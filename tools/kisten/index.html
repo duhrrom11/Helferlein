@@ -3,79 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Keller- & Kisten-Finder</title>
+    <title>Mini-HomeBox | Inventar & Kisten-Finder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-    <header class="bg-yellow-600 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-2xl font-bold">📦 Keller- & Kisten-Finder</h1>
-        <p class="text-sm opacity-90 mt-1">Inhalt erfassen & QR-Codes generieren</p>
+    <header class="bg-amber-600 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-2xl font-bold">📦 Mini-HomeBox (Inventar-Zentrale)</h1>
+        <p class="text-sm opacity-90 mt-1">Standorte, Kisten & Gegenstände perfekt organisiert</p>
     </header>
 
-    <main class="flex-grow container mx-auto p-4 max-w-4xl space-y-6">
-        <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold inline-block">← Zurück zur Startseite</a>
-
-        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h2 class="text-lg font-bold">Neue Kiste erfassen</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input type="text" id="boxTitle" placeholder="Kisten-Name (z.B. Karton Deko)" class="p-3 border rounded-xl text-sm">
-                <input type="text" id="boxItems" placeholder="Inhalt (z.B. Lichterketten, Kugeln)" class="p-3 border rounded-xl text-sm">
-            </div>
-            <button onclick="saveBox()" class="bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-3 px-6 rounded-xl text-sm shadow-sm">Kiste speichern & QR-Code erstellen</button>
+    <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
+        <div class="flex justify-between items-center">
+            <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
+            <input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Inventar durchsuchen..." class="p-2 border rounded-xl text-sm w-1/2 md:w-1/3">
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border">
-            <h3 class="font-bold text-lg mb-4">🗄️ Dein Kisten-Inventar</h3>
-            <div id="boxesList" class="space-y-4">
-                <p class="text-sm text-gray-400 text-center py-4">Noch keine Kisten erfasst.</p>
+        <!-- 1. STANDORT & KISTE ERFASSEN -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Standort anlegen -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
+                <h2 class="text-lg font-bold">📍 1. Standort anlegen</h2>
+                <input type="text" id="locName" placeholder="Standort (z.B. Keller, Garage, Dachboden)" class="w-full p-3 border rounded-xl text-sm">
+                <button onclick="saveLocation()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Standort speichern</button>
+            </div>
+
+            <!-- Kiste / Container anlegen -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
+                <h2 class="text-lg font-bold">📦 2. Kiste / Karton hinzufügen</h2>
+                <select id="boxLocationSelect" class="w-full p-3 border rounded-xl text-sm bg-white">
+                    <option value="">-- Standort wählen --</option>
+                </select>
+                <input type="text" id="boxName" placeholder="Kisten-Name (z.B. Karton #3 Werkzeug)" class="w-full p-3 border rounded-xl text-sm">
+                <input type="text" id="boxDesc" placeholder="Inhalt / Beschreibung (z.B. Schrauben, Dübel)" class="w-full p-3 border rounded-xl text-sm">
+                <button onclick="saveBox()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm">Kiste speichern & QR-Code</button>
+            </div>
+        </div>
+
+        <!-- 3. INVENTAR-ÜBERSICHT -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <h3 class="font-bold text-lg">🗄️ Dein vollständiges Inventar</h3>
+            <div id="inventoryContainer" class="space-y-4">
+                <p class="text-sm text-gray-400 text-center py-4">Noch keine Standorte oder Kisten erfasst.</p>
             </div>
         </div>
     </main>
 
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
+        <div class="bg-white p-6 rounded-2xl text-center space-y-3 shadow-2xl" onclick="event.stopPropagation()">
+            <h3 id="qrModalTitle" class="font-bold text-lg">QR-Code</h3>
+            <div id="qrcode" class="flex justify-center p-2 bg-white border rounded-xl"></div>
+            <p class="text-xs text-gray-500">Drucke diesen Code aus und klebe ihn auf die Kiste.</p>
+            <button onclick="closeQrModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', renderBoxesList);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLocationsDropdown();
+            renderInventory();
+        });
+
+        function getData() {
+            try {
+                return JSON.parse(localStorage.getItem('mini_homebox')) || { locations: [], boxes: [] };
+            } catch(e) {
+                return { locations: [], boxes: [] };
+            }
+        }
+
+        function saveData(data) {
+            localStorage.setItem('mini_homebox', JSON.stringify(data));
+        }
+
+        function saveLocation() {
+            const name = document.getElementById('locName').value.trim();
+            if (!name) return alert("Bitte Standort eingeben!");
+            let data = getData();
+            data.locations.push({ id: Date.now(), name });
+            saveData(data);
+            document.getElementById('locName').value = "";
+            loadLocationsDropdown();
+            renderInventory();
+        }
+
+        function loadLocationsDropdown() {
+            let data = getData();
+            const select = document.getElementById('boxLocationSelect');
+            select.innerHTML = '<option value="">-- Standort wählen --</option>' + 
+                data.locations.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+        }
 
         function saveBox() {
-            const title = document.getElementById('boxTitle').value.trim();
-            const items = document.getElementById('boxItems').value.trim();
-            if (!title) return alert("Bitte Titel angeben!");
-            let boxes = JSON.parse(localStorage.getItem('keller_boxes')) || [];
-            boxes.push({ title, items });
-            localStorage.setItem('keller_boxes', JSON.stringify(boxes));
-            document.getElementById('boxTitle').value = "";
-            document.getElementById('boxItems').value = "";
-            renderBoxesList();
+            const locId = document.getElementById('boxLocationSelect').value;
+            const name = document.getElementById('boxName').value.trim();
+            const desc = document.getElementById('boxDesc').value.trim();
+            if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
+            
+            let data = getData();
+            data.boxes.push({ id: Date.now(), locId: parseInt(locId), name, desc });
+            saveData(data);
+            document.getElementById('boxName').value = "";
+            document.getElementById('boxDesc').value = "";
+            renderInventory();
         }
 
-        function renderBoxesList() {
-            const container = document.getElementById('boxesList');
-            let boxes = JSON.parse(localStorage.getItem('keller_boxes')) || [];
-            container.innerHTML = boxes.map((b, idx) => `
-                <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div>
-                        <h4 class="font-bold text-sm">📦 ${b.title}</h4>
-                        <p class="text-xs text-gray-600">Inhalt: ${b.items}</p>
-                    </div>
-                    <div id="qrcode-${idx}" class="bg-white p-2 border rounded"></div>
-                    <button onclick="deleteBox(${idx})" class="text-xs text-red-500">Löschen</button>
-                </div>
-            `).join('') || `<p class="text-sm text-gray-400 text-center py-4">Noch keine Kisten erfasst.</p>`;
+        function renderInventory() {
+            const container = document.getElementById('inventoryContainer');
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            let data = getData();
 
-            boxes.forEach((b, idx) => {
-                const el = document.getElementById(`qrcode-${idx}`);
-                if (el && el.innerHTML === "") {
-                    new QRCode(el, { text: `Kiste: ${b.title} | Inhalt: ${b.items}`, width: 64, height: 64 });
+            if (data.locations.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Standorte erfasst.</p>`;
+                return;
+            }
+
+            container.innerHTML = data.locations.map(loc => {
+                let locBoxes = data.boxes.filter(b => b.locId === loc.id);
+                
+                // Filter nach Suche
+                if (search) {
+                    locBoxes = locBoxes.filter(b => b.name.toLowerCase().includes(search) || b.desc.toLowerCase().includes(search));
+                    if (locBoxes.length === 0 && !loc.name.toLowerCase().includes(search)) return '';
                 }
-            });
+
+                return `
+                    <div class="border rounded-2xl p-4 bg-gray-50 space-y-3">
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <h4 class="font-bold text-md text-amber-800">📍 Standort: ${loc.name}</h4>
+                            <button onclick="deleteLocation(${loc.id})" class="text-xs text-red-500 hover:underline">Standort löschen</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${locBoxes.length > 0 ? locBoxes.map(b => `
+                                <div class="bg-white p-3 border rounded-xl flex justify-between items-center shadow-sm">
+                                    <div>
+                                        <h5 class="font-bold text-sm">📦 ${b.name}</h5>
+                                        <p class="text-xs text-gray-600 mt-0.5">Inhalt: ${b.desc || 'Keine Angabe'}</p>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="showQrCode('${b.name}', '${b.desc}')" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100">🖨️ QR</button>
+                                        <button onclick="deleteBox(${b.id})" class="text-xs text-red-400 hover:text-red-600">✕</button>
+                                    </div>
+                                </div>
+                            `).join('') : '<p class="text-xs text-gray-400 col-span-2">Keine Kisten an diesem Standort.</p>'}
+                        </div>
+                    </div>
+                `;
+            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
         }
 
-        function deleteBox(idx) {
-            let boxes = JSON.parse(localStorage.getItem('keller_boxes')) || [];
-            boxes.splice(idx, 1);
-            localStorage.setItem('keller_boxes', JSON.stringify(boxes));
-            renderBoxesList();
+        function deleteLocation(locId) {
+            if (!confirm("Standort und alle zugehörigen Kisten löschen?")) return;
+            let data = getData();
+            data.locations = data.locations.filter(l => l.id !== locId);
+            data.boxes = data.boxes.filter(b => b.locId !== locId);
+            saveData(data);
+            loadLocationsDropdown();
+            renderInventory();
+        }
+
+        function deleteBox(boxId) {
+            let data = getData();
+            data.boxes = data.boxes.filter(b => b.id !== boxId);
+            saveData(data);
+            renderInventory();
+        }
+
+        function showQrCode(name, desc) {
+            document.getElementById('qrModalTitle').innerText = `QR-Code für: ${name}`;
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, {
+                text: `Mini-HomeBox | Kiste: ${name} | Inhalt: ${desc}`,
+                width: 128,
+                height: 128
+            });
+            document.getElementById('qrModal').classList.remove('hidden');
+        }
+
+        function closeQrModal() {
+            document.getElementById('qrModal').classList.add('hidden');
         }
     </script>
 </body>
