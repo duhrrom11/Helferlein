@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WG- & Haushalts-Kassen-Rechner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    <header class="bg-purple-600 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-2xl font-bold">💶 WG- & Haushalts-Kassen-Rechner</h1>
+        <p class="text-sm opacity-90 mt-1">Ausgaben erfassen und lokal aufteilen</p>
+    </header>
+
+    <main class="flex-grow container mx-auto p-4 max-w-4xl space-y-6">
+        <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold inline-block">← Zurück zur Startseite</a>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <h2 class="text-lg font-bold">Neue Ausgabe eintragen</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input type="text" id="expDesc" placeholder="Wofür? (z.B. Einkauf)" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="expAmount" placeholder="Betrag in € (z.B. 45.50)" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="expWho" placeholder="Bezahlt von (z.B. Anna)" class="p-3 border rounded-xl text-sm">
+            </div>
+            <button onclick="saveExpense()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-xl text-sm shadow-sm">Ausgabe hinzufügen</button>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border">
+            <h3 class="font-bold text-lg mb-4">📊 Ausgaben-Liste</h3>
+            <div id="expensesList" class="space-y-3">
+                <p class="text-sm text-gray-400 text-center py-4">Noch keine Ausgaben erfasst.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', renderExpensesList);
+
+        function saveExpense() {
+            const desc = document.getElementById('expDesc').value.trim();
+            const amount = parseFloat(document.getElementById('expAmount').value.replace(',', '.')) || 0;
+            const who = document.getElementById('expWho').value.trim() || "Jemand";
+            if (!desc || amount <= 0) return alert("Bitte gültige Daten eingeben!");
+            let exp = JSON.parse(localStorage.getItem('wg_expenses')) || [];
+            exp.push({ desc, amount, who });
+            localStorage.setItem('wg_expenses', JSON.stringify(exp));
+            document.getElementById('expDesc').value = "";
+            document.getElementById('expAmount').value = "";
+            document.getElementById('expWho').value = "";
+            renderExpensesList();
+        }
+
+        function renderExpensesList() {
+            const container = document.getElementById('expensesList');
+            let exp = JSON.parse(localStorage.getItem('wg_expenses')) || [];
+            container.innerHTML = exp.map((e, idx) => `
+                <div class="flex justify-between items-center p-3 bg-gray-50 border rounded-xl text-sm">
+                    <div><strong>${e.desc}</strong> (${e.amount.toFixed(2)} €) - Bezahlt von: <span class="text-blue-600">${e.who}</span></div>
+                    <button onclick="deleteExpense(${idx})" class="text-xs text-red-500">Löschen</button>
+                </div>
+            `).join('') || `<p class="text-sm text-gray-400 text-center py-4">Noch keine Ausgaben.</p>`;
+        }
+
+        function deleteExpense(idx) {
+            let exp = JSON.parse(localStorage.getItem('wg_expenses')) || [];
+            exp.splice(idx, 1);
+            localStorage.setItem('wg_expenses', JSON.stringify(exp));
+            renderExpensesList();
+        }
+    </script>
+</body>
+</html>
