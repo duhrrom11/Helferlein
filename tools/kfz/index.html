@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KFZ- & Reifenwechsel-Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <header class="bg-red-600 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-2xl font-bold">🚗 KFZ- & Reifenwechsel-Tracker</h1>
+        <p class="text-sm opacity-90 mt-1">TÜV, Inspektion und Reifen im Blick behalten</p>
+    </header>
+    <main class="flex-grow container mx-auto p-4 max-w-4xl space-y-6">
+        <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold inline-block">← Zurück zur Startseite</a>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <h2 class="text-lg font-bold">KFZ-Eintrag / Termin hinzufügen</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input type="text" id="kfzTitle" placeholder="Bezeichnung (z.B. TÜV fällig)" class="p-3 border rounded-xl text-sm">
+                <select id="kfzType" class="p-3 border rounded-xl text-sm bg-white">
+                    <option value="TÜV / HU">TÜV / HU</option>
+                    <option value="Inspektion">Inspektion</option>
+                    <option value="Reifenwechsel">Reifenwechsel</option>
+                    <option value="Ölwechsel">Ölwechsel</option>
+                </select>
+                <input type="date" id="kfzDate" class="p-3 border rounded-xl text-sm">
+            </div>
+            <button onclick="saveKfz()" class="bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-xl text-sm shadow-sm">Termin speichern</button>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border">
+            <h3 class="font-bold text-lg mb-4">📋 Anstehende KFZ-Termine</h3>
+            <div id="kfzList" class="space-y-3"><p class="text-sm text-gray-400 text-center py-4">Keine Termine erfasst.</p></div>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', renderKfz);
+        function saveKfz() {
+            const title = document.getElementById('kfzTitle').value.trim();
+            const type = document.getElementById('kfzType').value;
+            const date = document.getElementById('kfzDate').value;
+            if(!title || !date) return alert("Bitte Bezeichnung und Datum eingeben!");
+            let items = JSON.parse(localStorage.getItem('kfz_tracker')) || [];
+            items.push({ title, type, date });
+            localStorage.setItem('kfz_tracker', JSON.stringify(items));
+            document.getElementById('kfzTitle').value = "";
+            renderKfz();
+        }
+        function renderKfz() {
+            const list = document.getElementById('kfzList');
+            let items = JSON.parse(localStorage.getItem('kfz_tracker')) || [];
+            const today = new Date();
+            list.innerHTML = items.map((item, idx) => {
+                let d = new Date(item.date);
+                let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+                let badge = diff < 0 ? "🔴 Überfällig" : (diff <= 30 ? `🟡 in ${diff} Tagen` : "🟢 Planmäßig");
+                return `
+                    <div class="p-4 bg-gray-50 border rounded-2xl flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">${item.type}</span>
+                            <h4 class="font-bold text-sm mt-1">${item.title} <span class="text-xs font-normal text-gray-500">(${badge})</span></h4>
+                            <p class="text-xs text-gray-500">Fälligkeitsdatum: ${d.toLocaleDateString('de-DE')}</p>
+                        </div>
+                        <button onclick="deleteKfz(${idx})" class="text-xs text-red-500">Löschen</button>
+                    </div>`;
+            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine Termine erfasst.</p>`;
+        }
+        function deleteKfz(idx) {
+            let items = JSON.parse(localStorage.getItem('kfz_tracker')) || [];
+            items.splice(idx, 1);
+            localStorage.setItem('kfz_tracker', JSON.stringify(items));
+            renderKfz();
+        }
+    </script>
+</body>
+</html>
