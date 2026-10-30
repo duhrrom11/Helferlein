@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schlüssel-, PIN- & Dokumenten-Merker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <header class="bg-indigo-600 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-2xl font-bold">🔐 Schlüssel-, PIN- & Notiz-Merker</h1>
+        <p class="text-sm opacity-90 mt-1">Wichtige Infos sicher im lokalen Browser-Speicher</p>
+    </header>
+    <main class="flex-grow container mx-auto p-4 max-w-4xl space-y-6">
+        <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold inline-block">← Zurück zur Startseite</a>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <h2 class="text-lg font-bold">Neue Notiz / PIN erfassen</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input type="text" id="noteTitle" placeholder="Titel (z.B. Gäste-WLAN, Koffer-PIN)" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="noteCategory" placeholder="Kategorie (z.B. Internet, Sicherheit)" class="p-3 border rounded-xl text-sm">
+            </div>
+            <textarea id="noteContent" placeholder="Inhalt / Notiz / Code..." class="w-full p-3 border rounded-xl text-sm h-24"></textarea>
+            <button onclick="saveNote()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-xl text-sm shadow-sm">Notiz speichern</button>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border">
+            <h3 class="font-bold text-lg mb-4">📋 Gespeicherte Notizen</h3>
+            <div id="notesList" class="space-y-3"><p class="text-sm text-gray-400 text-center py-4">Noch keine Notizen.</p></div>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', renderNotes);
+        function saveNote() {
+            const title = document.getElementById('noteTitle').value.trim();
+            const category = document.getElementById('noteCategory').value.trim() || "Allgemein";
+            const content = document.getElementById('noteContent').value.trim();
+            if(!title || !content) return alert("Bitte Titel und Inhalt eingeben!");
+            let notes = JSON.parse(localStorage.getItem('secure_notes')) || [];
+            notes.push({ title, category, content });
+            localStorage.setItem('secure_notes', JSON.stringify(notes));
+            document.getElementById('noteTitle').value = "";
+            document.getElementById('noteCategory').value = "";
+            document.getElementById('noteContent').value = "";
+            renderNotes();
+        }
+        function renderNotes() {
+            const list = document.getElementById('notesList');
+            let notes = JSON.parse(localStorage.getItem('secure_notes')) || [];
+            list.innerHTML = notes.map((n, idx) => `
+                <div class="p-4 bg-gray-50 border rounded-2xl flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">${n.category}</span>
+                        <h4 class="font-bold text-sm mt-1">${n.title}</h4>
+                        <p class="text-xs text-gray-600 mt-1 whitespace-pre-line">${n.content}</p>
+                    </div>
+                    <button onclick="deleteNote(${idx})" class="text-xs text-red-500">Löschen</button>
+                </div>
+            `).join('') || `<p class="text-sm text-gray-400 text-center py-4">Noch keine Notizen.</p>`;
+        }
+        function deleteNote(idx) {
+            let notes = JSON.parse(localStorage.getItem('secure_notes')) || [];
+            notes.splice(idx, 1);
+            localStorage.setItem('secure_notes', JSON.stringify(notes));
+            renderNotes();
+        }
+    </script>
+</body>
+</html>
