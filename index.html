@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>100 Alltagshelferlein mit Foto-Scan</title>
+    <title>Garantie- & Kassenbon-Manager Pro</title>
     <!-- Tailwind CSS für modernes Design -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tesseract.js für die Texterkennung im Browser (OCR) -->
@@ -13,78 +13,78 @@
 
     <!-- Header -->
     <header class="bg-blue-600 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-2xl font-bold">100 Alltagshelferlein 🚀</h1>
-        <p class="text-sm opacity-90 mt-1">Clevere Tools für den Alltag – einfach Foto machen & erledigen lassen</p>
+        <h1 class="text-2xl font-bold">Garantie- & Kassenbon-Manager 🚀</h1>
+        <p class="text-sm opacity-90 mt-1">Dein smarter Alltagshelfer – Foto machen, Garantie sichern, Überblick behalten</p>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto p-4 max-w-4xl">
+    <main class="flex-grow container mx-auto p-4 max-w-4xl space-y-6">
         
-        <!-- Suchleiste -->
-        <div class="mb-6">
-            <input type="text" placeholder="Helferlein suchen (z.B. Kassenbon, Zählerstand)..." class="w-full p-3 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <!-- Dashboard / Statistiken -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl text-xl font-bold">🛡️</div>
+                <div>
+                    <p class="text-xs text-gray-500 font-medium">Aktive Garantien</p>
+                    <h3 id="statActive" class="text-lg font-bold">0</h3>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
+                <div class="p-3 bg-yellow-50 text-yellow-600 rounded-xl text-xl font-bold">⚠️</div>
+                <div>
+                    <p class="text-xs text-gray-500 font-medium">Läuft bald ab (30 Tage)</p>
+                    <h3 id="statExpiring" class="text-lg font-bold">0</h3>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
+                <div class="p-3 bg-green-50 text-green-600 rounded-xl text-xl font-bold">💰</div>
+                <div>
+                    <p class="text-xs text-gray-500 font-medium">Gesamtwert geschützt</p>
+                    <h3 id="statValue" class="text-lg font-bold">0,00 €</h3>
+                </div>
+            </div>
         </div>
 
-        <!-- Grid der Helfer -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            <!-- Helfer 1: Kassenbon & Garantie-Scanner -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                <div>
-                    <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded-full">Finanzen & Sicherheit</span>
-                    <h2 class="text-lg font-bold mt-2">1. Kassenbon & Garantie-Scanner</h2>
-                    <p class="text-sm text-gray-600 mt-1">Fotografiere den Bon – Werte werden erkannt und können kurz geprüft werden.</p>
-                </div>
-                
-                <!-- Unsichtbares Kamera-Input-Feld -->
-                <input type="file" id="bonCamera" accept="image/*" capture="environment" class="hidden" onchange="processBon(event)">
-                
-                <button onclick="document.getElementById('bonCamera').click()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl transition text-center">
+        <!-- Aktionen & Scanner -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h2 class="text-lg font-bold">Neues Gerät erfassen</h2>
+                <p class="text-sm text-gray-600">Fotografiere den Kassenbon, um Daten automatisch auszulesen.</p>
+            </div>
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <input type="file" id="bonCamera" accept="image/*" capture="environment" class="hidden" onchange="handleImageCapture(event)">
+                <button onclick="document.getElementById('bonCamera').click()" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl transition text-center text-sm shadow-sm">
                     📷 Kassenbon fotografieren
                 </button>
-                
-                <!-- Status- und Ladeanzeige -->
-                <div id="bonStatus" class="mt-3 text-xs text-gray-500 bg-gray-50 p-2 rounded-lg hidden"></div>
-
-                <!-- Korrektur-Formular (erscheint nach dem Scan) -->
-                <div id="editForm" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl hidden space-y-3">
-                    <p class="text-xs font-bold text-blue-800">✨ Scan beendet! Bitte Werte kurz prüfen & korrigieren:</p>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-gray-600">Kaufdatum:</label>
-                        <input type="text" id="inputDate" class="w-full p-2 text-xs border rounded bg-white">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-semibold text-gray-600">Gesamtbetrag:</label>
-                        <input type="text" id="inputAmount" class="w-full p-2 text-xs border rounded bg-white">
-                    </div>
-                    <button onclick="saveScannedReceipt()" class="w-full bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-2 px-3 rounded-lg transition">
-                        💾 Jetzt in Liste speichern
-                    </button>
-                </div>
-            </div>
-
-            <!-- Helfer 2: Zählerstands-Tracker -->
-            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                <div>
-                    <span class="text-xs bg-green-100 text-green-800 font-semibold px-2.5 py-0.5 rounded-full">Haushalt & Energie</span>
-                    <h2 class="text-lg font-bold mt-2">2. Strom- & Wasserzähler-Scanner</h2>
-                    <p class="text-sm text-gray-600 mt-1">Halte das Tablet vor den Zähler und fotografiere die Ziffern.</p>
-                </div>
-                <button onclick="alert('Zähler-Scan wird im nächsten Update aktiviert!')" class="mt-4 bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-xl transition text-center">
-                    📷 Zählerstand fotografieren
+                <button onclick="openModalForNew()" class="flex-1 md:flex-none bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition text-center text-sm">
+                    ➕ Manuell hinzufügen
                 </button>
             </div>
-
         </div>
 
-        <!-- Gespeicherte Bons / Garantie-Liste -->
-        <div class="mt-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg">📋 Deine gespeicherten Garantie-Bons</h3>
-                <button onclick="clearReceipts()" class="text-xs text-red-500 hover:underline">Alle löschen</button>
+        <!-- Such- & Filterleiste -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-3 justify-between items-center">
+            <input type="text" id="searchInput" oninput="renderList()" placeholder="🔍 Suchen nach Gerät, Kategorie oder Seriennummer..." class="w-full md:w-1/2 p-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            
+            <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                <select id="filterSelect" onchange="renderList()" class="p-3 border rounded-xl text-sm bg-white">
+                    <option value="all">Alle Status</option>
+                    <option value="active">🟢 Aktiv</option>
+                    <option value="expiring">🟡 Läuft bald ab</option>
+                    <option value="expired">🔴 Abgelaufen</option>
+                </select>
+                <button onclick="exportData()" class="p-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium" title="Daten sichern (Export)">💾 Export</button>
+                <label class="p-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium cursor-pointer" title="Daten wiederherstellen (Import)">
+                    📂 Import <input type="file" accept=".json" onchange="importData(event)" class="hidden">
+                </label>
             </div>
-            <div id="receiptsList" class="space-y-2">
-                <p class="text-sm text-gray-400">Noch keine Bons gespeichert. Mach ein Foto, um den ersten zu erfassen!</p>
+        </div>
+
+        <!-- Geräte-Liste -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <h3 class="font-bold text-lg mb-4">📋 Deine gespeicherten Geräte & Garantien</h3>
+            <div id="deviceList" class="space-y-3">
+                <p class="text-sm text-gray-400 text-py-4 text-center">Noch keine Geräte erfasst. Mach ein Foto oder füge eins hinzu!</p>
             </div>
         </div>
 
@@ -95,116 +95,127 @@
         Gehostet auf GitHub Pages • Entwickelt vom Tablet aus
     </footer>
 
-    <!-- JavaScript für Scan, Parsing & Korrektur -->
-    <script>
-        document.addEventListener('DOMContentLoaded', renderReceipts);
+    <!-- MODAL: Hinzufügen / Bearbeiten -->
+    <div id="deviceModal" class="fixed inset-0 bg-black bg-z-50 bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 id="modalTitle" class="text-lg font-bold">Gerät & Garantie bearbeiten</h3>
+            <input type="hidden" id="editIndex" value="-1">
+            <input type="hidden" id="receiptImageBase64" value="">
 
-        async function processBon(event) {
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Gerätename / Modell:</label>
+                <input type="text" id="devName" class="w-full p-3 border rounded-xl text-sm" placeholder="z.B. Kaffeemaschine Philips">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
+                    <select id="devCategory" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="Elektronik">⚡ Elektronik</option>
+                        <option value="Haushalt">🏠 Haushalt</option>
+                        <option value="Werkzeug">🛠️ Werkzeug</option>
+                        <option value="Outdoor">🌳 Outdoor</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kaufpreis (€):</label>
+                    <input type="text" id="devPrice" class="w-full p-3 border rounded-xl text-sm" placeholder="49.99">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kaufdatum:</label>
+                    <input type="date" id="devDate" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Garantie-Dauer:</label>
+                    <select id="devWarrantyYears" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="1">1 Jahr</option>
+                        <option value="2" selected>2 Jahre (Gesetzlich)</option>
+                        <option value="3">3 Jahre</option>
+                        <option value="5">5 Jahre</option>
+                        <option value="10">10 Jahre / Lebenslang</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Seriennummer / Artikel-Nr. (optional):</label>
+                <input type="text" id="devSerial" class="w-full p-3 border rounded-xl text-sm" placeholder="z.B. SN123456789">
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-medium">Abbrechen</button>
+                <button onclick="saveDevice()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Bild-Zoom (Kassenbon) -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeImageModal()">
+        <div class="relative max-w-3xl w-full max-h-[90vh] flex items-center justify-center">
+            <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg shadow-2xl object-contain bg-white p-2">
+        </div>
+    </div>
+
+    <!-- JavaScript Master-Logik -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            renderList();
+        });
+
+        // 1. Foto-Aufnahme & OCR Vorverarbeitung
+        async function handleImageCapture(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const statusBox = document.getElementById('bonStatus');
-            const editForm = document.getElementById('editForm');
-            
-            editForm.classList.add('hidden');
-            statusBox.classList.remove('hidden');
-            statusBox.innerHTML = "🔍 Analysiere Bon auf dem Tablet...";
+            // In Base64 umwandeln für direkte Vorschau/Speicherung
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64Image = e.target.result;
+                
+                // OCR Starten
+                try {
+                    const processed = await preprocessImage(file);
+                    const { data: { text } } = await Tesseract.recognize(processed, 'deu');
+                    
+                    const parsed = parseReceiptText(text);
 
-            try {
-                const processedImage = await preprocessImage(file);
-
-                const { data: { text } } = await Tesseract.recognize(
-                    processedImage,
-                    'deu',
-                    { logger: m => console.log(m) }
-                );
-
-                const parsedData = parseReceiptText(text);
-
-                // Felder im Korrekturformular vorausfüllen
-                document.getElementById('inputDate').value = parsedData.date || new Date().toLocaleDateString('de-DE');
-                document.getElementById('inputAmount').value = parsedData.amount || '0,00 €';
-
-                statusBox.classList.add('hidden');
-                editForm.classList.remove('hidden'); // Formular anzeigen zum Prüfen
-
-            } catch (error) {
-                statusBox.innerHTML = "❌ Fehler bei der Texterkennung. Bitte versuche es erneut.";
-                console.error(error);
-            }
+                    // Modal öffnen mit vorausgefüllten Daten
+                    openModalForNew(parsed.date, parsed.amount, base64Image);
+                } catch (err) {
+                    console.error(err);
+                    openModalForNew(null, null, base64Image);
+                }
+            };
+            reader.readAsDataURL(file);
         }
 
-        // Korrigierte Daten aus dem Formular speichern
-        function saveScannedReceipt() {
-            const date = document.getElementById('inputDate').value;
-            const amount = document.getElementById('inputAmount').value;
-
-            let receipts = JSON.parse(localStorage.getItem('my_receipts')) || [];
-            receipts.push({
-                date: date,
-                amount: amount,
-                timestamp: new Date().toLocaleDateString('de-DE')
-            });
-            localStorage.setItem('my_receipts', JSON.stringify(receipts));
-
-            // Formular verstecken und Liste aktualisieren
-            document.getElementById('editForm').classList.add('hidden');
-            renderReceipts();
-        }
-
-        // Gespeicherte Bons anzeigen
-        function renderReceipts() {
-            const listContainer = document.getElementById('receiptsList');
-            let receipts = JSON.parse(localStorage.getItem('my_receipts')) || [];
-
-            if (receipts.length === 0) {
-                listContainer.innerHTML = `<p class="text-sm text-gray-400">Noch keine Bons gespeichert. Mach ein Foto, um den ersten zu erfassen!</p>`;
-                return;
-            }
-
-            listContainer.innerHTML = receipts.map((r, index) => `
-                <div class="flex justify-between items-center p-3 bg-gray-50 border rounded-xl text-sm">
-                    <div>
-                        <span class="font-bold">Bon #${index + 1}</span>
-                        <span class="text-xs text-gray-500 ml-2">(Erfasst am: ${r.timestamp})</span>
-                        <div class="text-xs text-gray-600 mt-0.5">Datum: ${r.date} | Betrag: <span class="font-semibold text-blue-600">${r.amount}</span></div>
-                    </div>
-                    <button onclick="deleteReceipt(${index})" class="text-xs text-red-500 hover:bg-red-50 p-1.5 rounded">Löschen</button>
-                </div>
-            `).join('');
-        }
-
-        function deleteReceipt(index) {
-            let receipts = JSON.parse(localStorage.getItem('my_receipts')) || [];
-            receipts.splice(index, 1);
-            localStorage.setItem('my_receipts', JSON.stringify(receipts));
-            renderReceipts();
-        }
-
-        function clearReceipts() {
-            localStorage.removeItem('my_receipts');
-            renderReceipts();
-        }
-
+        // 2. Parser für Datum & Betrag
         function parseReceiptText(text) {
             const dateRegex = /\b(0[1-9]|[12][0-9]|3[01])[.\/-](0[1-9]|1[0-2])[.\/-](19|20)\d\d\b/;
             const dateMatch = text.match(dateRegex);
+
+            let isoDate = new Date().toISOString().split('T')[0];
+            if (dateMatch) {
+                const parts = dateMatch[0].split(/[.\/-]/);
+                isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
 
             const amountRegex = /(?:summe|gesamt|total|eur)?\s*[:]?\s*(\d+[\.,]\d{2})\b/gi;
             let amounts = [];
             let match;
             while ((match = amountRegex.exec(text)) !== null) {
-                amounts.push(match[1]);
+                amounts.push(match[1].replace(',', '.'));
             }
+            const amount = amounts.length > 0 ? amounts[amounts.length - 1] : "0.00";
 
-            const amount = amounts.length > 0 ? amounts[amounts.length - 1] + " €" : null;
-
-            return {
-                date: dateMatch ? dateMatch[0] : null,
-                amount: amount
-            };
+            return { date: isoDate, amount: amount };
         }
 
+        // 3. Bildoptimierung für OCR
         function preprocessImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -213,24 +224,17 @@
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        
                         canvas.width = img.width;
                         canvas.height = img.height;
                         ctx.drawImage(img, 0, 0);
 
                         const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                         const data = imgData.data;
-                        
                         for (let i = 0; i < data.length; i += 4) {
                             let avg = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
                             avg = avg < 130 ? avg * 0.75 : avg * 1.25;
-                            avg = avg > 255 ? 255 : avg;
-                            
-                            data[i]     = avg;
-                            data[i + 1] = avg;
-                            data[i + 2] = avg;
+                            data[i] = data[i+1] = data[i+2] = avg > 255 ? 255 : avg;
                         }
-                        
                         ctx.putImageData(imgData, 0, 0);
                         resolve(canvas.toDataURL('image/jpeg'));
                     };
@@ -238,6 +242,207 @@
                 };
                 reader.readAsDataURL(file);
             });
+        }
+
+        // Modal öffnen (Neu oder Bearbeiten)
+        function openModalForNew(date = null, price = null, imageBase64 = "") {
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('devName').value = "";
+            document.getElementById('devCategory').value = "Elektronik";
+            document.getElementById('devPrice').value = price || "";
+            document.getElementById('devDate').value = date || new Date().toISOString().split('T')[0];
+            document.getElementById('devWarrantyYears').value = "2";
+            document.getElementById('devSerial').value = "";
+            document.getElementById('receiptImageBase64').value = imageBase64;
+            
+            document.getElementById('modalTitle').innerText = "Neues Gerät & Garantie erfassen";
+            document.getElementById('deviceModal').classList.remove('hidden');
+        }
+
+        function openModalForEdit(index) {
+            let devices = JSON.parse(localStorage.getItem('warranty_devices')) || [];
+            let d = devices[index];
+
+            document.getElementById('editIndex').value = index;
+            document.getElementById('devName').value = d.name;
+            document.getElementById('devCategory').value = d.category;
+            document.getElementById('devPrice').value = d.price;
+            document.getElementById('devDate').value = d.date;
+            document.getElementById('devWarrantyYears').value = d.warrantyYears;
+            document.getElementById('devSerial').value = d.serial || "";
+            document.getElementById('receiptImageBase64').value = d.image || "";
+
+            document.getElementById('modalTitle').innerText = "Gerät im Nachhinein bearbeiten";
+            document.getElementById('deviceModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('deviceModal').classList.add('hidden');
+        }
+
+        // 4. Gerät speichern (Neu oder Update)
+        function saveDevice() {
+            const index = parseInt(document.getElementById('editIndex').value);
+            const name = document.getElementById('devName'].value.trim() || "Unbenanntes Gerät";
+            const category = document.getElementById('devCategory').value;
+            const price = parseFloat(document.getElementById('devPrice').value.replace(',', '.')) || 0;
+            const date = document.getElementById('devDate').value || new Date().toISOString().split('T')[0];
+            const warrantyYears = parseInt(document.getElementById('devWarrantyYears').value) || 2;
+            const serial = document.getElementById('devSerial').value.trim();
+            const image = document.getElementById('receiptImageBase64').value;
+
+            let devices = JSON.parse(localStorage.getItem('warranty_devices')) || [];
+
+            const deviceData = { name, category, price, date, warrantyYears, serial, image };
+
+            if (index === -1) {
+                devices.push(deviceData);
+            } else {
+                devices[index] = deviceData;
+            }
+
+            localStorage.setItem('warranty_devices', JSON.stringify(devices));
+            closeModal();
+            renderList();
+        }
+
+        // 5. Liste rendern mit Ampel-Logik & Statistiken
+        function renderList() {
+            const listContainer = document.getElementById('deviceList');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filter = document.getElementById('filterSelect').value;
+
+            let devices = JSON.parse(localStorage.getItem('warranty_devices')) || [];
+
+            let activeCount = 0;
+            let expiringCount = 0;
+            let totalValue = 0;
+
+            const today = new Date();
+
+            const htmlItems = devices.map((d, index) => {
+                totalValue += d.price;
+
+                // Ablaufdatum berechnen
+                let purchaseDate = new Date(d.date);
+                let expiryDate = new Date(purchaseDate);
+                expiryDate.setFullYear(expiryDate.getFullYear() + d.warrantyYears);
+
+                // Tage bis Ablauf
+                const diffTime = expiryDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                let status = "active";
+                let badgeClass = "bg-green-100 text-green-800";
+                let badgeText = "🟢 Aktiv";
+
+                if (diffDays < 0) {
+                    status = "expired";
+                    badgeClass = "bg-red-100 text-red-800";
+                    badgeText = "🔴 Abgelaufen";
+                } else if (diffDays <= 30) {
+                    status = "expiring";
+                    badgeClass = "bg-yellow-100 text-yellow-800";
+                    badgeText = `🟡 Läuft in ${diffDays} T. ab`;
+                }
+
+                if (status === 'active' || status === 'expiring') activeCount++;
+                if (status === 'expiring') expiringCount++;
+
+                // Such- & Filterfilterung
+                const matchesSearch = d.name.toLowerCase().includes(search) || d.category.toLowerCase().includes(search) || (d.serial && d.serial.toLowerCase().includes(search));
+                const matchesFilter = filter === 'all' || filter === status;
+
+                if (!matchesSearch || !matchesFilter) return '';
+
+                const formattedExpiry = expiryDate.toLocaleDateString('de-DE');
+                const formattedPrice = d.price.toFixed(2).replace('.', ',') + ' €';
+
+                return `
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-50 border rounded-2xl gap-3">
+                        <div class="flex items-center space-x-3">
+                            ${d.image ? `<img src="${d.image}" onclick="zoomImage('${d.image}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80" title="Bon vergrößern">` : '<div class="w-12 h-12 bg-gray-200 rounded-xl flex items-center justify-center text-xs text-gray-400">Kein Bon</div>'}
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <h4 class="font-bold text-sm">${d.name}</h4>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold ${badgeClass}">${badgeText}</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    Kauf: ${new Date(d.date).toLocaleDateString('de-DE')} | Garantie bis: <strong class="text-gray-700">${formattedExpiry}</strong> | Preis: <span class="font-semibold text-blue-600">${formattedPrice}</span>
+                                </p>
+                                ${d.serial ? `<p class="text-[11px] text-gray-400 mt-0.5">Seriennummer: ${d.serial}</p>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                            <button onclick="generateSupportEmail('${d.name}', '${d.serial || 'k.A.'}', '${d.date}')" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-medium">✉️ Support-Mail</button>
+                            <button onclick="openModalForEdit(${index})" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-medium">✏️ Bearbeiten</button>
+                            <button onclick="deleteDevice(${index})" class="px-3 py-1.5 bg-red-50 text-red-500 hover:bg-red-100 rounded-xl text-xs font-medium">Löschen</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Dashboard aktualisieren
+            document.getElementById('statActive').innerText = activeCount;
+            document.getElementById('statExpiring').innerText = expiringCount;
+            document.getElementById('statValue').innerText = totalValue.toFixed(2).replace('.', ',') + ' €';
+
+            listContainer.innerHTML = htmlItems || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Geräte gefunden.</p>`;
+        }
+
+        // 6. Support-Mail Vorlage generieren
+        function generateSupportEmail(name, serial, date) {
+            const subject = encodeURIComponent(`Garantieanfrage / Reklamation: ${name}`);
+            const body = encodeURIComponent(`Sehr geehrte Damen und Herren,\n\nich möchte hiermit einen Garantiefall für folgendes Gerät anmelden:\n\n- Produkt: ${name}\n- Seriennummer: ${serial}\n- Kaufdatum: ${new Date(date).toLocaleDateString('de-DE')}\n\nBitte teilen Sie mir das weitere Vorgehen mit.\n\nMit freundlichen Grüßen`);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+
+        // 7. Löschen
+        function deleteDevice(index) {
+            if (confirm("Möchtest du diesen Eintrag wirklich löschen?")) {
+                let devices = JSON.parse(localStorage.getItem('warranty_devices')) || [];
+                devices.splice(index, 1);
+                localStorage.setItem('warranty_devices', JSON.stringify(devices));
+                renderList();
+            }
+        }
+
+        // 8. Bild-Zoom Modal
+        function zoomImage(src) {
+            document.getElementById('zoomedImage').src = src;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+        }
+
+        // 9. Export / Import Backup
+        function exportData() {
+            let data = localStorage.getItem('warranty_devices') || '[]';
+            let blob = new Blob([data], { type: 'application/json' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `garantie-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    JSON.parse(e.target.result); // Validierung
+                    localStorage.setItem('warranty_devices', e.target.result);
+                    renderList();
+                    alert("Backup erfolgreich importiert!");
+                } catch (err) {
+                    alert("Ungültige Backup-Datei.");
+                }
+            };
+            reader.readAsText(file);
         }
     </script>
 
