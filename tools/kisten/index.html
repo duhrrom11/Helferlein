@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keller- & Kisten-Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    <header class="bg-yellow-600 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-2xl font-bold">📦 Keller- & Kisten-Finder</h1>
+        <p class="text-sm opacity-90 mt-1">Inhalt erfassen & QR-Codes generieren</p>
+    </header>
+
+    <main class="flex-grow container mx-auto p-4 max-w-4xl space-y-6">
+        <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold inline-block">← Zurück zur Startseite</a>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <h2 class="text-lg font-bold">Neue Kiste erfassen</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input type="text" id="boxTitle" placeholder="Kisten-Name (z.B. Karton Deko)" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="boxItems" placeholder="Inhalt (z.B. Lichterketten, Kugeln)" class="p-3 border rounded-xl text-sm">
+            </div>
+            <button onclick="saveBox()" class="bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-3 px-6 rounded-xl text-sm shadow-sm">Kiste speichern & QR-Code erstellen</button>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border">
+            <h3 class="font-bold text-lg mb-4">🗄️ Dein Kisten-Inventar</h3>
+            <div id="boxesList" class="space-y-4">
+                <p class="text-sm text-gray-400 text-center py-4">Noch keine Kisten erfasst.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', renderBoxesList);
+
+        function saveBox() {
+            const title = document.getElementById('boxTitle').value.trim();
+            const items = document.getElementById('boxItems').value.trim();
+            if (!title) return alert("Bitte Titel angeben!");
+            let boxes = JSON.parse(localStorage.getItem('keller_boxes')) || [];
+            boxes.push({ title, items });
+            localStorage.setItem('keller_boxes', JSON.stringify(boxes));
+            document.getElementById('boxTitle').value = "";
+            document.getElementById('boxItems').value = "";
+            renderBoxesList();
+        }
+
+        function renderBoxesList() {
+            const container = document.getElementById('boxesList');
+            let boxes = JSON.parse(localStorage.getItem('keller_boxes')) || [];
+            container.innerHTML = boxes.map((b, idx) => `
+                <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h4 class="font-bold text-sm">📦 ${b.title}</h4>
+                        <p class="text-xs text-gray-600">Inhalt: ${b.items}</p>
+                    </div>
+                    <div id="qrcode-${idx}" class="bg-white p-2 border rounded"></div>
+                    <button onclick="deleteBox(${idx})" class="text-xs text-red-500">Löschen</button>
+                </div>
+            `).join('') || `<p class="text-sm text-gray-400 text-center py-4">Noch keine Kisten erfasst.</p>`;
+
+            boxes.forEach((b, idx) => {
+                const el = document.getElementById(`qrcode-${idx}`);
+                if (el && el.innerHTML === "") {
+                    new QRCode(el, { text: `Kiste: ${b.title} | Inhalt: ${b.items}`, width: 64, height: 64 });
+                }
+            });
+        }
+
+        function deleteBox(idx) {
+            let boxes = JSON.parse(localStorage.getItem('keller_boxes')) || [];
+            boxes.splice(idx, 1);
+            localStorage.setItem('keller_boxes', JSON.stringify(boxes));
+            renderBoxesList();
+        }
+    </script>
+</body>
+</html>
