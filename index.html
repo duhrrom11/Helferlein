@@ -4,683 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>100 Alltagshelferlein 🚀</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tesseract.js für OCR -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@v5/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-    <!-- Header / Hub-Navigation -->
     <header class="bg-blue-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">100 Alltagshelferlein 🚀</h1>
-        <p class="text-sm opacity-90 mt-1">Clevere Tools für den Alltag – entwickelt für dein Tablet, gehostet auf GitHub</p>
+        <p class="text-sm opacity-90 mt-1">Dein modulares Alltags-Toolkit – entwickelt für das Tablet</p>
     </header>
 
-    <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
         
-        <!-- Suchleiste & Kategorie-Filter -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-3 justify-between items-center">
-            <input type="text" id="hubSearch" oninput="filterHub()" placeholder="🔍 Suche in allen 100 Helferlein..." class="w-full md:w-1/2 p-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                <button onclick="filterCategory('all')" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold">Alle</button>
-                <button onclick="filterCategory('finanzen')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Finanzen & Sicherheit</button>
-                <button onclick="filterCategory('haushalt')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Haushalt & Energie</button>
-            </div>
+        <!-- Suchleiste -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+            <input type="text" id="hubSearch" oninput="filterHub()" placeholder="🔍 Suche in allen Helferlein..." class="w-full p-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
-        <!-- Grid der Helferlein -->
+        <!-- Grid der Tools -->
         <div id="toolGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             
-            <!-- TOOL 1: Garantie- & Kassenbon-Manager (VOLL AKTIV) -->
-            <div class="tool-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between" data-category="finanzen">
+            <!-- Tool 1: Kassenbon & Garantie -->
+            <div class="tool-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
                 <div>
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded-full">Finanzen & Sicherheit</span>
-                        <span class="text-xs text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full">🟢 Aktiv & Vollständig</span>
-                    </div>
+                    <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded-full">Finanzen & Sicherheit</span>
                     <h2 class="text-lg font-bold mt-3">1. Garantie- & Kassenbon-Manager</h2>
-                    <p class="text-sm text-gray-600 mt-1">Fotografiere Kassenbons, verwalte Garantien mit Ampel-System, Push-Erinnerungen & Backups.</p>
+                    <p class="text-sm text-gray-600 mt-1">Fotografiere Kassenbons, verwalte Garantien mit Ampel-System & PDF-Export.</p>
                 </div>
-                <button onclick="openWarrantyApp()" class="mt-5 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition text-center text-sm shadow-sm">
+                <a href="./tools/kassenbon/index.html" class="mt-5 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition text-center text-sm shadow-sm block">
                     🚀 Tool öffnen
-                </button>
+                </a>
             </div>
 
-            <!-- TOOL 2: Zählerstands-Scanner (VORSCHAU) -->
-            <div class="tool-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between opacity-75" data-category="haushalt">
+            <!-- Tool 2: Kisten-Finder -->
+            <div class="tool-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
                 <div>
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs bg-green-100 text-green-800 font-semibold px-2.5 py-0.5 rounded-full">Haushalt & Energie</span>
-                        <span class="text-xs text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded-full">⏳ In Planung</span>
-                    </div>
-                    <h2 class="text-lg font-bold mt-3">2. Strom- & Wasserzähler-Scanner</h2>
-                    <p class="text-sm text-gray-600 mt-1">Zählerstand per Foto erfassen und monatlichen Verbrauch grafisch auswerten.</p>
+                    <span class="text-xs bg-yellow-100 text-yellow-800 font-semibold px-2.5 py-0.5 rounded-full">Ordnung & Keller</span>
+                    <h2 class="text-lg font-bold mt-3">2. Keller- & Kisten-Finder</h2>
+                    <p class="text-sm text-gray-600 mt-1">Erfasse Umzugskisten und generiere QR-Codes zum Ausdrucken.</p>
                 </div>
-                <button onclick="alert('Dieses Helferlein wird als Nächstes gebaut!')" class="mt-5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-xl transition text-center text-sm">
-                    🔜 Bald verfügbar
-                </button>
+                <a href="./tools/kisten/index.html" class="mt-5 bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-3 px-4 rounded-xl transition text-center text-sm shadow-sm block">
+                    🚀 Tool öffnen
+                </a>
             </div>
 
-            <!-- TOOL 3: MHD-Vorrats-Scanner (VORSCHAU) -->
-            <div class="tool-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between opacity-75" data-category="haushalt">
+            <!-- Tool 3: WG-Kasse -->
+            <div class="tool-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
                 <div>
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs bg-purple-100 text-purple-800 font-semibold px-2.5 py-0.5 rounded-full">Haushalt & Vorrat</span>
-                        <span class="text-xs text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded-full">⏳ In Planung</span>
-                    </div>
-                    <h2 class="text-lg font-bold mt-3">3. MHD- & Kühltheken-Scanner</h2>
-                    <p class="text-sm text-gray-600 mt-1">Mindesthaltbarkeitsdaten fotografieren und Lebensmittelverschwendung stoppen.</p>
+                    <span class="text-xs bg-purple-100 text-purple-800 font-semibold px-2.5 py-0.5 rounded-full">Haushalt & WG</span>
+                    <h2 class="text-lg font-bold mt-3">3. WG- & Haushalts-Kassen-Rechner</h2>
+                    <p class="text-sm text-gray-600 mt-1">Getätigte Ausgaben eintragen und automatisch im Browser aufteilen.</p>
                 </div>
-                <button onclick="alert('Kommt in Kürze!')" class="mt-5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-xl transition text-center text-sm">
-                    🔜 Bald verfügbar
-                </button>
-            </div>
-
-            <!-- TOOL 4: Keller- & Kisten-Finder (VORSCHAU) -->
-            <div class="tool-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between opacity-75" data-category="haushalt">
-                <div>
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs bg-yellow-100 text-yellow-800 font-semibold px-2.5 py-0.5 rounded-full">Ordnung & Keller</span>
-                        <span class="text-xs text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded-full">⏳ In Planung</span>
-                    </div>
-                    <h2 class="text-lg font-bold mt-3">4. Keller- & Kisten-Finder mit QR-Code</h2>
-                    <p class="text-sm text-gray-600 mt-1">Umzugskisten erfassen, QR-Codes generieren und nie wieder Dinge suchen.</p>
-                </div>
-                <button onclick="alert('Kommt in Kürze!')" class="mt-5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-4 rounded-xl transition text-center text-sm">
-                    🔜 Bald verfügbar
-                </button>
+                <a href="./tools/wg-kasse/index.html" class="mt-5 bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-4 rounded-xl transition text-center text-sm shadow-sm block">
+                    🚀 Tool öffnen
+                </a>
             </div>
 
         </div>
-
-        <!-- CONTAINER FÜR DIE AKTIVE APP -->
-        <div id="appContainer" class="hidden space-y-6">
-            <div class="flex justify-between items-center">
-                <button onclick="backToHub()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">
-                    ← Zurück zur Startseite
-                </button>
-                <button onclick="requestNotificationPermission()" id="notifBtn" class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">
-                    🔔 Benachrichtigungen aktivieren
-                </button>
-            </div>
-
-            <!-- Alarm-Banner für anstehende Garantien -->
-            <div id="alarmBanner" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-2xl text-xs text-amber-900 space-y-1">
-                <p class="font-bold">⚠️ Garantie-Warnung:</p>
-                <div id="alarmContent" class="space-y-0.5"></div>
-            </div>
-
-            <!-- Dashboard / Statistiken -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
-                    <div class="p-3 bg-blue-50 text-blue-600 rounded-xl text-xl font-bold">🛡️</div>
-                    <div>
-                        <p class="text-xs text-gray-500 font-medium">Aktive Garantien</p>
-                        <h3 id="statActive" class="text-lg font-bold">0</h3>
-                    </div>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
-                    <div class="p-3 bg-yellow-50 text-yellow-600 rounded-xl text-xl font-bold">⚠️</div>
-                    <div>
-                        <p class="text-xs text-gray-500 font-medium">Läuft bald ab (30 Tage)</p>
-                        <h3 id="statExpiring" class="text-lg font-bold">0</h3>
-                    </div>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
-                    <div class="p-3 bg-green-50 text-green-600 rounded-xl text-xl font-bold">💰</div>
-                    <div>
-                        <p class="text-xs text-gray-500 font-medium">Gesamtwert geschützt</p>
-                        <h3 id="statValue" class="text-lg font-bold">0,00 €</h3>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Aktionen & Scanner -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                <div>
-                    <h2 class="text-lg font-bold">Garantie-Manager</h2>
-                    <p class="text-sm text-gray-600">Fotografiere den Kassenbon oder füge Einträge manuell hinzu.</p>
-                </div>
-                <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                    <input type="file" id="bonCamera" accept="image/*" capture="environment" class="hidden" onchange="handleImageCapture(event)">
-                    <button onclick="document.getElementById('bonCamera').click()" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl transition text-center text-sm shadow-sm">
-                        📷 Kassenbon fotografieren
-                    </button>
-                    <button onclick="openModalForNew()" class="flex-1 md:flex-none bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-xl transition text-center text-sm">
-                        ➕ Manuell hinzufügen
-                    </button>
-                </div>
-            </div>
-
-            <!-- Status-Anzeige für den laufenden Scan -->
-            <div id="scanStatus" class="hidden bg-blue-50 border border-blue-200 text-blue-800 text-xs p-3 rounded-xl text-center font-medium animate-pulse">
-                🔍 Analysiere Foto auf dem Tablet... Bitte kurz warten.
-            </div>
-
-            <!-- Such- & Filterleiste -->
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-3 justify-between items-center">
-                <input type="text" id="searchInput" oninput="renderList()" placeholder="🔍 Suchen nach Gerät, Kategorie oder Seriennummer..." class="w-full md:w-1/2 p-3 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                
-                <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                    <select id="filterSelect" onchange="renderList()" class="p-3 border rounded-xl text-sm bg-white">
-                        <option value="all">Alle Status</option>
-                        <option value="active">🟢 Aktiv</option>
-                        <option value="expiring">🟡 Läuft bald ab</option>
-                        <option value="expired">🔴 Abgelaufen</option>
-                    </select>
-                    <button onclick="exportData()" class="p-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium" title="Daten sichern (Export)">💾 Export</button>
-                    <label class="p-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium cursor-pointer" title="Daten wiederherstellen (Import)">
-                        📂 Import <input type="file" accept=".json" onchange="importData(event)" class="hidden">
-                    </label>
-                </div>
-            </div>
-
-            <!-- Geräte-Liste -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="font-bold text-lg mb-4">📋 Deine gespeicherten Geräte & Garantien</h3>
-                <div id="deviceList" class="space-y-3">
-                    <p class="text-sm text-gray-400 text-py-4 text-center">Noch keine Geräte erfasst. Mach ein Foto oder füge eins hinzu!</p>
-                </div>
-            </div>
-        </div>
-
     </main>
 
-    <!-- Footer -->
     <footer class="bg-white border-t py-4 text-center text-xs text-gray-500 mt-6">
-        Gehostet auf GitHub Pages • Entwickelt vom Tablet aus
+        Gehostet auf GitHub Pages • Modularer Aufbau
     </footer>
 
-    <!-- MODAL: Hinzufügen / Bearbeiten -->
-    <div id="deviceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 id="modalTitle" class="text-lg font-bold">Gerät & Garantie bearbeiten</h3>
-            <input type="hidden" id="editIndex" value="-1">
-            <input type="hidden" id="receiptImageBase64" value="">
-
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Gerätename / Modell:</label>
-                <input type="text" id="devName" class="w-full p-3 border rounded-xl text-sm" placeholder="z.B. Kaffeemaschine Philips">
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
-                    <select id="devCategory" class="w-full p-3 border rounded-xl text-sm bg-white">
-                        <option value="Elektronik">⚡ Elektronik</option>
-                        <option value="Haushalt">🏠 Haushalt</option>
-                        <option value="Werkzeug">🛠️ Werkzeug</option>
-                        <option value="Outdoor">🌳 Outdoor</option>
-                        <option value="Sonstiges">📦 Sonstiges</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kaufpreis (€):</label>
-                    <input type="text" id="devPrice" class="w-full p-3 border rounded-xl text-sm" placeholder="49.99">
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kaufdatum:</label>
-                    <input type="date" id="devDate" class="w-full p-3 border rounded-xl text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Garantie-Dauer:</label>
-                    <select id="devWarrantyYears" class="w-full p-3 border rounded-xl text-sm bg-white">
-                        <option value="1">1 Jahr</option>
-                        <option value="2" selected>2 Jahre (Gesetzlich)</option>
-                        <option value="3">3 Jahre</option>
-                        <option value="5">5 Jahre</option>
-                        <option value="10">10 Jahre / Lebenslang</option>
-                    </select>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Seriennummer / Artikel-Nr. (optional):</label>
-                <input type="text" id="devSerial" class="w-full p-3 border rounded-xl text-sm" placeholder="z.B. SN123456789">
-            </div>
-
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-medium">Abbrechen</button>
-                <button onclick="saveDevice()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold">Speichern</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: Bild-Zoom (Kassenbon) -->
-    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeImageModal()">
-        <div class="relative max-w-3xl w-full max-h-[90vh] flex items-center justify-center">
-            <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg shadow-2xl object-contain bg-white p-2">
-        </div>
-    </div>
-
-    <!-- JavaScript Hub, Master-Logik & Benachrichtigungen -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            renderList();
-            checkNotificationButtonState();
-        });
-
-        // Hub Navigation
-        function openWarrantyApp() {
-            document.getElementById('toolGrid').classList.add('hidden');
-            document.querySelector('.bg-white.p-4.rounded-2xl.shadow-sm').classList.add('hidden');
-            document.getElementById('appContainer').classList.remove('hidden');
-            renderList();
-            checkAndTriggerMilestoneNotifications();
-        }
-
-        function backToHub() {
-            document.getElementById('appContainer').classList.add('hidden');
-            document.getElementById('toolGrid').classList.remove('hidden');
-            document.querySelector('.bg-white.p-4.rounded-2xl.shadow-sm').classList.remove('hidden');
-        }
-
         function filterHub() {
             const query = document.getElementById('hubSearch').value.toLowerCase();
-            const cards = document.querySelectorAll('.tool-card');
-            cards.forEach(card => {
-                const text = card.innerText.toLowerCase();
-                card.style.display = text.includes(query) ? "flex" : "none";
+            document.querySelectorAll('.tool-card').forEach(card => {
+                card.style.display = card.innerText.toLowerCase().includes(query) ? "flex" : "none";
             });
-        }
-
-        function filterCategory(cat) {
-            const cards = document.querySelectorAll('.tool-card');
-            cards.forEach(card => {
-                card.style.display = (cat === 'all' || card.dataset.category === cat) ? "flex" : "none";
-            });
-        }
-
-        // Sicheres Speichern
-        const Storage = {
-            get() {
-                try {
-                    return JSON.parse(localStorage.getItem('warranty_devices')) || [];
-                } catch (e) {
-                    return window._fallbackDevices || [];
-                }
-            },
-            set(data) {
-                try {
-                    localStorage.setItem('warranty_devices', JSON.stringify(data));
-                } catch (e) {
-                    window._fallbackDevices = data;
-                }
-            }
-        };
-
-        // Benachrichtigungs-Berechtigungen anfordern
-        function requestNotificationPermission() {
-            if (!("Notification" in window)) {
-                alert("Dein Browser unterstützt keine Desktop-Benachrichtigungen.");
-                return;
-            }
-            Notification.requestPermission().then(permission => {
-                checkNotificationButtonState();
-                if (permission === "granted") {
-                    new Notification("Garantie-Manager", { body: "Benachrichtigungen erfolgreich aktiviert! Du wirst rechtzeitig erinnert." });
-                }
-            });
-        }
-
-        function checkNotificationButtonState() {
-            const btn = document.getElementById('notifBtn');
-            if (!btn) return;
-            if (!("Notification" in window)) {
-                btn.style.display = 'none';
-                return;
-            }
-            if (Notification.permission === "granted") {
-                btn.innerText = "✅ Benachrichtigungen aktiv";
-                btn.classList.remove('bg-blue-50', 'text-blue-600');
-                btn.classList.add('bg-green-50', 'text-green-700');
-            } else if (Notification.permission === "denied") {
-                btn.innerText = "❌ Benachrichtigungen blockiert";
-                btn.classList.remove('bg-blue-50', 'text-blue-600');
-                btn.classList.add('bg-red-50', 'text-red-700');
-            }
-        }
-
-        // Meilenstein-Benachrichtigungs-Prüfung (6, 4, 2 Monate & Ablaufdatum)
-        function checkAndTriggerMilestoneNotifications() {
-            let devices = Storage.get();
-            let notifiedHistory = JSON.parse(localStorage.getItem('warranty_notified')) || {};
-            const today = new Date();
-            let alarmMessages = [];
-
-            devices.forEach((d, index) => {
-                let purchaseDate = new Date(d.date);
-                let expiryDate = new Date(purchaseDate);
-                expiryDate.setFullYear(expiryDate.getFullYear() + d.warrantyYears);
-
-                const diffTime = expiryDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                const monthsRemaining = (expiryDate.getFullYear() - today.getFullYear()) * 12 + (expiryDate.getMonth() - today.getMonth());
-
-                let milestone = null;
-                let message = "";
-
-                if (diffDays === 0) {
-                    milestone = "expired_today";
-                    message = `Die Garantie für "${d.name}" läuft HEUTE ab!`;
-                } else if (diffDays < 0) {
-                    return; // Bereits abgelaufen
-                } else if (monthsRemaining === 2 || (diffDays >= 55 && diffDays <= 65)) {
-                    milestone = "2m";
-                    message = `Die Garantie für "${d.name}" läuft in ca. 2 Monaten ab.`;
-                } else if (monthsRemaining === 4 || (diffDays >= 115 && diffDays <= 125)) {
-                    milestone = "4m";
-                    message = `Die Garantie für "${d.name}" läuft in ca. 4 Monaten ab.`;
-                } else if (monthsRemaining === 6 || (diffDays >= 175 && diffDays <= 185)) {
-                    milestone = "6m";
-                    message = `Die Garantie für "${d.name}" läuft in ca. 6 Monaten ab.`;
-                }
-
-                if (milestone) {
-                    const notifyKey = `${index}_${milestone}`;
-                    const todayStr = today.toISOString().split('T')[0];
-
-                    // Nur einmal pro Meilenstein benachrichtigen
-                    if (notifiedHistory[notifyKey] !== todayStr) {
-                        notifiedHistory[notifyKey] = todayStr;
-                        localStorage.setItem('warranty_notified', JSON.stringify(notifiedHistory));
-
-                        // Browser Benachrichtigung auslösen
-                        if (Notification.permission === "granted") {
-                            new Notification("⚠️ Garantie-Warnung", { body: message });
-                        }
-                        alarmMessages.push(message);
-                    }
-                }
-            });
-
-            // In-App Alarm Banner befüllen
-            const alarmBanner = document.getElementById('alarmBanner');
-            const alarmContent = document.getElementById('alarmContent');
-            if (alarmMessages.length > 0 && alarmBanner && alarmContent) {
-                alarmContent.innerHTML = alarmMessages.map(m => `<p>• ${m}</p>`).join('');
-                alarmBanner.classList.remove('hidden');
-            }
-        }
-
-        async function handleImageCapture(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const statusBox = document.getElementById('scanStatus');
-            statusBox.classList.remove('hidden');
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const base64Image = e.target.result;
-                try {
-                    const processed = await preprocessImage(file);
-                    const { data: { text } } = await Tesseract.recognize(processed, 'deu');
-                    const parsed = parseReceiptText(text);
-
-                    statusBox.classList.add('hidden');
-                    openModalForNew(parsed.date, parsed.amount, base64Image);
-                } catch (err) {
-                    statusBox.classList.add('hidden');
-                    openModalForNew(null, null, base64Image);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function parseReceiptText(text) {
-            const dateRegex = /\b(0[1-9]|[12][0-9]|3[01])[.\/-](0[1-9]|1[0-2])[.\/-](19|20)\d\d\b/;
-            const dateMatch = text.match(dateRegex);
-
-            let isoDate = new Date().toISOString().split('T')[0];
-            if (dateMatch) {
-                const parts = dateMatch[0].split(/[.\/-]/);
-                isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-            }
-
-            const amountRegex = /(?:summe|gesamt|total|eur)?\s*[:]?\s*(\d+[\.,]\d{2})\b/gi;
-            let amounts = [];
-            let match;
-            while ((match = amountRegex.exec(text)) !== null) {
-                amounts.push(match[1].replace(',', '.'));
-            }
-            const amount = amounts.length > 0 ? amounts[amounts.length - 1] : "0.00";
-
-            return { date: isoDate, amount: amount };
-        }
-
-        function preprocessImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        ctx.drawImage(img, 0, 0);
-
-                        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                        const data = imgData.data;
-                        for (let i = 0; i < data.length; i += 4) {
-                            let avg = (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
-                            avg = avg < 130 ? avg * 0.75 : avg * 1.25;
-                            data[i] = data[i+1] = data[i+2] = avg > 255 ? 255 : avg;
-                        }
-                        ctx.putImageData(imgData, 0, 0);
-                        resolve(canvas.toDataURL('image/jpeg'));
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function openModalForNew(date = null, price = null, imageBase64 = "") {
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('devName').value = "";
-            document.getElementById('devCategory').value = "Elektronik";
-            document.getElementById('devPrice').value = price || "";
-            document.getElementById('devDate').value = date || new Date().toISOString().split('T')[0];
-            document.getElementById('devWarrantyYears').value = "2";
-            document.getElementById('devSerial').value = "";
-            document.getElementById('receiptImageBase64').value = imageBase64;
-            
-            document.getElementById('modalTitle').innerText = "Neues Gerät & Garantie erfassen";
-            document.getElementById('deviceModal').classList.remove('hidden');
-        }
-
-        function openModalForEdit(index) {
-            let devices = Storage.get();
-            let d = devices[index];
-
-            document.getElementById('editIndex').value = index;
-            document.getElementById('devName').value = d.name;
-            document.getElementById('devCategory').value = d.category;
-            document.getElementById('devPrice').value = d.price;
-            document.getElementById('devDate').value = d.date;
-            document.getElementById('devWarrantyYears').value = d.warrantyYears;
-            document.getElementById('devSerial').value = d.serial || "";
-            document.getElementById('receiptImageBase64').value = d.image || "";
-
-            document.getElementById('modalTitle').innerText = "Gerät im Nachhinein bearbeiten";
-            document.getElementById('deviceModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('deviceModal').classList.add('hidden');
-        }
-
-        function saveDevice() {
-            const index = parseInt(document.getElementById('editIndex').value);
-            const name = document.getElementById('devName').value.trim() || "Unbenanntes Gerät";
-            const category = document.getElementById('devCategory').value;
-            const price = parseFloat(document.getElementById('devPrice').value.replace(',', '.')) || 0;
-            const date = document.getElementById('devDate').value || new Date().toISOString().split('T')[0];
-            const warrantyYears = parseInt(document.getElementById('devWarrantyYears').value) || 2;
-            const serial = document.getElementById('devSerial').value.trim();
-            const image = document.getElementById('receiptImageBase64').value;
-
-            let devices = Storage.get();
-            const deviceData = { name, category, price, date, warrantyYears, serial, image };
-
-            if (index === -1) {
-                devices.push(deviceData);
-            } else {
-                devices[index] = deviceData;
-            }
-
-            Storage.set(devices);
-            closeModal();
-            renderList();
-            checkAndTriggerMilestoneNotifications();
-        }
-
-        function renderList() {
-            const listContainer = document.getElementById('deviceList');
-            if (!listContainer) return;
-
-            const searchInput = document.getElementById('searchInput');
-            const filterSelect = document.getElementById('filterSelect');
-            
-            const search = searchInput ? searchInput.value.toLowerCase() : "";
-            const filter = filterSelect ? filterSelect.value : "all";
-
-            let devices = Storage.get();
-            let activeCount = 0;
-            let expiringCount = 0;
-            let totalValue = 0;
-            const today = new Date();
-
-            const htmlItems = devices.map((d, index) => {
-                totalValue += (typeof d.price === 'number' ? d.price : 0);
-
-                let purchaseDate = new Date(d.date);
-                let expiryDate = new Date(purchaseDate);
-                expiryDate.setFullYear(expiryDate.getFullYear() + d.warrantyYears);
-
-                const diffTime = expiryDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                let status = "active";
-                let badgeClass = "bg-green-100 text-green-800";
-                let badgeText = "🟢 Aktiv";
-
-                if (diffDays < 0) {
-                    status = "expired";
-                    badgeClass = "bg-red-100 text-red-800";
-                    badgeText = "🔴 Abgelaufen";
-                } else if (diffDays <= 30) {
-                    status = "expiring";
-                    badgeClass = "bg-yellow-100 text-yellow-800";
-                    badgeText = `🟡 Läuft in ${diffDays} T. ab`;
-                }
-
-                if (status === 'active' || status === 'expiring') activeCount++;
-                if (status === 'expiring') expiringCount++;
-
-                const matchesSearch = d.name.toLowerCase().includes(search) || d.category.toLowerCase().includes(search) || (d.serial && d.serial.toLowerCase().includes(search));
-                const matchesFilter = filter === 'all' || filter === status;
-
-                if (!matchesSearch || !matchesFilter) return '';
-
-                const formattedExpiry = expiryDate.toLocaleDateString('de-DE');
-                const formattedPrice = (typeof d.price === 'number' ? d.price : 0).toFixed(2).replace('.', ',') + ' €';
-
-                return `
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-50 border rounded-2xl gap-3">
-                        <div class="flex items-center space-x-3">
-                            ${d.image ? `<img src="${d.image}" onclick="zoomImage('${d.image}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80" title="Bon vergrößern">` : '<div class="w-12 h-12 bg-gray-200 rounded-xl flex items-center justify-center text-xs text-gray-400">Kein Bon</div>'}
-                            <div>
-                                <div class="flex items-center space-x-2">
-                                    <h4 class="font-bold text-sm">${d.name}</h4>
-                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold ${badgeClass}">${badgeText}</span>
-                                </div>
-                                <p class="text-xs text-gray-500 mt-0.5">
-                                    Kauf: ${new Date(d.date).toLocaleDateString('de-DE')} | Garantie bis: <strong class="text-gray-700">${formattedExpiry}</strong> | Preis: <span class="font-semibold text-blue-600">${formattedPrice}</span>
-                                </p>
-                                ${d.serial ? `<p class="text-[11px] text-gray-400 mt-0.5">Seriennummer: ${d.serial}</p>` : ''}
-                            </div>
-                        </div>
-
-                        <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                            <button onclick="generateSupportEmail('${d.name}', '${d.serial || 'k.A.'}', '${d.date}')" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-medium">✉️ Support-Mail</button>
-                            <button onclick="openModalForEdit(${index})" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-medium">✏️ Bearbeiten</button>
-                            <button onclick="deleteDevice(${index})" class="px-3 py-1.5 bg-red-50 text-red-500 hover:bg-red-100 rounded-xl text-xs font-medium">Löschen</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            const statActive = document.getElementById('statActive');
-            const statExpiring = document.getElementById('statExpiring');
-            const statValue = document.getElementById('statValue');
-
-            if (statActive) statActive.innerText = activeCount;
-            if (statExpiring) statExpiring.innerText = expiringCount;
-            if (statValue) statValue.innerText = totalValue.toFixed(2).replace('.', ',') + ' €';
-
-            listContainer.innerHTML = htmlItems || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Geräte gefunden.</p>`;
-        }
-
-        function generateSupportEmail(name, serial, date) {
-            const subject = encodeURIComponent(`Garantieanfrage / Reklamation: ${name}`);
-            const body = encodeURIComponent(`Sehr geehrte Damen und Herren,\n\nich möchte hiermit einen Garantiefall für folgendes Gerät anmelden:\n\n- Produkt: ${name}\n- Seriennummer: ${serial}\n- Kaufdatum: ${new Date(date).toLocaleDateString('de-DE')}\n\nBitte teilen Sie mir das weitere Vorgehen mit.\n\nMit freundlichen Grüßen`);
-            window.location.href = `mailto:?subject=${subject}&body=${body}`;
-        }
-
-        function deleteDevice(index) {
-            if (confirm("Möchtest du diesen Eintrag wirklich löschen?")) {
-                let devices = Storage.get();
-                devices.splice(index, 1);
-                Storage.set(devices);
-                renderList();
-                checkAndTriggerMilestoneNotifications();
-            }
-        }
-
-        function zoomImage(src) {
-            document.getElementById('zoomedImage').src = src;
-            document.getElementById('imageModal').classList.remove('hidden');
-        }
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.add('hidden');
-        }
-
-        function exportData() {
-            let data = JSON.stringify(Storage.get());
-            let blob = new Blob([data], { type: 'application/json' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = `garantie-backup-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    Storage.set(parsed);
-                    renderList();
-                    checkAndTriggerMilestoneNotifications();
-                    alert("Backup erfolgreich importiert!");
-                } catch (err) {
-                    alert("Ungültige Backup-Datei.");
-                }
-            };
-            reader.readAsText(file);
         }
     </script>
-
 </body>
 </html>
