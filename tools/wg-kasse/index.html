@@ -3,70 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WG- & Haushalts-Kassen-Rechner</title>
+    <title>WG- & Haushaltskasse Pro</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF für den PDF-Report-Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
+    <!-- Header -->
     <header class="bg-purple-600 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-2xl font-bold">💶 WG- & Haushalts-Kassen-Rechner</h1>
-        <p class="text-sm opacity-90 mt-1">Ausgaben erfassen und lokal aufteilen</p>
+        <h1 class="text-3xl font-bold">💶 WG- & Haushaltskasse Pro</h1>
+        <p class="text-sm opacity-90 mt-1">Ausgaben erfassen, automatisch aufteilen & Abrechnung starten</p>
     </header>
 
-    <main class="flex-grow container mx-auto p-4 max-w-4xl space-y-6">
-        <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold inline-block">← Zurück zur Startseite</a>
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
+        
+        <!-- Navigation & Global Actions -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
+            <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
+            
+            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                <button onclick="exportWG_PDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF-Abrechnung</button>
+                <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup Export</button>
+                <label class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
+                    📂 Import <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                </label>
+            </div>
+        </div>
 
+        <!-- Dashboard Statistiken -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-purple-50 text-purple-700 rounded-xl font-bold">💰</div>
+                <div><p class="text-xs text-gray-500">Gesamtausgaben</p><h3 id="statTotal" class="text-lg font-bold">0,00 €</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">👥</div>
+                <div><p class="text-xs text-gray-500">Erfasste Posten</p><h3 id="statCount" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">⚖️</div>
+                <div><p class="text-xs text-gray-500">Abrechnungs-Status</p><h3 id="statStatus" class="text-sm font-bold text-green-600">Ausgeglichen</h3></div>
+            </div>
+        </div>
+
+        <!-- Erfassung: Neue Ausgabe -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h2 class="text-lg font-bold">Neue Ausgabe eintragen</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="text" id="expDesc" placeholder="Wofür? (z.B. Einkauf)" class="p-3 border rounded-xl text-sm">
+            <h2 class="text-lg font-bold">➕ Neue Ausgabe hinzufügen</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <input type="text" id="expDesc" placeholder="Wofür? (z.B. Wocheneinkauf)" class="p-3 border rounded-xl text-sm md:col-span-2">
                 <input type="text" id="expAmount" placeholder="Betrag in € (z.B. 45.50)" class="p-3 border rounded-xl text-sm">
                 <input type="text" id="expWho" placeholder="Bezahlt von (z.B. Anna)" class="p-3 border rounded-xl text-sm">
             </div>
-            <button onclick="saveExpense()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-xl text-sm shadow-sm">Ausgabe hinzufügen</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <select id="expCategory" class="p-3 border rounded-xl text-sm bg-white">
+                    <option value="Lebensmittel">🛒 Lebensmittel</option>
+                    <option value="Haushalt">🏠 Haushalt & Strom</option>
+                    <option value="Freizeit">🎉 Freizeit & Party</option>
+                    <option value="Sonstiges">📦 Sonstiges</option>
+                </select>
+                <input type="file" id="expPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700">
+            </div>
+            <button onclick="saveExpense()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Ausgabe eintragen</button>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm border">
-            <h3 class="font-bold text-lg mb-4">📊 Ausgaben-Liste</h3>
+        <!-- SMART-SPLIT ABRECHNUNG (Wer schuldet wem?) -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
+            <h3 class="font-bold text-lg">💡 Smart-Split Abrechnung (Ausgleichszahlungen)</h3>
+            <div id="settlementContainer" class="space-y-2">
+                <p class="text-sm text-gray-400 text-center py-2">Noch keine Berechnungen nötig.</p>
+            </div>
+        </div>
+
+        <!-- Ausgaben-Liste -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+                <h3 class="font-bold text-lg">📋 Alle Transaktionen</h3>
+                <input type="text" id="searchBox" oninput="renderApp()" placeholder="🔍 Suchen..." class="p-2 border rounded-xl text-sm w-full md:w-1/3">
+            </div>
             <div id="expensesList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Noch keine Ausgaben erfasst.</p>
             </div>
         </div>
     </main>
 
+    <!-- MODAL: Foto Zoom -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeImageModal()">
+        <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
+    </div>
+
+    <!-- Script Logik -->
     <script>
-        document.addEventListener('DOMContentLoaded', renderExpensesList);
+        document.addEventListener('DOMContentLoaded', () => {
+            renderApp();
+        });
+
+        function getData() {
+            try {
+                return JSON.parse(localStorage.getItem('wg_kasse_pro')) || { expenses: [] };
+            } catch(e) {
+                return { expenses: [] };
+            }
+        }
+
+        function saveData(data) {
+            localStorage.setItem('wg_kasse_pro', JSON.stringify(data));
+        }
 
         function saveExpense() {
             const desc = document.getElementById('expDesc').value.trim();
             const amount = parseFloat(document.getElementById('expAmount').value.replace(',', '.')) || 0;
-            const who = document.getElementById('expWho').value.trim() || "Jemand";
-            if (!desc || amount <= 0) return alert("Bitte gültige Daten eingeben!");
-            let exp = JSON.parse(localStorage.getItem('wg_expenses')) || [];
-            exp.push({ desc, amount, who });
-            localStorage.setItem('wg_expenses', JSON.stringify(exp));
+            const who = document.getElementById('expWho').value.trim();
+            const category = document.getElementById('expCategory').value;
+            const photoInput = document.getElementById('expPhotoInput');
+
+            if (!desc || amount <= 0 || !who) {
+                return alert("Bitte Beschreibung, gültigen Betrag und Zahler angeben!");
+            }
+
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    storeExpenseData(desc, amount, who, category, e.target.result);
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                storeExpenseData(desc, amount, who, category, "");
+            }
+        }
+
+        function storeExpenseData(desc, amount, who, category, photo) {
+            let data = getData();
+            data.expenses.push({ id: Date.now(), desc, amount, who, category, photo, date: new Date().toLocaleDateString('de-DE') });
+            saveData(data);
             document.getElementById('expDesc').value = "";
             document.getElementById('expAmount').value = "";
             document.getElementById('expWho').value = "";
-            renderExpensesList();
+            document.getElementById('expPhotoInput').value = "";
+            renderApp();
         }
 
-        function renderExpensesList() {
-            const container = document.getElementById('expensesList');
-            let exp = JSON.parse(localStorage.getItem('wg_expenses')) || [];
-            container.innerHTML = exp.map((e, idx) => `
-                <div class="flex justify-between items-center p-3 bg-gray-50 border rounded-xl text-sm">
-                    <div><strong>${e.desc}</strong> (${e.amount.toFixed(2)} €) - Bezahlt von: <span class="text-blue-600">${e.who}</span></div>
-                    <button onclick="deleteExpense(${idx})" class="text-xs text-red-500">Löschen</button>
+        function deleteExpense(id) {
+            if (!confirm("Möchtest du diese Ausgabe wirklich löschen?")) return;
+            let data = getData();
+            data.expenses = data.expenses.filter(e => e.id !== id);
+            saveData(data);
+            renderApp();
+        }
+
+        function renderApp() {
+            const data = getData();
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            const listContainer = document.getElementById('expensesList');
+            const settlementContainer = document.getElementById('settlementContainer');
+
+            let total = data.expenses.reduce((sum, e) => sum + e.amount, 0);
+            document.getElementById('statTotal').innerText = total.toFixed(2).replace('.', ',') + ' €';
+            document.getElementById('statCount').innerText = data.expenses.length;
+
+            // Personenspezifische Salden berechnen
+            let paidByUser = {};
+            let participants = new Set();
+
+            data.expenses.forEach(e => {
+                participants.add(e.who);
+                paidByUser[e.who] = (paidByUser[e.who] || 0) + e.amount;
+            });
+
+            let numPeople = participants.size;
+            let fairShare = numPeople > 0 ? total / numPeople : 0;
+
+            let balances = {};
+            participants.forEach(p => {
+                balances[p] = (paidByUser[p] || 0) - fairShare;
+            });
+
+            // Smart-Split Algorithmus (Wer schuldet wem?)
+            let debtors = [];
+            let creditors = [];
+            for (let p in balances) {
+                if (balances[p] < -0.01) debtors.push({ name: p, amount: -balances[p] });
+                if (balances[p] > 0.01) creditors.push({ name: p, amount: balances[p] });
+            }
+
+            let settlements = [];
+            let i = 0, j = 0;
+            while (i < debtors.length && j < creditors.length) {
+                let d = debtors[i];
+                let c = creditors[j];
+                let amt = Math.min(d.amount, c.amount);
+                settlements.push(`${d.name} schuldet ${c.name}: ${amt.toFixed(2).replace('.', ',')} €`);
+                d.amount -= amt;
+                c.amount -= amt;
+                if (d.amount < 0.01) i++;
+                if (c.amount < 0.01) j++;
+            }
+
+            if (settlements.length > 0) {
+                document.getElementById('statStatus').innerText = "Ausgleich nötig";
+                document.getElementById('statStatus').className = "text-sm font-bold text-amber-600";
+                settlementContainer.innerHTML = settlements.map(s => `
+                    <div class="p-3 bg-purple-50 border border-purple-100 rounded-xl text-sm flex justify-between items-center font-medium">
+                        <span>💸 ${s}</span>
+                        <button onclick="shareViaWhatsApp('${s}')" class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs">WhatsApp senden</button>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('statStatus').innerText = "Alles ausgeglichen";
+                document.getElementById('statStatus').className = "text-sm font-bold text-green-600";
+                settlementContainer.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">Keine offenen Ausgleichszahlungen erforderlich.</p>`;
+            }
+
+            // Ausgaben filtern & rendern
+            let filtered = data.expenses;
+            if (search) {
+                filtered = filtered.filter(e => e.desc.toLowerCase().includes(search) || e.who.toLowerCase().includes(search) || e.category.toLowerCase().includes(search));
+            }
+
+            listContainer.innerHTML = filtered.map(e => `
+                <div class="p-4 bg-gray-50 border rounded-2xl flex items-center justify-between shadow-sm gap-3">
+                    <div class="flex items-center space-x-3">
+                        ${e.photo ? `<img src="${e.photo}" onclick="zoomImage('${e.photo}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Beleg</div>'}
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h4 class="font-bold text-sm">${e.desc}</h4>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-semibold">${e.category}</span>
+                            </div>
+                            <p class="text-xs text-gray-500">Bezahlt von: <span class="font-semibold text-purple-700">${e.who}</span> am ${e.date}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-bold text-md text-gray-800">${e.amount.toFixed(2).replace('.', ',')} €</span>
+                        <button onclick="deleteExpense(${e.id})" class="text-xs text-red-500 hover:text-red-700">Löschen</button>
+                    </div>
                 </div>
-            `).join('') || `<p class="text-sm text-gray-400 text-center py-4">Noch keine Ausgaben.</p>`;
+            `).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine Ausgaben gefunden.</p>`;
         }
 
-        function deleteExpense(idx) {
-            let exp = JSON.parse(localStorage.getItem('wg_expenses')) || [];
-            exp.splice(idx, 1);
-            localStorage.setItem('wg_expenses', JSON.stringify(exp));
-            renderExpensesList();
+        function shareViaWhatsApp(text) {
+            let msg = encodeURIComponent(`Hallo! Laut unserer WG-Kasse: ${text}. Schick mir kurz deinen PayPal-Link!`);
+            window.open(`https://wa.me/?text=${msg}`, '_blank');
+        }
+
+        function zoomImage(src) {
+            document.getElementById('zoomedImage').src = src;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+
+        // PDF-Report Export via jsPDF
+        function exportWG_PDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let data = getData();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("WG- & Haushaltskasse - Abrechnungsreport", 14, 20);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+
+            let y = 35;
+            let total = data.expenses.reduce((sum, e) => sum + e.amount, 0);
+
+            doc.setFont("helvetica", "bold");
+            doc.text(`Gesamtausgaben: ${total.toFixed(2)} EUR`, 14, y);
+            y += 10;
+
+            doc.setFont("helvetica", "underline");
+            doc.text("Transaktionen:", 14, y);
+            y += 7;
+
+            doc.setFont("helvetica", "normal");
+            data.expenses.forEach((e, idx) => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                doc.text(`${idx + 1}. ${e.desc} - ${e.amount.toFixed(2)} EUR (Bezahlt von: ${e.who}) [${e.category}]`, 14, y);
+                y += 6;
+            });
+
+            doc.save("wg-kassen-report.pdf");
+        }
+
+        // Backup Export / Import
+        function exportBackup() {
+            let data = JSON.stringify(getData());
+            let blob = new Blob([data], { type: 'application/json' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `wg-kasse-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.expenses) {
+                        saveData(parsed);
+                        renderApp();
+                        alert("Backup erfolgreich importiert!");
+                    } else {
+                        alert("Ungültiges Format.");
+                    }
+                } catch (err) {
+                    alert("Fehler beim Lesen der Datei.");
+                }
+            };
+            reader.readAsText(file);
         }
     </script>
 </body>
