@@ -49,7 +49,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h2 class="text-lg font-bold">Neues Gerät erfassen</h2>
-                <p class="text-sm text-gray-600">Fotografiere den Kassenbon, um Daten automatisch auszulesen.</p>
+                <p class="text-sm text-gray-600">Fotografiere den Kassenbon oder füge Einträge manuell hinzu.</p>
             </div>
             <div class="flex flex-wrap gap-2 w-full md:w-auto">
                 <input type="file" id="bonCamera" accept="image/*" capture="environment" class="hidden" onchange="handleImageCapture(event)">
@@ -60,6 +60,11 @@
                     ➕ Manuell hinzufügen
                 </button>
             </div>
+        </div>
+
+        <!-- Status-Anzeige für den laufenden Scan -->
+        <div id="scanStatus" class="hidden bg-blue-50 border border-blue-200 text-blue-800 text-xs p-3 rounded-xl text-center font-medium animate-pulse">
+            🔍 Analysiere Foto auf dem Tablet... Bitte kurz warten.
         </div>
 
         <!-- Such- & Filterleiste -->
@@ -96,7 +101,7 @@
     </footer>
 
     <!-- MODAL: Hinzufügen / Bearbeiten -->
-    <div id="deviceModal" class="fixed inset-0 bg-black bg-z-50 bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div id="deviceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 id="modalTitle" class="text-lg font-bold">Gerät & Garantie bearbeiten</h3>
             <input type="hidden" id="editIndex" value="-1">
@@ -166,27 +171,46 @@
             renderList();
         });
 
+        // Sicheres Speichern (mit Fallback, falls localStorage blockiert ist)
+        const Storage = {
+            get() {
+                try {
+                    return JSON.parse(localStorage.getItem('warranty_devices')) || [];
+                } catch (e) {
+                    return window._fallbackDevices || [];
+                }
+            },
+            set(data) {
+                try {
+                    localStorage.setItem('warranty_devices', JSON.stringify(data));
+                } catch (e) {
+                    window._fallbackDevices = data;
+                }
+            }
+        };
+
         // 1. Foto-Aufnahme & OCR Vorverarbeitung
         async function handleImageCapture(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // In Base64 umwandeln für direkte Vorschau/Speicherung
+            const statusBox = document.getElementById('scanStatus');
+            statusBox.classList.remove('hidden');
+
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const base64Image = e.target.result;
                 
-                // OCR Starten
                 try {
                     const processed = await preprocessImage(file);
                     const { data: { text } } = await Tesseract.recognize(processed, 'deu');
                     
                     const parsed = parseReceiptText(text);
 
-                    // Modal öffnen mit vorausgefüllten Daten
+                    statusBox.classList.add('hidden');
                     openModalForNew(parsed.date, parsed.amount, base64Image);
                 } catch (err) {
-                    console.error(err);
+                    statusBox.classList.add('hidden');
                     openModalForNew(null, null, base64Image);
                 }
             };
@@ -244,7 +268,6 @@
             });
         }
 
-        // Modal öffnen (Neu oder Bearbeiten)
         function openModalForNew(date = null, price = null, imageBase64 = "") {
             document.getElementById('editIndex').value = "-1";
             document.getElementById('devName').value = "";
@@ -260,7 +283,7 @@
         }
 
         function openModalForEdit(index) {
-            let devices = JSON.parse(localStorage.getItem('warranty_devices')) || [];
+            let devices = Storage.get();
             let d = devices[index];
 
             document.getElementById('editIndex').value = index;
@@ -280,10 +303,9 @@
             document.getElementById('deviceModal').classList.add('hidden');
         }
 
-        // 4. Gerät speichern (Neu oder Update)
         function saveDevice() {
             const index = parseInt(document.getElementById('editIndex').value);
-            const name = document.getElementById('devName'].value.trim() || "Unbenanntes Gerät";
+            const name = document.getElementById('devName').value.trim() || "Unbenanntes Gerät";
             const category = document.getElementById('devCategory').value;
             const price = parseFloat(document.getElementById('devPrice').value.replace(',', '.')) || 0;
             const date = document.getElementById('devDate').value || new Date().toISOString().split('T')[0];
@@ -291,7 +313,7 @@
             const serial = document.getElementById('devSerial').value.trim();
             const image = document.getElementById('receiptImageBase64').value;
 
-            let devices = JSON.parse(localStorage.getItem('warranty_devices')) || [];
+            let devices = Storage.get();
 
             const deviceData = { name, category, price, date, warrantyYears, serial, image };
 
@@ -301,18 +323,20 @@
                 devices[index] = deviceData;
             }
 
-            localStorage.setItem('warranty_devices', JSON.stringify(devices));
+            Storage.set(devices);
             closeModal();
             renderList();
         }
 
-        // 5. Liste rendern mit Ampel-Logik & Statistiken
         function renderList() {
             const listContainer = document.getElementById('deviceList');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const filter = document.getElementById('filterSelect').value;
+            const searchInput = document.getElementById('searchInput');
+            const filterSelect = document.getElementById('filterSelect');
+            
+            const search = searchInput ? searchInput.value.toLowerCase() : "";
+            const filter = filterSelect ? filterSelect.value : "all";
 
-            let devices = JSON.parse(localStorage.getItem('warranty_devices')) || [];
+            let devices = Storage.get();
 
             let activeCount = 0;
             let expiringCount = 0;
@@ -321,14 +345,12 @@
             const today = new Date();
 
             const htmlItems = devices.map((d, index) => {
-                totalValue += d.price;
+                totalValue += (typeof d.price === 'number' ? d.price : 0);
 
-                // Ablaufdatum berechnen
                 let purchaseDate = new Date(d.date);
                 let expiryDate = new Date(purchaseDate);
                 expiryDate.setFullYear(expiryDate.getFullYear() + d.warrantyYears);
 
-                // Tage bis Ablauf
                 const diffTime = expiryDate - today;
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -349,14 +371,13 @@
                 if (status === 'active' || status === 'expiring') activeCount++;
                 if (status === 'expiring') expiringCount++;
 
-                // Such- & Filterfilterung
                 const matchesSearch = d.name.toLowerCase().includes(search) || d.category.toLowerCase().includes(search) || (d.serial && d.serial.toLowerCase().includes(search));
                 const matchesFilter = filter === 'all' || filter === status;
 
                 if (!matchesSearch || !matchesFilter) return '';
 
                 const formattedExpiry = expiryDate.toLocaleDateString('de-DE');
-                const formattedPrice = d.price.toFixed(2).replace('.', ',') + ' €';
+                const formattedPrice = (typeof d.price === 'number' ? d.price : 0).toFixed(2).replace('.', ',') + ' €';
 
                 return `
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center p-4 bg-gray-50 border rounded-2xl gap-3">
@@ -383,7 +404,6 @@
                 `;
             }).join('');
 
-            // Dashboard aktualisieren
             document.getElementById('statActive').innerText = activeCount;
             document.getElementById('statExpiring').innerText = expiringCount;
             document.getElementById('statValue').innerText = totalValue.toFixed(2).replace('.', ',') + ' €';
@@ -391,24 +411,21 @@
             listContainer.innerHTML = htmlItems || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Geräte gefunden.</p>`;
         }
 
-        // 6. Support-Mail Vorlage generieren
         function generateSupportEmail(name, serial, date) {
             const subject = encodeURIComponent(`Garantieanfrage / Reklamation: ${name}`);
             const body = encodeURIComponent(`Sehr geehrte Damen und Herren,\n\nich möchte hiermit einen Garantiefall für folgendes Gerät anmelden:\n\n- Produkt: ${name}\n- Seriennummer: ${serial}\n- Kaufdatum: ${new Date(date).toLocaleDateString('de-DE')}\n\nBitte teilen Sie mir das weitere Vorgehen mit.\n\nMit freundlichen Grüßen`);
             window.location.href = `mailto:?subject=${subject}&body=${body}`;
         }
 
-        // 7. Löschen
         function deleteDevice(index) {
             if (confirm("Möchtest du diesen Eintrag wirklich löschen?")) {
-                let devices = JSON.parse(localStorage.getItem('warranty_devices')) || [];
+                let devices = Storage.get();
                 devices.splice(index, 1);
-                localStorage.setItem('warranty_devices', JSON.stringify(devices));
+                Storage.set(devices);
                 renderList();
             }
         }
 
-        // 8. Bild-Zoom Modal
         function zoomImage(src) {
             document.getElementById('zoomedImage').src = src;
             document.getElementById('imageModal').classList.remove('hidden');
@@ -417,9 +434,8 @@
             document.getElementById('imageModal').classList.add('hidden');
         }
 
-        // 9. Export / Import Backup
         function exportData() {
-            let data = localStorage.getItem('warranty_devices') || '[]';
+            let data = JSON.stringify(Storage.get());
             let blob = new Blob([data], { type: 'application/json' });
             let url = URL.createObjectURL(blob);
             let a = document.createElement('a');
@@ -434,8 +450,8 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    JSON.parse(e.target.result); // Validierung
-                    localStorage.setItem('warranty_devices', e.target.result);
+                    const parsed = JSON.parse(e.target.result);
+                    Storage.set(parsed);
                     renderList();
                     alert("Backup erfolgreich importiert!");
                 } catch (err) {
