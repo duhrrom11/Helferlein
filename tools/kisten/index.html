@@ -3,47 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini-HomeBox | Inventar & Kisten-Finder</title>
+    <title>Mini-HomeBox Pro | Inventar & Kisten-Finder</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- qrcode.js für QR-Code Erstellung -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- html5-qrcode für den Live-Kamera-Scanner -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
+    <!-- Header -->
     <header class="bg-amber-600 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-2xl font-bold">📦 Mini-HomeBox (Inventar-Zentrale)</h1>
-        <p class="text-sm opacity-90 mt-1">Standorte, Kisten & Gegenstände perfekt organisiert</p>
+        <h1 class="text-3xl font-bold">📦 Mini-HomeBox Pro (Inventar-Zentrale)</h1>
+        <p class="text-sm opacity-90 mt-1">Standorte, Kisten, Fotos, Werte & QR-Code-Scanner</p>
     </header>
 
+    <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
-        <div class="flex justify-between items-center">
+        
+        <!-- Navigation & Global Actions -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
-            <input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Inventar durchsuchen..." class="p-2 border rounded-xl text-sm w-1/2 md:w-1/3">
+            
+            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                <button onclick="openScannerModal()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm">🔍 Live QR-Scanner</button>
+                <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup Export</button>
+                <label class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
+                    📂 Import <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                </label>
+            </div>
         </div>
 
-        <!-- 1. STANDORT & KISTE ERFASSEN -->
+        <!-- Dashboard Statistiken -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">📦</div>
+                <div><p class="text-xs text-gray-500">Erfasste Kisten</p><h3 id="statBoxes" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">📍</div>
+                <div><p class="text-xs text-gray-500">Standorte</p><h3 id="statLocs" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
+                <div><p class="text-xs text-gray-500">Gesamtwert Inventar</p><h3 id="statValue" class="text-lg font-bold">0,00 €</h3></div>
+            </div>
+        </div>
+
+        <!-- Erfassung: Standort & Kiste -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Standort anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">📍 1. Standort anlegen</h2>
-                <input type="text" id="locName" placeholder="Standort (z.B. Keller, Garage, Dachboden)" class="w-full p-3 border rounded-xl text-sm">
+                <input type="text" id="locName" placeholder="Standort (z.B. Keller, Dachboden)" class="w-full p-3 border rounded-xl text-sm">
                 <button onclick="saveLocation()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Standort speichern</button>
             </div>
 
-            <!-- Kiste / Container anlegen -->
+            <!-- Kiste hinzufügen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">📦 2. Kiste / Karton hinzufügen</h2>
                 <select id="boxLocationSelect" class="w-full p-3 border rounded-xl text-sm bg-white">
                     <option value="">-- Standort wählen --</option>
                 </select>
-                <input type="text" id="boxName" placeholder="Kisten-Name (z.B. Karton #3 Werkzeug)" class="w-full p-3 border rounded-xl text-sm">
-                <input type="text" id="boxDesc" placeholder="Inhalt / Beschreibung (z.B. Schrauben, Dübel)" class="w-full p-3 border rounded-xl text-sm">
-                <button onclick="saveBox()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm">Kiste speichern & QR-Code</button>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="boxName" placeholder="Kisten-Name (z.B. Karton #3)" class="p-3 border rounded-xl text-sm">
+                    <input type="text" id="boxValue" placeholder="Wert in € (optional)" class="p-3 border rounded-xl text-sm">
+                </div>
+                <input type="text" id="boxDesc" placeholder="Inhalt / Beschreibung (z.B. Lichterketten)" class="w-full p-3 border rounded-xl text-sm">
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="boxTag" class="p-3 border rounded-xl text-sm bg-white">
+                        <option value="Standard">🏷️ Standard</option>
+                        <option value="Zerbrechlich">⚠️ Zerbrechlich</option>
+                        <option value="Wertvoll">💎 Wertvoll</option>
+                        <option value="Saison">❄️ Saison / Deko</option>
+                    </select>
+                    <input type="file" id="boxPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700">
+                </div>
+                <button onclick="saveBox()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Kiste speichern & QR-Code</button>
             </div>
         </div>
 
-        <!-- 3. INVENTAR-ÜBERSICHT -->
+        <!-- Suche & Inventar -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h3 class="font-bold text-lg">🗄️ Dein vollständiges Inventar</h3>
+            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
+                <h3 class="font-bold text-lg">🗄️ Vollständiges Inventar</h3>
+                <input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Durchsuche Kisten, Inhalt oder Tags..." class="p-2 border rounded-xl text-sm w-full md:w-1/3">
+            </div>
             <div id="inventoryContainer" class="space-y-4">
                 <p class="text-sm text-gray-400 text-center py-4">Noch keine Standorte oder Kisten erfasst.</p>
             </div>
@@ -52,20 +98,15 @@
 
     <!-- MODAL: Kiste Bearbeiten -->
     <div id="editBoxModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold">Kiste bearbeiten</h3>
             <input type="hidden" id="editBoxId">
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Standort:</label>
-                <select id="editBoxLocSelect" class="w-full p-3 border rounded-xl text-sm bg-white"></select>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Kisten-Name:</label>
-                <input type="text" id="editBoxName" class="w-full p-3 border rounded-xl text-sm">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Inhalt / Beschreibung:</label>
-                <input type="text" id="editBoxDesc" class="w-full p-3 border rounded-xl text-sm">
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Standort:</label><select id="editBoxLocSelect" class="w-full p-3 border rounded-xl text-sm bg-white"></select></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Kisten-Name:</label><input type="text" id="editBoxName" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Inhalt:</label><input type="text" id="editBoxDesc" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Wert (€):</label><input type="text" id="editBoxValue" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tag:</label><select id="editBoxTag" class="w-full p-3 border rounded-xl text-sm bg-white"><option value="Standard">Standard</option><option value="Zerbrechlich">Zerbrechlich</option><option value="Wertvoll">Wertvoll</option><option value="Saison">Saison</option></select></div>
             </div>
             <div class="flex justify-end space-x-2 pt-2">
                 <button onclick="closeEditBoxModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
@@ -74,7 +115,7 @@
         </div>
     </div>
 
-    <!-- QR Code Modal -->
+    <!-- MODAL: QR Code anzeigen -->
     <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
         <div class="bg-white p-6 rounded-2xl text-center space-y-3 shadow-2xl" onclick="event.stopPropagation()">
             <h3 id="qrModalTitle" class="font-bold text-lg">QR-Code</h3>
@@ -84,7 +125,25 @@
         </div>
     </div>
 
+    <!-- MODAL: Live QR Scanner -->
+    <div id="scannerModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl space-y-4 text-center">
+            <h3 class="font-bold text-lg">🔍 Live QR-Code Scanner</h3>
+            <div id="reader" class="w-full rounded-xl overflow-hidden border"></div>
+            <div id="scanResult" class="text-xs font-semibold text-amber-700 bg-amber-50 p-2 rounded-xl hidden"></div>
+            <button onclick="closeScannerModal()" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Scanner schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Foto Zoom -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeImageModal()">
+        <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
+    </div>
+
+    <!-- Script Logik -->
     <script>
+        let html5QrCode = null;
+
         document.addEventListener('DOMContentLoaded', () => {
             loadLocationsDropdown();
             renderInventory();
@@ -92,14 +151,14 @@
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('mini_homebox')) || { locations: [], boxes: [] };
+                return JSON.parse(localStorage.getItem('mini_homebox_pro')) || { locations: [], boxes: [] };
             } catch(e) {
                 return { locations: [], boxes: [] };
             }
         }
 
         function saveData(data) {
-            localStorage.setItem('mini_homebox', JSON.stringify(data));
+            localStorage.setItem('mini_homebox_pro', JSON.stringify(data));
         }
 
         function saveLocation() {
@@ -127,7 +186,7 @@
         }
 
         function deleteLocation(locId) {
-            if (!confirm("⚠️ Möchtest du diesen Standort und ALLE darin enthaltenen Kisten wirklich unwiderruflich löschen?")) return;
+            if (!confirm("⚠️ Möchtest du diesen Standort und ALLE Kisten darin wirklich löschen?")) return;
             let data = getData();
             data.locations = data.locations.filter(l => l.id !== locId);
             data.boxes = data.boxes.filter(b => b.locId !== locId);
@@ -148,13 +207,31 @@
             const locId = document.getElementById('boxLocationSelect').value;
             const name = document.getElementById('boxName').value.trim();
             const desc = document.getElementById('boxDesc').value.trim();
+            const value = parseFloat(document.getElementById('boxValue').value.replace(',', '.')) || 0;
+            const tag = document.getElementById('boxTag').value;
+            const photoInput = document.getElementById('boxPhotoInput');
+
             if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
-            
+
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    storeBoxData(locId, name, desc, value, tag, e.target.result);
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                storeBoxData(locId, name, desc, value, tag, "");
+            }
+        }
+
+        function storeBoxData(locId, name, desc, value, tag, photo) {
             let data = getData();
-            data.boxes.push({ id: Date.now(), locId: parseInt(locId), name, desc });
+            data.boxes.push({ id: Date.now(), locId: parseInt(locId), name, desc, value, tag, photo });
             saveData(data);
             document.getElementById('boxName').value = "";
             document.getElementById('boxDesc').value = "";
+            document.getElementById('boxValue').value = "";
+            document.getElementById('boxPhotoInput').value = "";
             renderInventory();
         }
 
@@ -167,6 +244,8 @@
             document.getElementById('editBoxLocSelect').value = box.locId;
             document.getElementById('editBoxName').value = box.name;
             document.getElementById('editBoxDesc').value = box.desc;
+            document.getElementById('editBoxValue').value = box.value || 0;
+            document.getElementById('editBoxTag').value = box.tag || "Standard";
             document.getElementById('editBoxModal').classList.remove('hidden');
         }
 
@@ -179,6 +258,9 @@
             const locId = parseInt(document.getElementById('editBoxLocSelect').value);
             const name = document.getElementById('editBoxName').value.trim();
             const desc = document.getElementById('editBoxDesc').value.trim();
+            const value = parseFloat(document.getElementById('editBoxValue').value.replace(',', '.')) || 0;
+            const tag = document.getElementById('editBoxTag').value;
+
             if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
 
             let data = getData();
@@ -187,6 +269,8 @@
                 box.locId = locId;
                 box.name = name;
                 box.desc = desc;
+                box.value = value;
+                box.tag = tag;
                 saveData(data);
             }
             closeEditBoxModal();
@@ -206,7 +290,15 @@
             const search = document.getElementById('searchBox').value.toLowerCase();
             let data = getData();
 
-            if (data.locations.length === 0) {
+            let totalBoxes = data.boxes.length;
+            let totalLocs = data.locations.length;
+            let totalVal = data.boxes.reduce((sum, b) => sum + (b.value || 0), 0);
+
+            document.getElementById('statBoxes').innerText = totalBoxes;
+            document.getElementById('statLocs').innerText = totalLocs;
+            document.getElementById('statValue').innerText = totalVal.toFixed(2).replace('.', ',') + ' €';
+
+            if (totalLocs === 0) {
                 container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Standorte erfasst.</p>`;
                 return;
             }
@@ -215,7 +307,7 @@
                 let locBoxes = data.boxes.filter(b => b.locId === loc.id);
                 
                 if (search) {
-                    locBoxes = locBoxes.filter(b => b.name.toLowerCase().includes(search) || b.desc.toLowerCase().includes(search));
+                    locBoxes = locBoxes.filter(b => b.name.toLowerCase().includes(search) || b.desc.toLowerCase().includes(search) || (b.tag && b.tag.toLowerCase().includes(search)));
                     if (locBoxes.length === 0 && !loc.name.toLowerCase().includes(search)) return '';
                 }
 
@@ -230,12 +322,19 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             ${locBoxes.length > 0 ? locBoxes.map(b => `
-                                <div class="bg-white p-3 border rounded-xl flex justify-between items-center shadow-sm">
-                                    <div>
-                                        <h5 class="font-bold text-sm">📦 ${b.name}</h5>
-                                        <p class="text-xs text-gray-600 mt-0.5">Inhalt: ${b.desc || 'Keine Angabe'}</p>
+                                <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3">
+                                    <div class="flex items-center space-x-3">
+                                        ${b.photo ? `<img src="${b.photo}" onclick="zoomImage('${b.photo}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
+                                        <div>
+                                            <div class="flex items-center space-x-2">
+                                                <h5 class="font-bold text-sm">📦 ${b.name}</h5>
+                                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${b.tag || 'Standard'}</span>
+                                            </div>
+                                            <p class="text-xs text-gray-600 mt-0.5">${b.desc || 'Keine Beschreibung'}</p>
+                                            <p class="text-xs font-semibold text-green-600 mt-0.5">Wert: ${(b.value || 0).toFixed(2).replace('.', ',')} €</p>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1">
                                         <button onclick="showQrCode('${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100" title="QR-Code">🖨️</button>
                                         <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200" title="Bearbeiten">✏️</button>
                                         <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
@@ -245,7 +344,7 @@
                         </div>
                     </div>
                 `;
-            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Noch keine passenden Einträge gefunden.</p>`;
+            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
         }
 
         function showQrCode(name, desc) {
@@ -260,8 +359,78 @@
             document.getElementById('qrModal').classList.remove('hidden');
         }
 
-        function closeQrModal() {
-            document.getElementById('qrModal').classList.add('hidden');
+        function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
+
+        function zoomImage(src) {
+            document.getElementById('zoomedImage').src = src;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
+
+        // Backup Export / Import
+        function exportBackup() {
+            let data = JSON.stringify(getData());
+            let blob = new Blob([data], { type: 'application/json' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `homebox-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.locations && parsed.boxes) {
+                        saveData(parsed);
+                        loadLocationsDropdown();
+                        renderInventory();
+                        alert("Backup erfolgreich importiert!");
+                    } else {
+                        alert("Ungültiges Format.");
+                    }
+                } catch (err) {
+                    alert("Fehler beim Lesen der Datei.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Live QR Code Scanner via html5-qrcode
+        function openScannerModal() {
+            document.getElementById('scannerModal').classList.remove('hidden');
+            const resBox = document.getElementById('scanResult');
+            resBox.classList.add('hidden');
+
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 200, height: 200 } },
+                (decodedText) => {
+                    resBox.innerText = `Erkannt: ${decodedText}`;
+                    resBox.classList.remove('hidden');
+                    document.getElementById('searchBox').value = decodedText.split('|')[1]?.replace('Kiste:', '').trim() || decodedText;
+                    renderInventory();
+                    setTimeout(() => closeScannerModal(), 1500);
+                },
+                (errorMessage) => {}
+            ).catch(err => {
+                alert("Kamera-Zugriff fehlgeschlagen oder nicht unterstützt.");
+                closeScannerModal();
+            });
+        }
+
+        function closeScannerModal() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                }).catch(err => {});
+            }
+            document.getElementById('scannerModal').classList.add('hidden');
         }
     </script>
 </body>
