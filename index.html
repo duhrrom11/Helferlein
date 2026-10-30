@@ -41,14 +41,14 @@
                         <span class="text-xs text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full">🟢 Aktiv & Vollständig</span>
                     </div>
                     <h2 class="text-lg font-bold mt-3">1. Garantie- & Kassenbon-Manager</h2>
-                    <p class="text-sm text-gray-600 mt-1">Fotografiere Kassenbons, verwalte Garantien mit Ampel-System und exportiere Backups.</p>
+                    <p class="text-sm text-gray-600 mt-1">Fotografiere Kassenbons, verwalte Garantien mit Ampel-System, Push-Erinnerungen & Backups.</p>
                 </div>
                 <button onclick="openWarrantyApp()" class="mt-5 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition text-center text-sm shadow-sm">
                     🚀 Tool öffnen
                 </button>
             </div>
 
-            <!-- TOOL 2: Zählerstands-Scanner (VORSCHAU / NÄCHSTES PROJEKT) -->
+            <!-- TOOL 2: Zählerstands-Scanner (VORSCHAU) -->
             <div class="tool-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between opacity-75" data-category="haushalt">
                 <div>
                     <div class="flex justify-between items-start">
@@ -95,11 +95,22 @@
 
         </div>
 
-        <!-- CONTAINER FÜR DIE AKTIVE APP (Wird beim Klick auf Tool 1 eingeblendet) -->
+        <!-- CONTAINER FÜR DIE AKTIVE APP -->
         <div id="appContainer" class="hidden space-y-6">
-            <button onclick="backToHub()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold mb-2">
-                ← Zurück zur Startseite (Alle Helferlein)
-            </button>
+            <div class="flex justify-between items-center">
+                <button onclick="backToHub()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">
+                    ← Zurück zur Startseite
+                </button>
+                <button onclick="requestNotificationPermission()" id="notifBtn" class="px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">
+                    🔔 Benachrichtigungen aktivieren
+                </button>
+            </div>
+
+            <!-- Alarm-Banner für anstehende Garantien -->
+            <div id="alarmBanner" class="hidden bg-amber-50 border border-amber-200 p-4 rounded-2xl text-xs text-amber-900 space-y-1">
+                <p class="font-bold">⚠️ Garantie-Warnung:</p>
+                <div id="alarmContent" class="space-y-0.5"></div>
+            </div>
 
             <!-- Dashboard / Statistiken -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -247,18 +258,20 @@
         </div>
     </div>
 
-    <!-- JavaScript Hub & Master-Logik -->
+    <!-- JavaScript Hub, Master-Logik & Benachrichtigungen -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             renderList();
+            checkNotificationButtonState();
         });
 
         // Hub Navigation
         function openWarrantyApp() {
             document.getElementById('toolGrid').classList.add('hidden');
-            document.querySelector('.bg-white.p-4.rounded-2xl.shadow-sm').classList.add('hidden'); // Suchleiste ausblenden
+            document.querySelector('.bg-white.p-4.rounded-2xl.shadow-sm').classList.add('hidden');
             document.getElementById('appContainer').classList.remove('hidden');
             renderList();
+            checkAndTriggerMilestoneNotifications();
         }
 
         function backToHub() {
@@ -272,22 +285,14 @@
             const cards = document.querySelectorAll('.tool-card');
             cards.forEach(card => {
                 const text = card.innerText.toLowerCase();
-                if (text.includes(query)) {
-                    card.style.display = "flex";
-                } else {
-                    card.style.display = "none";
-                }
+                card.style.display = text.includes(query) ? "flex" : "none";
             });
         }
 
         function filterCategory(cat) {
             const cards = document.querySelectorAll('.tool-card');
             cards.forEach(card => {
-                if (cat === 'all' || card.dataset.category === cat) {
-                    card.style.display = "flex";
-                } else {
-                    card.style.display = "none";
-                }
+                card.style.display = (cat === 'all' || card.dataset.category === cat) ? "flex" : "none";
             });
         }
 
@@ -309,6 +314,100 @@
             }
         };
 
+        // Benachrichtigungs-Berechtigungen anfordern
+        function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                alert("Dein Browser unterstützt keine Desktop-Benachrichtigungen.");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                checkNotificationButtonState();
+                if (permission === "granted") {
+                    new Notification("Garantie-Manager", { body: "Benachrichtigungen erfolgreich aktiviert! Du wirst rechtzeitig erinnert." });
+                }
+            });
+        }
+
+        function checkNotificationButtonState() {
+            const btn = document.getElementById('notifBtn');
+            if (!btn) return;
+            if (!("Notification" in window)) {
+                btn.style.display = 'none';
+                return;
+            }
+            if (Notification.permission === "granted") {
+                btn.innerText = "✅ Benachrichtigungen aktiv";
+                btn.classList.remove('bg-blue-50', 'text-blue-600');
+                btn.classList.add('bg-green-50', 'text-green-700');
+            } else if (Notification.permission === "denied") {
+                btn.innerText = "❌ Benachrichtigungen blockiert";
+                btn.classList.remove('bg-blue-50', 'text-blue-600');
+                btn.classList.add('bg-red-50', 'text-red-700');
+            }
+        }
+
+        // Meilenstein-Benachrichtigungs-Prüfung (6, 4, 2 Monate & Ablaufdatum)
+        function checkAndTriggerMilestoneNotifications() {
+            let devices = Storage.get();
+            let notifiedHistory = JSON.parse(localStorage.getItem('warranty_notified')) || {};
+            const today = new Date();
+            let alarmMessages = [];
+
+            devices.forEach((d, index) => {
+                let purchaseDate = new Date(d.date);
+                let expiryDate = new Date(purchaseDate);
+                expiryDate.setFullYear(expiryDate.getFullYear() + d.warrantyYears);
+
+                const diffTime = expiryDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const monthsRemaining = (expiryDate.getFullYear() - today.getFullYear()) * 12 + (expiryDate.getMonth() - today.getMonth());
+
+                let milestone = null;
+                let message = "";
+
+                if (diffDays === 0) {
+                    milestone = "expired_today";
+                    message = `Die Garantie für "${d.name}" läuft HEUTE ab!`;
+                } else if (diffDays < 0) {
+                    return; // Bereits abgelaufen
+                } else if (monthsRemaining === 2 || (diffDays >= 55 && diffDays <= 65)) {
+                    milestone = "2m";
+                    message = `Die Garantie für "${d.name}" läuft in ca. 2 Monaten ab.`;
+                } else if (monthsRemaining === 4 || (diffDays >= 115 && diffDays <= 125)) {
+                    milestone = "4m";
+                    message = `Die Garantie für "${d.name}" läuft in ca. 4 Monaten ab.`;
+                } else if (monthsRemaining === 6 || (diffDays >= 175 && diffDays <= 185)) {
+                    milestone = "6m";
+                    message = `Die Garantie für "${d.name}" läuft in ca. 6 Monaten ab.`;
+                }
+
+                if (milestone) {
+                    const notifyKey = `${index}_${milestone}`;
+                    const todayStr = today.toISOString().split('T')[0];
+
+                    // Nur einmal pro Meilenstein benachrichtigen
+                    if (notifiedHistory[notifyKey] !== todayStr) {
+                        notifiedHistory[notifyKey] = todayStr;
+                        localStorage.setItem('warranty_notified', JSON.stringify(notifiedHistory));
+
+                        // Browser Benachrichtigung auslösen
+                        if (Notification.permission === "granted") {
+                            new Notification("⚠️ Garantie-Warnung", { body: message });
+                        }
+                        alarmMessages.push(message);
+                    }
+                }
+            });
+
+            // In-App Alarm Banner befüllen
+            const alarmBanner = document.getElementById('alarmBanner');
+            const alarmContent = document.getElementById('alarmContent');
+            if (alarmMessages.length > 0 && alarmBanner && alarmContent) {
+                alarmContent.innerHTML = alarmMessages.map(m => `<p>• ${m}</p>`).join('');
+                alarmBanner.classList.remove('hidden');
+            }
+        }
+
         async function handleImageCapture(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -319,11 +418,9 @@
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const base64Image = e.target.result;
-                
                 try {
                     const processed = await preprocessImage(file);
                     const { data: { text } } = await Tesseract.recognize(processed, 'deu');
-                    
                     const parsed = parseReceiptText(text);
 
                     statusBox.classList.add('hidden');
@@ -442,6 +539,7 @@
             Storage.set(devices);
             closeModal();
             renderList();
+            checkAndTriggerMilestoneNotifications();
         }
 
         function renderList() {
@@ -543,6 +641,7 @@
                 devices.splice(index, 1);
                 Storage.set(devices);
                 renderList();
+                checkAndTriggerMilestoneNotifications();
             }
         }
 
@@ -573,6 +672,7 @@
                     const parsed = JSON.parse(e.target.result);
                     Storage.set(parsed);
                     renderList();
+                    checkAndTriggerMilestoneNotifications();
                     alert("Backup erfolgreich importiert!");
                 } catch (err) {
                     alert("Ungültige Backup-Datei.");
