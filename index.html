@@ -33,18 +33,34 @@
                 <div>
                     <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded-full">Finanzen & Sicherheit</span>
                     <h2 class="text-lg font-bold mt-2">1. Kassenbon & Garantie-Scanner</h2>
-                    <p class="text-sm text-gray-600 mt-1">Fotografiere den Bon – Datum und Betrag werden automatisch gespeichert.</p>
+                    <p class="text-sm text-gray-600 mt-1">Fotografiere den Bon – Werte werden erkannt und können kurz geprüft werden.</p>
                 </div>
                 
                 <!-- Unsichtbares Kamera-Input-Feld -->
                 <input type="file" id="bonCamera" accept="image/*" capture="environment" class="hidden" onchange="processBon(event)">
                 
                 <button onclick="document.getElementById('bonCamera').click()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-xl transition text-center">
-                    📷 Kassenbon fotografieren & speichern
+                    📷 Kassenbon fotografieren
                 </button>
                 
-                <!-- Status- und Ergebnis-Anzeige -->
-                <div id="bonResult" class="mt-3 text-xs text-gray-700 bg-gray-50 p-3 rounded-lg hidden border"></div>
+                <!-- Status- und Ladeanzeige -->
+                <div id="bonStatus" class="mt-3 text-xs text-gray-500 bg-gray-50 p-2 rounded-lg hidden"></div>
+
+                <!-- Korrektur-Formular (erscheint nach dem Scan) -->
+                <div id="editForm" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl hidden space-y-3">
+                    <p class="text-xs font-bold text-blue-800">✨ Scan beendet! Bitte Werte kurz prüfen & korrigieren:</p>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-600">Kaufdatum:</label>
+                        <input type="text" id="inputDate" class="w-full p-2 text-xs border rounded bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-600">Gesamtbetrag:</label>
+                        <input type="text" id="inputAmount" class="w-full p-2 text-xs border rounded bg-white">
+                    </div>
+                    <button onclick="saveScannedReceipt()" class="w-full bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-2 px-3 rounded-lg transition">
+                        💾 Jetzt in Liste speichern
+                    </button>
+                </div>
             </div>
 
             <!-- Helfer 2: Zählerstands-Tracker -->
@@ -79,18 +95,20 @@
         Gehostet auf GitHub Pages • Entwickelt vom Tablet aus
     </footer>
 
-    <!-- JavaScript für Scan, Parsing & lokale Speicherung -->
+    <!-- JavaScript für Scan, Parsing & Korrektur -->
     <script>
-        // Beim Laden der Seite gespeicherte Bons anzeigen
         document.addEventListener('DOMContentLoaded', renderReceipts);
 
         async function processBon(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const resultBox = document.getElementById('bonResult');
-            resultBox.classList.remove('hidden');
-            resultBox.innerHTML = "🔍 Analysiere Bon und speichere Daten...";
+            const statusBox = document.getElementById('bonStatus');
+            const editForm = document.getElementById('editForm');
+            
+            editForm.classList.add('hidden');
+            statusBox.classList.remove('hidden');
+            statusBox.innerHTML = "🔍 Analysiere Bon auf dem Tablet...";
 
             try {
                 const processedImage = await preprocessImage(file);
@@ -103,37 +121,38 @@
 
                 const parsedData = parseReceiptText(text);
 
-                // Neuen Bon im lokalen Speicher (localStorage) sichern
-                saveReceipt(parsedData);
+                // Felder im Korrekturformular vorausfüllen
+                document.getElementById('inputDate').value = parsedData.date || new Date().toLocaleDateString('de-DE');
+                document.getElementById('inputAmount').value = parsedData.amount || '0,00 €';
 
-                resultBox.innerHTML = `
-                    <div class="space-y-1 text-green-700 font-medium">
-                        <p>✅ Erfolgreich gespeichert!</p>
-                        <p class="text-xs text-gray-600">Datum: ${parsedData.date || 'Unbekannt'} | Betrag: ${parsedData.amount || 'Unbekannt'}</p>
-                    </div>
-                `;
-
-                // Liste aktualisieren
-                renderReceipts();
+                statusBox.classList.add('hidden');
+                editForm.classList.remove('hidden'); // Formular anzeigen zum Prüfen
 
             } catch (error) {
-                resultBox.innerHTML = "❌ Fehler bei der Texterkennung. Bitte versuche es erneut.";
+                statusBox.innerHTML = "❌ Fehler bei der Texterkennung. Bitte versuche es erneut.";
                 console.error(error);
             }
         }
 
-        // Daten im localStorage speichern
-        function saveReceipt(data) {
+        // Korrigierte Daten aus dem Formular speichern
+        function saveScannedReceipt() {
+            const date = document.getElementById('inputDate').value;
+            const amount = document.getElementById('inputAmount').value;
+
             let receipts = JSON.parse(localStorage.getItem('my_receipts')) || [];
             receipts.push({
-                date: data.date || new Date().toLocaleDateString('de-DE'),
-                amount: data.amount || '0,00 €',
+                date: date,
+                amount: amount,
                 timestamp: new Date().toLocaleDateString('de-DE')
             });
             localStorage.setItem('my_receipts', JSON.stringify(receipts));
+
+            // Formular verstecken und Liste aktualisieren
+            document.getElementById('editForm').classList.add('hidden');
+            renderReceipts();
         }
 
-        // Gespeicherte Bons auf der Oberfläche anzeigen
+        // Gespeicherte Bons anzeigen
         function renderReceipts() {
             const listContainer = document.getElementById('receiptsList');
             let receipts = JSON.parse(localStorage.getItem('my_receipts')) || [];
@@ -148,14 +167,13 @@
                     <div>
                         <span class="font-bold">Bon #${index + 1}</span>
                         <span class="text-xs text-gray-500 ml-2">(Erfasst am: ${r.timestamp})</span>
-                        <div class="text-xs text-gray-600 mt-0.5">Datum auf Bon: ${r.date} | Betrag: <span class="font-semibold text-blue-600">${r.amount}</span></div>
+                        <div class="text-xs text-gray-600 mt-0.5">Datum: ${r.date} | Betrag: <span class="font-semibold text-blue-600">${r.amount}</span></div>
                     </div>
                     <button onclick="deleteReceipt(${index})" class="text-xs text-red-500 hover:bg-red-50 p-1.5 rounded">Löschen</button>
                 </div>
             `).join('');
         }
 
-        // Einzelnen Bon löschen
         function deleteReceipt(index) {
             let receipts = JSON.parse(localStorage.getItem('my_receipts')) || [];
             receipts.splice(index, 1);
@@ -163,13 +181,11 @@
             renderReceipts();
         }
 
-        // Alle Bons löschen
         function clearReceipts() {
             localStorage.removeItem('my_receipts');
             renderReceipts();
         }
 
-        // Parser für Datum und Betrag
         function parseReceiptText(text) {
             const dateRegex = /\b(0[1-9]|[12][0-9]|3[01])[.\/-](0[1-9]|1[0-2])[.\/-](19|20)\d\d\b/;
             const dateMatch = text.match(dateRegex);
@@ -189,7 +205,6 @@
             };
         }
 
-        // Bildvorverarbeitung
         function preprocessImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
