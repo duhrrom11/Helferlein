@@ -50,6 +50,30 @@
         </div>
     </main>
 
+    <!-- MODAL: Kiste Bearbeiten -->
+    <div id="editBoxModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
+            <h3 class="text-lg font-bold">Kiste bearbeiten</h3>
+            <input type="hidden" id="editBoxId">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Standort:</label>
+                <select id="editBoxLocSelect" class="w-full p-3 border rounded-xl text-sm bg-white"></select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Kisten-Name:</label>
+                <input type="text" id="editBoxName" class="w-full p-3 border rounded-xl text-sm">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Inhalt / Beschreibung:</label>
+                <input type="text" id="editBoxDesc" class="w-full p-3 border rounded-xl text-sm">
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeEditBoxModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
+                <button onclick="updateBox()" class="px-5 py-2 bg-amber-600 text-white rounded-xl text-sm font-bold">Speichern</button>
+            </div>
+        </div>
+    </div>
+
     <!-- QR Code Modal -->
     <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
         <div class="bg-white p-6 rounded-2xl text-center space-y-3 shadow-2xl" onclick="event.stopPropagation()">
@@ -89,11 +113,35 @@
             renderInventory();
         }
 
+        function editLocation(locId) {
+            let data = getData();
+            let loc = data.locations.find(l => l.id === locId);
+            if (!loc) return;
+            let newName = prompt("Standort umbenennen:", loc.name);
+            if (newName !== null && newName.trim() !== "") {
+                loc.name = newName.trim();
+                saveData(data);
+                loadLocationsDropdown();
+                renderInventory();
+            }
+        }
+
+        function deleteLocation(locId) {
+            if (!confirm("⚠️ Möchtest du diesen Standort und ALLE darin enthaltenen Kisten wirklich unwiderruflich löschen?")) return;
+            let data = getData();
+            data.locations = data.locations.filter(l => l.id !== locId);
+            data.boxes = data.boxes.filter(b => b.locId !== locId);
+            saveData(data);
+            loadLocationsDropdown();
+            renderInventory();
+        }
+
         function loadLocationsDropdown() {
             let data = getData();
-            const select = document.getElementById('boxLocationSelect');
-            select.innerHTML = '<option value="">-- Standort wählen --</option>' + 
+            const html = '<option value="">-- Standort wählen --</option>' + 
                 data.locations.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+            document.getElementById('boxLocationSelect').innerHTML = html;
+            document.getElementById('editBoxLocSelect').innerHTML = html;
         }
 
         function saveBox() {
@@ -110,6 +158,49 @@
             renderInventory();
         }
 
+        function openEditBoxModal(boxId) {
+            let data = getData();
+            let box = data.boxes.find(b => b.id === boxId);
+            if (!box) return;
+
+            document.getElementById('editBoxId').value = box.id;
+            document.getElementById('editBoxLocSelect').value = box.locId;
+            document.getElementById('editBoxName').value = box.name;
+            document.getElementById('editBoxDesc').value = box.desc;
+            document.getElementById('editBoxModal').classList.remove('hidden');
+        }
+
+        function closeEditBoxModal() {
+            document.getElementById('editBoxModal').classList.add('hidden');
+        }
+
+        function updateBox() {
+            const boxId = parseInt(document.getElementById('editBoxId').value);
+            const locId = parseInt(document.getElementById('editBoxLocSelect').value);
+            const name = document.getElementById('editBoxName').value.trim();
+            const desc = document.getElementById('editBoxDesc').value.trim();
+            if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
+
+            let data = getData();
+            let box = data.boxes.find(b => b.id === boxId);
+            if (box) {
+                box.locId = locId;
+                box.name = name;
+                box.desc = desc;
+                saveData(data);
+            }
+            closeEditBoxModal();
+            renderInventory();
+        }
+
+        function deleteBox(boxId) {
+            if (!confirm("⚠️ Möchtest du diese Kiste wirklich löschen?")) return;
+            let data = getData();
+            data.boxes = data.boxes.filter(b => b.id !== boxId);
+            saveData(data);
+            renderInventory();
+        }
+
         function renderInventory() {
             const container = document.getElementById('inventoryContainer');
             const search = document.getElementById('searchBox').value.toLowerCase();
@@ -123,7 +214,6 @@
             container.innerHTML = data.locations.map(loc => {
                 let locBoxes = data.boxes.filter(b => b.locId === loc.id);
                 
-                // Filter nach Suche
                 if (search) {
                     locBoxes = locBoxes.filter(b => b.name.toLowerCase().includes(search) || b.desc.toLowerCase().includes(search));
                     if (locBoxes.length === 0 && !loc.name.toLowerCase().includes(search)) return '';
@@ -133,7 +223,10 @@
                     <div class="border rounded-2xl p-4 bg-gray-50 space-y-3">
                         <div class="flex justify-between items-center border-b pb-2">
                             <h4 class="font-bold text-md text-amber-800">📍 Standort: ${loc.name}</h4>
-                            <button onclick="deleteLocation(${loc.id})" class="text-xs text-red-500 hover:underline">Standort löschen</button>
+                            <div class="flex gap-3">
+                                <button onclick="editLocation(${loc.id})" class="text-xs text-blue-600 hover:underline">✏️ Bearbeiten</button>
+                                <button onclick="deleteLocation(${loc.id})" class="text-xs text-red-500 hover:underline">🗑️ Löschen</button>
+                            </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             ${locBoxes.length > 0 ? locBoxes.map(b => `
@@ -143,32 +236,16 @@
                                         <p class="text-xs text-gray-600 mt-0.5">Inhalt: ${b.desc || 'Keine Angabe'}</p>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <button onclick="showQrCode('${b.name}', '${b.desc}')" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100">🖨️ QR</button>
-                                        <button onclick="deleteBox(${b.id})" class="text-xs text-red-400 hover:text-red-600">✕</button>
+                                        <button onclick="showQrCode('${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100" title="QR-Code">🖨️</button>
+                                        <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200" title="Bearbeiten">✏️</button>
+                                        <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
                                     </div>
                                 </div>
                             `).join('') : '<p class="text-xs text-gray-400 col-span-2">Keine Kisten an diesem Standort.</p>'}
                         </div>
                     </div>
                 `;
-            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
-        }
-
-        function deleteLocation(locId) {
-            if (!confirm("Standort und alle zugehörigen Kisten löschen?")) return;
-            let data = getData();
-            data.locations = data.locations.filter(l => l.id !== locId);
-            data.boxes = data.boxes.filter(b => b.locId !== locId);
-            saveData(data);
-            loadLocationsDropdown();
-            renderInventory();
-        }
-
-        function deleteBox(boxId) {
-            let data = getData();
-            data.boxes = data.boxes.filter(b => b.id !== boxId);
-            saveData(data);
-            renderInventory();
+            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Noch keine passenden Einträge gefunden.</p>`;
         }
 
         function showQrCode(name, desc) {
