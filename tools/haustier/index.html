@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haustier-Gesundheits-Pass</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <header class="bg-emerald-600 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-2xl font-bold">🐾 Haustier-Gesundheits-Pass</h1>
+        <p class="text-sm opacity-90 mt-1">Impfungen, Entwurmung & Termine dokumentieren</p>
+    </header>
+    <main class="flex-grow container mx-auto p-4 max-w-4xl space-y-6">
+        <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold inline-block">← Zurück zur Startseite</a>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <h2 class="text-lg font-bold">Neuen Haustier-Eintrag erfassen</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input type="text" id="petName" placeholder="Haustier & Art (z.B. Luna / Katze)" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="petEvent" placeholder="Ereignis (z.B. Impfung Tollwut)" class="p-3 border rounded-xl text-sm">
+                <input type="date" id="petDate" class="p-3 border rounded-xl text-sm">
+            </div>
+            <button onclick="savePet()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-xl text-sm shadow-sm">Eintrag speichern</button>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border">
+            <h3 class="font-bold text-lg mb-4">📋 Gespeicherte Tierarzt- & Vorsorgedaten</h3>
+            <div id="petList" class="space-y-3"><p class="text-sm text-gray-400 text-center py-4">Keine Einträge vorhanden.</p></div>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', renderPet);
+        function savePet() {
+            const petName = document.getElementById('petName').value.trim();
+            const petEvent = document.getElementById('petEvent').value.trim();
+            const petDate = document.getElementById('petDate').value;
+            if(!petName || !petEvent || !petDate) return alert("Bitte alle Felder ausfüllen!");
+            let items = JSON.parse(localStorage.getItem('pet_health')) || [];
+            items.push({ petName, petEvent, petDate });
+            localStorage.setItem('pet_health', JSON.stringify(items));
+            document.getElementById('petEvent').value = "";
+            renderPet();
+        }
+        function renderPet() {
+            const list = document.getElementById('petList');
+            let items = JSON.parse(localStorage.getItem('pet_health')) || [];
+            list.innerHTML = items.map((item, idx) => `
+                <div class="p-4 bg-gray-50 border rounded-2xl flex justify-between items-center">
+                    <div>
+                        <span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">${item.petName}</span>
+                        <h4 class="font-bold text-sm mt-1">${item.petEvent}</h4>
+                        <p class="text-xs text-gray-500">Datum: ${new Date(item.petDate).toLocaleDateString('de-DE')}</p>
+                    </div>
+                    <button onclick="deletePet(${idx})" class="text-xs text-red-500">Löschen</button>
+                </div>
+            `).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge vorhanden.</p>`;
+        }
+        function deletePet(idx) {
+            let items = JSON.parse(localStorage.getItem('pet_health')) || [];
+            items.splice(idx, 1);
+            localStorage.setItem('pet_health', JSON.stringify(items));
+            renderPet();
+        }
+    </script>
+</body>
+</html>
