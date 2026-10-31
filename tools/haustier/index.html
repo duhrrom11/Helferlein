@@ -14,7 +14,7 @@
     <!-- Header -->
     <header class="bg-teal-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🐾 Haustier-Gesundheits-Pass Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Impfungen, Vorsorge, Gewicht & Tierarzt-Kontakte perfekt im Blick</p>
+        <p class="text-sm opacity-90 mt-1">Impfungen, Vorsorge, Kostenrechner & Kalender-Export</p>
     </header>
 
     <!-- Main Content -->
@@ -44,8 +44,8 @@
                 <div><p class="text-xs text-gray-500">Gesundheits-Einträge</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">🏥</div>
-                <div><p class="text-xs text-gray-500">Status</p><h3 class="text-sm font-bold text-green-600">Alles im grünen Bereich</h3></div>
+                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
+                <div><p class="text-xs text-gray-500">Gesamtkosten</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -60,6 +60,10 @@
                     <input type="text" id="petChip" placeholder="Chip-Nummer (optional)" class="p-3 border rounded-xl text-sm">
                 </div>
                 <input type="text" id="petVet" placeholder="Tierarzt / Praxis & Notfallnummer" class="w-full p-3 border rounded-xl text-sm">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Profilbild / Foto:</label>
+                    <input type="file" id="petPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700">
+                </div>
                 <button onclick="savePet()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Haustier speichern</button>
             </div>
 
@@ -75,16 +79,18 @@
                         <option value="Entwurmung">🪱 Entwurmung / Parasiten</option>
                         <option value="Medikament">💊 Medikament / Behandlung</option>
                         <option value="Gewicht">⚖️ Gewicht</option>
+                        <option value="Tierarzt">🏥 Tierarztbesuch / Rechnung</option>
                         <option value="Sonstiges">📝 Sonstiges</option>
                     </select>
                     <input type="date" id="eventDate" class="p-3 border rounded-xl text-sm">
                 </div>
-                <input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung, 18.5 kg)" class="w-full p-3 border rounded-xl text-sm">
+                <input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung)" class="w-full p-3 border rounded-xl text-sm">
+                <input type="text" id="eventCost" placeholder="Kosten in € (optional, z.B. 45.00)" class="w-full p-3 border rounded-xl text-sm">
                 <button onclick="saveEvent()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Eintrag speichern</button>
             </div>
         </div>
 
-        <!-- Listen-Ansicht -->
+        <!-- Listen-Ansicht & Filter -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Haustier-Profile -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
@@ -94,9 +100,14 @@
                 </div>
             </div>
 
-            <!-- Gesundheits-Einträge -->
+            <!-- Gesundheits-Einträge mit Filter -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-                <h3 class="font-bold text-lg">📋 Gesundheits- & Terminkalender</h3>
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
+                    <h3 class="font-bold text-lg">📋 Kalender & Kosten</h3>
+                    <select id="filterPetSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
+                        <option value="">Alle Haustiere anzeigen</option>
+                    </select>
+                </div>
                 <div id="eventsList" class="space-y-3">
                     <p class="text-sm text-gray-400 text-center py-4">Keine Termine erfasst.</p>
                 </div>
@@ -128,17 +139,31 @@
             const species = document.getElementById('petSpecies').value.trim();
             const chip = document.getElementById('petChip').value.trim();
             const vet = document.getElementById('petVet').value.trim();
+            const photoInput = document.getElementById('petPhotoInput');
 
             if (!name) return alert("Bitte einen Namen für das Haustier eingeben!");
 
+            if (photoInput.files && photoInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    storePetData(name, species, chip, vet, e.target.result);
+                };
+                reader.readAsDataURL(photoInput.files[0]);
+            } else {
+                storePetData(name, species, chip, vet, "");
+            }
+        }
+
+        function storePetData(name, species, chip, vet, photo) {
             let data = getData();
-            data.pets.push({ id: Date.now(), name, species, chip, vet });
+            data.pets.push({ id: Date.now(), name, species, chip, vet, photo });
             saveData(data);
 
             document.getElementById('petName').value = "";
             document.getElementById('petSpecies').value = "";
             document.getElementById('petChip').value = "";
             document.getElementById('petVet').value = "";
+            document.getElementById('petPhotoInput').value = "";
 
             loadPetDropdowns();
             renderApp();
@@ -159,15 +184,17 @@
             const type = document.getElementById('eventType').value;
             const date = document.getElementById('eventDate').value;
             const title = document.getElementById('eventTitle').value.trim();
+            const cost = parseFloat(document.getElementById('eventCost').value.replace(',', '.')) || 0;
 
             if (!petId || !date || !title) return alert("Bitte Haustier, Datum und Bezeichnung angeben!");
 
             let data = getData();
-            data.events.push({ id: Date.now(), petId: parseInt(petId), type, date, title });
+            data.events.push({ id: Date.now(), petId: parseInt(petId), type, date, title, cost });
             saveData(data);
 
             document.getElementById('eventDate').value = "";
             document.getElementById('eventTitle').value = "";
+            document.getElementById('eventCost').value = "";
             renderApp();
         }
 
@@ -181,61 +208,99 @@
 
         function loadPetDropdowns() {
             let data = getData();
-            const select = document.getElementById('eventPetSelect');
-            select.innerHTML = '<option value="">-- Haustier wählen --</option>' + 
+            const eventSelect = document.getElementById('eventPetSelect');
+            const filterSelect = document.getElementById('filterPetSelect');
+
+            const options = '<option value="">-- Haustier wählen --</option>' + 
                 data.pets.map(p => `<option value="${p.id}">${p.name} (${p.species || 'Haustier'})</option>`).join('');
+            
+            const filterOptions = '<option value="">Alle Haustiere anzeigen</option>' + 
+                data.pets.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+            eventSelect.innerHTML = options;
+            filterSelect.innerHTML = filterOptions;
         }
 
         function renderApp() {
             let data = getData();
             const petsContainer = document.getElementById('petsList');
             const eventsContainer = document.getElementById('eventsList');
+            const selectedFilter = document.getElementById('filterPetSelect').value;
 
             document.getElementById('statPets').innerText = data.pets.length;
             document.getElementById('statEvents').innerText = data.events.length;
+            
+            let totalCosts = data.events.reduce((sum, e) => sum + (e.cost || 0), 0);
+            document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (data.pets.length === 0) {
                 petsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Haustiere erfasst.</p>`;
             } else {
                 petsContainer.innerHTML = data.pets.map(p => `
-                    <div class="p-4 bg-gray-50 border rounded-2xl flex justify-between items-start">
-                        <div>
-                            <h4 class="font-bold text-sm text-teal-800">🐾 ${p.name}</h4>
-                            <p class="text-xs text-gray-600 mt-0.5">Rasse: ${p.species || 'k.A.'}</p>
-                            ${p.chip ? `<p class="text-xs text-gray-500">Chip: ${p.chip}</p>` : ''}
-                            ${p.vet ? `<p class="text-xs text-teal-600 mt-1">🏥 Tierarzt: ${p.vet}</p>` : ''}
+                    <div class="p-4 bg-gray-50 border rounded-2xl flex items-center justify-between gap-3">
+                        <div class="flex items-center space-x-3">
+                            ${p.photo ? `<img src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm">` : '<div class="w-12 h-12 bg-teal-100 text-teal-800 font-bold rounded-full flex items-center justify-center text-sm">🐾</div>'}
+                            <div>
+                                <h4 class="font-bold text-sm text-teal-800">${p.name}</h4>
+                                <p class="text-xs text-gray-600">${p.species || 'k.A.'} ${p.chip ? '| Chip: ' + p.chip : ''}</p>
+                                ${p.vet ? `<p class="text-xs text-teal-600 mt-0.5">🏥 ${p.vet}</p>` : ''}
+                            </div>
                         </div>
                         <button onclick="deletePet(${p.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
                     </div>
                 `).join('');
             }
 
-            if (data.events.length === 0) {
-                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Termine erfasst.</p>`;
+            let filteredEvents = data.events;
+            if (selectedFilter !== "") {
+                filteredEvents = filteredEvents.filter(e => e.petId === parseInt(selectedFilter));
+            }
+
+            if (filteredEvents.length === 0) {
+                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Termine für diesen Filter erfasst.</p>`;
             } else {
                 const today = new Date();
-                eventsContainer.innerHTML = data.events.map(e => {
+                eventsContainer.innerHTML = filteredEvents.map(e => {
                     let pet = data.pets.find(p => p.id === e.petId);
                     let petName = pet ? pet.name : "Unbekannt";
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
                     let badge = diff < 0 ? "🔴 Überfällig" : (diff <= 30 ? `🟡 in ${diff} Tagen` : "🟢 Planmäßig");
 
+                    let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + petName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Haustier-Termin für ' + petName)}`;
+
                     return `
-                        <div class="p-4 bg-gray-50 border rounded-2xl flex justify-between items-start">
+                        <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
                                 <div class="flex items-center space-x-2">
                                     <span class="text-[10px] bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">${e.type}</span>
                                     <span class="text-xs font-bold text-gray-700">${petName}</span>
+                                    ${e.cost > 0 ? `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${e.cost.toFixed(2).replace('.', ',')} €</span>` : ''}
                                 </div>
                                 <h4 class="font-bold text-sm mt-1">${e.title} <span class="text-xs font-normal text-gray-500">(${badge})</span></h4>
                                 <p class="text-xs text-gray-500">Datum: ${d.toLocaleDateString('de-DE')}</p>
                             </div>
-                            <button onclick="deleteEvent(${e.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
+                            <div class="flex items-center gap-2 self-end sm:self-center">
+                                <a href="${googleCalUrl}" target="_blank" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="In Google Kalender eintragen">📅 Google</a>
+                                <button onclick="downloadICS('${e.title} (${petName})', '${e.date}')" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Apple / ICS Kalender Export">📥 ICS</button>
+                                <button onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                            </div>
                         </div>
                     `;
                 }).join('');
             }
+        }
+
+        function downloadICS(title, dateStr) {
+            let d = new Date(dateStr);
+            let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
+            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:Haustier-Termin\nEND:VEVENT\nEND:VCALENDAR`;
+            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `${title.replace(/\s+/g, '_')}.ics`;
+            a.click();
         }
 
         // PDF Report Export via jsPDF
@@ -266,17 +331,23 @@
 
             y += 4;
             doc.setFont("helvetica", "bold");
-            doc.text("Gesundheits-Einträge & Termine:", 14, y);
+            doc.text("Gesundheits-Einträge & Kosten:", 14, y);
             y += 7;
 
+            let totalCosts = 0;
             doc.setFont("helvetica", "normal");
             data.events.forEach(e => {
                 let pet = data.pets.find(p => p.id === e.petId);
                 let pName = pet ? pet.name : "?";
+                totalCosts += (e.cost || 0);
                 if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`- [${e.type}] ${pName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')}`, 14, y);
+                doc.text(`- [${e.type}] ${pName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${(e.cost || 0).toFixed(2)} EUR)`, 14, y);
                 y += 6;
             });
+
+            y += 6;
+            doc.setFont("helvetica", "bold");
+            doc.text(`Gesamtkosten: ${totalCosts.toFixed(2)} EUR`, 14, y);
 
             doc.save("haustier-gesundheits-report.pdf");
         }
