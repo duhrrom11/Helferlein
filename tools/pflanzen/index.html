@@ -14,7 +14,7 @@
     <!-- Header -->
     <header class="bg-lime-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🌱 Pflanzen- & Garten-Pflege-Pass Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Smartes Wikipedia-Autofetch, Gieß- & Dünge-Timer, Kalender-Export</p>
+        <p class="text-sm opacity-90 mt-1">Smartes Wikipedia-Autofetch, Gieß- & Dünge-Tracker, Kalender-Export</p>
     </header>
 
     <!-- Main Content -->
@@ -62,13 +62,13 @@
                 <input type="text" id="plantLocation" placeholder="Standort (z.B. Wohnzimmer Hell)" class="p-3 border rounded-xl text-sm">
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Intervall (Tage):</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Tage:</label>
                     <input type="number" id="plantInterval" placeholder="z.B. 7" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Dünge-Intervall (Tage):</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Dünge-Tage:</label>
                     <input type="number" id="plantFertInterval" placeholder="z.B. 30" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
@@ -78,6 +78,10 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Gießen:</label>
                     <input type="date" id="plantLastWatered" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Düngen:</label>
+                    <input type="date" id="plantLastFertilized" class="w-full p-3 border rounded-xl text-sm">
                 </div>
             </div>
 
@@ -94,7 +98,7 @@
 
         <!-- Pflanzen-Liste -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h3 class="font-bold text-lg">📋 Meine Pflanzen &amp; Gieß-Timer</h3>
+            <h3 class="font-bold text-lg">📋 Meine Pflanzen &amp; Pflege-Timer</h3>
             <div id="plantsList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Keine Pflanzen erfasst.</p>
             </div>
@@ -115,9 +119,10 @@
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Tage:</label><input type="number" id="editInterval" class="w-full p-3 border rounded-xl text-sm"></div>
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Dünge-Tage:</label><input type="number" id="editFertInterval" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-3 gap-2">
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Düngerart:</label><input type="text" id="editFertType" class="w-full p-3 border rounded-xl text-sm"></div>
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Gießen:</label><input type="date" id="editLastWatered" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Düngen:</label><input type="date" id="editLastFertilized" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Anmerkungen:</label><textarea id="editNote" class="w-full p-3 border rounded-xl text-sm h-20 resize-none"></textarea></div>
             <div class="flex justify-end space-x-2 pt-2">
@@ -131,6 +136,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('plantLastWatered').valueAsDate = new Date();
+            document.getElementById('plantLastFertilized').valueAsDate = new Date();
             renderApp();
         });
 
@@ -146,7 +152,7 @@
             localStorage.setItem('pflanzen_pass', JSON.stringify(data));
         }
 
-        // Smart Wikipedia Autofetch & Parsing
+        // Smart Wikipedia Autofetch & Parsing für Gießen und Düngen
         function fetchWikipediaData() {
             const speciesInput = document.getElementById('plantSpecies').value.trim();
             const nameInput = document.getElementById('plantName').value.trim();
@@ -167,8 +173,8 @@
                         let text = data.extract;
                         let textLower = text.toLowerCase();
 
-                        // Intelligente Extraktion für Gieß-Intervall
-                        let interval = 7; // Standard
+                        // 1. Gieß-Intervall ermitteln
+                        let interval = 7;
                         if (textLower.includes('wöchentlich') || textLower.includes('jede woche')) interval = 7;
                         else if (textLower.includes('alle zwei wochen') || textLower.includes('14 tage')) interval = 14;
                         else if (textLower.includes('monatlich')) interval = 30;
@@ -178,18 +184,28 @@
                             if (match) interval = parseInt(match[1]);
                         }
 
-                        // Standort-Erkennung
+                        // 2. Dünge-Intervall & Art ermitteln
+                        let fertInterval = 30;
+                        let fertType = "Flüssigdünger (Standard)";
+                        if (textLower.includes('während der wachstumsphase wöchentlich') || textLower.includes('alle 1-2 wochen düngen')) {
+                            fertInterval = 14;
+                        } else if (textLower.includes('monatlich düngen') || textLower.includes('alle vier wochen')) {
+                            fertInterval = 30;
+                        } else if (textLower.includes('selten düngen') || textLower.includes('alle zwei monate')) {
+                            fertInterval = 60;
+                        }
+
+                        if (textLower.includes('kaktus') || textLower.includes('sukkulent')) fertType = "Kakteendünger";
+                        else if (textLower.includes('orchideen')) fertType = "Orchideendünger";
+                        else if (textLower.includes('zitrus')) fertType = "Zitrusdünger";
+
+                        // 3. Standort-Erkennung
                         let standort = "Hell bis halbschattig, keine direkte Mittagssonne";
                         if (textLower.includes('sonnig')) standort = "Sonniger Standort";
                         if (textLower.includes('schatten') || textLower.includes('schattig')) standort = "Schattiger / kühler Standort";
 
-                        // Dünger-Empfehlung
-                        let fertType = "Flüssigdünger (Standard)";
-                        if (textLower.includes('kaktus') || textLower.includes('sukkulent')) fertType = "Kakteendünger";
-                        else if (textLower.includes('orchideen')) fertType = "Orchideendünger";
-
                         document.getElementById('plantInterval').value = interval;
-                        document.getElementById('plantFertInterval').value = 30;
+                        document.getElementById('plantFertInterval').value = fertInterval;
                         document.getElementById('plantFertType').value = fertType;
                         if(!document.getElementById('plantLocation').value) {
                             document.getElementById('plantLocation').value = standort;
@@ -199,9 +215,9 @@
                         document.getElementById('plantNote').value = 
                             `📌 Standort: ${standort}\n` +
                             `💧 Pflege-Info: ${text}\n` +
-                            `🌱 Dünger: Alle 30 Tage (${fertType})`;
+                            `🌱 Dünger: Alle ${fertInterval} Tage (${fertType})`;
 
-                        alert("Wikipedia-Daten erfolgreich analysiert und eingetragen!");
+                        alert("Wikipedia-Daten erfolgreich analysiert (Gießen & Düngen automatisch ausgefüllt)!");
                     } else {
                         alert("Keine Wikipedia-Zusammenfassung gefunden.");
                     }
@@ -219,17 +235,18 @@
             const fertInterval = parseInt(document.getElementById('plantFertInterval').value) || 30;
             const fertType = document.getElementById('plantFertType').value.trim();
             const lastWatered = document.getElementById('plantLastWatered').value;
+            const lastFertilized = document.getElementById('plantLastFertilized').value || lastWatered;
             const note = document.getElementById('plantNote').value.trim();
             const photoInput = document.getElementById('plantPhotoInput');
 
-            if (!name || !lastWatered) return alert("Bitte mindestens Pflanzenname und Datum angeben!");
+            if (!name || !lastWatered) return alert("Bitte mindestens Pflanzenname und Gießdatum angeben!");
 
             if (photoInput.files && photoInput.files[0]) {
                 compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, note, compressedPhoto);
+                    storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, lastFertilized, note, compressedPhoto);
                 });
             } else {
-                storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, note, "");
+                storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, lastFertilized, note, "");
             }
         }
 
@@ -259,9 +276,9 @@
             reader.readAsDataURL(file);
         }
 
-        function storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, note, photo) {
+        function storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, lastFertilized, note, photo) {
             let data = getData();
-            data.plants.push({ id: Date.now(), name, species, location, interval, fertInterval, fertType, lastWatered, note, photo });
+            data.plants.push({ id: Date.now(), name, species, location, interval, fertInterval, fertType, lastWatered, lastFertilized, note, photo });
             saveData(data);
 
             document.getElementById('plantName').value = "";
@@ -273,6 +290,7 @@
             document.getElementById('plantNote').value = "";
             document.getElementById('plantPhotoInput').value = "";
             document.getElementById('plantLastWatered').valueAsDate = new Date();
+            document.getElementById('plantLastFertilized').valueAsDate = new Date();
             
             renderApp();
         }
@@ -282,6 +300,16 @@
             let p = data.plants.find(item => item.id === id);
             if (p) {
                 p.lastWatered = new Date().toISOString().split('T')[0];
+                saveData(data);
+                renderApp();
+            }
+        }
+
+        function fertilizePlant(id) {
+            let data = getData();
+            let p = data.plants.find(item => item.id === id);
+            if (p) {
+                p.lastFertilized = new Date().toISOString().split('T')[0];
                 saveData(data);
                 renderApp();
             }
@@ -308,6 +336,7 @@
             document.getElementById('editFertInterval').value = p.fertInterval || 30;
             document.getElementById('editFertType').value = p.fertType || "";
             document.getElementById('editLastWatered').value = p.lastWatered;
+            document.getElementById('editLastFertilized').value = p.lastFertilized || p.lastWatered;
             document.getElementById('editNote').value = p.note || "";
             document.getElementById('editModal').classList.remove('hidden');
         }
@@ -325,6 +354,7 @@
             const fertInterval = parseInt(document.getElementById('editFertInterval').value) || 30;
             const fertType = document.getElementById('editFertType').value.trim();
             const lastWatered = document.getElementById('editLastWatered').value;
+            const lastFertilized = document.getElementById('editLastFertilized').value;
             const note = document.getElementById('editNote').value.trim();
 
             if (!name || !lastWatered) return alert("Bitte Name und Datum angeben!");
@@ -339,6 +369,7 @@
                 p.fertInterval = fertInterval;
                 p.fertType = fertType;
                 p.lastWatered = lastWatered;
+                p.lastFertilized = lastFertilized;
                 p.note = note;
                 saveData(data);
             }
@@ -346,15 +377,18 @@
             renderApp();
         }
 
-        function downloadICS(name, nextWaterDateStr) {
-            let d = new Date(nextWaterDateStr);
+        function downloadICS(name, dateStr, type) {
+            let d = new Date(dateStr);
             let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Pflanze gießen: ${name}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:Zeit, diese Pflanze zu gießen!\nEND:VEVENT\nEND:VCALENDAR`;
+            let title = type === 'water' ? `Pflanze gießen: ${name}` : `Pflanze düngen: ${name}`;
+            let desc = type === 'water' ? 'Zeit, diese Pflanze zu gießen!' : 'Zeit, diese Pflanze zu düngen!';
+            
+            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:${desc}\nEND:VEVENT\nEND:VCALENDAR`;
             let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
             let url = URL.createObjectURL(blob);
             let a = document.createElement('a');
             a.href = url;
-            a.download = `Giessen_${name.replace(/\s+/g, '_')}.ics`;
+            a.download = `${type}_${name.replace(/\s+/g, '_')}.ics`;
             a.click();
         }
 
@@ -371,25 +405,36 @@
                 container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Pflanzen erfasst.</p>`;
             } else {
                 container.innerHTML = data.plants.map(p => {
-                    let last = new Date(p.lastWatered);
-                    let next = new Date(last);
-                    next.setDate(last.getDate() + p.interval);
-                    
-                    let diffDays = Math.ceil((next - today) / (1000 * 60 * 60 * 24));
+                    // Gießen Berechnung
+                    let lastWater = new Date(p.lastWatered);
+                    let nextWater = new Date(lastWater);
+                    nextWater.setDate(lastWater.getDate() + p.interval);
+                    let diffWater = Math.ceil((nextWater - today) / (1000 * 60 * 60 * 24));
+
+                    // Düngen Berechnung
+                    let fertInt = p.fertInterval || 30;
+                    let lastFert = new Date(p.lastFertilized || p.lastWatered);
+                    let nextFert = new Date(lastFert);
+                    nextFert.setDate(lastFert.getDate() + fertInt);
+                    let diffFert = Math.ceil((nextFert - today) / (1000 * 60 * 60 * 24));
 
                     let badge = "";
-                    if (diffDays < 0) {
+                    if (diffWater < 0) {
                         overdueCount++;
-                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig vor ${Math.abs(diffDays)} Tag(en)!</span>`;
-                    } else if (diffDays <= 2) {
+                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Gießen überfällig (${Math.abs(diffWater)}T)</span>`;
+                    } else if (diffWater <= 2) {
                         dueSoonCount++;
-                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 Fällig in ${diffDays} Tag(en)</span>`;
+                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 Gießen in ${diffWater}T</span>`;
                     } else {
-                        badge = `<span class="text-[10px] bg-lime-100 text-lime-800 font-semibold px-2 py-0.5 rounded-full">🟢 Nächste Bewässerung in ${diffDays} Tagen</span>`;
+                        badge = `<span class="text-[10px] bg-lime-100 text-lime-800 font-semibold px-2 py-0.5 rounded-full">🟢 Gießen in ${diffWater}T</span>`;
                     }
 
-                    let nextIso = next.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
-                    let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Pflanze gießen: ' + p.name)}&dates=${nextIso}/${nextIso}&details=${encodeURIComponent('Pflege-Erinnerung für ' + p.name)}`;
+                    let fertBadge = diffFert < 0 ? 
+                        `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🧪 Düngen überfällig</span>` : 
+                        `<span class="text-[10px] bg-sky-100 text-sky-800 font-semibold px-2 py-0.5 rounded-full">🧪 Düngen in ${diffFert}T</span>`;
+
+                    let nextWaterIso = nextWater.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
+                    let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Pflanze gießen: ' + p.name)}&dates=${nextWaterIso}/${nextWaterIso}&details=${encodeURIComponent('Pflege-Erinnerung für ' + p.name)}`;
 
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
@@ -400,18 +445,20 @@
                                         <span class="text-xs font-bold text-gray-800">${p.name}</span>
                                         ${p.species ? `<span class="text-xs text-lime-700 font-semibold">(${p.species})</span>` : ''}
                                         ${badge}
+                                        ${fertBadge}
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">
                                         ${p.location ? 'Ort: ' + p.location + ' | ' : ''}
-                                        Gießen: alle ${p.interval} Tage ${p.fertType ? '| Dünger: ' + p.fertType + ' (alle ' + (p.fertInterval || 30) + 'T)' : ''}
+                                        Gießen: alle ${p.interval}T ${p.fertType ? '| Dünger: ' + p.fertType + ' (alle ' + fertInt + 'T)' : ''}
                                     </p>
                                     ${p.note ? `<p class="text-[11px] text-gray-400 mt-0.5 whitespace-pre-line">${p.note}</p>` : ''}
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
-                                <a href="${googleCalUrl}" target="_blank" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
-                                <button onclick="downloadICS('${p.name}', '${next.toISOString().split('T')[0]}')" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>
+                                <a href="${googleCalUrl}" target="_blank" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender Gießen">📅 Google</a>
+                                <button onclick="downloadICS('${p.name}', '${nextWater.toISOString().split('T')[0]}', 'water')" class="px-2 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Gießen">📥 ICS</button>
                                 <button onclick="waterPlant(${p.id})" class="px-3 py-1.5 bg-lime-600 hover:bg-lime-700 text-white rounded-xl text-xs font-semibold">💧 Gegossen!</button>
+                                <button onclick="fertilizePlant(${p.id})" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-semibold">🧪 Gedüngt!</button>
                                 <button onclick="openEditModal(${p.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
                                 <button onclick="deletePlant(${p.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
@@ -446,7 +493,7 @@
             doc.setFont("helvetica", "normal");
             data.plants.forEach(p => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`- ${p.name} (${p.species || 'keine Art'}), Ort: ${p.location || 'k.A.'}, Gießen: ${p.interval} Tage`, 14, y);
+                doc.text(`- ${p.name} (${p.species || 'keine Art'}), Ort: ${p.location || 'k.A.'}, Gießen: ${p.interval}T, Düngen: ${p.fertInterval || 30}T`, 14, y);
                 y += 6;
             });
 
