@@ -14,7 +14,7 @@
     <!-- Header -->
     <header class="bg-lime-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🌱 Pflanzen- & Garten-Pflege-Pass Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Trefle API Autofetch, Ausklappbare Rechner, Gieß- & Dünge-Tracker</p>
+        <p class="text-sm opacity-90 mt-1">Ausklappbare Rechner, Gieß- & Dünge-Tracker</p>
     </header>
 
     <!-- Main Content -->
@@ -137,10 +137,7 @@
 
         <!-- Erfassung: Neue Pflanze -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <h2 class="text-lg font-bold">🌿 Neue Pflanze erfassen</h2>
-                <button onclick="fetchTrefleApiData()" class="px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold border border-emerald-200 shadow-sm" title="Trefle API abfragen">🌿 Trefle API Autofetch</button>
-            </div>
+            <h2 class="text-lg font-bold">🌿 Neue Pflanze erfassen</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input type="text" id="plantName" placeholder="Pflanzenname (z.B. Monstera im Flur)" class="p-3 border rounded-xl text-sm">
@@ -315,49 +312,6 @@
 
         function saveData(data) {
             localStorage.setItem('pflanzen_pass', JSON.stringify(data));
-        }
-
-        // Robuste Trefle API Integration mit JSON-Fehlerprüfung
-        async function fetchTrefleApiData() {
-            const query = document.getElementById('plantSpecies').value.trim() || document.getElementById('plantName').value.trim();
-            if (!query) {
-                alert("Bitte zuerst Pflanzenart oder -name eingeben!");
-                return;
-            }
-
-            const trefleToken = "usr-bGcr4aCCO_nvwgd1RaUz1Eb7gCSlIJpcgWkeSxAi_gA"; 
-            const url = `https://trefle.io/api/v1/plants/search?token=${trefleToken}&q=${encodeURIComponent(query)}`;
-            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(url);
-
-            try {
-                let res = await fetch(proxyUrl);
-                if (!res.ok) throw new Error("Trefle API Verbindung fehlgeschlagen");
-                
-                let textData = await res.text();
-                let json;
-                try {
-                    json = JSON.parse(textData);
-                } catch(e) {
-                    throw new Error("Der Proxy hat keine gültige JSON-Antwort geliefert (möglicherweise blockiert).");
-                }
-                
-                if (json.data && json.data.length > 0) {
-                    let plant = json.data[0];
-                    document.getElementById('plantName').value = plant.common_name || plant.scientific_name;
-                    document.getElementById('plantSpecies').value = plant.scientific_name;
-                    document.getElementById('plantInterval').value = calculatedWaterDaysFinal;
-                    document.getElementById('plantFertInterval').value = calculatedFertDaysFinal;
-                    document.getElementById('plantFertType').value = calculatedFertTypeFinal;
-                    document.getElementById('plantLocation').value = "Hell bis halbschattig";
-                    document.getElementById('plantNote').value = `🌿 Trefle API Botanik-Daten:\nWissenschaftlich: ${plant.scientific_name}\nFamilie: ${plant.family || 'k.A.'}\nGattung: ${plant.genus || 'k.A.'}`;
-                    alert("Pflanzendaten erfolgreich von der Trefle API geladen!");
-                } else {
-                    alert("Keine Treffer in der Trefle Datenbank gefunden.");
-                }
-            } catch (err) {
-                alert("Fehler beim Abrufen der Trefle API: " + err.message);
-                console.error(err);
-            }
         }
 
         function savePlant() {
