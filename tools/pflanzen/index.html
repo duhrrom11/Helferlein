@@ -14,11 +14,11 @@
     <!-- Header -->
     <header class="bg-lime-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🌱 Pflanzen- & Garten-Pflege-Pass Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Smartes Smart-Autofetch, Interaktiver Gießrechner & Dünge-Tracker</p>
+        <p class="text-sm opacity-90 mt-1">Smartes Smart-Autofetch, Ausklappbare Rechner, Gieß- & Dünge-Tracker</p>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
+    <main class="flex-grow container mx-auto p-4 max-w-6xl space-y-6">
         
         <!-- Navigation & Global Actions -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
@@ -49,67 +49,90 @@
             </div>
         </div>
 
-        <!-- 🧮 INTERAKTIVER GIESSRECHNER (Nach Vorlage) -->
-        <div class="bg-white p-6 rounded-3xl shadow-md border border-lime-100 space-y-6">
-            <div class="text-center bg-sky-50 dark:bg-slate-800 p-6 rounded-2xl border border-sky-100 shadow-inner">
-                <p class="text-xs text-sky-600 uppercase font-bold tracking-wider">Empfohlenes Gießintervall</p>
-                <h2 id="calcResultTitle" class="text-3xl font-extrabold text-sky-900 mt-1">Alle 7 Tage</h2>
-                <p id="calcResultMl" class="text-xs text-gray-600 mt-1">ca. 150-300 ml pro Gießvorgang</p>
-                <p class="text-[11px] text-sky-700 mt-2 font-medium">💡 Goldene Regel: Stecke vor jedem Gießen den Finger in die Erde (2-3 cm tief).</p>
-                <button onclick="applyCalculatorResult()" class="mt-4 px-6 py-2.5 bg-lime-600 hover:bg-lime-700 text-white text-xs font-bold rounded-xl shadow-md transition-transform transform active:scale-95">⬇️ Wert in Formular übernehmen</button>
-            </div>
+        <!-- 🧮 AUSKLAPPBARE RECHNER (Gießen & Düngen) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <!-- Pflanzentyp -->
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pflanzentyp</label>
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-2" id="group-type">
-                    <button type="button" onclick="setCalc('type', 7, this)" class="calc-btn-type p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-lime-700 text-white border-lime-700 shadow-sm" data-val="7">🌿 Tropisch</button>
-                    <button type="button" onclick="setCalc('type', 10, this)" class="calc-btn-type p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="10">🍃 Blattpflanze</button>
-                    <button type="button" onclick="setCalc('type', 6, this)" class="calc-btn-type p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="6">🌸 Blühpflanze</button>
-                    <button type="button" onclick="setCalc('type', 5, this)" class="calc-btn-type p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="5">🌱 Farn</button>
-                    <button type="button" onclick="setCalc('type', 21, this)" class="calc-btn-type p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="21">🌵 Sukkulente / Kaktus</button>
-                </div>
-            </div>
-
-            <!-- Standort -->
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Standort</label>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-2" id="group-loc">
-                    <button type="button" onclick="setCalc('loc', 0.8, this)" class="calc-btn-loc p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-lime-700 text-white border-lime-700 shadow-sm" data-val="0.8">☀️ Sonnig / Südfenster</button>
-                    <button type="button" onclick="setCalc('loc', 1.0, this)" class="calc-btn-loc p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="1.0">⛅ Hell / Ost-West</button>
-                    <button type="button" onclick="setCalc('loc', 1.3, this)" class="calc-btn-loc p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="1.3">🌥️ Schattig / Nordfenster</button>
-                </div>
-            </div>
-
-            <!-- Jahreszeit -->
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Jahreszeit</label>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2" id="group-season">
-                    <button type="button" onclick="setCalc('season', 1.0, this)" class="calc-btn-season p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="1.0">🌷 Frühling</button>
-                    <button type="button" onclick="setCalc('season', 0.8, this)" class="calc-btn-season p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-lime-700 text-white border-lime-700 shadow-sm" data-val="0.8">☀️ Sommer</button>
-                    <button type="button" onclick="setCalc('season', 1.0, this)" class="calc-btn-season p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="1.0">🍂 Herbst</button>
-                    <button type="button" onclick="setCalc('season', 1.4, this)" class="calc-btn-season p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="1.4">❄️ Winter</button>
-                </div>
-            </div>
-
-            <!-- Topfgröße & Heizungsluft -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Topfgröße</label>
-                    <div class="grid grid-cols-3 gap-2" id="group-pot">
-                        <button type="button" onclick="setCalc('pot', 0.7, this)" class="calc-btn-pot p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="0.7">Klein (&lt;15cm)</button>
-                        <button type="button" onclick="setCalc('pot', 1.0, this)" class="calc-btn-pot p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-lime-700 text-white border-lime-700 shadow-sm" data-val="1.0">Mittel (15-25cm)</button>
-                        <button type="button" onclick="setCalc('pot', 1.3, this)" class="calc-btn-pot p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="1.3">Groß (&gt;25cm)</button>
+            <!-- 1. GIESSRECHNER (Ausklappbar) -->
+            <div class="bg-white rounded-3xl shadow-md border border-lime-100 overflow-hidden">
+                <button onclick="toggleCalculator('waterCalcBody', 'waterToggleIcon')" class="w-full p-5 bg-sky-50 hover:bg-sky-100 flex justify-between items-center transition-colors">
+                    <span class="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-2">💧 Interaktiver Gießrechner <span class="text-[10px] bg-sky-200 text-sky-800 px-2 py-0.5 rounded-full">Klicken zum Öffnen</span></span>
+                    <span id="waterToggleIcon" class="text-sky-700 font-bold text-sm">▼</span>
+                </button>
+                <div id="waterCalcBody" class="p-6 space-y-4 hidden border-t border-sky-100">
+                    <div class="text-center bg-sky-50 p-4 rounded-2xl border border-sky-100">
+                        <p class="text-[11px] text-sky-600 uppercase font-bold tracking-wider">Empfohlenes Gießintervall</p>
+                        <h2 id="calcResultTitle" class="text-2xl font-extrabold text-sky-900 mt-0.5">Alle 7 Tage</h2>
+                        <p id="calcResultMl" class="text-xs text-gray-600 mt-0.5">ca. 150-300 ml pro Gießvorgang</p>
+                        <button onclick="applyWaterCalculator()" class="mt-3 px-4 py-2 bg-lime-600 hover:bg-lime-700 text-white text-xs font-bold rounded-xl shadow-sm">⬇️ Gieß-Wert übernehmen</button>
                     </div>
-                </div>
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border">
+
                     <div>
-                        <span class="text-xs font-bold block text-gray-800">🔥 Heizungsluft / Trockene Raumluft</span>
-                        <span class="text-[11px] text-gray-500">Erfordert häufigeres Gießen</span>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Pflanzentyp (Gießen)</label>
+                        <div class="grid grid-cols-3 gap-1.5" id="group-type">
+                            <button type="button" onclick="setWaterCalc('type', 7, this)" class="w-btn-type p-2 rounded-xl border text-[11px] font-semibold text-center bg-lime-700 text-white border-lime-700 shadow-sm" data-val="7">🌿 Tropisch</button>
+                            <button type="button" onclick="setWaterCalc('type', 10, this)" class="w-btn-type p-2 rounded-xl border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="10">🍃 Blatt</button>
+                            <button type="button" onclick="setWaterCalc('type', 21, this)" class="w-btn-type p-2 rounded-xl border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="21">🌵 Sukkulente</button>
+                        </div>
                     </div>
-                    <input type="checkbox" id="calcHeating" onchange="runCalculator()" class="w-5 h-5 accent-lime-600 cursor-pointer">
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Standort &amp; Saison</label>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <select id="waterLoc" onchange="runWaterCalculator()" class="p-2 border rounded-xl text-xs bg-white">
+                                <option value="0.8">☀️ Sonnig / Südfenster</option>
+                                <option value="1.0" selected>⛅ Hell / Normal</option>
+                                <option value="1.3">🌥️ Schattig / Nord</option>
+                            </select>
+                            <select id="waterSeason" onchange="runWaterCalculator()" class="p-2 border rounded-xl text-xs bg-white">
+                                <option value="0.8">☀️ Sommer (Wachstum)</option>
+                                <option value="1.0" selected>🌷 Frühling / Herbst</option>
+                                <option value="1.4">❄️ Winter (Ruhephase)</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- 2. DÜNGERECHNER (Ausklappbar) -->
+            <div class="bg-white rounded-3xl shadow-md border border-sky-100 overflow-hidden">
+                <button onclick="toggleCalculator('fertCalcBody', 'fertToggleIcon')" class="w-full p-5 bg-amber-50 hover:bg-amber-100 flex justify-between items-center transition-colors">
+                    <span class="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-2">🧪 Interaktiver Düngerechner <span class="text-[10px] bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">Klicken zum Öffnen</span></span>
+                    <span id="fertToggleIcon" class="text-amber-700 font-bold text-sm">▼</span>
+                </button>
+                <div id="fertCalcBody" class="p-6 space-y-4 hidden border-t border-amber-100">
+                    <div class="text-center bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                        <p class="text-[11px] text-amber-700 uppercase font-bold tracking-wider">Empfohlenes Düngeintervall</p>
+                        <h2 id="fertCalcResultTitle" class="text-2xl font-extrabold text-amber-900 mt-0.5">Alle 30 Tage</h2>
+                        <p id="fertCalcResultType" class="text-xs text-gray-600 mt-0.5">Düngerart: Flüssigdünger</p>
+                        <button onclick="applyFertCalculator()" class="mt-3 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-sm">⬇️ Dünge-Wert übernehmen</button>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Nährstoffbedarf (Düngen)</label>
+                        <div class="grid grid-cols-3 gap-1.5" id="group-ferttype">
+                            <button type="button" onclick="setFertCalc('demand', 14, 'Blühpflanzendünger', this)" class="f-btn-demand p-2 rounded-xl border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50">🌸 Starkzehrer (14T)</button>
+                            <button type="button" onclick="setFertCalc('demand', 30, 'Grünpflanzendünger', this)" class="f-btn-demand p-2 rounded-xl border text-[11px] font-semibold text-center bg-sky-700 text-white border-sky-700 shadow-sm">🌿 Normal (30T)</button>
+                            <button type="button" onclick="setFertCalc('demand', 60, 'Kakteendünger', this)" class="f-btn-demand p-2 rounded-xl border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50">🌵 Wenig (60T)</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Wachstumsphase &amp; Dünger</label>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <select id="fertSeason" onchange="runFertCalculator()" class="p-2 border rounded-xl text-xs bg-white">
+                                <option value="1.0" selected>☀️ Hauptwachstum (Standard)</option>
+                                <option value="2.0">❄️ Winterpause (Kein Düngen / selten)</option>
+                            </select>
+                            <select id="fertKind" onchange="runFertCalculator()" class="p-2 border rounded-xl text-xs bg-white">
+                                <option value="Flüssigdünger" selected>💧 Flüssigdünger</option>
+                                <option value="Stäbchen / Langzeit">🪵 Langzeit-Stäbchen</option>
+                                <option value="Orchideendünger">🌸 Spezieller Dünger</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- Erfassung: Neue Pflanze -->
@@ -197,39 +220,83 @@
 
     <!-- Script Logik -->
     <script>
-        // Gießrechner Zustand
-        let calcState = { type: 7, loc: 0.8, season: 0.8, pot: 1.0 };
-        let calculatedDaysFinal = 7;
-
-        function setCalc(group, val, btn) {
-            calcState[group] = val;
-            document.querySelectorAll(`.calc-btn-${group}`).forEach(b => {
-                b.className = `calc-btn-${group} p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-white text-gray-700 border-gray-200 hover:bg-gray-50`;
-            });
-            btn.className = `calc-btn-${group} p-3 rounded-2xl border text-xs font-semibold text-center transition-all bg-lime-700 text-white border-lime-700 shadow-sm`;
-            runCalculator();
+        function toggleCalculator(bodyId, iconId) {
+            let body = document.getElementById(bodyId);
+            let icon = document.getElementById(iconId);
+            if (body.classList.contains('hidden')) {
+                body.classList.remove('hidden');
+                icon.innerText = "▲";
+            } else {
+                body.classList.add('hidden');
+                icon.innerText = "▼";
+            }
         }
 
-        function runCalculator() {
-            let base = calcState.type;
-            let mult = calcState.loc * calcState.season * calcState.pot;
-            if (document.getElementById('calcHeating').checked) mult *= 0.85;
+        let waterState = { type: 7 };
+        let calculatedWaterDaysFinal = 7;
 
-            let days = Math.round(base * mult);
+        let fertState = { baseDays: 30, typeName: "Flüssigdünger" };
+        let calculatedFertDaysFinal = 30;
+        let calculatedFertTypeFinal = "Flüssigdünger";
+
+        function setWaterCalc(group, val, btn) {
+            waterState[group] = val;
+            document.querySelectorAll(`.w-btn-${group}`).forEach(b => {
+                b.className = `w-btn-${group} p-2 rounded-xl border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50`;
+            });
+            btn.className = `w-btn-${group} p-2 rounded-xl border text-[11px] font-semibold text-center bg-lime-700 text-white border-lime-700 shadow-sm`;
+            runWaterCalculator();
+        }
+
+        function runWaterCalculator() {
+            let base = waterState.type;
+            let locMult = parseFloat(document.getElementById('waterLoc').value);
+            let seasonMult = parseFloat(document.getElementById('waterSeason').value);
+
+            let days = Math.round(base * locMult * seasonMult);
             if (days < 2) days = 2;
-            calculatedDaysFinal = days;
+            calculatedWaterDaysFinal = days;
 
             let mlText = days <= 5 ? "ca. 250-400 ml" : (days <= 12 ? "ca. 150-300 ml" : "ca. 100-200 ml");
             document.getElementById('calcResultTitle').innerText = `Alle ${days} Tage`;
             document.getElementById('calcResultMl').innerText = mlText + " pro Gießvorgang";
         }
 
-        function applyCalculatorResult() {
-            document.getElementById('plantInterval').value = calculatedDaysFinal;
-            alert(`Gieß-Intervall von ${calculatedDaysFinal} Tagen in das Formular übernommen!`);
+        function applyWaterCalculator() {
+            document.getElementById('plantInterval').value = calculatedWaterDaysFinal;
+            alert(`Gieß-Intervall von ${calculatedWaterDaysFinal} Tagen übernommen!`);
         }
 
-        // Integrierte lokale Profi-Datenbank für beliebte Pflanzen
+        function setFertCalc(group, daysVal, nameVal, btn) {
+            fertState.baseDays = daysVal;
+            fertState.typeName = nameVal;
+            document.querySelectorAll(`.f-btn-${group}`).forEach(b => {
+                b.className = `f-btn-${group} p-2 rounded-xl border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50`;
+            });
+            btn.className = `f-btn-${group} p-2 rounded-xl border text-[11px] font-semibold text-center bg-sky-700 text-white border-sky-700 shadow-sm`;
+            runFertCalculator();
+        }
+
+        function runFertCalculator() {
+            let base = fertState.baseDays;
+            let seasonMult = parseFloat(document.getElementById('fertSeason').value);
+            let kind = document.getElementById('fertKind').value;
+
+            let days = Math.round(base * seasonMult);
+            if (seasonMult > 1.5) days = 120;
+            calculatedFertDaysFinal = days;
+            calculatedFertTypeFinal = kind;
+
+            document.getElementById('fertCalcResultTitle').innerText = `Alle ${days} Tage`;
+            document.getElementById('fertCalcResultType').innerText = `Düngerart: ${kind}`;
+        }
+
+        function applyFertCalculator() {
+            document.getElementById('plantFertInterval').value = calculatedFertDaysFinal;
+            document.getElementById('plantFertType').value = calculatedFertTypeFinal;
+            alert(`Dünge-Intervall (${calculatedFertDaysFinal} Tage) und Düngerart übernommen!`);
+        }
+
         const PLANT_DB = {
             "monstera": { interval: 10, fertInterval: 30, fertType: "Grünpflanzendünger", location: "Hell bis halbschattig, keine direkte Sonne", note: "Erst gießen, wenn die obersten Zentimeter Erde trocken sind." },
             "orchidee": { interval: 10, fertInterval: 21, fertType: "Orchideendünger", location: "Heller Standort ohne direkte Mittagssonne", note: "Staunässe unbedingt vermeiden, am besten tauchen statt gießen." },
@@ -254,7 +321,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('plantLastWatered').valueAsDate = new Date();
             document.getElementById('plantLastFertilized').valueAsDate = new Date();
-            runCalculator();
+            runWaterCalculator();
+            runFertCalculator();
             renderApp();
         });
 
@@ -307,26 +375,14 @@
                 .then(data => {
                     if (data.extract) {
                         let text = data.extract;
-                        let textLower = text.toLowerCase();
-
-                        let interval = calculatedDaysFinal;
-                        let fertInterval = 30;
-                        let fertType = "Flüssigdünger (Standard)";
-                        let standort = "Hell bis halbschattig";
-
-                        document.getElementById('plantInterval').value = interval;
-                        document.getElementById('plantFertInterval').value = fertInterval;
-                        document.getElementById('plantFertType').value = fertType;
+                        document.getElementById('plantInterval').value = calculatedWaterDaysFinal;
+                        document.getElementById('plantFertInterval').value = calculatedFertDaysFinal;
+                        document.getElementById('plantFertType').value = calculatedFertTypeFinal;
                         if(!document.getElementById('plantLocation').value) {
-                            document.getElementById('plantLocation').value = standort;
+                            document.getElementById('plantLocation').value = "Hell bis halbschattig";
                         }
-
-                        document.getElementById('plantNote').value = 
-                            `📌 Standort: ${standort}\n` +
-                            `💧 Wikipedia-Info: ${text}\n` +
-                            `🌱 Dünger: Alle ${fertInterval} Tage (${fertType})`;
-
-                        alert("Wikipedia-Daten erfolgreich analysiert!");
+                        document.getElementById('plantNote').value = `📌 Wikipedia-Info: ${text}`;
+                        alert("Wikipedia-Daten erfolgreich geladen!");
                     } else {
                         alert("Keine Wikipedia-Zusammenfassung gefunden.");
                     }
@@ -340,9 +396,9 @@
             const name = document.getElementById('plantName').value.trim();
             const species = document.getElementById('plantSpecies').value.trim();
             const location = document.getElementById('plantLocation').value.trim();
-            const interval = parseInt(document.getElementById('plantInterval').value) || calculatedDaysFinal;
-            const fertInterval = parseInt(document.getElementById('plantFertInterval').value) || 30;
-            const fertType = document.getElementById('plantFertType').value.trim();
+            const interval = parseInt(document.getElementById('plantInterval').value) || calculatedWaterDaysFinal;
+            const fertInterval = parseInt(document.getElementById('plantFertInterval').value) || calculatedFertDaysFinal;
+            const fertType = document.getElementById('plantFertType').value.trim() || calculatedFertTypeFinal;
             const lastWatered = document.getElementById('plantLastWatered').value;
             const lastFertilized = document.getElementById('plantLastFertilized').value || lastWatered;
             const note = document.getElementById('plantNote').value.trim();
