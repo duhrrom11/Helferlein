@@ -41,11 +41,11 @@
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">🛠️</div>
-                <div><p class="text-xs text-gray-500">Wartungs- & Tank-Einträge</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500">Einträge (gefiltert)</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
-                <div><p class="text-xs text-gray-500">Gesamtkosten</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
+                <div><p class="text-xs text-gray-500">Gesamtkosten (gefiltert)</p><h3 id="statCosts" class="text-lg font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -339,10 +339,6 @@
             const selectedFilter = document.getElementById('filterCarSelect').value;
 
             document.getElementById('statCars').innerText = data.cars.length;
-            document.getElementById('statEvents').innerText = data.events.length;
-            
-            let totalCosts = data.events.reduce((sum, e) => sum + (e.cost || 0), 0);
-            document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (data.cars.length === 0) {
                 carsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Fahrzeuge erfasst.</p>`;
@@ -361,10 +357,16 @@
                 `).join('');
             }
 
+            // Filter auf gefilterte Events anwenden
             let filteredEvents = data.events;
             if (selectedFilter !== "") {
                 filteredEvents = filteredEvents.filter(e => e.carId === parseInt(selectedFilter));
             }
+
+            // Dashboard Statistiken basierend auf den gefilterten Events aktualisieren
+            document.getElementById('statEvents').innerText = filteredEvents.length;
+            let totalCosts = filteredEvents.reduce((sum, e) => sum + (e.cost || 0), 0);
+            document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (filteredEvents.length === 0) {
                 eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge für diesen Filter erfasst.</p>`;
