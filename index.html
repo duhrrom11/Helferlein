@@ -234,4 +234,173 @@
 
         let deviceId = localStorage.getItem('hub_device_id');
         if (!deviceId) {
-            deviceId = 'device_' + Math.random().toStri
+            deviceId = 'device_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+            localStorage.setItem('hub_device_id', deviceId);
+        }
+
+        async function syncWithCloudPull() {
+            if (!supabaseClient) return;
+            try {
+                const { data } = await supabaseClient
+                    .from('app_sync')
+                    .select('data')
+                    .eq('device_id', deviceId)
+                    .single();
+
+                if (data && data.data) {
+                    for (let key in data.data) {
+                        localStorage.setItem(key, data.data[key]);
+                    }
+                    loadStats();
+                }
+            } catch (e) {
+                console.log("Cloud Pull Info: Noch keine Daten oder offline.");
+            }
+        }
+
+        async function syncWithCloudPush() {
+            if (!supabaseClient) return;
+            try {
+                let globalBackup = {};
+                for (let i = 0; i < localStorage.length; i++) {
+                    let key = localStorage.key(i);
+                    globalBackup[key] = localStorage.getItem(key);
+                }
+
+                await supabaseClient
+                    .from('app_sync')
+                    .upsert({ device_id: deviceId, data: globalBackup, updated_at: new Date() });
+            } catch (e) {
+                console.log("Cloud Push Info: Konnte nicht speichern.");
+            }
+        }
+
+        function openSyncModal() {
+            alert("Modal wird geöffnet!"); // Visueller Diagnose-Test
+            const modal = document.getElementById('syncModal');
+            const disp = document.getElementById('deviceIdDisplay');
+            if (disp) disp.innerText = deviceId;
+            if (modal) {
+                modal.style.display = 'flex';
+            } else {
+                alert("Modal-Element nicht gefunden!");
+            }
+        }
+
+        function closeSyncModal() {
+            const modal = document.getElementById('syncModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+
+            await syncWithCloudPull();
+            loadStats();
+        });
+
+        function filterTools() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            const cards = document.querySelectorAll('.tool-card');
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name');
+                if (name.includes(query) || card.innerText.toLowerCase().includes(query)) {
+                    card.style.display = "flex";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
+        function loadStats() {
+            try {
+                const setStat = (id, text) => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerText = text;
+                };
+
+                const kassenbonData = JSON.parse(localStorage.getItem('kassenbon_data')) || { items: [] };
+                setStat('stats-kassenbon', `${kassenbonData.items.length} Belege gespeichert`);
+
+                const kistenData = JSON.parse(localStorage.getItem('kisten_data')) || { boxes: [] };
+                setStat('stats-kisten', `${kistenData.boxes.length} Kisten im Bestand`);
+
+                const wgData = JSON.parse(localStorage.getItem('wg_kasse_data')) || { expenses: [] };
+                setStat('stats-wg-kasse', `${wgData.expenses.length} Ausgaben erfasst`);
+
+                const notizenData = JSON.parse(localStorage.getItem('secure_notes')) || { notes: [] };
+                setStat('stats-notizen', `${notizenData.notes.length} Notizen gesichert`);
+
+                const kfzData = JSON.parse(localStorage.getItem('kfz_pass')) || { vehicles: [] };
+                setStat('stats-kfz', `${kfzData.vehicles.length} Fahrzeuge aktiv`);
+
+                const haustierData = JSON.parse(localStorage.getItem('haustier_pass')) || { pets: [] };
+                setStat('stats-haustier', `${haustierData.pets.length} Haustiere erfasst`);
+
+                const parkenData = JSON.parse(localStorage.getItem('parken_data')) || { active: null };
+                setStat('stats-parken', parkenData.active ? "Aktiver Park-Timer" : "Kein aktives Ticket");
+
+                const verleihData = JSON.parse(localStorage.getItem('verleih_pass')) || { items: [] };
+                setStat('stats-verleih', `${verleihData.items.length} Verleih-Objekte`);
+
+                const pflanzenData = JSON.parse(localStorage.getItem('pflanzen_pass')) || { plants: [] };
+                setStat('stats-pflanzen', `${pflanzenData.plants.length} Pflanzen im Bestand`);
+
+                const energieData = JSON.parse(localStorage.getItem('energie_tracker_pro')) || { readings: [] };
+                setStat('stats-energie', `${energieData.readings.length} Ablesungen erfasst`);
+            } catch(e) {
+                console.log("Fehler beim Laden der Stats", e);
+            }
+        }
+
+        function exportGlobalBackup() {
+            let globalBackup = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                globalBackup[key] = localStorage.getItem(key);
+            }
+            let blob = new Blob([JSON.stringify(globalBackup)], { type: 'application/json' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `alltagshilfe-komplett-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        async function importGlobalBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    for (let key in parsed) {
+                        localStorage.setItem(key, parsed[key]);
+                    }
+                    loadStats();
+                    await syncWithCloudPush();
+                    alert("Komplettes System-Backup erfolgreich eingespielt & in Cloud synchronisiert!");
+                } catch (err) {
+                    alert("Fehler beim Importieren der Backup-Datei.");
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
