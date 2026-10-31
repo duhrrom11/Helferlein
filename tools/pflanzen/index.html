@@ -25,7 +25,7 @@
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
             
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                <button id="pushGlobalBtn" onclick="togglePushNotifications()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors">🔔 Push aktivieren</button>
+                <button id="pushGlobalBtn" onclick="togglePushNotifications()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors">🔔 Push Nachrichten aktivieren</button>
                 <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF-Report</button>
                 <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
                 <label class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
@@ -230,11 +230,11 @@
             const pushEnabled = localStorage.getItem('push_enabled') === 'true' && Notification.permission === 'granted';
 
             if (pushEnabled) {
-                btn.innerText = "🔔 Push deaktivieren";
-                btn.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors";
-            } else {
-                btn.innerText = "🔔 Push aktivieren";
+                btn.innerText = "🔔 Push Nachrichten deaktivieren";
                 btn.className = "px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors";
+            } else {
+                btn.innerText = "🔔 Push Nachrichten aktivieren";
+                btn.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors";
             }
         }
 
