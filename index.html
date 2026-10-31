@@ -200,7 +200,7 @@
     </main>
 
     <!-- SYNC MODAL -->
-    <div id="syncModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div id="syncModal" style="display: none;" class="fixed inset-0 bg-black/50 items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl max-w-lg w-full shadow-xl space-y-4 border dark:border-slate-800">
             <h3 class="text-lg font-bold text-gray-900 dark:text-white">☁️ Cloud Synchronisation</h3>
             <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
@@ -220,7 +220,6 @@
 
     <!-- Script Logik -->
     <script>
-        // Supabase Zugangsdaten
         const SUPABASE_URL = 'https://tztinaiwdrtvpwpupnqu.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_EeCxfgWQTUp5W1Yj-HyFJw_2XxtRfLE';
 
@@ -233,6 +232,6 @@
             console.log("Supabase Init Fehler:", err);
         }
 
-        // Anonyme Geräte-ID generieren oder laden
         let deviceId = localStorage.getItem('hub_device_id');
-        if (
+        if (!deviceId) {
+            deviceId = 'device_' + Math.random().toStri
