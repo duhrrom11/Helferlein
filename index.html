@@ -20,9 +20,9 @@
                 <p class="text-sm md:text-base text-slate-300 mt-1">10 professionelle, offline-fähige Pro-Tools für dein Tablet</p>
             </div>
 
-            <!-- Top Controls (Flexbox statt absolut, damit absolut nichts überlappt) -->
+            <!-- Top Controls -->
             <div class="flex flex-wrap items-center gap-2">
-                <button type="button" id="syncBtn" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl shadow-sm text-white flex items-center gap-1 cursor-pointer">☁️ Sync &amp; Status</button>
+                <button type="button" onclick="openSyncModal()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl shadow-sm text-white flex items-center gap-1 cursor-pointer">☁️ Sync &amp; Status</button>
                 <button type="button" onclick="exportGlobalBackup()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl shadow-sm border border-slate-700 cursor-pointer">💾 Backup</button>
                 <label class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl shadow-sm border border-slate-700 cursor-pointer">
                     📂 Restore <input type="file" accept=".json" onchange="importGlobalBackup(event)" class="hidden">
@@ -221,4 +221,5 @@
                     <label class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-center cursor-pointer">
                         📂 Backup einlesen
                         <input type="file" accept=".json" onchange="importGlobalBackupAndClose(event)" class="hidden">
-       
+                    </label>
+                </div
