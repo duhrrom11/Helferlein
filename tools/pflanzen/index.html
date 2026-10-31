@@ -14,7 +14,7 @@
     <!-- Header -->
     <header class="bg-lime-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🌱 Pflanzen- & Garten-Pflege-Pass Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Gieß-Timer, Wikipedia-Autofetch, Kalender-Export & Pflanzen-Zentrale</p>
+        <p class="text-sm opacity-90 mt-1">Smartes Wikipedia-Autofetch, Gieß- & Dünge-Timer, Kalender-Export</p>
     </header>
 
     <!-- Main Content -->
@@ -51,30 +51,44 @@
 
         <!-- Erfassung: Neue Pflanze -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-            <h2 class="text-lg font-bold">🌿 Neue Pflanze erfassen</h2>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <h2 class="text-lg font-bold">🌿 Neue Pflanze erfassen</h2>
+                <button onclick="fetchWikipediaData()" class="px-4 py-2 bg-sky-50 text-sky-600 hover:bg-sky-100 rounded-xl text-xs font-bold border border-sky-200 shadow-sm">🤖 Wikipedia-Pflege automatisch laden</button>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input type="text" id="plantName" placeholder="Pflanzenname (z.B. Monstera im Flur)" class="p-3 border rounded-xl text-sm">
                 <input type="text" id="plantSpecies" placeholder="Pflanzenart (z.B. Monstera deliciosa)" class="p-3 border rounded-xl text-sm">
-                <input type="text" id="plantLocation" placeholder="Standort (z.B. Wohnzimmer Südseite)" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="plantLocation" placeholder="Standort (z.B. Wohnzimmer Hell)" class="p-3 border rounded-xl text-sm">
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Intervall (in Tagen):</label>
-                    <input type="number" id="plantInterval" value="7" class="w-full p-3 border rounded-xl text-sm">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Intervall (Tage):</label>
+                    <input type="number" id="plantInterval" placeholder="z.B. 7" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Dünge-Intervall (Tage):</label>
+                    <input type="number" id="plantFertInterval" placeholder="z.B. 30" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Düngerart:</label>
+                    <input type="text" id="plantFertType" placeholder="z.B. Flüssigdünger" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Gießen:</label>
                     <input type="date" id="plantLastWatered" class="w-full p-3 border rounded-xl text-sm">
                 </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <textarea id="plantNote" placeholder="Wichtige Anmerkungen &amp; Pflegehinweise..." class="w-full p-3 border rounded-xl text-sm h-20 resize-none"></textarea>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Pflanzenfoto:</label>
                     <input type="file" id="plantPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-lime-50 file:text-lime-700">
                 </div>
             </div>
-            <div class="flex gap-2">
-                <input type="text" id="plantNote" placeholder="Spezielle Pflegenotiz (oder automatisch via Wikipedia laden)" class="w-full p-3 border rounded-xl text-sm">
-                <button onclick="fetchWikipediaSummary()" class="px-4 py-2 bg-sky-50 text-sky-600 hover:bg-sky-100 rounded-xl text-xs font-bold whitespace-nowrap border border-sky-200" title="Wikipedia-Pflegehinweise automatisch abrufen">🤖 Wikipedia laden</button>
-            </div>
+
             <button onclick="savePlant()" class="w-full bg-lime-600 hover:bg-lime-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Pflanze speichern</button>
         </div>
 
@@ -89,17 +103,23 @@
 
     <!-- MODAL: Bearbeiten -->
     <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-xl space-y-4">
             <h3 class="text-lg font-bold">Pflanze bearbeiten</h3>
             <input type="hidden" id="editId">
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Name:</label><input type="text" id="editName" class="w-full p-3 border rounded-xl text-sm"></div>
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Art / Sorte:</label><input type="text" id="editSpecies" class="w-full p-3 border rounded-xl text-sm"></div>
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Standort:</label><input type="text" id="editLocation" class="w-full p-3 border rounded-xl text-sm"></div>
             <div class="grid grid-cols-2 gap-2">
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Intervall (Tage):</label><input type="number" id="editInterval" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Name:</label><input type="text" id="editName" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Art / Sorte:</label><input type="text" id="editSpecies" class="w-full p-3 border rounded-xl text-sm"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Standort:</label><input type="text" id="editLocation" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Tage:</label><input type="number" id="editInterval" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Dünge-Tage:</label><input type="number" id="editFertInterval" class="w-full p-3 border rounded-xl text-sm"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Düngerart:</label><input type="text" id="editFertType" class="w-full p-3 border rounded-xl text-sm"></div>
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Gießen:</label><input type="date" id="editLastWatered" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Notiz:</label><input type="text" id="editNote" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Anmerkungen:</label><textarea id="editNote" class="w-full p-3 border rounded-xl text-sm h-20 resize-none"></textarea></div>
             <div class="flex justify-end space-x-2 pt-2">
                 <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
                 <button onclick="updatePlant()" class="px-5 py-2 bg-lime-600 text-white rounded-xl text-sm font-bold">Speichern</button>
@@ -126,7 +146,8 @@
             localStorage.setItem('pflanzen_pass', JSON.stringify(data));
         }
 
-        function fetchWikipediaSummary() {
+        // Smart Wikipedia Autofetch & Parsing
+        function fetchWikipediaData() {
             const speciesInput = document.getElementById('plantSpecies').value.trim();
             const nameInput = document.getElementById('plantName').value.trim();
             const query = speciesInput || nameInput;
@@ -143,13 +164,50 @@
                 })
                 .then(data => {
                     if (data.extract) {
-                        document.getElementById('plantNote').value = data.extract;
+                        let text = data.extract;
+                        let textLower = text.toLowerCase();
+
+                        // Intelligente Extraktion für Gieß-Intervall
+                        let interval = 7; // Standard
+                        if (textLower.includes('wöchentlich') || textLower.includes('jede woche')) interval = 7;
+                        else if (textLower.includes('alle zwei wochen') || textLower.includes('14 tage')) interval = 14;
+                        else if (textLower.includes('monatlich')) interval = 30;
+                        else if (textLower.includes('täglich')) interval = 1;
+                        else {
+                            let match = textLower.match(/alle\s+(\d+)\s+tage/);
+                            if (match) interval = parseInt(match[1]);
+                        }
+
+                        // Standort-Erkennung
+                        let standort = "Hell bis halbschattig, keine direkte Mittagssonne";
+                        if (textLower.includes('sonnig')) standort = "Sonniger Standort";
+                        if (textLower.includes('schatten') || textLower.includes('schattig')) standort = "Schattiger / kühler Standort";
+
+                        // Dünger-Empfehlung
+                        let fertType = "Flüssigdünger (Standard)";
+                        if (textLower.includes('kaktus') || textLower.includes('sukkulent')) fertType = "Kakteendünger";
+                        else if (textLower.includes('orchideen')) fertType = "Orchideendünger";
+
+                        document.getElementById('plantInterval').value = interval;
+                        document.getElementById('plantFertInterval').value = 30;
+                        document.getElementById('plantFertType').value = fertType;
+                        if(!document.getElementById('plantLocation').value) {
+                            document.getElementById('plantLocation').value = standort;
+                        }
+
+                        // Strukturierte Notiz erstellen
+                        document.getElementById('plantNote').value = 
+                            `📌 Standort: ${standort}\n` +
+                            `💧 Pflege-Info: ${text}\n` +
+                            `🌱 Dünger: Alle 30 Tage (${fertType})`;
+
+                        alert("Wikipedia-Daten erfolgreich analysiert und eingetragen!");
                     } else {
                         alert("Keine Wikipedia-Zusammenfassung gefunden.");
                     }
                 })
                 .catch(error => {
-                    alert("Konnte keine Wikipedia-Daten abrufen. Versuche einen anderen Suchbegriff.");
+                    alert("Konnte keine Wikipedia-Daten abrufen. Bitte manuell eintragen.");
                 });
         }
 
@@ -158,6 +216,8 @@
             const species = document.getElementById('plantSpecies').value.trim();
             const location = document.getElementById('plantLocation').value.trim();
             const interval = parseInt(document.getElementById('plantInterval').value) || 7;
+            const fertInterval = parseInt(document.getElementById('plantFertInterval').value) || 30;
+            const fertType = document.getElementById('plantFertType').value.trim();
             const lastWatered = document.getElementById('plantLastWatered').value;
             const note = document.getElementById('plantNote').value.trim();
             const photoInput = document.getElementById('plantPhotoInput');
@@ -166,10 +226,10 @@
 
             if (photoInput.files && photoInput.files[0]) {
                 compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storePlant(name, species, location, interval, lastWatered, note, compressedPhoto);
+                    storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, note, compressedPhoto);
                 });
             } else {
-                storePlant(name, species, location, interval, lastWatered, note, "");
+                storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, note, "");
             }
         }
 
@@ -199,15 +259,17 @@
             reader.readAsDataURL(file);
         }
 
-        function storePlant(name, species, location, interval, lastWatered, note, photo) {
+        function storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, note, photo) {
             let data = getData();
-            data.plants.push({ id: Date.now(), name, species, location, interval, lastWatered, note, photo });
+            data.plants.push({ id: Date.now(), name, species, location, interval, fertInterval, fertType, lastWatered, note, photo });
             saveData(data);
 
             document.getElementById('plantName').value = "";
             document.getElementById('plantSpecies').value = "";
             document.getElementById('plantLocation').value = "";
-            document.getElementById('plantInterval').value = "7";
+            document.getElementById('plantInterval').value = "";
+            document.getElementById('plantFertInterval').value = "";
+            document.getElementById('plantFertType').value = "";
             document.getElementById('plantNote').value = "";
             document.getElementById('plantPhotoInput').value = "";
             document.getElementById('plantLastWatered').valueAsDate = new Date();
@@ -243,6 +305,8 @@
             document.getElementById('editSpecies').value = p.species || "";
             document.getElementById('editLocation').value = p.location || "";
             document.getElementById('editInterval').value = p.interval;
+            document.getElementById('editFertInterval').value = p.fertInterval || 30;
+            document.getElementById('editFertType').value = p.fertType || "";
             document.getElementById('editLastWatered').value = p.lastWatered;
             document.getElementById('editNote').value = p.note || "";
             document.getElementById('editModal').classList.remove('hidden');
@@ -258,6 +322,8 @@
             const species = document.getElementById('editSpecies').value.trim();
             const location = document.getElementById('editLocation').value.trim();
             const interval = parseInt(document.getElementById('editInterval').value) || 7;
+            const fertInterval = parseInt(document.getElementById('editFertInterval').value) || 30;
+            const fertType = document.getElementById('editFertType').value.trim();
             const lastWatered = document.getElementById('editLastWatered').value;
             const note = document.getElementById('editNote').value.trim();
 
@@ -270,6 +336,8 @@
                 p.species = species;
                 p.location = location;
                 p.interval = interval;
+                p.fertInterval = fertInterval;
+                p.fertType = fertType;
                 p.lastWatered = lastWatered;
                 p.note = note;
                 saveData(data);
@@ -320,8 +388,6 @@
                         badge = `<span class="text-[10px] bg-lime-100 text-lime-800 font-semibold px-2 py-0.5 rounded-full">🟢 Nächste Bewässerung in ${diffDays} Tagen</span>`;
                     }
 
-                    let searchTerm = encodeURIComponent("Pflanzenpflege " + (p.species || p.name));
-                    let googleSearchUrl = `https://www.google.com/search?q=${searchTerm}`;
                     let nextIso = next.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
                     let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Pflanze gießen: ' + p.name)}&dates=${nextIso}/${nextIso}&details=${encodeURIComponent('Pflege-Erinnerung für ' + p.name)}`;
 
@@ -335,13 +401,16 @@
                                         ${p.species ? `<span class="text-xs text-lime-700 font-semibold">(${p.species})</span>` : ''}
                                         ${badge}
                                     </div>
-                                    <p class="text-xs text-gray-500 mt-1">${p.location ? 'Ort: ' + p.location + ' | ' : ''}Intervall: alle ${p.interval} Tage ${p.note ? '| ' + p.note : ''}</p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        ${p.location ? 'Ort: ' + p.location + ' | ' : ''}
+                                        Gießen: alle ${p.interval} Tage ${p.fertType ? '| Dünger: ' + p.fertType + ' (alle ' + (p.fertInterval || 30) + 'T)' : ''}
+                                    </p>
+                                    ${p.note ? `<p class="text-[11px] text-gray-400 mt-0.5 whitespace-pre-line">${p.note}</p>` : ''}
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
-                                <a href="${googleSearchUrl}" target="_blank" class="px-2.5 py-1.5 bg-sky-50 text-sky-600 hover:bg-sky-100 rounded-xl text-xs font-semibold" title="Google Pflegehinweise">🔍 Pflege</a>
-                                <a href="${googleCalUrl}" target="_blank" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
-                                <button onclick="downloadICS('${p.name}', '${next.toISOString().split('T')[0]}')" class="px-2 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>
+                                <a href="${googleCalUrl}" target="_blank" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
+                                <button onclick="downloadICS('${p.name}', '${next.toISOString().split('T')[0]}')" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>
                                 <button onclick="waterPlant(${p.id})" class="px-3 py-1.5 bg-lime-600 hover:bg-lime-700 text-white rounded-xl text-xs font-semibold">💧 Gegossen!</button>
                                 <button onclick="openEditModal(${p.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
                                 <button onclick="deletePlant(${p.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
@@ -377,7 +446,7 @@
             doc.setFont("helvetica", "normal");
             data.plants.forEach(p => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`- ${p.name} (${p.species || 'keine Art'}), Ort: ${p.location || 'k.A.'}, Intervall: ${p.interval} Tage`, 14, y);
+                doc.text(`- ${p.name} (${p.species || 'keine Art'}), Ort: ${p.location || 'k.A.'}, Gießen: ${p.interval} Tage`, 14, y);
                 y += 6;
             });
 
