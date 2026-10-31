@@ -317,7 +317,7 @@
             localStorage.setItem('pflanzen_pass', JSON.stringify(data));
         }
 
-        // Trefle API Integration (rein per API ohne Fallback)
+        // Robuste Trefle API Integration mit JSON-Fehlerprüfung
         async function fetchTrefleApiData() {
             const query = document.getElementById('plantSpecies').value.trim() || document.getElementById('plantName').value.trim();
             if (!query) {
@@ -332,7 +332,14 @@
             try {
                 let res = await fetch(proxyUrl);
                 if (!res.ok) throw new Error("Trefle API Verbindung fehlgeschlagen");
-                let json = await res.json();
+                
+                let textData = await res.text();
+                let json;
+                try {
+                    json = JSON.parse(textData);
+                } catch(e) {
+                    throw new Error("Der Proxy hat keine gültige JSON-Antwort geliefert (möglicherweise blockiert).");
+                }
                 
                 if (json.data && json.data.length > 0) {
                     let plant = json.data[0];
@@ -348,7 +355,7 @@
                     alert("Keine Treffer in der Trefle Datenbank gefunden.");
                 }
             } catch (err) {
-                alert("Fehler beim Abrufen der Trefle API. Bitte prüfen Sie die Verbindung oder den Token.");
+                alert("Fehler beim Abrufen der Trefle API: " + err.message);
                 console.error(err);
             }
         }
