@@ -14,8 +14,9 @@
 
     <!-- Header -->
     <header class="bg-slate-900 dark:bg-slate-900 text-white shadow-lg py-8 px-4 text-center relative border-b border-slate-800">
-        <!-- Top Controls (Dark Mode & Backups) -->
+        <!-- Top Controls (Dark Mode, Sync & Backups) -->
         <div class="absolute top-4 right-4 flex items-center gap-2">
+            <button onclick="openSyncModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl shadow-sm border border-indigo-500 text-white flex items-center gap-1" title="Geräte automatisch synchronisieren">☁️ Sync</button>
             <button onclick="exportGlobalBackup()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl shadow-sm border border-slate-700" title="Gesamtes System sichern">💾 Backup</button>
             <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl shadow-sm border border-slate-700 cursor-pointer" title="System wiederherstellen">
                 📂 Restore <input type="file" accept=".json" onchange="importGlobalBackup(event)" class="hidden">
@@ -24,7 +25,7 @@
         </div>
 
         <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mt-4 md:mt-0">🛠️ Alltagshelferlein Hub</h1>
-        <p class="text-sm md:text-base text-slate-300 mt-2">10 professionelle, offline-f&auml;hige Pro-Tools f&uuml;r dein Tablet</p>
+        <p class="text-sm md:text-base text-slate-300 mt-2">10 professionelle, offline-fähige Pro-Tools für dein Tablet</p>
         
         <!-- Suchleiste -->
         <div class="mt-6 max-w-md mx-auto px-4">
@@ -113,6 +114,94 @@
 
                 <!-- Tool 5 -->
                 <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="kfz" data-name="kfz auto reifenwechsel tüv öl tanken kosten reifentiefe">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🚗</div>
+                            <button onclick="toggleFavorite('kfz', event)" class="text-gray-300 dark:text-gray-600 hover:text-amber-500 text-lg fav-btn-kfz" title="Zu Favoriten hinzufügen">⭐</button>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">KFZ- & Reifen-Tracker Pro</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">TÜV, Reifentiefe, Tanken, Reparaturen, Kostenrechner und Kalender-Export für Autos.</p>
+                        <div id="stats-kfz" class="mt-3 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-red-600 dark:text-red-400">
+                        <a href="tools/kfz/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
+                    </div>
+                </div>
+
+                <!-- Tool 6 -->
+                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="haustier" data-name="haustier hund katze gesundheit impfpass tierarzt kosten">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🐾</div>
+                            <button onclick="toggleFavorite('haustier', event)" class="text-gray-300 dark:text-gray-600 hover:text-amber-500 text-lg fav-btn-haustier" title="Zu Favoriten hinzufügen">⭐</button>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Haustier-Gesundheits-Pass</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Impfungen, Vorsorge, Tierarzt-Termine, Foto-Avatare und Kostenrechner für Haustiere.</p>
+                        <div id="stats-haustier" class="mt-3 text-[11px] font-semibold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-teal-600 dark:text-teal-400">
+                        <a href="tools/haustier/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
+                    </div>
+                </div>
+
+                <!-- Tool 7 -->
+                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="parken" data-name="parken parkschein timer gps standort auto">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🅿️</div>
+                            <button onclick="toggleFavorite('parken', event)" class="text-gray-300 dark:text-gray-600 hover:text-amber-500 text-lg fav-btn-parken" title="Zu Favoriten hinzufügen">⭐</button>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Parkschein- & Park-Timer</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Visueller Countdown gegen Strafzettel, GPS-Standortspeicherung und Park-Historie.</p>
+                        <div id="stats-parken" class="mt-3 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-sky-600 dark:text-sky-400">
+                        <a href="tools/parken/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
+                    </div>
+                </div>
+
+                <!-- Tool 8 -->
+                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="verleih" data-name="leih verleih tracker werkzeug kaution whatsapp">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🤝</div>
+                            <button onclick="toggleFavorite('verleih', event)" class="text-gray-300 dark:text-gray-600 hover:text-amber-500 text-lg fav-btn-verleih" title="Zu Favoriten hinzufügen">⭐</button>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Leih- & Verleih-Tracker Pro</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Wer hat dein Werkzeug? Mit WhatsApp-Erinnerung, Kaution, Kontakten und QR-Codes.</p>
+                        <div id="stats-verleih" class="mt-3 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                        <a href="tools/verleih/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
+                    </div>
+                </div>
+
+                <!-- Tool 9 -->
+                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="pflanzen" data-name="pflanzen garten pflege pass gießen dünger">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-lime-50 dark:bg-lime-950/50 text-lime-600 dark:text-lime-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🌱</div>
+                            <button onclick="toggleFavorite('pflanzen', event)" class="text-gray-300 dark:text-gray-600 hover:text-amber-500 text-lg fav-btn-pflanzen" title="Zu Favoriten hinzufügen">⭐</button>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Pflanzen- & Garten-Pass</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Gieß-Intervall, Dünger-Historie, Standorte und Foto-Avatare für deine Zimmerpflanzen.</p>
+                        <div id="stats-pflanzen" class="mt-3 text-[11px] font-semibold text-lime-600 dark:text-lime-400 bg-lime-50 dark:bg-lime-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    </div>
+                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-lime-600 dark:text-lime-400">
+                        <a href="tools/pflanzen/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
+                    </div>
+                </div>
+
+                <!-- Tool 10 -->
+                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="energie" data-name="strom wasser gas zähler energie tracker verbrauch">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">⚡</div>
+                            <button onclick="toggleFavorite('energie', event)" class="text-gray-300 dark:text-gray-600 hover:text-amber-500 text-lg fav-btn-energie" title="Zu Favoriten hinzufügen">⭐</button>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Strom-, Wasser- & Gaszähler</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Monatliche Zählerstände erfassen, Verbrauch im Blick behalten und PDF für Versorger.</p>
+                        <div id="stats-energie" class="mt-3 text-[11px] font-semibold text-orange-600 dark:text-orange-400 bg-orangerd bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="kfz" data-name="kfz auto reifenwechsel tüv öl tanken kosten reifentiefe">
                     <div>
                         <div class="flex justify-between items-start mb-4">
                             <div class="w-12 h-12 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🚗</div>
