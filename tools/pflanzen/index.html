@@ -14,7 +14,7 @@
     <!-- Header -->
     <header class="bg-lime-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🌱 Pflanzen- & Garten-Pflege-Pass Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Gieß-Timer, Google-Pflegehinweise, Kalender-Export & Pflanzen-Zentrale</p>
+        <p class="text-sm opacity-90 mt-1">Gieß-Timer, Wikipedia-Autofetch, Kalender-Export & Pflanzen-Zentrale</p>
     </header>
 
     <!-- Main Content -->
@@ -54,7 +54,7 @@
             <h2 class="text-lg font-bold">🌿 Neue Pflanze erfassen</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input type="text" id="plantName" placeholder="Pflanzenname (z.B. Monstera im Flur)" class="p-3 border rounded-xl text-sm">
-                <input type="text" id="plantSpecies" placeholder="Pflanzenart (z.B. Monstera Deliciosa)" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="plantSpecies" placeholder="Pflanzenart (z.B. Monstera deliciosa)" class="p-3 border rounded-xl text-sm">
                 <input type="text" id="plantLocation" placeholder="Standort (z.B. Wohnzimmer Südseite)" class="p-3 border rounded-xl text-sm">
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -71,8 +71,11 @@
                     <input type="file" id="plantPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-lime-50 file:text-lime-700">
                 </div>
             </div>
-            <input type="text" id="plantNote" placeholder="Spezielle Pflegenotiz (z.B. Staunässe vermeiden, mäßig düngen)" class="w-full p-3 border rounded-xl text-sm">
-            <button onclick="savePlant()" class="w-full bg-lime-600 hover:bg-lime-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Pflanze speichern &amp; Pflegehinweise generieren</button>
+            <div class="flex gap-2">
+                <input type="text" id="plantNote" placeholder="Spezielle Pflegenotiz (oder automatisch via Wikipedia laden)" class="w-full p-3 border rounded-xl text-sm">
+                <button onclick="fetchWikipediaSummary()" class="px-4 py-2 bg-sky-50 text-sky-600 hover:bg-sky-100 rounded-xl text-xs font-bold whitespace-nowrap border border-sky-200" title="Wikipedia-Pflegehinweise automatisch abrufen">🤖 Wikipedia laden</button>
+            </div>
+            <button onclick="savePlant()" class="w-full bg-lime-600 hover:bg-lime-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Pflanze speichern</button>
         </div>
 
         <!-- Pflanzen-Liste -->
@@ -121,6 +124,33 @@
 
         function saveData(data) {
             localStorage.setItem('pflanzen_pass', JSON.stringify(data));
+        }
+
+        function fetchWikipediaSummary() {
+            const speciesInput = document.getElementById('plantSpecies').value.trim();
+            const nameInput = document.getElementById('plantName').value.trim();
+            const query = speciesInput || nameInput;
+            
+            if (!query) {
+                alert("Bitte zuerst Pflanzenart oder -name eingeben!");
+                return;
+            }
+
+            fetch(`https://de.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Nicht gefunden");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.extract) {
+                        document.getElementById('plantNote').value = data.extract;
+                    } else {
+                        alert("Keine Wikipedia-Zusammenfassung gefunden.");
+                    }
+                })
+                .catch(error => {
+                    alert("Konnte keine Wikipedia-Daten abrufen. Versuche einen anderen Suchbegriff.");
+                });
         }
 
         function savePlant() {
@@ -285,16 +315,13 @@
                         badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig vor ${Math.abs(diffDays)} Tag(en)!</span>`;
                     } else if (diffDays <= 2) {
                         dueSoonCount++;
-                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 Fällig in ${diffDay} Tag(en)</span>`;
+                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 Fällig in ${diffDays} Tag(en)</span>`;
                     } else {
                         badge = `<span class="text-[10px] bg-lime-100 text-lime-800 font-semibold px-2 py-0.5 rounded-full">🟢 Nächste Bewässerung in ${diffDays} Tagen</span>`;
                     }
 
-                    // Google Care Search URL
                     let searchTerm = encodeURIComponent("Pflanzenpflege " + (p.species || p.name));
                     let googleSearchUrl = `https://www.google.com/search?q=${searchTerm}`;
-
-                    // Google Calendar URL
                     let nextIso = next.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
                     let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Pflanze gießen: ' + p.name)}&dates=${nextIso}/${nextIso}&details=${encodeURIComponent('Pflege-Erinnerung für ' + p.name)}`;
 
@@ -390,4 +417,3 @@
     </script>
 </body>
 </html>
-
