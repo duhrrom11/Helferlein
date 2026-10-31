@@ -14,7 +14,7 @@
     <!-- Header -->
     <header class="bg-lime-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🌱 Pflanzen- & Garten-Pflege-Pass Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Smartes Smart-Autofetch, Ausklappbare Rechner, Gieß- & Dünge-Tracker</p>
+        <p class="text-sm opacity-90 mt-1">Trefle API Autofetch, Ausklappbare Rechner, Gieß- & Dünge-Tracker</p>
     </header>
 
     <!-- Main Content -->
@@ -52,7 +52,7 @@
         <!-- 🧮 AUSKLAPPBARE RECHNER (Gießen & Düngen) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <!-- 1. GIESSRECHNER (Ausklappbar) -->
+            <!-- 1. GIESSRECHNER -->
             <div class="bg-white rounded-3xl shadow-md border border-lime-100 overflow-hidden">
                 <button onclick="toggleCalculator('waterCalcBody', 'waterToggleIcon')" class="w-full p-5 bg-sky-50 hover:bg-sky-100 flex justify-between items-center transition-colors">
                     <span class="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-2">💧 Interaktiver Gießrechner <span class="text-[10px] bg-sky-200 text-sky-800 px-2 py-0.5 rounded-full">Klicken zum Öffnen</span></span>
@@ -93,7 +93,7 @@
                 </div>
             </div>
 
-            <!-- 2. DÜNGERECHNER (Ausklappbar) -->
+            <!-- 2. DÜNGERECHNER -->
             <div class="bg-white rounded-3xl shadow-md border border-sky-100 overflow-hidden">
                 <button onclick="toggleCalculator('fertCalcBody', 'fertToggleIcon')" class="w-full p-5 bg-amber-50 hover:bg-amber-100 flex justify-between items-center transition-colors">
                     <span class="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-2">🧪 Interaktiver Düngerechner <span class="text-[10px] bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">Klicken zum Öffnen</span></span>
@@ -139,7 +139,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <h2 class="text-lg font-bold">🌿 Neue Pflanze erfassen</h2>
-                <button onclick="autoFillPlantData()" class="px-4 py-2 bg-sky-50 text-sky-600 hover:bg-sky-100 rounded-xl text-xs font-bold border border-sky-200 shadow-sm">🤖 Smart-Autofetch (Profi-DB)</button>
+                <button onclick="fetchTrefleApiData()" class="px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold border border-emerald-200 shadow-sm" title="Trefle API abfragen">🌿 Trefle API Autofetch</button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -297,27 +297,6 @@
             alert(`Dünge-Intervall (${calculatedFertDaysFinal} Tage) und Düngerart übernommen!`);
         }
 
-        const PLANT_DB = {
-            "monstera": { interval: 10, fertInterval: 30, fertType: "Grünpflanzendünger", location: "Hell bis halbschattig, keine direkte Sonne", note: "Erst gießen, wenn die obersten Zentimeter Erde trocken sind." },
-            "orchidee": { interval: 10, fertInterval: 21, fertType: "Orchideendünger", location: "Heller Standort ohne direkte Mittagssonne", note: "Staunässe unbedingt vermeiden, am besten tauchen statt gießen." },
-            "bogenhanf": { interval: 21, fertInterval: 60, fertType: "Grünpflanzendünger", location: "Toleriert hellen bis schattigen Standort", note: "Extrem pflegeleicht, lieber zu wenig als zu viel gießen." },
-            "sansevieria": { interval: 21, fertInterval: 60, fertType: "Grünpflanzendünger", location: "Toleriert hellen bis schattigen Standort", note: "Extrem pflegeleicht, lieber zu wenig als zu viel gießen." },
-            "kaktus": { interval: 28, fertInterval: 60, fertType: "Kakteendünger", location: "Sehr sonnig und warm", note: "Im Winter fast gar nicht gießen (Ruhephase)." },
-            "sukkulente": { interval: 14, fertInterval: 45, fertType: "Kakteendünger", location: "Sonnig und hell", note: "Erde vor dem nächsten Gießen komplett austrocknen lassen." },
-            "efeutute": { interval: 7, fertInterval: 30, fertType: "Grünpflanzendünger", location: "Halbschattig bis hell, keine pralle Sonne", note: "Mag hohe Luftfeuchtigkeit und regelmäßiges Besprühen." },
-            "ficus": { interval: 10, fertInterval: 30, fertType: "Grünpflanzendünger", location: "Heller Platz ohne Zugluft", note: "Standortwechsel vermeiden, da sonst die Blätter abgeworfen werden." },
-            "aloe vera": { interval: 14, fertInterval: 60, fertType: "Kakteendünger", location: "Sonnig und warm", note: "Sehr genügsam, Erde gründlich austrocknen lassen." },
-            "yucca": { interval: 14, fertInterval: 45, fertType: "Grünpflanzendünger", location: "Sehr hell bis sonnig", note: "Mäßig gießen, Staunässe führt schnell zu Wurzelfäule." },
-            "zamioculcas": { interval: 14, fertInterval: 45, fertType: "Grünpflanzendünger", location: "Hell bis schattig", note: "Kommt sehr gut mit wenig Wasser und Licht aus (Glücksfeder)." },
-            "spatifolium": { interval: 5, fertInterval: 30, fertType: "Blühpflanzendünger", location: "Halbschattig, keine direkte Sonne", note: "Einblatt zeigt Wassermangel sofort durch hängende Blätter." },
-            "calathea": { interval: 7, fertInterval: 30, fertType: "Grünpflanzendünger", location: "Absonnig bis halbschattig, hohe Luftfeuchtigkeit", note: "Erde sollte stets leicht feucht, aber nie nass sein." },
-            "farn": { interval: 5, fertInterval: 21, fertType: "Grünpflanzendünger", location: "Schattig bis halbschattig, feuchtes Klima", note: "Regelmäßig mit kalkarmem Wasser besprühen." },
-            "lavendel": { interval: 10, fertInterval: 30, fertType: "Universaldünger", location: "Vollsonnig", note: "Bevorzugt kalkhaltige, durchlässige Erde." },
-            "tomate": { interval: 3, fertInterval: 14, fertType: "Tomatendünger", location: "Vollsonnig und windgeschützt", note: "Regelmäßig gießen, Blätter beim Gießen trocken halten." },
-            "hortensie": { interval: 4, fertInterval: 14, fertType: "Hortensiendünger", location: "Halbschattig bis schattig", note: "Benötigt extrem viel Wasser und saure Erde." },
-            "rosenfamilie": { interval: 7, fertInterval: 21, fertType: "Rosendünger", location: "Sonnig und luftig", note: "Regelmäßig düngen für üppige Blüten." }
-        };
-
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('plantLastWatered').valueAsDate = new Date();
             document.getElementById('plantLastFertilized').valueAsDate = new Date();
@@ -338,58 +317,40 @@
             localStorage.setItem('pflanzen_pass', JSON.stringify(data));
         }
 
-        function autoFillPlantData() {
-            const speciesInput = document.getElementById('plantSpecies').value.trim().toLowerCase();
-            const nameInput = document.getElementById('plantName').value.trim().toLowerCase();
-            
-            let foundKey = Object.keys(PLANT_DB).find(k => speciesInput.includes(k) || nameInput.includes(k));
-
-            if (foundKey) {
-                let p = PLANT_DB[foundKey];
-                document.getElementById('plantInterval').value = p.interval;
-                document.getElementById('plantFertInterval').value = p.fertInterval;
-                document.getElementById('plantFertType').value = p.fertType;
-                document.getElementById('plantLocation').value = p.location;
-                document.getElementById('plantNote').value = `📌 Standort: ${p.location}\n💡 Pflege: ${p.note}\n🌱 Dünger: Alle ${p.fertInterval} Tage (${p.fertType})`;
-                alert(`Erfolgreich aus Profi-Datenbank geladen: ${foundKey.toUpperCase()}!`);
-            } else {
-                fetchWikipediaData();
-            }
-        }
-
-        function fetchWikipediaData() {
-            const speciesInput = document.getElementById('plantSpecies').value.trim();
-            const nameInput = document.getElementById('plantName').value.trim();
-            const query = speciesInput || nameInput;
-            
+        // Trefle API Integration (rein per API ohne Fallback)
+        async function fetchTrefleApiData() {
+            const query = document.getElementById('plantSpecies').value.trim() || document.getElementById('plantName').value.trim();
             if (!query) {
                 alert("Bitte zuerst Pflanzenart oder -name eingeben!");
                 return;
             }
 
-            fetch(`https://de.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`)
-                .then(response => {
-                    if (!response.ok) throw new Error("Nicht gefunden");
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.extract) {
-                        let text = data.extract;
-                        document.getElementById('plantInterval').value = calculatedWaterDaysFinal;
-                        document.getElementById('plantFertInterval').value = calculatedFertDaysFinal;
-                        document.getElementById('plantFertType').value = calculatedFertTypeFinal;
-                        if(!document.getElementById('plantLocation').value) {
-                            document.getElementById('plantLocation').value = "Hell bis halbschattig";
-                        }
-                        document.getElementById('plantNote').value = `📌 Wikipedia-Info: ${text}`;
-                        alert("Wikipedia-Daten erfolgreich geladen!");
-                    } else {
-                        alert("Keine Wikipedia-Zusammenfassung gefunden.");
-                    }
-                })
-                .catch(error => {
-                    alert("Konnte keine Daten abrufen. Bitte Werte manuell eintragen.");
-                });
+            const trefleToken = "usr-bGcr4aCCO_nvwgd1RaUz1Eb7gCSlIJpcgWkeSxAi_gA"; 
+            const url = `https://trefle.io/api/v1/plants/search?token=${trefleToken}&q=${encodeURIComponent(query)}`;
+            const proxyUrl = `https://corsproxy.io/?` + encodeURIComponent(url);
+
+            try {
+                let res = await fetch(proxyUrl);
+                if (!res.ok) throw new Error("Trefle API Verbindung fehlgeschlagen");
+                let json = await res.json();
+                
+                if (json.data && json.data.length > 0) {
+                    let plant = json.data[0];
+                    document.getElementById('plantName').value = plant.common_name || plant.scientific_name;
+                    document.getElementById('plantSpecies').value = plant.scientific_name;
+                    document.getElementById('plantInterval').value = calculatedWaterDaysFinal;
+                    document.getElementById('plantFertInterval').value = calculatedFertDaysFinal;
+                    document.getElementById('plantFertType').value = calculatedFertTypeFinal;
+                    document.getElementById('plantLocation').value = "Hell bis halbschattig";
+                    document.getElementById('plantNote').value = `🌿 Trefle API Botanik-Daten:\nWissenschaftlich: ${plant.scientific_name}\nFamilie: ${plant.family || 'k.A.'}\nGattung: ${plant.genus || 'k.A.'}`;
+                    alert("Pflanzendaten erfolgreich von der Trefle API geladen!");
+                } else {
+                    alert("Keine Treffer in der Trefle Datenbank gefunden.");
+                }
+            } catch (err) {
+                alert("Fehler beim Abrufen der Trefle API. Bitte prüfen Sie die Verbindung oder den Token.");
+                console.error(err);
+            }
         }
 
         function savePlant() {
