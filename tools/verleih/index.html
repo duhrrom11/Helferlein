@@ -8,13 +8,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für PDF-Report -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- qrcodejs für QR-Codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
     <!-- Header -->
     <header class="bg-indigo-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🤝 Leih- & Verleih-Tracker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Behalte den Überblick, wer sich dein Zeug geliehen hat</p>
+        <p class="text-sm opacity-90 mt-1">Gegenstände, Kautionen, WhatsApp-Erinnerung & QR-Codes im Blick behalten</p>
     </header>
 
     <!-- Main Content -->
@@ -34,18 +36,22 @@
         </div>
 
         <!-- Dashboard Statistiken -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold">📦</div>
                 <div><p class="text-xs text-gray-500">Aktiv verliehen</p><h3 id="statActive" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-red-50 text-red-600 rounded-xl font-bold">⏰</div>
-                <div><p class="text-xs text-gray-500">Überfällig (&gt; 30 Tage)</p><h3 id="statOverdue" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500">Überfällig (&gt; 30T)</p><h3 id="statOverdue" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">✅</div>
-                <div><p class="text-xs text-gray-500">Bereits zurückerhalten</p><h3 id="statReturned" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500">Zurückerhalten</p><h3 id="statReturned" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">💶</div>
+                <div><p class="text-xs text-gray-500">Offene Kaution</p><h3 id="statDeposit" class="text-lg font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -55,20 +61,62 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <input type="text" id="itemTitle" placeholder="Gegenstand (z.B. Bohrhammer)" class="p-3 border rounded-xl text-sm">
                 <input type="text" id="itemPerson" placeholder="An wen? (z.B. Nachbar Müller)" class="p-3 border rounded-xl text-sm">
-                <input type="date" id="itemDate" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="itemPhone" placeholder="Telefonnummer (für WhatsApp, z.B. 0176...)" class="p-3 border rounded-xl text-sm">
             </div>
-            <input type="text" id="itemNote" placeholder="Notiz / Beschreibung (optional)" class="w-full p-3 border rounded-xl text-sm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input type="date" id="itemDate" class="p-3 border rounded-xl text-sm">
+                <input type="date" id="itemReturnDate" placeholder="Geplantes Rückgabedatum" class="p-3 border rounded-xl text-sm" title="Geplantes Rückgabedatum">
+                <input type="text" id="itemDeposit" placeholder="Kaution / Wert in € (optional)" class="p-3 border rounded-xl text-sm">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input type="text" id="itemNote" placeholder="Notiz / Beschreibung (optional)" class="p-3 border rounded-xl text-sm">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zustands-Foto (optional):</label>
+                    <input type="file" id="itemPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700">
+                </div>
+            </div>
             <button onclick="saveItem()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Verleih speichern</button>
         </div>
 
         <!-- Verleih-Liste -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h3 class="font-bold text-lg">📋 Aktuelle Verleih-Liste</h3>
+            <h3 class="font-bold text-lg">📋 Aktuelle Verleih-Zentrale</h3>
             <div id="itemsList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Keine verliehenen Gegenstände erfasst.</p>
             </div>
         </div>
     </main>
+
+    <!-- MODAL: QR Code Ansicht -->
+    <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+            <h3 id="qrTitle" class="font-bold text-lg text-indigo-800">QR-Code</h3>
+            <div id="qrcode" class="flex justify-center p-4 bg-gray-50 rounded-xl border"></div>
+            <p class="text-xs text-gray-500">Scannen, um Details aufzurufen.</p>
+            <button onclick="closeQrModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Bearbeiten -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
+            <h3 class="text-lg font-bold">Verleih-Eintrag bearbeiten</h3>
+            <input type="hidden" id="editId">
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Gegenstand:</label><input type="text" id="editTitle" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Ausleiher:</label><input type="text" id="editPerson" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Telefon (WhatsApp):</label><input type="text" id="editPhone" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Ausleihdatum:</label><input type="date" id="editDate" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Geplantes Rückgabedatum:</label><input type="date" id="editReturnDate" class="w-full p-3 border rounded-xl text-sm"></div>
+            </div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Kaution / Wert (€):</label><input type="text" id="editDeposit" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Notiz:</label><input type="text" id="editNote" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
+                <button onclick="updateItem()" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold">Speichern</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Script Logik -->
     <script>
@@ -92,18 +140,62 @@
         function saveItem() {
             const title = document.getElementById('itemTitle').value.trim();
             const person = document.getElementById('itemPerson').value.trim();
+            const phone = document.getElementById('itemPhone').value.trim();
             const date = document.getElementById('itemDate').value;
+            const returnDate = document.getElementById('itemReturnDate').value;
+            const deposit = parseFloat(document.getElementById('itemDeposit').value.replace(',', '.')) || 0;
             const note = document.getElementById('itemNote').value.trim();
+            const photoInput = document.getElementById('itemPhotoInput');
 
-            if (!title || !person || !date) return alert("Bitte Gegenstand, Person und Datum angeben!");
+            if (!title || !person || !date) return alert("Bitte Gegenstand, Person und Ausleihdatum angeben!");
 
+            if (photoInput.files && photoInput.files[0]) {
+                compressImage(photoInput.files[0], (compressedPhoto) => {
+                    storeData(title, person, phone, date, returnDate, deposit, note, compressedPhoto);
+                });
+            } else {
+                storeData(title, person, phone, date, returnDate, deposit, note, "");
+            }
+        }
+
+        function compressImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 300;
+                    const MAX_HEIGHT = 300;
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    callback(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function storeData(title, person, phone, date, returnDate, deposit, note, photo) {
             let data = getData();
-            data.items.push({ id: Date.now(), title, person, date, note, returned: false });
+            data.items.push({ id: Date.now(), title, person, phone, date, returnDate, deposit, note, photo, returned: false });
             saveData(data);
 
             document.getElementById('itemTitle').value = "";
             document.getElementById('itemPerson').value = "";
+            document.getElementById('itemPhone').value = "";
+            document.getElementById('itemDeposit').value = "";
             document.getElementById('itemNote').value = "";
+            document.getElementById('itemReturnDate').value = "";
+            document.getElementById('itemPhotoInput').value = "";
             document.getElementById('itemDate').valueAsDate = new Date();
             renderApp();
         }
@@ -126,6 +218,81 @@
             renderApp();
         }
 
+        function openEditModal(id) {
+            let data = getData();
+            let item = data.items.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('editId').value = item.id;
+            document.getElementById('editTitle').value = item.title;
+            document.getElementById('editPerson').value = item.person;
+            document.getElementById('editPhone').value = item.phone || "";
+            document.getElementById('editDate').value = item.date;
+            document.getElementById('editReturnDate').value = item.returnDate || "";
+            document.getElementById('editDeposit').value = item.deposit || "";
+            document.getElementById('editNote').value = item.note || "";
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        function updateItem() {
+            const id = parseInt(document.getElementById('editId').value);
+            const title = document.getElementById('editTitle').value.trim();
+            const person = document.getElementById('editPerson').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const date = document.getElementById('editDate').value;
+            const returnDate = document.getElementById('editReturnDate').value;
+            const deposit = parseFloat(document.getElementById('editDeposit').value.replace(',', '.')) || 0;
+            const note = document.getElementById('editNote').value.trim();
+
+            if (!title || !person || !date) return alert("Bitte Gegenstand, Person und Ausleihdatum angeben!");
+
+            let data = getData();
+            let item = data.items.find(i => i.id === id);
+            if (item) {
+                item.title = title;
+                item.person = person;
+                item.phone = phone;
+                item.date = date;
+                item.returnDate = returnDate;
+                item.deposit = deposit;
+                item.note = note;
+                saveData(data);
+            }
+            closeEditModal();
+            renderApp();
+        }
+
+        function showQrCode(title, person) {
+            document.getElementById('qrTitle').innerText = title + " (" + person + ")";
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: "Gegenstand: " + title + " | Verliehen an: " + person,
+                width: 180,
+                height: 180
+            });
+            document.getElementById('qrModal').classList.remove('hidden');
+        }
+
+        function closeQrModal() {
+            document.getElementById('qrModal').classList.add('hidden');
+        }
+
+        function downloadICS(title, dateStr, person) {
+            let d = new Date(dateStr);
+            let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
+            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Rückgabe: ${title} (${person})\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:Verleih-Rückgabe fällig\nEND:VEVENT\nEND:VCALENDAR`;
+            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `Rueckgabe_${title.replace(/\s+/g, '_')}.ics`;
+            a.click();
+        }
+
         function renderApp() {
             let data = getData();
             const container = document.getElementById('itemsList');
@@ -133,6 +300,7 @@
             let activeCount = data.items.filter(i => !i.returned).length;
             let returnedCount = data.items.filter(i => i.returned).length;
             let overdueCount = 0;
+            let totalDeposit = data.items.filter(i => !i.returned).reduce((sum, i) => sum + (i.deposit || 0), 0);
 
             const today = new Date();
 
@@ -148,25 +316,49 @@
                         badge = `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">✅ Zurückgegeben</span>`;
                     } else if (diff > 30) {
                         overdueCount++;
-                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig (${diff} Tage)</span>`;
+                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig (${diff}T)</span>`;
                     } else if (diff > 14) {
-                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 vor ${diff} Tagen</span>`;
+                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 vor ${diff}T</span>`;
                     } else {
-                        badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">🟢 vor ${diff} Tagen</span>`;
+                        badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">🟢 vor ${diff}T</span>`;
+                    }
+
+                    let whatsappBtn = "";
+                    if (i.phone && !i.returned) {
+                        let cleanPhone = i.phone.replace(/[^0-9+]/g, '');
+                        let msg = encodeURIComponent(`Hallo ${i.person}, du hast dir meinen Gegenstand "${i.title}" geliehen. Wollte kurz nachhören, wann du ihn zurückbringen kannst? Liebe Grüße!`);
+                        whatsappBtn = `<a href="https://wa.me/${cleanPhone}?text=${msg}" target="_blank" class="px-2.5 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-xl text-xs font-semibold" title="WhatsApp Erinnerung">💬 WhatsApp</a>`;
+                    }
+
+                    let calButtons = "";
+                    if (i.returnDate && !i.returned) {
+                        let rd = new Date(i.returnDate);
+                        let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Rückgabe: ' + i.title + ' (' + i.person + ')')}&dates=${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Verleih-Rückgabe fällig')}`;
+                        calButtons = `
+                            <a href="${googleCalUrl}" target="_blank" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
+                            <button onclick="downloadICS('${i.title}', '${i.returnDate}', '${i.person}')" class="px-2 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>
+                        `;
                     }
 
                     return `
-                        <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 ${i.returned ? 'opacity-60' : ''}">
-                            <div>
-                                <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                    <span class="text-xs font-bold text-gray-800">📦 ${i.title}</span>
-                                    <span class="text-xs text-indigo-600 font-semibold">→ ${i.person}</span>
-                                    ${badge}
+                        <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 ${i.returned ? 'opacity-60' : ''}">
+                            <div class="flex items-center space-x-3">
+                                ${i.photo ? `<img src="${i.photo}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="showQrCode('${i.title}', '${i.person}')">` : `<div onclick="showQrCode('${i.title}', '${i.person}')" class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer" title="QR-Code anzeigen">📱 QR</div>`}
+                                <div>
+                                    <div class="flex items-center space-x-2 flex-wrap gap-1">
+                                        <span class="text-xs font-bold text-gray-800">📦 ${i.title}</span>
+                                        <span class="text-xs text-indigo-600 font-semibold">→ ${i.person}</span>
+                                        ${badge}
+                                        ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">Kaution: ${i.deposit.toFixed(2).replace('.', ',')} €</span>` : ''}
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Ausleihe: ${d.toLocaleDateString('de-DE')} ${i.returnDate ? '| Rückgabe: ' + new Date(i.returnDate).toLocaleDateString('de-DE') : ''} ${i.note ? '| Notiz: ' + i.note : ''}</p>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1">Verliehen am: ${d.toLocaleDateString('de-DE')} ${i.note ? '| Notiz: ' + i.note : ''}</p>
                             </div>
-                            <div class="flex items-center gap-2 self-end sm:self-center">
+                            <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
+                                ${whatsappBtn}
+                                ${calButtons}
                                 <button onclick="toggleReturn(${i.id})" class="px-3 py-1.5 ${i.returned ? 'bg-gray-200 text-gray-700' : 'bg-green-600 text-white'} rounded-xl text-xs font-semibold">${i.returned ? 'Wieder ausleihen' : 'Zurück erhalten'}</button>
+                                <button onclick="openEditModal(${i.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
                                 <button onclick="deleteItem(${i.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
@@ -177,6 +369,7 @@
             document.getElementById('statActive').innerText = activeCount;
             document.getElementById('statOverdue').innerText = overdueCount;
             document.getElementById('statReturned').innerText = returnedCount;
+            document.getElementById('statDeposit').innerText = totalDeposit.toFixed(2).replace('.', ',') + ' €';
         }
 
         function exportPDF() {
@@ -186,14 +379,19 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
-            doc.text("Leih- & Verleih-Report", 14, 20);
+            doc.text("Leih- & Verleih-Report Pro", 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
             let y = 35;
+            let totalDeposit = data.items.filter(i => !i.returned).reduce((sum, i) => sum + (i.deposit || 0), 0);
             doc.setFont("helvetica", "bold");
+            doc.text(`Offene Kaution / Wert: ${totalDeposit.toFixed(2)} EUR`, 14, y);
+            y += 10;
+
+            doc.setFont("helvetica", "underline");
             doc.text("Verleih-Historie:", 14, y);
             y += 7;
 
@@ -201,11 +399,12 @@
             data.items.forEach(i => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let status = i.returned ? "[ZURÜCK]" : "[AKTIV]";
-                doc.text(`- ${status} ${i.title} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})`, 14, y);
+                let depText = i.deposit > 0 ? ` (Kaution: ${i.deposit.toFixed(2)} EUR)` : "";
+                doc.text(`- ${status} ${i.title} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 14, y);
                 y += 6;
             });
 
-            doc.save("verleih-report.pdf");
+            doc.save("verleih-report-pro.pdf");
         }
 
         function exportBackup() {
@@ -241,4 +440,3 @@
     </script>
 </body>
 </html>
-
