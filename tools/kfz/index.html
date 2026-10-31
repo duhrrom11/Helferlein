@@ -14,7 +14,7 @@
     <!-- Header -->
     <header class="bg-red-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🚗 KFZ- & Reifenwechsel-Tracker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">TÜV, Reifen, Wartung, Kosten & Fahrzeug-Zentrale</p>
+        <p class="text-sm opacity-90 mt-1">TÜV, Reifentiefe, Kostenrechner, Kalender-Export & Fahrzeug-Zentrale</p>
     </header>
 
     <!-- Main Content -->
@@ -41,7 +41,7 @@
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">🛠️</div>
-                <div><p class="text-xs text-gray-500">Wartungs-Einträge</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500">Wartungs- & Tank-Einträge</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
@@ -66,25 +66,30 @@
                 <button onclick="saveCar()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Fahrzeug speichern</button>
             </div>
 
-            <!-- 2. Wartung / Termin hinzufügen -->
+            <!-- 2. Wartung / Tanken / Reifen erfassen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-                <h2 class="text-lg font-bold">🛠️ 2. Wartung & Kosten erfassen</h2>
+                <h2 class="text-lg font-bold">🛠️ 2. Eintrag, Kosten & Reifentiefe</h2>
                 <select id="eventCarSelect" class="w-full p-3 border rounded-xl text-sm bg-white">
                     <option value="">-- Fahrzeug wählen --</option>
                 </select>
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="eventType" class="p-3 border rounded-xl text-sm bg-white">
+                    <select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="toggleTreadInput()">
                         <option value="TÜV / HU">🔍 TÜV / Hauptuntersuchung</option>
                         <option value="Inspektion">⚙️ Inspektion & Service</option>
                         <option value="Reifenwechsel">🛞 Reifenwechsel</option>
+                        <option value="Reifentiefe">📏 Reifentiefe-Check</option>
                         <option value="Ölwechsel">🛢️ Ölwechsel</option>
                         <option value="Reparatur">🔧 Reparatur</option>
+                        <option value="Tanken">⛽ Tanken / Kraftstoff</option>
                     </select>
                     <input type="date" id="eventDate" class="p-3 border rounded-xl text-sm">
                 </div>
-                <input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. TÜV neu, Sommerreifen)" class="w-full p-3 border rounded-xl text-sm">
-                <input type="text" id="eventCost" placeholder="Kosten in € (optional, z.B. 120.00)" class="w-full p-3 border rounded-xl text-sm">
-                <button onclick="saveEvent()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Wartung speichern</button>
+                <input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Sommerreifen montiert)" class="w-full p-3 border rounded-xl text-sm">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="eventCost" placeholder="Kosten in € (z.B. 45.00)" class="p-3 border rounded-xl text-sm">
+                    <input type="text" id="eventTread" placeholder="Profiltiefe in mm (z.B. 4.5)" class="p-3 border rounded-xl text-sm hidden">
+                </div>
+                <button onclick="saveEvent()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Eintrag speichern</button>
             </div>
         </div>
 
@@ -98,16 +103,16 @@
                 </div>
             </div>
 
-            <!-- Wartungs-Einträge mit Filter -->
+            <!-- Wartungs- & Kosten-Einträge mit Filter -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
-                    <h3 class="font-bold text-lg">📋 Wartung & Kosten</h3>
+                    <h3 class="font-bold text-lg">📋 Historie, Kosten & Kalender</h3>
                     <select id="filterCarSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
                         <option value="">Alle Fahrzeuge anzeigen</option>
                     </select>
                 </div>
                 <div id="eventsList" class="space-y-3">
-                    <p class="text-sm text-gray-400 text-center py-4">Keine Wartungen erfasst.</p>
+                    <p class="text-sm text-gray-400 text-center py-4">Keine Einträge erfasst.</p>
                 </div>
             </div>
         </div>
@@ -116,7 +121,7 @@
     <!-- MODAL: Eintrag Bearbeiten -->
     <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
-            <h3 class="text-lg font-bold">Wartung bearbeiten</h3>
+            <h3 class="text-lg font-bold">Eintrag bearbeiten</h3>
             <input type="hidden" id="editId">
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Bezeichnung:</label><input type="text" id="editTitle" class="w-full p-3 border rounded-xl text-sm"></div>
             <div>
@@ -125,12 +130,17 @@
                     <option value="TÜV / HU">🔍 TÜV / Hauptuntersuchung</option>
                     <option value="Inspektion">⚙️ Inspektion & Service</option>
                     <option value="Reifenwechsel">🛞 Reifenwechsel</option>
+                    <option value="Reifentiefe">📏 Reifentiefe-Check</option>
                     <option value="Ölwechsel">🛢️ Ölwechsel</option>
                     <option value="Reparatur">🔧 Reparatur</option>
+                    <option value="Tanken">⛽ Tanken / Kraftstoff</option>
                 </select>
             </div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Datum:</label><input type="date" id="editDate" class="w-full p-3 border rounded-xl text-sm"></div>
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Kosten (€):</label><input type="text" id="editCost" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Kosten (€):</label><input type="text" id="editCost" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Profiltiefe (mm):</label><input type="text" id="editTread" class="w-full p-3 border rounded-xl text-sm"></div>
+            </div>
             <div class="flex justify-end space-x-2 pt-2">
                 <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
                 <button onclick="updateEvent()" class="px-5 py-2 bg-red-600 text-white rounded-xl text-sm font-bold">Speichern</button>
@@ -155,6 +165,16 @@
 
         function saveData(data) {
             localStorage.setItem('kfz_tracker_pro', JSON.stringify(data));
+        }
+
+        function toggleTreadInput() {
+            const type = document.getElementById('eventType').value;
+            const treadInput = document.getElementById('eventTread');
+            if (type === 'Reifentiefe' || type === 'Reifenwechsel') {
+                treadInput.classList.remove('hidden');
+            } else {
+                treadInput.classList.add('hidden');
+            }
         }
 
         function saveCar() {
@@ -217,7 +237,7 @@
         }
 
         function deleteCar(id) {
-            if (!confirm("⚠️ Möchtest du dieses Fahrzeug und alle zugehörigen Wartungen wirklich unwiderruflich löschen?")) return;
+            if (!confirm("⚠️ Möchtest du dieses Fahrzeug und alle zugehörigen Einträge wirklich unwiderruflich löschen?")) return;
             let data = getData();
             data.cars = data.cars.filter(c => c.id !== id);
             data.events = data.events.filter(e => e.carId !== id);
@@ -232,16 +252,18 @@
             const date = document.getElementById('eventDate').value;
             const title = document.getElementById('eventTitle').value.trim();
             const cost = parseFloat(document.getElementById('eventCost').value.replace(',', '.')) || 0;
+            const tread = parseFloat(document.getElementById('eventTread').value.replace(',', '.')) || null;
 
             if (!carId || !date || !title) return alert("Bitte Fahrzeug, Datum und Bezeichnung angeben!");
 
             let data = getData();
-            data.events.push({ id: Date.now(), carId: parseInt(carId), type, date, title, cost });
+            data.events.push({ id: Date.now(), carId: parseInt(carId), type, date, title, cost, tread });
             saveData(data);
 
             document.getElementById('eventDate').value = "";
             document.getElementById('eventTitle').value = "";
             document.getElementById('eventCost').value = "";
+            document.getElementById('eventTread').value = "";
             renderApp();
         }
 
@@ -254,7 +276,8 @@
             document.getElementById('editTitle').value = ev.title;
             document.getElementById('editType').value = ev.type;
             document.getElementById('editDate').value = ev.date;
-            document.getElementById('editCost').value = ev.cost;
+            document.getElementById('editCost').value = ev.cost || "";
+            document.getElementById('editTread').value = ev.tread || "";
             document.getElementById('editModal').classList.remove('hidden');
         }
 
@@ -268,6 +291,7 @@
             const type = document.getElementById('editType').value;
             const date = document.getElementById('editDate').value;
             const cost = parseFloat(document.getElementById('editCost').value.replace(',', '.')) || 0;
+            const tread = parseFloat(document.getElementById('editTread').value.replace(',', '.')) || null;
 
             if (!title || !date) return alert("Bitte Bezeichnung und Datum eingeben!");
 
@@ -278,6 +302,7 @@
                 ev.type = type;
                 ev.date = date;
                 ev.cost = cost;
+                ev.tread = tread;
                 saveData(data);
             }
             closeEditModal();
@@ -285,7 +310,7 @@
         }
 
         function deleteEvent(id) {
-            if (!confirm("⚠️ Diesen Wartungseintrag wirklich löschen?")) return;
+            if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.events = data.events.filter(e => e.id !== id);
             saveData(data);
@@ -342,7 +367,7 @@
             }
 
             if (filteredEvents.length === 0) {
-                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Wartungen für diesen Filter erfasst.</p>`;
+                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge für diesen Filter erfasst.</p>`;
             } else {
                 const today = new Date();
                 eventsContainer.innerHTML = filteredEvents.map(e => {
@@ -352,18 +377,30 @@
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
                     let badge = diff < 0 ? "🔴 Überfällig" : (diff <= 30 ? `🟡 in ${diff} Tagen` : "🟢 Planmäßig");
 
+                    // Reifentiefe Ampel Badge
+                    let treadBadge = "";
+                    if (e.tread !== null && e.tread !== undefined && !isNaN(e.tread)) {
+                        let treadColor = e.tread < 3 ? "bg-red-100 text-red-800" : (e.tread <= 4 ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800");
+                        treadBadge = `<span class="text-[10px] ${treadColor} font-semibold px-2 py-0.5 rounded-full">📏 ${e.tread} mm</span>`;
+                    }
+
+                    let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + carName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('KFZ-Termin für ' + carName)}`;
+
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
-                                <div class="flex items-center space-x-2">
+                                <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">${e.type}</span>
                                     <span class="text-xs font-bold text-gray-700">${carName}</span>
                                     ${e.cost > 0 ? `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${e.cost.toFixed(2).replace('.', ',')} €</span>` : ''}
+                                    ${treadBadge}
                                 </div>
                                 <h4 class="font-bold text-sm mt-1">${e.title} <span class="text-xs font-normal text-gray-500">(${badge})</span></h4>
                                 <p class="text-xs text-gray-500">Datum: ${d.toLocaleDateString('de-DE')}</p>
                             </div>
-                            <div class="flex items-center gap-2 self-end sm:self-center">
+                            <div class="flex items-center gap-2 self-end sm:self-center flex-wrap">
+                                <a href="${googleCalUrl}" target="_blank" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
+                                <button onclick="downloadICS('${e.title} (${carName})', '${e.date}')" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Apple / ICS Kalender">📥 ICS</button>
                                 <button onclick="openEditModal(${e.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
                                 <button onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
@@ -371,6 +408,18 @@
                     `;
                 }).join('');
             }
+        }
+
+        function downloadICS(title, dateStr) {
+            let d = new Date(dateStr);
+            let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
+            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${title}\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:KFZ-Termin\nEND:VEVENT\nEND:VCALENDAR`;
+            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `${title.replace(/\s+/g, '_')}.ics`;
+            a.click();
         }
 
         // PDF Report Export via jsPDF
@@ -401,7 +450,7 @@
 
             y += 4;
             doc.setFont("helvetica", "bold");
-            doc.text("Wartungen & Kosten:", 14, y);
+            doc.text("Wartungen, Tanken & Kosten:", 14, y);
             y += 7;
 
             let totalCosts = 0;
@@ -411,7 +460,8 @@
                 let cName = car ? car.name : "?";
                 totalCosts += (e.cost || 0);
                 if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`- [${e.type}] ${cName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${(e.cost || 0).toFixed(2)} EUR)`, 14, y);
+                let treadText = e.tread ? ` | ${e.tread} mm` : "";
+                doc.text(`- [${e.type}] ${cName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${(e.cost || 0).toFixed(2)} EUR${treadText})`, 14, y);
                 y += 6;
             });
 
