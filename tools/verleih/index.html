@@ -16,7 +16,7 @@
     <!-- Header -->
     <header class="bg-indigo-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🤝 Leih- & Verleih-Tracker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Gegenstände, Kautionen, WhatsApp-Erinnerung & QR-Codes im Blick behalten</p>
+        <p class="text-sm opacity-90 mt-1">Kontakte, Filter nach Person & Gegenstand, Kautionen & QR-Codes</p>
     </header>
 
     <!-- Main Content -->
@@ -55,32 +55,52 @@
             </div>
         </div>
 
-        <!-- Erfassung: Neuer Verleih -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-            <h2 class="text-lg font-bold">➕ Gegenstand als verliehen eintragen</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="text" id="itemTitle" placeholder="Gegenstand (z.B. Bohrhammer)" class="p-3 border rounded-xl text-sm">
-                <input type="text" id="itemPerson" placeholder="An wen? (z.B. Nachbar Müller)" class="p-3 border rounded-xl text-sm">
-                <input type="text" id="itemPhone" placeholder="Telefonnummer (für WhatsApp, z.B. 0176...)" class="p-3 border rounded-xl text-sm">
+        <!-- Erfassung: Neuer Verleih & Kontakt hinzufügen -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Kontakt hinzufügen -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 md:col-span-1">
+                <h2 class="text-lg font-bold">👤 1. Kontakt anlegen</h2>
+                <input type="text" id="contactName" placeholder="Name (z.B. Nachbar Müller)" class="w-full p-3 border rounded-xl text-sm">
+                <input type="text" id="contactPhone" placeholder="Telefon (für WhatsApp)" class="w-full p-3 border rounded-xl text-sm">
+                <button onclick="saveContact()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Kontakt speichern</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="date" id="itemDate" class="p-3 border rounded-xl text-sm">
-                <input type="date" id="itemReturnDate" placeholder="Geplantes Rückgabedatum" class="p-3 border rounded-xl text-sm" title="Geplantes Rückgabedatum">
-                <input type="text" id="itemDeposit" placeholder="Kaution / Wert in € (optional)" class="p-3 border rounded-xl text-sm">
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input type="text" id="itemNote" placeholder="Notiz / Beschreibung (optional)" class="p-3 border rounded-xl text-sm">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zustands-Foto (optional):</label>
+
+            <!-- Gegenstand verliehen eintragen -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 md:col-span-2">
+                <h2 class="text-lg font-bold">➕ 2. Gegenstand verliehen eintragen</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input type="text" id="itemTitle" placeholder="Gegenstand (z.B. Bohrhammer)" class="p-3 border rounded-xl text-sm">
+                    <select id="itemPersonSelect" class="p-3 border rounded-xl text-sm bg-white" onchange="checkCustomPerson(this)">
+                        <option value="">-- Kontakt wählen --</option>
+                    </select>
+                </div>
+                <input type="text" id="itemCustomPerson" placeholder="Oder neuen Namen direkt eingeben..." class="w-full p-3 border rounded-xl text-sm hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <input type="date" id="itemDate" class="p-3 border rounded-xl text-sm">
+                    <input type="date" id="itemReturnDate" placeholder="Rückgabe" class="p-3 border rounded-xl text-sm" title="Geplantes Rückgabedatum">
+                    <input type="text" id="itemDeposit" placeholder="Kaution / Wert in €" class="p-3 border rounded-xl text-sm">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input type="text" id="itemNote" placeholder="Notiz (optional)" class="p-3 border rounded-xl text-sm">
                     <input type="file" id="itemPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700">
                 </div>
+                <button onclick="saveItem()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Verleih speichern</button>
             </div>
-            <button onclick="saveItem()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Verleih speichern</button>
         </div>
 
-        <!-- Verleih-Liste -->
+        <!-- Verleih-Liste mit Filtern -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h3 class="font-bold text-lg">📋 Aktuelle Verleih-Zentrale</h3>
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                <h3 class="font-bold text-lg">📋 Verleih-Zentrale & Historie</h3>
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
+                        <option value="">Alle Personen</option>
+                    </select>
+                    <select id="filterItem" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
+                        <option value="">Alle Gegenstände</option>
+                    </select>
+                </div>
+            </div>
             <div id="itemsList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Keine verliehenen Gegenstände erfasst.</p>
             </div>
@@ -104,10 +124,9 @@
             <input type="hidden" id="editId">
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Gegenstand:</label><input type="text" id="editTitle" class="w-full p-3 border rounded-xl text-sm"></div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Ausleiher:</label><input type="text" id="editPerson" class="w-full p-3 border rounded-xl text-sm"></div>
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Telefon (WhatsApp):</label><input type="text" id="editPhone" class="w-full p-3 border rounded-xl text-sm"></div>
             <div class="grid grid-cols-2 gap-2">
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Ausleihdatum:</label><input type="date" id="editDate" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Geplantes Rückgabedatum:</label><input type="date" id="editReturnDate" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Geplante Rückgabe:</label><input type="date" id="editReturnDate" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Kaution / Wert (€):</label><input type="text" id="editDeposit" class="w-full p-3 border rounded-xl text-sm"></div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Notiz:</label><input type="text" id="editNote" class="w-full p-3 border rounded-xl text-sm"></div>
@@ -122,14 +141,15 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('itemDate').valueAsDate = new Date();
+            loadDropdowns();
             renderApp();
         });
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('verleih_tracker_pro')) || { items: [] };
+                return JSON.parse(localStorage.getItem('verleih_tracker_pro')) || { items: [], contacts: [] };
             } catch(e) {
-                return { items: [] };
+                return { items: [], contacts: [] };
             }
         }
 
@@ -137,10 +157,56 @@
             localStorage.setItem('verleih_tracker_pro', JSON.stringify(data));
         }
 
+        function saveContact() {
+            const name = document.getElementById('contactName').value.trim();
+            const phone = document.getElementById('contactPhone').value.trim();
+            if (!name) return alert("Bitte einen Namen eingeben!");
+
+            let data = getData();
+            if(!data.contacts) data.contacts = [];
+            data.contacts.push({ id: Date.now(), name, phone });
+            saveData(data);
+
+            document.getElementById('contactName').value = "";
+            document.getElementById('contactPhone').value = "";
+            loadDropdowns();
+            alert("Kontakt erfolgreich gespeichert!");
+        }
+
+        function loadDropdowns() {
+            let data = getData();
+            const personSelect = document.getElementById('itemPersonSelect');
+            const filterPerson = document.getElementById('filterPerson');
+            const filterItem = document.getElementById('filterItem');
+
+            const contacts = data.contacts || [];
+            personSelect.innerHTML = '<option value="">-- Kontakt wählen --</option><option value="custom">+ Neuen Namen eingeben</option>' + 
+                contacts.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+
+            filterPerson.innerHTML = '<option value="">Alle Personen</option>' + 
+                [...new Set(data.items.map(i => i.person))].map(p => `<option value="${p}">${p}</option>`).join('');
+
+            filterItem.innerHTML = '<option value="">Alle Gegenstände</option>' + 
+                [...new Set(data.items.map(i => i.title))].map(t => `<option value="${t}">${t}</option>`).join('');
+        }
+
+        function checkCustomPerson(select) {
+            const customInput = document.getElementById('itemCustomPerson');
+            if (select.value === 'custom') {
+                customInput.classList.remove('hidden');
+                customInput.focus();
+            } else {
+                customInput.classList.add('hidden');
+                customInput.value = "";
+            }
+        }
+
         function saveItem() {
             const title = document.getElementById('itemTitle').value.trim();
-            const person = document.getElementById('itemPerson').value.trim();
-            const phone = document.getElementById('itemPhone').value.trim();
+            let person = document.getElementById('itemPersonSelect').value;
+            if (person === 'custom' || !person) {
+                person = document.getElementById('itemCustomPerson').value.trim();
+            }
             const date = document.getElementById('itemDate').value;
             const returnDate = document.getElementById('itemReturnDate').value;
             const deposit = parseFloat(document.getElementById('itemDeposit').value.replace(',', '.')) || 0;
@@ -151,10 +217,10 @@
 
             if (photoInput.files && photoInput.files[0]) {
                 compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storeData(title, person, phone, date, returnDate, deposit, note, compressedPhoto);
+                    storeData(title, person, date, returnDate, deposit, note, compressedPhoto);
                 });
             } else {
-                storeData(title, person, phone, date, returnDate, deposit, note, "");
+                storeData(title, person, date, returnDate, deposit, note, "");
             }
         }
 
@@ -184,19 +250,22 @@
             reader.readAsDataURL(file);
         }
 
-        function storeData(title, person, phone, date, returnDate, deposit, note, photo) {
+        function storeData(title, person, date, returnDate, deposit, note, photo) {
             let data = getData();
-            data.items.push({ id: Date.now(), title, person, phone, date, returnDate, deposit, note, photo, returned: false });
+            data.items.push({ id: Date.now(), title, person, date, returnDate, deposit, note, photo, returned: false });
             saveData(data);
 
             document.getElementById('itemTitle').value = "";
-            document.getElementById('itemPerson').value = "";
-            document.getElementById('itemPhone').value = "";
+            document.getElementById('itemPersonSelect').value = "";
+            document.getElementById('itemCustomPerson').value = "";
+            document.getElementById('itemCustomPerson').classList.add('hidden');
             document.getElementById('itemDeposit').value = "";
             document.getElementById('itemNote').value = "";
             document.getElementById('itemReturnDate').value = "";
             document.getElementById('itemPhotoInput').value = "";
             document.getElementById('itemDate').valueAsDate = new Date();
+            
+            loadDropdowns();
             renderApp();
         }
 
@@ -215,6 +284,7 @@
             let data = getData();
             data.items = data.items.filter(i => i.id !== id);
             saveData(data);
+            loadDropdowns();
             renderApp();
         }
 
@@ -226,7 +296,6 @@
             document.getElementById('editId').value = item.id;
             document.getElementById('editTitle').value = item.title;
             document.getElementById('editPerson').value = item.person;
-            document.getElementById('editPhone').value = item.phone || "";
             document.getElementById('editDate').value = item.date;
             document.getElementById('editReturnDate').value = item.returnDate || "";
             document.getElementById('editDeposit').value = item.deposit || "";
@@ -242,7 +311,6 @@
             const id = parseInt(document.getElementById('editId').value);
             const title = document.getElementById('editTitle').value.trim();
             const person = document.getElementById('editPerson').value.trim();
-            const phone = document.getElementById('editPhone').value.trim();
             const date = document.getElementById('editDate').value;
             const returnDate = document.getElementById('editReturnDate').value;
             const deposit = parseFloat(document.getElementById('editDeposit').value.replace(',', '.')) || 0;
@@ -255,7 +323,6 @@
             if (item) {
                 item.title = title;
                 item.person = person;
-                item.phone = phone;
                 item.date = date;
                 item.returnDate = returnDate;
                 item.deposit = deposit;
@@ -263,6 +330,7 @@
                 saveData(data);
             }
             closeEditModal();
+            loadDropdowns();
             renderApp();
         }
 
@@ -296,6 +364,8 @@
         function renderApp() {
             let data = getData();
             const container = document.getElementById('itemsList');
+            const personFilter = document.getElementById('filterPerson').value;
+            const itemFilter = document.getElementById('filterItem').value;
 
             let activeCount = data.items.filter(i => !i.returned).length;
             let returnedCount = data.items.filter(i => i.returned).length;
@@ -304,10 +374,18 @@
 
             const today = new Date();
 
-            if (data.items.length === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine verliehenen Gegenstände erfasst.</p>`;
+            let filteredItems = data.items;
+            if (personFilter !== "") {
+                filteredItems = filteredItems.filter(i => i.person === personFilter);
+            }
+            if (itemFilter !== "") {
+                filteredItems = filteredItems.filter(i => i.title === itemFilter);
+            }
+
+            if (filteredItems.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Gegenstände für diesen Filter gefunden.</p>`;
             } else {
-                container.innerHTML = data.items.map(i => {
+                container.innerHTML = filteredItems.map(i => {
                     let d = new Date(i.date);
                     let diff = Math.ceil((today - d) / (1000 * 60 * 60 * 24));
                     
@@ -323,10 +401,13 @@
                         badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">🟢 vor ${diff}T</span>`;
                     }
 
+                    // Prüfen ob Kontakt eine Telefonnummer hat
+                    let contact = (data.contacts || []).find(c => c.name === i.person);
+                    let phone = contact ? contact.phone : "";
                     let whatsappBtn = "";
-                    if (i.phone && !i.returned) {
-                        let cleanPhone = i.phone.replace(/[^0-9+]/g, '');
-                        let msg = encodeURIComponent(`Hallo ${i.person}, du hast dir meinen Gegenstand "${i.title}" geliehen. Wollte kurz nachhören, wann du ihn zurückbringen kannst? Liebe Grüße!`);
+                    if (phone && !i.returned) {
+                        let cleanPhone = phone.replace(/[^0-9+]/g, '');
+                        let msg = encodeURIComponent(`Hallo ${i.person}, du hast dir meinen Gegenstand "${i.title}" geliehen. Wollte kurz nachhören, wann du ihn zurückbringen kannst?`);
                         whatsappBtn = `<a href="https://wa.me/${cleanPhone}?text=${msg}" target="_blank" class="px-2.5 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-xl text-xs font-semibold" title="WhatsApp Erinnerung">💬 WhatsApp</a>`;
                     }
 
@@ -426,6 +507,7 @@
                     const parsed = JSON.parse(e.target.result);
                     if (parsed.items) {
                         saveData(parsed);
+                        loadDropdowns();
                         renderApp();
                         alert("Backup erfolgreich importiert!");
                     } else {
