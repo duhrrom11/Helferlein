@@ -3,62 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Haustier-Gesundheits-Pass</title>
+    <title>Haustier-Gesundheits-Pass Pro</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF für den PDF-Report-Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
-    <header class="bg-emerald-600 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-2xl font-bold">🐾 Haustier-Gesundheits-Pass</h1>
-        <p class="text-sm opacity-90 mt-1">Impfungen, Entwurmung & Termine dokumentieren</p>
+
+    <!-- Header -->
+    <header class="bg-teal-600 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-3xl font-bold">🐾 Haustier-Gesundheits-Pass Pro</h1>
+        <p class="text-sm opacity-90 mt-1">Impfungen, Vorsorge, Gewicht & Tierarzt-Kontakte perfekt im Blick</p>
     </header>
-    <main class="flex-grow container mx-auto p-4 max-w-4xl space-y-6">
-        <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold inline-block">← Zurück zur Startseite</a>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h2 class="text-lg font-bold">Neuen Haustier-Eintrag erfassen</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="text" id="petName" placeholder="Haustier & Art (z.B. Luna / Katze)" class="p-3 border rounded-xl text-sm">
-                <input type="text" id="petEvent" placeholder="Ereignis (z.B. Impfung Tollwut)" class="p-3 border rounded-xl text-sm">
-                <input type="date" id="petDate" class="p-3 border rounded-xl text-sm">
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
+        
+        <!-- Navigation & Global Actions -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
+            <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
+            
+            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF-Report</button>
+                <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
+                <label class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
+                    📂 Import <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                </label>
             </div>
-            <button onclick="savePet()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-6 rounded-xl text-sm shadow-sm">Eintrag speichern</button>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border">
-            <h3 class="font-bold text-lg mb-4">📋 Gespeicherte Tierarzt- & Vorsorgedaten</h3>
-            <div id="petList" class="space-y-3"><p class="text-sm text-gray-400 text-center py-4">Keine Einträge vorhanden.</p></div>
+
+        <!-- Dashboard Statistiken -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-teal-50 text-teal-700 rounded-xl font-bold">🐕</div>
+                <div><p class="text-xs text-gray-500">Registrierte Haustiere</p><h3 id="statPets" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">💉</div>
+                <div><p class="text-xs text-gray-500">Gesundheits-Einträge</p><h3 id="statEvents" class="text-lg font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">🏥</div>
+                <div><p class="text-xs text-gray-500">Status</p><h3 class="text-sm font-bold text-green-600">Alles im grünen Bereich</h3></div>
+            </div>
+        </div>
+
+        <!-- Erfassung: Haustier & Gesundheits-Eintrag -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- 1. Haustier anlegen -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
+                <h2 class="text-lg font-bold">🐕 1. Haustier-Profil anlegen</h2>
+                <input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm">
+                    <input type="text" id="petChip" placeholder="Chip-Nummer (optional)" class="p-3 border rounded-xl text-sm">
+                </div>
+                <input type="text" id="petVet" placeholder="Tierarzt / Praxis & Notfallnummer" class="w-full p-3 border rounded-xl text-sm">
+                <button onclick="savePet()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Haustier speichern</button>
+            </div>
+
+            <!-- 2. Gesundheits-Eintrag hinzufügen -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
+                <h2 class="text-lg font-bold">💉 2. Gesundheits-Eintrag / Termin</h2>
+                <select id="eventPetSelect" class="w-full p-3 border rounded-xl text-sm bg-white">
+                    <option value="">-- Haustier wählen --</option>
+                </select>
+                <div class="grid grid-cols-2 gap-2">
+                    <select id="eventType" class="p-3 border rounded-xl text-sm bg-white">
+                        <option value="Impfung">💉 Impfung</option>
+                        <option value="Entwurmung">🪱 Entwurmung / Parasiten</option>
+                        <option value="Medikament">💊 Medikament / Behandlung</option>
+                        <option value="Gewicht">⚖️ Gewicht</option>
+                        <option value="Sonstiges">📝 Sonstiges</option>
+                    </select>
+                    <input type="date" id="eventDate" class="p-3 border rounded-xl text-sm">
+                </div>
+                <input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung, 18.5 kg)" class="w-full p-3 border rounded-xl text-sm">
+                <button onclick="saveEvent()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Eintrag speichern</button>
+            </div>
+        </div>
+
+        <!-- Listen-Ansicht -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Haustier-Profile -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+                <h3 class="font-bold text-lg">🐾 Meine Haustiere</h3>
+                <div id="petsList" class="space-y-3">
+                    <p class="text-sm text-gray-400 text-center py-4">Noch keine Haustiere erfasst.</p>
+                </div>
+            </div>
+
+            <!-- Gesundheits-Einträge -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+                <h3 class="font-bold text-lg">📋 Gesundheits- & Terminkalender</h3>
+                <div id="eventsList" class="space-y-3">
+                    <p class="text-sm text-gray-400 text-center py-4">Keine Termine erfasst.</p>
+                </div>
+            </div>
         </div>
     </main>
+
+    <!-- Script Logik -->
     <script>
-        document.addEventListener('DOMContentLoaded', renderPet);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPetDropdowns();
+            renderApp();
+        });
+
+        function getData() {
+            try {
+                return JSON.parse(localStorage.getItem('haustier_pass_pro')) || { pets: [], events: [] };
+            } catch(e) {
+                return { pets: [], events: [] };
+            }
+        }
+
+        function saveData(data) {
+            localStorage.setItem('haustier_pass_pro', JSON.stringify(data));
+        }
+
         function savePet() {
-            const petName = document.getElementById('petName').value.trim();
-            const petEvent = document.getElementById('petEvent').value.trim();
-            const petDate = document.getElementById('petDate').value;
-            if(!petName || !petEvent || !petDate) return alert("Bitte alle Felder ausfüllen!");
-            let items = JSON.parse(localStorage.getItem('pet_health')) || [];
-            items.push({ petName, petEvent, petDate });
-            localStorage.setItem('pet_health', JSON.stringify(items));
-            document.getElementById('petEvent').value = "";
-            renderPet();
+            const name = document.getElementById('petName').value.trim();
+            const species = document.getElementById('petSpecies').value.trim();
+            const chip = document.getElementById('petChip').value.trim();
+            const vet = document.getElementById('petVet').value.trim();
+
+            if (!name) return alert("Bitte einen Namen für das Haustier eingeben!");
+
+            let data = getData();
+            data.pets.push({ id: Date.now(), name, species, chip, vet });
+            saveData(data);
+
+            document.getElementById('petName').value = "";
+            document.getElementById('petSpecies').value = "";
+            document.getElementById('petChip').value = "";
+            document.getElementById('petVet').value = "";
+
+            loadPetDropdowns();
+            renderApp();
         }
-        function renderPet() {
-            const list = document.getElementById('petList');
-            let items = JSON.parse(localStorage.getItem('pet_health')) || [];
-            list.innerHTML = items.map((item, idx) => `
-                <div class="p-4 bg-gray-50 border rounded-2xl flex justify-between items-center">
-                    <div>
-                        <span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">${item.petName}</span>
-                        <h4 class="font-bold text-sm mt-1">${item.petEvent}</h4>
-                        <p class="text-xs text-gray-500">Datum: ${new Date(item.petDate).toLocaleDateString('de-DE')}</p>
+
+        function deletePet(id) {
+            if (!confirm("⚠️ Möchtest du dieses Haustier und alle zugehörigen Einträge wirklich löschen?")) return;
+            let data = getData();
+            data.pets = data.pets.filter(p => p.id !== id);
+            data.events = data.events.filter(e => e.petId !== id);
+            saveData(data);
+            loadPetDropdowns();
+            renderApp();
+        }
+
+        function saveEvent() {
+            const petId = document.getElementById('eventPetSelect').value;
+            const type = document.getElementById('eventType').value;
+            const date = document.getElementById('eventDate').value;
+            const title = document.getElementById('eventTitle').value.trim();
+
+            if (!petId || !date || !title) return alert("Bitte Haustier, Datum und Bezeichnung angeben!");
+
+            let data = getData();
+            data.events.push({ id: Date.now(), petId: parseInt(petId), type, date, title });
+            saveData(data);
+
+            document.getElementById('eventDate').value = "";
+            document.getElementById('eventTitle').value = "";
+            renderApp();
+        }
+
+        function deleteEvent(id) {
+            if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
+            let data = getData();
+            data.events = data.events.filter(e => e.id !== id);
+            saveData(data);
+            renderApp();
+        }
+
+        function loadPetDropdowns() {
+            let data = getData();
+            const select = document.getElementById('eventPetSelect');
+            select.innerHTML = '<option value="">-- Haustier wählen --</option>' + 
+                data.pets.map(p => `<option value="${p.id}">${p.name} (${p.species || 'Haustier'})</option>`).join('');
+        }
+
+        function renderApp() {
+            let data = getData();
+            const petsContainer = document.getElementById('petsList');
+            const eventsContainer = document.getElementById('eventsList');
+
+            document.getElementById('statPets').innerText = data.pets.length;
+            document.getElementById('statEvents').innerText = data.events.length;
+
+            if (data.pets.length === 0) {
+                petsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Haustiere erfasst.</p>`;
+            } else {
+                petsContainer.innerHTML = data.pets.map(p => `
+                    <div class="p-4 bg-gray-50 border rounded-2xl flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-sm text-teal-800">🐾 ${p.name}</h4>
+                            <p class="text-xs text-gray-600 mt-0.5">Rasse: ${p.species || 'k.A.'}</p>
+                            ${p.chip ? `<p class="text-xs text-gray-500">Chip: ${p.chip}</p>` : ''}
+                            ${p.vet ? `<p class="text-xs text-teal-600 mt-1">🏥 Tierarzt: ${p.vet}</p>` : ''}
+                        </div>
+                        <button onclick="deletePet(${p.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
                     </div>
-                    <button onclick="deletePet(${idx})" class="text-xs text-red-500">Löschen</button>
-                </div>
-            `).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge vorhanden.</p>`;
+                `).join('');
+            }
+
+            if (data.events.length === 0) {
+                eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Termine erfasst.</p>`;
+            } else {
+                const today = new Date();
+                eventsContainer.innerHTML = data.events.map(e => {
+                    let pet = data.pets.find(p => p.id === e.petId);
+                    let petName = pet ? pet.name : "Unbekannt";
+                    let d = new Date(e.date);
+                    let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+                    let badge = diff < 0 ? "🔴 Überfällig" : (diff <= 30 ? `🟡 in ${diff} Tagen` : "🟢 Planmäßig");
+
+                    return `
+                        <div class="p-4 bg-gray-50 border rounded-2xl flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-[10px] bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">${e.type}</span>
+                                    <span class="text-xs font-bold text-gray-700">${petName}</span>
+                                </div>
+                                <h4 class="font-bold text-sm mt-1">${e.title} <span class="text-xs font-normal text-gray-500">(${badge})</span></h4>
+                                <p class="text-xs text-gray-500">Datum: ${d.toLocaleDateString('de-DE')}</p>
+                            </div>
+                            <button onclick="deleteEvent(${e.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
-        function deletePet(idx) {
-            let items = JSON.parse(localStorage.getItem('pet_health')) || [];
-            items.splice(idx, 1);
-            localStorage.setItem('pet_health', JSON.stringify(items));
-            renderPet();
+
+        // PDF Report Export via jsPDF
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let data = getData();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("Haustier-Gesundheits-Pass Report", 14, 20);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+
+            let y = 35;
+            doc.setFont("helvetica", "bold");
+            doc.text("Haustiere:", 14, y);
+            y += 7;
+
+            doc.setFont("helvetica", "normal");
+            data.pets.forEach(p => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                doc.text(`- ${p.name} (${p.species || 'Haustier'}), Chip: ${p.chip || 'k.A.'}, TA: ${p.vet || 'k.A.'}`, 14, y);
+                y += 6;
+            });
+
+            y += 4;
+            doc.setFont("helvetica", "bold");
+            doc.text("Gesundheits-Einträge & Termine:", 14, y);
+            y += 7;
+
+            doc.setFont("helvetica", "normal");
+            data.events.forEach(e => {
+                let pet = data.pets.find(p => p.id === e.petId);
+                let pName = pet ? pet.name : "?";
+                if (y > 270) { doc.addPage(); y = 20; }
+                doc.text(`- [${e.type}] ${pName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')}`, 14, y);
+                y += 6;
+            });
+
+            doc.save("haustier-gesundheits-report.pdf");
+        }
+
+        function exportBackup() {
+            let data = JSON.stringify(getData());
+            let blob = new Blob([data], { type: 'application/json' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `haustier-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.pets && parsed.events) {
+                        saveData(parsed);
+                        loadPetDropdowns();
+                        renderApp();
+                        alert("Backup erfolgreich importiert!");
+                    } else {
+                        alert("Ungültiges Format.");
+                    }
+                } catch (err) {
+                    alert("Fehler beim Lesen der Datei.");
+                }
+            };
+            reader.readAsText(file);
         }
     </script>
 </body>
