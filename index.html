@@ -199,21 +199,25 @@
         </div>
     </main>
 
-    <!-- SYNC MODAL -->
+    <!-- SYNC MODAL MIT EINGABEFELD -->
     <div id="syncModal" style="display: none;" class="fixed inset-0 bg-black/50 items-center justify-center p-4 z-50">
         <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl max-w-lg w-full shadow-xl space-y-4 border dark:border-slate-800">
             <h3 class="text-lg font-bold text-gray-900 dark:text-white">☁️ Cloud Synchronisation</h3>
             <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                Deine Geräte werden automatisch über Supabase synchronisiert. Deine Geräte-ID lautet:
+                Deine Geräte-ID (zum Synchronisieren auf anderen Geräten eintragen oder kopieren):
             </p>
-            <div class="p-3 bg-gray-50 dark:bg-slate-800 rounded-xl text-xs font-mono text-indigo-600 dark:text-indigo-400 break-all" id="deviceIdDisplay">
-                Lade ID...
+            
+            <!-- Jetzt ein echtes Input-Feld zum Bearbeiten/Eintragen -->
+            <div class="flex gap-2 items-center">
+                <input type="text" id="deviceIdInput" class="w-full p-3 bg-gray-50 dark:bg-slate-800 rounded-xl text-xs font-mono text-indigo-600 dark:text-indigo-400 border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <button type="button" onclick="saveCustomDeviceId()" class="px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold cursor-pointer shrink-0">Übernehmen</button>
             </div>
+
             <p class="text-[11px] text-gray-400 leading-relaxed">
-                Um dieselben Daten auf einem anderen Gerät (z.B. Handy) zu nutzen, trage dort dieselbe Geräte-ID ein.
+                Trage hier die ID deines Hauptgeräts ein und klicke auf „Übernehmen“, um die Daten sofort zu synchronisieren.
             </p>
             <div class="flex justify-end pt-2">
-                <button type="button" onclick="closeSyncModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-semibold cursor-pointer">Schließen</button>
+                <button type="button" onclick="closeSyncModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-semibold cursor-pointer">Schließen</button>
             </div>
         </div>
     </div>
@@ -252,6 +256,7 @@
                         localStorage.setItem(key, data.data[key]);
                     }
                     loadStats();
+                    console.log("Daten erfolgreich aus Cloud geladen.");
                 }
             } catch (e) {
                 console.log("Cloud Pull Info: Noch keine Daten oder offline.");
@@ -276,15 +281,25 @@
         }
 
         function openSyncModal() {
-            alert("Modal wird geöffnet!"); // Visueller Diagnose-Test
+            const input = document.getElementById('deviceIdInput');
+            if (input) input.value = deviceId; // Setzt die aktuelle ID in das Eingabefeld
             const modal = document.getElementById('syncModal');
-            const disp = document.getElementById('deviceIdDisplay');
-            if (disp) disp.innerText = deviceId;
             if (modal) {
                 modal.style.display = 'flex';
-            } else {
-                alert("Modal-Element nicht gefunden!");
             }
+        }
+
+        async function saveCustomDeviceId() {
+            const input = document.getElementById('deviceIdInput');
+            if (!input || !input.value.trim()) return;
+            
+            deviceId = input.value.trim();
+            localStorage.setItem('hub_device_id', deviceId);
+            
+            alert("Geräte-ID aktualisiert! Lade Daten aus der Cloud...");
+            await syncWithCloudPull();
+            closeSyncModal();
+            loadStats();
         }
 
         function closeSyncModal() {
