@@ -236,81 +236,112 @@
                     if (el) el.innerText = text;
                 };
 
-                const getData = (key) => {
-                    try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; }
+                // Hilfsfunktion, die mehrere mögliche Schlüssel im LocalStorage prüft
+                const getToolData = (possibleKeys) => {
+                    for (let key of possibleKeys) {
+                        try {
+                            let val = localStorage.getItem(key);
+                            if (val) {
+                                let parsed = JSON.parse(val);
+                                if (parsed) return parsed;
+                            }
+                        } catch(e) {}
+                    }
+                    return null;
                 };
 
-                const kassenbonData = getData('kassenbon_data') || { items: [] };
-                setStat('stats-kassenbon', `${kassenbonData.items ? kassenbonData.items.length : 0} Belege gespeichert`);
+                // 1. Kassenbon
+                let cb = getToolData(['kassenbon_data', 'kassenbon', 'belege']);
+                let cbCount = cb ? (cb.items ? cb.items.length : (Array.isArray(cb) ? cb.length : 0)) : 0;
+                setStat('stats-kassenbon', `${cbCount} Belege gespeichert`);
 
-                const kistenData = getData('kisten_data') || { boxes: [] };
-                const kistenCount = kistenData.boxes ? kistenData.boxes.length : 0;
-                setStat('stats-kisten', `${kistenCount} Kisten im Bestand`);
+                // 2. Kisten
+                let ki = getToolData(['kisten_data', 'kisten', 'boxes', 'inventar']);
+                let kiCount = ki ? (ki.boxes ? ki.boxes.length : (Array.isArray(ki) ? ki.length : 0)) : 0;
+                setStat('stats-kisten', `${kiCount} Kisten im Bestand`);
 
-                const wgData = getData('wg_kasse_data') || { expenses: [] };
-                setStat('stats-wg-kasse', `${wgData.expenses ? wgData.expenses.length : 0} Ausgaben erfasst`);
+                // 3. WG-Kasse
+                let wg = getToolData(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt']);
+                let wgCount = wg ? (wg.expenses ? wg.expenses.length : (Array.isArray(wg) ? wg.length : 0)) : 0;
+                setStat('stats-wg-kasse', `${wgCount} Ausgaben erfasst`);
 
-                const notizenData = getData('secure_notes') || { notes: [] };
-                setStat('stats-notizen', `${notizenData.notes ? notizenData.notes.length : 0} Notizen gesichert`);
+                // 4. Notizen
+                let no = getToolData(['secure_notes', 'notes', 'notizen_data', 'notizen']);
+                let noCount = no ? (no.notes ? no.notes.length : (Array.isArray(no) ? no.length : 0)) : 0;
+                setStat('stats-notizen', `${noCount} Notizen gesichert`);
 
-                const kfzData = getData('kfz_pass') || { vehicles: [] };
-                setStat('stats-kfz', `${kfzData.vehicles ? kfzData.vehicles.length : 0} Fahrzeuge aktiv`);
+                // 5. KFZ
+                let kfz = getToolData(['kfz_pass', 'kfz_data', 'vehicles', 'autos']);
+                let kfzCount = kfz ? (kfz.vehicles ? kfz.vehicles.length : (Array.isArray(kfz) ? kfz.length : 0)) : 0;
+                setStat('stats-kfz', `${kfzCount} Fahrzeuge aktiv`);
 
-                const haustierData = getData('haustier_pass') || { pets: [] };
-                setStat('stats-haustier', `${haustierData.pets ? haustierData.pets.length : 0} Haustiere erfasst`);
+                // 6. Haustier
+                let pet = getToolData(['haustier_pass', 'haustier_data', 'pets', 'tiere']);
+                let petCount = pet ? (pet.pets ? pet.pets.length : (Array.isArray(pet) ? pet.length : 0)) : 0;
+                setStat('stats-haustier', `${petCount} Haustiere erfasst`);
 
-                const parkenData = getData('parken_data') || { active: null };
-                setStat('stats-parken', parkenData.active ? "Aktiver Park-Timer" : "Kein aktives Ticket");
+                // 7. Parken
+                let park = getToolData(['parken_data', 'parken', 'parking']);
+                let parkActive = park ? (park.active !== undefined ? park.active : park) : null;
+                setStat('stats-parken', parkActive ? "Aktiver Park-Timer" : "Kein aktives Ticket");
 
-                const verleihData = getData('verleih_pass') || { items: [] };
-                setStat('stats-verleih', `${verleihData.items ? verleihData.items.length : 0} Verleih-Objekte`);
+                // 8. Verleih
+                let ver = getToolData(['verleih_pass', 'verleih_data', 'verleih', 'items']);
+                let verCount = ver ? (ver.items ? ver.items.length : (Array.isArray(ver) ? ver.length : 0)) : 0;
+                setStat('stats-verleih', `${verCount} Verleih-Objekte`);
 
-                const pflanzenData = getData('pflanzen_pass') || { plants: [] };
-                setStat('stats-pflanzen', `${pflanzenData.plants ? pflanzenData.plants.length : 0} Pflanzen im Bestand`);
+                // 9. Pflanzen
+                let pl = getToolData(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants']);
+                let plCount = pl ? (pl.plants ? pl.plants.length : (Array.isArray(pl) ? pl.length : 0)) : 0;
+                setStat('stats-pflanzen', `${plCount} Pflanzen im Bestand`);
 
-                const energieData = getData('energie_tracker_pro') || { readings: [] };
-                setStat('stats-energie', `${energieData.readings ? energieData.readings.length : 0} Ablesungen erfasst`);
+                // 10. Energie
+                let en = getToolData(['energie_tracker_pro', 'energie_data', 'energie', 'readings']);
+                let enCount = en ? (en.readings ? en.readings.length : (Array.isArray(en) ? en.length : 0)) : 0;
+                setStat('stats-energie', `${enCount} Ablesungen erfasst`);
             } catch(e) {
                 console.log("Fehler beim Laden der Stats:", e);
             }
         }
 
         async function exportGlobalBackup() {
-            let globalBackup = {};
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
-                globalBackup[key] = localStorage.getItem(key);
-            }
-            const jsonString = JSON.stringify(globalBackup);
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            const fileName = `alltagshilfe-komplett-backup-${new Date().toISOString().split('T')[0]}.json`;
-            const file = new File([blob], fileName, { type: 'application/json' });
+            try {
+                let globalBackup = {};
+                for (let i = 0; i < localStorage.length; i++) {
+                    let key = localStorage.key(i);
+                    globalBackup[key] = localStorage.getItem(key);
+                }
+                const jsonString = JSON.stringify(globalBackup);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const fileName = `alltagshilfe-komplett-backup-${new Date().toISOString().split('T')[0]}.json`;
+                const file = new File([blob], fileName, { type: 'application/json' });
 
-            // Web Share API nutzen, um direkt das Teilen-Fenster zu öffnen
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({
-                        files: [file],
-                        title: 'Alltagshelferlein Backup',
-                        text: 'Hier ist das komplette Backup deines Alltagshelferlein Hubs.'
-                    });
-                    return;
-                } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        console.log("Share API abgebrochen oder fehlgeschlagen, nutze Download-Fallback", err);
-                    } else {
+                // Versuche Web Share API (Teilen-Fenster)
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Alltagshelferlein Backup',
+                            text: 'Hier ist das komplette Backup deines Alltagshelferlein Hubs.'
+                        });
                         return;
+                    } catch (err) {
+                        if (err.name === 'AbortError') return; // Nutzer hat abgebrochen
                     }
                 }
-            }
 
-            // Fallback für Browser, die kein Teilen unterstützen
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            a.click();
-            URL.revokeObjectURL(url);
+                // Fallback: Direkter Download (funktioniert garantiert immer)
+                let url = URL.createObjectURL(blob);
+                let a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert("Fehler beim Exportieren: " + e.message);
+            }
         }
 
         function importGlobalBackup(event) {
