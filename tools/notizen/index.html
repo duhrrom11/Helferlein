@@ -16,7 +16,7 @@
     <!-- Header -->
     <header class="bg-indigo-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🔐 Schlüssel-, PIN- & Dokumenten-Merker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Sicherer lokaler Speicher für Passwörter, WLAN & wichtige Fristen</p>
+        <p class="text-sm opacity-90 mt-1">Sicherer lokaler Speicher mit PIN-Schutz für sensible Notizen</p>
     </header>
 
     <!-- Main Content -->
@@ -47,7 +47,7 @@
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">🛡️</div>
-                <div><p class="text-xs text-gray-500">Sicherheits-Status</p><h3 class="text-sm font-bold text-green-600">Lokal Verschlüsselt</h3></div>
+                <div><p class="text-xs text-gray-500">Sicherheits-Status</p><h3 class="text-sm font-bold text-green-600">PIN-Schutz aktiv</h3></div>
             </div>
         </div>
 
@@ -58,7 +58,7 @@
                 <button onclick="generatePassword()" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold">🎲 Sicheres Passwort generieren</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="text" id="noteTitle" placeholder="Titel (z.B. Gäste-WLAN, Koffer-PIN)" class="p-3 border rounded-xl text-sm md:col-span-2">
+                <input type="text" id="noteTitle" placeholder="Titel (z.B. Online-Banking, WLAN)" class="p-3 border rounded-xl text-sm md:col-span-2">
                 <select id="noteCategory" class="p-3 border rounded-xl text-sm bg-white">
                     <option value="WLAN">📶 WLAN</option>
                     <option value="PIN / Code">🔢 PIN / Code</option>
@@ -68,12 +68,13 @@
                 </select>
             </div>
             <textarea id="noteContent" placeholder="Inhalt / Passwort / Notiz..." class="w-full p-3 border rounded-xl text-sm h-24"></textarea>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+                <input type="text" id="notePin" placeholder="Schutz-PIN (optional, z.B. 1234)" class="p-3 border rounded-xl text-sm">
                 <div class="flex items-center space-x-2">
                     <input type="checkbox" id="noteFav" class="w-4 h-4 text-indigo-600 rounded">
-                    <label for="noteFav" class="text-xs font-semibold text-gray-700">Als Favorit markieren (ganz oben anzeigen)</label>
+                    <label for="noteFav" class="text-xs font-semibold text-gray-700">Als Favorit markieren</label>
                 </div>
-                <input type="date" id="noteExpiry" class="p-3 border rounded-xl text-sm" placeholder="Ablaufdatum (optional)">
+                <input type="date" id="noteExpiry" class="p-3 border rounded-xl text-sm">
             </div>
             <button onclick="saveNote()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Eintrag sicher speichern</button>
         </div>
@@ -107,6 +108,7 @@
                 </select>
             </div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Inhalt:</label><textarea id="editContent" class="w-full p-3 border rounded-xl text-sm h-24"></textarea></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Schutz-PIN (leer lassen für keinen Schutz):</label><input type="text" id="editPin" class="w-full p-3 border rounded-xl text-sm"></div>
             <div class="flex items-center space-x-2">
                 <input type="checkbox" id="editFav" class="w-4 h-4 text-indigo-600 rounded">
                 <label for="editFav" class="text-xs font-semibold text-gray-700">Favorit</label>
@@ -130,6 +132,9 @@
 
     <!-- Script Logik -->
     <script>
+        // Speichert temporär freigeschaltete IDs in der Session
+        let unlockedNotes = new Set();
+
         document.addEventListener('DOMContentLoaded', () => {
             renderNotes();
         });
@@ -159,17 +164,19 @@
             const title = document.getElementById('noteTitle').value.trim();
             const category = document.getElementById('noteCategory').value;
             const content = document.getElementById('noteContent').value.trim();
+            const pin = document.getElementById('notePin').value.trim();
             const fav = document.getElementById('noteFav').checked;
             const expiry = document.getElementById('noteExpiry').value;
 
             if (!title || !content) return alert("Bitte Titel und Inhalt eingeben!");
 
             let data = getData();
-            data.notes.push({ id: Date.now(), title, category, content, fav, expiry });
+            data.notes.push({ id: Date.now(), title, category, content, pin, fav, expiry });
             saveData(data);
 
             document.getElementById('noteTitle').value = "";
             document.getElementById('noteContent').value = "";
+            document.getElementById('notePin').value = "";
             document.getElementById('noteFav').checked = false;
             document.getElementById('noteExpiry').value = "";
             renderNotes();
@@ -184,6 +191,7 @@
             document.getElementById('editTitle').value = note.title;
             document.getElementById('editCategory').value = note.category;
             document.getElementById('editContent').value = note.content;
+            document.getElementById('editPin').value = note.pin || "";
             document.getElementById('editFav').checked = note.fav || false;
             document.getElementById('editModal').classList.remove('hidden');
         }
@@ -197,6 +205,7 @@
             const title = document.getElementById('editTitle').value.trim();
             const category = document.getElementById('editCategory').value;
             const content = document.getElementById('editContent').value.trim();
+            const pin = document.getElementById('editPin').value.trim();
             const fav = document.getElementById('editFav').checked;
 
             if (!title || !content) return alert("Bitte Titel und Inhalt eingeben!");
@@ -207,6 +216,7 @@
                 note.title = title;
                 note.category = category;
                 note.content = content;
+                note.pin = pin;
                 note.fav = fav;
                 saveData(data);
             }
@@ -218,8 +228,19 @@
             if (!confirm("⚠️ Möchtest du diesen Eintrag wirklich unwiderruflich löschen?")) return;
             let data = getData();
             data.notes = data.notes.filter(n => n.id !== id);
+            unlockedNotes.delete(id);
             saveData(data);
             renderNotes();
+        }
+
+        function unlockNote(id, correctPin) {
+            let entered = prompt("Bitte Schutz-PIN eingeben:");
+            if (entered === correctPin) {
+                unlockedNotes.add(id);
+                renderNotes();
+            } else if (entered !== null) {
+                alert("Falsche PIN!");
+            }
         }
 
         function copyToClipboard(text) {
@@ -247,24 +268,34 @@
                 sorted = sorted.filter(n => n.title.toLowerCase().includes(search) || n.content.toLowerCase().includes(search) || n.category.toLowerCase().includes(search));
             }
 
-            listContainer.innerHTML = sorted.map(n => `
-                <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shadow-sm">
-                    <div class="space-y-1">
-                        <div class="flex items-center space-x-2">
-                            ${n.fav ? '<span>⭐</span>' : ''}
-                            <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">${n.category}</span>
-                            <h4 class="font-bold text-sm">${n.title}</h4>
+            listContainer.innerHTML = sorted.map(n => {
+                let isLocked = n.pin && !unlockedNotes.has(n.id);
+                let displayContent = isLocked ? "••••••••••••••••" : n.content;
+
+                return `
+                    <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shadow-sm">
+                        <div class="space-y-1">
+                            <div class="flex items-center space-x-2">
+                                ${n.fav ? '<span>⭐</span>' : ''}
+                                <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">${n.category}</span>
+                                <h4 class="font-bold text-sm">${n.title}</h4>
+                                ${n.pin ? '<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔒 PIN-geschützt</span>' : ''}
+                            </div>
+                            <p class="text-xs text-gray-600 whitespace-pre-line font-mono bg-white p-2 rounded-xl border">${displayContent}</p>
                         </div>
-                        <p class="text-xs text-gray-600 whitespace-pre-line font-mono bg-white p-2 rounded-xl border">${n.content}</p>
+                        <div class="flex items-center gap-2 self-end md:self-center">
+                            ${isLocked ? `
+                                <button onclick="unlockNote(${n.id}, '${n.pin}')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold">🔓 Entsperren</button>
+                            ` : `
+                                <button onclick="copyToClipboard('${n.content.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Kopieren">📋</button>
+                                ${n.category === 'WLAN' ? `<button onclick="showWlanQr('${n.title}', '${n.content}')" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="WLAN QR">📶</button>` : ''}
+                            `}
+                            <button onclick="openEditModal(${n.id})" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
+                            <button onclick="deleteNote(${n.id})" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold" title="Löschen">✕</button>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2 self-end md:self-center">
-                        <button onclick="copyToClipboard('${n.content.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Kopieren">📋</button>
-                        ${n.category === 'WLAN' ? `<button onclick="showWlanQr('${n.title}', '${n.content}')" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="WLAN QR">📶</button>` : ''}
-                        <button onclick="openEditModal(${n.id})" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
-                        <button onclick="deleteNote(${n.id})" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold" title="Löschen">✕</button>
-                    </div>
-                </div>
-            `).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
+                `;
+            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
         }
 
         function showWlanQr(title, content) {
@@ -302,7 +333,8 @@
                 doc.text(`${idx + 1}. ${n.title} [${n.category}]`, 14, y);
                 y += 6;
                 doc.setFont("helvetica", "normal");
-                doc.text(`Inhalt: ${n.content}`, 14, y);
+                let contentToPrint = n.pin ? "[PIN GESCHÜTZT]" : n.content;
+                doc.text(`Inhalt: ${contentToPrint}`, 14, y);
                 y += 10;
             });
 
