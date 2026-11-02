@@ -31,7 +31,7 @@
 <body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-200">
 
     <!-- Header / Navbar -->
-    <header class="bg-white/90 backdrop-blur-md shadow-lg py-6 px-4 border-b border-gray-200 sticky top-0 z-40">
+    <header class="bg-white/95 backdrop-blur-md shadow-lg py-6 px-4 border-b border-gray-200 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
@@ -43,7 +43,7 @@
             <!-- Top Controls -->
             <div class="flex flex-wrap items-center gap-2">
                 <button type="button" onclick="openSettings()" class="px-3.5 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl shadow-sm border border-gray-300 cursor-pointer flex items-center gap-1.5 transition-all">
-                    ⚙️ Einstellungen
+                    ⚙️ Einstellungen & Sync
                 </button>
                 <a href="https://ko-fi.com/DEIN_KOFI_NAME" target="_blank" rel="noopener" class="px-3.5 py-2 bg-gradient-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-xs font-bold rounded-xl shadow-md text-white flex items-center gap-1.5 transition-all">
                     <span>☕</span> Spenden
@@ -63,7 +63,7 @@
         <!-- Badge Info -->
         <div class="flex justify-between items-center">
             <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Alle 10 Alltagshelfer im Überblick</h2>
-            <span class="text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-3 py-1 rounded-full">🔒 100% Offline • Lokaler Speicher</span>
+            <span class="text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-3 py-1 rounded-full">☁️ Firebase Cloud-Sync Aktiv</span>
         </div>
 
         <!-- Tools Grid -->
@@ -251,19 +251,19 @@
     <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
-                <h3 class="text-lg font-bold text-gray-900">⚙️ Einstellungen, Sync & Backup</h3>
+                <h3 class="text-lg font-bold text-gray-900">⚙️ Einstellungen, Cloud-Sync & Backup</h3>
                 <button type="button" onclick="closeSettings()" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">&times;</button>
             </div>
             
             <div class="space-y-5">
                 <!-- Sync Sektion -->
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">☁️ Geräte-Synchronisation (Cloud-ID)</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">☁️ Firebase Geräte-Synchronisation (Cloud-ID)</label>
                     <div class="flex gap-2">
                         <input type="text" id="globalSyncId" placeholder="z.B. helfer-9f8a-4c21" class="w-full px-3 py-2 text-sm rounded-xl bg-gray-50 border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500">
                         <button type="button" onclick="generateSyncKey()" class="px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 text-xs font-bold rounded-xl border border-sky-200 whitespace-nowrap cursor-pointer">Schlüssel erstellen</button>
                     </div>
-                    <p class="text-[11px] text-gray-400 mt-1">Generiere einen Code und trage ihn auf deinem Zweitgerät ein, um beide zu verbinden.</p>
+                    <p class="text-[11px] text-gray-400 mt-1">Trage hier deine Cloud-ID ein, um Daten automatisch über Firebase zu synchronisieren.</p>
                 </div>
 
                 <!-- Backup & Restore Sektion -->
@@ -280,18 +280,36 @@
 
             <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
                 <button type="button" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Abbrechen</button>
-                <button type="button" onclick="saveSettings()" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-xs font-bold rounded-xl text-white cursor-pointer shadow-md">Speichern</button>
+                <button type="button" onclick="saveSettings()" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-xs font-bold rounded-xl text-white cursor-pointer shadow-md">Speichern & Sync</button>
             </div>
         </div>
     </div>
 
-    <!-- Script Logik -->
-    <script>
+    <!-- Script Logik mit Firebase Firestore -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Exakte Firebase-Konfiguration aus deiner Firebase Console
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5g2Pq2rszkCGgabJSfZkrpDRSgLw16-s",
+            authDomain: "helferlein-966e1.firebaseapp.com",
+            projectId: "helferlein-966e1",
+            storageBucket: "helferlein-966e1.firebasestorage.app",
+            messagingSenderId: "219792138235",
+            appId: "1:219792138235:web:c0174e41f1c1076386b55e",
+            measurementId: "G-8HZ5E6FGF8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         document.addEventListener('DOMContentLoaded', () => {
             loadStats();
+            syncFromCloud();
         });
 
-        function openSettings() {
+        window.openSettings = function() {
             const syncInput = document.getElementById('globalSyncId');
             if (syncInput) {
                 syncInput.value = localStorage.getItem('hub_sync_id') || '';
@@ -303,7 +321,7 @@
             }
         }
 
-        function closeSettings() {
+        window.closeSettings = function() {
             const modal = document.getElementById('settingsModal');
             if (modal) {
                 modal.classList.remove('flex');
@@ -311,33 +329,86 @@
             }
         }
 
-        function generateSyncKey() {
-            const randomPart = Math.random().toString(36).substring(2, 6) + '-' + Math.random().toString(36).substring(2, 6);
+        window.generateSyncKey = function() {
+            const randomId = 'hub-' + Math.random().toString(36).substring(2, 8) + '-' + Math.random().toString(36).substring(2, 8);
             const syncInput = document.getElementById('globalSyncId');
             if (syncInput) {
-                syncInput.value = 'helfer-' + randomPart;
+                syncInput.value = randomId;
             }
         }
 
-        function saveSettings() {
+        window.saveSettings = async function() {
             const syncInput = document.getElementById('globalSyncId');
             if (syncInput) {
                 localStorage.setItem('hub_sync_id', syncInput.value.trim());
             }
             alert('Einstellungen erfolgreich gespeichert!');
             closeSettings();
+            await syncToCloud();
+            syncFromCloud();
         }
 
-        // Erweiterte Suche: Durchsucht Tool-Namen UND sämtliche Inhalte im localStorage der Unterseiten
-        function filterTools() {
+        // --- FIREBASE SYNC LOGIK ---
+
+        async function syncFromCloud() {
+            const cloudId = localStorage.getItem('hub_sync_id');
+            if (!cloudId) return;
+
+            try {
+                const docRef = doc(db, "hubs", cloudId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const cloudData = docSnap.data();
+                    if (cloudData && typeof cloudData === 'object') {
+                        for (const key in cloudData) {
+                            if (cloudData[key]) {
+                                localStorage.setItem(key, typeof cloudData[key] === 'object' ? JSON.stringify(cloudData[key]) : cloudData[key]);
+                            }
+                        }
+                        loadStats();
+                        console.log("Erfolgreich mit Firebase Firestore synchronisiert!");
+                    }
+                } else {
+                    await syncToCloud();
+                }
+            } catch (error) {
+                console.error("Fehler beim Laden aus Firestore:", error);
+            }
+        }
+
+        async function syncToCloud() {
+            const cloudId = localStorage.getItem('hub_sync_id');
+            if (!cloudId) return;
+
+            try {
+                let globalBackup = {};
+                for (let i = 0; i < localStorage.length; i++) {
+                    let key = localStorage.key(i);
+                    let val = localStorage.getItem(key);
+                    try {
+                        globalBackup[key] = JSON.parse(val);
+                    } catch(e) {
+                        globalBackup[key] = val;
+                    }
+                }
+
+                const docRef = doc(db, "hubs", cloudId);
+                await setDoc(docRef, globalBackup);
+                console.log("Daten erfolgreich in Firebase Firestore gesichert.");
+            } catch (error) {
+                console.error("Fehler beim Speichern in Firestore:", error);
+            }
+        }
+
+        // Erweiterte Suche (durchsucht Titel UND Unterseiten-Inhalte im localStorage)
+        window.filterTools = function() {
             const query = document.getElementById('searchBox').value.toLowerCase().trim();
             const cards = document.querySelectorAll('.tool-card');
 
             cards.forEach(card => {
                 const nameAttr = card.getAttribute('data-name') || '';
                 const cardText = card.innerText.toLowerCase();
-                
-                // Prüfen ob im localStorage des jeweiligen Tools ein passender Eintrag liegt
                 const toolId = card.getAttribute('data-id');
                 let foundInStorage = false;
                 
@@ -362,7 +433,7 @@
             });
         }
 
-        function loadStats() {
+        window.loadStats = function() {
             try {
                 const setStat = (id, text) => {
                     const el = document.getElementById(id);
@@ -411,8 +482,9 @@
             }
         }
 
-        async function exportGlobalBackup() {
+        window.exportGlobalBackup = async function() {
             try {
+                await syncToCloud();
                 let globalBackup = {};
                 for (let i = 0; i < localStorage.length; i++) {
                     let key = localStorage.key(i);
@@ -449,18 +521,19 @@
             }
         }
 
-        function importGlobalBackup(event) {
+        window.importGlobalBackup = async function(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
                     for (let key in parsed) {
                         localStorage.setItem(key, parsed[key]);
                     }
                     loadStats();
-                    alert("Komplettes System-Backup erfolgreich eingespielt!");
+                    await syncToCloud();
+                    alert("Komplettes System-Backup erfolgreich eingespielt & in die Firebase-Cloud gesichert!");
                 } catch (err) {
                     alert("Fehler beim Importieren der Backup-Datei.");
                 }
