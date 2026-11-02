@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Alltagshelferlein Hub – 10 Tablet-Pro-Tools</title>
     
-    <!-- PWA / App-Modus Meta Tags für Tablet -->
+    <!-- PWA / App-Modus Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Helferlein Hub">
@@ -15,11 +15,17 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(2, 132, 199, 0.03) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.03) 0%, transparent 40%);
+        /* Canvas Partikel Hintergrund */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
         }
+
         .tool-card::before {
             content: '';
             position: absolute;
@@ -34,9 +40,35 @@
         .tool-card:hover::before {
             opacity: 1;
         }
+
+        /* Cyberpunk / Neon-Hacker-Modus Styles */
+        body.cyberpunk-mode {
+            background-color: #030712 !important;
+            color: #00ffcc !important;
+        }
+        body.cyberpunk-mode header,
+        body.cyberpunk-mode .bg-white,
+        body.cyberpunk-mode .modal-box {
+            background-color: #0b0f19 !important;
+            border-color: #00ffcc44 !important;
+            color: #00ffcc !important;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.15);
+        }
+        body.cyberpunk-mode h1, body.cyberpunk-mode h3 {
+            color: #00ffcc !important;
+            text-shadow: 0 0 8px rgba(0, 255, 204, 0.6);
+        }
+        body.cyberpunk-mode input {
+            background-color: #030712 !important;
+            color: #00ffcc !important;
+            border-color: #00ffcc66 !important;
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-200">
+<body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
+
+    <!-- Feature 2: Interaktiver Touch-Partikel Hintergrund -->
+    <canvas id="particleCanvas"></canvas>
 
     <!-- Header / Navbar -->
     <header class="bg-white/95 backdrop-blur-md shadow-lg py-5 px-4 border-b border-gray-200 sticky top-0 z-40">
@@ -50,20 +82,25 @@
 
             <!-- Top Controls -->
             <div class="flex flex-wrap items-center gap-2">
-                <button type="button" onclick="openMonthlyReport()" class="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold rounded-xl border border-sky-200 shadow-sm cursor-pointer flex items-center gap-1.5 transition-all">
-                    📊 Monatsreport
+                <!-- Feature 1: Cyberpunk Toggle -->
+                <button type="button" onclick="toggleCyberpunk()" id="cyberBtn" class="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold rounded-xl border border-purple-200 shadow-sm cursor-pointer transition-all" title="Cyberpunk Modus">
+                    🌌 Cyber
+                </button>
+                <!-- Feature 3: Retro Arcade Button -->
+                <button type="button" onclick="openArcade()" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold rounded-xl border border-amber-200 shadow-sm cursor-pointer transition-all">
+                    🕹️ Arcade
+                </button>
+                <button type="button" onclick="openMonthlyReport()" class="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold rounded-xl border border-sky-200 shadow-sm cursor-pointer transition-all">
+                    📊 Report
                 </button>
                 <button type="button" onclick="openSettings()" class="px-3.5 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl shadow-sm border border-gray-300 cursor-pointer flex items-center gap-1.5 transition-all">
-                    ⚙️ Einstellungen & Sync
+                    ⚙️ Sync & Backup
                 </button>
-                <a href="https://ko-fi.com/DEIN_KOFI_NAME" target="_blank" rel="noopener" class="px-3.5 py-2 bg-gradient-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-xs font-bold rounded-xl shadow-md text-white flex items-center gap-1.5 transition-all">
-                    <span>☕</span> Spenden
-                </a>
             </div>
         </div>
 
         <!-- Suchleiste -->
-        <div class="mt-4 max-w-2xl mx-auto px-4 flex flex-col sm:flex-row gap-3">
+        <div class="mt-4 max-w-2xl mx-auto px-4">
             <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder gespeicherte Einträge durchsuchen..." class="w-full px-4 py-2.5 rounded-xl text-sm bg-gray-50 text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-200">
         </div>
     </header>
@@ -71,7 +108,7 @@
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
         
-        <!-- Aktivitäts-Stream (Feature 4) -->
+        <!-- Aktivitäts-Stream -->
         <div id="activityStream" class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between text-xs text-gray-600">
             <div class="flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -81,7 +118,7 @@
             <span class="text-gray-400 text-[11px]" id="activityTime">Cloud-Sync aktiv</span>
         </div>
 
-        <!-- Favoriten-Sektion (Feature 1) -->
+        <!-- Favoriten-Sektion -->
         <div id="favoritesSection" class="hidden space-y-3">
             <h2 class="text-xs font-bold text-sky-700 uppercase tracking-wider flex items-center gap-1.5">⭐ Deine Favoriten & Schnellstart</h2>
             <div id="favoritesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
@@ -304,7 +341,7 @@
         <p>Alltagshelferlein Hub – 100% lokal, sicher & blitzschnell im Browser.</p>
     </footer>
 
-    <!-- Einstellungs-Modal (Popup) -->
+    <!-- Einstellungs-Modal -->
     <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
@@ -340,7 +377,7 @@
         </div>
     </div>
 
-    <!-- Monatsreport Modal (Feature 5) -->
+    <!-- Monatsreport Modal -->
     <div id="reportModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
@@ -348,7 +385,7 @@
                 <button type="button" onclick="closeMonthlyReport()" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">&times;</button>
             </div>
             <div id="reportContent" class="space-y-3 text-sm text-gray-700">
-                <p>Lade aggregierte Daten aus allen Unterseiten...</p>
+                <p>Lade aggregierte Daten...</p>
             </div>
             <div class="flex justify-end mt-6 pt-4 border-t border-gray-200">
                 <button type="button" onclick="closeMonthlyReport()" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-xs font-bold rounded-xl text-white cursor-pointer">Schließen</button>
@@ -356,7 +393,27 @@
         </div>
     </div>
 
-    <!-- Script Logik mit Firebase & neuen Features -->
+    <!-- Feature 3: Retro Arcade Modal -->
+    <div id="arcadeModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+        <div class="bg-slate-900 border border-amber-500/50 rounded-2xl w-full max-w-md p-6 shadow-2xl text-center text-white">
+            <div class="flex justify-between items-center mb-3 border-b border-slate-800 pb-2">
+                <h3 class="text-base font-bold text-amber-400">🕹️ Retro Kaffeepausen-Arcade</h3>
+                <button type="button" onclick="closeArcade()" class="text-gray-400 hover:text-white text-xl font-bold cursor-pointer">&times;</button>
+            </div>
+            <p class="text-xs text-slate-400 mb-4">Klicke so schnell du kannst auf den Pixel-Coin, um Punkte zu sammeln!</p>
+            <div id="arcadeScreen" class="bg-slate-950 border-2 border-amber-500/30 rounded-xl h-48 relative overflow-hidden flex flex-col items-center justify-center cursor-pointer select-none" onclick="scorePoint()">
+                <div id="arcadeScore" class="text-3xl font-mono font-bold text-amber-400">0</div>
+                <div class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Punkte (Klick hier!)</div>
+                <div id="coin" class="absolute text-2xl transition-all duration-100" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">🪙</div>
+            </div>
+            <div class="flex justify-between items-center mt-4">
+                <span class="text-xs text-slate-400" id="arcadeTimer">Zeit: 30s</span>
+                <button type="button" onclick="startArcadeGame()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-xs font-bold rounded-xl text-slate-950 cursor-pointer">Spiel starten</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logik (Firebase, Partikel, Cyberpunk, Arcade, etc.) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -378,38 +435,165 @@
             loadStats();
             syncFromCloud();
             initFavorites();
+            initParticles();
             updateActivityStream();
+            if(localStorage.getItem('hub_cyberpunk') === 'true') {
+                document.body.classList.add('cyberpunk-mode');
+            }
         });
 
+        // --- FEATURE 2: INTERAKTIVER CANVAS-PARTIKEL-HINTERGRUND ---
+        function initParticles() {
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            let mouse = { x: null, y: null };
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+            window.addEventListener('touchmove', e => { if(e.touches.length > 0) { mouse.x = e.touches[0].clientX; mouse.y = e.touches[0].clientY; } });
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.8;
+                    this.vy = (Math.random() - 0.5) * 0.8;
+                    this.size = Math.random() * 2 + 1;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > width) this.vx *= -1;
+                    if (this.y < 0 || this.y > height) this.vy *= -1;
+                }
+                draw() {
+                    ctx.fillStyle = document.body.classList.contains('cyberpunk-mode') ? 'rgba(0, 255, 204, 0.4)' : 'rgba(2, 132, 199, 0.25)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < 40; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach((p, index) => {
+                    p.update();
+                    p.draw();
+                    for (let j = index + 1; j < particles.length; j++) {
+                        let p2 = particles[j];
+                        let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                        if (dist < 120) {
+                            ctx.strokeStyle = document.body.classList.contains('cyberpunk-mode') ? `rgba(0, 255, 204, ${1 - dist/120})` : `rgba(2, 132, 199, ${0.15 * (1 - dist/120)})`;
+                            ctx.lineWidth = 0.6;
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        // --- FEATURE 1: CYBERPUNK MODUS TOGGLE ---
+        window.toggleCyberpunk = function() {
+            document.body.classList.toggle('cyberpunk-mode');
+            const isCyber = document.body.classList.contains('cyberpunk-mode');
+            localStorage.setItem('hub_cyberpunk', isCyber);
+        }
+
+        // --- FEATURE 3: RETRO ARCADE MINI-SPIEL ---
+        let gameInterval = null;
+        let timeLeft = 30;
+        let gameScore = 0;
+
+        window.openArcade = function() {
+            const modal = document.getElementById('arcadeModal');
+            if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
+        }
+
+        window.closeArcade = function() {
+            const modal = document.getElementById('arcadeModal');
+            if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
+            clearInterval(gameInterval);
+        }
+
+        window.startArcadeGame = function() {
+            clearInterval(gameInterval);
+            timeLeft = 30;
+            gameScore = 0;
+            document.getElementById('arcadeScore').textContent = gameScore;
+            moveCoin();
+
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('arcadeTimer').textContent = `Zeit: ${timeLeft}s`;
+                moveCoin();
+                if (timeLeft <= 0) {
+                    clearInterval(gameInterval);
+                    alert(`🏁 Spiel vorbei! Dein Score: ${gameScore} Punkte.`);
+                }
+            }, 1000);
+        }
+
+        window.scorePoint = function() {
+            if (timeLeft > 0 && gameInterval) {
+                gameScore++;
+                document.getElementById('arcadeScore').textContent = gameScore;
+                moveCoin();
+            }
+        }
+
+        function moveCoin() {
+            const coin = document.getElementById('coin');
+            const screen = document.getElementById('arcadeScreen');
+            if(!coin || !screen) return;
+            const maxX = screen.clientWidth - 40;
+            const maxY = screen.clientHeight - 40;
+            const rx = Math.floor(Math.random() * maxX);
+            const ry = Math.floor(Math.random() * maxY);
+            coin.style.position = 'absolute';
+            coin.style.left = rx + 'px';
+            coin.style.top = ry + 'px';
+        }
+
+        // Globale Modal & Sync Handler
         window.openSettings = function() {
             const syncInput = document.getElementById('globalSyncId');
             if (syncInput) syncInput.value = localStorage.getItem('hub_sync_id') || '';
             const modal = document.getElementById('settingsModal');
             if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
         }
-
         window.closeSettings = function() {
             const modal = document.getElementById('settingsModal');
             if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
         }
-
         window.openMonthlyReport = function() {
             generateReport();
             const modal = document.getElementById('reportModal');
             if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
         }
-
         window.closeMonthlyReport = function() {
             const modal = document.getElementById('reportModal');
             if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
         }
-
         window.generateSyncKey = function() {
             const randomId = 'hub-' + Math.random().toString(36).substring(2, 8) + '-' + Math.random().toString(36).substring(2, 8);
             const syncInput = document.getElementById('globalSyncId');
             if (syncInput) syncInput.value = randomId;
         }
-
         window.saveSettings = async function() {
             const syncInput = document.getElementById('globalSyncId');
             if (syncInput) localStorage.setItem('hub_sync_id', syncInput.value.trim());
@@ -465,7 +649,7 @@
             }
         }
 
-        // --- FEATURE 1: FAVORITEN LOGIK ---
+        // --- FAVORITEN LOGIK ---
         window.toggleFavorite = function(toolId, event) {
             event.preventDefault();
             event.stopPropagation();
@@ -487,13 +671,9 @@
             const allCards = document.querySelectorAll('#toolsGrid .tool-card');
             
             grid.innerHTML = '';
-            
             if (favs.length === 0) {
                 section.classList.add('hidden');
-                allCards.forEach(c => {
-                    const btn = c.querySelector('.fav-btn');
-                    if(btn) btn.style.color = '#d1d5db';
-                });
+                allCards.forEach(c => { const btn = c.querySelector('.fav-btn'); if(btn) btn.style.color = '#d1d5db'; });
                 return;
             }
 
@@ -502,7 +682,6 @@
                 const card = document.querySelector(`#toolsGrid .tool-card[data-id="${id}"]`);
                 if (card) {
                     const clone = card.cloneNode(true);
-                    // Event listener für den Klon im Favoritenbereich neu binden
                     const btn = clone.querySelector('.fav-btn');
                     btn.style.color = '#f59e0b';
                     btn.onclick = (e) => toggleFavorite(id, e);
@@ -513,13 +692,10 @@
             allCards.forEach(c => {
                 const toolId = c.getAttribute('data-id');
                 const btn = c.querySelector('.fav-btn');
-                if (btn) {
-                    btn.style.color = favs.includes(toolId) ? '#f59e0b' : '#d1d5db';
-                }
+                if (btn) btn.style.color = favs.includes(toolId) ? '#f59e0b' : '#d1d5db';
             });
         }
 
-        // --- FEATURE 4: AKTIVITÄTS-STREAM ---
         function updateActivityStream() {
             const time = localStorage.getItem('hub_last_sync') || 'Gerade eben';
             const elText = document.getElementById('activityText');
@@ -528,7 +704,6 @@
             if (elTime) elTime.textContent = `Letzter Sync: ${time}`;
         }
 
-        // --- FEATURE 5: MONATS-SCHNELLREPORT ---
         function generateReport() {
             const content = document.getElementById('reportContent');
             const getCount = (keys) => {
@@ -584,34 +759,26 @@
                         <span class="text-lg font-bold text-lime-600">${plants}</span>
                     </div>
                 </div>
-                <p class="text-xs text-gray-400 text-center mt-3">Alle Werte basieren auf deinen lokalen & synchronisierten Daten.</p>
             `;
         }
 
-        // Globale Funktionen für Suche & Stats
         window.filterTools = function() {
             const query = document.getElementById('searchBox').value.toLowerCase().trim();
             const cards = document.querySelectorAll('#toolsGrid .tool-card');
-
             cards.forEach(card => {
                 const nameAttr = card.getAttribute('data-name') || '';
                 const cardText = card.innerText.toLowerCase();
                 const toolId = card.getAttribute('data-id');
                 let foundInStorage = false;
-                
                 if (query.length > 1) {
                     for (let i = 0; i < localStorage.length; i++) {
                         const key = localStorage.key(i);
                         if (key.includes(toolId)) {
                             const val = localStorage.getItem(key);
-                            if (val && val.toLowerCase().includes(query)) {
-                                foundInStorage = true;
-                                break;
-                            }
+                            if (val && val.toLowerCase().includes(query)) { foundInStorage = true; break; }
                         }
                     }
                 }
-
                 if (nameAttr.includes(query) || cardText.includes(query) || foundInStorage) {
                     card.style.display = "flex";
                 } else {
@@ -622,11 +789,7 @@
 
         window.loadStats = function() {
             try {
-                const setStat = (id, text) => {
-                    const el = document.getElementById(id);
-                    if (el) el.innerText = text;
-                };
-
+                const setStat = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
                 const getCount = (keys) => {
                     for (let key of keys) {
                         try {
@@ -645,7 +808,6 @@
                     }
                     return 0;
                 };
-
                 setStat('stats-kassenbon', `${getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts'])} Belege gespeichert`);
                 setStat('stats-kisten', `${getCount(['kisten_data', 'kisten', 'boxes', 'inventar'])} Kisten im Bestand`);
                 setStat('stats-wg-kasse', `${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])} Ausgaben erfasst`);
@@ -663,7 +825,6 @@
                 setStat('stats-verleih', `${getCount(['verleih_pass', 'verleih_data', 'verleih', 'items'])} Verleih-Objekte`);
                 setStat('stats-pflanzen', `${getCount(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants'])} Pflanzen im Bestand`);
                 setStat('stats-energie', `${getCount(['energie_tracker_pro', 'energie_data', 'energie', 'readings'])} Ablesungen erfasst`);
-
             } catch(e) {
                 console.log("Fehler beim Laden der Stats:", e);
             }
@@ -677,35 +838,16 @@
                     let key = localStorage.key(i);
                     globalBackup[key] = localStorage.getItem(key);
                 }
-                const jsonString = JSON.stringify(globalBackup);
-                const blob = new Blob([jsonString], { type: 'application/json' });
-                const fileName = `alltagshilfe-komplett-backup-${new Date().toISOString().split('T')[0]}.json`;
-                const file = new File([blob], fileName, { type: 'application/json' });
-
+                const blob = new Blob([JSON.stringify(globalBackup)], { type: 'application/json' });
+                const file = new File([blob], `alltagshilfe-backup-${new Date().toISOString().split('T')[0]}.json`, { type: 'application/json' });
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            files: [file],
-                            title: 'Alltagshelferlein Backup',
-                            text: 'Hier ist das komplette Backup deines Alltagshelferlein Hubs.'
-                        });
-                        return;
-                    } catch (err) {
-                        if (err.name === 'AbortError') return;
-                    }
+                    await navigator.share({ files: [file], title: 'Alltagshelferlein Backup' });
+                    return;
                 }
-
                 let url = URL.createObjectURL(blob);
-                let a = document.createElement('a');
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } catch (e) {
-                alert("Fehler beim Exportieren: " + e.message);
-            }
+                let a = document.createElement('a'); a.href = url; a.download = file.name;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            } catch (e) { alert("Fehler: " + e.message); }
         }
 
         window.importGlobalBackup = async function(event) {
@@ -715,16 +857,10 @@
             reader.onload = async function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    for (let key in parsed) {
-                        localStorage.setItem(key, parsed[key]);
-                    }
-                    loadStats();
-                    initFavorites();
-                    await syncToCloud();
-                    alert("Komplettes System-Backup erfolgreich eingespielt & in die Firebase-Cloud gesichert!");
-                } catch (err) {
-                    alert("Fehler beim Importieren der Backup-Datei.");
-                }
+                    for (let key in parsed) { localStorage.setItem(key, parsed[key]); }
+                    loadStats(); initFavorites(); await syncToCloud();
+                    alert("Backup erfolgreich eingespielt & gesichert!");
+                } catch (err) { alert("Fehler beim Importieren."); }
             };
             reader.readAsText(file);
         }
