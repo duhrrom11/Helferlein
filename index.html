@@ -9,192 +9,251 @@
     <script>
         tailwind.config = { darkMode: 'class' }
     </script>
+    <style>
+        /* Feine High-Tech Hintergründe und Effekte */
+        body {
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(129, 140, 248, 0.05) 0%, transparent 40%);
+        }
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 dark:bg-slate-950 text-gray-800 dark:text-gray-100 min-h-full flex flex-col transition-colors duration-200">
+<body class="bg-slate-950 text-gray-100 min-h-full flex flex-col transition-colors duration-200">
 
-    <!-- Header -->
-    <header class="bg-slate-900 dark:bg-slate-900 text-white shadow-lg py-6 px-4 border-b border-slate-800">
-        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+    <!-- Header / Navbar -->
+    <header class="bg-slate-900/80 backdrop-blur-md text-white shadow-xl py-6 px-4 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight">🛠️ Alltagshelferlein Hub</h1>
-                <p class="text-sm md:text-base text-slate-300 mt-1">10 professionelle, offline-fähige Pro-Tools für dein Tablet</p>
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-sky-400 to-indigo-400 bg-clip-text text-transparent flex items-center gap-2">
+                    ⚡ Alltagshelferlein Hub
+                </h1>
+                <p class="text-xs md:text-sm text-slate-400 mt-1">10 High-Performance Pro-Tools für dein Tablet</p>
             </div>
 
             <!-- Top Controls -->
-            <div class="flex flex-wrap items-center gap-2 relative z-50">
-                <button type="button" onclick="exportGlobalBackup()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl shadow-sm text-white flex items-center gap-1 cursor-pointer">💾 Backup & Teilen</button>
-                <label class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl shadow-sm border border-slate-700 cursor-pointer flex items-center gap-1">
+            <div class="flex flex-wrap items-center gap-2">
+                <button type="button" onclick="exportGlobalBackup()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl shadow-md text-white flex items-center gap-1.5 transition-all cursor-pointer">
+                    💾 Backup & Teilen
+                </button>
+                <label class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-xl shadow-md border border-slate-700 cursor-pointer flex items-center gap-1.5 transition-all">
                     📂 Restore <input type="file" accept=".json" onchange="importGlobalBackup(event)" class="hidden">
                 </label>
-                <button type="button" onclick="toggleDarkMode()" id="darkToggle" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs border border-slate-700 cursor-pointer">🌙</button>
+                <a href="https://ko-fi.com/DEIN_KOFI_NAME" target="_blank" rel="noopener" class="px-3.5 py-2 bg-gradient-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-xs font-bold rounded-xl shadow-md text-white flex items-center gap-1.5 transition-all">
+                    <span>☕</span> Spenden
+                </a>
+                <button type="button" onclick="toggleDarkMode()" id="darkToggle" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs border border-slate-700 cursor-pointer transition-all">🌙</button>
             </div>
         </div>
 
-        <!-- Suchleiste -->
-        <div class="mt-6 max-w-md mx-auto px-4">
-            <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool suchen (z.B. KFZ, Kiste, Haustier)..." class="w-full px-4 py-3 rounded-2xl text-sm text-gray-800 bg-white dark:bg-slate-800 dark:text-white dark:placeholder-gray-400 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-transparent dark:border-slate-700">
+        <!-- Suchleiste & Filter Bar -->
+        <div class="mt-5 max-w-2xl mx-auto px-4 flex flex-col sm:flex-row gap-3">
+            <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool suchen (z.B. KFZ, Kiste, Haustier)..." class="w-full px-4 py-2.5 rounded-xl text-sm bg-slate-950 text-white placeholder-slate-500 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-slate-800">
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto p-4 md:p-8 max-w-6xl space-y-8">
-        <div>
-            <h2 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Alle 10 Alltagshelfer</h2>
-            <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <main class="flex-grow container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
+        
+        <!-- Badge Info -->
+        <div class="flex justify-between items-center">
+            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Alle 10 Alltagshelfer im Überblick</h2>
+            <span class="text-[11px] font-semibold text-sky-400 bg-sky-950/40 border border-sky-800/50 px-3 py-1 rounded-full">🔒 100% Offline • Lokaler Speicher</span>
+        </div>
 
-                <!-- Tool 1 -->
-                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="kassenbon" data-name="garantie kassenbon beleg mhd scanner">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🧾</div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Garantie & Kassenbon Pro</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Belege scannen, Garantiefristen überwachen, Support-Mails generieren & PDF-Export.</p>
-                        <div id="stats-kassenbon" class="mt-3 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+        <!-- Tools Grid -->
+        <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Tool 1 -->
+            <div class="tool-card bg-slate-900/90 hover:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-name="garantie kassenbon beleg mhd scanner">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-emerald-950/50 text-emerald-400 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-800/40 shadow-inner">🧾</div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Pro</span>
                     </div>
-                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                        <a href="tools/kassenbon/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
-                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">Garantie & Kassenbon Pro</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Belege scannen, Garantiefristen überwachen, Support-Mails generieren & PDF-Export.</p>
+                    <div id="stats-kassenbon" class="mt-3 text-[11px] font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-900/50 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-
-                <!-- Tool 2 -->
-                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="kisten" data-name="keller kisten finder qr code inventar">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-12 h-12 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">📦</div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Keller- & Kisten-Finder</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Umzugskisten und Lagerorte digital verwalten & QR-Codes direkt im Browser drucken.</p>
-                        <div id="stats-kisten" class="mt-3 text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                    </div>
-                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-blue-600 dark:text-blue-400">
-                        <a href="tools/kisten/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
-                    </div>
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500">📄 PDF-Export</span>
+                    <a href="tools/kassenbon/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
-
-                <!-- Tool 3 -->
-                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="wg-kasse" data-name="wg haushalt kasse ausgaben rechner split">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-12 h-12 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">💶</div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">WG- & Haushalts-Kasse</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Gemeinsame Ausgaben erfassen, Beträge aufteilen und Salden sekundenschnell berechnen.</p>
-                        <div id="stats-wg-kasse" class="mt-3 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                    </div>
-                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-amber-600 dark:text-amber-400">
-                        <a href="tools/wg-kasse/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
-                    </div>
-                </div>
-
-                <!-- Tool 4 -->
-                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="notizen" data-name="schlüssel pin dokumente notiz wlan merker">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-12 h-12 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🔐</div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Schlüssel, PIN & Notizen</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Sicherer, lokaler Speicher für WLAN-Codes, PINs, Koffer-Zahlenkombinationen und Notizen.</p>
-                        <div id="stats-notizen" class="mt-3 text-[11px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                    </div>
-                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-purple-600 dark:text-purple-400">
-                        <a href="tools/notizen/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
-                    </div>
-                </div>
-
-                <!-- Tool 5 -->
-                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="kfz" data-name="kfz auto reifenwechsel tüv öl tanken kosten reifentiefe">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-12 h-12 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🚗</div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">KFZ- & Reifen-Tracker Pro</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">TÜV, Reifentiefe, Tanken, Reparaturen, Kostenrechner und Kalender-Export für Autos.</p>
-                        <div id="stats-kfz" class="mt-3 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                    </div>
-                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-red-600 dark:text-red-400">
-                        <a href="tools/kfz/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
-                    </div>
-                </div>
-
-                <!-- Tool 6 -->
-                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="haustier" data-name="haustier hund katze gesundheit impfpass tierarzt kosten">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-12 h-12 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🐾</div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Haustier-Gesundheits-Pass</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Impfungen, Vorsorge, Tierarzt-Termine, Foto-Avatare und Kostenrechner für Haustiere.</p>
-                        <div id="stats-haustier" class="mt-3 text-[11px] font-semibold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                    </div>
-                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-teal-600 dark:text-teal-400">
-                        <a href="tools/haustier/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
-                    </div>
-                </div>
-
-                <!-- Tool 7 -->
-                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="parken" data-name="parken parkschein timer gps standort auto">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-12 h-12 bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🅿️</div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Parkschein- & Park-Timer</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Visueller Countdown gegen Strafzettel, GPS-Standortspeicherung und Park-Historie.</p>
-                        <div id="stats-parken" class="mt-3 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                    </div>
-                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-sky-600 dark:text-sky-400">
-                        <a href="tools/parken/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
-                    </div>
-                </div>
-
-                <!-- Tool 8 -->
-                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="verleih" data-name="leih verleih tracker werkzeug kaution whatsapp">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🤝</div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Leih- & Verleih-Tracker Pro</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Wer hat dein Werkzeug? Mit WhatsApp-Erinnerung, Kaution, Kontakten und QR-Codes.</p>
-                        <div id="stats-verleih" class="mt-3 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                    </div>
-                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                        <a href="tools/verleih/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
-                    </div>
-                </div>
-
-                <!-- Tool 9 -->
-                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="pflanzen" data-name="pflanzen garten pflege pass gießen dünger">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-12 h-12 bg-lime-50 dark:bg-lime-950/50 text-lime-600 dark:text-lime-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">🌱</div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Pflanzen- & Garten-Pass</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Gieß-Intervall, Dünger-Historie, Standorte und Foto-Avatare für deine Zimmerpflanzen.</p>
-                        <div id="stats-pflanzen" class="mt-3 text-[11px] font-semibold text-lime-600 dark:text-lime-400 bg-lime-50 dark:bg-lime-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                    </div>
-                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-lime-600 dark:text-lime-400">
-                        <a href="tools/pflanzen/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
-                    </div>
-                </div>
-
-                <!-- Tool 10 -->
-                <div class="tool-card bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm hover:shadow-md border border-gray-100 dark:border-slate-800 flex flex-col justify-between transition-all" data-id="energie" data-name="strom wasser gas zähler energie tracker verbrauch">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-12 h-12 bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center text-xl font-bold shadow-sm">⚡</div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Strom-, Wasser- & Gaszähler</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Monatliche Zählerstände erfassen, Verbrauch im Blick behalten und PDF für Versorger.</p>
-                        <div id="stats-energie" class="mt-3 text-[11px] font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                    </div>
-                    <div class="mt-6 flex items-center justify-between text-xs font-semibold text-orange-600 dark:text-orange-400">
-                        <a href="tools/energie/index.html" class="w-full flex justify-between items-center"><span>Öffnen</span><span>→</span></a>
-                    </div>
-                </div>
-
             </div>
+
+            <!-- Tool 2 -->
+            <div class="tool-card bg-slate-900/90 hover:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-name="keller kisten finder qr code inventar">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-blue-950/50 text-blue-400 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-800/40 shadow-inner">📦</div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Lager</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">Keller- & Kisten-Finder</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Umzugskisten und Lagerorte digital verwalten & QR-Codes direkt im Browser drucken.</p>
+                    <div id="stats-kisten" class="mt-3 text-[11px] font-semibold text-blue-400 bg-blue-950/40 border border-blue-900/50 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500">🖨️ QR-Druck</span>
+                    <a href="tools/kisten/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                </div>
+            </div>
+
+            <!-- Tool 3 -->
+            <div class="tool-card bg-slate-900/90 hover:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-name="wg haushalt kasse ausgaben rechner split">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-amber-950/50 text-amber-400 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-800/40 shadow-inner">💶</div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Budget</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">WG- & Haushalts-Kasse</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Gemeinsame Ausgaben erfassen, Beträge aufteilen und Salden sekundenschnell berechnen.</p>
+                    <div id="stats-wg-kasse" class="mt-3 text-[11px] font-semibold text-amber-400 bg-amber-950/40 border border-amber-900/50 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500">⚡ Live-Calc</span>
+                    <a href="tools/wg-kasse/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                </div>
+            </div>
+
+            <!-- Tool 4 -->
+            <div class="tool-card bg-slate-900/90 hover:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-name="schlüssel pin dokumente notiz wlan merker">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-purple-950/50 text-purple-400 rounded-xl flex items-center justify-center text-xl font-bold border border-purple-800/40 shadow-inner">🔐</div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Secure</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">Schlüssel, PIN & Notizen</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Sicherer, lokaler Speicher für WLAN-Codes, PINs, Koffer-Zahlenkombinationen und Notizen.</p>
+                    <div id="stats-notizen" class="mt-3 text-[11px] font-semibold text-purple-400 bg-purple-950/40 border border-purple-900/50 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500">🛡️ AES-Local</span>
+                    <a href="tools/notizen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                </div>
+            </div>
+
+            <!-- Tool 5 -->
+            <div class="tool-card bg-slate-900/90 hover:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-name="kfz auto reifenwechsel tüv öl tanken kosten reifentiefe">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-red-950/50 text-red-400 rounded-xl flex items-center justify-center text-xl font-bold border border-red-800/40 shadow-inner">🚗</div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Tracker</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">KFZ- & Reifen-Tracker Pro</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">TÜV, Reifentiefe, Tanken, Reparaturen, Kostenrechner und Kalender-Export für Autos.</p>
+                    <div id="stats-kfz" class="mt-3 text-[11px] font-semibold text-red-400 bg-red-950/40 border border-red-900/50 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500">📅 Kalender</span>
+                    <a href="tools/kfz/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                </div>
+            </div>
+
+            <!-- Tool 6 -->
+            <div class="tool-card bg-slate-900/90 hover:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-name="haustier hund katze gesundheit impfpass tierarzt kosten">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-teal-950/50 text-teal-400 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-800/40 shadow-inner">🐾</div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Care</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">Haustier-Gesundheits-Pass</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Impfungen, Vorsorge, Tierarzt-Termine, Foto-Avatare und Kostenrechner für Haustiere.</p>
+                    <div id="stats-haustier" class="mt-3 text-[11px] font-semibold text-teal-400 bg-teal-950/40 border border-teal-900/50 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500">🩺 Vorsorge</span>
+                    <a href="tools/haustier/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                </div>
+            </div>
+
+            <!-- Tool 7 -->
+            <div class="tool-card bg-slate-900/90 hover:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-name="parken parkschein timer gps standort auto">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-sky-950/50 text-sky-400 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-800/40 shadow-inner">🅿️</div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Timer</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">Parkschein- & Park-Timer</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Visueller Countdown gegen Strafzettel, GPS-Standortspeicherung und Park-Historie.</p>
+                    <div id="stats-parken" class="mt-3 text-[11px] font-semibold text-sky-400 bg-sky-950/40 border border-sky-900/50 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500">📍 GPS-Save</span>
+                    <a href="tools/parken/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                </div>
+            </div>
+
+            <!-- Tool 8 -->
+            <div class="tool-card bg-slate-900/90 hover:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-name="leih verleih tracker werkzeug kaution whatsapp">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-indigo-950/50 text-indigo-400 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-800/40 shadow-inner">🤝</div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Share</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">Leih- & Verleih-Tracker Pro</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Wer hat dein Werkzeug? Mit WhatsApp-Erinnerung, Kaution, Kontakten und QR-Codes.</p>
+                    <div id="stats-verleih" class="mt-3 text-[11px] font-semibold text-indigo-400 bg-indigo-950/40 border border-indigo-900/50 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500">💬 WhatsApp</span>
+                    <a href="tools/verleih/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                </div>
+            </div>
+
+            <!-- Tool 9 -->
+            <div class="tool-card bg-slate-900/90 hover:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-name="pflanzen garten pflege pass gießen dünger">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-lime-950/50 text-lime-400 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-800/40 shadow-inner">🌱</div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Green</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">Pflanzen- & Garten-Pass</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Gieß-Intervall, Dünger-Historie, Standorte und Foto-Avatare für deine Zimmerpflanzen.</p>
+                    <div id="stats-pflanzen" class="mt-3 text-[11px] font-semibold text-lime-400 bg-lime-950/40 border border-lime-900/50 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500">💧 Reminder</span>
+                    <a href="tools/pflanzen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                </div>
+            </div>
+
+            <!-- Tool 10 -->
+            <div class="tool-card bg-slate-900/90 hover:bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-name="strom wasser gas zähler energie tracker verbrauch">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-orange-950/50 text-orange-400 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-800/40 shadow-inner">⚡</div>
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md border border-slate-700">Energy</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tight">Strom-, Wasser- & Gaszähler</h3>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">Monatliche Zählerstände erfassen, Verbrauch im Blick behalten und PDF für Versorger.</p>
+                    <div id="stats-energie" class="mt-3 text-[11px] font-semibold text-orange-400 bg-orange-950/40 border border-orange-900/50 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span class="text-[11px] text-slate-500">📊 Charts</span>
+                    <a href="tools/energie/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-400 hover:text-slate-950 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                </div>
+            </div>
+
         </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 text-xs text-slate-500 border-t border-slate-800">
+        <p>Alltagshelferlein Hub – 100% lokal, sicher & blitzschnell im Browser.</p>
+    </footer>
 
     <!-- Script Logik -->
     <script>
@@ -255,25 +314,13 @@
                     return 0;
                 };
 
-                // 1. Kassenbon
                 setStat('stats-kassenbon', `${getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts'])} Belege gespeichert`);
-
-                // 2. Kisten
                 setStat('stats-kisten', `${getCount(['kisten_data', 'kisten', 'boxes', 'inventar'])} Kisten im Bestand`);
-
-                // 3. WG-Kasse
                 setStat('stats-wg-kasse', `${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])} Ausgaben erfasst`);
-
-                // 4. Notizen
                 setStat('stats-notizen', `${getCount(['secure_notes', 'notes', 'notizen_data', 'notizen'])} Notizen gesichert`);
-
-                // 5. KFZ
                 setStat('stats-kfz', `${getCount(['kfz_pass', 'kfz_data', 'vehicles', 'autos'])} Fahrzeuge aktiv`);
-
-                // 6. Haustier
                 setStat('stats-haustier', `${getCount(['haustier_pass', 'haustier_data', 'pets', 'tiere'])} Haustiere erfasst`);
-
-                // 7. Parken
+                
                 let parkData = null;
                 for (let k of ['parken_data', 'parken', 'parking']) {
                     try { let v = localStorage.getItem(k); if (v) { parkData = JSON.parse(v); break; } } catch(e){}
@@ -281,13 +328,8 @@
                 let hasActivePark = parkData && (parkData.active || parkData.startTime || parkData.endTime);
                 setStat('stats-parken', hasActivePark ? "Aktiver Park-Timer" : "Kein aktives Ticket");
 
-                // 8. Verleih
                 setStat('stats-verleih', `${getCount(['verleih_pass', 'verleih_data', 'verleih', 'items'])} Verleih-Objekte`);
-
-                // 9. Pflanzen
                 setStat('stats-pflanzen', `${getCount(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants'])} Pflanzen im Bestand`);
-
-                // 10. Energie
                 setStat('stats-energie', `${getCount(['energie_tracker_pro', 'energie_data', 'energie', 'readings'])} Ablesungen erfasst`);
 
             } catch(e) {
