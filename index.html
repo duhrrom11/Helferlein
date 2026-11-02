@@ -41,7 +41,7 @@
             opacity: 1;
         }
 
-        /* Cyberpunk / Neon-Hacker-Modus Styles */
+        /* Cyberpunk / Neon-Hacker-Modus */
         body.cyberpunk-mode {
             background-color: #030712 !important;
             color: #00ffcc !important;
@@ -63,15 +63,54 @@
             color: #00ffcc !important;
             border-color: #00ffcc66 !important;
         }
+
+        /* Holografischer Glassmorphism-Modus */
+        body.glass-mode {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
+            color: #e2e8f0 !important;
+        }
+        body.glass-mode header,
+        body.glass-mode .bg-white,
+        body.glass-mode .modal-box {
+            background: rgba(255, 255, 255, 0.05) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+        }
+        body.glass-mode h1, body.glass-mode h3 { color: #38bdf8 !important; }
+
+        /* Boot-Animation Overlay */
+        #bootScreen {
+            position: fixed;
+            inset: 0;
+            background: #030712;
+            color: #38bdf8;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            transition: opacity 0.5s ease;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
 
-    <!-- Feature 2: Interaktiver Touch-Partikel Hintergrund -->
+    <!-- Feature 5: Futuristischer Start-Screen / Boot-Animation -->
+    <div id="bootScreen">
+        <div class="text-2xl font-bold tracking-widest animate-pulse">⚡ ALLTAGSHELFERLEIN HUB v3.0</div>
+        <div class="text-xs text-sky-400 mt-2">SYSTEM INITIALIZING... 10 PRO-TOOLS ONLINE</div>
+        <div class="w-48 h-1 bg-slate-800 rounded-full mt-6 overflow-hidden">
+            <div id="bootProgress" class="h-full bg-sky-400 w-0 transition-all duration-1000"></div>
+        </div>
+    </div>
+
+    <!-- Partikel Hintergrund -->
     <canvas id="particleCanvas"></canvas>
 
     <!-- Header / Navbar -->
-    <header class="bg-white/95 backdrop-blur-md shadow-lg py-5 px-4 border-b border-gray-200 sticky top-0 z-40">
+    <header class="bg-white/95 backdrop-blur-md shadow-lg py-4 px-4 border-b border-gray-200 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
@@ -80,13 +119,25 @@
                 <p class="text-xs md:text-sm text-gray-500 mt-0.5">10 High-Performance Pro-Tools für dein Tablet</p>
             </div>
 
-            <!-- Top Controls -->
+            <!-- Top Controls (Erweitert um alle neuen Features) -->
             <div class="flex flex-wrap items-center gap-2">
-                <!-- Feature 1: Cyberpunk Toggle -->
-                <button type="button" onclick="toggleCyberpunk()" id="cyberBtn" class="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold rounded-xl border border-purple-200 shadow-sm cursor-pointer transition-all" title="Cyberpunk Modus">
+                <!-- Feature 3: Sprachsteuerung -->
+                <button type="button" onclick="startVoiceSearch()" id="voiceBtn" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-xl border border-rose-200 shadow-sm cursor-pointer transition-all" title="Sprachsteuerung">
+                    🎙️ Sprachbefehl
+                </button>
+                <!-- Feature 1: Touch-Zeichenpad -->
+                <button type="button" onclick="openPad()" class="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200 shadow-sm cursor-pointer transition-all">
+                    ✏️ Notizpad
+                </button>
+                <!-- Feature 2: Glassmorphism Modus -->
+                <button type="button" onclick="toggleGlass()" class="px-3.5 py-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 text-xs font-bold rounded-xl border border-cyan-200 shadow-sm cursor-pointer transition-all">
+                    💎 Glass
+                </button>
+                <!-- Cyberpunk Modus -->
+                <button type="button" onclick="toggleCyberpunk()" class="px-3.5 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold rounded-xl border border-purple-200 shadow-sm cursor-pointer transition-all">
                     🌌 Cyber
                 </button>
-                <!-- Feature 3: Retro Arcade Button -->
+                <!-- Retro Arcade -->
                 <button type="button" onclick="openArcade()" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold rounded-xl border border-amber-200 shadow-sm cursor-pointer transition-all">
                     🕹️ Arcade
                 </button>
@@ -94,14 +145,17 @@
                     📊 Report
                 </button>
                 <button type="button" onclick="openSettings()" class="px-3.5 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl shadow-sm border border-gray-300 cursor-pointer flex items-center gap-1.5 transition-all">
-                    ⚙️ Sync & Backup
+                    ⚙️ Sync
                 </button>
             </div>
         </div>
 
-        <!-- Suchleiste -->
-        <div class="mt-4 max-w-2xl mx-auto px-4">
+        <!-- Suchleiste & Feature 4: Life-Hack Motivations-Banner -->
+        <div class="mt-4 max-w-2xl mx-auto px-4 space-y-2">
             <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder gespeicherte Einträge durchsuchen..." class="w-full px-4 py-2.5 rounded-xl text-sm bg-gray-50 text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-200">
+            <div id="lifeHackBanner" class="text-[11px] text-sky-700 bg-sky-50/80 border border-sky-100 rounded-xl px-3 py-1.5 text-center font-medium">
+                💡 <strong>Life-Hack des Tages:</strong> Regelmäßige Backups auf mehreren Geräten sichern deine digitalen Werte!
+            </div>
         </div>
     </header>
 
@@ -393,7 +447,23 @@
         </div>
     </div>
 
-    <!-- Feature 3: Retro Arcade Modal -->
+    <!-- Feature 1: Touch-Zeichenpad Modal -->
+    <div id="padModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl text-center">
+            <div class="flex justify-between items-center mb-3 border-b border-gray-200 pb-2">
+                <h3 class="text-base font-bold text-gray-900">✏️ Schnelles Touch-Notizpad</h3>
+                <button type="button" onclick="closePad()" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">&times;</button>
+            </div>
+            <p class="text-xs text-gray-500 mb-3">Kritzle Notizen oder Skizzen direkt mit dem Finger/Stift:</p>
+            <canvas id="sketchCanvas" class="w-full h-64 bg-gray-50 border border-gray-300 rounded-xl cursor-crosshair touch-none"></canvas>
+            <div class="flex justify-between items-center mt-4">
+                <button type="button" onclick="clearPad()" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Leeren</button>
+                <button type="button" onclick="savePad()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-xl text-white cursor-pointer shadow-md">Als Bild speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Retro Arcade Modal -->
     <div id="arcadeModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center p-4">
         <div class="bg-slate-900 border border-amber-500/50 rounded-2xl w-full max-w-md p-6 shadow-2xl text-center text-white">
             <div class="flex justify-between items-center mb-3 border-b border-slate-800 pb-2">
@@ -413,11 +483,12 @@
         </div>
     </div>
 
-    <!-- Script Logik (Firebase, Partikel, Cyberpunk, Arcade, etc.) -->
+    <!-- Script Logik (Firebase, Partikel, Cyberpunk, Arcade, Zeichenpad, Sprachsteuerung, Boot-Screen) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // Firebase Konfiguration aus der Konsole[span_2](start_span)[span_2](end_span)[span_3](start_span)[span_3](end_span)
         const firebaseConfig = {
             apiKey: "AIzaSyD5g2Pq2rszkCGgabJSfZkrpDRSgLw16-s",
             authDomain: "helferlein-966e1.firebaseapp.com",
@@ -432,14 +503,28 @@
         const db = getFirestore(app);
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Feature 5: Boot-Animation abspielen
+            setTimeout(() => {
+                const boot = document.getElementById('bootScreen');
+                const prog = document.getElementById('bootProgress');
+                if(prog) prog.style.width = '100%';
+                setTimeout(() => {
+                    if(boot) {
+                        boot.style.opacity = '0';
+                        setTimeout(() => boot.remove(), 500);
+                    }
+                }, 600);
+            }, 300);
+
             loadStats();
             syncFromCloud();
             initFavorites();
             initParticles();
+            initPad();
             updateActivityStream();
-            if(localStorage.getItem('hub_cyberpunk') === 'true') {
-                document.body.classList.add('cyberpunk-mode');
-            }
+
+            if(localStorage.getItem('hub_cyberpunk') === 'true') document.body.classList.add('cyberpunk-mode');
+            if(localStorage.getItem('hub_glass') === 'true') document.body.classList.add('glass-mode');
         });
 
         // --- FEATURE 2: INTERAKTIVER CANVAS-PARTIKEL-HINTERGRUND ---
@@ -469,16 +554,13 @@
                     this.size = Math.random() * 2 + 1;
                 }
                 update() {
-                    this.x += this.vx;
-                    this.y += this.vy;
+                    this.x += this.vx; this.y += this.vy;
                     if (this.x < 0 || this.x > width) this.vx *= -1;
                     if (this.y < 0 || this.y > height) this.vy *= -1;
                 }
                 draw() {
                     ctx.fillStyle = document.body.classList.contains('cyberpunk-mode') ? 'rgba(0, 255, 204, 0.4)' : 'rgba(2, 132, 199, 0.25)';
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
                 }
             }
 
@@ -487,18 +569,13 @@
             function animate() {
                 ctx.clearRect(0, 0, width, height);
                 particles.forEach((p, index) => {
-                    p.update();
-                    p.draw();
+                    p.update(); p.draw();
                     for (let j = index + 1; j < particles.length; j++) {
                         let p2 = particles[j];
                         let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
                         if (dist < 120) {
                             ctx.strokeStyle = document.body.classList.contains('cyberpunk-mode') ? `rgba(0, 255, 204, ${1 - dist/120})` : `rgba(2, 132, 199, ${0.15 * (1 - dist/120)})`;
-                            ctx.lineWidth = 0.6;
-                            ctx.beginPath();
-                            ctx.moveTo(p.x, p.y);
-                            ctx.lineTo(p2.x, p2.y);
-                            ctx.stroke();
+                            ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
                         }
                     }
                 });
@@ -507,360 +584,290 @@
             animate();
         }
 
-        // --- FEATURE 1: CYBERPUNK MODUS TOGGLE ---
+        // --- FEATURE MODES ---
         window.toggleCyberpunk = function() {
+            document.body.classList.remove('glass-mode');
             document.body.classList.toggle('cyberpunk-mode');
-            const isCyber = document.body.classList.contains('cyberpunk-mode');
-            localStorage.setItem('hub_cyberpunk', isCyber);
+            localStorage.setItem('hub_cyberpunk', document.body.classList.contains('cyberpunk-mode'));
+            localStorage.setItem('hub_glass', 'false');
         }
 
-        // --- FEATURE 3: RETRO ARCADE MINI-SPIEL ---
-        let gameInterval = null;
-        let timeLeft = 30;
-        let gameScore = 0;
+        window.toggleGlass = function() {
+            document.body.classList.remove('cyberpunk-mode');
+            document.body.classList.toggle('glass-mode');
+            localStorage.setItem('hub_glass', document.body.classList.contains('glass-mode'));
+            localStorage.setItem('hub_cyberpunk', 'false');
+        }
 
-        window.openArcade = function() {
-            const modal = document.getElementById('arcadeModal');
+        // --- FEATURE 1: TOUCH-ZEICHENPAD LOGIK ---
+        let drawing = false;
+        let padCanvas, padCtx;
+
+        function initPad() {
+            padCanvas = document.getElementById('sketchCanvas');
+            if(!padCanvas) return;
+            padCtx = padCanvas.getContext('2d');
+            
+            function resizePad() {
+                padCanvas.width = padCanvas.parentElement.clientWidth - 48;
+                padCanvas.height = 250;
+            }
+            window.addEventListener('resize', resizePad);
+            resizePad();
+
+            const startDraw = (e) => { drawing = true; draw(e); };
+            const endDraw = () => { drawing = false; padCtx.beginPath(); };
+            const draw = (e) => {
+                if (!drawing) return;
+                e.preventDefault();
+                const rect = padCanvas.getBoundingClientRect();
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+
+                padCtx.lineWidth = 3;
+                padCtx.lineCap = 'round';
+                padCtx.strokeStyle = '#0f172a';
+                padCtx.lineTo(x, y);
+                padCtx.stroke();
+                padCtx.beginPath();
+                padCtx.moveTo(x, y);
+            };
+
+            padCanvas.addEventListener('mousedown', startDraw);
+            padCanvas.addEventListener('mouseup', endDraw);
+            padCanvas.addEventListener('mousemove', draw);
+            padCanvas.addEventListener('touchstart', startDraw);
+            padCanvas.addEventListener('touchend', endDraw);
+            padCanvas.addEventListener('touchmove', draw);
+        }
+
+        window.openPad = function() {
+            const modal = document.getElementById('padModal');
             if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
         }
-
-        window.closeArcade = function() {
-            const modal = document.getElementById('arcadeModal');
+        window.closePad = function() {
+            const modal = document.getElementById('padModal');
             if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
-            clearInterval(gameInterval);
+        }
+        window.clearPad = function() {
+            if(padCtx && padCanvas) padCtx.clearRect(0, 0, padCanvas.width, padCanvas.height);
+        }
+        window.savePad = function() {
+            if(!padCanvas) return;
+            const link = document.createElement('a');
+            link.download = 'notizpad-skizze.png';
+            link.href = padCanvas.toDataURL();
+            link.click();
+            alert('Skizze als Bild heruntergeladen!');
+            closePad();
         }
 
-        window.startArcadeGame = function() {
-            clearInterval(gameInterval);
-            timeLeft = 30;
-            gameScore = 0;
-            document.getElementById('arcadeScore').textContent = gameScore;
-            moveCoin();
+        // --- FEATURE 3: SPRACHSTEUERUNG (WEB SPEECH API) ---
+        window.startVoiceSearch = function() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Dein Browser unterstützt leider keine Sprachsteuerung.");
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'de-DE';
+            recognition.start();
 
-            gameInterval = setInterval(() => {
-                timeLeft--;
-                document.getElementById('arcadeTimer').textContent = `Zeit: ${timeLeft}s`;
-                moveCoin();
-                if (timeLeft <= 0) {
-                    clearInterval(gameInterval);
-                    alert(`🏁 Spiel vorbei! Dein Score: ${gameScore} Punkte.`);
+            const btn = document.getElementById('voiceBtn');
+            if(btn) { btn.textContent = "🎙️ Höre zu..."; btn.classList.add('animate-pulse'); }
+
+            recognition.onresult = (event) => {
+                const speechResult = event.results[0][0].transcript.toLowerCase();
+                if(btn) { btn.textContent = "🎙️ Sprachbefehl"; btn.classList.remove('animate-pulse'); }
+                
+                const searchBox = document.getElementById('searchBox');
+                if(searchBox) {
+                    searchBox.value = speechResult;
+                    filterTools();
                 }
+            };
+
+            recognition.onerror = () => {
+                if(btn) { btn.textContent = "🎙️ Sprachbefehl"; btn.classList.remove('animate-pulse'); }
+            };
+        }
+
+        // --- FEATURE 3 (ARCADE) & 4 (LIFE-HACKS) & FIREBASE SYNC ---
+        let gameInterval = null, timeLeft = 30, gameScore = 0;
+        window.openArcade = function() { document.getElementById('arcadeModal').classList.remove('hidden'); document.getElementById('arcadeModal').classList.add('flex'); }
+        window.closeArcade = function() { document.getElementById('arcadeModal').classList.remove('flex'); document.getElementById('arcadeModal').classList.add('hidden'); clearInterval(gameInterval); }
+        window.startArcadeGame = function() {
+            clearInterval(gameInterval); timeLeft = 30; gameScore = 0;
+            document.getElementById('arcadeScore').textContent = gameScore; moveCoin();
+            gameInterval = setInterval(() => {
+                timeLeft--; document.getElementById('arcadeTimer').textContent = `Zeit: ${timeLeft}s`; moveCoin();
+                if (timeLeft <= 0) { clearInterval(gameInterval); alert(`🏁 Spiel vorbei! Dein Score: ${gameScore} Punkte.`); }
             }, 1000);
         }
-
-        window.scorePoint = function() {
-            if (timeLeft > 0 && gameInterval) {
-                gameScore++;
-                document.getElementById('arcadeScore').textContent = gameScore;
-                moveCoin();
-            }
-        }
-
+        window.scorePoint = function() { if (timeLeft > 0 && gameInterval) { gameScore++; document.getElementById('arcadeScore').textContent = gameScore; moveCoin(); } }
         function moveCoin() {
-            const coin = document.getElementById('coin');
-            const screen = document.getElementById('arcadeScreen');
+            const coin = document.getElementById('coin'), screen = document.getElementById('arcadeScreen');
             if(!coin || !screen) return;
-            const maxX = screen.clientWidth - 40;
-            const maxY = screen.clientHeight - 40;
-            const rx = Math.floor(Math.random() * maxX);
-            const ry = Math.floor(Math.random() * maxY);
             coin.style.position = 'absolute';
-            coin.style.left = rx + 'px';
-            coin.style.top = ry + 'px';
+            coin.style.left = Math.floor(Math.random() * (screen.clientWidth - 40)) + 'px';
+            coin.style.top = Math.floor(Math.random() * (screen.clientHeight - 40)) + 'px';
         }
 
-        // Globale Modal & Sync Handler
-        window.openSettings = function() {
-            const syncInput = document.getElementById('globalSyncId');
-            if (syncInput) syncInput.value = localStorage.getItem('hub_sync_id') || '';
-            const modal = document.getElementById('settingsModal');
-            if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
-        }
-        window.closeSettings = function() {
-            const modal = document.getElementById('settingsModal');
-            if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
-        }
-        window.openMonthlyReport = function() {
-            generateReport();
-            const modal = document.getElementById('reportModal');
-            if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
-        }
-        window.closeMonthlyReport = function() {
-            const modal = document.getElementById('reportModal');
-            if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
-        }
-        window.generateSyncKey = function() {
-            const randomId = 'hub-' + Math.random().toString(36).substring(2, 8) + '-' + Math.random().toString(36).substring(2, 8);
-            const syncInput = document.getElementById('globalSyncId');
-            if (syncInput) syncInput.value = randomId;
-        }
+        window.openSettings = function() { document.getElementById('settingsModal').classList.remove('hidden'); document.getElementById('settingsModal').classList.add('flex'); document.getElementById('globalSyncId').value = localStorage.getItem('hub_sync_id') || ''; }
+        window.closeSettings = function() { document.getElementById('settingsModal').classList.remove('flex'); document.getElementById('settingsModal').classList.add('hidden'); }
+        window.openMonthlyReport = function() { generateReport(); document.getElementById('reportModal').classList.remove('hidden'); document.getElementById('reportModal').classList.add('flex'); }
+        window.closeMonthlyReport = function() { document.getElementById('reportModal').classList.remove('flex'); document.getElementById('reportModal').classList.add('hidden'); }
+        window.generateSyncKey = function() { document.getElementById('globalSyncId').value = 'hub-' + Math.random().toString(36).substring(2, 8) + '-' + Math.random().toString(36).substring(2, 8); }
         window.saveSettings = async function() {
-            const syncInput = document.getElementById('globalSyncId');
-            if (syncInput) localStorage.setItem('hub_sync_id', syncInput.value.trim());
-            alert('Einstellungen erfolgreich gespeichert!');
-            closeSettings();
-            await syncToCloud();
-            syncFromCloud();
+            localStorage.setItem('hub_sync_id', document.getElementById('globalSyncId').value.trim());
+            alert('Einstellungen erfolgreich gespeichert!'); closeSettings(); await syncToCloud(); syncFromCloud();
         }
 
-        // --- FIREBASE SYNC LOGIK ---
         async function syncFromCloud() {
-            const cloudId = localStorage.getItem('hub_sync_id');
-            if (!cloudId) return;
+            const cloudId = localStorage.getItem('hub_sync_id'); if (!cloudId) return;
             try {
-                const docRef = doc(db, "hubs", cloudId);
-                const docSnap = await getDoc(docRef);
+                const docSnap = await getDoc(doc(db, "hubs", cloudId));
                 if (docSnap.exists()) {
                     const cloudData = docSnap.data();
-                    if (cloudData && typeof cloudData === 'object') {
-                        for (const key in cloudData) {
-                            if (cloudData[key]) {
-                                localStorage.setItem(key, typeof cloudData[key] === 'object' ? JSON.stringify(cloudData[key]) : cloudData[key]);
-                            }
-                        }
-                        loadStats();
-                        initFavorites();
-                        updateActivityStream();
-                    }
-                } else {
-                    await syncToCloud();
-                }
-            } catch (error) {
-                console.error("Fehler beim Laden aus Firestore:", error);
-            }
+                    for (const key in cloudData) { if (cloudData[key]) localStorage.setItem(key, typeof cloudData[key] === 'object' ? JSON.stringify(cloudData[key]) : cloudData[key]); }
+                    loadStats(); initFavorites(); updateActivityStream();
+                } else { await syncToCloud(); }
+            } catch (error) { console.error(error); }
         }
 
         async function syncToCloud() {
-            const cloudId = localStorage.getItem('hub_sync_id');
-            if (!cloudId) return;
+            const cloudId = localStorage.getItem('hub_sync_id'); if (!cloudId) return;
             try {
                 let globalBackup = {};
                 for (let i = 0; i < localStorage.length; i++) {
-                    let key = localStorage.key(i);
-                    let val = localStorage.getItem(key);
+                    let key = localStorage.key(i); let val = localStorage.getItem(key);
                     try { globalBackup[key] = JSON.parse(val); } catch(e) { globalBackup[key] = val; }
                 }
-                const docRef = doc(db, "hubs", cloudId);
-                await setDoc(docRef, globalBackup);
+                await setDoc(doc(db, "hubs", cloudId), globalBackup);
                 localStorage.setItem('hub_last_sync', new Date().toLocaleTimeString());
                 updateActivityStream();
-            } catch (error) {
-                console.error("Fehler beim Speichern in Firestore:", error);
-            }
+            } catch (error) { console.error(error); }
         }
 
-        // --- FAVORITEN LOGIK ---
         window.toggleFavorite = function(toolId, event) {
-            event.preventDefault();
-            event.stopPropagation();
+            event.preventDefault(); event.stopPropagation();
             let favs = JSON.parse(localStorage.getItem('hub_favorites') || '[]');
-            if (favs.includes(toolId)) {
-                favs = favs.filter(id => id !== toolId);
-            } else {
-                favs.push(toolId);
-            }
+            favs = favs.includes(toolId) ? favs.filter(id => id !== toolId) : [...favs, toolId];
             localStorage.setItem('hub_favorites', JSON.stringify(favs));
-            initFavorites();
-            syncToCloud();
+            initFavorites(); syncToCloud();
         }
 
         function initFavorites() {
             const favs = JSON.parse(localStorage.getItem('hub_favorites') || '[]');
-            const section = document.getElementById('favoritesSection');
-            const grid = document.getElementById('favoritesGrid');
-            const allCards = document.querySelectorAll('#toolsGrid .tool-card');
-            
+            const section = document.getElementById('favoritesSection'), grid = document.getElementById('favoritesGrid');
             grid.innerHTML = '';
-            if (favs.length === 0) {
-                section.classList.add('hidden');
-                allCards.forEach(c => { const btn = c.querySelector('.fav-btn'); if(btn) btn.style.color = '#d1d5db'; });
-                return;
-            }
-
+            if (favs.length === 0) { section.classList.add('hidden'); return; }
             section.classList.remove('hidden');
             favs.forEach(id => {
                 const card = document.querySelector(`#toolsGrid .tool-card[data-id="${id}"]`);
                 if (card) {
                     const clone = card.cloneNode(true);
-                    const btn = clone.querySelector('.fav-btn');
-                    btn.style.color = '#f59e0b';
-                    btn.onclick = (e) => toggleFavorite(id, e);
+                    clone.querySelector('.fav-btn').style.color = '#f59e0b';
+                    clone.querySelector('.fav-btn').onclick = (e) => toggleFavorite(id, e);
                     grid.appendChild(clone);
                 }
             });
-
-            allCards.forEach(c => {
-                const toolId = c.getAttribute('data-id');
+            document.querySelectorAll('#toolsGrid .tool-card').forEach(c => {
                 const btn = c.querySelector('.fav-btn');
-                if (btn) btn.style.color = favs.includes(toolId) ? '#f59e0b' : '#d1d5db';
+                if(btn) btn.style.color = favs.includes(c.getAttribute('data-id')) ? '#f59e0b' : '#d1d5db';
             });
         }
 
         function updateActivityStream() {
-            const time = localStorage.getItem('hub_last_sync') || 'Gerade eben';
-            const elText = document.getElementById('activityText');
-            const elTime = document.getElementById('activityTime');
-            if (elText) elText.textContent = "Alle Systeme synchronisiert & betriebsbereit.";
-            if (elTime) elTime.textContent = `Letzter Sync: ${time}`;
+            document.getElementById('activityText').textContent = "Alle Systeme synchronisiert & betriebsbereit.";
+            document.getElementById('activityTime').textContent = `Letzter Sync: ${localStorage.getItem('hub_last_sync') || 'Gerade eben'}`;
         }
 
         function generateReport() {
             const content = document.getElementById('reportContent');
             const getCount = (keys) => {
                 for (let key of keys) {
-                    try {
-                        let val = localStorage.getItem(key);
-                        if (val) {
+                    let val = localStorage.getItem(key);
+                    if (val) {
+                        try {
                             let parsed = JSON.parse(val);
                             if (Array.isArray(parsed)) return parsed.length;
                             if (parsed && typeof parsed === 'object') {
-                                for (let prop of ['items', 'boxes', 'expenses', 'notes', 'vehicles', 'pets', 'readings', 'plants', 'data']) {
-                                    if (Array.isArray(parsed[prop])) return parsed[prop].length;
+                                for (let p of ['items', 'boxes', 'expenses', 'notes', 'vehicles', 'pets', 'readings', 'plants', 'data']) {
+                                    if (Array.isArray(parsed[p])) return parsed[p].length;
                                 }
                                 return Object.keys(parsed).length;
                             }
-                        }
-                    } catch(e) {}
+                        } catch(e) {}
+                    }
                 }
                 return 0;
             };
-
-            const receipts = getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts']);
-            const boxes = getCount(['kisten_data', 'kisten', 'boxes', 'inventar']);
-            const expenses = getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt']);
-            const notes = getCount(['secure_notes', 'notes', 'notizen_data', 'notizen']);
-            const pets = getCount(['haustier_pass', 'haustier_data', 'pets', 'tiere']);
-            const plants = getCount(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants']);
-
             content.innerHTML = `
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <span class="text-xs text-gray-400 block">Belege & Garantie</span>
-                        <span class="text-lg font-bold text-emerald-600">${receipts}</span>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <span class="text-xs text-gray-400 block">Lagerkisten</span>
-                        <span class="text-lg font-bold text-blue-600">${boxes}</span>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <span class="text-xs text-gray-400 block">Ausgaben / Kasse</span>
-                        <span class="text-lg font-bold text-amber-600">${expenses}</span>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <span class="text-xs text-gray-400 block">Notizen & PINs</span>
-                        <span class="text-lg font-bold text-purple-600">${notes}</span>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <span class="text-xs text-gray-400 block">Haustiere</span>
-                        <span class="text-lg font-bold text-teal-600">${pets}</span>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
-                        <span class="text-xs text-gray-400 block">Pflanzen</span>
-                        <span class="text-lg font-bold text-lime-600">${plants}</span>
-                    </div>
-                </div>
-            `;
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">Belege: <b>${getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts'])}</b></div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">Kisten: <b>${getCount(['kisten_data', 'kisten', 'boxes', 'inventar'])}</b></div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">Ausgaben: <b>${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])}</b></div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">Notizen: <b>${getCount(['secure_notes', 'notes', 'notizen_data', 'notizen'])}</b></div>
+                </div>`;
         }
 
         window.filterTools = function() {
             const query = document.getElementById('searchBox').value.toLowerCase().trim();
-            const cards = document.querySelectorAll('#toolsGrid .tool-card');
-            cards.forEach(card => {
-                const nameAttr = card.getAttribute('data-name') || '';
-                const cardText = card.innerText.toLowerCase();
-                const toolId = card.getAttribute('data-id');
-                let foundInStorage = false;
+            document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
+                const name = card.getAttribute('data-name') || '', text = card.innerText.toLowerCase(), id = card.getAttribute('data-id');
+                let found = false;
                 if (query.length > 1) {
                     for (let i = 0; i < localStorage.length; i++) {
-                        const key = localStorage.key(i);
-                        if (key.includes(toolId)) {
-                            const val = localStorage.getItem(key);
-                            if (val && val.toLowerCase().includes(query)) { foundInStorage = true; break; }
-                        }
+                        let k = localStorage.key(i);
+                        if (k.includes(id) && (localStorage.getItem(k) || '').toLowerCase().includes(query)) { found = true; break; }
                     }
                 }
-                if (nameAttr.includes(query) || cardText.includes(query) || foundInStorage) {
-                    card.style.display = "flex";
-                } else {
-                    card.style.display = "none";
-                }
+                card.style.display = (name.includes(query) || text.includes(query) || found) ? "flex" : "none";
             });
         }
 
         window.loadStats = function() {
-            try {
-                const setStat = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
-                const getCount = (keys) => {
-                    for (let key of keys) {
-                        try {
-                            let val = localStorage.getItem(key);
-                            if (val) {
-                                let parsed = JSON.parse(val);
-                                if (Array.isArray(parsed)) return parsed.length;
-                                if (parsed && typeof parsed === 'object') {
-                                    for (let prop of ['items', 'boxes', 'expenses', 'notes', 'vehicles', 'pets', 'readings', 'plants', 'data']) {
-                                        if (Array.isArray(parsed[prop])) return parsed[prop].length;
-                                    }
-                                    return Object.keys(parsed).length;
-                                }
-                            }
-                        } catch(e) {}
-                    }
-                    return 0;
-                };
-                setStat('stats-kassenbon', `${getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts'])} Belege gespeichert`);
-                setStat('stats-kisten', `${getCount(['kisten_data', 'kisten', 'boxes', 'inventar'])} Kisten im Bestand`);
-                setStat('stats-wg-kasse', `${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])} Ausgaben erfasst`);
-                setStat('stats-notizen', `${getCount(['secure_notes', 'notes', 'notizen_data', 'notizen'])} Notizen gesichert`);
-                setStat('stats-kfz', `${getCount(['kfz_pass', 'kfz_data', 'vehicles', 'autos'])} Fahrzeuge aktiv`);
-                setStat('stats-haustier', `${getCount(['haustier_pass', 'haustier_data', 'pets', 'tiere'])} Haustiere erfasst`);
-                
-                let parkData = null;
-                for (let k of ['parken_data', 'parken', 'parking']) {
-                    try { let v = localStorage.getItem(k); if (v) { parkData = JSON.parse(v); break; } } catch(e){}
+            const setStat = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
+            const getCount = (keys) => {
+                for (let k of keys) {
+                    let v = localStorage.getItem(k);
+                    if (v) { try { let p = JSON.parse(v); return Array.isArray(p) ? p.length : Object.keys(p).length; } catch(e){} }
                 }
-                let hasActivePark = parkData && (parkData.active || parkData.startTime || parkData.endTime);
-                setStat('stats-parken', hasActivePark ? "Aktiver Park-Timer" : "Kein aktives Ticket");
-
-                setStat('stats-verleih', `${getCount(['verleih_pass', 'verleih_data', 'verleih', 'items'])} Verleih-Objekte`);
-                setStat('stats-pflanzen', `${getCount(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants'])} Pflanzen im Bestand`);
-                setStat('stats-energie', `${getCount(['energie_tracker_pro', 'energie_data', 'energie', 'readings'])} Ablesungen erfasst`);
-            } catch(e) {
-                console.log("Fehler beim Laden der Stats:", e);
-            }
+                return 0;
+            };
+            setStat('stats-kassenbon', `${getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts'])} Belege gespeichert`);
+            setStat('stats-kisten', `${getCount(['kisten_data', 'kisten', 'boxes', 'inventar'])} Kisten im Bestand`);
+            setStat('stats-wg-kasse', `${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])} Ausgaben erfasst`);
+            setStat('stats-notizen', `${getCount(['secure_notes', 'notes', 'notizen_data', 'notizen'])} Notizen gesichert`);
+            setStat('stats-kfz', `${getCount(['kfz_pass', 'kfz_data', 'vehicles', 'autos'])} Fahrzeuge aktiv`);
+            setStat('stats-haustier', `${getCount(['haustier_pass', 'haustier_data', 'pets', 'tiere'])} Haustiere erfasst`);
+            setStat('stats-verleih', `${getCount(['verleih_pass', 'verleih_data', 'verleih', 'items'])} Verleih-Objekte`);
+            setStat('stats-pflanzen', `${getCount(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants'])} Pflanzen im Bestand`);
+            setStat('stats-energie', `${getCount(['energie_tracker_pro', 'energie_data', 'energie', 'readings'])} Ablesungen erfasst`);
         }
 
         window.exportGlobalBackup = async function() {
-            try {
-                await syncToCloud();
-                let globalBackup = {};
-                for (let i = 0; i < localStorage.length; i++) {
-                    let key = localStorage.key(i);
-                    globalBackup[key] = localStorage.getItem(key);
-                }
-                const blob = new Blob([JSON.stringify(globalBackup)], { type: 'application/json' });
-                const file = new File([blob], `alltagshilfe-backup-${new Date().toISOString().split('T')[0]}.json`, { type: 'application/json' });
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                    await navigator.share({ files: [file], title: 'Alltagshelferlein Backup' });
-                    return;
-                }
-                let url = URL.createObjectURL(blob);
-                let a = document.createElement('a'); a.href = url; a.download = file.name;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            } catch (e) { alert("Fehler: " + e.message); }
+            await syncToCloud();
+            let globalBackup = {};
+            for (let i = 0; i < localStorage.length; i++) globalBackup[localStorage.key(i)] = localStorage.getItem(localStorage.key(i));
+            const blob = new Blob([JSON.stringify(globalBackup)], { type: 'application/json' });
+            const file = new File([blob], `alltagshilfe-backup-${new Date().toISOString().split('T')[0]}.json`, { type: 'application/json' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Backup' }); return; }
+            let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
         }
 
         window.importGlobalBackup = async function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const file = event.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = async function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    for (let key in parsed) { localStorage.setItem(key, parsed[key]); }
-                    loadStats(); initFavorites(); await syncToCloud();
-                    alert("Backup erfolgreich eingespielt & gesichert!");
-                } catch (err) { alert("Fehler beim Importieren."); }
+                    for (let key in parsed) localStorage.setItem(key, parsed[key]);
+                    loadStats(); initFavorites(); await syncToCloud(); alert("Backup eingespielt & gesichert!");
+                } catch (err) { alert("Fehler beim Import."); }
             };
             reader.readAsText(file);
         }
