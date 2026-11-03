@@ -291,14 +291,15 @@
     </main>
 
     <script>
-        /* --- FIREBASE KONFIGURATION --- */
+        /* --- FIREBASE KONFIGURATION (VON DEINEM SCREENSHOT) --- */
         const firebaseConfig = {
-            apiKey: "DEINE_FIREBASE_API_KEY",
-            authDomain: "DEIN_PROJECT.firebaseapp.com",
-            projectId: "DEIN_PROJECT_ID",
-            storageBucket: "DEIN_PROJECT.appspot.com",
-            messagingSenderId: "DEINE_SENDER_ID",
-            appId: "DEINE_APP_ID"
+            apiKey: "AIzaSyAMWtuQHTGhMMd3WmIgW46NbvT6bQoBwm8",
+            authDomain: "nachlass-app-99df8.firebaseapp.com",
+            projectId: "nachlass-app-99df8",
+            storageBucket: "nachlass-app-99df8.firebasestorage.app",
+            messagingSenderId: "593798150622",
+            appId: "1:593798150622:web:e4e980c9fb6b06201ec54f",
+            measurementId: "G-LWRZKYPJXC"
         };
         
         // Firebase initialisieren
@@ -401,7 +402,7 @@
                 localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
                 alert("☁️ Safe erfolgreich in Firebase synchronisiert!");
             } catch(e) {
-                alert("❌ Fehler beim Firebase Sync: Bitte Config prüfen. (Lokal wurde gespeichert)");
+                alert("❌ Fehler beim Firebase Sync. Bitte prüfe deine Firestore Security Rules.");
             }
         }
 
@@ -563,7 +564,6 @@
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
             
             container.innerHTML = cfg.trustees.map((t, idx) => {
-                // Einzel-Schlüssel Link zur erben.html
                 const heirUrl = `${baseUrl}/erben.html?vaultId=${cfg.vaultId}&key=${cfg.masterKeyHex}`;
                 const qrId = `qrKit_${idx}`;
 
