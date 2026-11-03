@@ -11,14 +11,55 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Tesseract.js für OCR Texterkennung -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- QRCode.js für Sticker-Generierung -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #printStickerArea, #printStickerArea * { visibility: visible; }
+            #printStickerArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
     <!-- Header -->
-    <header class="bg-emerald-700 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-3xl font-bold">🧾 Garantie & Kassenbon Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Garantieüberwachung, OCR-Scanner, Steuer-Filter, Google Kalender & .ics Export</p>
+    <header class="bg-emerald-700 text-white shadow-md py-6 px-4">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-center md:text-left">
+                <h1 class="text-2xl md:text-3xl font-bold">🧾 Garantie & Kassenbon Pro</h1>
+                <p class="text-xs md:text-sm opacity-90 mt-1">Garantieüberwachung, OCR-Scanner, Galerie, QR-Sticker & Zeitwert-Rechner</p>
+            </div>
+            <button onclick="toggleGuide()" class="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 border border-emerald-500 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2">
+                📖 Gebrauchsanleitung & Hilfe
+            </button>
+        </div>
     </header>
+
+    <!-- Gebrauchsanleitung / Dokumentation (Aufklappbar) -->
+    <section id="guideSection" class="hidden bg-emerald-900 text-emerald-50 border-b border-emerald-800 p-6 transition-all duration-300">
+        <div class="max-w-6xl mx-auto space-y-4">
+            <div class="flex justify-between items-center border-b border-emerald-700 pb-3">
+                <h2 class="text-lg font-bold flex items-center gap-2">📘 Detaillierte Dokumentation & Anleitung</h2>
+                <button onclick="toggleGuide()" class="text-emerald-300 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs leading-relaxed">
+                <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">1. Beleg- & Foto-Erfassung</h3>
+                    <p>Erfasse Artikelbezeichnung, Kaufdatum, Preis und Garantiedauer. Lade beliebig viele Dokumentenfotos (Kassenbon, Zusatzgarantie, Seriennummernschild) zeitgleich hoch. Mit dem <strong>OCR-Button</strong> werden Kaufpreis und Datum automatisch aus dem Kassenbon extrahiert. Verblasste Thermobons kannst du über die Helligkeits- & Kontrastregler nachschärfen.</p>
+                </div>
+                <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">2. Kalender, QR-Sticker & Zeitwert</h3>
+                    <p>Über den Button <strong>"Google Kalender"</strong> lässt sich der Garantieablauf direkt in deinen Kalender eintragen. Drucke über <strong>"QR-Sticker"</strong> ein kompaktes Etikett aus, das du auf das physische Gerät kleben kannst. Der integrierte <strong>Zeitwert-Rechner</strong> ermittelt automatisch den verbleibenden Wert für die Hausratversicherung anhand der Nutzungsdauer.</p>
+                </div>
+                <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">3. Steuer-Export & Backup</h3>
+                    <p>Markiere berufliche Anschaffungen als <strong>"Steuerrelevant"</strong>. Am Jahresende kannst du mit einem Klick eine CSV-Tabelle für die Steuererklärung exportieren. Über die Funktionen <strong>"Backup"</strong> und <strong>"Import"</strong> können sämtliche Belege und hochauflösende Fotos lokal gesichert und auf anderen Geräten wiederhergestellt werden.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-6xl space-y-6">
@@ -44,16 +85,16 @@
                 <div><p class="text-xs text-gray-500">Aktiver Garantiewert</p><h3 id="statTotalValue" class="text-lg font-bold">0,00 €</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">🧾</div>
-                <div><p class="text-xs text-gray-500">Gespeicherte Belege</p><h3 id="statTotalCount" class="text-lg font-bold">0</h3></div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">🏠</div>
+                <div><p class="text-xs text-gray-500">Hausrat-Zeitwert gesamt</p><h3 id="statZeitwertTotal" class="text-lg font-bold">0,00 €</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-purple-50 text-purple-600 rounded-xl font-bold">💼</div>
                 <div><p class="text-xs text-gray-500">Steuerrelevant Gesamt</p><h3 id="statTaxValue" class="text-lg font-bold">0,00 €</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">⏱️</div>
-                <div><p class="text-xs text-gray-500">Aktive Rückgabefristen</p><h3 id="statReturnCount" class="text-lg font-bold">0</h3></div>
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">🧾</div>
+                <div><p class="text-xs text-gray-500">Gespeicherte Belege</p><h3 id="statTotalCount" class="text-lg font-bold">0</h3></div>
             </div>
         </div>
 
@@ -76,14 +117,18 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Kaufpreis (€):</label>
                     <input type="number" step="0.01" id="receiptPrice" placeholder="299.99" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Garantiedauer (Monate):</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Garantie (Monate):</label>
                     <input type="number" id="receiptWarranty" value="24" placeholder="24" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nutzungsdauer (Jahre):</label>
+                    <input type="number" id="receiptLifespan" value="5" placeholder="5" class="w-full p-3 border rounded-xl text-sm" title="Erforderlich für den Zeitwert-Rechner">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Rückgabefrist (Tage):</label>
@@ -119,16 +164,19 @@
                 </div>
             </div>
 
-            <!-- Photo Upload, OCR Scanner & Thermopapier-Restaurator -->
+            <!-- Mehrseiten-Scan, OCR Scanner & Thermopapier-Restaurator -->
             <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
                 <div class="flex justify-between items-center flex-wrap gap-2">
-                    <label class="block text-xs font-bold text-emerald-900">📷 Belegfoto & Thermopapier-Restaurator (Canvas Filter)</label>
+                    <label class="block text-xs font-bold text-emerald-900">📷 Mehrseiten-Dokumentenscan & Thermopapier-Restaurator</label>
                     <button type="button" onclick="runOCR()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">🔍 Text automatisch erkennen (OCR)</button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
-                    <input type="file" id="receiptPhotoInput" accept="image/*" onchange="loadPhotoToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full">
+                    <input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full">
                     <div id="ocrStatus" class="text-xs text-emerald-800 font-semibold hidden">🔍 Scanne Kassenbon... Bitte warten.</div>
                 </div>
+
+                <!-- Galerie Vorschau während der Erfassung -->
+                <div id="uploadGalleryPreview" class="flex gap-2 overflow-x-auto py-2 hidden"></div>
 
                 <!-- Canvas Editor für Thermopapier Filter -->
                 <div id="canvasEditor" class="hidden space-y-2 pt-2 border-t border-emerald-200">
@@ -176,14 +224,58 @@
         </div>
     </main>
 
+    <!-- Modal: Dokumenten-Galerie -->
+    <div id="galleryModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 id="galleryTitle" class="text-lg font-bold">🖼️ Dokumenten-Galerie</h3>
+                <button onclick="closeGalleryModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div id="galleryContainer" class="flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <div class="flex justify-end pt-2 border-t">
+                <button onclick="closeGalleryModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: QR-Code Sticker Ausdruck -->
+    <div id="qrModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">🏷️ Geräte-Sticker drucken</h3>
+                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            
+            <div id="printStickerArea" class="p-4 border-2 border-dashed border-gray-400 rounded-2xl bg-gray-50 flex flex-col items-center text-center space-y-3">
+                <h4 id="stickerTitle" class="font-bold text-sm text-gray-900"></h4>
+                <div id="qrcode" class="p-2 bg-white border rounded-xl shadow-sm"></div>
+                <div class="text-[11px] text-gray-600 space-y-0.5">
+                    <p id="stickerStoreDate"></p>
+                    <p id="stickerSN"></p>
+                    <p id="stickerWarranty"></p>
+                </div>
+            </div>
+
+            <div class="flex justify-between gap-2 pt-2">
+                <button onclick="closeQRModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+                <button onclick="window.print()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">🖨️ Sticker Drucken</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Skript Logik -->
     <script>
+        let currentUploadedPhotos = [];
         let rawImage = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('receiptDate').valueAsDate = new Date();
             renderApp();
         });
+
+        function toggleGuide() {
+            document.getElementById('guideSection').classList.toggle('hidden');
+        }
 
         function getData() {
             try {
@@ -197,21 +289,38 @@
             localStorage.setItem('kassenbon_data', JSON.stringify(data));
         }
 
-        /* Thermopapier Canvas Filter */
-        function loadPhotoToCanvas(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    rawImage = img;
-                    document.getElementById('canvasEditor').classList.remove('hidden');
-                    applyCanvasFilter();
+        /* Mehrseiten-Scan & Canvas Filter */
+        function loadPhotosToCanvas(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            
+            currentUploadedPhotos = [];
+            const previewContainer = document.getElementById('uploadGalleryPreview');
+            previewContainer.innerHTML = "";
+            previewContainer.classList.remove('hidden');
+
+            Array.from(files).forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentUploadedPhotos.push(e.target.result);
+
+                    const imgThumb = document.createElement('img');
+                    imgThumb.src = e.target.result;
+                    imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
+                    previewContainer.appendChild(imgThumb);
+
+                    if (idx === 0) {
+                        const img = new Image();
+                        img.onload = function() {
+                            rawImage = img;
+                            document.getElementById('canvasEditor').classList.remove('hidden');
+                            applyCanvasFilter();
+                        };
+                        img.src = e.target.result;
+                    }
                 };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+                reader.readAsDataURL(file);
+            });
         }
 
         function applyCanvasFilter() {
@@ -226,12 +335,16 @@
 
             ctx.filter = `brightness(${100 + b}%) contrast(${100 + c}%)`;
             ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
+
+            if (currentUploadedPhotos.length > 0) {
+                currentUploadedPhotos[0] = canvas.toDataURL('image/jpeg', 0.6);
+            }
         }
 
         /* Tesseract OCR Scanner */
         async function runOCR() {
             const input = document.getElementById('receiptPhotoInput');
-            if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
+            if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst mindestens ein Belegfoto aus!");
             
             const statusEl = document.getElementById('ocrStatus');
             statusEl.innerText = "🔍 Scanne Kassenbon... Bitte warten.";
@@ -266,6 +379,7 @@
             const date = document.getElementById('receiptDate').value;
             const price = parseFloat(document.getElementById('receiptPrice').value) || 0;
             const warrantyMonths = parseInt(document.getElementById('receiptWarranty').value) || 0;
+            const lifespan = parseFloat(document.getElementById('receiptLifespan').value) || 5;
             const returnDays = parseInt(document.getElementById('receiptReturnDays').value) || 0;
             const category = document.getElementById('receiptCategory').value;
             const sn = document.getElementById('receiptSN').value.trim();
@@ -277,21 +391,17 @@
                 return alert("Bitte mindestens Bezeichnung und Kaufdatum angeben!");
             }
 
-            let photo = "";
-            const canvas = document.getElementById('photoCanvas');
-            if (!document.getElementById('canvasEditor').classList.contains('hidden')) {
-                photo = canvas.toDataURL('image/jpeg', 0.6);
-            }
-
             let data = getData();
             data.push({
                 id: Date.now(),
-                title, store, date, price, warrantyMonths, returnDays, category, sn, location, isTax, note, photo
+                title, store, date, price, warrantyMonths, lifespan, returnDays, category, sn, location, isTax, note,
+                photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : []
             });
 
             data.sort((a, b) => new Date(b.date) - new Date(a.date));
             saveData(data);
 
+            // Form Reset
             document.getElementById('receiptTitle').value = "";
             document.getElementById('receiptStore').value = "";
             document.getElementById('receiptPrice').value = "";
@@ -300,8 +410,10 @@
             document.getElementById('receiptNote').value = "";
             document.getElementById('receiptIsTax').checked = false;
             document.getElementById('receiptPhotoInput').value = "";
+            document.getElementById('uploadGalleryPreview').classList.add('hidden');
             document.getElementById('canvasEditor').classList.add('hidden');
             document.getElementById('ocrStatus').classList.add('hidden');
+            currentUploadedPhotos = [];
 
             renderApp();
         }
@@ -314,7 +426,7 @@
             renderApp();
         }
 
-        /* App Render & Dashboard */
+        /* App Render, Dashboard & Zeitwert-Rechner */
         function renderApp() {
             let data = getData();
             const catFilter = document.getElementById('filterCategory').value;
@@ -329,8 +441,8 @@
 
             const now = new Date();
             let totalVal = 0;
+            let totalZeitwert = 0;
             let taxVal = 0;
-            let activeReturns = 0;
 
             data.forEach(r => {
                 const buyDate = new Date(r.date);
@@ -340,15 +452,17 @@
                 if (expDate >= now) totalVal += r.price;
                 if (r.isTax) taxVal += r.price;
 
-                const retDate = new Date(buyDate);
-                retDate.setDate(retDate.getDate() + (r.returnDays || 0));
-                if (retDate >= now) activeReturns++;
+                // Zeitwert-Rechner
+                const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
+                const lifespan = r.lifespan || 5;
+                const currentZeitwert = Math.max(0, r.price * (1 - (ageYears / lifespan)));
+                totalZeitwert += currentZeitwert;
             });
 
             document.getElementById('statTotalValue').innerText = totalVal.toFixed(2) + " €";
-            document.getElementById('statTotalCount').innerText = data.length;
+            document.getElementById('statZeitwertTotal').innerText = totalZeitwert.toFixed(2) + " €";
             document.getElementById('statTaxValue').innerText = taxVal.toFixed(2) + " €";
-            document.getElementById('statReturnCount').innerText = activeReturns;
+            document.getElementById('statTotalCount').innerText = data.length;
 
             if (filtered.length === 0) {
                 container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Belege gefunden.</p>`;
@@ -368,20 +482,33 @@
                 const diffDaysReturn = Math.ceil((retDate - now) / (1000 * 60 * 60 * 24));
                 const isReturnActive = diffDaysReturn >= 0;
 
+                // Einzelner Zeitwert
+                const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
+                const lifespan = r.lifespan || 5;
+                const zeitwert = Math.max(0, r.price * (1 - (ageYears / lifespan)));
+
+                const photos = r.photos || (r.photo ? [r.photo] : []);
+
                 return `
                     <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div class="flex items-start space-x-3">
-                            ${r.photo ? `<img src="${r.photo}" class="w-16 h-16 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="window.open('${r.photo}')">` : `<div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center font-bold text-xl">🧾</div>`}
+                            ${photos.length > 0 
+                                ? `<div class="relative cursor-pointer" onclick="openGalleryModal(${r.id})">
+                                     <img src="${photos[0]}" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
+                                     ${photos.length > 1 ? `<span class="absolute bottom-0 right-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br-xl rounded-tl-md">+${photos.length - 1}</span>` : ''}
+                                   </div>` 
+                                : `<div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center font-bold text-xl">🧾</div>`
+                            }
                             <div class="space-y-1">
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-sm font-bold text-gray-900">${r.title}</span>
                                     <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${r.category}</span>
                                     ${r.isTax ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">💼 Steuer</span>` : ''}
-                                    ${isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Garantie aktiv (${diffDaysWarranty} Tage)</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Garantie abgelaufen</span>`}
-                                    ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">⏱️ Rückgabe: noch ${diffDaysReturn} Tage</span>` : ''}
+                                    ${isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Garantie aktiv (${diffDaysWarranty} T)</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Garantie abgelaufen</span>`}
+                                    ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">⏱️ Rückgabe: ${diffDaysReturn} T</span>` : ''}
                                 </div>
                                 <p class="text-xs text-gray-600">
-                                    Händler: <strong>${r.store || 'k.A.'}</strong> | Preis: <strong>${r.price.toFixed(2)} €</strong> | Kaufdatum: ${r.date}
+                                    Händler: <strong>${r.store || 'k.A.'}</strong> | Kaufpreis: <strong>${r.price.toFixed(2)} €</strong> | Zeitwert ca.: <strong class="text-blue-700">${zeitwert.toFixed(2)} €</strong>
                                 </p>
                                 <p class="text-[11px] text-gray-500">
                                     ${r.sn ? 'S/N: ' + r.sn + ' | ' : ''} ${r.location ? 'Karton: ' + r.location + ' | ' : ''} ${r.note ? 'Notiz: ' + r.note : ''}
@@ -389,13 +516,78 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
+                            <button onclick="openQRModal(${r.id})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold">🏷️ QR-Sticker</button>
                             <button onclick="openGoogleCalendar(${r.id})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold">📅 Google Kalender</button>
-                            <button onclick="downloadICS(${r.id})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold">📄 .ics Datei</button>
-                            <button onclick="deleteReceipt(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕ Löschen</button>
+                            <button onclick="downloadICS(${r.id})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold">📄 .ics</button>
+                            <button onclick="deleteReceipt(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        /* Galerie Modal (Mehrseiten-Scan) */
+        function openGalleryModal(id) {
+            const data = getData();
+            const r = data.find(item => item.id === id);
+            if (!r) return;
+
+            const photos = r.photos || (r.photo ? [r.photo] : []);
+            const container = document.getElementById('galleryContainer');
+            document.getElementById('galleryTitle').innerText = `🖼️ Galerie: ${r.title}`;
+            container.innerHTML = "";
+
+            photos.forEach((src, index) => {
+                container.innerHTML += `
+                    <div class="space-y-1 text-center">
+                        <img src="${src}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
+                        <span class="text-xs text-gray-500 font-semibold">Seite / Foto ${index + 1} von ${photos.length}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('galleryModal').classList.remove('hidden');
+            document.getElementById('galleryModal').classList.add('flex');
+        }
+
+        function closeGalleryModal() {
+            document.getElementById('galleryModal').classList.remove('flex');
+            document.getElementById('galleryModal').classList.add('hidden');
+        }
+
+        /* QR-Code Sticker Ausdruck Generator */
+        function openQRModal(id) {
+            const data = getData();
+            const r = data.find(item => item.id === id);
+            if (!r) return;
+
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+
+            document.getElementById('stickerTitle').innerText = r.title;
+            document.getElementById('stickerStoreDate').innerText = `Kauf: ${r.date} (${r.store || 'Garantie-Beleg'})`;
+            document.getElementById('stickerSN').innerText = `S/N: ${r.sn || 'keine angegeben'}`;
+            
+            const buyDate = new Date(r.date);
+            const expDate = new Date(buyDate);
+            expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
+            document.getElementById('stickerWarranty').innerText = `Garantie bis: ${expDate.toLocaleDateString('de-DE')}`;
+
+            const qrText = `GERÄT: ${r.title}\nKAUFDATUM: ${r.date}\nHÄNDLER: ${r.store || 'k.A.'}\nSERIENNR: ${r.sn || 'k.A.'}\nKARTON: ${r.location || 'k.A.'}`;
+
+            new QRCode(qrContainer, {
+                text: qrText,
+                width: 120,
+                height: 120
+            });
+
+            document.getElementById('qrModal').classList.remove('hidden');
+            document.getElementById('qrModal').classList.add('flex');
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').classList.remove('flex');
+            document.getElementById('qrModal').classList.add('hidden');
         }
 
         /* Direkter Google Kalender Eintrag */
