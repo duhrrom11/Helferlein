@@ -51,6 +51,22 @@
         </div>
     </div>
 
+    <!-- NOTFALL-ALARM BANNER (Wird eingeblendet, wenn Erben Alarm ausgelöst haben) -->
+    <div id="emergencyAlarmBanner" class="hidden bg-red-950 border-b border-red-800 p-4 shadow-2xl animate-pulse">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">🚨</span>
+                <div>
+                    <h3 class="font-black text-red-400 text-sm">ACHTUNG: Notfall-Alarm ausgelöst!</h3>
+                    <p id="alarmDetailsText" class="text-xs text-slate-300">Vertrauensperson hat Inaktivitäts-Alarm aktiviert. 24h-Frist läuft.</p>
+                </div>
+            </div>
+            <button onclick="clearEmergencyAlarm()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                ✅ Ich lebe noch (Entwarnung geben)
+            </button>
+        </div>
+    </div>
+
     <!-- HEADER -->
     <header class="bg-slate-950 border-b border-slate-800 text-white py-4 px-4 shadow-xl">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -150,7 +166,7 @@
                 <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
                     <h4 class="text-xs font-bold text-indigo-400">👥 Personen für 24h-Notfall-Trigger anlegen</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                        <input type="text" id="newAlarmPersonName" placeholder="Name (z.B. Mutter, Onkel)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
+                        <input type="text" id="newAlarmPersonName" placeholder="Name (z.B. Isabelle, Mutter)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
                         <input type="text" id="newAlarmPersonContact" placeholder="Kontakt / E-Mail (optional)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
                         <button onclick="addAlarmPerson()" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md">
                             ➕ Person anlegen
@@ -207,19 +223,16 @@
         document.addEventListener('DOMContentLoaded', async () => {
             await initVault();
             renderApp();
+            await checkIncomingAlarms(); // Alarme beim Start prüfen
         });
 
-        // ROBUSTE TAB UMSCHALTUNG
+        // TAB UMSCHALTUNG
         function switchTab(tabName) {
-            // Aktiven Button hervorheben
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.getElementById(`tab-${tabName}`);
             if (activeBtn) activeBtn.classList.add('active');
 
-            // Alle Sektionen verstecken
             document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
-            
-            // Ziel-Sektion anzeigen
             const targetSec = document.getElementById(`section-${tabName}`);
             if (targetSec) targetSec.classList.remove('hidden');
 
@@ -272,6 +285,7 @@
                         { id: 3, name: "Notar", role: "Rechtsbeistand" }
                     ],
                     alarmPersons: [
+                        { id: "isabelle", name: "Isabelle", contact: "" },
                         { id: "mutter", name: "Mutter", contact: "" },
                         { id: "vater", name: "Vater", contact: "" },
                         { id: "onkel", name: "Onkel", contact: "" }
@@ -283,6 +297,7 @@
                 currentMasterKeyHex = cfg.masterKeyHex;
                 if (!cfg.alarmPersons) {
                     cfg.alarmPersons = [
+                        { id: "isabelle", name: "Isabelle", contact: "" },
                         { id: "mutter", name: "Mutter", contact: "" },
                         { id: "vater", name: "Vater", contact: "" },
                         { id: "onkel", name: "Onkel", contact: "" }
@@ -322,178 +337,8 @@
                 if (!silent) {
                     setTimeout(() => document.getElementById('syncModalOverlay').classList.add('hidden'), 1500);
                 }
+                await checkIncomingAlarms();
                 return true;
             } catch(e) {
                 if (!silent) {
-                    document.getElementById('syncErrorMessage').innerText = e.message;
-                    document.getElementById('syncStatusLoading').classList.add('hidden');
-                    document.getElementById('syncStatusError').classList.remove('hidden');
-                }
-                return false;
-            }
-        }
-
-        function renderApp() {
-            const cfg = getVaultConfig();
-            if (!cfg) return;
-
-            const lastCheck = new Date(cfg.lastCheckIn);
-            const diffDays = Math.floor((new Date() - lastCheck) / (1000 * 60 * 60 * 24));
-            const remaining = (cfg.checkInIntervalDays || 30) - diffDays;
-
-            document.getElementById('deadmanCountdown').innerText = remaining <= 0 ? "0 Tage (Abgelaufen)" : `${remaining} Tage`;
-            document.getElementById('deadmanLastCheck').innerText = `Letzter Check-in: ${lastCheck.toLocaleDateString('de-DE')}`;
-            document.getElementById('deadmanIntervalSelect').value = cfg.checkInIntervalDays || 30;
-
-            document.getElementById('trusteesGrid').innerHTML = cfg.trustees.map((t, idx) => `
-                <div class="p-3.5 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
-                    <span class="font-bold text-indigo-400">Vertrauensperson #${idx + 1}</span>
-                    <input type="text" id="tName_${idx}" value="${t.name}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200">
-                    <input type="text" id="tRole_${idx}" value="${t.role}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200">
-                </div>
-            `).join('');
-
-            renderVaultEntries();
-            renderAlarmPersons();
-        }
-
-        function renderVaultEntries() {
-            const container = document.getElementById('vaultEntriesList');
-            const entries = currentDecryptedVault.entries || [];
-            if (entries.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Keine Einträge vorhanden.</p>`;
-                return;
-            }
-            container.innerHTML = entries.map(e => `
-                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center text-xs">
-                    <div>
-                        <span class="font-bold text-slate-100 text-sm">${e.title}</span> <span class="text-indigo-400">(${e.category})</span>
-                        <p class="text-slate-300 font-mono mt-1">${e.content}</p>
-                    </div>
-                    <button onclick="deleteVaultEntry(${e.id})" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg">Löschen</button>
-                </div>
-            `).join('');
-        }
-
-        function renderAlarmPersons() {
-            const cfg = getVaultConfig();
-            const container = document.getElementById('alarmPersonsList');
-            if (!cfg.alarmPersons || cfg.alarmPersons.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500">Keine Personen angelegt.</p>`;
-                return;
-            }
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-            container.innerHTML = cfg.alarmPersons.map((p, idx) => {
-                const personLink = `${baseUrl}/erben.html?vaultId=${cfg.vaultId}&key=${cfg.masterKeyHex}&person=${p.id}`;
-                return `
-                    <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-2 text-xs">
-                        <div>
-                            <span class="font-bold text-slate-100">${p.name}</span>
-                            <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">${personLink}</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="navigator.clipboard.writeText('${personLink}'); alert('🔗 Link kopiert!');" class="px-3 py-1 bg-indigo-600 text-white font-bold rounded-lg text-[11px]">Link kopieren</button>
-                            <button onclick="deleteAlarmPerson(${idx})" class="px-2 py-1 bg-slate-800 text-slate-300 rounded-lg text-[11px]">Löschen</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        async function addAlarmPerson() {
-            const nameInput = document.getElementById('newAlarmPersonName');
-            const contactInput = document.getElementById('newAlarmPersonContact');
-            const name = nameInput.value.trim();
-            if (!name) { alert("Bitte Namen eingeben!"); return; }
-
-            const cfg = getVaultConfig();
-            if (!cfg.alarmPersons) cfg.alarmPersons = [];
-            const personId = "p_" + Math.random().toString(36).substring(2, 9);
-            cfg.alarmPersons.push({ id: personId, name, contact: contactInput.value.trim() });
-
-            await saveLocalConfig(cfg);
-            await syncVaultToFirebase(true);
-            nameInput.value = "";
-            contactInput.value = "";
-            renderAlarmPersons();
-        }
-
-        async function deleteAlarmPerson(idx) {
-            const cfg = getVaultConfig();
-            cfg.alarmPersons.splice(idx, 1);
-            await saveLocalConfig(cfg);
-            await syncVaultToFirebase(true);
-            renderAlarmPersons();
-        }
-
-        async function saveVaultEntry() {
-            const title = document.getElementById('entryTitle').value.trim();
-            const category = document.getElementById('entryCategory').value;
-            const content = document.getElementById('entryContent').value.trim();
-            if (!title || !content) { alert("Titel und Inhalt erforderlich!"); return; }
-
-            currentDecryptedVault.entries.unshift({ id: Date.now(), title, category, content });
-            await saveLocalConfig(getVaultConfig());
-            document.getElementById('entryTitle').value = "";
-            document.getElementById('entryContent').value = "";
-            renderVaultEntries();
-            await syncVaultToFirebase(false);
-        }
-
-        async function deleteVaultEntry(id) {
-            currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
-            await saveLocalConfig(getVaultConfig());
-            renderVaultEntries();
-            await syncVaultToFirebase(true);
-        }
-
-        async function performCheckIn() {
-            const cfg = getVaultConfig();
-            cfg.lastCheckIn = new Date().toISOString();
-            await saveLocalConfig(cfg);
-            renderApp();
-            await syncVaultToFirebase(true);
-            alert("✅ Check-in erneuert!");
-        }
-
-        async function updateDeadmanInterval() {
-            const cfg = getVaultConfig();
-            cfg.checkInIntervalDays = parseInt(document.getElementById('deadmanIntervalSelect').value);
-            await saveLocalConfig(cfg);
-            await syncVaultToFirebase(true);
-        }
-
-        async function saveTrustees() {
-            const cfg = getVaultConfig();
-            for (let i = 0; i < 3; i++) {
-                cfg.trustees[i].name = document.getElementById(`tName_${i}`).value.trim();
-                cfg.trustees[i].role = document.getElementById(`tRole_${i}`).value.trim();
-            }
-            await saveLocalConfig(cfg);
-            await syncVaultToFirebase(true);
-            alert("✅ Vertrauenspersonen gespeichert!");
-        }
-
-        function renderPrintableKit() {
-            const cfg = getVaultConfig();
-            const container = document.getElementById('kitSharesPreview');
-            container.innerHTML = cfg.trustees.map((t, idx) => `
-                <div class="p-3 bg-white text-slate-900 rounded-xl space-y-2 text-center text-xs">
-                    <h4 class="font-bold">${t.name} (${t.role})</h4>
-                    <p class="font-mono text-[9px] break-all bg-slate-100 p-1 rounded">Schlüssel: ${cfg.masterKeyHex}</p>
-                </div>
-            `).join('');
-        }
-
-        function generatePrintableKitPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const cfg = getVaultConfig();
-            doc.text("DIGITALES NACHLASS-NOTFALL-KIT", 14, 20);
-            doc.text(`Vault-ID: ${cfg.vaultId}`, 14, 28);
-            doc.text(`Master-Key: ${cfg.masterKeyHex}`, 14, 36);
-            doc.save(`notfall-kit-${cfg.vaultId}.pdf`);
-        }
-    </script>
-</body>
-</html>
+                    document.getElemen
