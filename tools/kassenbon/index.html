@@ -54,8 +54,8 @@
                     <p>Über den Button <strong>"Google Kalender"</strong> lässt sich der Garantieablauf direkt in deinen Kalender eintragen. Drucke über <strong>"QR-Sticker"</strong> ein kompaktes Etikett aus, das du auf das physische Gerät kleben kannst. Der integrierte <strong>Zeitwert-Rechner</strong> ermittelt automatisch den verbleibenden Wert für die Hausratversicherung anhand der Nutzungsdauer.</p>
                 </div>
                 <div class="bg-emerald-800/60 p-4 rounded-xl border border-emerald-700 space-y-2">
-                    <h3 class="font-bold text-sm text-emerald-200">3. Steuer-Export & Backup</h3>
-                    <p>Markiere berufliche Anschaffungen als <strong>"Steuerrelevant"</strong>. Am Jahresende kannst du mit einem Klick eine CSV-Tabelle für die Steuererklärung exportieren. Über die Funktionen <strong>"Backup"</strong> und <strong>"Import"</strong> können sämtliche Belege und hochauflösende Fotos lokal gesichert und auf anderen Geräten wiederhergestellt werden.</p>
+                    <h3 class="font-bold text-sm text-emerald-200">3. Steuer-Export, Bearbeiten & Backup</h3>
+                    <p>Markiere berufliche Anschaffungen als <strong>"Steuerrelevant"</strong>. Am Jahresende kannst du mit einem Klick eine CSV-Tabelle für die Steuererklärung exportieren. Einträge lassen sich über das <strong>✏️ Icon</strong> jederzeit bearbeiten. Über <strong>"Backup"</strong> und <strong>"Import"</strong> können sämtliche Belege lokal gesichert werden.</p>
                 </div>
             </div>
         </div>
@@ -98,9 +98,12 @@
             </div>
         </div>
 
-        <!-- Erfassung: Neuer Kassenbon -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h2 class="text-lg font-bold">✍️ Neuen Kassenbon / Beleg erfassen</h2>
+        <!-- Erfassung & Bearbeitung: Kassenbon -->
+        <div id="formCard" class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 id="formTitle" class="text-lg font-bold">✍️ Neuen Kassenbon / Beleg erfassen</h2>
+                <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden px-3 py-1 bg-gray-200 hover:bg-gray-300 text-xs font-bold rounded-lg text-gray-700">✕ Bearbeiten abbrechen</button>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
@@ -196,7 +199,7 @@
                 <input type="text" id="receiptNote" placeholder="z.B. Inkl. 3 Jahre Zusatz-Garantieversicherung" class="w-full p-3 border rounded-xl text-sm">
             </div>
 
-            <button onclick="saveReceipt()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-3 rounded-xl text-sm shadow-sm transition-colors">Beleg & Garantie speichern</button>
+            <button id="saveBtn" onclick="saveReceipt()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-3 rounded-xl text-sm shadow-sm transition-colors">Beleg & Garantie speichern</button>
         </div>
 
         <!-- Verlauf & Historie mit Filtern -->
@@ -248,7 +251,7 @@
             
             <div id="printStickerArea" class="p-4 border-2 border-dashed border-gray-400 rounded-2xl bg-gray-50 flex flex-col items-center text-center space-y-3">
                 <h4 id="stickerTitle" class="font-bold text-sm text-gray-900"></h4>
-                <div id="qrcode" class="p-2 bg-white border rounded-xl shadow-sm"></div>
+                <div id="qrcode" class="p-2 bg-white border rounded-xl shadow-sm min-w-[130px] min-h-[130px] flex items-center justify-center"></div>
                 <div class="text-[11px] text-gray-600 space-y-0.5">
                     <p id="stickerStoreDate"></p>
                     <p id="stickerSN"></p>
@@ -267,6 +270,7 @@
     <script>
         let currentUploadedPhotos = [];
         let rawImage = null;
+        let editingReceiptId = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('receiptDate').valueAsDate = new Date();
@@ -372,7 +376,7 @@
             }
         }
 
-        /* Beleg Speichern */
+        /* Beleg Speichern / Aktualisieren */
         function saveReceipt() {
             const title = document.getElementById('receiptTitle').value.trim();
             const store = document.getElementById('receiptStore').value.trim();
@@ -392,16 +396,86 @@
             }
 
             let data = getData();
-            data.push({
-                id: Date.now(),
-                title, store, date, price, warrantyMonths, lifespan, returnDays, category, sn, location, isTax, note,
-                photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : []
-            });
+
+            if (editingReceiptId) {
+                // Bearbeiten
+                const index = data.findIndex(r => r.id === editingReceiptId);
+                if (index !== -1) {
+                    data[index] = {
+                        ...data[index],
+                        title, store, date, price, warrantyMonths, lifespan, returnDays, category, sn, location, isTax, note,
+                        photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : (data[index].photos || (data[index].photo ? [data[index].photo] : []))
+                    };
+                }
+            } else {
+                // Neu anlegen
+                data.push({
+                    id: Date.now(),
+                    title, store, date, price, warrantyMonths, lifespan, returnDays, category, sn, location, isTax, note,
+                    photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : []
+                });
+            }
 
             data.sort((a, b) => new Date(b.date) - new Date(a.date));
             saveData(data);
 
-            // Form Reset
+            resetForm();
+            renderApp();
+        }
+
+        /* Eintrag bearbeiten (Load into form) */
+        function editReceipt(id) {
+            const data = getData();
+            const r = data.find(item => item.id === id);
+            if (!r) return;
+
+            editingReceiptId = id;
+
+            document.getElementById('receiptTitle').value = r.title || '';
+            document.getElementById('receiptStore').value = r.store || '';
+            document.getElementById('receiptDate').value = r.date || '';
+            document.getElementById('receiptPrice').value = r.price || '';
+            document.getElementById('receiptWarranty').value = r.warrantyMonths !== undefined ? r.warrantyMonths : 24;
+            document.getElementById('receiptLifespan').value = r.lifespan || 5;
+            document.getElementById('receiptReturnDays').value = r.returnDays !== undefined ? r.returnDays : 14;
+            document.getElementById('receiptCategory').value = r.category || 'Sonstiges';
+            document.getElementById('receiptSN').value = r.sn || '';
+            document.getElementById('receiptLocation').value = r.location || '';
+            document.getElementById('receiptIsTax').checked = !!r.isTax;
+            document.getElementById('receiptNote').value = r.note || '';
+
+            // Fotos anzeigen
+            const photos = r.photos || (r.photo ? [r.photo] : []);
+            currentUploadedPhotos = [...photos];
+
+            const previewContainer = document.getElementById('uploadGalleryPreview');
+            previewContainer.innerHTML = "";
+            if (photos.length > 0) {
+                previewContainer.classList.remove('hidden');
+                photos.forEach(src => {
+                    const imgThumb = document.createElement('img');
+                    imgThumb.src = src;
+                    imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
+                    previewContainer.appendChild(imgThumb);
+                });
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+
+            // Form UI auf Bearbeiten anpassen
+            document.getElementById('formTitle').innerText = `✏️ Beleg bearbeiten: ${r.title}`;
+            document.getElementById('saveBtn').innerText = "💾 Änderungen speichern";
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+
+            document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEdit() {
+            resetForm();
+        }
+
+        function resetForm() {
+            editingReceiptId = null;
             document.getElementById('receiptTitle').value = "";
             document.getElementById('receiptStore').value = "";
             document.getElementById('receiptPrice').value = "";
@@ -413,9 +487,12 @@
             document.getElementById('uploadGalleryPreview').classList.add('hidden');
             document.getElementById('canvasEditor').classList.add('hidden');
             document.getElementById('ocrStatus').classList.add('hidden');
+            
+            document.getElementById('formTitle').innerText = "✍️ Neuen Kassenbon / Beleg erfassen";
+            document.getElementById('saveBtn').innerText = "Beleg & Garantie speichern";
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+            document.getElementById('receiptDate').valueAsDate = new Date();
             currentUploadedPhotos = [];
-
-            renderApp();
         }
 
         function deleteReceipt(id) {
@@ -423,6 +500,7 @@
             let data = getData();
             data = data.filter(item => item.id !== id);
             saveData(data);
+            if (editingReceiptId === id) cancelEdit();
             renderApp();
         }
 
@@ -452,7 +530,6 @@
                 if (expDate >= now) totalVal += r.price;
                 if (r.isTax) taxVal += r.price;
 
-                // Zeitwert-Rechner
                 const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
                 const lifespan = r.lifespan || 5;
                 const currentZeitwert = Math.max(0, r.price * (1 - (ageYears / lifespan)));
@@ -482,7 +559,6 @@
                 const diffDaysReturn = Math.ceil((retDate - now) / (1000 * 60 * 60 * 24));
                 const isReturnActive = diffDaysReturn >= 0;
 
-                // Einzelner Zeitwert
                 const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
                 const lifespan = r.lifespan || 5;
                 const zeitwert = Math.max(0, r.price * (1 - (ageYears / lifespan)));
@@ -516,6 +592,7 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
+                            <button onclick="editReceipt(${r.id})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold">✏️ Bearbeiten</button>
                             <button onclick="openQRModal(${r.id})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold">🏷️ QR-Sticker</button>
                             <button onclick="openGoogleCalendar(${r.id})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold">📅 Google Kalender</button>
                             <button onclick="downloadICS(${r.id})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold">📄 .ics</button>
@@ -526,7 +603,7 @@
             }).join('');
         }
 
-        /* Galerie Modal (Mehrseiten-Scan) */
+        /* Galerie Modal */
         function openGalleryModal(id) {
             const data = getData();
             const r = data.find(item => item.id === id);
@@ -561,8 +638,9 @@
             const r = data.find(item => item.id === id);
             if (!r) return;
 
-            const qrContainer = document.getElementById('qrcode');
-            qrContainer.innerHTML = "";
+            const modal = document.getElementById('qrModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
 
             document.getElementById('stickerTitle').innerText = r.title;
             document.getElementById('stickerStoreDate').innerText = `Kauf: ${r.date} (${r.store || 'Garantie-Beleg'})`;
@@ -573,16 +651,26 @@
             expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
             document.getElementById('stickerWarranty').innerText = `Garantie bis: ${expDate.toLocaleDateString('de-DE')}`;
 
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+
             const qrText = `GERÄT: ${r.title}\nKAUFDATUM: ${r.date}\nHÄNDLER: ${r.store || 'k.A.'}\nSERIENNR: ${r.sn || 'k.A.'}\nKARTON: ${r.location || 'k.A.'}`;
 
-            new QRCode(qrContainer, {
-                text: qrText,
-                width: 120,
-                height: 120
-            });
-
-            document.getElementById('qrModal').classList.remove('hidden');
-            document.getElementById('qrModal').classList.add('flex');
+            // QRCode Erzeugung mit Fallback
+            if (typeof QRCode !== 'undefined') {
+                try {
+                    new QRCode(qrContainer, {
+                        text: qrText,
+                        width: 120,
+                        height: 120,
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                } catch(e) {
+                    qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}" alt="QR Code" class="w-[120px] h-[120px]">`;
+                }
+            } else {
+                qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}" alt="QR Code" class="w-[120px] h-[120px]">`;
+            }
         }
 
         function closeQRModal() {
