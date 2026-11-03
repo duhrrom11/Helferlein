@@ -244,4 +244,487 @@
                     </div>
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
                         <p class="text-xs text-slate-400 font-medium">Prüf-Intervall</p>
-                        <select id="deadmanIntervalSelect" onchange="updateDeadmanInterval()" class="w-full p-2 bg-slate-950 border border-slate
+                        <select id="deadmanIntervalSelect" onchange="updateDeadmanInterval()" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-slate-200">
+                            <option value="30">Alle 30 Tage (Standard)</option>
+                            <option value="60">Alle 60 Tage</option>
+                            <option value="90">Alle 90 Tage</option>
+                            <option value="180">Alle 180 Tage</option>
+                        </select>
+                    </div>
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col justify-center">
+                        <button onclick="performCheckIn()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg transition-all">
+                            ✅ "Ich lebe noch!" (Check-in erneuern)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-amber-950/40 border border-amber-800/60 rounded-2xl space-y-2">
+                    <h4 class="text-xs font-bold text-amber-400">🧪 Notfall-Simulation für Funktionstest:</h4>
+                    <p class="text-xs text-slate-300">Testen, wie der Status für die Erben im Auslösefall erscheint:</p>
+                    <button onclick="simulateInactivity()" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs">
+                        ⚠️ Inaktivität simulieren (Totmannschalter auslösen)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: VERTRAUENSPERSONEN -->
+        <div id="section-trustees" class="hidden space-y-6">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
+                <div class="border-b border-slate-800 pb-3">
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <span>👥</span> Vertrauenspersonen verwalten
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Jede hier eingetragene Person erhält im Notfall-Kit einen Schlüssel. **Bereits eine einzige Person** kann den Safe damit öffnen.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs" id="trusteesGrid">
+                    <!-- Dynamic -->
+                </div>
+
+                <button onclick="saveTrustees()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg transition-all">
+                    💾 Vertrauenspersonen speichern
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 4: PAPIER NOTFALL-KIT -->
+        <div id="section-kit" class="hidden space-y-6">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                <div class="border-b border-slate-800 pb-3">
+                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                        <span>📄</span> Papier-Notfall-Kit (Cold Storage)
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Drucke dieses Kit aus. Die QR-Codes leiten direkt zum Erben-Cockpit weiter und enthalten den Entschlüsselungs-Code.
+                    </p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="generatePrintableKitPDF()" class="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                        📄 Notfall-Kit als PDF exportieren
+                    </button>
+                    <button onclick="window.print()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs">
+                        🖨️ Seite drucken
+                    </button>
+                </div>
+
+                <div id="emergencyPrintArea" class="p-6 bg-white text-slate-900 rounded-2xl space-y-6 shadow-2xl border border-slate-300">
+                    <div class="text-center border-b pb-4">
+                        <h2 class="text-xl font-black">🏛️ DIGITALES NACHLASS-NOTFALL-KIT</h2>
+                        <p class="text-xs text-slate-600">Rechtliches Dokument für Vertrauenspersonen & Erben</p>
+                    </div>
+
+                    <div class="text-xs space-y-1">
+                        <p><strong>Erblasser / Safe-Inhaber:</strong> <span id="kitOwnerName">Romain Duhr</span></p>
+                        <p><strong>Vault-ID:</strong> <span id="kitVaultId" class="font-mono text-slate-700">-</span></p>
+                        <p><strong>Erstellt am:</strong> <span id="kitCreatedDate">-</span></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2" id="kitSharesPreview">
+                        <!-- Dynamic QR Codes -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        /* --- FIREBASE KONFIGURATION --- */
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMWtuQHTGhMMd3WmIgW46NbvT6bQoBwm8",
+            authDomain: "nachlass-app-99df8.firebaseapp.com",
+            projectId: "nachlass-app-99df8",
+            storageBucket: "nachlass-app-99df8.firebasestorage.app",
+            messagingSenderId: "593798150622",
+            appId: "1:593798150622:web:e4e980c9fb6b06201ec54f",
+            measurementId: "G-LWRZKYPJXC"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        /* --- GLOBAL STATE & CRYPTO --- */
+        let currentMasterKeyHex = null;
+        let currentDecryptedVault = { entries: [] };
+
+        function toggleHeaderGuide() {
+            const box = document.getElementById('headerGuideBox');
+            const txt = document.getElementById('guideToggleText');
+            box.classList.toggle('hidden');
+            txt.innerText = box.classList.contains('hidden') ? "Anleitung" : "Schließen";
+        }
+
+        /* --- MODAL ANIMATION CONTROL --- */
+        function showSyncModalLoading() {
+            const overlay = document.getElementById('syncModalOverlay');
+            overlay.classList.remove('hidden');
+            document.getElementById('syncStatusLoading').classList.remove('hidden');
+            document.getElementById('syncStatusSuccess').classList.add('hidden');
+            document.getElementById('syncStatusError').classList.add('hidden');
+        }
+
+        function showSyncModalSuccess() {
+            document.getElementById('syncStatusLoading').classList.add('hidden');
+            document.getElementById('syncStatusSuccess').classList.remove('hidden');
+            setTimeout(() => {
+                closeSyncModal();
+            }, 2000);
+        }
+
+        function showSyncModalError(msg) {
+            document.getElementById('syncStatusLoading').classList.add('hidden');
+            document.getElementById('syncStatusSuccess').classList.add('hidden');
+            document.getElementById('syncErrorMessage').innerText = msg;
+            document.getElementById('syncStatusError').classList.remove('hidden');
+        }
+
+        function closeSyncModal() {
+            document.getElementById('syncModalOverlay').classList.add('hidden');
+        }
+
+        /* --- AES-GCM ENCRYPTION / DECRYPTION --- */
+        async function getCryptoKeyFromHex(hexKey) {
+            const bytes = new Uint8Array(hexKey.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            return crypto.subtle.importKey("raw", bytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+        }
+
+        async function encryptVaultPayload(dataObj, hexKey) {
+            const encoder = new TextEncoder();
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const cryptoKey = await getCryptoKeyFromHex(hexKey);
+            const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, cryptoKey, encoder.encode(JSON.stringify(dataObj)));
+            const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+            return { ciphertext: b64(encrypted), iv: b64(iv) };
+        }
+
+        async function decryptVaultPayload(encryptedObj, hexKey) {
+            try {
+                if (!encryptedObj || !encryptedObj.iv || !encryptedObj.ciphertext) return null;
+                const b64toBuf = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+                const iv = b64toBuf(encryptedObj.iv);
+                const ciphertext = b64toBuf(encryptedObj.ciphertext);
+                const cryptoKey = await getCryptoKeyFromHex(hexKey);
+                const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, cryptoKey, ciphertext);
+                return JSON.parse(new TextDecoder().decode(decrypted));
+            } catch(e) { return null; }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initVault();
+            renderApp();
+        });
+
+        /* --- ROBUSTE INITIALISIERUNG --- */
+        async function initVault() {
+            try {
+                let cfg = JSON.parse(localStorage.getItem('digital_estate_vault'));
+                
+                if (cfg && !cfg.masterKeyHex) {
+                    localStorage.removeItem('digital_estate_vault');
+                    cfg = null;
+                }
+
+                if (!cfg) {
+                    const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+                    currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+                    const vaultId = "v_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+
+                    currentDecryptedVault = { entries: [] };
+                    cfg = {
+                        vaultId: vaultId,
+                        ownerName: "Romain Duhr",
+                        masterKeyHex: currentMasterKeyHex,
+                        checkInIntervalDays: 30,
+                        lastCheckIn: new Date().toISOString(),
+                        trustees: [
+                            { id: 1, name: "Isabelle", role: "Partnerin" },
+                            { id: 2, name: "Lynn Duhr", role: "Tochter" },
+                            { id: 3, name: "Notar", role: "Rechtsbeistand" }
+                        ],
+                        encryptedData: await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex)
+                    };
+                    localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+                } else {
+                    currentMasterKeyHex = cfg.masterKeyHex;
+                    const dec = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
+                    currentDecryptedVault = (dec && dec.entries) ? dec : { entries: [] };
+                }
+            } catch (error) {
+                console.error("Init Fehler:", error);
+                localStorage.removeItem('digital_estate_vault');
+                alert("Der lokale Cache war defekt und wurde bereinigt. Bitte die Seite einmal neu laden.");
+                window.location.reload();
+            }
+        }
+
+        function getVaultConfig() {
+            return JSON.parse(localStorage.getItem('digital_estate_vault'));
+        }
+
+        async function saveLocalConfig(cfg) {
+            cfg.encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
+            localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+        }
+
+        async function syncVaultToFirebase(silent = false) {
+            if (!silent) showSyncModalLoading();
+
+            try {
+                const cfg = getVaultConfig();
+                cfg.encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
+
+                await db.collection("vaults").doc(cfg.vaultId).set({
+                    vaultId: cfg.vaultId,
+                    ownerName: cfg.ownerName,
+                    lastCheckIn: cfg.lastCheckIn,
+                    checkInIntervalDays: cfg.checkInIntervalDays,
+                    encryptedData: cfg.encryptedData,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+
+                if (!silent) {
+                    showSyncModalSuccess();
+                }
+                return true;
+            } catch(e) {
+                console.error("Firebase Sync Error:", e);
+                const errDetail = e.message || e.toString();
+                if (!silent) {
+                    showSyncModalError(errDetail);
+                }
+                return false;
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            ['vault', 'deadman', 'trustees', 'kit'].forEach(sec => {
+                document.getElementById(`section-${sec}`).classList.add('hidden');
+            });
+            document.getElementById(`section-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'kit') renderPrintableKit();
+        }
+
+        function renderApp() {
+            const cfg = getVaultConfig();
+            if (!cfg) return;
+
+            const lastCheck = new Date(cfg.lastCheckIn);
+            const diffDays = Math.floor((new Date() - lastCheck) / (1000 * 60 * 60 * 24));
+            const remaining = (cfg.checkInIntervalDays || 30) - diffDays;
+
+            const badge = document.getElementById('statusBadge');
+            const badgeText = document.getElementById('statusBadgeText');
+
+            if (remaining <= 0) {
+                badge.className = "px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 bg-red-950/80 border-red-800 text-red-400";
+                badgeText.innerText = "🚨 INAKTIVITÄT DETEKTIERT";
+                document.getElementById('deadmanCountdown').innerText = "0 Tage (ABGELAUFEN)";
+                document.getElementById('deadmanCountdown').className = "text-2xl font-black text-red-500";
+            } else {
+                badge.className = "px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 bg-emerald-950/80 border-emerald-800 text-emerald-400";
+                badgeText.innerText = `Status: Aktiv (${remaining} Tage übrig)`;
+                document.getElementById('deadmanCountdown').innerText = `${remaining} Tage`;
+                document.getElementById('deadmanCountdown').className = "text-2xl font-black text-emerald-400";
+            }
+
+            document.getElementById('deadmanLastCheck').innerText = `Letzter Check-in: ${lastCheck.toLocaleDateString('de-DE')}`;
+            document.getElementById('deadmanIntervalSelect').value = cfg.checkInIntervalDays || 30;
+
+            document.getElementById('trusteesGrid').innerHTML = cfg.trustees.map((t, idx) => `
+                <div class="p-3.5 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
+                    <span class="font-bold text-indigo-400">Vertrauensperson #${idx + 1}</span>
+                    <input type="text" id="tName_${idx}" value="${t.name}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200" placeholder="Name">
+                    <input type="text" id="tRole_${idx}" value="${t.role}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200" placeholder="Rolle">
+                </div>
+            `).join('');
+
+            renderVaultEntries();
+        }
+
+        function renderVaultEntries() {
+            const filter = document.getElementById('filterCategory').value;
+            const container = document.getElementById('vaultEntriesList');
+            let entries = currentDecryptedVault.entries || [];
+
+            if (filter !== 'ALL') entries = entries.filter(e => e.category === filter);
+            if (entries.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Keine passenden Nachlass-Einträge vorhanden.</p>`;
+                return;
+            }
+
+            const catIcons = { "Finanzen": "💳", "Verträge": "📜", "Digital": "🌐", "Rechtliches": "⚖️", "Posthum": "💌" };
+            container.innerHTML = entries.map(e => `
+                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span>${catIcons[e.category] || '📦'}</span>
+                            <span class="font-bold text-slate-100 text-sm">${e.title}</span>
+                            <span class="bg-indigo-950 text-indigo-400 font-semibold px-2 py-0.5 rounded-full text-[10px]">${e.category}</span>
+                        </div>
+                        <p class="text-slate-300 font-mono bg-slate-950 p-2 rounded-lg border border-slate-800/80">${e.content}</p>
+                        ${e.partner ? `<p class="text-[11px] text-amber-400">Vertragspartner: ${e.partner} | Nr: ${e.contractNo || 'k.A.'}</p>` : ''}
+                    </div>
+                    <button onclick="deleteVaultEntry(${e.id})" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-semibold text-[11px]">Löschen</button>
+                </div>
+            `).join('');
+        }
+
+        async function performCheckIn() {
+            const cfg = getVaultConfig();
+            cfg.lastCheckIn = new Date().toISOString();
+            await saveLocalConfig(cfg);
+            renderApp();
+            await syncVaultToFirebase(true);
+            alert("✅ Check-in erneuert und in Cloud gespeichert!");
+        }
+
+        async function updateDeadmanInterval() {
+            const cfg = getVaultConfig();
+            cfg.checkInIntervalDays = parseInt(document.getElementById('deadmanIntervalSelect').value);
+            await saveLocalConfig(cfg);
+            renderApp();
+            await syncVaultToFirebase(true);
+        }
+
+        async function simulateInactivity() {
+            const cfg = getVaultConfig();
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 200);
+            cfg.lastCheckIn = pastDate.toISOString();
+            await saveLocalConfig(cfg);
+            renderApp();
+            await syncVaultToFirebase(true);
+            alert("⚠️ Inaktivität simuliert & in Firebase aktualisiert!");
+        }
+
+        async function saveVaultEntry() {
+            try {
+                const title = document.getElementById('entryTitle').value.trim();
+                const category = document.getElementById('entryCategory').value;
+                const content = document.getElementById('entryContent').value.trim();
+                const contractNo = document.getElementById('entryContractNo').value.trim();
+                const partner = document.getElementById('entryPartner').value.trim();
+                const fee = parseFloat(document.getElementById('entryFee').value) || 0;
+
+                if (!title || !content) {
+                    alert("⚠️ Bitte mindestens Titel und Inhalt eingeben!");
+                    return;
+                }
+
+                if (!currentDecryptedVault.entries) {
+                    currentDecryptedVault.entries = [];
+                }
+
+                currentDecryptedVault.entries.unshift({ id: Date.now(), title, category, content, contractNo, partner, fee });
+                
+                await saveLocalConfig(getVaultConfig());
+
+                document.getElementById('entryTitle').value = "";
+                document.getElementById('entryContent').value = "";
+                document.getElementById('entryContractNo').value = "";
+                document.getElementById('entryPartner').value = "";
+                document.getElementById('entryFee').value = "";
+                renderVaultEntries();
+
+                await syncVaultToFirebase(false);
+
+            } catch (err) {
+                console.error("Fehler im Speicherablauf:", err);
+                showSyncModalError(err.message || "Unbekannter Fehler beim lokalen Speichern.");
+            }
+        }
+
+        async function deleteVaultEntry(id) {
+            if (!confirm("Eintrag löschen?")) return;
+            currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
+            await saveLocalConfig(getVaultConfig());
+            renderVaultEntries();
+            await syncVaultToFirebase(true);
+        }
+
+        async function saveTrustees() {
+            const cfg = getVaultConfig();
+            for (let i = 0; i < 3; i++) {
+                cfg.trustees[i].name = document.getElementById(`tName_${i}`).value.trim() || `Vertrauensperson #${i+1}`;
+                cfg.trustees[i].role = document.getElementById(`tRole_${i}`).value.trim() || `Rolle`;
+            }
+            await saveLocalConfig(cfg);
+            renderApp();
+            await syncVaultToFirebase(true);
+            alert("✅ Vertrauenspersonen gespeichert & synchronisiert!");
+        }
+
+        function renderPrintableKit() {
+            const cfg = getVaultConfig();
+            document.getElementById('kitOwnerName').innerText = cfg.ownerName || "Romain Duhr";
+            document.getElementById('kitVaultId').innerText = cfg.vaultId;
+            document.getElementById('kitCreatedDate').innerText = new Date().toLocaleDateString('de-DE');
+
+            const container = document.getElementById('kitSharesPreview');
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+            
+            container.innerHTML = cfg.trustees.map((t, idx) => {
+                const heirUrl = `${baseUrl}/erben.html?vaultId=${cfg.vaultId}&key=${cfg.masterKeyHex}`;
+                const qrId = `qrKit_${idx}`;
+
+                setTimeout(() => {
+                    const el = document.getElementById(qrId);
+                    if (el) {
+                        el.innerHTML = "";
+                        new QRCode(el, { text: heirUrl, width: 120, height: 120 });
+                    }
+                }, 100);
+
+                return `
+                    <div class="p-3 bg-slate-50 border border-slate-300 rounded-xl space-y-2 text-center text-xs">
+                        <h4 class="font-bold text-slate-900">${t.name} (${t.role})</h4>
+                        <div id="${qrId}" class="flex justify-center p-1 bg-white border rounded"></div>
+                        <p class="font-mono text-[9px] break-all bg-slate-200 p-1.5 rounded border text-slate-800">
+                            <strong>Schlüssel:</strong> ${cfg.masterKeyHex}
+                        </p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function generatePrintableKitPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const cfg = getVaultConfig();
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("DIGITALES NACHLASS-NOTFALL-KIT", 14, 20);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Erblasser: ${cfg.ownerName} | Vault-ID: ${cfg.vaultId}`, 14, 28);
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 34);
+
+            let y = 46;
+            cfg.trustees.forEach((t, idx) => {
+                doc.setFont("helvetica", "bold");
+                doc.text(`Vertrauensperson #${idx+1}: ${t.name} (${t.role})`, 14, y);
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                doc.text(`Notfall-Schlüssel: ${cfg.masterKeyHex}`, 14, y);
+                y += 12;
+            });
+
+            doc.save(`notfall-kit-${cfg.vaultId}.pdf`);
+        }
+    </script>
+</body>
+</html>
