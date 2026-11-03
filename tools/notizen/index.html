@@ -243,35 +243,40 @@
                 btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
             });
 
-            // Feste Buttons
-            document.getElementById('manualSyncBtn').addEventListener('click', () => syncVaultToFirebase(false));
-            document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
-            document.getElementById('clearAlarmBtn').addEventListener('click', clearEmergencyAlarm);
-            document.getElementById('saveEntryBtn').addEventListener('click', saveVaultEntry);
-            document.getElementById('checkInBtn').addEventListener('click', performCheckIn);
-            document.getElementById('deadmanIntervalSelect').addEventListener('change', updateDeadmanInterval);
-            document.getElementById('addAlarmPersonBtn').addEventListener('click', addAlarmPerson);
-            document.getElementById('saveTrusteesBtn').addEventListener('click', saveTrustees);
-            document.getElementById('generatePdfBtn').addEventListener('click', generatePrintableKitPDF);
+            // Feste Buttons mit Fehlerabfang
+            const bindClick = (id, handler) => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('click', handler);
+            };
+
+            bindClick('manualSyncBtn', () => syncVaultToFirebase(false));
+            bindClick('closeModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
+            bindClick('clearAlarmBtn', clearEmergencyAlarm);
+            bindClick('saveEntryBtn', saveVaultEntry);
+            bindClick('checkInBtn', performCheckIn);
+            
+            const intervalSel = document.getElementById('deadmanIntervalSelect');
+            if (intervalSel) intervalSel.addEventListener('change', updateDeadmanInterval);
+
+            bindClick('addAlarmPersonBtn', addAlarmPerson);
+            bindClick('saveTrusteesBtn', saveTrustees);
+            bindClick('generatePdfBtn', generatePrintableKitPDF);
 
             // Delegierte Klicks für dynamische Listen (Tresor-Einträge & Alarm-Personen)
             document.addEventListener('click', (e) => {
                 const target = e.target;
 
-                // Tresor Eintrag löschen
                 if (target.classList.contains('delete-entry-btn')) {
                     const id = parseInt(target.getAttribute('data-id'));
                     deleteVaultEntry(id);
                 }
 
-                // Link kopieren
                 if (target.classList.contains('copy-link-btn')) {
                     const link = target.getAttribute('data-link');
                     navigator.clipboard.writeText(link);
                     alert('🔗 Link in die Zwischenablage kopiert!');
                 }
 
-                // E-Mail senden (EmailJS)
                 if (target.classList.contains('email-btn')) {
                     const name = target.getAttribute('data-name');
                     const email = target.getAttribute('data-email');
@@ -279,7 +284,6 @@
                     sendEmailToPerson(name, email, link);
                 }
 
-                // Alarm-Person löschen
                 if (target.classList.contains('delete-person-btn')) {
                     const idx = parseInt(target.getAttribute('data-idx'));
                     deleteAlarmPerson(idx);
