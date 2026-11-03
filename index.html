@@ -3,7 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kostenlose Online-Tools und Rechner für den Alltag</title>
+    
+    <!-- SEO Meta-Daten -->
+    <title>Kostenlose Online-Tools & Rechner für deinen Alltag</title>
+    <meta name="description" content="Entdecke 10 kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung, 100% lokal & sicher. Nutze praktische Alltagsrechner direkt im Browser!">
+    
+    <!-- PWA / App-Modus Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Alltags-Tools">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href='data:application/manifest+json,{"name": "Alltagshelferlein Hub", "short_name": "Helferlein", "start_url": "./index.html", "display": "standalone", "background_color": "#f3f4f6", "theme_color": "#0284c7"}'>
+
+    <!-- Schema.org / Strukturierte Daten für Suchmaschinen & KI -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Alltagshelferlein Hub",
+      "operatingSystem": "Web Browser",
+      "applicationCategory": "UtilitiesApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "description": "Kostenlose Online-Tools für Haushalt, Finanzen und Organisation ohne Anmeldung. Daten bleiben 100% lokal auf dem Gerät.",
+      "author": {
+        "@type": "Person",
+        "name": "Romain Duhr"
+      }
+    }
+    </script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -31,9 +62,9 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
-                    ⚡ Kostenlose Online-Tools und Rechner für den Alltag
+                    ⚡ Kostenlose Online-Tools und clevere Rechner
                 </h1>
-                <p class="text-xs md:text-sm text-gray-500 mt-0.5">Kostenlose Online-Tools für Auto, Haushalt, Finanzen, Garten und Organisation.</p>
+                <p class="text-xs md:text-sm text-gray-500 mt-0.5">Entdecke 10 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.</p>
             </div>
 
             <!-- Top Controls -->
@@ -66,219 +97,237 @@
         </div>
 
         <!-- Hauptgrid Header -->
-        <div class="flex justify-between items-center pt-2">
-            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Alle Tools im Überblick</h2>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-2">
+            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 10 kostenlosen Online-Tools im Überblick</h2>
+            <div class="flex gap-3 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                <span>🔒 100% Local Storage</span>
+                <span>🚫 Keine Cloud-Falle</span>
+            </div>
         </div>
 
         <!-- Tools Grid (Alle 10 Tools) -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            <!-- Tool 1: Garantie & Kassenbon Pro -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-name="garantie kassenbon beleg mhd scanner">
+            <!-- Tool 1 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-name="garantie manager kassenbon scanner beleg">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-200 shadow-inner">🧾</div>
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-200 shadow-inner" aria-hidden="true">🧾</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kassenbon', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kassenbon">⭐</button>
+                            <button type="button" onclick="toggleFavorite('kassenbon', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kassenbon" aria-label="Als Favorit speichern">⭐</button>
                             <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Pro</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Garantie & Kassenbon Pro</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Belege scannen, Garantiefristen überwachen, Support-Mails generieren & PDF-Export.</p>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Garantie-Manager & Kassenbon-Scanner</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Scanne Rechnungen sicher lokal ein, überwache Garantiefristen und erstelle PDF-Exporte im Schadensfall.</p>
                     <div id="stats-kassenbon" class="mt-3 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">📄 PDF-Export</span>
-                    <a href="tools/kassenbon/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                    <a href="tools/kassenbon/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Kassenbon Scanner</span> &rarr;</a>
                 </div>
             </div>
 
-            <!-- Tool 2: Keller- & Kisten-Finder -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-name="keller kisten finder qr code inventar">
+            <!-- Tool 2 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-name="umzugskisten inventar verwaltung keller">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-200 shadow-inner">📦</div>
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-200 shadow-inner" aria-hidden="true">📦</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kisten', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kisten">⭐</button>
+                            <button type="button" onclick="toggleFavorite('kisten', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kisten" aria-label="Als Favorit speichern">⭐</button>
                             <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Lager</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Keller- & Kisten-Finder</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Umzugskisten und Lagerorte digital verwalten & QR-Codes direkt im Browser drucken.</p>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Umzugskisten- & Inventar-Verwaltung</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Finde Gegenstände in Keller und Garage sofort wieder. Generiere QR-Codes zum Ausdrucken für deine Boxen.</p>
                     <div id="stats-kisten" class="mt-3 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">🖨️ QR-Druck</span>
-                    <a href="tools/kisten/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                    <a href="tools/kisten/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Inventar-Verwaltung</span> &rarr;</a>
                 </div>
             </div>
 
-            <!-- Tool 3: WG- & Haushalts-Kasse -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-name="wg haushalt kasse ausgaben rechner split">
+            <!-- Tool 3 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-name="wg kasse haushaltsbuch rechner ausgaben">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-200 shadow-inner">💶</div>
+                        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-200 shadow-inner" aria-hidden="true">💶</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('wg-kasse', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wg-kasse">⭐</button>
+                            <button type="button" onclick="toggleFavorite('wg-kasse', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wg-kasse" aria-label="Als Favorit speichern">⭐</button>
                             <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Budget</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">WG- & Haushalts-Kasse</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Gemeinsame Ausgaben erfassen, Beträge aufteilen und Salden sekundenschnell berechnen.</p>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">WG-Kasse & Haushaltsbuch Rechner</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erfasse gemeinsame Einkäufe im Haushalt und teile Kosten fair auf. Automatische Salden- und Schuldenberechnung.</p>
                     <div id="stats-wg-kasse" class="mt-3 text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">⚡ Live-Calc</span>
-                    <a href="tools/wg-kasse/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                    <a href="tools/wg-kasse/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">WG Kasse</span> &rarr;</a>
                 </div>
             </div>
 
-            <!-- Tool 4: Schlüssel, PIN & Notizen -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-name="schlüssel pin dokumente notiz wlan merker">
+            <!-- Tool 4 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-name="passwort pin manager notizen wlan">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold border border-purple-200 shadow-inner">🔐</div>
+                        <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold border border-purple-200 shadow-inner" aria-hidden="true">🔐</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('notizen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="notizen">⭐</button>
+                            <button type="button" onclick="toggleFavorite('notizen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="notizen" aria-label="Als Favorit speichern">⭐</button>
                             <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Secure</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Schlüssel, PIN & Notizen</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Sicherer, lokaler Speicher für WLAN-Codes, PINs, Koffer-Zahlenkombinationen und Notizen.</p>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Sicherer Passwort- & PIN-Manager</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Speichere WLAN-Codes, Kofferschlösser und sensible Notizen lokal ab. Keine Cloud-Speicherung, maximale Sicherheit.</p>
                     <div id="stats-notizen" class="mt-3 text-[11px] font-semibold text-purple-600 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">🛡️ AES-Local</span>
-                    <a href="tools/notizen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                    <a href="tools/notizen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Passwort-Manager</span> &rarr;</a>
                 </div>
             </div>
 
-            <!-- Tool 5: KFZ- & Reifen-Tracker Pro -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-name="kfz auto reifenwechsel tüv öl tanken kosten reifentiefe">
+            <!-- Tool 5 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-name="kfz kosten auto reifenwechsel tracker tüv">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl font-bold border border-red-200 shadow-inner">🚗</div>
+                        <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl font-bold border border-red-200 shadow-inner" aria-hidden="true">🚗</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kfz', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kfz">⭐</button>
+                            <button type="button" onclick="toggleFavorite('kfz', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kfz" aria-label="Als Favorit speichern">⭐</button>
                             <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Tracker</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">KFZ- & Reifen-Tracker Pro</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">TÜV, Reifentiefe, Tanken, Reparaturen, Kostenrechner und Kalender-Export für Autos.</p>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">KFZ-Kosten & Reifenwechsel-Tracker</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Verwalte TÜV-Termine, protokolliere Reifentiefe, Tankkosten und Werkstattreparaturen für dein Auto.</p>
                     <div id="stats-kfz" class="mt-3 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">📅 Kalender</span>
-                    <a href="tools/kfz/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                    <a href="tools/kfz/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">KFZ-Tracker</span> &rarr;</a>
                 </div>
             </div>
 
-            <!-- Tool 6: Haustier-Gesundheits-Pass -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-name="haustier hund katze gesundheit impfpass tierarzt kosten">
+            <!-- Tool 6 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-name="haustier hunde gesundheitspass impfpass tierarzt">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 shadow-inner">🐾</div>
+                        <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 shadow-inner" aria-hidden="true">🐾</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="haustier">⭐</button>
+                            <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="haustier" aria-label="Als Favorit speichern">⭐</button>
                             <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Care</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Haustier-Gesundheits-Pass</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Impfungen, Vorsorge, Tierarzt-Termine, Foto-Avatare und Kostenrechner für Haustiere.</p>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Haustier- & Hunde-Gesundheitspass</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte den Überblick über Impfungen, Tierarztkosten und Medikamente für deinen Hund oder deine Katze.</p>
                     <div id="stats-haustier" class="mt-3 text-[11px] font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">🩺 Vorsorge</span>
-                    <a href="tools/haustier/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                    <a href="tools/haustier/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Gesundheitspass</span> &rarr;</a>
                 </div>
             </div>
 
-            <!-- Tool 7: Parkschein- & Park-Timer -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-name="parken parkschein timer gps standort auto">
+            <!-- Tool 7 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-name="gps parkschein timer standort merker auto">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-200 shadow-inner">🅿️</div>
+                        <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-200 shadow-inner" aria-hidden="true">🅿️</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('parken', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="parken">⭐</button>
+                            <button type="button" onclick="toggleFavorite('parken', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="parken" aria-label="Als Favorit speichern">⭐</button>
                             <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Timer</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Parkschein- & Park-Timer</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Visueller Countdown gegen Strafzettel, GPS-Standortspeicherung und Park-Historie.</p>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">GPS Parkschein-Timer & Standort-Merker</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Vermeide Strafzettel durch den visuellen Park-Countdown. Finde dein geparktes Auto per GPS-Standort wieder.</p>
                     <div id="stats-parken" class="mt-3 text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">📍 GPS-Save</span>
-                    <a href="tools/parken/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                    <a href="tools/parken/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Park-Timer</span> &rarr;</a>
                 </div>
             </div>
 
-            <!-- Tool 8: Leih- & Verleih-Tracker Pro -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-name="leih verleih tracker werkzeug kaution whatsapp">
+            <!-- Tool 8 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-name="leihvertrag werkzeug verleih tracker kaution">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-200 shadow-inner">🤝</div>
+                        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-200 shadow-inner" aria-hidden="true">🤝</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('verleih', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="verleih">⭐</button>
+                            <button type="button" onclick="toggleFavorite('verleih', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="verleih" aria-label="Als Favorit speichern">⭐</button>
                             <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Share</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Leih- & Verleih-Tracker Pro</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Wer hat dein Werkzeug? Mit WhatsApp-Erinnerung, Kaution, Kontakten und QR-Codes.</p>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Leihvertrag & Werkzeug-Verleih-Tracker</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Notiere verliehenes Werkzeug oder Bücher. Generiere Kaution-Details und automatische WhatsApp-Erinnerungen.</p>
                     <div id="stats-verleih" class="mt-3 text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">💬 WhatsApp</span>
-                    <a href="tools/verleih/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                    <a href="tools/verleih/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Verleih-Tracker</span> &rarr;</a>
                 </div>
             </div>
 
-            <!-- Tool 9: Pflanzen- & Garten-Pass -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-name="pflanzen garten pflege pass gießen dünger">
+            <!-- Tool 9 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-name="pflanzenpflege gieß erinnerung garten pass">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-lime-50 text-lime-600 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-200 shadow-inner">🌱</div>
+                        <div class="w-12 h-12 bg-lime-50 text-lime-600 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-200 shadow-inner" aria-hidden="true">🌱</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('pflanzen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="pflanzen">⭐</button>
+                            <button type="button" onclick="toggleFavorite('pflanzen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="pflanzen" aria-label="Als Favorit speichern">⭐</button>
                             <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Green</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Pflanzen- & Garten-Pass</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Gieß-Intervall, Dünger-Historie, Standorte und Foto-Avatare für deine Zimmerpflanzen.</p>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Pflanzenpflege & Gieß-Erinnerung</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erstelle Profile für deine Zimmerpflanzen, notiere Gieß-Intervalle, Dünge-Historie und ideale Standorte.</p>
                     <div id="stats-pflanzen" class="mt-3 text-[11px] font-semibold text-lime-600 bg-lime-50 border border-lime-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">💧 Reminder</span>
-                    <a href="tools/pflanzen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                    <a href="tools/pflanzen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Pflanzen-Pass</span> &rarr;</a>
                 </div>
             </div>
 
-            <!-- Tool 10: Strom-, Wasser- & Gaszähler -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-name="strom wasser gas zähler energie tracker verbrauch">
+            <!-- Tool 10 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-name="strom wasserzähler verbrauchsmelder tracker gas">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-200 shadow-inner">⚡</div>
+                        <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-200 shadow-inner" aria-hidden="true">⚡</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('energie', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="energie">⭐</button>
+                            <button type="button" onclick="toggleFavorite('energie', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="energie" aria-label="Als Favorit speichern">⭐</button>
                             <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Energy</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Strom-, Wasser- & Gaszähler</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Monatliche Zählerstände erfassen, Verbrauch im Blick behalten und PDF für Versorger.</p>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Strom- & Wasserzähler Verbrauchsmelder</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erfasse monatliche Zählerstände, behalte deinen Verbrauch im Blick und erstelle Reports für Nachzahlungen.</p>
                     <div id="stats-energie" class="mt-3 text-[11px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">📊 Charts</span>
-                    <a href="tools/energie/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
+                    <a href="tools/energie/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Energie Tracker</span> &rarr;</a>
                 </div>
             </div>
 
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="text-center py-8 text-xs text-gray-500 border-t border-gray-200 transition-colors">
-        <p>Alltagshelferlein Hub – 100% lokal, sicher & blitzschnell im Browser.</p>
+    <!-- Footer mit EEAT- & Trust-Signalen -->
+    <footer class="mt-8 py-8 border-t border-gray-200 bg-white">
+        <div class="container mx-auto px-4 max-w-7xl text-center space-y-3">
+            <h2 class="text-sm font-bold text-gray-800">Über Alltagshelferlein Hub</h2>
+            <p class="text-xs text-gray-500 leading-relaxed max-w-2xl mx-auto">
+                Diese Sammlung kostenloser Online-Tools wurde konzipiert, um alltägliche Probleme (Haushalt, Finanzen, Auto) einfach und effizient im Browser zu lösen. 
+                <strong>Ohne versteckte Kosten, ohne Account-Zwang.</strong>
+            </p>
+            <p class="text-xs text-gray-500">
+                Entwickelt mit 💡 von Romain Duhr. 
+                <span class="font-semibold text-emerald-600">Datenschutz hat Priorität:</span> Deine Eingaben werden ausschließlich im Local Storage deines Browsers verarbeitet.
+            </p>
+            <div class="flex justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
+                <a href="#" class="text-xs text-sky-600 hover:text-sky-800 font-medium transition-colors">Datenschutzerklärung</a>
+                <a href="#" class="text-xs text-sky-600 hover:text-sky-800 font-medium transition-colors">Impressum</a>
+            </div>
+        </div>
     </footer>
 
     <!-- Einstellungs-Modal -->
