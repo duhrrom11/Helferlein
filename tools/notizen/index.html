@@ -225,28 +225,25 @@
         let currentMasterKeyHex = null;
         let currentDecryptedVault = { entries: [] };
 
-        // ZENTRALE INITIALISIERUNG SOBALD DOM LÄDT
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 await initVault();
                 renderApp();
                 await checkIncomingAlarms();
-                setupEventListeners();
+                setupGlobalEventListeners();
             } catch (err) {
                 console.error("Initialisierungsfehler:", err);
             }
         });
 
-        function setupEventListeners() {
-            // Tab Umschaltung
+        // Event Delegation für alle statischen und dynamischen Buttons
+        function setupGlobalEventListeners() {
+            // Tabs
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tabName = btn.getAttribute('data-tab');
-                    switchTab(tabName);
-                });
+                btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
             });
 
-            // Buttons verknüpfen
+            // Feste Buttons
             document.getElementById('manualSyncBtn').addEventListener('click', () => syncVaultToFirebase(false));
             document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             document.getElementById('clearAlarmBtn').addEventListener('click', clearEmergencyAlarm);
@@ -256,10 +253,42 @@
             document.getElementById('addAlarmPersonBtn').addEventListener('click', addAlarmPerson);
             document.getElementById('saveTrusteesBtn').addEventListener('click', saveTrustees);
             document.getElementById('generatePdfBtn').addEventListener('click', generatePrintableKitPDF);
+
+            // Delegierte Klicks für dynamische Listen (Tresor-Einträge & Alarm-Personen)
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+
+                // Tresor Eintrag löschen
+                if (target.classList.contains('delete-entry-btn')) {
+                    const id = parseInt(target.getAttribute('data-id'));
+                    deleteVaultEntry(id);
+                }
+
+                // Link kopieren
+                if (target.classList.contains('copy-link-btn')) {
+                    const link = target.getAttribute('data-link');
+                    navigator.clipboard.writeText(link);
+                    alert('🔗 Link in die Zwischenablage kopiert!');
+                }
+
+                // E-Mail senden (EmailJS)
+                if (target.classList.contains('email-btn')) {
+                    const name = target.getAttribute('data-name');
+                    const email = target.getAttribute('data-email');
+                    const link = target.getAttribute('data-link');
+                    sendEmailToPerson(name, email, link);
+                }
+
+                // Alarm-Person löschen
+                if (target.classList.contains('delete-person-btn')) {
+                    const idx = parseInt(target.getAttribute('data-idx'));
+                    deleteAlarmPerson(idx);
+                }
+            });
         }
 
         function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn b, .tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
             if (activeBtn) activeBtn.classList.add('active');
 
@@ -476,13 +505,9 @@
                         <span class="font-bold text-slate-100 text-sm">${e.title}</span> <span class="text-indigo-400">(${e.category})</span>
                         <p class="text-slate-300 font-mono mt-1">${e.content}</p>
                     </div>
-                    <button data-delete-entry="${e.id}" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg delete-entry-btn">Löschen</button>
+                    <button data-id="${e.id}" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg delete-entry-btn">Löschen</button>
                 </div>
             `).join('');
-
-            document.querySelectorAll('.delete-entry-btn').forEach(btn => {
-                btn.addEventListener('click', () => deleteVaultEntry(parseInt(btn.getAttribute('data-delete-entry'))));
-            });
         }
 
         function renderAlarmPersons() {
@@ -504,35 +529,13 @@
                             <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">${personLink}</p>
                         </div>
                         <div class="flex gap-2 flex-wrap">
-                            <button data-copy-link="${personLink}" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px] copy-link-btn">Link kopieren</button>
-                            ${p.contact ? `<button data-email-name="${p.name}" data-email-contact="${p.contact}" data-email-link="${personLink}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] email-btn">✉️ E-Mail senden</button>` : ''}
-                            <button data-delete-person="${idx}" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px] delete-person-btn">Löschen</button>
+                            <button data-link="${personLink}" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px] copy-link-btn">Link kopieren</button>
+                            ${p.contact ? `<button data-name="${p.name}" data-email="${p.contact}" data-link="${personLink}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] email-btn">✉️ E-Mail senden</button>` : ''}
+                            <button data-idx="${idx}" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px] delete-person-btn">Löschen</button>
                         </div>
                     </div>
                 `;
             }).join('');
-
-            // Event-Listener für dynamische Buttons in der Liste
-            document.querySelectorAll('.copy-link-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(btn.getAttribute('data-copy-link'));
-                    alert('🔗 Link in die Zwischenablage kopiert!');
-                });
-            });
-
-            document.querySelectorAll('.email-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    sendEmailToPerson(
-                        btn.getAttribute('data-email-name'),
-                        btn.getAttribute('data-email-contact'),
-                        btn.getAttribute('data-email-link')
-                    );
-                });
-            });
-
-            document.querySelectorAll('.delete-person-btn').forEach(btn => {
-                btn.addEventListener('click', () => deleteAlarmPerson(parseInt(btn.getAttribute('data-delete-person'))));
-            });
         }
 
         async function addAlarmPerson() {
