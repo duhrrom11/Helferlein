@@ -48,7 +48,7 @@
                 <div class="inline-block p-4 bg-red-950/80 rounded-full text-red-400 border border-red-800"><span class="text-3xl">❌</span></div>
                 <h3 class="font-bold text-red-400 text-base">Fehler</h3>
                 <p id="syncErrorMessage" class="text-xs text-slate-400 font-mono">-</p>
-                <button onclick="document.getElementById('syncModalOverlay').classList.add('hidden')" class="w-full py-2 bg-slate-800 text-slate-200 rounded-xl text-xs">Schließen</button>
+                <button id="closeModalBtn" class="w-full py-2 bg-slate-800 text-slate-200 rounded-xl text-xs">Schließen</button>
             </div>
         </div>
     </div>
@@ -63,7 +63,7 @@
                     <p id="alarmDetailsText" class="text-xs text-slate-300">Vertrauensperson hat Inaktivitäts-Alarm aktiviert.</p>
                 </div>
             </div>
-            <button onclick="clearEmergencyAlarm()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg">
+            <button id="clearAlarmBtn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg">
                 ✅ Ich lebe noch (Entwarnung geben)
             </button>
         </div>
@@ -79,7 +79,7 @@
                     <p class="text-[11px] text-slate-400">Zero-Knowledge Safe</p>
                 </div>
             </div>
-            <button onclick="syncVaultToFirebase(false)" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs">
+            <button id="manualSyncBtn" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs">
                 ☁️ Manuell Synch.
             </button>
         </div>
@@ -90,10 +90,10 @@
 
         <!-- TABS NAVIGATION -->
         <div class="flex border-b border-slate-800 space-x-6 text-sm font-medium overflow-x-auto">
-            <button onclick="switchTab('vault')" id="tab-vault" class="tab-btn active pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">🔐 Tresor</button>
-            <button onclick="switchTab('deadman')" id="tab-deadman" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">⏰ Totmannschalter</button>
-            <button onclick="switchTab('trustees')" id="tab-trustees" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">👥 Vertrauenspersonen</button>
-            <button onclick="switchTab('kit')" id="tab-kit" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">📄 Notfall-Kit</button>
+            <button data-tab="vault" class="tab-btn active pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">🔐 Tresor</button>
+            <button data-tab="deadman" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">⏰ Totmannschalter</button>
+            <button data-tab="trustees" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">👥 Vertrauenspersonen</button>
+            <button data-tab="kit" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">📄 Notfall-Kit</button>
         </div>
 
         <!-- TAB 1: TRESOR -->
@@ -124,7 +124,7 @@
                     <label class="block text-slate-400 text-xs mb-1">Inhalt / Zugangsdaten *:</label>
                     <textarea id="entryContent" rows="3" placeholder="IBAN, PINs, Logins..." class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-xs font-mono"></textarea>
                 </div>
-                <button onclick="saveVaultEntry()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg">
+                <button id="saveEntryBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg">
                     🔒 Verschlüsseln & speichern
                 </button>
             </div>
@@ -151,14 +151,14 @@
                     </div>
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
                         <p class="text-xs text-slate-400">Prüf-Intervall</p>
-                        <select id="deadmanIntervalSelect" onchange="updateDeadmanInterval()" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-slate-200">
+                        <select id="deadmanIntervalSelect" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-slate-200">
                             <option value="30">Alle 30 Tage</option>
                             <option value="60">Alle 60 Tage</option>
                             <option value="90">Alle 90 Tage</option>
                         </select>
                     </div>
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col justify-center">
-                        <button onclick="performCheckIn()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                        <button id="checkInBtn" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg">
                             ✅ "Ich lebe noch!"
                         </button>
                     </div>
@@ -170,7 +170,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
                         <input type="text" id="newAlarmPersonName" placeholder="Name (z.B. Isabelle)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
                         <input type="email" id="newAlarmPersonContact" placeholder="E-Mail-Adresse" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
-                        <button onclick="addAlarmPerson()" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md">
+                        <button id="addAlarmPersonBtn" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md">
                             ➕ Person anlegen
                         </button>
                     </div>
@@ -186,7 +186,7 @@
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
                 <h3 class="text-sm font-bold text-slate-100">👥 Vertrauenspersonen verwalten</h3>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs" id="trusteesGrid"></div>
-                <button onclick="saveTrustees()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                <button id="saveTrusteesBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg">
                     💾 Vertrauenspersonen speichern
                 </button>
             </div>
@@ -196,7 +196,7 @@
         <div id="section-kit" class="tab-section hidden space-y-6">
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
                 <h3 class="text-sm font-bold text-slate-100">📄 Papier-Notfall-Kit (Cold Storage)</h3>
-                <button onclick="generatePrintableKitPDF()" class="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                <button id="generatePdfBtn" class="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-lg">
                     📄 Notfall-Kit als PDF exportieren
                 </button>
                 <div id="kitSharesPreview" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2"></div>
@@ -219,25 +219,48 @@
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.firestore();
 
-        // EmailJS Initialisierung mit Public Key
+        // EmailJS Initialisierung
         emailjs.init("Z1IQ0xhr3cplXVC0j");[span_0](start_span)[span_0](end_span)
 
         let currentMasterKeyHex = null;
         let currentDecryptedVault = { entries: [] };
 
+        // ZENTRALE INITIALISIERUNG SOBALD DOM LÄDT
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 await initVault();
                 renderApp();
                 await checkIncomingAlarms();
+                setupEventListeners();
             } catch (err) {
                 console.error("Initialisierungsfehler:", err);
             }
         });
 
-        window.switchTab = function(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById(`tab-${tabName}`);
+        function setupEventListeners() {
+            // Tab Umschaltung
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabName = btn.getAttribute('data-tab');
+                    switchTab(tabName);
+                });
+            });
+
+            // Buttons verknüpfen
+            document.getElementById('manualSyncBtn').addEventListener('click', () => syncVaultToFirebase(false));
+            document.getElementById('closeModalBtn').addEventListener('click', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
+            document.getElementById('clearAlarmBtn').addEventListener('click', clearEmergencyAlarm);
+            document.getElementById('saveEntryBtn').addEventListener('click', saveVaultEntry);
+            document.getElementById('checkInBtn').addEventListener('click', performCheckIn);
+            document.getElementById('deadmanIntervalSelect').addEventListener('change', updateDeadmanInterval);
+            document.getElementById('addAlarmPersonBtn').addEventListener('click', addAlarmPerson);
+            document.getElementById('saveTrusteesBtn').addEventListener('click', saveTrustees);
+            document.getElementById('generatePdfBtn').addEventListener('click', generatePrintableKitPDF);
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn b, .tab-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
             if (activeBtn) activeBtn.classList.add('active');
 
             document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
@@ -245,7 +268,7 @@
             if (targetSec) targetSec.classList.remove('hidden');
 
             if (tabName === 'kit') renderPrintableKit();
-        };
+        }
 
         async function getCryptoKeyFromHex(hexKey) {
             const bytes = new Uint8Array(hexKey.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
@@ -317,7 +340,7 @@
             localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
         }
 
-        window.syncVaultToFirebase = async function(silent = false) {
+        async function syncVaultToFirebase(silent = false) {
             if (!silent) document.getElementById('syncModalOverlay').classList.remove('hidden');
             try {
                 const cfg = getVaultConfig();
@@ -347,7 +370,7 @@
                 }
                 return false;
             }
-        };
+        }
 
         async function checkIncomingAlarms() {
             try {
@@ -386,7 +409,7 @@
             }
         }
 
-        window.clearEmergencyAlarm = async function() {
+        async function clearEmergencyAlarm() {
             if (!confirm("Möchtest du Entwarnung geben und den Alarm zurücksetzen?")) return;
 
             try {
@@ -405,7 +428,7 @@
             } catch (e) {
                 alert("Fehler beim Zurücksetzen: " + e.message);
             }
-        };
+        }
 
         function renderApp() {
             const cfg = getVaultConfig();
@@ -453,9 +476,13 @@
                         <span class="font-bold text-slate-100 text-sm">${e.title}</span> <span class="text-indigo-400">(${e.category})</span>
                         <p class="text-slate-300 font-mono mt-1">${e.content}</p>
                     </div>
-                    <button onclick="deleteVaultEntry(${e.id})" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg">Löschen</button>
+                    <button data-delete-entry="${e.id}" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg delete-entry-btn">Löschen</button>
                 </div>
             `).join('');
+
+            document.querySelectorAll('.delete-entry-btn').forEach(btn => {
+                btn.addEventListener('click', () => deleteVaultEntry(parseInt(btn.getAttribute('data-delete-entry'))));
+            });
         }
 
         function renderAlarmPersons() {
@@ -477,16 +504,38 @@
                             <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">${personLink}</p>
                         </div>
                         <div class="flex gap-2 flex-wrap">
-                            <button onclick="navigator.clipboard.writeText('${personLink}'); alert('🔗 Link kopiert!');" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px]">Link kopieren</button>
-                            ${p.contact ? `<button onclick="sendEmailToPerson('${p.name}', '${p.contact}', '${personLink}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px]">✉️ E-Mail senden</button>` : ''}
-                            <button onclick="deleteAlarmPerson(${idx})" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px]">Löschen</button>
+                            <button data-copy-link="${personLink}" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px] copy-link-btn">Link kopieren</button>
+                            ${p.contact ? `<button data-email-name="${p.name}" data-email-contact="${p.contact}" data-email-link="${personLink}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] email-btn">✉️ E-Mail senden</button>` : ''}
+                            <button data-delete-person="${idx}" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px] delete-person-btn">Löschen</button>
                         </div>
                     </div>
                 `;
             }).join('');
+
+            // Event-Listener für dynamische Buttons in der Liste
+            document.querySelectorAll('.copy-link-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(btn.getAttribute('data-copy-link'));
+                    alert('🔗 Link in die Zwischenablage kopiert!');
+                });
+            });
+
+            document.querySelectorAll('.email-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    sendEmailToPerson(
+                        btn.getAttribute('data-email-name'),
+                        btn.getAttribute('data-email-contact'),
+                        btn.getAttribute('data-email-link')
+                    );
+                });
+            });
+
+            document.querySelectorAll('.delete-person-btn').forEach(btn => {
+                btn.addEventListener('click', () => deleteAlarmPerson(parseInt(btn.getAttribute('data-delete-person'))));
+            });
         }
 
-        window.addAlarmPerson = async function() {
+        async function addAlarmPerson() {
             const nameInput = document.getElementById('newAlarmPersonName');
             const contactInput = document.getElementById('newAlarmPersonContact');
             const name = nameInput.value.trim();
@@ -498,22 +547,21 @@
             cfg.alarmPersons.push({ id: personId, name, contact: contactInput.value.trim() });
 
             await saveLocalConfig(cfg);
-            await window.syncVaultToFirebase(true);
+            await syncVaultToFirebase(true);
             nameInput.value = "";
             contactInput.value = "";
             renderAlarmPersons();
-        };
+        }
 
-        window.deleteAlarmPerson = async function(idx) {
+        async function deleteAlarmPerson(idx) {
             const cfg = getVaultConfig();
             cfg.alarmPersons.splice(idx, 1);
             await saveLocalConfig(cfg);
-            await window.syncVaultToFirebase(true);
+            await syncVaultToFirebase(true);
             renderAlarmPersons();
-        };
+        }
 
-        // EXAKTER VERSAND MIT DIREKTEM FEEDBACK
-        window.sendEmailToPerson = function(name, email, link) {
+        function sendEmailToPerson(name, email, link) {
             if (!email) {
                 alert("Keine E-Mail-Adresse für diese Person hinterlegt.");
                 return;
@@ -528,19 +576,15 @@
                 person_link: link
             };
 
-            console.log("Starte EmailJS Versand mit:", templateParams);
-
             emailjs.send('service_8gzihbf', 'template_xmidqv9', templateParams)[span_1](start_span)[span_1](end_span)[span_2](start_span)[span_2](end_span)
                 .then(function(response) {
-                    console.log("SUCCESS!", response.status, response.text);
                     alert(`✅ E-Mail erfolgreich an ${name} (${email}) gesendet!`);
                 }, function(error) {
-                    console.error("FAILED...", error);
-                    alert(`❌ EmailJS Fehler-Details: ${JSON.stringify(error)}`);
+                    alert(`❌ EmailJS Fehler: ${JSON.stringify(error)}`);
                 });
-        };
+        }
 
-        window.saveVaultEntry = async function() {
+        async function saveVaultEntry() {
             const title = document.getElementById('entryTitle').value.trim();
             const category = document.getElementById('entryCategory').value;
             const content = document.getElementById('entryContent').value.trim();
@@ -551,42 +595,42 @@
             document.getElementById('entryTitle').value = "";
             document.getElementById('entryContent').value = "";
             renderVaultEntries();
-            await window.syncVaultToFirebase(false);
-        };
+            await syncVaultToFirebase(false);
+        }
 
-        window.deleteVaultEntry = async function(id) {
+        async function deleteVaultEntry(id) {
             currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
             await saveLocalConfig(getVaultConfig());
             renderVaultEntries();
-            await window.syncVaultToFirebase(true);
-        };
+            await syncVaultToFirebase(true);
+        }
 
-        window.performCheckIn = async function() {
+        async function performCheckIn() {
             const cfg = getVaultConfig();
             cfg.lastCheckIn = new Date().toISOString();
             await saveLocalConfig(cfg);
             renderApp();
-            await window.syncVaultToFirebase(true);
+            await syncVaultToFirebase(true);
             alert("✅ Check-in erneuert!");
-        };
+        }
 
-        window.updateDeadmanInterval = async function() {
+        async function updateDeadmanInterval() {
             const cfg = getVaultConfig();
             cfg.checkInIntervalDays = parseInt(document.getElementById('deadmanIntervalSelect').value);
             await saveLocalConfig(cfg);
-            await window.syncVaultToFirebase(true);
-        };
+            await syncVaultToFirebase(true);
+        }
 
-        window.saveTrustees = async function() {
+        async function saveTrustees() {
             const cfg = getVaultConfig();
             for (let i = 0; i < 3; i++) {
                 cfg.trustees[i].name = document.getElementById(`tName_${i}`).value.trim();
                 cfg.trustees[i].role = document.getElementById(`tRole_${i}`).value.trim();
             }
             await saveLocalConfig(cfg);
-            await window.syncVaultToFirebase(true);
+            await syncVaultToFirebase(true);
             alert("✅ Vertrauenspersonen gespeichert!");
-        };
+        }
 
         function renderPrintableKit() {
             const cfg = getVaultConfig();
@@ -600,7 +644,7 @@
             `).join('');
         }
 
-        window.generatePrintableKitPDF = function() {
+        function generatePrintableKitPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const cfg = getVaultConfig();
@@ -608,7 +652,7 @@
             doc.text(`Vault-ID: ${cfg.vaultId}`, 14, 28);
             doc.text(`Master-Key: ${cfg.masterKeyHex}`, 14, 36);
             doc.save(`notfall-kit-${cfg.vaultId}.pdf`);
-        };
+        }
     </script>
 </body>
 </html>
