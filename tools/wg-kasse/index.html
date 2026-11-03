@@ -7,8 +7,6 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js für WG-Finanz-Analysen -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- jsPDF für PDF-Berichte -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -57,12 +55,12 @@
                     <p>Erstelle Putzaufgaben für Bad, Küche, Flur oder Müll. Weise Personen zu und rotiere die Aufgaben per Klick wöchentlich durch. Aufgaben können als erledigt markiert werden.</p>
                 </div>
                 <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
-                    <h3 class="font-bold text-sm text-emerald-200">3. Live-Einkaufsliste</h3>
-                    <p>Füge Artikel zur WG-Einkaufsliste hinzu. Beim Abhaken im Supermarkt kannst du gekaufte Artikel mit einem Klick direkt als Ausgabe in die <strong>WG-Kasse übernehmen</strong>.</p>
+                    <h3 class="font-bold text-sm text-emerald-200">3. Live-Einkaufsliste & Amazon</h3>
+                    <p>Füge Artikel zur WG-Einkaufsliste hinzu. Jeder Artikel enthält direkt einen Amazon-Suchlink (Partner-ID: <code>duhrrom-21</code>). Beim Kaufen lässt sich der Artikel mit einem Klick in die <strong>WG-Kasse übernehmen</strong>.</p>
                 </div>
                 <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
-                    <h3 class="font-bold text-sm text-emerald-200">4. Termine & Umfragen</h3>
-                    <p>Trage Partys, Elternbesuch oder Klausurenphasen in den WG-Kalender ein. Nutze Schnell-Umfragen für Entscheidungen (z. B. neue Kaffeemaschine) ohne Gruppenchat-Chaos.</p>
+                    <h3 class="font-bold text-sm text-emerald-200">4. Infoboard, Termine & Umfragen</h3>
+                    <p>WLAN-Passwort, Vermieter, Hausmeister und Müllabfuhr-Zeiten lassen sich über den Button <strong>✏️ Editieren</strong> anpassen und speichern. Nutze Schnell-Umfragen für WG-Entscheidungen.</p>
                 </div>
             </div>
         </div>
@@ -169,7 +167,7 @@
             </div>
         </div>
 
-        <!-- SECTION 2: Putzplan & Einkaufsliste -->
+        <!-- SECTION 2: Putzplan & Einkaufsliste mit Amazon Affiliate -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Rotierender Putzplan -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
@@ -185,23 +183,23 @@
                 </div>
             </div>
 
-            <!-- Live Einkaufsliste mit Direkt-Verbuchung -->
+            <!-- Live Einkaufsliste mit Amazon Affiliate (duhrrom-21) -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">🛒 Gemeinsame Einkaufsliste</h3>
-                    <span class="text-xs text-gray-500">Beim Kaufen direkt in WG-Kasse übernehmen</span>
+                    <span class="text-xs text-gray-500">Inkl. Amazon-Bestell-Button & WG-Kassen-Übernahme</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Müllbeutel" class="flex-grow p-2.5 border rounded-xl text-xs">
+                    <input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Müllbeutel, Spülmaschinentabs" class="flex-grow p-2.5 border rounded-xl text-xs">
                     <button onclick="addShoppingItem()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-sm">Hinzufügen</button>
                 </div>
-                <div id="shoppingList" class="space-y-2 max-h-52 overflow-y-auto pr-1">
+                <div id="shoppingList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
                     <p class="text-xs text-gray-400 text-center py-4">Einkaufsliste ist leer.</p>
                 </div>
             </div>
         </div>
 
-        <!-- SECTION 3: Kalender/Termine & Quick-Polls / Infoboard -->
+        <!-- SECTION 3: Kalender/Termine & Anpassbares Infoboard -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Termine & Events -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
@@ -214,18 +212,23 @@
                 </div>
             </div>
 
-            <!-- Schnell-Umfragen & Info-Hub -->
+            <!-- Dynamisch Editierbares Infoboard & Umfragen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">📌 WG-Infoboard & Umfragen</h3>
                     <button onclick="openAddPollModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold">+ Umfrage</button>
                 </div>
                 
-                <!-- Stammdaten Box -->
-                <div class="p-3 bg-gray-50 border rounded-xl text-xs space-y-1">
-                    <p>📶 <strong>WLAN-Passwort:</strong> <span id="infoWifi" class="font-mono bg-white px-2 py-0.5 rounded border">WG-Supernet-2026</span></p>
-                    <p>📞 <strong>Vermieter / Hausmeister:</strong> <span id="infoLandlord">Hr. Weber (+49 170 1234567)</span></p>
-                    <p>🗑️ <strong>Müllabfuhr:</strong> Bio (Di) | Restmüll (Fr)</p>
+                <!-- Bearbeitbare Stammdaten Box -->
+                <div class="p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs space-y-2">
+                    <div class="flex justify-between items-center border-b border-gray-200 pb-1.5">
+                        <span class="font-bold text-gray-800">📋 WG-Stammdaten</span>
+                        <button onclick="openInfoboardModal()" class="px-2 py-0.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[11px] font-bold shadow-sm">✏️ Editieren</button>
+                    </div>
+                    <p>📶 <strong>WLAN-Passwort:</strong> <span id="infoWifi" class="font-mono bg-white px-2 py-0.5 rounded border">Lade...</span></p>
+                    <p>🏠 <strong>Vermieter:</strong> <span id="infoLandlord">Lade...</span></p>
+                    <p>🛠️ <strong>Hausmeister:</strong> <span id="infoCaretaker">Lade...</span></p>
+                    <p>🗑️ <strong>Müllabfuhr:</strong> <span id="infoTrash">Lade...</span></p>
                 </div>
 
                 <div id="pollList" class="space-y-3 max-h-48 overflow-y-auto">
@@ -235,6 +238,38 @@
         </div>
 
     </main>
+
+    <!-- Modal: Infoboard / Stammdaten bearbeiten -->
+    <div id="infoboardModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">📌 WG-Stammdaten bearbeiten</h3>
+                <button onclick="closeInfoboardModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">📶 WLAN-Passwort:</label>
+                    <input type="text" id="editWifi" placeholder="z. B. WG-Supernet-2026" class="w-full p-2.5 border rounded-xl font-mono">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">🏠 Vermieter Contact:</label>
+                    <input type="text" id="editLandlord" placeholder="z. B. Hr. Weber (+49 170 1234567)" class="w-full p-2.5 border rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">🛠️ Hausmeister / Notdienst:</label>
+                    <input type="text" id="editCaretaker" placeholder="z. B. Hr. Müller (+49 171 9876543)" class="w-full p-2.5 border rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">🗑️ Müllabfuhr-Zeiten:</label>
+                    <input type="text" id="editTrash" placeholder="z. B. Bio (Di) | Restmüll (Fr)" class="w-full p-2.5 border rounded-xl">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeInfoboardModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveInfoboardFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal: Mitbewohner verwalten -->
     <div id="mitbewohnerModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
@@ -330,6 +365,8 @@
 
     <!-- Script Logik -->
     <script>
+        const AMAZON_AFFILIATE_TAG = "duhrrom-21";
+
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('expenseDate').valueAsDate = new Date();
             renderApp();
@@ -376,6 +413,25 @@
         }
         function savePolls(data) { localStorage.setItem('wg_polls', JSON.stringify(data)); }
 
+        function getInfoData() {
+            try {
+                return JSON.parse(localStorage.getItem('wg_infoboard')) || {
+                    wifi: "WG-Supernet-2026",
+                    landlord: "Hr. Weber (+49 170 1234567)",
+                    caretaker: "Hr. Müller (+49 171 9876543)",
+                    trash: "Bio (Di) | Restmüll (Fr)"
+                };
+            } catch(e) {
+                return {
+                    wifi: "WG-Supernet-2026",
+                    landlord: "Hr. Weber (+49 170 1234567)",
+                    caretaker: "Hr. Müller (+49 171 9876543)",
+                    trash: "Bio (Di) | Restmüll (Fr)"
+                };
+            }
+        }
+        function saveInfoData(data) { localStorage.setItem('wg_infoboard', JSON.stringify(data)); }
+
         /* --- Main Render Function --- */
         function renderApp() {
             const flatmates = getFlatmates();
@@ -412,7 +468,43 @@
             renderShoppingList();
             renderEvents();
             renderPolls();
+            renderInfoBoard();
             renderFlatmateModalList();
+        }
+
+        /* --- Infoboard Render & Handling --- */
+        function renderInfoBoard() {
+            const info = getInfoData();
+            document.getElementById('infoWifi').innerText = info.wifi || 'k.A.';
+            document.getElementById('infoLandlord').innerText = info.landlord || 'k.A.';
+            document.getElementById('infoCaretaker').innerText = info.caretaker || 'k.A.';
+            document.getElementById('infoTrash').innerText = info.trash || 'k.A.';
+        }
+
+        function openInfoboardModal() {
+            const info = getInfoData();
+            document.getElementById('editWifi').value = info.wifi || '';
+            document.getElementById('editLandlord').value = info.landlord || '';
+            document.getElementById('editCaretaker').value = info.caretaker || '';
+            document.getElementById('editTrash').value = info.trash || '';
+            document.getElementById('infoboardModal').classList.remove('hidden');
+            document.getElementById('infoboardModal').classList.add('flex');
+        }
+
+        function closeInfoboardModal() {
+            document.getElementById('infoboardModal').classList.remove('flex');
+            document.getElementById('infoboardModal').classList.add('hidden');
+        }
+
+        function saveInfoboardFromModal() {
+            const wifi = document.getElementById('editWifi').value.trim();
+            const landlord = document.getElementById('editLandlord').value.trim();
+            const caretaker = document.getElementById('editCaretaker').value.trim();
+            const trash = document.getElementById('editTrash').value.trim();
+
+            saveInfoData({ wifi, landlord, caretaker, trash });
+            closeInfoboardModal();
+            renderInfoBoard();
         }
 
         /* --- Schulden-Minimierungs-Algorithmus --- */
@@ -435,7 +527,6 @@
                 });
             });
 
-            // Separate creditors and debtors
             const debtors = [];
             const creditors = [];
 
@@ -628,7 +719,7 @@
             renderApp();
         }
 
-        /* --- Einkaufsliste & Verbuchung --- */
+        /* --- Einkaufsliste & Amazon Affiliate --- */
         function renderShoppingList() {
             const items = getShoppingList();
             const container = document.getElementById('shoppingList');
@@ -638,15 +729,23 @@
                 return;
             }
 
-            container.innerHTML = items.map(item => `
-                <div class="p-3 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                    <span class="font-medium text-gray-800">${item.title}</span>
-                    <div class="flex gap-2">
-                        <button onclick="transferShoppingToExpense(${item.id})" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg font-bold">🛒 Gekauft & Buchen</button>
-                        <button onclick="deleteShoppingItem(${item.id})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
+            container.innerHTML = items.map(item => {
+                const amazonUrl = `https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}`;
+                return `
+                    <div class="p-3 bg-gray-50 border rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+                        <span class="font-medium text-gray-800">${item.title}</span>
+                        <div class="flex flex-wrap gap-1.5 self-end sm:self-center">
+                            <a href="${amazonUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 rounded-lg font-bold flex items-center gap-1 transition-colors">
+                                📦 Amazon
+                            </a>
+                            <button onclick="transferShoppingToExpense(${item.id})" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg font-bold">
+                                🧾 Buchen
+                            </button>
+                            <button onclick="deleteShoppingItem(${item.id})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function addShoppingItem() {
@@ -677,7 +776,6 @@
             const price = parseFloat(priceStr);
             if (!price || price <= 0) return alert("Ungültiger Preis.");
 
-            // In Kasse eintragen
             const expenses = getExpenses();
             expenses.unshift({
                 id: Date.now(),
@@ -690,7 +788,6 @@
             });
             saveExpenses(expenses);
 
-            // Aus Einkaufsliste entfernen
             deleteShoppingItem(id);
             renderApp();
         }
@@ -832,7 +929,8 @@
                 cleaning: getCleaningPlan(),
                 shopping: getShoppingList(),
                 events: getEvents(),
-                polls: getPolls()
+                polls: getPolls(),
+                infoboard: getInfoData()
             };
             const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' });
             const a = document.createElement('a');
@@ -854,6 +952,7 @@
                     if (parsed.shopping) saveShoppingList(parsed.shopping);
                     if (parsed.events) saveEvents(parsed.events);
                     if (parsed.polls) savePolls(parsed.polls);
+                    if (parsed.infoboard) saveInfoData(parsed.infoboard);
                     renderApp();
                     alert("WG-Daten erfolgreich importiert!");
                 } catch(err) { alert("Fehler beim Import."); }
