@@ -7,12 +7,12 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- jsPDF für PDF-Notfallkits & Kündigungsschreiben -->
+    <!-- jsPDF für PDF-Notfallkits -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- QRCode.js für Schlüssel-QR-Codes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- Firebase SDKs (Compat-Versionen für einfaches Browser-Scripting) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
@@ -40,7 +40,7 @@
                     <div class="p-2.5 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30 text-2xl">🏛️</div>
                     <div>
                         <h1 class="text-xl md:text-2xl font-black tracking-tight text-slate-100">Digitaler Nachlassverwalter Pro</h1>
-                        <p class="text-xs text-slate-400 mt-0.5">Zero-Knowledge Safe · Firebase Cloud Sync · Einzel-Schlüssel Entschlüsselung</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Zero-Knowledge Safe · Auto Cloud Sync · Einzel-Schlüssel Entschlüsselung</p>
                     </div>
                 </div>
                 
@@ -54,8 +54,8 @@
                         <span id="statusBadgeText">Status: Aktiv (Check-in OK)</span>
                     </div>
 
-                    <button onclick="syncVaultToFirebase()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-md">
-                        ☁️ In Firebase Speichern
+                    <button onclick="syncVaultToFirebase(false)" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-md">
+                        ☁️ Manuell Synch.
                     </button>
                 </div>
             </div>
@@ -71,7 +71,7 @@
                         <h4 class="font-bold text-emerald-400">👤 Eigentümer (Du):</h4>
                         <ol class="list-decimal list-inside text-slate-300 space-y-1">
                             <li>Trage im Tab <strong>"Tresor"</strong> Zugänge, Passwörter und Verträge ein.</li>
-                            <li>Klicke auf <strong>"In Firebase Speichern"</strong>, um den verschlüsselten Stand in der Cloud zu sichern.</li>
+                            <li>Jeder Eintrag wird automatisch lokal und in Firebase gespeichert.</li>
                             <li>Erneuere im Tab <strong>"Totmannschalter"</strong> regelmäßig deinen Aktivitäts-Status.</li>
                             <li>Drucke unter <strong>"Papier-Notfall-Kit"</strong> die Zettel für deine Vertrauenspersonen aus.</li>
                         </ol>
@@ -159,7 +159,7 @@
                 </div>
 
                 <button onclick="saveVaultEntry()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg transition-all">
-                    🔒 Im Safe speichern
+                    🔒 Verschlüsseln & in Cloud speichern
                 </button>
             </div>
 
@@ -291,7 +291,7 @@
     </main>
 
     <script>
-        /* --- FIREBASE KONFIGURATION (VON DEINEM SCREENSHOT) --- */
+        /* --- FIREBASE KONFIGURATION --- */
         const firebaseConfig = {
             apiKey: "AIzaSyAMWtuQHTGhMMd3WmIgW46NbvT6bQoBwm8",
             authDomain: "nachlass-app-99df8.firebaseapp.com",
@@ -302,7 +302,6 @@
             measurementId: "G-LWRZKYPJXC"
         };
         
-        // Firebase initialisieren
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -335,6 +334,7 @@
 
         async function decryptVaultPayload(encryptedObj, hexKey) {
             try {
+                if (!encryptedObj || !encryptedObj.iv || !encryptedObj.ciphertext) return null;
                 const b64toBuf = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
                 const iv = b64toBuf(encryptedObj.iv);
                 const ciphertext = b64toBuf(encryptedObj.ciphertext);
@@ -356,6 +356,7 @@
                 currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
                 const vaultId = "v_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
 
+                currentDecryptedVault = { entries: [] };
                 cfg = {
                     vaultId: vaultId,
                     ownerName: "Romain Duhr",
@@ -367,13 +368,13 @@
                         { id: 2, name: "Lynn Duhr", role: "Tochter" },
                         { id: 3, name: "Notar", role: "Rechtsbeistand" }
                     ],
-                    encryptedData: await encryptVaultPayload({ entries: [] }, currentMasterKeyHex)
+                    encryptedData: await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex)
                 };
                 localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
             } else {
                 currentMasterKeyHex = cfg.masterKeyHex;
                 const dec = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
-                if (dec) currentDecryptedVault = dec;
+                currentDecryptedVault = (dec && dec.entries) ? dec : { entries: [] };
             }
         }
 
@@ -386,7 +387,7 @@
             localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
         }
 
-        async function syncVaultToFirebase() {
+        async function syncVaultToFirebase(silent = false) {
             const cfg = getVaultConfig();
             cfg.encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
 
@@ -400,9 +401,12 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
-                alert("☁️ Safe erfolgreich in Firebase synchronisiert!");
+                if (!silent) alert("☁️ Safe erfolgreich in Firebase synchronisiert!");
+                return true;
             } catch(e) {
-                alert("❌ Fehler beim Firebase Sync. Bitte prüfe deine Firestore Security Rules.");
+                console.error("Firebase Error:", e);
+                alert("⚠️ Speichern in Firebase fehlgeschlagen!\nBitte erstelle die Firestore Security Rules (Regeln) in Firebase.");
+                return false;
             }
         }
 
@@ -488,7 +492,8 @@
             cfg.lastCheckIn = new Date().toISOString();
             await saveLocalConfig(cfg);
             renderApp();
-            alert("✅ Check-in erfolgreich erneuert!");
+            await syncVaultToFirebase(true);
+            alert("✅ Check-in erneuert und in Cloud gespeichert!");
         }
 
         async function updateDeadmanInterval() {
@@ -496,6 +501,7 @@
             cfg.checkInIntervalDays = parseInt(document.getElementById('deadmanIntervalSelect').value);
             await saveLocalConfig(cfg);
             renderApp();
+            await syncVaultToFirebase(true);
         }
 
         async function simulateInactivity() {
@@ -505,7 +511,8 @@
             cfg.lastCheckIn = pastDate.toISOString();
             await saveLocalConfig(cfg);
             renderApp();
-            alert("⚠️ Inaktivität simuliert!");
+            await syncVaultToFirebase(true);
+            alert("⚠️ Inaktivität simuliert & in Firebase aktualisiert!");
         }
 
         function generateRandomPass() {
@@ -523,17 +530,30 @@
             const partner = document.getElementById('entryPartner').value.trim();
             const fee = parseFloat(document.getElementById('entryFee').value) || 0;
 
-            if (!title || !content) return alert("Bitte Titel und Inhalt eingeben!");
+            if (!title || !content) return alert("⚠️ Bitte mindestens Titel und Inhalt eingeben!");
+
+            if (!currentDecryptedVault.entries) {
+                currentDecryptedVault.entries = [];
+            }
 
             currentDecryptedVault.entries.unshift({ id: Date.now(), title, category, content, contractNo, partner, fee });
+            
+            // 1. Lokalen Stand speichern
             await saveLocalConfig(getVaultConfig());
 
+            // 2. Felder leeren & Liste aktualisieren
             document.getElementById('entryTitle').value = "";
             document.getElementById('entryContent').value = "";
             document.getElementById('entryContractNo').value = "";
             document.getElementById('entryPartner').value = "";
             document.getElementById('entryFee').value = "";
             renderVaultEntries();
+
+            // 3. Automatisch in Firebase speichern
+            const success = await syncVaultToFirebase(true);
+            if (success) {
+                alert("✅ Eintrag verschlüsselt im Safe & in Firebase gespeichert!");
+            }
         }
 
         async function deleteVaultEntry(id) {
@@ -541,6 +561,8 @@
             currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
             await saveLocalConfig(getVaultConfig());
             renderVaultEntries();
+            await syncVaultToFirebase(true);
+            alert("🗑️ Eintrag gelöscht und Cloud aktualisiert.");
         }
 
         async function saveTrustees() {
@@ -551,7 +573,8 @@
             }
             await saveLocalConfig(cfg);
             renderApp();
-            alert("✅ Vertrauenspersonen gespeichert!");
+            await syncVaultToFirebase(true);
+            alert("✅ Vertrauenspersonen gespeichert & synchronisiert!");
         }
 
         function renderPrintableKit() {
