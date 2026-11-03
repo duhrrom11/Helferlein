@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitaler Nachlassverwalter - Erben-Portal</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF für Kündigungsschreiben -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 font-sans flex flex-col justify-center items-center">
+
+    <div class="max-w-3xl w-full bg-slate-950 border-2 border-amber-600 p-6 rounded-2xl shadow-2xl space-y-6">
+        
+        <!-- Header -->
+        <div class="border-b border-amber-800/80 pb-4 text-center">
+            <div class="text-3xl mb-2">🏛️</div>
+            <h1 class="text-xl font-black text-amber-400">ERBEN-NOTFALL-COCKPIT</h1>
+            <p class="text-xs text-slate-400 mt-1">Sicherer Einzel-Schlüssel Nachlass-Zugriff</p>
+        </div>
+
+        <!-- Lade-Zustand -->
+        <div id="loadingState" class="text-center py-6 text-xs text-slate-400">
+            ⏳ Lade verschlüsselte Daten aus der Cloud...
+        </div>
+
+        <!-- Entsperr-Formular -->
+        <div id="heirUnlockCard" class="hidden space-y-4 text-xs">
+            <div class="p-3.5 bg-slate-900 border border-slate-800 rounded-xl space-y-1">
+                <p><strong>Erblasser / Safe-Inhaber:</strong> <span id="ownerNameDisplay" class="text-slate-100 font-bold">-</span></p>
+                <p><strong>Totmannschalter Status:</strong> <span id="deadmanStatusDisplay" class="font-bold">-</span></p>
+            </div>
+
+            <p class="text-slate-300">Geben Sie den ausgedruckten Notfall-Schlüssel ein (wird beim Scannen des QR-Codes automatisch ausgefüllt):</p>
+
+            <div class="space-y-2">
+                <label class="block font-semibold text-slate-300">Schlüssel-Code:</label>
+                <input type="text" id="masterKeyInput" placeholder="64-stelliger Hex-Schlüssel..." class="w-full p-3 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 font-mono text-xs">
+            </div>
+
+            <button onclick="unlockVault()" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow-lg transition-all text-xs">
+                🔓 Safe jetzt entschlüsseln
+            </button>
+        </div>
+
+        <!-- FREIGESCHALTETER NACHLASS -->
+        <div id="heirDecryptedContent" class="hidden space-y-6">
+            
+            <div class="p-3 bg-emerald-950/60 border border-emerald-800 rounded-xl text-emerald-400 text-xs font-bold text-center">
+                ✅ Tresor erfolgreich entschlüsselt
+            </div>
+
+            <!-- Geführte Checkliste -->
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3 text-xs">
+                <h3 class="font-bold text-amber-400 text-sm">📌 Geführte Checkliste für Hinterbliebene</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+                        <h4 class="font-bold text-slate-200">1. Woche</h4>
+                        <ul class="list-disc list-inside text-slate-400 space-y-0.5 text-[11px]">
+                            <li>Todesbescheinigung holen</li>
+                            <li>Bestatter beauftragen</li>
+                            <li>Standesamt benachrichtigen</li>
+                        </ul>
+                    </div>
+                    <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+                        <h4 class="font-bold text-slate-200">2. Woche</h4>
+                        <ul class="list-disc list-inside text-slate-400 space-y-0.5 text-[11px]">
+                            <li>Mietvertrag prüfen</li>
+                            <li>Verträge & Abos kündigen</li>
+                            <li>Kündigungs-Button nutzen</li>
+                        </ul>
+                    </div>
+                    <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+                        <h4 class="font-bold text-slate-200">3. Woche</h4>
+                        <ul class="list-disc list-inside text-slate-400 space-y-0.5 text-[11px]">
+                            <li>Banken informieren</li>
+                            <li>Erbschein / Testament</li>
+                            <li>Digitales Erbe abwickeln</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nachlass Einträge -->
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3">
+                <h3 class="font-bold text-slate-100 text-sm">📂 Freigeschaltete Nachlass-Einträge</h3>
+                <div id="heirEntriesList" class="space-y-3 text-xs"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL: 1-KLICK KÜNDIGUNGSGENERATOR -->
+    <div id="cancelModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 text-xs">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-slate-100">📜 1-Klick Kündigungsschreiben im Todesfall</h3>
+                <button onclick="closeCancelModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Vertrag / Leistung:</label>
+                    <input type="text" id="cancelTargetTitle" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-200" readonly>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1">Vertragsnummer:</label>
+                        <input type="text" id="cancelContractNo" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Firma / Partner:</label>
+                        <input type="text" id="cancelPartner" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-200">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 border-t border-slate-800 pt-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1">Absender (Erbe Name):</label>
+                        <input type="text" id="cancelHeirName" placeholder="z. B. Lynn Duhr" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Sterbedatum:</label>
+                        <input type="date" id="cancelDeathDate" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-200">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                <button onclick="closeCancelModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-semibold">Abbrechen</button>
+                <button onclick="generateCancellationPDF()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl">
+                    📄 Kündigungs-PDF Herunterladen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- FIREBASE KONFIGURATION --- */
+        const firebaseConfig = {
+            apiKey: "DEINE_FIREBASE_API_KEY",
+            authDomain: "DEIN_PROJECT.firebaseapp.com",
+            projectId: "DEIN_PROJECT_ID",
+            storageBucket: "DEIN_PROJECT.appspot.com",
+            messagingSenderId: "DEINE_SENDER_ID",
+            appId: "DEINE_APP_ID"
+        };
+        
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        let loadedEncryptedPayload = null;
+        let activeCancellationTarget = null;
+
+        /* --- LOAD ON STARTUP --- */
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const vaultId = urlParams.get('vaultId');
+            const keyParam = urlParams.get('key');
+
+            if (keyParam) {
+                document.getElementById('masterKeyInput').value = keyParam;
+            }
+
+            if (!vaultId) {
+                document.getElementById('loadingState').innerHTML = `<span class="text-red-400">❌ Fehler: Keine Vault-ID in der URL angegeben.</span>`;
+                return;
+            }
+
+            try {
+                const doc = await db.collection("vaults").doc(vaultId).get();
+                if (!doc.exists) {
+                    document.getElementById('loadingState').innerHTML = `<span class="text-red-400">❌ Fehler: Nachlass-Safe mit dieser ID existiert nicht in der Cloud.</span>`;
+                    return;
+                }
+
+                const data = doc.data();
+                loadedEncryptedPayload = data.encryptedData;
+
+                document.getElementById('ownerNameDisplay').innerText = data.ownerName || 'Unbekannt';
+
+                const lastCheck = new Date(data.lastCheckIn);
+                const diffDays = Math.floor((new Date() - lastCheck) / (1000 * 60 * 60 * 24));
+                const isExpired = diffDays >= (data.checkInIntervalDays || 30);
+
+                const statusEl = document.getElementById('deadmanStatusDisplay');
+                if (isExpired) {
+                    statusEl.innerText = "🚨 Inaktivität bestätigt (Zur Freigabe bereit)";
+                    statusEl.className = "text-red-400 font-bold";
+                } else {
+                    statusEl.innerText = `⚠️ Hinweis: Letzter Inhaber Check-in vor ${diffDays} Tagen`;
+                    statusEl.className = "text-amber-400 font-bold";
+                }
+
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('heirUnlockCard').classList.remove('hidden');
+
+                // Automatisch entsperren, wenn der Schlüssel im QR-Code enthalten war
+                if (keyParam) {
+                    unlockVault();
+                }
+
+            } catch (err) {
+                document.getElementById('loadingState').innerHTML = `<span class="text-red-400">❌ Fehler beim Abrufen des Firebase Dokumentes.</span>`;
+            }
+        });
+
+        /* --- DECRYPTION --- */
+        async function unlockVault() {
+            const keyHex = document.getElementById('masterKeyInput').value.trim();
+            if (!keyHex) return alert("Bitte Schlüssel-Code eingeben!");
+
+            try {
+                const bytes = new Uint8Array(keyHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+                const cryptoKey = await crypto.subtle.importKey("raw", bytes, { name: "AES-GCM" }, false, ["decrypt"]);
+
+                const b64toBuf = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+                const iv = b64toBuf(loadedEncryptedPayload.iv);
+                const ciphertext = b64toBuf(loadedEncryptedPayload.ciphertext);
+
+                const decryptedBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, cryptoKey, ciphertext);
+                const decryptedObj = JSON.parse(new TextDecoder().decode(decryptedBuf));
+
+                document.getElementById('heirUnlockCard').classList.add('hidden');
+                document.getElementById('heirDecryptedContent').classList.remove('hidden');
+
+                renderHeirEntries(decryptedObj.entries || []);
+
+            } catch (err) {
+                alert("❌ Entschlüsselung fehlgeschlagen! Falscher Schlüssel-Code.");
+            }
+        }
+
+        function renderHeirEntries(entries) {
+            const container = document.getElementById('heirEntriesList');
+            if (entries.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-center py-4">Keine Nachlass-Einträge im Safe abgelegt.</p>`;
+                return;
+            }
+
+            container.innerHTML = entries.map(e => `
+                <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                    <div class="flex justify-between items-center font-bold text-slate-100">
+                        <span>${e.title} <span class="text-[10px] bg-indigo-950 text-indigo-400 px-2 py-0.5 rounded-full font-normal">${e.category}</span></span>
+                        ${e.category === 'Verträge' ? `<button onclick="openCancelModal('${encodeURIComponent(JSON.stringify(e))}')" class="px-2 py-0.5 bg-red-600 text-white rounded font-bold text-[10px]">📜 Kündigen</button>` : ''}
+                    </div>
+                    <p class="font-mono text-slate-300 bg-slate-900 p-2 rounded border border-slate-800 text-[11px] whitespace-pre-line">${e.content}</p>
+                    ${e.partner ? `<p class="text-[10px] text-amber-400">Vertragspartner: ${e.partner} | Nr: ${e.contractNo || 'k.A.'}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        /* --- KÜNDIGUNGSGENERATOR --- */
+        function openCancelModal(encodedEntry) {
+            const entry = JSON.parse(decodeURIComponent(encodedEntry));
+            activeCancellationTarget = entry;
+
+            document.getElementById('cancelTargetTitle').value = entry.title;
+            document.getElementById('cancelContractNo').value = entry.contractNo || '';
+            document.getElementById('cancelPartner').value = entry.partner || '';
+            document.getElementById('cancelDeathDate').valueAsDate = new Date();
+
+            document.getElementById('cancelModal').classList.remove('hidden');
+            document.getElementById('cancelModal').classList.add('flex');
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancelModal').classList.remove('flex');
+            document.getElementById('cancelModal').classList.add('hidden');
+        }
+
+        function generateCancellationPDF() {
+            if (!activeCancellationTarget) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const heirName = document.getElementById('cancelHeirName').value.trim() || "Der Erbe / Die Erbin";
+            const deathDate = document.getElementById('cancelDeathDate').value;
+            const partner = document.getElementById('cancelPartner').value.trim() || activeCancellationTarget.partner || "Vertragspartner";
+            const contractNo = document.getElementById('cancelContractNo').value.trim() || activeCancellationTarget.contractNo || "k.A.";
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text(`An: ${partner}`, 14, 25);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Absender (Erbe): ${heirName}`, 14, 35);
+            doc.text(`Datum: ${new Date().toLocaleDateString('de-DE')}`, 14, 40);
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.text(`BETREFF: Sonderkündigung im Todesfall - Vertrag: ${activeCancellationTarget.title}`, 14, 55);
+            doc.text(`Vertrags- / Kundennummer: ${contractNo}`, 14, 62);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            let body = `Sehr geehrte Damen und Herren,\n\n` +
+                `hiermit mache ich als Erbe von meinem Sonderkündigungsrecht im Todesfall Gebrauch und kündige den Vertrag "${activeCancellationTarget.title}" (Nr. ${contractNo}) mit sofortiger Wirkung.\n\n` +
+                `Der Erblasser ist am ${deathDate ? new Date(deathDate).toLocaleDateString('de-DE') : 'k.A.'} verstorben.\n\n` +
+                `Bitte bestätigen Sie mir das Vertragsende schriftlich.\n\n` +
+                `Mit freundlichen Grüßen,\n\n` +
+                `${heirName}`;
+
+            doc.text(body, 14, 75);
+            doc.save(`kuendigung-${activeCancellationTarget.title.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+            closeCancelModal();
+        }
+    </script>
+</body>
+</html>
