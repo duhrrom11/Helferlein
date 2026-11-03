@@ -29,73 +29,6 @@
         .tool-card:hover::before {
             opacity: 1;
         }
-
-        /* Dunkelmodus Styles */
-        body.dark-mode {
-            background-color: #0f172a !important;
-            color: #f8fafc !important;
-        }
-        body.dark-mode header,
-        body.dark-mode .bg-white {
-            background-color: #1e293b !important;
-            border-color: #334155 !important;
-            color: #f8fafc !important;
-        }
-        body.dark-mode .tool-card {
-            background-color: #1e293b !important;
-            border-color: #334155 !important;
-            color: #f8fafc !important;
-        }
-        body.dark-mode h1, body.dark-mode h3, body.dark-mode h2 {
-            color: #f8fafc !important;
-        }
-        body.dark-mode input, body.dark-mode select {
-            background-color: #0f172a !important;
-            color: #f8fafc !important;
-            border-color: #475569 !important;
-        }
-        body.dark-mode .text-gray-500, body.dark-mode .text-gray-600 {
-            color: #94a3b8 !important;
-        }
-        body.dark-mode .bg-gray-50 {
-            background-color: #0f172a !important;
-            border-color: #334155 !important;
-            color: #f8fafc !important;
-        }
-
-        /* Cyberpunk / Hoher Kontrast Styles */
-        body.cyber-mode {
-            background-color: #030712 !important;
-            color: #00ffcc !important;
-        }
-        body.cyber-mode header,
-        body.cyber-mode .bg-white {
-            background-color: #090d16 !important;
-            border-color: #00ffcc !important;
-            color: #00ffcc !important;
-        }
-        body.cyber-mode .tool-card {
-            background-color: #090d16 !important;
-            border-color: #facc15 !important;
-            color: #f8fafc !important;
-            box-shadow: 0 0 12px rgba(0, 255, 204, 0.25);
-        }
-        body.cyber-mode h1, body.cyber-mode h3, body.cyber-mode h2 {
-            color: #00ffcc !important;
-        }
-        body.cyber-mode input, body.cyber-mode select {
-            background-color: #030712 !important;
-            color: #00ffcc !important;
-            border-color: #00ffcc !important;
-        }
-        body.cyber-mode .text-gray-500, body.cyber-mode .text-gray-600 {
-            color: #38bdf8 !important;
-        }
-        body.cyber-mode .bg-gray-50 {
-            background-color: #030712 !important;
-            border-color: #38bdf8 !important;
-            color: #f8fafc !important;
-        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
@@ -112,10 +45,10 @@
 
             <!-- Top Controls -->
             <div class="flex flex-wrap items-center gap-2">
-                <button type="button" id="reportBtn" class="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 text-xs font-bold rounded-xl border border-sky-200 dark:border-sky-800 shadow-sm cursor-pointer transition-all">
+                <button type="button" id="reportBtn" class="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold rounded-xl border border-sky-200 shadow-sm cursor-pointer transition-all">
                     📊 Report
                 </button>
-                <button type="button" id="settingsBtn" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-base rounded-xl shadow-sm border border-gray-300 dark:border-slate-700 cursor-pointer flex items-center justify-center transition-all" title="Einstellungen & Sync">
+                <button type="button" id="settingsBtn" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 text-base rounded-xl shadow-sm border border-gray-300 cursor-pointer flex items-center justify-center transition-all" title="Einstellungen & Sync">
                     ⚙️
                 </button>
                 <a href="https://ko-fi.com/DEIN_KOFI_NAME" target="_blank" rel="noopener" class="px-3.5 py-2 bg-gradient-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-xs font-bold rounded-xl shadow-md text-white flex items-center gap-1.5 transition-all">
@@ -126,7 +59,7 @@
 
         <!-- Suchleiste -->
         <div class="mt-4 max-w-2xl mx-auto px-4">
-            <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder gespeicherte Einträge durchsuchen..." class="w-full px-4 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-200 dark:border-slate-700 transition-colors">
+            <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder gespeicherte Einträge durchsuchen..." class="w-full px-4 py-2.5 rounded-xl text-sm bg-gray-50 text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-200 transition-colors">
         </div>
     </header>
 
@@ -135,213 +68,213 @@
 
         <!-- Favoriten-Sektion -->
         <div id="favoritesSection" class="hidden space-y-3">
-            <h2 class="text-xs font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider flex items-center gap-1.5">⭐ Deine Favoriten & Schnellstart</h2>
+            <h2 class="text-xs font-bold text-sky-700 uppercase tracking-wider flex items-center gap-1.5">⭐ Deine Favoriten & Schnellstart</h2>
             <div id="favoritesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
         <!-- Hauptgrid Header -->
         <div class="flex justify-between items-center pt-2">
-            <h2 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Alle 10 Alltagshelfer im Überblick</h2>
+            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Alle 10 Alltagshelfer im Überblick</h2>
         </div>
 
         <!-- Tools Grid (Alle 10 Tools) -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             <!-- Tool 1: Garantie & Kassenbon Pro -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-name="garantie kassenbon beleg mhd scanner">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-name="garantie kassenbon beleg mhd scanner">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-200 dark:border-emerald-800 shadow-inner">🧾</div>
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-200 shadow-inner">🧾</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kassenbon', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kassenbon">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-600">Pro</span>
+                            <button type="button" onclick="toggleFavorite('kassenbon', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kassenbon">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Pro</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Garantie & Kassenbon Pro</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Belege scannen, Garantiefristen überwachen, Support-Mails generieren & PDF-Export.</p>
-                    <div id="stats-kassenbon" class="mt-3 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Garantie & Kassenbon Pro</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Belege scannen, Garantiefristen überwachen, Support-Mails generieren & PDF-Export.</p>
+                    <div id="stats-kassenbon" class="mt-3 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">📄 PDF-Export</span>
                     <a href="tools/kassenbon/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
             </div>
 
             <!-- Tool 2: Keller- & Kisten-Finder -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-name="keller kisten finder qr code inventar">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-name="keller kisten finder qr code inventar">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-200 dark:border-blue-800 shadow-inner">📦</div>
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-200 shadow-inner">📦</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kisten', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kisten">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-600">Lager</span>
+                            <button type="button" onclick="toggleFavorite('kisten', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kisten">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Lager</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Keller- & Kisten-Finder</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Umzugskisten und Lagerorte digital verwalten & QR-Codes direkt im Browser drucken.</p>
-                    <div id="stats-kisten" class="mt-3 text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Keller- & Kisten-Finder</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Umzugskisten und Lagerorte digital verwalten & QR-Codes direkt im Browser drucken.</p>
+                    <div id="stats-kisten" class="mt-3 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">🖨️ QR-Druck</span>
                     <a href="tools/kisten/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
             </div>
 
             <!-- Tool 3: WG- & Haushalts-Kasse -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-name="wg haushalt kasse ausgaben rechner split">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-name="wg haushalt kasse ausgaben rechner split">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-200 dark:border-amber-800 shadow-inner">💶</div>
+                        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-200 shadow-inner">💶</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('wg-kasse', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wg-kasse">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-600">Budget</span>
+                            <button type="button" onclick="toggleFavorite('wg-kasse', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wg-kasse">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Budget</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">WG- & Haushalts-Kasse</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Gemeinsame Ausgaben erfassen, Beträge aufteilen und Salden sekundenschnell berechnen.</p>
-                    <div id="stats-wg-kasse" class="mt-3 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">WG- & Haushalts-Kasse</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Gemeinsame Ausgaben erfassen, Beträge aufteilen und Salden sekundenschnell berechnen.</p>
+                    <div id="stats-wg-kasse" class="mt-3 text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">⚡ Live-Calc</span>
                     <a href="tools/wg-kasse/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
             </div>
 
             <!-- Tool 4: Schlüssel, PIN & Notizen -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-name="schlüssel pin dokumente notiz wlan merker">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-name="schlüssel pin dokumente notiz wlan merker">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-xl flex items-center justify-center text-xl font-bold border border-purple-200 dark:border-purple-800 shadow-inner">🔐</div>
+                        <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold border border-purple-200 shadow-inner">🔐</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('notizen', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="notizen">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-600">Secure</span>
+                            <button type="button" onclick="toggleFavorite('notizen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="notizen">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Secure</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Schlüssel, PIN & Notizen</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Sicherer, lokaler Speicher für WLAN-Codes, PINs, Koffer-Zahlenkombinationen und Notizen.</p>
-                    <div id="stats-notizen" class="mt-3 text-[11px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Schlüssel, PIN & Notizen</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Sicherer, lokaler Speicher für WLAN-Codes, PINs, Koffer-Zahlenkombinationen und Notizen.</p>
+                    <div id="stats-notizen" class="mt-3 text-[11px] font-semibold text-purple-600 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">🛡️ AES-Local</span>
                     <a href="tools/notizen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
             </div>
 
             <!-- Tool 5: KFZ- & Reifen-Tracker Pro -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-name="kfz auto reifenwechsel tüv öl tanken kosten reifentiefe">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-name="kfz auto reifenwechsel tüv öl tanken kosten reifentiefe">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center text-xl font-bold border border-red-200 dark:border-red-800 shadow-inner">🚗</div>
+                        <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl font-bold border border-red-200 shadow-inner">🚗</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kfz', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kfz">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-600">Tracker</span>
+                            <button type="button" onclick="toggleFavorite('kfz', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kfz">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Tracker</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">KFZ- & Reifen-Tracker Pro</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">TÜV, Reifentiefe, Tanken, Reparaturen, Kostenrechner und Kalender-Export für Autos.</p>
-                    <div id="stats-kfz" class="mt-3 text-[11px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">KFZ- & Reifen-Tracker Pro</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">TÜV, Reifentiefe, Tanken, Reparaturen, Kostenrechner und Kalender-Export für Autos.</p>
+                    <div id="stats-kfz" class="mt-3 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">📅 Kalender</span>
                     <a href="tools/kfz/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
             </div>
 
             <!-- Tool 6: Haustier-Gesundheits-Pass -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-name="haustier hund katze gesundheit impfpass tierarzt kosten">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-name="haustier hund katze gesundheit impfpass tierarzt kosten">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 dark:border-teal-800 shadow-inner">🐾</div>
+                        <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 shadow-inner">🐾</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="haustier">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-600">Care</span>
+                            <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="haustier">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Care</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Haustier-Gesundheits-Pass</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Impfungen, Vorsorge, Tierarzt-Termine, Foto-Avatare und Kostenrechner für Haustiere.</p>
-                    <div id="stats-haustier" class="mt-3 text-[11px] font-semibold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-800 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Haustier-Gesundheits-Pass</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Impfungen, Vorsorge, Tierarzt-Termine, Foto-Avatare und Kostenrechner für Haustiere.</p>
+                    <div id="stats-haustier" class="mt-3 text-[11px] font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">🩺 Vorsorge</span>
                     <a href="tools/haustier/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
             </div>
 
             <!-- Tool 7: Parkschein- & Park-Timer -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-name="parken parkschein timer gps standort auto">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-name="parken parkschein timer gps standort auto">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-200 dark:border-sky-800 shadow-inner">🅿️</div>
+                        <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-200 shadow-inner">🅿️</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('parken', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="parken">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-600">Timer</span>
+                            <button type="button" onclick="toggleFavorite('parken', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="parken">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Timer</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Parkschein- & Park-Timer</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Visueller Countdown gegen Strafzettel, GPS-Standortspeicherung und Park-Historie.</p>
-                    <div id="stats-parken" class="mt-3 text-[11px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Parkschein- & Park-Timer</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Visueller Countdown gegen Strafzettel, GPS-Standortspeicherung und Park-Historie.</p>
+                    <div id="stats-parken" class="mt-3 text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">📍 GPS-Save</span>
                     <a href="tools/parken/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
             </div>
 
             <!-- Tool 8: Leih- & Verleih-Tracker Pro -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-name="leih verleih tracker werkzeug kaution whatsapp">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-name="leih verleih tracker werkzeug kaution whatsapp">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-200 dark:border-indigo-800 shadow-inner">🤝</div>
+                        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-200 shadow-inner">🤝</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('verleih', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="verleih">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-600">Share</span>
+                            <button type="button" onclick="toggleFavorite('verleih', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="verleih">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Share</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Leih- & Verleih-Tracker Pro</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Wer hat dein Werkzeug? Mit WhatsApp-Erinnerung, Kaution, Kontakten und QR-Codes.</p>
-                    <div id="stats-verleih" class="mt-3 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Leih- & Verleih-Tracker Pro</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Wer hat dein Werkzeug? Mit WhatsApp-Erinnerung, Kaution, Kontakten und QR-Codes.</p>
+                    <div id="stats-verleih" class="mt-3 text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">💬 WhatsApp</span>
                     <a href="tools/verleih/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
             </div>
 
             <!-- Tool 9: Pflanzen- & Garten-Pass -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-name="pflanzen garten pflege pass gießen dünger">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-name="pflanzen garten pflege pass gießen dünger">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-lime-50 dark:bg-lime-950/50 text-lime-600 dark:text-lime-400 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-200 dark:border-lime-800 shadow-inner">🌱</div>
+                        <div class="w-12 h-12 bg-lime-50 text-lime-600 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-200 shadow-inner">🌱</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('pflanzen', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="pflanzen">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-600">Green</span>
+                            <button type="button" onclick="toggleFavorite('pflanzen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="pflanzen">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Green</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Pflanzen- & Garten-Pass</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Gieß-Intervall, Dünger-Historie, Standorte und Foto-Avatare für deine Zimmerpflanzen.</p>
-                    <div id="stats-pflanzen" class="mt-3 text-[11px] font-semibold text-lime-600 dark:text-lime-400 bg-lime-50 dark:bg-lime-950/50 border border-lime-200 dark:border-lime-800 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Pflanzen- & Garten-Pass</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Gieß-Intervall, Dünger-Historie, Standorte und Foto-Avatare für deine Zimmerpflanzen.</p>
+                    <div id="stats-pflanzen" class="mt-3 text-[11px] font-semibold text-lime-600 bg-lime-50 border border-lime-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">💧 Reminder</span>
                     <a href="tools/pflanzen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
             </div>
 
             <!-- Tool 10: Strom-, Wasser- & Gaszähler -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-name="strom wasser gas zähler energie tracker verbrauch">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-name="strom wasser gas zähler energie tracker verbrauch">
                 <div>
                     <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-orange-50 dark:bg-orange-950/50 text-orange-600 dark:text-orange-400 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-200 dark:border-orange-800 shadow-inner">⚡</div>
+                        <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-200 shadow-inner">⚡</div>
                         <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('energie', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="energie">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2.5 py-1 rounded-md border border-gray-200 dark:border-slate-600">Energy</span>
+                            <button type="button" onclick="toggleFavorite('energie', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="energie">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Energy</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Strom-, Wasser- & Gaszähler</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">Monatliche Zählerstände erfassen, Verbrauch im Blick behalten und PDF für Versorger.</p>
-                    <div id="stats-energie" class="mt-3 text-[11px] font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-800 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Strom-, Wasser- & Gaszähler</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Monatliche Zählerstände erfassen, Verbrauch im Blick behalten und PDF für Versorger.</p>
+                    <div id="stats-energie" class="mt-3 text-[11px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">📊 Charts</span>
                     <a href="tools/energie/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
                 </div>
@@ -351,51 +284,41 @@
     </main>
 
     <!-- Footer -->
-    <footer class="text-center py-8 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-slate-800 transition-colors">
+    <footer class="text-center py-8 text-xs text-gray-500 border-t border-gray-200 transition-colors">
         <p>Alltagshelferlein Hub – 100% lokal, sicher & blitzschnell im Browser.</p>
     </footer>
 
     <!-- Einstellungs-Modal -->
     <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-slate-800 pb-3">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">⚙️ Einstellungen, Design & Cloud-Sync</h3>
-                <button type="button" id="closeSettingsBtn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl font-bold cursor-pointer">&times;</button>
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
+                <h3 class="text-lg font-bold text-gray-900">⚙️ Einstellungen & Cloud-Sync</h3>
+                <button type="button" id="closeSettingsBtn" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">&times;</button>
             </div>
             
             <div class="space-y-5">
-                <!-- Design Switch -->
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">🎨 Darstellung (Hell / Dunkel / Cyberpunk)</label>
-                    <select id="themeSelect" onchange="changeTheme(this.value)" class="w-full px-3 py-2 text-sm rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-500">
-                        <option value="light">☀️ Hell-Modus</option>
-                        <option value="dark">🌙 Dunkel-Modus</option>
-                        <option value="cyber">⚡ Cyberpunk (Hoher Kontrast)</option>
-                    </select>
-                </div>
-
-                <div class="border-t border-gray-200 dark:border-slate-800 pt-4">
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1.5">☁️ Firebase Geräte-Synchronisation (Cloud-ID)</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">☁️ Firebase Geräte-Synchronisation (Cloud-ID)</label>
                     <div class="flex gap-2">
-                        <input type="text" id="globalSyncId" placeholder="z.B. helfer-9f8a-4c21" class="w-full px-3 py-2 text-sm rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-500">
-                        <button type="button" id="genSyncKeyBtn" class="px-3 py-2 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950 dark:hover:bg-sky-900 text-sky-600 dark:text-sky-300 text-xs font-bold rounded-xl border border-sky-200 dark:border-sky-800 whitespace-nowrap cursor-pointer">Schlüssel erstellen</button>
+                        <input type="text" id="globalSyncId" placeholder="z.B. helfer-9f8a-4c21" class="w-full px-3 py-2 text-sm rounded-xl bg-gray-50 border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <button type="button" id="genSyncKeyBtn" class="px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 text-xs font-bold rounded-xl border border-sky-200 whitespace-nowrap cursor-pointer">Schlüssel erstellen</button>
                     </div>
                     <p class="text-[11px] text-gray-400 mt-1">Trage hier deine Cloud-ID ein, um Daten automatisch über Firebase zu synchronisieren.</p>
                 </div>
 
-                <div class="border-t border-gray-200 dark:border-slate-800 pt-4">
-                    <label class="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
+                <div class="border-t border-gray-200 pt-4">
+                    <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
                     <div class="flex gap-2">
                         <button type="button" onclick="exportGlobalBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Backup teilen / laden</button>
-                        <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-200 cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                        <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
                             📤 Restore <input type="file" accept=".json" onchange="importGlobalBackup(event)" class="hidden">
                         </label>
                     </div>
                 </div>
             </div>
 
-            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200 dark:border-slate-800">
-                <button type="button" id="cancelSettingsBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-semibold rounded-xl text-gray-700 dark:text-gray-300 cursor-pointer">Abbrechen</button>
+            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+                <button type="button" id="cancelSettingsBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Abbrechen</button>
                 <button type="button" id="saveSettingsBtn" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-xs font-bold rounded-xl text-white cursor-pointer shadow-md">Speichern & Sync</button>
             </div>
         </div>
@@ -403,15 +326,15 @@
 
     <!-- Monatsreport Modal -->
     <div id="reportModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-slate-800 pb-3">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white">📊 Globaler Monats-Schnellreport</h3>
-                <button type="button" id="closeReportBtn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl font-bold cursor-pointer">&times;</button>
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
+                <h3 class="text-lg font-bold text-gray-900">📊 Globaler Monats-Schnellreport</h3>
+                <button type="button" id="closeReportBtn" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">&times;</button>
             </div>
-            <div id="reportContent" class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+            <div id="reportContent" class="space-y-3 text-sm text-gray-700">
                 <p>Lade aggregierte Daten...</p>
             </div>
-            <div class="flex justify-end mt-6 pt-4 border-t border-gray-200 dark:border-slate-800">
+            <div class="flex justify-end mt-6 pt-4 border-t border-gray-200">
                 <button type="button" id="closeReportFooterBtn" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-xs font-bold rounded-xl text-white cursor-pointer">Schließen</button>
             </div>
         </div>
@@ -424,9 +347,6 @@
             if (modal) {
                 const syncInput = document.getElementById('globalSyncId');
                 if (syncInput) syncInput.value = localStorage.getItem('hub_sync_id') || '';
-                const currentTheme = localStorage.getItem('hub_theme') || 'light';
-                const select = document.getElementById('themeSelect');
-                if(select) select.value = currentTheme;
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
             }
@@ -473,22 +393,6 @@
             closeSettings();
             if (window.syncToCloud) await window.syncToCloud();
             if (window.syncFromCloud) window.syncFromCloud();
-        }
-
-        function changeTheme(theme) {
-            applyTheme(theme);
-            localStorage.setItem('hub_theme', theme);
-        }
-
-        function applyTheme(theme) {
-            const select = document.getElementById('themeSelect');
-            if(select) select.value = theme;
-            document.body.classList.remove('dark-mode', 'cyber-mode');
-            if(theme === 'dark') {
-                document.body.classList.add('dark-mode');
-            } else if(theme === 'cyber') {
-                document.body.classList.add('cyber-mode');
-            }
         }
 
         function toggleFavorite(toolId, event) {
@@ -549,10 +453,10 @@
             };
             content.innerHTML = `
                 <div class="grid grid-cols-2 gap-3 text-sm">
-                    <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-xl border border-gray-100 dark:border-slate-700">Belege: <b>${getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts'])}</b></div>
-                    <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-xl border border-gray-100 dark:border-slate-700">Kisten: <b>${getCount(['kisten_data', 'kisten', 'boxes', 'inventar'])}</b></div>
-                    <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-xl border border-gray-100 dark:border-slate-700">Ausgaben: <b>${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])}</b></div>
-                    <div class="bg-gray-50 dark:bg-slate-800 p-3 rounded-xl border border-gray-100 dark:border-slate-700">Notizen: <b>${getCount(['secure_notes', 'notes', 'notizen_data', 'notizen'])}</b></div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">Belege: <b>${getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts'])}</b></div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">Kisten: <b>${getCount(['kisten_data', 'kisten', 'boxes', 'inventar'])}</b></div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">Ausgaben: <b>${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])}</b></div>
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">Notizen: <b>${getCount(['secure_notes', 'notes', 'notizen_data', 'notizen'])}</b></div>
                 </div>`;
         }
 
@@ -621,7 +525,6 @@
         window.closeMonthlyReport = closeMonthlyReport;
         window.generateSyncKey = generateSyncKey;
         window.saveSettings = saveSettings;
-        window.changeTheme = changeTheme;
         window.toggleFavorite = toggleFavorite;
         window.filterTools = filterTools;
         window.exportGlobalBackup = exportGlobalBackup;
@@ -646,8 +549,6 @@
             if(closeReportBtn) closeReportBtn.addEventListener('click', closeMonthlyReport);
             if(closeReportFooterBtn) closeReportFooterBtn.addEventListener('click', closeMonthlyReport);
 
-            const savedTheme = localStorage.getItem('hub_theme') || 'light';
-            applyTheme(savedTheme);
             loadStats();
             initFavorites();
         });
