@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WG-Organisator & Haushaltsbuch Pro Max</title>
+    <title>WG-Organisator & Haushaltsbuch Ultimate Pro</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,15 +30,15 @@
     <header class="bg-emerald-800 text-white shadow-lg py-6 px-4">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="text-center md:text-left">
-                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">🏠 WG-Organisator & Haushaltsbuch Pro Max</h1>
-                <p class="text-xs md:text-sm opacity-90 mt-1">Vollständiges Finanz- & Budgetsystem kombiniert mit kompletter WG-Organisation</p>
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">🏠 WG-Organisator Ultimate Pro</h1>
+                <p class="text-xs md:text-sm opacity-90 mt-1">Haushaltsbuch, WG-Kasse, Putz- & Kochplan, Kalender (Wasch-Slots & Gäste), Inventar & Allergie-Matrix</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <button onclick="openMitbewohnerModal()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 rounded-xl text-xs font-bold shadow-sm">
                     👥 Mitbewohner
                 </button>
                 <button onclick="toggleGuide()" class="px-3.5 py-2 bg-emerald-900 hover:bg-emerald-950 border border-emerald-600 rounded-xl text-xs font-bold shadow-sm">
-                    📖 Anleitung
+                    📖 Handbuch
                 </button>
             </div>
         </div>
@@ -48,25 +48,25 @@
     <section id="guideSection" class="hidden bg-emerald-950 text-emerald-50 border-b border-emerald-800 p-6 transition-all duration-300">
         <div class="max-w-7xl mx-auto space-y-4">
             <div class="flex justify-between items-center border-b border-emerald-700 pb-3">
-                <h2 class="text-lg font-bold">📘 All-in-One Handbuch: Finanzen & WG-Organisation</h2>
+                <h2 class="text-lg font-bold">📘 Ultimate WG-Handbuch</h2>
                 <button onclick="toggleGuide()" class="text-emerald-300 hover:text-white text-xl font-bold">&times;</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs leading-relaxed">
                 <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">1. Haushaltsbuch & Budgets</h3>
-                    <p>Erfasse Einnahmen, persönliche Ausgaben und WG-Einkäufe. Verfolge Ampel-Budgets pro Kategorie und behalte das Sparschwein im Blick.</p>
+                    <h3 class="font-bold text-emerald-200">1. Finanzen & Kasse</h3>
+                    <p>Haushaltsbuch mit Einnahmen/Ausgaben, OCR-Bonscan, Ampel-Budgets und Schuldenminimierer.</p>
                 </div>
                 <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">2. WG-Kasse & Ausgleich</h3>
-                    <p>Belege per OCR-Kamera scannen. Der mathematische Schuldenminimierer berechnet automatisch, wer wem wie viel schuldet.</p>
+                    <h3 class="font-bold text-emerald-200">2. Termine & Wasch-Slots</h3>
+                    <p>WG-Kalender für Ereignisse, Party/Lärm-Ankündigungen, Besuch sowie direkte Zeit-Buchung für Waschmaschine & Trockner.</p>
                 </div>
                 <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">3. Garantie & QR-Sticker</h3>
-                    <p>Erfasse Seriennummern, Garantien und Rückgabefristen. Drucke Geräte-QR-Sticker für Kartons oder exportiere Kalendererinnerungen.</p>
+                    <h3 class="font-bold text-emerald-200">3. Inventar & Auszug</h3>
+                    <p>Gemeinsame WG-Anschaffungen erfassen. Der Restwert-Rechner zeigt, wer beim Auszug wie viel Auszahlung erhält.</p>
                 </div>
                 <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">4. WG-Module</h3>
-                    <p>Rotierender Putzplan, Wochenkochplaner mit Zutaten-Sync, Einkaufsliste (inkl. Amazon-Bestellbutton <code>duhrrom-21</code>), Wäsche-Timer & Infoboard mit WLAN QR-Code.</p>
+                    <h3 class="font-bold text-emerald-200">4. Küche & Alltag</h3>
+                    <p>Rotierender Putzplan, Kochplaner mit Zutaten-Sync, Amazon-Einkaufsliste (<code>duhrrom-21</code>) & Allergie-Matrix.</p>
                 </div>
             </div>
         </div>
@@ -89,8 +89,8 @@
             </div>
         </div>
 
-        <!-- Kombiniertes Dashboard (KPIs) -->
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+        <!-- Dashboard KPIs -->
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
                 <p class="text-[10px] text-gray-500 font-medium">Monats-Einnahmen</p>
                 <h3 id="statIncome" class="text-sm md:text-base font-bold text-emerald-600">0,00 €</h3>
@@ -112,22 +112,31 @@
                 <h3 id="statFixRatio" class="text-sm md:text-base font-bold text-purple-600">0 %</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Hausrat-Zeitwert</p>
-                <h3 id="statZeitwertTotal" class="text-sm md:text-base font-bold text-amber-600">0,00 €</h3>
+                <p class="text-[10px] text-gray-500 font-medium">WG-Inventar Restwert</p>
+                <h3 id="statInventoryValue" class="text-sm md:text-base font-bold text-teal-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Pfandwert Flur</p>
-                <h3 id="statPfandVal" class="text-sm md:text-base font-bold text-teal-600">0,00 €</h3>
-            </div>
-            <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Aktive Mitbewohner</p>
+                <p class="text-[10px] text-gray-500 font-medium">Mitbewohner</p>
                 <h3 id="statFlatmateCount" class="text-sm md:text-base font-bold text-indigo-600">0</h3>
+            </div>
+        </div>
+
+        <!-- SECTION: WG-KALENDER (INCL. WASCHMASCHINE, TROCKNER, GÄSTE, PARTY) -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
+                <div>
+                    <h3 class="font-bold text-base text-gray-900">📅 WG-Kalender: Termine, Wasch-Slots & Gäste-Radar</h3>
+                    <p class="text-xs text-gray-500">Buche hier Waschmaschine/Trockner, kündige Besuch an oder trage Partys/Termine ein.</p>
+                </div>
+                <button onclick="openAddEventModal()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm">+ Termin / Slot buchen</button>
+            </div>
+            <div id="eventList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-1">
+                <p class="text-xs text-gray-400 text-center col-span-3 py-4">Keine anstehenden Termine oder Wasch-Slots.</p>
             </div>
         </div>
 
         <!-- HAUSHALTSBUCH ANALYSE & BUDGETS -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Diagramme -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <h3 class="font-bold text-base text-gray-900 border-b pb-2">📊 Visuelle Finanz-Analyse</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -142,7 +151,6 @@
                 </div>
             </div>
 
-            <!-- Monats-Budgets -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">🎯 Monats-Budgets & Ampel-Limits</h3>
@@ -165,14 +173,13 @@
             </div>
         </div>
 
-        <!-- BILDUNG & UNIFIED EXPENSE FORMULAR (Haushaltsbuch + WG-Kasse) -->
+        <!-- FORMULAR: EXPENSE / BUCHUNG / OCR -->
         <div id="formCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h2 id="formTitle" class="text-lg font-bold text-gray-900">✍️ Buchung / WG-Kassenbon erfassen</h2>
                 <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden px-3 py-1 bg-gray-200 hover:bg-gray-300 text-xs font-bold rounded-lg text-gray-700">✕ Abbrechen</button>
             </div>
 
-            <!-- Buchungstyp -->
             <div class="flex gap-3">
                 <label class="flex-1 text-center py-2.5 rounded-xl border font-bold text-xs cursor-pointer transition-all bg-red-50 border-red-200 text-red-700 hover:bg-red-100">
                     <input type="radio" name="entryType" value="ausgabe" checked onchange="updateFormUI()" class="hidden"> 🔻 Ausgabe
@@ -185,7 +192,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                 <div>
                     <label class="block font-semibold text-gray-600 mb-1">Titel / Artikel *:</label>
-                    <input type="text" id="receiptTitle" placeholder="z. B. Waschmittel, Einkäufe, Gehalt" class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="receiptTitle" placeholder="z. B. Spülmittel, Miete, Gehalt" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
                     <label class="block font-semibold text-gray-600 mb-1">Händler / Partner / Quelle:</label>
@@ -231,11 +238,10 @@
                 </div>
                 <div>
                     <label class="block font-semibold text-gray-600 mb-1">Nutzung (Jahre):</label>
-                    <input type="number" id="receiptLifespan" value="5" class="w-full p-2.5 border rounded-xl" title="Nutzungsdauer für Hausrat-Zeitwert">
+                    <input type="number" id="receiptLifespan" value="5" class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>
 
-            <!-- Seriennummer, Lagerort & Fixkosten -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200 text-xs">
                 <div>
                     <label class="block font-semibold text-gray-600 mb-1">Seriennummer / S/N:</label>
@@ -248,7 +254,7 @@
                 <div class="flex flex-col justify-center space-y-1.5 pt-1">
                     <label class="inline-flex items-center cursor-pointer space-x-2">
                         <input type="checkbox" id="receiptIsFixkosten" class="w-4 h-4 text-purple-600 rounded">
-                        <span class="font-bold text-gray-700">🔄 Wiederkehrende Fixkosten / Abo</span>
+                        <span class="font-bold text-gray-700">🔄 Wiederkehrende Fixkosten</span>
                     </label>
                     <label class="inline-flex items-center cursor-pointer space-x-2">
                         <input type="checkbox" id="receiptIsTax" class="w-4 h-4 text-emerald-600 rounded">
@@ -257,7 +263,6 @@
                 </div>
             </div>
 
-            <!-- WG-Kassen Aufteilung & OCR Scanner -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-emerald-50/80 rounded-xl border border-emerald-200 text-xs">
                 <div class="space-y-2">
                     <label class="block font-bold text-emerald-900">👥 WG-Aufteilung (Wer beteiligt sich?):</label>
@@ -269,23 +274,16 @@
                         <label class="block font-bold text-emerald-900">📷 Belegfoto & OCR Scanner</label>
                         <button type="button" onclick="runOCR()" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">🔍 Texterkennung</button>
                     </div>
-                    <input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-1.5 border rounded-xl bg-white w-full">
+                    <input type="file" id="receiptPhotoInput" accept="image/*" class="text-xs p-1.5 border rounded-xl bg-white w-full">
                     <p id="ocrStatus" class="text-emerald-800 font-semibold hidden"></p>
-                    <div id="uploadGalleryPreview" class="flex gap-2 overflow-x-auto py-1 hidden"></div>
                 </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
-                <input type="text" id="receiptNote" placeholder="z. B. Inkl. 3 Jahre Garantie-Erweiterung" class="w-full p-2.5 border rounded-xl text-xs">
             </div>
 
             <button id="saveBtn" onclick="saveReceipt()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl text-sm shadow-md transition-colors">Buchung / Kassenbon speichern</button>
         </div>
 
-        <!-- SCHULDEN-MINIMIERER MATRIX & VERLAUF -->
+        <!-- SCHULDENMINIMIERER MATRIX & VERLAUF -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Schulden-Ausgleich -->
             <div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3 lg:col-span-1">
                 <div class="flex justify-between items-center">
                     <h3 class="font-bold text-sm text-emerald-900">🧮 Optimaler WG-Schuldenausgleich</h3>
@@ -296,7 +294,6 @@
                 </div>
             </div>
 
-            <!-- Buchungshistorie -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 lg:col-span-2">
                 <div class="flex justify-between items-center flex-wrap gap-2">
                     <h3 class="font-bold text-base text-gray-900">📋 Transaktionen & Kassenbons</h3>
@@ -329,7 +326,19 @@
             </div>
         </div>
 
-        <!-- WG MODULE 1: PUTZPLAN & EINKAUFSLISTE (Amazon Affiliate duhrrom-21) -->
+        <!-- WG-INVENTAR & AUSZUGS-RESTWERT-RECHNER -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <div>
+                    <h3 class="font-bold text-base text-gray-900">📦 WG-Inventar & Auszugs-Restwert-Rechner</h3>
+                    <p class="text-xs text-gray-500">Erfasse gemeinsame Möbel/Geräte. Berechnet den fairen Zeitwert & Auszahlungsanspruch bei Auszug.</p>
+                </div>
+                <button onclick="openAddInventoryModal()" class="px-3 py-1 bg-emerald-700 text-white hover:bg-emerald-800 rounded-lg text-xs font-bold shadow-sm">+ Gegenstand erfassen</button>
+            </div>
+            <div id="inventoryList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- PUTZPLAN & EINKAUFSLISTE (Amazon Affiliate duhrrom-21) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
@@ -355,7 +364,7 @@
             </div>
         </div>
 
-        <!-- WG MODULE 2: KOCHPLANER & PFAND-TRACKER -->
+        <!-- KOCHPLANER & ERNÄHRUNGS-/ALLERGIE-MATRIX -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
@@ -367,23 +376,14 @@
 
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
-                    <h3 class="font-bold text-base text-gray-900">🍾 Pfand- & Getränkekisten-Tracker</h3>
-                    <button onclick="transferPfandToExpense()" class="px-3 py-1 bg-teal-700 text-white hover:bg-teal-800 rounded-lg text-xs font-bold shadow-sm">💰 Pfand in Kasse buchen</button>
+                    <h3 class="font-bold text-base text-gray-900">🥦 Ernährungs- & Allergie-Matrix</h3>
+                    <button onclick="openDietModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold">✏️ Bearbeiten</button>
                 </div>
-                <div id="pfandTrackerList" class="space-y-2 text-xs"></div>
+                <div id="dietMatrixList" class="space-y-2 text-xs"></div>
             </div>
         </div>
 
-        <!-- WG MODULE 3: WASCHMASCHINEN- & TROCKNER-TIMER -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-base text-gray-900">🧺 Waschmaschinen- & Trockner-Timer</h3>
-                <span class="text-xs text-gray-500">Live-Countdown auf dem Küchen-Tablet</span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="laundryGrid"></div>
-        </div>
-
-        <!-- WG MODULE 4: VERTRÄGE & INFOBOARD (MIT WLAN QR) -->
+        <!-- VERTRÄGE & INFOBOARD (MIT WLAN QR) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
@@ -407,13 +407,105 @@
                     <p>🛠️ <strong>Hausmeister:</strong> <span id="infoCaretaker">Lade...</span></p>
                     <p>🗑️ <strong>Müllabfuhr:</strong> <span id="infoTrash">Lade...</span></p>
                 </div>
-                <div id="pollList" class="space-y-3 max-h-40 overflow-y-auto"></div>
             </div>
         </div>
 
     </main>
 
     <!-- MODALS -->
+
+    <!-- Modal: Termin / Wasch-Slot buchen -->
+    <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">📅 Termin / Slot buchen</h3>
+                <button onclick="closeAddEventModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">Kategorie / Typ *:</label>
+                    <select id="eventType" class="w-full p-2.5 border rounded-xl bg-white font-bold">
+                        <option value="Waschmaschine">🧺 Waschmaschine buchen</option>
+                        <option value="Trockner">💨 Trockner buchen</option>
+                        <option value="Gäste">👤 Gäste-Besuch / Übernachtung</option>
+                        <option value="Party">🎉 Party / Lärm-Ankündigung</option>
+                        <option value="Allgemein">📅 Allgemeiner WG-Termin</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Bezeichnung / Details *:</label>
+                    <input type="text" id="eventTitle" placeholder="z. B. Kochwäsche 60°, Besuch von Anna" class="w-full p-2.5 border rounded-xl">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">Datum *:</label>
+                        <input type="date" id="eventDate" class="w-full p-2.5 border rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Uhrzeit / Slot:</label>
+                        <input type="text" id="eventTime" placeholder="z. B. 14:00 - 16:30 Uhr" class="w-full p-2.5 border rounded-xl">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Gebucht von / Wer:</label>
+                    <select id="eventOwner" class="w-full p-2.5 border rounded-xl bg-white"></select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeAddEventModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveEvent()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Inventar -->
+    <div id="inventoryModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">📦 WG-Inventar erfassen</h3>
+                <button onclick="closeAddInventoryModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">Gegenstand *:</label>
+                    <input type="text" id="invTitle" placeholder="z. B. Mikrowelle, Ledersofa, Kaffeemaschine" class="w-full p-2.5 border rounded-xl">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">Kaufpreis (€) *:</label>
+                        <input type="number" step="0.01" id="invPrice" placeholder="250.00" class="w-full p-2.5 border rounded-xl">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Kaufdatum *:</label>
+                        <input type="date" id="invDate" class="w-full p-2.5 border rounded-xl">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Nutzungsdauer (Jahre):</label>
+                    <input type="number" id="invLifespan" value="5" class="w-full p-2.5 border rounded-xl">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeAddInventoryModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveInventoryItem()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Erfassen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Ernährungs-Matrix -->
+    <div id="dietModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">🥦 Ernährungs- & Allergie-Matrix</h3>
+                <button onclick="closeDietModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div id="dietInputContainer" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeDietModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveDietMatrix()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Speichern</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal: Monats-Budgets -->
     <div id="budgetModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
@@ -424,7 +516,7 @@
             </div>
             <div id="budgetInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
             <div class="flex justify-end gap-2 pt-3 border-t">
-                <button onclick="closeBudgetModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="closeBudgetModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
                 <button onclick="saveBudgetsFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
             </div>
         </div>
@@ -440,7 +532,7 @@
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block font-semibold mb-1">Bezeichnung des Zieles *:</label>
-                    <input type="text" id="goalTitle" placeholder="z. B. Urlaub, Notgroschen" class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="goalTitle" placeholder="z. B. Urlaub, Kaution-Reserve" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">Zielbetrag (€) *:</label>
@@ -452,7 +544,7 @@
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-3 border-t">
-                <button onclick="closeSavingsModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="closeSavingsModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
                 <button onclick="saveSavingsGoal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">Anlegen</button>
             </div>
         </div>
@@ -484,7 +576,6 @@
                 <div class="text-[11px] text-gray-600 space-y-0.5">
                     <p id="stickerStoreDate"></p>
                     <p id="stickerSN"></p>
-                    <p id="stickerWarranty"></p>
                 </div>
             </div>
             <div class="flex justify-between gap-2 pt-2">
@@ -626,13 +717,12 @@
         let categoryChartInstance = null;
         let cashflowChartInstance = null;
         let editingReceiptId = null;
-        let currentUploadedPhotos = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('receiptDate').valueAsDate = new Date();
+            document.getElementById('eventDate').valueAsDate = new Date();
             initCharts();
             renderApp();
-            setInterval(renderLaundryTimer, 1000);
         });
 
         function toggleGuide() { document.getElementById('guideSection').classList.toggle('hidden'); }
@@ -650,6 +740,15 @@
         function getSavingsGoals() { try { return JSON.parse(localStorage.getItem('budgetbuch_goals')) || []; } catch(e) { return []; } }
         function saveSavingsGoals(data) { localStorage.setItem('budgetbuch_goals', JSON.stringify(data)); }
 
+        function getEvents() { try { return JSON.parse(localStorage.getItem('wg_events')) || []; } catch(e) { return []; } }
+        function saveEvents(data) { localStorage.setItem('wg_events', JSON.stringify(data)); }
+
+        function getInventory() { try { return JSON.parse(localStorage.getItem('wg_inventory')) || []; } catch(e) { return []; } }
+        function saveInventory(data) { localStorage.setItem('wg_inventory', JSON.stringify(data)); }
+
+        function getDiets() { try { return JSON.parse(localStorage.getItem('wg_diets')) || {}; } catch(e) { return {}; } }
+        function saveDiets(data) { localStorage.setItem('wg_diets', JSON.stringify(data)); }
+
         function getCleaningPlan() { try { return JSON.parse(localStorage.getItem('wg_cleaning')) || [{ id: 1, task: "Badezimmer & WC wischen", assignee: "Alex", done: false }, { id: 2, task: "Küche & Herd reinigen", assignee: "Sam", done: false }]; } catch(e) { return []; } }
         function saveCleaningPlan(data) { localStorage.setItem('wg_cleaning', JSON.stringify(data)); }
 
@@ -658,12 +757,6 @@
 
         function getCookingPlan() { try { return JSON.parse(localStorage.getItem('wg_cooking')) || daysOfWeek.map(d => ({ day: d, chef: "Frei", dish: "", ingredients: "" })); } catch(e) { return []; } }
         function saveCookingPlan(data) { localStorage.setItem('wg_cooking', JSON.stringify(data)); }
-
-        function getPfandData() { try { return JSON.parse(localStorage.getItem('wg_pfand')) || { "Alex": { flaschen: 8, kisten: 1 }, "Sam": { flaschen: 4, kisten: 0 } }; } catch(e) { return {}; } }
-        function savePfandData(data) { localStorage.setItem('wg_pfand', JSON.stringify(data)); }
-
-        function getLaundryData() { try { return JSON.parse(localStorage.getItem('wg_laundry')) || [{ id: "wash", name: "Waschmaschine 🧺", occupant: "", endTime: 0, program: "" }, { id: "dry", name: "Wäschetrockner 💨", occupant: "", endTime: 0, program: "" }]; } catch(e) { return []; } }
-        function saveLaundryData(data) { localStorage.setItem('wg_laundry', JSON.stringify(data)); }
 
         function getContracts() { try { return JSON.parse(localStorage.getItem('wg_contracts')) || []; } catch(e) { return []; } }
         function saveContracts(data) { localStorage.setItem('wg_contracts', JSON.stringify(data)); }
@@ -678,7 +771,7 @@
             else if (catSelect.value === 'Einnahme') catSelect.value = 'Lebensmittel';
         }
 
-        /* Chart.js */
+        /* Charts */
         function initCharts() {
             const ctxCat = document.getElementById('categoryChart').getContext('2d');
             categoryChartInstance = new Chart(ctxCat, {
@@ -716,12 +809,12 @@
 
             document.getElementById('cleanTaskAssignee').innerHTML = flatmates.map(m => `<option value="${m}">${m}</option>`).join('');
             document.getElementById('contractPayer').innerHTML = flatmates.map(m => `<option value="${m}">${m}</option>`).join('');
+            document.getElementById('eventOwner').innerHTML = flatmates.map(m => `<option value="${m}">${m}</option>`).join('');
 
-            // Metrics calculation
+            // Metrics
             let totalIncome = 0;
             let totalExpense = 0;
             let fixExpense = 0;
-            let totalZeitwert = 0;
             const categoryExpenses = {};
             defaultCategories.forEach(cat => categoryExpenses[cat] = 0);
 
@@ -738,12 +831,6 @@
                         categoryExpenses[r.category] = (categoryExpenses[r.category] || 0) + r.price;
                     }
                 }
-
-                const buyDate = new Date(r.date);
-                const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
-                const lifespan = r.lifespan || 5;
-                const zeitwert = Math.max(0, r.price * (1 - (ageYears / lifespan)));
-                if (!isIncome) totalZeitwert += zeitwert;
             });
 
             document.getElementById('statIncome').innerText = totalIncome.toFixed(2) + " €";
@@ -753,10 +840,9 @@
             balanceEl.innerText = balance.toFixed(2) + " €";
             balanceEl.className = `text-sm md:text-base font-bold ${balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`;
             document.getElementById('statFixRatio').innerText = totalExpense > 0 ? ((fixExpense / totalExpense) * 100).toFixed(0) + " %" : "0 %";
-            document.getElementById('statZeitwertTotal').innerText = totalZeitwert.toFixed(2) + " €";
             document.getElementById('statFlatmateCount').innerText = flatmates.length;
 
-            // Charts
+            // Update Charts
             if (categoryChartInstance && cashflowChartInstance) {
                 const catLabels = Object.keys(categoryExpenses).filter(k => categoryExpenses[k] > 0);
                 const catValues = catLabels.map(k => categoryExpenses[k]);
@@ -791,16 +877,209 @@
                 `;
             }).join('');
 
+            renderEvents();
+            renderInventory();
+            renderDietMatrix();
             renderSavingsGoals();
             renderSettlementAndExpenses();
             renderCleaningPlan();
             renderShoppingList();
             renderCookingPlan();
-            renderPfandTracker();
-            renderLaundryTimer();
             renderContracts();
             renderInfoBoard();
             renderFlatmateModalList();
+        }
+
+        /* WG Kalender & Wasch-Slots Render */
+        function renderEvents() {
+            const events = getEvents();
+            const container = document.getElementById('eventList');
+
+            if (events.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">Keine anstehenden Termine oder Wasch-Slots.</p>`;
+                return;
+            }
+
+            const icons = {
+                "Waschmaschine": "🧺",
+                "Trockner": "💨",
+                "Gäste": "👤",
+                "Party": "🎉",
+                "Allgemein": "📅"
+            };
+
+            const colors = {
+                "Waschmaschine": "bg-purple-50 border-purple-200 text-purple-900",
+                "Trockner": "bg-indigo-50 border-indigo-200 text-indigo-900",
+                "Gäste": "bg-amber-50 border-amber-200 text-amber-900",
+                "Party": "bg-red-50 border-red-200 text-red-900",
+                "Allgemein": "bg-sky-50 border-sky-200 text-sky-900"
+            };
+
+            container.innerHTML = events.map(ev => `
+                <div class="p-3 border rounded-xl flex justify-between items-start text-xs ${colors[ev.type] || 'bg-gray-50 border-gray-200'}">
+                    <div>
+                        <div class="flex items-center space-x-1 font-bold">
+                            <span>${icons[ev.type] || '📅'}</span>
+                            <span>${ev.title}</span>
+                        </div>
+                        <p class="text-[11px] opacity-80 mt-1">📅 ${ev.date} ${ev.time ? '| ⏰ ' + ev.time : ''}</p>
+                        <p class="text-[10px] opacity-70">Gebucht von: <strong>${ev.owner}</strong></p>
+                    </div>
+                    <button onclick="deleteEvent(${ev.id})" class="text-gray-400 hover:text-red-500 font-bold text-sm">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        function openAddEventModal() { document.getElementById('eventModal').classList.remove('hidden'); document.getElementById('eventModal').classList.add('flex'); }
+        function closeAddEventModal() { document.getElementById('eventModal').classList.remove('flex'); document.getElementById('eventModal').classList.add('hidden'); }
+
+        function saveEvent() {
+            const type = document.getElementById('eventType').value;
+            const title = document.getElementById('eventTitle').value.trim();
+            const date = document.getElementById('eventDate').value;
+            const time = document.getElementById('eventTime').value.trim();
+            const owner = document.getElementById('eventOwner').value;
+
+            if (!title || !date) return alert("Bitte Titel und Datum angeben!");
+
+            const events = getEvents();
+            events.push({ id: Date.now(), type, title, date, time, owner });
+            saveEvents(events);
+            closeAddEventModal();
+            renderApp();
+        }
+
+        function deleteEvent(id) {
+            saveEvents(getEvents().filter(e => e.id !== id));
+            renderApp();
+        }
+
+        /* WG-Inventar & Auszugs-Restwert-Rechner */
+        function renderInventory() {
+            const items = getInventory();
+            const container = document.getElementById('inventoryList');
+            const flatmates = getFlatmates();
+            const now = new Date();
+
+            let totalZeitwert = 0;
+
+            if (items.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">Noch kein Inventar erfasst.</p>`;
+                document.getElementById('statInventoryValue').innerText = "0,00 €";
+                return;
+            }
+
+            container.innerHTML = items.map(item => {
+                const buyDate = new Date(item.date);
+                const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
+                const lifespan = item.lifespan || 5;
+                const zeitwert = Math.max(0, item.price * (1 - (ageYears / lifespan)));
+                totalZeitwert += zeitwert;
+
+                const sharePerMate = flatmates.length > 0 ? (zeitwert / flatmates.length) : 0;
+
+                return `
+                    <div class="p-3 bg-teal-50/60 border border-teal-200 rounded-xl space-y-1.5 text-xs">
+                        <div class="flex justify-between font-bold text-teal-950">
+                            <span>📦 ${item.title}</span>
+                            <button onclick="deleteInventoryItem(${item.id})" class="text-red-500 hover:text-red-700">&times;</button>
+                        </div>
+                        <p class="text-gray-600 text-[11px]">Kauf: ${item.price.toFixed(2)} € (${item.date})</p>
+                        <div class="pt-1 border-t border-teal-200 flex justify-between items-center text-[11px]">
+                            <span>Aktueller Zeitwert: <strong class="text-teal-900">${zeitwert.toFixed(2)} €</strong></span>
+                            <span class="text-teal-800 font-semibold" title="Auszahlungsanspruch pro Person bei Auszug">Auszug: ${sharePerMate.toFixed(2)} €/p.P.</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('statInventoryValue').innerText = totalZeitwert.toFixed(2) + " €";
+        }
+
+        function openAddInventoryModal() { document.getElementById('inventoryModal').classList.remove('hidden'); document.getElementById('inventoryModal').classList.add('flex'); }
+        function closeAddInventoryModal() { document.getElementById('inventoryModal').classList.remove('flex'); document.getElementById('inventoryModal').classList.add('hidden'); }
+
+        function saveInventoryItem() {
+            const title = document.getElementById('invTitle').value.trim();
+            const price = parseFloat(document.getElementById('invPrice').value) || 0;
+            const date = document.getElementById('invDate').value;
+            const lifespan = parseFloat(document.getElementById('invLifespan').value) || 5;
+
+            if (!title || price <= 0 || !date) return alert("Bitte Gegenstand, Betrag und Kaufdatum angeben!");
+
+            const items = getInventory();
+            items.push({ id: Date.now(), title, price, date, lifespan });
+            saveInventory(items);
+            closeAddInventoryModal();
+            renderApp();
+        }
+
+        function deleteInventoryItem(id) {
+            saveInventory(getInventory().filter(i => i.id !== id));
+            renderApp();
+        }
+
+        /* Ernährungs- & Allergie-Matrix */
+        function renderDietMatrix() {
+            const flatmates = getFlatmates();
+            const diets = getDiets();
+            const container = document.getElementById('dietMatrixList');
+
+            container.innerHTML = flatmates.map(m => {
+                const info = diets[m] || { pref: "Allesesser", allergy: "Keine" };
+                return `
+                    <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
+                        <span class="font-bold text-gray-800">${m}</span>
+                        <div class="text-right text-[11px]">
+                            <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">${info.pref}</span>
+                            <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-semibold ml-1">🚫 ${info.allergy}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openDietModal() {
+            const flatmates = getFlatmates();
+            const diets = getDiets();
+            const container = document.getElementById('dietInputContainer');
+
+            container.innerHTML = flatmates.map(m => {
+                const info = diets[m] || { pref: "Allesesser", allergy: "Keine" };
+                return `
+                    <div class="p-3 bg-gray-50 border rounded-xl space-y-2">
+                        <span class="font-bold text-gray-900">${m}</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" data-mate="${m}" class="dietPref input w-full p-2 border rounded" placeholder="z. B. Vegan, Veggie" value="${info.pref}">
+                            <input type="text" data-mate="${m}" class="dietAllergy input w-full p-2 border rounded" placeholder="z. B. Laktose, Nüsse" value="${info.allergy}">
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('dietModal').classList.remove('hidden');
+            document.getElementById('dietModal').classList.add('flex');
+        }
+
+        function closeDietModal() { document.getElementById('dietModal').classList.remove('flex'); document.getElementById('dietModal').classList.add('hidden'); }
+
+        function saveDietMatrix() {
+            const diets = {};
+            const prefInputs = document.querySelectorAll('.dietPref');
+            const allergyInputs = document.querySelectorAll('.dietAllergy');
+
+            prefInputs.forEach((input, idx) => {
+                const mate = input.getAttribute('data-mate');
+                diets[mate] = {
+                    pref: input.value.trim() || "Allesesser",
+                    allergy: allergyInputs[idx].value.trim() || "Keine"
+                };
+            });
+
+            saveDiets(diets);
+            closeDietModal();
+            renderDietMatrix();
         }
 
         /* Schuldenminimierer */
@@ -902,15 +1181,11 @@
 
             listContainer.innerHTML = filtered.map(r => {
                 const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
-                const photos = r.photos || [];
 
                 return `
                     <div class="p-3 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-2 text-xs">
                         <div class="flex items-start space-x-3">
-                            ${photos.length > 0 
-                                ? `<img src="${photos[0]}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer">` 
-                                : `<div class="w-12 h-12 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-lg">${isIncome ? '🔺' : '🧾'}</div>`
-                            }
+                            <div class="w-10 h-10 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-base">${isIncome ? '🔺' : '🧾'}</div>
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="font-bold text-gray-900">${r.title}</span>
@@ -933,6 +1208,31 @@
             }).join('');
         }
 
+        /* OCR Scan */
+        async function runOCR() {
+            const input = document.getElementById('receiptPhotoInput');
+            if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
+            const statusEl = document.getElementById('ocrStatus');
+            statusEl.innerText = "🔍 Scanne Kassenbon...";
+            statusEl.classList.remove('hidden');
+
+            try {
+                const worker = await Tesseract.createWorker('deu');
+                const ret = await worker.recognize(input.files[0]);
+                await worker.terminate();
+
+                const text = ret.data.text;
+                statusEl.innerText = "✅ OCR Scan erfolgreich!";
+
+                const priceMatch = text.match(/(\d+[\.,]\d{2})\s*(€|EUR)?/i);
+                if (priceMatch && !document.getElementById('receiptPrice').value) {
+                    document.getElementById('receiptPrice').value = priceMatch[1].replace(',', '.');
+                }
+            } catch(e) {
+                statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+            }
+        }
+
         /* Save Transaction */
         function saveReceipt() {
             const title = document.getElementById('receiptTitle').value.trim();
@@ -948,7 +1248,6 @@
             const location = document.getElementById('receiptLocation').value.trim();
             const isFixkosten = document.getElementById('receiptIsFixkosten').checked;
             const isTax = document.getElementById('receiptIsTax').checked;
-            const note = document.getElementById('receiptNote').value.trim();
             const entryType = document.querySelector('input[name="entryType"]:checked').value;
             const splitWith = Array.from(document.querySelectorAll('input[name="splitMate"]:checked')).map(cb => cb.value);
 
@@ -958,10 +1257,10 @@
             if (editingReceiptId) {
                 const idx = data.findIndex(r => r.id === editingReceiptId);
                 if (idx !== -1) {
-                    data[idx] = { ...data[idx], title, store, date, price, category, payer, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType, splitWith };
+                    data[idx] = { ...data[idx], title, store, date, price, category, payer, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, entryType, splitWith };
                 }
             } else {
-                data.unshift({ id: Date.now(), title, store, date, price, category, payer, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType, splitWith, photos: [...currentUploadedPhotos] });
+                data.unshift({ id: Date.now(), title, store, date, price, category, payer, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, entryType, splitWith });
             }
 
             saveData(data);
@@ -988,7 +1287,6 @@
             document.getElementById('receiptLocation').value = r.location || '';
             document.getElementById('receiptIsFixkosten').checked = !!r.isFixkosten;
             document.getElementById('receiptIsTax').checked = !!r.isTax;
-            document.getElementById('receiptNote').value = r.note || '';
 
             document.getElementById('formTitle').innerText = `✏️ Buchung bearbeiten: ${r.title}`;
             document.getElementById('saveBtn').innerText = "💾 Änderungen speichern";
@@ -1005,17 +1303,21 @@
             document.getElementById('receiptPrice').value = "";
             document.getElementById('receiptSN').value = "";
             document.getElementById('receiptLocation').value = "";
-            document.getElementById('receiptNote').value = "";
             document.getElementById('formTitle').innerText = "✍️ Buchung / WG-Kassenbon erfassen";
             document.getElementById('saveBtn').innerText = "Buchung / Kassenbon speichern";
             document.getElementById('cancelEditBtn').classList.add('hidden');
             document.getElementById('receiptDate').valueAsDate = new Date();
-            currentUploadedPhotos = [];
         }
 
         function deleteReceipt(id) {
             if (!confirm("Buchung wirklich löschen?")) return;
             saveData(getData().filter(item => item.id !== id));
+            renderApp();
+        }
+
+        function settleAllDebts() {
+            if (!confirm("⚠️ Möchtest du wirklich alle aktuellen WG-Schulden ausgleichen?")) return;
+            saveData([]);
             renderApp();
         }
 
@@ -1166,74 +1468,6 @@
         }
         function syncIngredientsToShopping(idx) { const item = getCookingPlan()[idx]; if (!item || !item.ingredients) return; item.ingredients.split(',').forEach(i => addShoppingItem(i.trim())); alert("Zutaten wurden hinzugefügt!"); }
 
-        /* Pfand Tracker */
-        function renderPfandTracker() {
-            const pfand = getPfandData();
-            const flatmates = getFlatmates();
-            let totalVal = 0;
-            document.getElementById('pfandTrackerList').innerHTML = flatmates.map(m => {
-                const d = pfand[m] || { flaschen: 0, kisten: 0 };
-                const val = (d.flaschen * 0.25) + (d.kisten * 1.50);
-                totalVal += val;
-                return `
-                    <div class="p-2 bg-gray-50 border rounded-xl flex justify-between items-center">
-                        <span class="font-bold">${m}</span>
-                        <span>🍾 ${d.flaschen} Fl. | 📦 ${d.kisten} Ki. = <strong>${val.toFixed(2)} €</strong></span>
-                        <div class="flex gap-1">
-                            <button onclick="updatePfand('${m}', 'flaschen', 1)" class="px-1.5 py-0.5 bg-gray-200 rounded font-bold">+Fl</button>
-                            <button onclick="updatePfand('${m}', 'kisten', 1)" class="px-1.5 py-0.5 bg-gray-200 rounded font-bold">+Ki</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            document.getElementById('statPfandVal').innerText = totalVal.toFixed(2) + " €";
-        }
-        function updatePfand(mate, type, amount) { const pfand = getPfandData(); if (!pfand[mate]) pfand[mate] = { flaschen: 0, kisten: 0 }; pfand[mate][type] = Math.max(0, (pfand[mate][type] || 0) + amount); savePfandData(pfand); renderPfandTracker(); }
-        function transferPfandToExpense() {
-            const pfand = getPfandData();
-            const flatmates = getFlatmates();
-            let totalVal = 0;
-            flatmates.forEach(m => { const d = pfand[m] || { flaschen: 0, kisten: 0 }; totalVal += (d.flaschen * 0.25) + (d.kisten * 1.50); });
-            if (totalVal <= 0) return alert("Kein Pfand vorhanden!");
-            const collector = prompt(`Wer hat das Pfand weggebracht?`, flatmates[0]); if (!collector) return;
-            const data = getData();
-            data.unshift({ id: Date.now(), title: "🍾 Pfand-Gutschrift", price: totalVal, payer: collector, date: new Date().toISOString().split('T')[0], category: "Haushalt", entryType: "ausgabe", splitWith: flatmates });
-            saveData(data);
-            flatmates.forEach(m => pfand[m] = { flaschen: 0, kisten: 0 }); savePfandData(pfand);
-            renderApp();
-        }
-
-        /* Waschmaschinen Timer */
-        function renderLaundryTimer() {
-            const laundry = getLaundryData();
-            const flatmates = getFlatmates();
-            const grid = document.getElementById('laundryGrid');
-            const now = Date.now();
-            grid.innerHTML = laundry.map(m => {
-                const isRunning = m.endTime > now;
-                const remainingSecs = isRunning ? Math.ceil((m.endTime - now) / 1000) : 0;
-                const mins = Math.floor(remainingSecs / 60); const secs = remainingSecs % 60;
-                return `
-                    <div class="p-3 border rounded-2xl ${isRunning ? 'bg-purple-50 border-purple-200' : 'bg-gray-50 border-gray-200'} space-y-2 text-xs">
-                        <div class="flex justify-between font-bold"><span>${m.name}</span><span class="${isRunning ? 'text-purple-700' : 'text-emerald-700'}">${isRunning ? '⚙️ Läuft' : '🟢 Frei'}</span></div>
-                        ${isRunning ? `
-                            <p>Nutzer: <strong>${m.occupant}</strong> (${m.program || 'Wäsche'})</p>
-                            <p class="text-sm font-extrabold text-purple-900">⏳ ${mins}m ${secs}s</p>
-                            <button onclick="stopLaundry('${m.id}')" class="px-2 py-1 bg-red-100 text-red-700 rounded font-bold">Stoppen</button>
-                        ` : `
-                            <div class="flex gap-2">
-                                <select id="occupant_${m.id}" class="p-1 border rounded bg-white flex-1">${flatmates.map(f => `<option value="${f}">${f}</option>`).join('')}</select>
-                                <input type="number" id="duration_${m.id}" value="45" class="p-1 border rounded w-16 text-center font-bold">
-                            </div>
-                            <button onclick="startLaundry('${m.id}')" class="w-full py-1.5 bg-emerald-700 text-white font-bold rounded-xl">▶️ Starten</button>
-                        `}
-                    </div>
-                `;
-            }).join('');
-        }
-        function startLaundry(id) { const laundry = getLaundryData(); const machine = laundry.find(l => l.id === id); if (!machine) return; machine.occupant = document.getElementById(`occupant_${id}`).value; machine.endTime = Date.now() + ((parseInt(document.getElementById(`duration_${id}`).value) || 45) * 60 * 1000); saveLaundryData(laundry); renderLaundryTimer(); }
-        function stopLaundry(id) { const laundry = getLaundryData(); const machine = laundry.find(l => l.id === id); if (!machine) return; machine.endTime = 0; saveLaundryData(laundry); renderLaundryTimer(); }
-
         /* Verträge */
         function renderContracts() {
             const contracts = getContracts();
@@ -1316,9 +1550,9 @@
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `steuer-export.csv`; a.click();
         }
         function exportBackup() {
-            const backupObj = { flatmates: getFlatmates(), data: getData(), budgets: getBudgets(), goals: getSavingsGoals(), cleaning: getCleaningPlan(), shopping: getShoppingList(), cooking: getCookingPlan(), pfand: getPfandData(), laundry: getLaundryData(), contracts: getContracts(), infoboard: getInfoData() };
+            const backupObj = { flatmates: getFlatmates(), data: getData(), budgets: getBudgets(), goals: getSavingsGoals(), events: getEvents(), inventory: getInventory(), diets: getDiets(), cleaning: getCleaningPlan(), shopping: getShoppingList(), cooking: getCookingPlan(), contracts: getContracts(), infoboard: getInfoData() };
             const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `wg-haushaltsbuch-backup-${new Date().toISOString().split('T')[0]}.json`; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `wg-ultimate-backup-${new Date().toISOString().split('T')[0]}.json`; a.click();
         }
         function importBackup(event) {
             const file = event.target.files[0]; if (!file) return;
@@ -1326,7 +1560,7 @@
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed.flatmates) saveFlatmates(parsed.flatmates); if (parsed.data) saveData(parsed.data); if (parsed.budgets) saveBudgets(parsed.budgets); if (parsed.goals) saveSavingsGoals(parsed.goals); if (parsed.cleaning) saveCleaningPlan(parsed.cleaning); if (parsed.shopping) saveShoppingList(parsed.shopping); if (parsed.cooking) saveCookingPlan(parsed.cooking); if (parsed.pfand) savePfandData(parsed.pfand); if (parsed.laundry) saveLaundryData(parsed.laundry); if (parsed.contracts) saveContracts(parsed.contracts); if (parsed.infoboard) saveInfoData(parsed.infoboard);
+                    if (parsed.flatmates) saveFlatmates(parsed.flatmates); if (parsed.data) saveData(parsed.data); if (parsed.budgets) saveBudgets(parsed.budgets); if (parsed.goals) saveSavingsGoals(parsed.goals); if (parsed.events) saveEvents(parsed.events); if (parsed.inventory) saveInventory(parsed.inventory); if (parsed.diets) saveDiets(parsed.diets); if (parsed.cleaning) saveCleaningPlan(parsed.cleaning); if (parsed.shopping) saveShoppingList(parsed.shopping); if (parsed.cooking) saveCookingPlan(parsed.cooking); if (parsed.contracts) saveContracts(parsed.contracts); if (parsed.infoboard) saveInfoData(parsed.infoboard);
                     renderApp(); alert("Backup erfolgreich importiert!");
                 } catch(err) { alert("Fehler beim Import."); }
             }; reader.readAsText(file);
