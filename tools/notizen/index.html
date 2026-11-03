@@ -219,8 +219,8 @@
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.firestore();
 
-        // EmailJS Initialisierung
-        emailjs.init("Z1IQ0xhr3cplXVC0j"); //[span_0](start_span)[span_0](end_span)
+        // EmailJS Initialisierung mit Public Key
+        emailjs.init("Z1IQ0xhr3cplXVC0j");[span_0](start_span)[span_0](end_span)
 
         let currentMasterKeyHex = null;
         let currentDecryptedVault = { entries: [] };
@@ -512,7 +512,7 @@
             renderAlarmPersons();
         };
 
-        // EMAILJS VERSAND-FUNKTION MIT VISUELLEM FEEDBACK
+        // EXAKTER VERSAND MIT DIREKTEM FEEDBACK
         window.sendEmailToPerson = function(name, email, link) {
             if (!email) {
                 alert("Keine E-Mail-Adresse für diese Person hinterlegt.");
@@ -528,14 +528,15 @@
                 person_link: link
             };
 
-            // Visuelles Feedback
-            alert("⏳ Sende E-Mail über EmailJS...");
+            console.log("Starte EmailJS Versand mit:", templateParams);
 
             emailjs.send('service_8gzihbf', 'template_xmidqv9', templateParams)[span_1](start_span)[span_1](end_span)[span_2](start_span)[span_2](end_span)
                 .then(function(response) {
-                    alert(`✅ E-Mail erfolgreich an ${name} (${email}) gesendet! (Status: ${response.status})`);
+                    console.log("SUCCESS!", response.status, response.text);
+                    alert(`✅ E-Mail erfolgreich an ${name} (${email}) gesendet!`);
                 }, function(error) {
-                    alert(`❌ EmailJS Fehler: ${JSON.stringify(error)}`);
+                    console.error("FAILED...", error);
+                    alert(`❌ EmailJS Fehler-Details: ${JSON.stringify(error)}`);
                 });
         };
 
