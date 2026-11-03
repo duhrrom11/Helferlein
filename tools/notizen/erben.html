@@ -49,7 +49,7 @@
                 </div>
             </div>
 
-            <!-- FREIGEGEBEN-ZUSTAND (Inaktivität abgelaufen oder Alarm aktiv) -->
+            <!-- FREIGEGEBEN-ZUSTAND -->
             <div id="unlockedStateBox" class="space-y-4 hidden">
                 <div class="p-4 bg-emerald-950/40 border border-emerald-800/60 rounded-xl space-y-2">
                     <h3 class="font-bold text-emerald-400 text-sm">🔓 Safe freigegeben</h3>
@@ -95,13 +95,19 @@
         let ownerNameGlobal = "";
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // URL-Parameter absolut robust auslesen
             const urlParams = new URLSearchParams(window.location.search);
             urlVaultId = urlParams.get('vaultId');
             urlMasterKey = urlParams.get('key');
             personKey = urlParams.get('person') || "vertrauensperson";
 
             if (!urlVaultId) {
-                document.getElementById('loadingStatus').innerHTML = `<p class="text-xs text-red-400">❌ Fehler: Keine Vault-ID in der URL gefunden.</p>`;
+                document.getElementById('loadingStatus').innerHTML = `
+                    <div class="p-4 bg-red-950/80 border border-red-800 rounded-xl space-y-2">
+                        <p class="text-xs font-bold text-red-400">❌ Fehler: Keine Vault-ID in der URL gefunden.</p>
+                        <p class="text-[11px] text-slate-300">Bitte stelle sicher, dass du den vollständigen Link inklusive <code class="bg-slate-900 px-1 py-0.5 rounded text-indigo-300">?vaultId=...</code> im Browser aufrufst.</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -121,24 +127,23 @@
 
                 document.getElementById('loadingStatus').classList.add('hidden');
 
-                // PRÜFUNG: Ist der Safe wirklich fällig (Inaktivität abgelaufen)?
+                // Prüfen ob Inaktivität abgelaufen ist
                 const lastCheckIn = new Date(data.lastCheckIn || data.updatedAt);
                 const intervalDays = data.checkInIntervalDays || 30;
                 const diffDays = Math.floor((new Date() - lastCheckIn) / (1000 * 60 * 60 * 24));
                 const isInactiveExpired = diffDays >= intervalDays;
 
-                // PRÜFUNG: Wurde ein Notfall-Alarm ausgelöst?
+                // Prüfen ob Notfall-Alarm aktiv ist
                 let isAlarmTriggered = false;
                 if (data.emergencyTriggers) {
-                    // Prüfen ob irgendein Alarm aktiv ist
                     for (let p in data.emergencyTriggers) {
-                        if (data.emergencyTriggers[p].status === "active" || data.emergencyTriggers[p].status === "test_active") {
+                        const tr = data.emergencyTriggers[p];
+                        if (tr && (tr.status === "active" || tr.status === "test_active")) {
                             isAlarmTriggered = true;
                         }
                     }
                 }
 
-                // WICHTIG: Nur freigeben, wenn Inaktivität abgelaufen ODER Alarm aktiv ist!
                 if (isInactiveExpired || isAlarmTriggered) {
                     document.getElementById('unlockedStateBox').classList.remove('hidden');
                 } else {
