@@ -15,6 +15,8 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
     <style>
         .tab-btn.active {
@@ -162,12 +164,12 @@
                     </div>
                 </div>
 
-                <!-- PERSONEN FÜR NOTFALL-TRIGGER -->
+                <!-- PERSONEN FÜR NOTFALL-TRIGGER & EMAIL -->
                 <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
-                    <h4 class="text-xs font-bold text-indigo-400">👥 Personen für 24h-Notfall-Trigger anlegen</h4>
+                    <h4 class="text-xs font-bold text-indigo-400">👥 Personen für 24h-Notfall-Trigger & E-Mail-Versand</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                        <input type="text" id="newAlarmPersonName" placeholder="Name (z.B. Isabelle, Mutter)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
-                        <input type="text" id="newAlarmPersonContact" placeholder="Kontakt / E-Mail (optional)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
+                        <input type="text" id="newAlarmPersonName" placeholder="Name (z.B. Isabelle)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
+                        <input type="email" id="newAlarmPersonContact" placeholder="E-Mail-Adresse" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
                         <button onclick="addAlarmPerson()" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md">
                             ➕ Person anlegen
                         </button>
@@ -217,10 +219,12 @@
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.firestore();
 
+        // EmailJS Initialisierung
+        emailjs.init("Z1IQ0xhr3cplXVC0j"); //[span_3](start_span)[span_3](end_span)
+
         let currentMasterKeyHex = null;
         let currentDecryptedVault = { entries: [] };
 
-        // INITIALISIERUNG BEIM LADEN
         document.addEventListener('DOMContentLoaded', async () => {
             try {
                 await initVault();
@@ -231,7 +235,6 @@
             }
         });
 
-        // TAB UMSCHALTUNG (GLOBAL EXONIERT)
         window.switchTab = function(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.getElementById(`tab-${tabName}`);
@@ -290,10 +293,7 @@
                         { id: 3, name: "Notar", role: "Rechtsbeistand" }
                     ],
                     alarmPersons: [
-                        { id: "isabelle", name: "Isabelle", contact: "" },
-                        { id: "mutter", name: "Mutter", contact: "" },
-                        { id: "vater", name: "Vater", contact: "" },
-                        { id: "onkel", name: "Onkel", contact: "" }
+                        { id: "isabelle", name: "Isabelle", contact: "" }
                     ],
                     encryptedData: await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex)
                 };
@@ -301,12 +301,7 @@
             } else {
                 currentMasterKeyHex = cfg.masterKeyHex;
                 if (!cfg.alarmPersons) {
-                    cfg.alarmPersons = [
-                        { id: "isabelle", name: "Isabelle", contact: "" },
-                        { id: "mutter", name: "Mutter", contact: "" },
-                        { id: "vater", name: "Vater", contact: "" },
-                        { id: "onkel", name: "Onkel", contact: "" }
-                    ];
+                    cfg.alarmPersons = [];
                 }
                 const dec = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
                 currentDecryptedVault = (dec && dec.entries) ? dec : { entries: [] };
@@ -475,14 +470,16 @@
             container.innerHTML = cfg.alarmPersons.map((p, idx) => {
                 const personLink = `${baseUrl}/erben.html?vaultId=${cfg.vaultId}&key=${cfg.masterKeyHex}&person=${p.id}`;
                 return `
-                    <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-2 text-xs">
+                    <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs">
                         <div>
                             <span class="font-bold text-slate-100">${p.name}</span>
+                            ${p.contact ? `<span class="text-slate-400 text-[11px] ml-2">(${p.contact})</span>` : ''}
                             <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">${personLink}</p>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="navigator.clipboard.writeText('${personLink}'); alert('🔗 Link für ${p.name} kopiert!');" class="px-3 py-1 bg-indigo-600 text-white font-bold rounded-lg text-[11px]">Link kopieren</button>
-                            <button onclick="deleteAlarmPerson(${idx})" class="px-2 py-1 bg-slate-800 text-slate-300 rounded-lg text-[11px]">Löschen</button>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="navigator.clipboard.writeText('${personLink}'); alert('🔗 Link kopiert!');" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px]">Link kopieren</button>
+                            ${p.contact ? `<button onclick="sendEmailToPerson('${p.name}', '${p.contact}', '${personLink}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px]">✉️ E-Mail senden</button>` : ''}
+                            <button onclick="deleteAlarmPerson(${idx})" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px]">Löschen</button>
                         </div>
                     </div>
                 `;
@@ -513,6 +510,31 @@
             await saveLocalConfig(cfg);
             await window.syncVaultToFirebase(true);
             renderAlarmPersons();
+        };
+
+        // EMAILJS VERSAND-FUNKTION
+        window.sendEmailToPerson = function(name, email, link) {
+            if (!email) {
+                alert("Keine E-Mail-Adresse für diese Person hinterlegt.");
+                return;
+            }
+
+            if (!confirm(`Möchtest du den Notfall-Link automatisch per E-Mail an ${name} (${email}) senden?`)) return;
+
+            const templateParams = {
+                to_name: name,
+                to_email: email,
+                owner_name: getVaultConfig().ownerName || "Romain Duhr",
+                person_link: link
+            };
+
+            // EmailJS Send: Service ID, Template ID, Params
+            emailjs.send('service_8gzihbf', 'template_xmidqv9', templateParams)[span_4](start_span)[span_4](end_span)[span_5](start_span)[span_5](end_span)
+                .then(function(response) {
+                    alert(`✅ E-Mail erfolgreich an ${name} (${email}) versendet!`);
+                }, function(error) {
+                    alert(`❌ Fehler beim E-Mail-Versand: ${JSON.stringify(error)}`);
+                });
         };
 
         window.saveVaultEntry = async function() {
