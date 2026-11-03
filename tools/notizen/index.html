@@ -27,7 +27,6 @@
             #emergencyPrintArea, #emergencyPrintArea * { visibility: visible; }
             #emergencyPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
         }
-        /* CSS Keyframe Animationen für das Feedback Overlay */
         @keyframes popIn {
             0% { transform: scale(0.8); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
@@ -51,7 +50,7 @@
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                 </div>
-                <h3 class="font-bold text-slate-100 text-sm">Lokale AES-Verschlüsselung...</h3>
+                <h3 class="font-bold text-slate-100 text-sm">Verschlüsselung läuft...</h3>
                 <p class="text-xs text-slate-400">Payload wird generiert & an Firebase übertragen</p>
             </div>
 
@@ -61,7 +60,7 @@
                     <span class="text-3xl">✅</span>
                 </div>
                 <h3 class="font-bold text-emerald-400 text-base">Erfolgreich gespeichert!</h3>
-                <p class="text-xs text-slate-300">Dein Eintrag wurde lokal verschlüsselt und sicher in der Cloud abgelegt.</p>
+                <p class="text-xs text-slate-300">Dein Eintrag wurde lokal verschlüsselt und in der Cloud gesichert.</p>
             </div>
 
             <!-- Zustand 3: Fehler aufgetreten -->
@@ -69,7 +68,7 @@
                 <div class="inline-block p-4 bg-red-950/80 rounded-full text-red-400 border border-red-800">
                     <span class="text-3xl">❌</span>
                 </div>
-                <h3 class="font-bold text-red-400 text-base">Cloud-Upload fehlgeschlagen</h3>
+                <h3 class="font-bold text-red-400 text-base">Vorgang fehlgeschlagen</h3>
                 <p id="syncErrorMessage" class="text-xs text-slate-400 bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 font-mono text-left break-all">-</p>
                 <button onclick="closeSyncModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold">Fenster schließen</button>
             </div>
@@ -86,7 +85,7 @@
                     <div class="p-2.5 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30 text-2xl">🏛️</div>
                     <div>
                         <h1 class="text-xl md:text-2xl font-black tracking-tight text-slate-100">Digitaler Nachlassverwalter Pro</h1>
-                        <p class="text-xs text-slate-400 mt-0.5">Zero-Knowledge Safe · Auto Cloud Sync · Einzel-Schlüssel Entschlüsselung</p>
+                        <p class="text-xs text-slate-400 mt-0.5">Zero-Knowledge Safe · Auto Cloud Sync</p>
                     </div>
                 </div>
                 
@@ -424,32 +423,48 @@
             renderApp();
         });
 
+        /* --- ROBUSTE INITIALISIERUNG MIT AUTO-CLEANUP --- */
         async function initVault() {
-            let cfg = JSON.parse(localStorage.getItem('digital_estate_vault'));
-            if (!cfg) {
-                const randomBytes = crypto.getRandomValues(new Uint8Array(32));
-                currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
-                const vaultId = "v_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+            try {
+                let cfg = JSON.parse(localStorage.getItem('digital_estate_vault'));
+                
+                // FAILSAFE: Falls alte Struktur (ohne masterKeyHex) im Browser hängt, setze zurück.
+                if (cfg && !cfg.masterKeyHex) {
+                    console.warn("Alte Speicherstruktur gefunden. Wird zurückgesetzt.");
+                    localStorage.removeItem('digital_estate_vault');
+                    cfg = null;
+                }
 
-                currentDecryptedVault = { entries: [] };
-                cfg = {
-                    vaultId: vaultId,
-                    ownerName: "Romain Duhr",
-                    masterKeyHex: currentMasterKeyHex,
-                    checkInIntervalDays: 30,
-                    lastCheckIn: new Date().toISOString(),
-                    trustees: [
-                        { id: 1, name: "Isabelle", role: "Partnerin" },
-                        { id: 2, name: "Lynn Duhr", role: "Tochter" },
-                        { id: 3, name: "Notar", role: "Rechtsbeistand" }
-                    ],
-                    encryptedData: await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex)
-                };
-                localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
-            } else {
-                currentMasterKeyHex = cfg.masterKeyHex;
-                const dec = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
-                currentDecryptedVault = (dec && dec.entries) ? dec : { entries: [] };
+                if (!cfg) {
+                    const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+                    currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+                    const vaultId = "v_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+
+                    currentDecryptedVault = { entries: [] };
+                    cfg = {
+                        vaultId: vaultId,
+                        ownerName: "Romain Duhr",
+                        masterKeyHex: currentMasterKeyHex,
+                        checkInIntervalDays: 30,
+                        lastCheckIn: new Date().toISOString(),
+                        trustees: [
+                            { id: 1, name: "Isabelle", role: "Partnerin" },
+                            { id: 2, name: "Lynn Duhr", role: "Tochter" },
+                            { id: 3, name: "Notar", role: "Rechtsbeistand" }
+                        ],
+                        encryptedData: await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex)
+                    };
+                    localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+                } else {
+                    currentMasterKeyHex = cfg.masterKeyHex;
+                    const dec = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
+                    currentDecryptedVault = (dec && dec.entries) ? dec : { entries: [] };
+                }
+            } catch (error) {
+                console.error("Init Fehler:", error);
+                localStorage.removeItem('digital_estate_vault');
+                alert("Der lokale Cache war defekt und wurde bereinigt. Bitte die Seite einmal neu laden.");
+                window.location.reload();
             }
         }
 
@@ -487,7 +502,7 @@
                 console.error("Firebase Error:", e);
                 const errDetail = e.message || e.toString();
                 if (!silent) {
-                    showSyncModalError(errDetail + " (Prüfe die Firestore Security Rules in Firebase)");
+                    showSyncModalError(errDetail);
                 }
                 return false;
             }
@@ -575,7 +590,8 @@
             cfg.lastCheckIn = new Date().toISOString();
             await saveLocalConfig(cfg);
             renderApp();
-            await syncVaultToFirebase(false);
+            await syncVaultToFirebase(true);
+            alert("✅ Check-in erneuert und in Cloud gespeichert!");
         }
 
         async function updateDeadmanInterval() {
@@ -593,7 +609,8 @@
             cfg.lastCheckIn = pastDate.toISOString();
             await saveLocalConfig(cfg);
             renderApp();
-            await syncVaultToFirebase(false);
+            await syncVaultToFirebase(true);
+            alert("⚠️ Inaktivität simuliert & in Firebase aktualisiert!");
         }
 
         function generateRandomPass() {
@@ -604,37 +621,43 @@
         }
 
         async function saveVaultEntry() {
-            const title = document.getElementById('entryTitle').value.trim();
-            const category = document.getElementById('entryCategory').value;
-            const content = document.getElementById('entryContent').value.trim();
-            const contractNo = document.getElementById('entryContractNo').value.trim();
-            const partner = document.getElementById('entryPartner').value.trim();
-            const fee = parseFloat(document.getElementById('entryFee').value) || 0;
+            try {
+                const title = document.getElementById('entryTitle').value.trim();
+                const category = document.getElementById('entryCategory').value;
+                const content = document.getElementById('entryContent').value.trim();
+                const contractNo = document.getElementById('entryContractNo').value.trim();
+                const partner = document.getElementById('entryPartner').value.trim();
+                const fee = parseFloat(document.getElementById('entryFee').value) || 0;
 
-            if (!title || !content) {
-                alert("⚠️ Bitte mindestens Titel und Inhalt eingeben!");
-                return;
+                if (!title || !content) {
+                    alert("⚠️ Bitte mindestens Titel und Inhalt eingeben!");
+                    return;
+                }
+
+                if (!currentDecryptedVault.entries) {
+                    currentDecryptedVault.entries = [];
+                }
+
+                // Eintrag lokal hinzufügen
+                currentDecryptedVault.entries.unshift({ id: Date.now(), title, category, content, contractNo, partner, fee });
+                
+                // LocalStorage sichern & Ansicht leeren
+                await saveLocalConfig(getVaultConfig());
+
+                document.getElementById('entryTitle').value = "";
+                document.getElementById('entryContent').value = "";
+                document.getElementById('entryContractNo').value = "";
+                document.getElementById('entryPartner').value = "";
+                document.getElementById('entryFee').value = "";
+                renderVaultEntries();
+
+                // Cloud-Sync mit Animation starten
+                await syncVaultToFirebase(false);
+
+            } catch (err) {
+                console.error("Fehler beim Speichern:", err);
+                showSyncModalError(err.message || "Unbekannter Fehler beim lokalen Speichern.");
             }
-
-            if (!currentDecryptedVault.entries) {
-                currentDecryptedVault.entries = [];
-            }
-
-            // Eintrag lokal hinzufügen
-            currentDecryptedVault.entries.unshift({ id: Date.now(), title, category, content, contractNo, partner, fee });
-            
-            // LocalStorage sichern & Ansicht leeren
-            await saveLocalConfig(getVaultConfig());
-
-            document.getElementById('entryTitle').value = "";
-            document.getElementById('entryContent').value = "";
-            document.getElementById('entryContractNo').value = "";
-            document.getElementById('entryPartner').value = "";
-            document.getElementById('entryFee').value = "";
-            renderVaultEntries();
-
-            // Cloud-Sync mit Animation starten
-            await syncVaultToFirebase(false);
         }
 
         async function deleteVaultEntry(id) {
@@ -642,7 +665,7 @@
             currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
             await saveLocalConfig(getVaultConfig());
             renderVaultEntries();
-            await syncVaultToFirebase(false);
+            await syncVaultToFirebase(true);
         }
 
         async function saveTrustees() {
@@ -653,7 +676,8 @@
             }
             await saveLocalConfig(cfg);
             renderApp();
-            await syncVaultToFirebase(false);
+            await syncVaultToFirebase(true);
+            alert("✅ Vertrauenspersonen gespeichert & synchronisiert!");
         }
 
         function renderPrintableKit() {
@@ -718,3 +742,4 @@
     </script>
 </body>
 </html>
+
