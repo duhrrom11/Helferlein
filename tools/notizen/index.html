@@ -27,26 +27,81 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
-    <!-- Header -->
+    <!-- Header mit detaillierter Anleitung -->
     <header class="bg-slate-950 border-b border-slate-800 text-white py-5 px-4 shadow-xl">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="text-center md:text-left flex items-center space-x-3">
-                <div class="p-2.5 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30 text-2xl">🏛️</div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-black tracking-tight text-slate-100">Digitaler Nachlassverwalter Pro</h1>
-                    <p class="text-xs text-slate-400 mt-0.5">Zero-Knowledge Safe · Totmannschalter · 2-von-3 Shamir Key Split · 100% Lokal</p>
-                </div>
-            </div>
+        <div class="max-w-7xl mx-auto space-y-4">
             
-            <div class="flex items-center gap-3">
-                <div id="statusBadge" class="px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 bg-emerald-950/80 border-emerald-800 text-emerald-400">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span id="statusBadgeText">Status: Aktiv (Check-in OK)</span>
+            <!-- Header Top Bar -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-center md:text-left flex items-center space-x-3">
+                    <div class="p-2.5 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30 text-2xl">🏛️</div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-black tracking-tight text-slate-100">Digitaler Nachlassverwalter Pro</h1>
+                        <p class="text-xs text-slate-400 mt-0.5">Zero-Knowledge Safe · Totmannschalter · 2-von-3 Shamir Key Split · 100% Lokal</p>
+                    </div>
                 </div>
-                <button onclick="toggleModeView()" id="modeSwitchBtn" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow-md transition-all">
-                    🚨 Zum Erben-Cockpit
-                </button>
+                
+                <div class="flex items-center gap-2 flex-wrap justify-center">
+                    <button onclick="toggleHeaderGuide()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-indigo-300 font-bold rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5">
+                        <span>📖</span> <span id="guideToggleText">Anleitung anzeigen</span>
+                    </button>
+                    
+                    <div id="statusBadge" class="px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 bg-emerald-950/80 border-emerald-800 text-emerald-400">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span id="statusBadgeText">Status: Aktiv (Check-in OK)</span>
+                    </div>
+                    
+                    <button onclick="toggleModeView()" id="modeSwitchBtn" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow-md transition-all">
+                        🚨 Zum Erben-Cockpit
+                    </button>
+                </div>
             </div>
+
+            <!-- DETAILLIERTE ANLEITUNG (Aufklappbar) -->
+            <div id="headerGuideBox" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 text-xs shadow-2xl transition-all">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <h3 class="font-bold text-sm text-indigo-400 flex items-center gap-2">
+                        <span>📘</span> System-Anleitung & Sicherheits-Konzept
+                    </h3>
+                    <span class="text-[10px] bg-indigo-950 text-indigo-300 px-2 py-0.5 rounded-full font-mono border border-indigo-800/60">Zero-Knowledge Architecture</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <!-- Spalte 1: Für den Inhaber zu Lebzeiten -->
+                    <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-2">
+                        <h4 class="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+                            <span class="text-emerald-400">👤</span> Für den Safe-Inhaber (Einrichtung & Betrieb):
+                        </h4>
+                        <ol class="list-decimal list-inside text-slate-300 space-y-1.5 leading-relaxed">
+                            <li><strong class="text-slate-100">Safe befüllen:</strong> Trage im Tab <em>„Tresor“</em> Konten, Verträge, Zugänge und Anweisungen für den Todesfall ein.</li>
+                            <li><strong class="text-slate-100">Totmannschalter aktivieren:</strong> Lege das Prüf-Intervall fest (z. B. 30 Tage). Bestätige regelmäßig den Klick <em>„Ich lebe noch!“</em>.</li>
+                            <li><strong class="text-slate-100">Schlüssel aufteilen (2-v-3):</strong> Hinterlege 3 Vertrauenspersonen. Das System erzeugt 3 unvollständige Schlüssel-Fragmente.</li>
+                            <li><strong class="text-slate-100">Notfall-Kit verteilen:</strong> Drucke das <em>Papier-Notfall-Kit</em> aus und händige jeder Vertrauensperson ihren persönlichen QR-Code aus.</li>
+                        </ol>
+                    </div>
+
+                    <!-- Spalte 2: Für die Hinterbliebenen im Notfall -->
+                    <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-2">
+                        <h4 class="font-bold text-slate-200 text-xs flex items-center gap-1.5">
+                            <span class="text-amber-400">🚨</span> Für Erben & Vertrauenspersonen im Notfall:
+                        </h4>
+                        <ol class="list-decimal list-inside text-slate-300 space-y-1.5 leading-relaxed">
+                            <li><strong class="text-slate-100">Inaktivitäts-Alarm:</strong> Verstreicht das Intervall ohne Check-in, schaltet der Totmannschalter den Safe zur Freigabe frei.</li>
+                            <li><strong class="text-slate-100">Erben-Cockpit öffnen:</strong> Klicke oben rechts auf den Button <em>„Zum Erben-Cockpit“</em>.</li>
+                            <li><strong class="text-slate-100">Schlüssel zusammenfügen:</strong> Mindestens 2 Vertrauenspersonen müssen ihre Papier-Fragmente (z. B. Schlüssel 1 & 2) eingeben.</li>
+                            <li><strong class="text-slate-100">Nachlass & Kündigungen:</strong> Der Safe entschlüsselt sich lokal im Browser. Nutze die geführte Checkliste und den 1-Klick Kündigungs-Generator.</li>
+                        </ol>
+                    </div>
+
+                </div>
+
+                <div class="p-2.5 bg-indigo-950/40 border border-indigo-900/60 rounded-xl text-[11px] text-indigo-200 flex items-center justify-between flex-wrap gap-2">
+                    <span><strong>🔒 Maximale Sicherheit:</strong> Es werden keine Passwörter oder Klartext-Daten auf Servern gespeichert. Alle Berechnungen laufen zu 100 % lokal in deinem Browser.</span>
+                    <button onclick="toggleHeaderGuide()" class="text-indigo-400 hover:underline font-bold">Anleitung schließen ×</button>
+                </div>
+            </div>
+
         </div>
     </header>
 
@@ -232,7 +287,7 @@
                             <span>📄</span> Papier-Notfall-Kit (Cold Storage)
                         </h3>
                         <p class="text-xs text-slate-400 mt-1">
-                            Drucke das Notfall-Kit aus und übergebe den Vertrauenspersonen jeweils ihren persöhnlichen QR-Code Schlüssel-Schnipsel (oder deponiere ihn im Schließfach/Notar).
+                            Drucke das Notfall-Kit aus und übergebe den Vertrauenspersonen jeweils ihren persönlichen QR-Code Schlüssel-Schnipsel (oder deponiere ihn im Schließfach/Notar).
                         </p>
                     </div>
 
@@ -267,7 +322,7 @@
 
         </div>
 
-        <!-- ERBEN- / NOTFALL-COCKPIT VIEW (Tritt bei Auslösung oder Erben-Zugriff in Kraft) -->
+        <!-- ERBEN- / NOTFALL-COCKPIT VIEW -->
         <div id="heirView" class="hidden space-y-6">
             
             <div class="bg-amber-950/40 border-2 border-amber-600 p-6 rounded-2xl space-y-4 shadow-2xl">
@@ -307,7 +362,7 @@
                 <!-- FREIGESCHALTETER NACHLASS & ASSISTENT -->
                 <div id="heirDecryptedContent" class="hidden space-y-6">
                     
-                    <!-- Geführter 3-Wochen-Leitfaden für Erben -->
+                    <!-- Geführter Leitfaden für Erben -->
                     <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3 text-xs">
                         <h3 class="font-bold text-emerald-400 text-sm">📌 Geführte Checkliste für Hinterbliebene</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -396,8 +451,21 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIK (Zero-Knowledge, AES-256-GCM, Shamir 2-of-3) -->
+    <!-- JAVASCRIPT LOGIK -->
     <script>
+        /* --- HEADER GUIDE TOGGLE --- */
+        function toggleHeaderGuide() {
+            const box = document.getElementById('headerGuideBox');
+            const txt = document.getElementById('guideToggleText');
+            if (box.classList.contains('hidden')) {
+                box.classList.remove('hidden');
+                txt.innerText = "Anleitung ausblenden";
+            } else {
+                box.classList.add('hidden');
+                txt.innerText = "Anleitung anzeigen";
+            }
+        }
+
         /* --- GALOIS FIELD GF(2^8) MATHEMATIK FÜR SHAMIR 2-OF-3 SECRET SHARING --- */
         function gfMul(a, b) {
             let p = 0;
@@ -405,7 +473,7 @@
                 if (b & 1) p ^= a;
                 let hi = a & 0x80;
                 a = (a << 1) & 0xff;
-                if (hi) a ^= 0x1b; // Irreduzibles Polynom 0x11b
+                if (hi) a ^= 0x1b;
                 b >>= 1;
             }
             return p;
@@ -517,7 +585,6 @@
             let vaultConfig = JSON.parse(localStorage.getItem('digital_estate_vault'));
             
             if (!vaultConfig) {
-                // Erstmals initialisieren: Master-Key generieren
                 const randomBytes = crypto.getRandomValues(new Uint8Array(32));
                 currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
                 
@@ -538,7 +605,6 @@
                 localStorage.setItem('digital_estate_vault', JSON.stringify(vaultConfig));
                 currentDecryptedVault = { entries: [] };
             } else {
-                // Schlüssel aus temporärer Session wiederherstellen (oder im Speicher behalten)
                 if (vaultConfig.sharesGenerated && vaultConfig.sharesGenerated.length >= 2) {
                     currentMasterKeyHex = reconstructSecret(vaultConfig.sharesGenerated[0], vaultConfig.sharesGenerated[1]);
                     const dec = await decryptVaultPayload(vaultConfig.encryptedData, currentMasterKeyHex);
@@ -592,7 +658,6 @@
             const cfg = getVaultConfig();
             if (!cfg) return;
 
-            // Totmannschalter Status Check
             const lastCheck = new Date(cfg.lastCheckIn);
             const now = new Date();
             const diffDays = Math.floor((now - lastCheck) / (1000 * 60 * 60 * 24));
@@ -603,7 +668,7 @@
 
             if (remaining <= 0) {
                 badge.className = "px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 bg-red-950/80 border-red-800 text-red-400";
-                badgeText.innerText = "🚨 INAKTIVITÄT DETEKTIERT (Freigabe bereit)";
+                badgeText.innerText = "🚨 INAKTIVITÄT DETEKTIERT";
                 document.getElementById('deadmanCountdown').innerText = "0 Tage (ABGELAUFEN)";
                 document.getElementById('deadmanCountdown').className = "text-2xl font-black text-red-500";
             } else {
@@ -616,12 +681,10 @@
             document.getElementById('deadmanLastCheck').innerText = `Letzter Check-in: ${lastCheck.toLocaleDateString('de-DE')}`;
             document.getElementById('deadmanIntervalSelect').value = cfg.checkInIntervalDays || 30;
 
-            // Vertrauenspersonen Select in Formular
             const visibleSelect = document.getElementById('entryVisibleFor');
             visibleSelect.innerHTML = `<option value="ALL">Freigabe für ALLE Vertrauenspersonen</option>` +
                 cfg.trustees.map(t => `<option value="${t.id}">Nur für: ${t.name} (${t.role})</option>`).join('');
 
-            // Render Trustees Grid (Tab 3)
             document.getElementById('trusteesGrid').innerHTML = cfg.trustees.map((t, idx) => `
                 <div class="p-3.5 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
                     <span class="font-bold text-indigo-400">Vertrauensperson #${idx + 1} (Share x=${t.shareX})</span>
@@ -685,7 +748,7 @@
         async function simulateInactivity() {
             const cfg = getVaultConfig();
             const pastDate = new Date();
-            pastDate.setDate(pastDate.getDate() - 200); // 200 Tage in die Vergangenheit setzen
+            pastDate.setDate(pastDate.getDate() - 200);
             cfg.lastCheckIn = pastDate.toISOString();
             await saveVaultConfig(cfg);
             renderApp();
@@ -743,7 +806,6 @@
                 cfg.trustees[i].role = document.getElementById(`tRole_${i}`).value.trim() || `Rolle`;
             }
 
-            // Neue Shares berechnen
             cfg.sharesGenerated = generate2of3Shares(currentMasterKeyHex);
             await saveVaultConfig(cfg);
             renderApp();
@@ -840,7 +902,6 @@
             document.getElementById('heirUnlockCard').classList.add('hidden');
             document.getElementById('heirDecryptedContent').classList.remove('hidden');
 
-            // Render Erben-Einträge
             const container = document.getElementById('heirEntriesList');
             container.innerHTML = decryptedPayload.entries.map(e => `
                 <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-1.5">
