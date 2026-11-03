@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schlüssel-, PIN- & Dokumenten-Merker Pro</title>
+    <title>Schlüssel-, PIN- & Dokumenten-Merker Pro (AES Vault Edition)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- qrcode.js für WLAN-QR-Codes -->
@@ -11,24 +11,24 @@
     <!-- jsPDF für den PDF-Report-Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col font-sans">
 
     <!-- Header -->
-    <header class="bg-indigo-600 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-3xl font-bold">🔐 Schlüssel-, PIN- & Dokumenten-Merker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Sicherer lokaler Speicher mit PIN-Schutz für sensible Notizen</p>
+    <header class="bg-indigo-700 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-3xl font-extrabold tracking-tight">🔐 Schlüssel-, PIN- & Dokumenten-Merker Pro</h1>
+        <p class="text-xs sm:text-sm opacity-90 mt-1">Clientseitiger Safe mit echter AES-256-GCM Web Crypto Verschlüsselung</p>
     </header>
 
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
         
         <!-- Navigation & Global Actions -->
-        <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
-            <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+            <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold transition-colors">← Zurück zur Startseite</a>
             
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
                 <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF-Report</button>
-                <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup Export</button>
+                <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup Export (Verschlüsselt)</button>
                 <label class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
                     📂 Import <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
                 </label>
@@ -36,30 +36,34 @@
         </div>
 
         <!-- Dashboard Statistiken -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold">🔑</div>
-                <div><p class="text-xs text-gray-500">Gesamte Einträge</p><h3 id="statTotal" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500 font-medium">Gesamte Einträge</p><h3 id="statTotal" class="text-lg font-bold text-gray-900">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">⭐</div>
-                <div><p class="text-xs text-gray-500">Favoriten</p><h3 id="statFavs" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-xs text-gray-500 font-medium">Favoriten</p><h3 id="statFavs" class="text-lg font-bold text-gray-900">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">🛡️</div>
-                <div><p class="text-xs text-gray-500">Sicherheits-Status</p><h3 class="text-sm font-bold text-green-600">PIN-Schutz aktiv</h3></div>
+                <div class="p-3 bg-red-50 text-red-600 rounded-xl font-bold">⏳</div>
+                <div><p class="text-xs text-gray-500 font-medium">Abgelaufen</p><h3 id="statExpired" class="text-lg font-bold text-red-600">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold">🛡️</div>
+                <div><p class="text-xs text-gray-500 font-medium">Sicherheits-Standard</p><h3 class="text-xs font-bold text-emerald-600">AES-256-GCM & PBKDF2</h3></div>
             </div>
         </div>
 
         <!-- Erfassung: Neuer Eintrag -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-bold">➕ Neuen Eintrag erfassen</h2>
-                <button onclick="generatePassword()" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold">🎲 Sicheres Passwort generieren</button>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+                <h2 class="text-lg font-bold text-gray-900">➕ Neuen Eintrag erfassen</h2>
+                <button onclick="generatePassword()" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold shadow-sm">🎲 Sicheres Passwort generieren</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="text" id="noteTitle" placeholder="Titel (z.B. Online-Banking, WLAN)" class="p-3 border rounded-xl text-sm md:col-span-2">
-                <select id="noteCategory" class="p-3 border rounded-xl text-sm bg-white">
+                <input type="text" id="noteTitle" placeholder="Titel (z. B. Online-Banking, WLAN Heimnetz)" class="p-3 border rounded-xl text-sm md:col-span-2">
+                <select id="noteCategory" class="p-3 border rounded-xl text-sm bg-white font-medium">
                     <option value="WLAN">📶 WLAN</option>
                     <option value="PIN / Code">🔢 PIN / Code</option>
                     <option value="Finanzen">💳 Finanzen & Versicherung</option>
@@ -67,23 +71,32 @@
                     <option value="Sonstiges">📝 Sonstiges</option>
                 </select>
             </div>
-            <textarea id="noteContent" placeholder="Inhalt / Passwort / Notiz..." class="w-full p-3 border rounded-xl text-sm h-24"></textarea>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
-                <input type="text" id="notePin" placeholder="Schutz-PIN (optional, z.B. 1234)" class="p-3 border rounded-xl text-sm">
-                <div class="flex items-center space-x-2">
-                    <input type="checkbox" id="noteFav" class="w-4 h-4 text-indigo-600 rounded">
-                    <label for="noteFav" class="text-xs font-semibold text-gray-700">Als Favorit markieren</label>
+            <textarea id="noteContent" placeholder="Inhalt / Passwort / Notiz..." class="w-full p-3 border rounded-xl text-sm h-28 font-mono"></textarea>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center text-xs">
+                <div>
+                    <label class="block font-semibold text-gray-600 mb-1">Schutz-PIN (optional):</label>
+                    <input type="password" id="notePin" placeholder="Verschlüsselungs-PIN (z.B. 4921)" class="w-full p-3 border rounded-xl text-sm font-mono">
+                    <p class="text-[10px] text-gray-400 mt-1">Bei PIN-Eingabe wird der Inhalt per AES-256-GCM verschlüsselt.</p>
                 </div>
-                <input type="date" id="noteExpiry" class="p-3 border rounded-xl text-sm">
+                <div>
+                    <label class="block font-semibold text-gray-600 mb-1">Ablaufdatum (optional):</label>
+                    <input type="date" id="noteExpiry" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div class="flex items-center space-x-2 pt-4">
+                    <input type="checkbox" id="noteFav" class="w-4 h-4 text-indigo-600 rounded">
+                    <label for="noteFav" class="font-bold text-gray-700">Als Favorit markieren</label>
+                </div>
             </div>
-            <button onclick="saveNote()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Eintrag sicher speichern</button>
+            
+            <button onclick="saveNote()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition-colors">Eintrag sicher speichern</button>
         </div>
 
         <!-- Suchleiste & Liste -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
             <div class="flex flex-col md:flex-row justify-between items-center gap-3">
-                <h3 class="font-bold text-lg">📋 Gespeicherte Notizen & PINs</h3>
-                <input type="text" id="searchBox" oninput="renderNotes()" placeholder="🔍 Durchsuche Titel oder Inhalt..." class="p-2 border rounded-xl text-sm w-full md:w-1/3">
+                <h3 class="font-bold text-lg text-gray-900">📋 Gespeicherte Notizen & PINs</h3>
+                <input type="text" id="searchBox" oninput="renderNotes()" placeholder="🔍 Durchsuche Titel oder Kategorien..." class="p-2.5 border rounded-xl text-sm w-full md:w-1/3">
             </div>
             <div id="notesList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Noch keine Einträge erfasst.</p>
@@ -92,14 +105,17 @@
     </main>
 
     <!-- MODAL: Eintrag Bearbeiten -->
-    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-lg font-bold">Eintrag bearbeiten</h3>
+    <div id="editModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-lg font-bold text-gray-900 border-b pb-2">✏️ Eintrag bearbeiten</h3>
             <input type="hidden" id="editId">
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Titel:</label><input type="text" id="editTitle" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Titel:</label>
+                <input type="text" id="editTitle" class="w-full p-2.5 border rounded-xl text-sm">
+            </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
-                <select id="editCategory" class="w-full p-3 border rounded-xl text-sm bg-white">
+                <select id="editCategory" class="w-full p-2.5 border rounded-xl text-sm bg-white font-medium">
                     <option value="WLAN">📶 WLAN</option>
                     <option value="PIN / Code">🔢 PIN / Code</option>
                     <option value="Finanzen">💳 Finanzen & Versicherung</option>
@@ -107,38 +123,126 @@
                     <option value="Sonstiges">📝 Sonstiges</option>
                 </select>
             </div>
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Inhalt:</label><textarea id="editContent" class="w-full p-3 border rounded-xl text-sm h-24"></textarea></div>
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Schutz-PIN (leer lassen für keinen Schutz):</label><input type="text" id="editPin" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Inhalt:</label>
+                <textarea id="editContent" class="w-full p-2.5 border rounded-xl text-sm h-28 font-mono"></textarea>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Schutz-PIN (Ändern/Hinzufügen):</label>
+                <input type="password" id="editPin" placeholder="Leer lassen für keinen PIN-Schutz" class="w-full p-2.5 border rounded-xl text-sm font-mono">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Ablaufdatum:</label>
+                <input type="date" id="editExpiry" class="w-full p-2.5 border rounded-xl text-sm">
+            </div>
             <div class="flex items-center space-x-2">
                 <input type="checkbox" id="editFav" class="w-4 h-4 text-indigo-600 rounded">
-                <label for="editFav" class="text-xs font-semibold text-gray-700">Favorit</label>
+                <label for="editFav" class="text-xs font-bold text-gray-700">Favorit</label>
             </div>
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
-                <button onclick="updateNote()" class="px-5 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold">Speichern</button>
+            <div class="flex justify-end space-x-2 pt-2 border-t">
+                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="updateNote()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL: WLAN QR Code -->
-    <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
-        <div class="bg-white p-6 rounded-2xl text-center space-y-3 shadow-2xl" onclick="event.stopPropagation()">
-            <h3 class="font-bold text-lg">📶 WLAN-Zugangs-QR-Code</h3>
-            <div id="qrcode" class="flex justify-center p-2 bg-white border rounded-xl"></div>
-            <p class="text-xs text-gray-500">Scannen, um sich direkt ins WLAN einzuwählen.</p>
-            <button onclick="closeQrModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+    <div id="qrModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
+        <div class="bg-white p-6 rounded-2xl text-center space-y-3 shadow-2xl max-w-sm w-full" onclick="event.stopPropagation()">
+            <h3 class="font-bold text-lg text-gray-900">📶 WLAN-Zugangs-QR-Code</h3>
+            <div id="qrcode" class="flex justify-center p-3 bg-white border rounded-xl min-h-[160px] items-center"></div>
+            <p id="qrWlanInfo" class="text-xs text-gray-500 font-mono"></p>
+            <button onclick="closeQrModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
         </div>
     </div>
 
-    <!-- Script Logik -->
     <script>
-        // Speichert temporär freigeschaltete IDs in der Session
-        let unlockedNotes = new Set();
+        // Zwischenspeicher für freigeschaltete Inhalte (nur im RAM während der Sitzung)
+        const decryptedCache = new Map();
 
         document.addEventListener('DOMContentLoaded', () => {
             renderNotes();
         });
 
+        /* --- WEB CRYPTO API UTILITIES (AES-256-GCM + PBKDF2) --- */
+        function bufferToBase64(buf) {
+            let bin = "";
+            const bytes = new Uint8Array(buf);
+            for (let i = 0; i < bytes.byteLength; i++) {
+                bin += String.fromCharCode(bytes[i]);
+            }
+            return btoa(bin);
+        }
+
+        function base64ToBuffer(b64) {
+            const bin = atob(b64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) {
+                bytes[i] = bin.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        async function deriveKey(password, salt) {
+            const encoder = new TextEncoder();
+            const keyMaterial = await crypto.subtle.importKey(
+                "raw",
+                encoder.encode(password),
+                "PBKDF2",
+                false,
+                ["deriveKey"]
+            );
+            return crypto.subtle.deriveKey(
+                {
+                    name: "PBKDF2",
+                    salt: salt,
+                    iterations: 100000,
+                    hash: "SHA-256"
+                },
+                keyMaterial,
+                { name: "AES-GCM", length: 256 },
+                false,
+                ["encrypt", "decrypt"]
+            );
+        }
+
+        async function encryptText(text, password) {
+            const encoder = new TextEncoder();
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const key = await deriveKey(password, salt);
+            const encrypted = await crypto.subtle.encrypt(
+                { name: "AES-GCM", iv: iv },
+                key,
+                encoder.encode(text)
+            );
+
+            return {
+                ciphertext: bufferToBase64(encrypted),
+                salt: bufferToBase64(salt),
+                iv: bufferToBase64(iv)
+            };
+        }
+
+        async function decryptText(encryptedObj, password) {
+            try {
+                const salt = new Uint8Array(base64ToBuffer(encryptedObj.salt));
+                const iv = new Uint8Array(base64ToBuffer(encryptedObj.iv));
+                const ciphertext = base64ToBuffer(encryptedObj.ciphertext);
+
+                const key = await deriveKey(password, salt);
+                const decrypted = await crypto.subtle.decrypt(
+                    { name: "AES-GCM", iv: iv },
+                    key,
+                    ciphertext
+                );
+                return new TextDecoder().decode(decrypted);
+            } catch (e) {
+                return null; // Entschlüsselung fehlgeschlagen (Falscher PIN)
+            }
+        }
+
+        /* --- STORAGE MANAGEMENT --- */
         function getData() {
             try {
                 return JSON.parse(localStorage.getItem('secure_notes_pro')) || { notes: [] };
@@ -152,15 +256,18 @@
         }
 
         function generatePassword() {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=";
             let pass = "";
+            const randomVals = new Uint32Array(16);
+            crypto.getRandomValues(randomVals);
             for (let i = 0; i < 16; i++) {
-                pass += chars.charAt(Math.floor(Math.random() * chars.length));
+                pass += chars.charAt(randomVals[i] % chars.length);
             }
             document.getElementById('noteContent').value = pass;
         }
 
-        function saveNote() {
+        /* --- SAVE & EDIT LOGIC --- */
+        async function saveNote() {
             const title = document.getElementById('noteTitle').value.trim();
             const category = document.getElementById('noteCategory').value;
             const content = document.getElementById('noteContent').value.trim();
@@ -170,9 +277,22 @@
 
             if (!title || !content) return alert("Bitte Titel und Inhalt eingeben!");
 
+            let storedContent = content;
+            let isEncrypted = false;
+
+            if (pin) {
+                storedContent = await encryptText(content, pin);
+                isEncrypted = true;
+            }
+
             let data = getData();
-            data.notes.push({ id: Date.now(), title, category, content, pin, fav, expiry });
+            const newId = Date.now();
+            data.notes.push({ id: newId, title, category, content: storedContent, isEncrypted, fav, expiry });
             saveData(data);
+
+            if (isEncrypted) {
+                decryptedCache.set(newId, content);
+            }
 
             document.getElementById('noteTitle').value = "";
             document.getElementById('noteContent').value = "";
@@ -182,16 +302,30 @@
             renderNotes();
         }
 
-        function openEditModal(id) {
+        async function openEditModal(id) {
             let data = getData();
             let note = data.notes.find(n => n.id === id);
             if (!note) return;
 
+            let plainContent = note.content;
+            if (note.isEncrypted) {
+                if (decryptedCache.has(id)) {
+                    plainContent = decryptedCache.get(id);
+                } else {
+                    const enteredPin = prompt("🔒 Dieser Eintrag ist verschlüsselt. Bitte Schutz-PIN zum Bearbeiten eingeben:");
+                    if (!enteredPin) return;
+                    plainContent = await decryptText(note.content, enteredPin);
+                    if (plainContent === null) return alert("❌ Falscher PIN!");
+                    decryptedCache.set(id, plainContent);
+                }
+            }
+
             document.getElementById('editId').value = note.id;
             document.getElementById('editTitle').value = note.title;
             document.getElementById('editCategory').value = note.category;
-            document.getElementById('editContent').value = note.content;
-            document.getElementById('editPin').value = note.pin || "";
+            document.getElementById('editContent').value = plainContent;
+            document.getElementById('editPin').value = "";
+            document.getElementById('editExpiry').value = note.expiry || "";
             document.getElementById('editFav').checked = note.fav || false;
             document.getElementById('editModal').classList.remove('hidden');
         }
@@ -200,12 +334,13 @@
             document.getElementById('editModal').classList.add('hidden');
         }
 
-        function updateNote() {
+        async function updateNote() {
             const id = parseInt(document.getElementById('editId').value);
             const title = document.getElementById('editTitle').value.trim();
             const category = document.getElementById('editCategory').value;
             const content = document.getElementById('editContent').value.trim();
             const pin = document.getElementById('editPin').value.trim();
+            const expiry = document.getElementById('editExpiry').value;
             const fav = document.getElementById('editFav').checked;
 
             if (!title || !content) return alert("Bitte Titel und Inhalt eingeben!");
@@ -213,10 +348,22 @@
             let data = getData();
             let note = data.notes.find(n => n.id === id);
             if (note) {
+                let storedContent = content;
+                let isEncrypted = false;
+
+                if (pin) {
+                    storedContent = await encryptText(content, pin);
+                    isEncrypted = true;
+                    decryptedCache.set(id, content);
+                } else {
+                    decryptedCache.delete(id);
+                }
+
                 note.title = title;
                 note.category = category;
-                note.content = content;
-                note.pin = pin;
+                note.content = storedContent;
+                note.isEncrypted = isEncrypted;
+                note.expiry = expiry;
                 note.fav = fav;
                 saveData(data);
             }
@@ -228,34 +375,62 @@
             if (!confirm("⚠️ Möchtest du diesen Eintrag wirklich unwiderruflich löschen?")) return;
             let data = getData();
             data.notes = data.notes.filter(n => n.id !== id);
-            unlockedNotes.delete(id);
+            decryptedCache.delete(id);
             saveData(data);
             renderNotes();
         }
 
-        function unlockNote(id, correctPin) {
-            let entered = prompt("Bitte Schutz-PIN eingeben:");
-            if (entered === correctPin) {
-                unlockedNotes.add(id);
+        async function unlockNote(id) {
+            let data = getData();
+            let note = data.notes.find(n => n.id === id);
+            if (!note || !note.isEncrypted) return;
+
+            let entered = prompt("🔒 Bitte Schutz-PIN eingeben:");
+            if (entered === null) return;
+
+            const decrypted = await decryptText(note.content, entered);
+            if (decrypted !== null) {
+                decryptedCache.set(id, decrypted);
                 renderNotes();
-            } else if (entered !== null) {
-                alert("Falsche PIN!");
+            } else {
+                alert("❌ Falsche PIN!");
             }
         }
 
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
+        function copyNote(id) {
+            let data = getData();
+            let note = data.notes.find(n => n.id === id);
+            if (!note) return;
+
+            let textToCopy = note.content;
+            if (note.isEncrypted) {
+                if (decryptedCache.has(id)) {
+                    textToCopy = decryptedCache.get(id);
+                } else {
+                    return alert("🔒 Bitte schalte den Eintrag zuerst mit der PIN frei!");
+                }
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
                 alert("📋 In Zwischenablage kopiert!");
             });
         }
 
+        /* --- RENDER FUNCTIONS --- */
         function renderNotes() {
             const data = getData();
             const search = document.getElementById('searchBox').value.toLowerCase();
             const listContainer = document.getElementById('notesList');
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let expiredCount = 0;
+            data.notes.forEach(n => {
+                if (n.expiry && n.expiry < todayStr) expiredCount++;
+            });
 
             document.getElementById('statTotal').innerText = data.notes.length;
             document.getElementById('statFavs').innerText = data.notes.filter(n => n.fav).length;
+            document.getElementById('statExpired').innerText = expiredCount;
 
             if (data.notes.length === 0) {
                 listContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Einträge erfasst.</p>`;
@@ -265,32 +440,42 @@
             let sorted = [...data.notes].sort((a, b) => (b.fav ? 1 : 0) - (a.fav ? 1 : 0));
 
             if (search) {
-                sorted = sorted.filter(n => n.title.toLowerCase().includes(search) || n.content.toLowerCase().includes(search) || n.category.toLowerCase().includes(search));
+                sorted = sorted.filter(n => n.title.toLowerCase().includes(search) || n.category.toLowerCase().includes(search));
             }
 
             listContainer.innerHTML = sorted.map(n => {
-                let isLocked = n.pin && !unlockedNotes.has(n.id);
-                let displayContent = isLocked ? "••••••••••••••••" : n.content;
+                const isLocked = n.isEncrypted && !decryptedCache.has(n.id);
+                let displayContent = isLocked ? "•••••••••••••••• (AES-256 Verschlüsselt)" : (n.isEncrypted ? decryptedCache.get(n.id) : n.content);
+
+                let expiryBadge = "";
+                if (n.expiry) {
+                    if (n.expiry < todayStr) {
+                        expiryBadge = `<span class="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full">⚠️ Abgelaufen (${n.expiry})</span>`;
+                    } else {
+                        expiryBadge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-medium px-2 py-0.5 rounded-full">⏳ Bis ${n.expiry}</span>`;
+                    }
+                }
 
                 return `
-                    <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shadow-sm">
-                        <div class="space-y-1">
-                            <div class="flex items-center space-x-2">
+                    <div class="p-4 bg-gray-50 border border-gray-200 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shadow-sm">
+                        <div class="space-y-1.5 flex-1">
+                            <div class="flex items-center space-x-2 flex-wrap gap-1">
                                 ${n.fav ? '<span>⭐</span>' : ''}
-                                <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">${n.category}</span>
-                                <h4 class="font-bold text-sm">${n.title}</h4>
-                                ${n.pin ? '<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔒 PIN-geschützt</span>' : ''}
+                                <span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">${n.category}</span>
+                                <h4 class="font-bold text-sm text-gray-900">${n.title}</h4>
+                                ${n.isEncrypted ? '<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🔒 AES-GCM</span>' : ''}
+                                ${expiryBadge}
                             </div>
-                            <p class="text-xs text-gray-600 whitespace-pre-line font-mono bg-white p-2 rounded-xl border">${displayContent}</p>
+                            <p class="text-xs text-gray-700 whitespace-pre-line font-mono bg-white p-2.5 rounded-xl border border-gray-200 select-all">${displayContent}</p>
                         </div>
-                        <div class="flex items-center gap-2 self-end md:self-center">
+                        <div class="flex items-center gap-1.5 self-end md:self-center">
                             ${isLocked ? `
-                                <button onclick="unlockNote(${n.id}, '${n.pin}')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold">🔓 Entsperren</button>
+                                <button onclick="unlockNote(${n.id})" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm">🔓 Entsperren</button>
                             ` : `
-                                <button onclick="copyToClipboard('${n.content.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Kopieren">📋</button>
-                                ${n.category === 'WLAN' ? `<button onclick="showWlanQr('${n.title}', '${n.content}')" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="WLAN QR">📶</button>` : ''}
+                                <button onclick="copyNote(${n.id})" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold" title="Kopieren">📋</button>
+                                ${n.category === 'WLAN' ? `<button onclick="showWlanQr(${n.id})" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="WLAN QR">📶</button>` : ''}
                             `}
-                            <button onclick="openEditModal(${n.id})" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
+                            <button onclick="openEditModal(${n.id})" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
                             <button onclick="deleteNote(${n.id})" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold" title="Löschen">✕</button>
                         </div>
                     </div>
@@ -298,13 +483,31 @@
             }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
         }
 
-        function showWlanQr(title, content) {
-            document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById('qrcode'), {
-                text: `WIFI:S:${title};T:WPA;P:${content};;`,
+        function showWlanQr(id) {
+            let data = getData();
+            let note = data.notes.find(n => n.id === id);
+            if (!note) return;
+
+            let pass = note.content;
+            if (note.isEncrypted) {
+                if (decryptedCache.has(id)) {
+                    pass = decryptedCache.get(id);
+                } else {
+                    return alert("🔒 Bitte entsperre die WLAN Notiz zuerst mit der PIN!");
+                }
+            }
+
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+            const wifiString = `WIFI:S:${note.title};T:WPA;P:${pass};;`;
+
+            new QRCode(qrContainer, {
+                text: wifiString,
                 width: 150,
                 height: 150
             });
+
+            document.getElementById('qrWlanInfo').innerText = `SSID: ${note.title}`;
             document.getElementById('qrModal').classList.remove('hidden');
         }
 
@@ -312,43 +515,47 @@
             document.getElementById('qrModal').classList.add('hidden');
         }
 
-        // PDF Report Export via jsPDF
+        /* --- PDF EXPORT --- */
         function exportPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             let data = getData();
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(18);
+            doc.setFontSize(16);
             doc.text("Schlüssel-, PIN- & Dokumenten-Report", 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
-            let y = 35;
+            let y = 38;
             data.notes.forEach((n, idx) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 doc.setFont("helvetica", "bold");
-                doc.text(`${idx + 1}. ${n.title} [${n.category}]`, 14, y);
+                doc.text(`${idx + 1}. ${n.title} [${n.category}] ${n.expiry ? '(Ablauf: ' + n.expiry + ')' : ''}`, 14, y);
                 y += 6;
                 doc.setFont("helvetica", "normal");
-                let contentToPrint = n.pin ? "[PIN GESCHÜTZT]" : n.content;
+
+                let contentToPrint = n.content;
+                if (n.isEncrypted) {
+                    contentToPrint = decryptedCache.has(n.id) ? decryptedCache.get(n.id) : "[VERBASSWORTET / AES-256 GESCHÜTZT]";
+                }
                 doc.text(`Inhalt: ${contentToPrint}`, 14, y);
                 y += 10;
             });
 
-            doc.save("notizen-report.pdf");
+            doc.save(`notizen-report-${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
-        // Backup Export / Import
+        /* --- BACKUP EXPORT & IMPORT --- */
         function exportBackup() {
-            let data = JSON.stringify(getData());
+            let data = JSON.stringify(getData(), null, 2);
             let blob = new Blob([data], { type: 'application/json' });
             let url = URL.createObjectURL(blob);
             let a = document.createElement('a');
             a.href = url;
-            a.download = `notizen-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `notizen-aes-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
         }
 
@@ -359,15 +566,16 @@
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed.notes) {
+                    if (parsed && Array.isArray(parsed.notes)) {
                         saveData(parsed);
+                        decryptedCache.clear();
                         renderNotes();
-                        alert("Backup erfolgreich importiert!");
+                        alert("✅ Verschlüsseltes Backup erfolgreich importiert!");
                     } else {
-                        alert("Ungültiges Format.");
+                        alert("❌ Ungültiges Backup-Dateiformat.");
                     }
                 } catch (err) {
-                    alert("Fehler beim Lesen der Datei.");
+                    alert("❌ Fehler beim Einlesen der Backup-Datei.");
                 }
             };
             reader.readAsText(file);
