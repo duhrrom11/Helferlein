@@ -1,27 +1,78 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Strom-, Wasser- & Gaszähler-Tracker Pro</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für PDF-Report -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Global Theme Switcher & CSS overrides -->
     <script>
-  (function() {
-    const theme = localStorage.getItem('hub_theme') || 'light';
-    if (theme === 'dark') document.documentElement.classList.add('dark-mode');
-    if (theme === 'cyber') document.documentElement.classList.add('cyber-mode');
-  })();
-</script>
+        (function() {
+            const theme = localStorage.getItem('hub_theme') || 'light';
+            if (theme === 'dark') document.documentElement.classList.add('dark-mode');
+            if (theme === 'cyber') document.documentElement.classList.add('cyber-mode');
+        })();
+    </script>
+
+    <style>
+        /* Dunkelmodus Übersteuerungen */
+        html.dark-mode body {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+        }
+        html.dark-mode header,
+        html.dark-mode .bg-white,
+        html.dark-mode .bg-gray-50 {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+        html.dark-mode input, 
+        html.dark-mode select {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            border-color: #475569 !important;
+        }
+        html.dark-mode .text-gray-500, 
+        html.dark-mode .text-gray-600 {
+            color: #94a3b8 !important;
+        }
+
+        /* Cyberpunk / Hoher Kontrast Übersteuerungen */
+        html.cyber-mode body {
+            background-color: #030712 !important;
+            color: #00ffcc !important;
+        }
+        html.cyber-mode header,
+        html.cyber-mode .bg-white,
+        html.cyber-mode .bg-gray-50 {
+            background-color: #090d16 !important;
+            border-color: #00ffcc !important;
+            color: #00ffcc !important;
+        }
+        html.cyber-mode input, 
+        html.cyber-mode select {
+            background-color: #030712 !important;
+            color: #00ffcc !important;
+            border-color: #00ffcc !important;
+        }
+        html.cyber-mode .text-gray-500, 
+        html.cyber-mode .text-gray-600 {
+            color: #38bdf8 !important;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col transition-colors duration-300">
 
     <!-- Header -->
     <header class="bg-sky-700 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">⚡ Strom-, Wasser- & Gaszähler-Tracker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Verbrauchskontrolle, Budget-Rechner, Foto-Nachweis &amp; Jahres-Prognose</p>
+        <p class="text-sm opacity-90 mt-1">Verbrauchskontrolle, Budget-Rechner, Foto-Nachweis & Jahres-Prognose</p>
     </header>
 
     <!-- Main Content -->
@@ -60,10 +111,10 @@
             </div>
         </div>
 
-        <!-- Tarife & Abschläge (Feature 1) -->
+        <!-- Tarife & Abschläge -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
             <div class="flex justify-between items-center">
-                <h2 class="text-lg font-bold">⚙️ Tarife &amp; monatliche Abschläge (Budget-Monitor)</h2>
+                <h2 class="text-lg font-bold">⚙️ Tarife & monatliche Abschläge (Budget-Monitor)</h2>
                 <button onclick="saveTarifs()" class="px-4 py-2 bg-sky-700 hover:bg-sky-800 text-white rounded-xl text-xs font-bold shadow-sm">Tarife speichern</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -100,7 +151,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zählername / Nummer (Feature 4):</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zählername / Nummer:</label>
                     <input type="text" id="meterName" placeholder="z.B. Hauptzähler #12345" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
@@ -115,11 +166,11 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zählerfoto-Nachweis (Feature 3):</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zählerfoto-Nachweis:</label>
                     <input type="file" id="meterPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung (z.B. Zählerwechsel):</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
                     <input type="text" id="meterNote" placeholder="z.B. Nach Jahresabrechnung" class="w-full p-3 border rounded-xl text-sm">
                 </div>
             </div>
@@ -127,9 +178,9 @@
             <button onclick="saveReading()" class="w-full bg-sky-700 hover:bg-sky-800 text-white font-medium py-3 rounded-xl text-sm shadow-sm transition-colors">Zählerstand speichern</button>
         </div>
 
-        <!-- Jahres-Prognose & Budget Dashboard (Feature 1 & 2) -->
+        <!-- Jahres-Prognose & Budget Dashboard -->
         <div id="prognosisCard" class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 hidden">
-            <h3 class="font-bold text-lg">📈 Jahres-Prognose &amp; Budget-Check</h3>
+            <h3 class="font-bold text-lg">📈 Jahres-Prognose & Budget-Check</h3>
             <div id="prognosisContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Dynamisch gefüllt -->
             </div>
@@ -138,7 +189,7 @@
         <!-- Verlauf & Historie -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
             <div class="flex justify-between items-center flex-wrap gap-2">
-                <h3 class="font-bold text-lg">📋 Zählerstände &amp; Verlauf</h3>
+                <h3 class="font-bold text-lg">📋 Zählerstände & Verlauf</h3>
                 <div class="flex gap-2">
                     <select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
                         <option value="All">Alle Zähler anzeigen</option>
@@ -359,4 +410,101 @@
             let hasData = false;
 
             types.forEach(t => {
-                let list = data.readings.filter(r => r.type === t).sort((a,b) => new 
+                let list = data.readings
+                    .filter(r => r.type === t || (t === 'Kaltwasser' && r.type === 'Warmwasser'))
+                    .sort((a,b) => new Date(a.date) - new Date(b.date));
+
+                if (list.length >= 2) {
+                    hasData = true;
+                    let first = list[0];
+                    let last = list[list.length - 1];
+                    let diffDays = (new Date(last.date) - new Date(first.date)) / (1000 * 60 * 60 * 24);
+
+                    if (diffDays > 0) {
+                        let diffVal = last.value - first.value;
+                        let daily = diffVal / diffDays;
+                        let yearlyEst = (daily * 365).toFixed(1);
+
+                        let tarifKey = t === 'Kaltwasser' ? 'Wasser' : t;
+                        let price = data.tarifs && data.tarifs[tarifKey] ? data.tarifs[tarifKey].price : 0;
+                        let abschlag = data.tarifs && data.tarifs[tarifKey] ? data.tarifs[tarifKey].abschlag : 0;
+                        let yearlyCost = (yearlyEst * price).toFixed(2);
+                        let yearlyAbschlag = (abschlag * 12).toFixed(2);
+                        let diffCost = (yearlyCost - yearlyAbschlag).toFixed(2);
+
+                        let unit = t === 'Strom' ? 'kWh' : 'm³';
+                        let statusColor = diffCost <= 0 ? 'text-emerald-600' : 'text-red-600';
+
+                        html += `
+                            <div class="p-4 bg-gray-50 border rounded-xl space-y-1">
+                                <h4 class="font-bold text-sm">${t} Prognose</h4>
+                                <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
+                                <p class="text-xs">Geschätzte Kosten: <strong>${yearlyCost} €</strong></p>
+                                <p class="text-xs">Jahres-Abschlag: <strong>${yearlyAbschlag} €</strong></p>
+                                <p class="text-xs font-bold ${statusColor}">
+                                    ${diffCost <= 0 ? 'Guthaben ca.: ' + Math.abs(diffCost) + ' €' : 'Nachzahlung ca.: ' + diffCost + ' €'}
+                                </p>
+                            </div>
+                        `;
+                    }
+                }
+            });
+
+            if (hasData) {
+                card.classList.remove('hidden');
+                content.innerHTML = html;
+            } else {
+                card.classList.add('hidden');
+            }
+        }
+
+        function exportBackup() {
+            const data = getData();
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `energie-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    saveData(parsed);
+                    loadTarifs();
+                    renderApp();
+                    alert("Backup erfolgreich importiert!");
+                } catch(err) {
+                    alert("Fehler beim Importieren der Datei.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const data = getData();
+
+            doc.setFontSize(16);
+            doc.text("Zählerstands-Bericht", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+
+            let y = 38;
+            data.readings.forEach((r, idx) => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                let unit = r.type === 'Strom' ? 'kWh' : 'm³';
+                doc.text(`${r.date} | ${r.type} (${r.name}): ${r.value} ${unit} ${r.note ? '- Note: ' + r.note : ''}`, 14, y);
+                y += 8;
+            });
+
+            doc.save(`zaehlerstaende-${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+    </script>
+</body>
+</html>
