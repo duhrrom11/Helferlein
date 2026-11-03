@@ -1,584 +1,916 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schlüssel-, PIN- & Dokumenten-Merker Pro (AES Vault Edition)</title>
+    <title>Digitaler Nachlassverwalter & Safe Pro</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- qrcode.js für WLAN-QR-Codes -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- jsPDF für den PDF-Report-Export -->
+    <!-- jsPDF für PDF-Notfallkits & Kündigungsschreiben -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- QRCode.js für Schlüssel-Fragmente QR-Codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        .tab-btn.active {
+            border-bottom-color: #4f46e5;
+            color: #4f46e5;
+            font-weight: 700;
+        }
+        @media print {
+            body * { visibility: hidden; }
+            #emergencyPrintArea, #emergencyPrintArea * { visibility: visible; }
+            #emergencyPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col font-sans">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
     <!-- Header -->
-    <header class="bg-indigo-700 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-3xl font-extrabold tracking-tight">🔐 Schlüssel-, PIN- & Dokumenten-Merker Pro</h1>
-        <p class="text-xs sm:text-sm opacity-90 mt-1">Clientseitiger Safe mit echter AES-256-GCM Web Crypto Verschlüsselung</p>
+    <header class="bg-slate-950 border-b border-slate-800 text-white py-5 px-4 shadow-xl">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-center md:text-left flex items-center space-x-3">
+                <div class="p-2.5 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30 text-2xl">🏛️</div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black tracking-tight text-slate-100">Digitaler Nachlassverwalter Pro</h1>
+                    <p class="text-xs text-slate-400 mt-0.5">Zero-Knowledge Safe · Totmannschalter · 2-von-3 Shamir Key Split · 100% Lokal</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div id="statusBadge" class="px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 bg-emerald-950/80 border-emerald-800 text-emerald-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="statusBadgeText">Status: Aktiv (Check-in OK)</span>
+                </div>
+                <button onclick="toggleModeView()" id="modeSwitchBtn" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow-md transition-all">
+                    🚨 Zum Erben-Cockpit
+                </button>
+            </div>
+        </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
-        
-        <!-- Navigation & Global Actions -->
-        <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-            <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold transition-colors">← Zurück zur Startseite</a>
-            
-            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF-Report</button>
-                <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup Export (Verschlüsselt)</button>
-                <label class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
-                    📂 Import <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
-                </label>
-            </div>
+    <!-- Main Container -->
+    <main class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
+
+        <!-- NAV TABS (Eigentümer Modus) -->
+        <div id="ownerNav" class="flex border-b border-slate-800 space-x-6 text-sm font-medium overflow-x-auto">
+            <button onclick="switchTab('vault')" id="tab-vault" class="tab-btn active pb-3 border-b-2 border-transparent hover:text-indigo-400 transition-colors flex items-center gap-2 whitespace-nowrap">
+                <span>🔐</span> Tresor & Nachlass-Kategorien
+            </button>
+            <button onclick="switchTab('deadman')" id="tab-deadman" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 transition-colors flex items-center gap-2 whitespace-nowrap">
+                <span>⏰</span> Totmannschalter
+            </button>
+            <button onclick="switchTab('trustees')" id="tab-trustees" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 transition-colors flex items-center gap-2 whitespace-nowrap">
+                <span>👥</span> Vertrauenspersonen & Key-Split
+            </button>
+            <button onclick="switchTab('kit')" id="tab-kit" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 transition-colors flex items-center gap-2 whitespace-nowrap">
+                <span>📄</span> Papier-Notfall-Kit
+            </button>
         </div>
 
-        <!-- Dashboard Statistiken -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold">🔑</div>
-                <div><p class="text-xs text-gray-500 font-medium">Gesamte Einträge</p><h3 id="statTotal" class="text-lg font-bold text-gray-900">0</h3></div>
+        <!-- EIGENTÜMER VIEW -->
+        <div id="ownerView" class="space-y-6">
+
+            <!-- TAB 1: TRESOR & NACHLASS-EINTRÄGE -->
+            <div id="section-vault" class="space-y-6">
+                <!-- Erfassung Formular -->
+                <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 flex-wrap gap-2">
+                        <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                            <span>✍️</span> Nachlass-Eintrag / Dokument sichern
+                        </h2>
+                        <button onclick="generateRandomPass()" class="px-3 py-1.5 bg-indigo-950 text-indigo-400 hover:bg-indigo-900 border border-indigo-800 rounded-xl text-xs font-semibold">
+                            🎲 Passwort generieren
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Titel / Vertrag / Konto *:</label>
+                            <input type="text" id="entryTitle" placeholder="z. B. Sparkasse Girokonto, Mietvertrag Wohnung" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Nachlass-Kategorie *:</label>
+                            <select id="entryCategory" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 font-semibold">
+                                <option value="Finanzen">💳 Finanzen & Krypto</option>
+                                <option value="Verträge">📜 Verträge & Abos</option>
+                                <option value="Digital">🌐 Digitales Erbe & Social Media</option>
+                                <option value="Rechtliches">⚖️ Rechtliches & Vollmachten</option>
+                                <option value="Posthum">💌 Posthume Botschaft / Video-Link</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1 font-semibold">Sichtbar für Vertrauensperson:</label>
+                            <select id="entryVisibleFor" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
+                                <option value="ALL">Freigabe für ALLE Vertrauenspersonen</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-1 font-semibold">Vertraulicher Inhalt / Zugangsdaten / Anweisungen *:</label>
+                        <textarea id="entryContent" rows="3" placeholder="IBAN, PINs, Seed-Phrases, Logins oder persönliche Worte im Todesfall..." class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-xs font-mono"></textarea>
+                    </div>
+
+                    <!-- Spezialfelder für Verträge (für Kündigungsgenerator) -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 bg-slate-900/60 rounded-xl border border-slate-800/80 text-xs">
+                        <div>
+                            <label class="block text-slate-400 mb-1">Vertrags- / Kundennummer:</label>
+                            <input type="text" id="entryContractNo" placeholder="z. B. VK-998877" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">Vertragspartner / Firma:</label>
+                            <input type="text" id="entryPartner" placeholder="z. B. Vodafone GmbH, Vermieter Weber" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">Monatliche Kosten (€):</label>
+                            <input type="number" step="0.01" id="entryFee" placeholder="49.99" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-200">
+                        </div>
+                    </div>
+
+                    <button onclick="saveVaultEntry()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg shadow-indigo-600/20 transition-all">
+                        🔒 Verschlüsselt im Nachlass-Safe speichern
+                    </button>
+                </div>
+
+                <!-- Liste der Einträge -->
+                <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <h3 class="font-bold text-slate-100 text-sm">📋 Verschlüsselte Nachlass-Einträge</h3>
+                        <select id="filterCategory" onchange="renderVaultEntries()" class="p-2 bg-slate-900 border border-slate-800 rounded-xl text-xs">
+                            <option value="ALL">Alle Kategorien</option>
+                            <option value="Finanzen">💳 Finanzen & Krypto</option>
+                            <option value="Verträge">📜 Verträge & Abos</option>
+                            <option value="Digital">🌐 Digitales Erbe</option>
+                            <option value="Rechtliches">⚖️ Rechtliches</option>
+                            <option value="Posthum">💌 Posthume Botschaften</option>
+                        </select>
+                    </div>
+                    <div id="vaultEntriesList" class="space-y-3">
+                        <p class="text-xs text-slate-500 text-center py-6">Der Nachlass-Safe ist noch leer.</p>
+                    </div>
+                </div>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">⭐</div>
-                <div><p class="text-xs text-gray-500 font-medium">Favoriten</p><h3 id="statFavs" class="text-lg font-bold text-gray-900">0</h3></div>
+
+            <!-- TAB 2: TOTMANNSCHALTER -->
+            <div id="section-deadman" class="hidden space-y-6">
+                <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
+                    <div class="border-b border-slate-800 pb-3">
+                        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                            <span>⏰</span> Totmannschalter (Inaktivitäts-Überwachung)
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Der Totmannschalter prüft regelmäßig deinen Aktivitäts-Status. Bestätigst du den Check-in nicht vor Ablauf des Intervalls, gilt der Safe für deine Erben als freigeschaltet.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
+                            <p class="text-xs text-slate-400 font-medium">Verbleibende Zeit</p>
+                            <h4 id="deadmanCountdown" class="text-2xl font-black text-emerald-400">30 Tage</h4>
+                            <p id="deadmanLastCheck" class="text-[10px] text-slate-500">Letzter Check-in: -</p>
+                        </div>
+                        <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
+                            <p class="text-xs text-slate-400 font-medium">Prüf-Intervall</p>
+                            <select id="deadmanIntervalSelect" onchange="updateDeadmanInterval()" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-slate-200">
+                                <option value="30">Alle 30 Tage (Standard)</option>
+                                <option value="60">Alle 60 Tage</option>
+                                <option value="90">Alle 90 Tage</option>
+                                <option value="180">Alle 180 Tage</option>
+                            </select>
+                            <p class="text-[10px] text-slate-500">Erfordert regelmäßigen Klick.</p>
+                        </div>
+                        <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col justify-center">
+                            <button onclick="performCheckIn()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-emerald-600/20 transition-all">
+                                ✅ "Ich lebe noch!" (Check-in erneuern)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Inaktivitäts-Simulation für Tests -->
+                    <div class="p-4 bg-amber-950/40 border border-amber-800/60 rounded-2xl space-y-2">
+                        <h4 class="text-xs font-bold text-amber-400">🧪 Notfall-Simulation für Funktionstest:</h4>
+                        <p class="text-xs text-slate-300">
+                            Möchtest du testen, wie das System im Ernstfall reagiert? Du kannst den Timer manuell ablaufen lassen.
+                        </p>
+                        <button onclick="simulateInactivity()" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold rounded-xl text-xs">
+                            ⚠️ Inaktivität simulieren (Totmannschalter auslösen)
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-red-50 text-red-600 rounded-xl font-bold">⏳</div>
-                <div><p class="text-xs text-gray-500 font-medium">Abgelaufen</p><h3 id="statExpired" class="text-lg font-bold text-red-600">0</h3></div>
+
+            <!-- TAB 3: VERTRAUENSPERSONEN & KEY-SPLIT -->
+            <div id="section-trustees" class="hidden space-y-6">
+                <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
+                    <div class="border-b border-slate-800 pb-3">
+                        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                            <span>👥</span> Vertrauenspersonen & 2-von-3 Shamir Secret Sharing
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Dein Tresor-Schlüssel wird in **3 mathematische Fragmente (Shares)** zerlegt. Niemand kann deinen Tresor allein öffnen – erst wenn mindestens **2 beliebige Vertrauenspersonen** ihre Schlüssel im Notfall kombinieren, wird dein Nachlass entschlüsselt.
+                        </p>
+                    </div>
+
+                    <!-- 3 Vertrauenspersonen Erfassen -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs" id="trusteesGrid">
+                        <!-- Generiert via JS -->
+                    </div>
+
+                    <button onclick="saveTrusteesAndRegenerateKeys()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-indigo-600/20 transition-all">
+                        🔑 Vertrauenspersonen speichern & 2-v-3 Key-Split erzeugen
+                    </button>
+                </div>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold">🛡️</div>
-                <div><p class="text-xs text-gray-500 font-medium">Sicherheits-Standard</p><h3 class="text-xs font-bold text-emerald-600">AES-256-GCM & PBKDF2</h3></div>
+
+            <!-- TAB 4: PAPIER-NOTFALL-KIT -->
+            <div id="section-kit" class="hidden space-y-6">
+                <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                    <div class="border-b border-slate-800 pb-3">
+                        <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                            <span>📄</span> Papier-Notfall-Kit (Cold Storage)
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Drucke das Notfall-Kit aus und übergebe den Vertrauenspersonen jeweils ihren persöhnlichen QR-Code Schlüssel-Schnipsel (oder deponiere ihn im Schließfach/Notar).
+                        </p>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="generatePrintableKitPDF()" class="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-red-600/20">
+                            📄 Vollständiges Notfall-Kit als PDF exportieren
+                        </button>
+                        <button onclick="window.print()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs">
+                            🖨️ Notfall-Blatt drucken
+                        </button>
+                    </div>
+
+                    <!-- Print Preview / Area -->
+                    <div id="emergencyPrintArea" class="p-6 bg-white text-slate-900 rounded-2xl space-y-6 shadow-2xl border border-slate-300">
+                        <div class="text-center border-b pb-4">
+                            <h2 class="text-xl font-black">🏛️ DIGITALES NACHLASS-NOTFALL-KIT</h2>
+                            <p class="text-xs text-slate-600">Rechtlich geschütztes Notfall-Schlüsseldokument (2-von-3 Threshold Vault)</p>
+                        </div>
+
+                        <div class="text-xs space-y-2">
+                            <p><strong>Erblasser / Safe-Inhaber:</strong> <span id="kitOwnerName">Romain Duhr</span></p>
+                            <p><strong>Erstellt am:</strong> <span id="kitCreatedDate">03.11.2026</span></p>
+                            <p class="text-slate-600">Anleitung für Hinterbliebene: Um den Nachlass-Safe im Notfall zu entsperren, müssen mindestens zwei der drei folgenden Schlüssel-Fragmente auf der Notfall-Webseite eingescannt oder eingegeben werden.</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2" id="kitSharesPreview">
+                            <!-- Dynamische QR Codes & Key Fragments -->
+                        </div>
+                    </div>
+                </div>
             </div>
+
         </div>
 
-        <!-- Erfassung: Neuer Eintrag -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-            <div class="flex justify-between items-center flex-wrap gap-2">
-                <h2 class="text-lg font-bold text-gray-900">➕ Neuen Eintrag erfassen</h2>
-                <button onclick="generatePassword()" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold shadow-sm">🎲 Sicheres Passwort generieren</button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="text" id="noteTitle" placeholder="Titel (z. B. Online-Banking, WLAN Heimnetz)" class="p-3 border rounded-xl text-sm md:col-span-2">
-                <select id="noteCategory" class="p-3 border rounded-xl text-sm bg-white font-medium">
-                    <option value="WLAN">📶 WLAN</option>
-                    <option value="PIN / Code">🔢 PIN / Code</option>
-                    <option value="Finanzen">💳 Finanzen & Versicherung</option>
-                    <option value="Notfall / ICE">🚨 Notfall / ICE</option>
-                    <option value="Sonstiges">📝 Sonstiges</option>
-                </select>
-            </div>
-            <textarea id="noteContent" placeholder="Inhalt / Passwort / Notiz..." class="w-full p-3 border rounded-xl text-sm h-28 font-mono"></textarea>
+        <!-- ERBEN- / NOTFALL-COCKPIT VIEW (Tritt bei Auslösung oder Erben-Zugriff in Kraft) -->
+        <div id="heirView" class="hidden space-y-6">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center text-xs">
-                <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Schutz-PIN (optional):</label>
-                    <input type="password" id="notePin" placeholder="Verschlüsselungs-PIN (z.B. 4921)" class="w-full p-3 border rounded-xl text-sm font-mono">
-                    <p class="text-[10px] text-gray-400 mt-1">Bei PIN-Eingabe wird der Inhalt per AES-256-GCM verschlüsselt.</p>
+            <div class="bg-amber-950/40 border-2 border-amber-600 p-6 rounded-2xl space-y-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b border-amber-800/80 pb-3 flex-wrap gap-2">
+                    <div>
+                        <h2 class="text-lg font-black text-amber-400 flex items-center gap-2">
+                            <span>🚨</span> ERBEN-NOTFALL-COCKPIT (Geführter Assistenz-Modus)
+                        </h2>
+                        <p class="text-xs text-amber-200 mt-0.5">Schlüssel-Wiederherstellung (2-von-3 Shamir Threshold) & Nachlass-Abwicklung</p>
+                    </div>
+                    <button onclick="toggleModeView()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-slate-300">
+                        ← Zurück zum Eigentümer-Modus
+                    </button>
                 </div>
-                <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Ablaufdatum (optional):</label>
-                    <input type="date" id="noteExpiry" class="w-full p-3 border rounded-xl text-sm">
+
+                <!-- ENTSPERR-SCHRITT (Falls Safe verschlüsselt) -->
+                <div id="heirUnlockCard" class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4 text-xs">
+                    <h3 class="font-bold text-slate-100 text-sm">🔑 Schritt 1: Tresor mit 2 Schlüssel-Fragmenten entsperren</h3>
+                    <p class="text-slate-400">Geben Sie zwei beliebige Schlüssel-Fragmente von zwei Vertrauenspersonen ein:</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="font-semibold text-slate-300">1. Schlüssel-Fragment (z. B. Share #1):</label>
+                            <input type="text" id="shareInput1" placeholder="x1:... (Hex-Key)" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 font-mono">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="font-semibold text-slate-300">2. Schlüssel-Fragment (z. B. Share #2):</label>
+                            <input type="text" id="shareInput2" placeholder="x2:... (Hex-Key)" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 font-mono">
+                        </div>
+                    </div>
+
+                    <button onclick="unlockVaultWithShares()" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-amber-500/20">
+                        🔓 Tresor entschlüsseln & Nachlass freischalten
+                    </button>
                 </div>
-                <div class="flex items-center space-x-2 pt-4">
-                    <input type="checkbox" id="noteFav" class="w-4 h-4 text-indigo-600 rounded">
-                    <label for="noteFav" class="font-bold text-gray-700">Als Favorit markieren</label>
+
+                <!-- FREIGESCHALTETER NACHLASS & ASSISTENT -->
+                <div id="heirDecryptedContent" class="hidden space-y-6">
+                    
+                    <!-- Geführter 3-Wochen-Leitfaden für Erben -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3 text-xs">
+                        <h3 class="font-bold text-emerald-400 text-sm">📌 Geführte Checkliste für Hinterbliebene</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
+                                <h4 class="font-bold text-slate-200">1. Woche: Erste Schritte</h4>
+                                <ul class="list-disc list-inside text-slate-400 space-y-0.5">
+                                    <li>Arzt / Todesbescheinigung</li>
+                                    <li>Bestattungsinstitut beauftragen</li>
+                                    <li>Standesamt (Sterbeurkunde)</li>
+                                </ul>
+                            </div>
+                            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
+                                <h4 class="font-bold text-slate-200">2. Woche: Verträge & Abos</h4>
+                                <ul class="list-disc list-inside text-slate-400 space-y-0.5">
+                                    <li>Mietvertrag / Wohnungsübergabe</li>
+                                    <li>Strom, Wasser, Internet kündigen</li>
+                                    <li>1-Klick Kündigungs-Generator nutzen</li>
+                                </ul>
+                            </div>
+                            <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-1">
+                                <h4 class="font-bold text-slate-200">3. Woche: Finanzen & Erbe</h4>
+                                <ul class="list-disc list-inside text-slate-400 space-y-0.5">
+                                    <li>Banken & Versicherungen informieren</li>
+                                    <li>Erbschein / Testament abwickeln</li>
+                                    <li>Digitales Erbe / Konten löschen</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Entschlüsselte Einträge -->
+                    <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+                        <h3 class="font-bold text-slate-100 text-sm">📂 Freigeschaltete Nachlass-Einträge & Dokumente</h3>
+                        <div id="heirEntriesList" class="space-y-3 text-xs">
+                            <!-- Inject JS -->
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <button onclick="saveNote()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition-colors">Eintrag sicher speichern</button>
+
         </div>
 
-        <!-- Suchleiste & Liste -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
-                <h3 class="font-bold text-lg text-gray-900">📋 Gespeicherte Notizen & PINs</h3>
-                <input type="text" id="searchBox" oninput="renderNotes()" placeholder="🔍 Durchsuche Titel oder Kategorien..." class="p-2.5 border rounded-xl text-sm w-full md:w-1/3">
-            </div>
-            <div id="notesList" class="space-y-3">
-                <p class="text-sm text-gray-400 text-center py-4">Noch keine Einträge erfasst.</p>
-            </div>
-        </div>
     </main>
 
-    <!-- MODAL: Eintrag Bearbeiten -->
-    <div id="editModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-lg font-bold text-gray-900 border-b pb-2">✏️ Eintrag bearbeiten</h3>
-            <input type="hidden" id="editId">
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Titel:</label>
-                <input type="text" id="editTitle" class="w-full p-2.5 border rounded-xl text-sm">
+    <!-- MODAL: 1-KLICK KÜNDIGUNGSGENERATOR -->
+    <div id="cancelModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 text-xs">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-slate-100">📜 1-Klick Kündigungsschreiben (Sonderkündigung im Todesfall)</h3>
+                <button onclick="closeCancelModal()" class="text-slate-400 hover:text-white text-xl font-bold">&times;</button>
             </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
-                <select id="editCategory" class="w-full p-2.5 border rounded-xl text-sm bg-white font-medium">
-                    <option value="WLAN">📶 WLAN</option>
-                    <option value="PIN / Code">🔢 PIN / Code</option>
-                    <option value="Finanzen">💳 Finanzen & Versicherung</option>
-                    <option value="Notfall / ICE">🚨 Notfall / ICE</option>
-                    <option value="Sonstiges">📝 Sonstiges</option>
-                </select>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-slate-400 mb-1 font-semibold">Vertrag / Leistung:</label>
+                    <input type="text" id="cancelTargetTitle" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-200" readonly>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1">Vertragsnummer:</label>
+                        <input type="text" id="cancelContractNo" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Vertragspartner Firma:</label>
+                        <input type="text" id="cancelPartner" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-200">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 border-t border-slate-800 pt-2">
+                    <div>
+                        <label class="block text-slate-400 mb-1">Name des Erben / Ansprechpartners:</label>
+                        <input type="text" id="cancelHeirName" placeholder="z. B. Lynn Duhr" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Sterbedatum:</label>
+                        <input type="date" id="cancelDeathDate" class="w-full p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-200">
+                    </div>
+                </div>
             </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Inhalt:</label>
-                <textarea id="editContent" class="w-full p-2.5 border rounded-xl text-sm h-28 font-mono"></textarea>
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Schutz-PIN (Ändern/Hinzufügen):</label>
-                <input type="password" id="editPin" placeholder="Leer lassen für keinen PIN-Schutz" class="w-full p-2.5 border rounded-xl text-sm font-mono">
-            </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Ablaufdatum:</label>
-                <input type="date" id="editExpiry" class="w-full p-2.5 border rounded-xl text-sm">
-            </div>
-            <div class="flex items-center space-x-2">
-                <input type="checkbox" id="editFav" class="w-4 h-4 text-indigo-600 rounded">
-                <label for="editFav" class="text-xs font-bold text-gray-700">Favorit</label>
-            </div>
-            <div class="flex justify-end space-x-2 pt-2 border-t">
-                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
-                <button onclick="updateNote()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                <button onclick="closeCancelModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-semibold">Abbrechen</button>
+                <button onclick="generateCancellationPDF()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow-lg">
+                    📄 Kündigungs-PDF Herunterladen
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: WLAN QR Code -->
-    <div id="qrModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
-        <div class="bg-white p-6 rounded-2xl text-center space-y-3 shadow-2xl max-w-sm w-full" onclick="event.stopPropagation()">
-            <h3 class="font-bold text-lg text-gray-900">📶 WLAN-Zugangs-QR-Code</h3>
-            <div id="qrcode" class="flex justify-center p-3 bg-white border rounded-xl min-h-[160px] items-center"></div>
-            <p id="qrWlanInfo" class="text-xs text-gray-500 font-mono"></p>
-            <button onclick="closeQrModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
-        </div>
-    </div>
-
+    <!-- JAVASCRIPT LOGIK (Zero-Knowledge, AES-256-GCM, Shamir 2-of-3) -->
     <script>
-        // Zwischenspeicher für freigeschaltete Inhalte (nur im RAM während der Sitzung)
-        const decryptedCache = new Map();
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderNotes();
-        });
-
-        /* --- WEB CRYPTO API UTILITIES (AES-256-GCM + PBKDF2) --- */
-        function bufferToBase64(buf) {
-            let bin = "";
-            const bytes = new Uint8Array(buf);
-            for (let i = 0; i < bytes.byteLength; i++) {
-                bin += String.fromCharCode(bytes[i]);
+        /* --- GALOIS FIELD GF(2^8) MATHEMATIK FÜR SHAMIR 2-OF-3 SECRET SHARING --- */
+        function gfMul(a, b) {
+            let p = 0;
+            for (let i = 0; i < 8; i++) {
+                if (b & 1) p ^= a;
+                let hi = a & 0x80;
+                a = (a << 1) & 0xff;
+                if (hi) a ^= 0x1b; // Irreduzibles Polynom 0x11b
+                b >>= 1;
             }
-            return btoa(bin);
+            return p;
         }
 
-        function base64ToBuffer(b64) {
-            const bin = atob(b64);
-            const bytes = new Uint8Array(bin.length);
-            for (let i = 0; i < bin.length; i++) {
-                bytes[i] = bin.charCodeAt(i);
+        function gfDiv(a, b) {
+            if (a === 0) return 0;
+            let inv = 1;
+            let base = b;
+            for (let exp = 254; exp > 0; exp >>= 1) {
+                if (exp & 1) inv = gfMul(inv, base);
+                base = gfMul(base, base);
             }
-            return bytes.buffer;
+            return gfMul(a, inv);
         }
 
-        async function deriveKey(password, salt) {
-            const encoder = new TextEncoder();
-            const keyMaterial = await crypto.subtle.importKey(
-                "raw",
-                encoder.encode(password),
-                "PBKDF2",
-                false,
-                ["deriveKey"]
-            );
-            return crypto.subtle.deriveKey(
-                {
-                    name: "PBKDF2",
-                    salt: salt,
-                    iterations: 100000,
-                    hash: "SHA-256"
-                },
-                keyMaterial,
-                { name: "AES-GCM", length: 256 },
-                false,
-                ["encrypt", "decrypt"]
-            );
+        function generate2of3Shares(masterKeyHex) {
+            const bytes = [];
+            for (let i = 0; i < masterKeyHex.length; i += 2) {
+                bytes.push(parseInt(masterKeyHex.substr(i, 2), 16));
+            }
+            const len = bytes.length;
+            const a1 = crypto.getRandomValues(new Uint8Array(len));
+            
+            const s1 = [], s2 = [], s3 = [];
+            for (let i = 0; i < len; i++) {
+                let s = bytes[i];
+                let a = a1[i];
+                s1.push(s ^ gfMul(a, 1));
+                s2.push(s ^ gfMul(a, 2));
+                s3.push(s ^ gfMul(a, 3));
+            }
+
+            const toHex = arr => Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+            return [
+                { x: 1, key: toHex(s1) },
+                { x: 2, key: toHex(s2) },
+                { x: 3, key: toHex(s3) }
+            ];
         }
 
-        async function encryptText(text, password) {
+        function reconstructSecret(shareA, shareB) {
+            const bytesA = [], bytesB = [];
+            for (let i = 0; i < shareA.key.length; i += 2) {
+                bytesA.push(parseInt(shareA.key.substr(i, 2), 16));
+                bytesB.push(parseInt(shareB.key.substr(i, 2), 16));
+            }
+            const x1 = shareA.x;
+            const x2 = shareB.x;
+            const secretBytes = [];
+
+            const term1Mult = gfDiv(x2, x1 ^ x2);
+            const term2Mult = gfDiv(x1, x1 ^ x2);
+
+            for (let i = 0; i < bytesA.length; i++) {
+                let y1 = bytesA[i];
+                let y2 = bytesB[i];
+                let s = gfMul(y1, term1Mult) ^ gfMul(y2, term2Mult);
+                secretBytes.push(s);
+            }
+            return Array.from(secretBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        /* --- AES-256-GCM VERSCHLÜSSELUNG --- */
+        async function getCryptoKeyFromHex(hexKey) {
+            const bytes = new Uint8Array(hexKey.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            return crypto.subtle.importKey("raw", bytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+        }
+
+        async function encryptVaultPayload(dataObj, hexKey) {
             const encoder = new TextEncoder();
-            const salt = crypto.getRandomValues(new Uint8Array(16));
             const iv = crypto.getRandomValues(new Uint8Array(12));
-            const key = await deriveKey(password, salt);
-            const encrypted = await crypto.subtle.encrypt(
-                { name: "AES-GCM", iv: iv },
-                key,
-                encoder.encode(text)
-            );
-
+            const cryptoKey = await getCryptoKeyFromHex(hexKey);
+            const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, cryptoKey, encoder.encode(JSON.stringify(dataObj)));
+            
+            const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
             return {
-                ciphertext: bufferToBase64(encrypted),
-                salt: bufferToBase64(salt),
-                iv: bufferToBase64(iv)
+                ciphertext: b64(encrypted),
+                iv: b64(iv)
             };
         }
 
-        async function decryptText(encryptedObj, password) {
+        async function decryptVaultPayload(encryptedObj, hexKey) {
             try {
-                const salt = new Uint8Array(base64ToBuffer(encryptedObj.salt));
-                const iv = new Uint8Array(base64ToBuffer(encryptedObj.iv));
-                const ciphertext = base64ToBuffer(encryptedObj.ciphertext);
-
-                const key = await deriveKey(password, salt);
-                const decrypted = await crypto.subtle.decrypt(
-                    { name: "AES-GCM", iv: iv },
-                    key,
-                    ciphertext
-                );
-                return new TextDecoder().decode(decrypted);
-            } catch (e) {
-                return null; // Entschlüsselung fehlgeschlagen (Falscher PIN)
-            }
-        }
-
-        /* --- STORAGE MANAGEMENT --- */
-        function getData() {
-            try {
-                return JSON.parse(localStorage.getItem('secure_notes_pro')) || { notes: [] };
+                const b64toBuf = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+                const iv = b64toBuf(encryptedObj.iv);
+                const ciphertext = b64toBuf(encryptedObj.ciphertext);
+                const cryptoKey = await getCryptoKeyFromHex(hexKey);
+                const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, cryptoKey, ciphertext);
+                return JSON.parse(new TextDecoder().decode(decrypted));
             } catch(e) {
-                return { notes: [] };
+                return null;
             }
         }
 
-        function saveData(data) {
-            localStorage.setItem('secure_notes_pro', JSON.stringify(data));
-        }
+        /* --- STATE MANAGEMENT & LOCAL STORAGE --- */
+        let currentMasterKeyHex = null;
+        let currentDecryptedVault = { entries: [] };
+        let activeTab = "vault";
+        let isHeirMode = false;
+        let activeCancellationTarget = null;
 
-        function generatePassword() {
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=";
-            let pass = "";
-            const randomVals = new Uint32Array(16);
-            crypto.getRandomValues(randomVals);
-            for (let i = 0; i < 16; i++) {
-                pass += chars.charAt(randomVals[i] % chars.length);
-            }
-            document.getElementById('noteContent').value = pass;
-        }
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initVault();
+            renderApp();
+        });
 
-        /* --- SAVE & EDIT LOGIC --- */
-        async function saveNote() {
-            const title = document.getElementById('noteTitle').value.trim();
-            const category = document.getElementById('noteCategory').value;
-            const content = document.getElementById('noteContent').value.trim();
-            const pin = document.getElementById('notePin').value.trim();
-            const fav = document.getElementById('noteFav').checked;
-            const expiry = document.getElementById('noteExpiry').value;
+        async function initVault() {
+            let vaultConfig = JSON.parse(localStorage.getItem('digital_estate_vault'));
+            
+            if (!vaultConfig) {
+                // Erstmals initialisieren: Master-Key generieren
+                const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+                currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+                
+                const shares = generate2of3Shares(currentMasterKeyHex);
 
-            if (!title || !content) return alert("Bitte Titel und Inhalt eingeben!");
-
-            let storedContent = content;
-            let isEncrypted = false;
-
-            if (pin) {
-                storedContent = await encryptText(content, pin);
-                isEncrypted = true;
-            }
-
-            let data = getData();
-            const newId = Date.now();
-            data.notes.push({ id: newId, title, category, content: storedContent, isEncrypted, fav, expiry });
-            saveData(data);
-
-            if (isEncrypted) {
-                decryptedCache.set(newId, content);
-            }
-
-            document.getElementById('noteTitle').value = "";
-            document.getElementById('noteContent').value = "";
-            document.getElementById('notePin').value = "";
-            document.getElementById('noteFav').checked = false;
-            document.getElementById('noteExpiry').value = "";
-            renderNotes();
-        }
-
-        async function openEditModal(id) {
-            let data = getData();
-            let note = data.notes.find(n => n.id === id);
-            if (!note) return;
-
-            let plainContent = note.content;
-            if (note.isEncrypted) {
-                if (decryptedCache.has(id)) {
-                    plainContent = decryptedCache.get(id);
-                } else {
-                    const enteredPin = prompt("🔒 Dieser Eintrag ist verschlüsselt. Bitte Schutz-PIN zum Bearbeiten eingeben:");
-                    if (!enteredPin) return;
-                    plainContent = await decryptText(note.content, enteredPin);
-                    if (plainContent === null) return alert("❌ Falscher PIN!");
-                    decryptedCache.set(id, plainContent);
-                }
-            }
-
-            document.getElementById('editId').value = note.id;
-            document.getElementById('editTitle').value = note.title;
-            document.getElementById('editCategory').value = note.category;
-            document.getElementById('editContent').value = plainContent;
-            document.getElementById('editPin').value = "";
-            document.getElementById('editExpiry').value = note.expiry || "";
-            document.getElementById('editFav').checked = note.fav || false;
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
-        }
-
-        async function updateNote() {
-            const id = parseInt(document.getElementById('editId').value);
-            const title = document.getElementById('editTitle').value.trim();
-            const category = document.getElementById('editCategory').value;
-            const content = document.getElementById('editContent').value.trim();
-            const pin = document.getElementById('editPin').value.trim();
-            const expiry = document.getElementById('editExpiry').value;
-            const fav = document.getElementById('editFav').checked;
-
-            if (!title || !content) return alert("Bitte Titel und Inhalt eingeben!");
-
-            let data = getData();
-            let note = data.notes.find(n => n.id === id);
-            if (note) {
-                let storedContent = content;
-                let isEncrypted = false;
-
-                if (pin) {
-                    storedContent = await encryptText(content, pin);
-                    isEncrypted = true;
-                    decryptedCache.set(id, content);
-                } else {
-                    decryptedCache.delete(id);
-                }
-
-                note.title = title;
-                note.category = category;
-                note.content = storedContent;
-                note.isEncrypted = isEncrypted;
-                note.expiry = expiry;
-                note.fav = fav;
-                saveData(data);
-            }
-            closeEditModal();
-            renderNotes();
-        }
-
-        function deleteNote(id) {
-            if (!confirm("⚠️ Möchtest du diesen Eintrag wirklich unwiderruflich löschen?")) return;
-            let data = getData();
-            data.notes = data.notes.filter(n => n.id !== id);
-            decryptedCache.delete(id);
-            saveData(data);
-            renderNotes();
-        }
-
-        async function unlockNote(id) {
-            let data = getData();
-            let note = data.notes.find(n => n.id === id);
-            if (!note || !note.isEncrypted) return;
-
-            let entered = prompt("🔒 Bitte Schutz-PIN eingeben:");
-            if (entered === null) return;
-
-            const decrypted = await decryptText(note.content, entered);
-            if (decrypted !== null) {
-                decryptedCache.set(id, decrypted);
-                renderNotes();
+                vaultConfig = {
+                    ownerName: "Romain Duhr",
+                    checkInIntervalDays: 30,
+                    lastCheckIn: new Date().toISOString(),
+                    trustees: [
+                        { id: 1, name: "Isabelle", role: "Partnerin", shareX: 1 },
+                        { id: 2, name: "Lynn Duhr", role: "Tochter", shareX: 2 },
+                        { id: 3, name: "Notar / Rechtsbeistand", role: "Notar", shareX: 3 }
+                    ],
+                    sharesGenerated: shares,
+                    encryptedData: await encryptVaultPayload({ entries: [] }, currentMasterKeyHex)
+                };
+                localStorage.setItem('digital_estate_vault', JSON.stringify(vaultConfig));
+                currentDecryptedVault = { entries: [] };
             } else {
-                alert("❌ Falsche PIN!");
+                // Schlüssel aus temporärer Session wiederherstellen (oder im Speicher behalten)
+                if (vaultConfig.sharesGenerated && vaultConfig.sharesGenerated.length >= 2) {
+                    currentMasterKeyHex = reconstructSecret(vaultConfig.sharesGenerated[0], vaultConfig.sharesGenerated[1]);
+                    const dec = await decryptVaultPayload(vaultConfig.encryptedData, currentMasterKeyHex);
+                    if (dec) currentDecryptedVault = dec;
+                }
             }
         }
 
-        function copyNote(id) {
-            let data = getData();
-            let note = data.notes.find(n => n.id === id);
-            if (!note) return;
+        function getVaultConfig() {
+            return JSON.parse(localStorage.getItem('digital_estate_vault'));
+        }
 
-            let textToCopy = note.content;
-            if (note.isEncrypted) {
-                if (decryptedCache.has(id)) {
-                    textToCopy = decryptedCache.get(id);
-                } else {
-                    return alert("🔒 Bitte schalte den Eintrag zuerst mit der PIN frei!");
-                }
+        async function saveVaultConfig(cfg) {
+            if (currentMasterKeyHex && currentDecryptedVault) {
+                cfg.encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
             }
+            localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+        }
 
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                alert("📋 In Zwischenablage kopiert!");
+        /* --- UI TAB & MODE SWITCHING --- */
+        function switchTab(tabName) {
+            activeTab = tabName;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            ['vault', 'deadman', 'trustees', 'kit'].forEach(sec => {
+                document.getElementById(`section-${sec}`).classList.add('hidden');
             });
+            document.getElementById(`section-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'kit') renderPrintableKit();
+        }
+
+        function toggleModeView() {
+            isHeirMode = !isHeirMode;
+            if (isHeirMode) {
+                document.getElementById('ownerNav').classList.add('hidden');
+                document.getElementById('ownerView').classList.add('hidden');
+                document.getElementById('heirView').classList.remove('hidden');
+                document.getElementById('modeSwitchBtn').innerText = "🏠 Zum Eigentümer-Modus";
+            } else {
+                document.getElementById('ownerNav').classList.remove('hidden');
+                document.getElementById('ownerView').classList.remove('hidden');
+                document.getElementById('heirView').classList.add('hidden');
+                document.getElementById('modeSwitchBtn').innerText = "🚨 Zum Erben-Cockpit";
+            }
         }
 
         /* --- RENDER FUNCTIONS --- */
-        function renderNotes() {
-            const data = getData();
-            const search = document.getElementById('searchBox').value.toLowerCase();
-            const listContainer = document.getElementById('notesList');
-            const todayStr = new Date().toISOString().split('T')[0];
+        function renderApp() {
+            const cfg = getVaultConfig();
+            if (!cfg) return;
 
-            let expiredCount = 0;
-            data.notes.forEach(n => {
-                if (n.expiry && n.expiry < todayStr) expiredCount++;
-            });
+            // Totmannschalter Status Check
+            const lastCheck = new Date(cfg.lastCheckIn);
+            const now = new Date();
+            const diffDays = Math.floor((now - lastCheck) / (1000 * 60 * 60 * 24));
+            const remaining = (cfg.checkInIntervalDays || 30) - diffDays;
 
-            document.getElementById('statTotal').innerText = data.notes.length;
-            document.getElementById('statFavs').innerText = data.notes.filter(n => n.fav).length;
-            document.getElementById('statExpired').innerText = expiredCount;
+            const badge = document.getElementById('statusBadge');
+            const badgeText = document.getElementById('statusBadgeText');
 
-            if (data.notes.length === 0) {
-                listContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Einträge erfasst.</p>`;
+            if (remaining <= 0) {
+                badge.className = "px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 bg-red-950/80 border-red-800 text-red-400";
+                badgeText.innerText = "🚨 INAKTIVITÄT DETEKTIERT (Freigabe bereit)";
+                document.getElementById('deadmanCountdown').innerText = "0 Tage (ABGELAUFEN)";
+                document.getElementById('deadmanCountdown').className = "text-2xl font-black text-red-500";
+            } else {
+                badge.className = "px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 bg-emerald-950/80 border-emerald-800 text-emerald-400";
+                badgeText.innerText = `Status: Aktiv (${remaining} Tage übrig)`;
+                document.getElementById('deadmanCountdown').innerText = `${remaining} Tage`;
+                document.getElementById('deadmanCountdown').className = "text-2xl font-black text-emerald-400";
+            }
+
+            document.getElementById('deadmanLastCheck').innerText = `Letzter Check-in: ${lastCheck.toLocaleDateString('de-DE')}`;
+            document.getElementById('deadmanIntervalSelect').value = cfg.checkInIntervalDays || 30;
+
+            // Vertrauenspersonen Select in Formular
+            const visibleSelect = document.getElementById('entryVisibleFor');
+            visibleSelect.innerHTML = `<option value="ALL">Freigabe für ALLE Vertrauenspersonen</option>` +
+                cfg.trustees.map(t => `<option value="${t.id}">Nur für: ${t.name} (${t.role})</option>`).join('');
+
+            // Render Trustees Grid (Tab 3)
+            document.getElementById('trusteesGrid').innerHTML = cfg.trustees.map((t, idx) => `
+                <div class="p-3.5 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
+                    <span class="font-bold text-indigo-400">Vertrauensperson #${idx + 1} (Share x=${t.shareX})</span>
+                    <input type="text" id="tName_${idx}" value="${t.name}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200" placeholder="Name">
+                    <input type="text" id="tRole_${idx}" value="${t.role}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200" placeholder="Rolle (z. B. Partner)">
+                </div>
+            `).join('');
+
+            renderVaultEntries();
+        }
+
+        function renderVaultEntries() {
+            const filter = document.getElementById('filterCategory').value;
+            const container = document.getElementById('vaultEntriesList');
+            let entries = currentDecryptedVault.entries || [];
+
+            if (filter !== 'ALL') entries = entries.filter(e => e.category === filter);
+
+            if (entries.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">Keine passenden Nachlass-Einträge gefunden.</p>`;
                 return;
             }
 
-            let sorted = [...data.notes].sort((a, b) => (b.fav ? 1 : 0) - (a.fav ? 1 : 0));
+            const catIcons = { "Finanzen": "💳", "Verträge": "📜", "Digital": "🌐", "Rechtliches": "⚖️", "Posthum": "💌" };
 
-            if (search) {
-                sorted = sorted.filter(n => n.title.toLowerCase().includes(search) || n.category.toLowerCase().includes(search));
-            }
-
-            listContainer.innerHTML = sorted.map(n => {
-                const isLocked = n.isEncrypted && !decryptedCache.has(n.id);
-                let displayContent = isLocked ? "•••••••••••••••• (AES-256 Verschlüsselt)" : (n.isEncrypted ? decryptedCache.get(n.id) : n.content);
-
-                let expiryBadge = "";
-                if (n.expiry) {
-                    if (n.expiry < todayStr) {
-                        expiryBadge = `<span class="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded-full">⚠️ Abgelaufen (${n.expiry})</span>`;
-                    } else {
-                        expiryBadge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-medium px-2 py-0.5 rounded-full">⏳ Bis ${n.expiry}</span>`;
-                    }
-                }
-
-                return `
-                    <div class="p-4 bg-gray-50 border border-gray-200 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 shadow-sm">
-                        <div class="space-y-1.5 flex-1">
-                            <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                ${n.fav ? '<span>⭐</span>' : ''}
-                                <span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">${n.category}</span>
-                                <h4 class="font-bold text-sm text-gray-900">${n.title}</h4>
-                                ${n.isEncrypted ? '<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🔒 AES-GCM</span>' : ''}
-                                ${expiryBadge}
-                            </div>
-                            <p class="text-xs text-gray-700 whitespace-pre-line font-mono bg-white p-2.5 rounded-xl border border-gray-200 select-all">${displayContent}</p>
+            container.innerHTML = entries.map(e => `
+                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span>${catIcons[e.category] || '📦'}</span>
+                            <span class="font-bold text-slate-100 text-sm">${e.title}</span>
+                            <span class="bg-indigo-950 text-indigo-400 font-semibold px-2 py-0.5 rounded-full text-[10px]">${e.category}</span>
                         </div>
-                        <div class="flex items-center gap-1.5 self-end md:self-center">
-                            ${isLocked ? `
-                                <button onclick="unlockNote(${n.id})" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm">🔓 Entsperren</button>
-                            ` : `
-                                <button onclick="copyNote(${n.id})" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold" title="Kopieren">📋</button>
-                                ${n.category === 'WLAN' ? `<button onclick="showWlanQr(${n.id})" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="WLAN QR">📶</button>` : ''}
-                            `}
-                            <button onclick="openEditModal(${n.id})" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
-                            <button onclick="deleteNote(${n.id})" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold" title="Löschen">✕</button>
-                        </div>
+                        <p class="text-slate-300 font-mono bg-slate-950 p-2 rounded-lg border border-slate-800/80">${e.content}</p>
+                        ${e.category === 'Verträge' && e.partner ? `<p class="text-[11px] text-amber-400">Vertragspartner: ${e.partner} | Nr: ${e.contractNo || 'k.A.'}</p>` : ''}
                     </div>
-                `;
-            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
+                    <div class="flex gap-2 self-end md:self-center">
+                        ${e.category === 'Verträge' ? `<button onclick="openCancelModal(${e.id})" class="px-2.5 py-1.5 bg-red-950 text-red-400 border border-red-800 hover:bg-red-900 rounded-lg font-bold text-[11px]">📜 1-Klick Kündigen</button>` : ''}
+                        <button onclick="deleteVaultEntry(${e.id})" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg font-semibold text-[11px]">Löschen</button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function showWlanQr(id) {
-            let data = getData();
-            let note = data.notes.find(n => n.id === id);
-            if (!note) return;
+        /* --- TOTMANNSCHALTER ACTIONS --- */
+        async function performCheckIn() {
+            const cfg = getVaultConfig();
+            cfg.lastCheckIn = new Date().toISOString();
+            await saveVaultConfig(cfg);
+            renderApp();
+            alert("✅ Check-in erfolgreich erneuert! Totmannschalter ist zurückgesetzt.");
+        }
 
-            let pass = note.content;
-            if (note.isEncrypted) {
-                if (decryptedCache.has(id)) {
-                    pass = decryptedCache.get(id);
-                } else {
-                    return alert("🔒 Bitte entsperre die WLAN Notiz zuerst mit der PIN!");
-                }
-            }
+        async function updateDeadmanInterval() {
+            const cfg = getVaultConfig();
+            cfg.checkInIntervalDays = parseInt(document.getElementById('deadmanIntervalSelect').value);
+            await saveVaultConfig(cfg);
+            renderApp();
+        }
 
-            const qrContainer = document.getElementById('qrcode');
-            qrContainer.innerHTML = "";
-            const wifiString = `WIFI:S:${note.title};T:WPA;P:${pass};;`;
+        async function simulateInactivity() {
+            const cfg = getVaultConfig();
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 200); // 200 Tage in die Vergangenheit setzen
+            cfg.lastCheckIn = pastDate.toISOString();
+            await saveVaultConfig(cfg);
+            renderApp();
+            alert("⚠️ Inaktivität simuliert! Der Safe steht für die Erben als freigeschaltet bereit.");
+        }
 
-            new QRCode(qrContainer, {
-                text: wifiString,
-                width: 150,
-                height: 150
+        /* --- NACHLASS EINTRÄGE AKTIONEN --- */
+        function generateRandomPass() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+            let pass = "";
+            for (let i = 0; i < 20; i++) pass += chars.charAt(Math.floor(Math.random() * chars.length));
+            document.getElementById('entryContent').value = pass;
+        }
+
+        async function saveVaultEntry() {
+            const title = document.getElementById('entryTitle').value.trim();
+            const category = document.getElementById('entryCategory').value;
+            const visibleFor = document.getElementById('entryVisibleFor').value;
+            const content = document.getElementById('entryContent').value.trim();
+            const contractNo = document.getElementById('entryContractNo').value.trim();
+            const partner = document.getElementById('entryPartner').value.trim();
+            const fee = parseFloat(document.getElementById('entryFee').value) || 0;
+
+            if (!title || !content) return alert("Bitte Titel und Inhalt eingeben!");
+
+            currentDecryptedVault.entries.unshift({
+                id: Date.now(),
+                title, category, visibleFor, content, contractNo, partner, fee
             });
 
-            document.getElementById('qrWlanInfo').innerText = `SSID: ${note.title}`;
-            document.getElementById('qrModal').classList.remove('hidden');
+            await saveVaultConfig(getVaultConfig());
+
+            document.getElementById('entryTitle').value = "";
+            document.getElementById('entryContent').value = "";
+            document.getElementById('entryContractNo').value = "";
+            document.getElementById('entryPartner').value = "";
+            document.getElementById('entryFee').value = "";
+
+            renderVaultEntries();
+            alert("🔒 Eintrag erfolgreich im Nachlass-Safe gesichert!");
         }
 
-        function closeQrModal() {
-            document.getElementById('qrModal').classList.add('hidden');
+        async function deleteVaultEntry(id) {
+            if (!confirm("Eintrag wirklich löschen?")) return;
+            currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
+            await saveVaultConfig(getVaultConfig());
+            renderVaultEntries();
         }
 
-        /* --- PDF EXPORT --- */
-        function exportPDF() {
+        /* --- TRUSTEES & SHAMIR KEY-SPLIT --- */
+        async function saveTrusteesAndRegenerateKeys() {
+            const cfg = getVaultConfig();
+            for (let i = 0; i < 3; i++) {
+                cfg.trustees[i].name = document.getElementById(`tName_${i}`).value.trim() || `Vertrauensperson #${i+1}`;
+                cfg.trustees[i].role = document.getElementById(`tRole_${i}`).value.trim() || `Rolle`;
+            }
+
+            // Neue Shares berechnen
+            cfg.sharesGenerated = generate2of3Shares(currentMasterKeyHex);
+            await saveVaultConfig(cfg);
+            renderApp();
+            alert("✅ Vertrauenspersonen und 2-v-3 Key-Split wurden erneuert!");
+        }
+
+        /* --- PAPIER NOTFALL KIT RENDER & PRINT --- */
+        function renderPrintableKit() {
+            const cfg = getVaultConfig();
+            document.getElementById('kitOwnerName').innerText = cfg.ownerName || "Romain Duhr";
+            document.getElementById('kitCreatedDate').innerText = new Date().toLocaleDateString('de-DE');
+
+            const container = document.getElementById('kitSharesPreview');
+            container.innerHTML = cfg.trustees.map((t, idx) => {
+                const shareObj = cfg.sharesGenerated[idx];
+                const shareString = `x${shareObj.x}:${shareObj.key}`;
+                const qrId = `qrKit_${idx}`;
+
+                setTimeout(() => {
+                    const el = document.getElementById(qrId);
+                    if (el) {
+                        el.innerHTML = "";
+                        new QRCode(el, { text: shareString, width: 110, height: 110 });
+                    }
+                }, 100);
+
+                return `
+                    <div class="p-3 bg-slate-50 border border-slate-300 rounded-xl space-y-2 text-center text-xs">
+                        <h4 class="font-bold text-slate-900">${t.name} (${t.role})</h4>
+                        <p class="text-[10px] text-slate-500">Schlüssel-Fragment #${shareObj.x} von 3</p>
+                        <div id="${qrId}" class="flex justify-center p-1 bg-white border rounded"></div>
+                        <p class="font-mono text-[9px] break-all bg-slate-200 p-1 rounded border">${shareString}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function generatePrintableKitPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            let data = getData();
+            const cfg = getVaultConfig();
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(16);
-            doc.text("Schlüssel-, PIN- & Dokumenten-Report", 14, 20);
+            doc.setFontSize(18);
+            doc.text("DIGITALES NACHLASS-NOTFALL-KIT", 14, 20);
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
+            doc.text(`Erblasser: ${cfg.ownerName || 'Romain Duhr'} | Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+            doc.text("WICHTIG: Zur Entschlüsselung werden mindestens 2 beliebige Schlüssel-Fragmente benötigt.", 14, 34);
 
-            let y = 38;
-            data.notes.forEach((n, idx) => {
-                if (y > 270) { doc.addPage(); y = 20; }
+            let y = 46;
+            cfg.trustees.forEach((t, idx) => {
+                const shareObj = cfg.sharesGenerated[idx];
                 doc.setFont("helvetica", "bold");
-                doc.text(`${idx + 1}. ${n.title} [${n.category}] ${n.expiry ? '(Ablauf: ' + n.expiry + ')' : ''}`, 14, y);
+                doc.text(`Vertrauensperson #${shareObj.x}: ${t.name} (${t.role})`, 14, y);
                 y += 6;
                 doc.setFont("helvetica", "normal");
-
-                let contentToPrint = n.content;
-                if (n.isEncrypted) {
-                    contentToPrint = decryptedCache.has(n.id) ? decryptedCache.get(n.id) : "[VERBASSWORTET / AES-256 GESCHÜTZT]";
-                }
-                doc.text(`Inhalt: ${contentToPrint}`, 14, y);
-                y += 10;
+                doc.text(`Schlüssel-Code (x${shareObj.x}): ${shareObj.key}`, 14, y);
+                y += 12;
             });
 
-            doc.save(`notizen-report-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.save(`nachlass-notfall-kit-${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
-        /* --- BACKUP EXPORT & IMPORT --- */
-        function exportBackup() {
-            let data = JSON.stringify(getData(), null, 2);
-            let blob = new Blob([data], { type: 'application/json' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = `notizen-aes-backup-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
+        /* --- ERBEN-COCKPIT UNLOCK --- */
+        async function unlockVaultWithShares() {
+            const raw1 = document.getElementById('shareInput1').value.trim();
+            const raw2 = document.getElementById('shareInput2').value.trim();
+
+            if (!raw1 || !raw2) return alert("Bitte zwei Schlüssel-Fragmente eingeben!");
+
+            function parseShare(str) {
+                const match = str.match(/x?([1-3]):([a-f0-9]+)/i);
+                if (match) return { x: parseInt(match[1]), key: match[2] };
+                return null;
+            }
+
+            const shareA = parseShare(raw1);
+            const shareB = parseShare(raw2);
+
+            if (!shareA || !shareB || shareA.x === shareB.x) {
+                return alert("Ungültige Schlüssel-Fragmente. Bitte zwei unterschiedliche Fragmente (z. B. x1 und x2) eingeben!");
+            }
+
+            const reconstructedHex = reconstructSecret(shareA, shareB);
+            const cfg = getVaultConfig();
+            const decryptedPayload = await decryptVaultPayload(cfg.encryptedData, reconstructedHex);
+
+            if (!decryptedPayload) {
+                return alert("❌ Entschlüsselung fehlgeschlagen! Die Schlüssel-Fragmente sind ungültig.");
+            }
+
+            document.getElementById('heirUnlockCard').classList.add('hidden');
+            document.getElementById('heirDecryptedContent').classList.remove('hidden');
+
+            // Render Erben-Einträge
+            const container = document.getElementById('heirEntriesList');
+            container.innerHTML = decryptedPayload.entries.map(e => `
+                <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-1.5">
+                    <div class="flex justify-between font-bold text-slate-100">
+                        <span>${e.title} (${e.category})</span>
+                        ${e.category === 'Verträge' ? `<button onclick="openCancelModal(${e.id})" class="px-2 py-0.5 bg-red-600 text-white rounded font-bold text-[10px]">📄 Kündigen</button>` : ''}
+                    </div>
+                    <p class="font-mono text-slate-300 bg-slate-950 p-2 rounded border border-slate-800">${e.content}</p>
+                </div>
+            `).join('');
+
+            alert("🎉 Tresor erfolgreich entsperrt!");
         }
 
-        function importBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    if (parsed && Array.isArray(parsed.notes)) {
-                        saveData(parsed);
-                        decryptedCache.clear();
-                        renderNotes();
-                        alert("✅ Verschlüsseltes Backup erfolgreich importiert!");
-                    } else {
-                        alert("❌ Ungültiges Backup-Dateiformat.");
-                    }
-                } catch (err) {
-                    alert("❌ Fehler beim Einlesen der Backup-Datei.");
-                }
-            };
-            reader.readAsText(file);
+        /* --- 1-KLICK KÜNDIGUNGSGENERATOR --- */
+        function openCancelModal(entryId) {
+            const entry = currentDecryptedVault.entries.find(e => e.id === entryId);
+            if (!entry) return;
+            activeCancellationTarget = entry;
+
+            document.getElementById('cancelTargetTitle').value = entry.title;
+            document.getElementById('cancelContractNo').value = entry.contractNo || '';
+            document.getElementById('cancelPartner').value = entry.partner || '';
+            document.getElementById('cancelDeathDate').valueAsDate = new Date();
+
+            document.getElementById('cancelModal').classList.remove('hidden');
+            document.getElementById('cancelModal').classList.add('flex');
+        }
+
+        function closeCancelModal() {
+            document.getElementById('cancelModal').classList.remove('flex');
+            document.getElementById('cancelModal').classList.add('hidden');
+        }
+
+        function generateCancellationPDF() {
+            if (!activeCancellationTarget) return;
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const heirName = document.getElementById('cancelHeirName').value.trim() || "Der Erbe / Die Erbin";
+            const deathDate = document.getElementById('cancelDeathDate').value;
+            const partner = document.getElementById('cancelPartner').value.trim() || activeCancellationTarget.partner || "Vertragspartner";
+            const contractNo = document.getElementById('cancelContractNo').value.trim() || activeCancellationTarget.contractNo || "k.A.";
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text(`An: ${partner}`, 14, 25);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Absender (Erbe): ${heirName}`, 14, 35);
+            doc.text(`Datum: ${new Date().toLocaleDateString('de-DE')}`, 14, 40);
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.text(`BETREFF: Sonderkündigung im Todesfall - Vertrag: ${activeCancellationTarget.title}`, 14, 55);
+            doc.text(`Vertrags- / Kundennummer: ${contractNo}`, 14, 62);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            let body = `Sehr geehrte Damen und Herren,\n\n` +
+                `hiermit mache ich als Erbe/Vertrauensperson von meinem Sonderkündigungsrecht im Todesfall Gebrauch und kündige den Vertrag "${activeCancellationTarget.title}" (Nr. ${contractNo}) mit sofortiger Wirkung.\n\n` +
+                `Der Erblasser ist am ${deathDate ? new Date(deathDate).toLocaleDateString('de-DE') : 'k.A.'} verstorben.\n\n` +
+                `Bitte bestätigen Sie mir die Aufhebung des Vertrags sowie das Vertragsende schriftlich.\n\n` +
+                `Mit freundlichen Grüßen,\n\n` +
+                `${heirName}`;
+
+            doc.text(body, 14, 75);
+            doc.save(`kuendigung-${activeCancellationTarget.title.replace(/[^a-z0-9]/gi, '_')}.pdf`);
+            closeCancelModal();
         }
     </script>
 </body>
