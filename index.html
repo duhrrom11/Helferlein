@@ -73,33 +73,9 @@
             border-color: #334155 !important;
             color: #f8fafc !important;
         }
-
-        /* Boot-Animation Overlay */
-        #bootScreen {
-            position: fixed;
-            inset: 0;
-            background: #030712;
-            color: #38bdf8;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-family: monospace;
-            transition: opacity 0.5s ease;
-        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
-
-    <!-- Futuristischer Start-Screen / Boot-Animation -->
-    <div id="bootScreen">
-        <div class="text-2xl font-bold tracking-widest animate-pulse">⚡ ALLTAGSHELFERLEIN HUB</div>
-        <div class="text-xs text-sky-400 mt-2">SYSTEM INITIALIZING... 10 PRO-TOOLS ONLINE</div>
-        <div class="w-48 h-1 bg-slate-800 rounded-full mt-6 overflow-hidden">
-            <div id="bootProgress" class="h-full bg-sky-400 w-0 transition-all duration-1000"></div>
-        </div>
-    </div>
 
     <!-- Partikel Hintergrund -->
     <canvas id="particleCanvas"></canvas>
@@ -263,4 +239,9 @@
             </div>
 
             <!-- Tool 6 -->
-            <div class
+            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-name="haustier hund katze gesundheit impfpass tierarzt kosten">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 dark:border-teal-800 shadow-inner">🐾</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 dark:text-slate-60
