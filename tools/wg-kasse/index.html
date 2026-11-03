@@ -1,32 +1,85 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WG- & Haushaltskasse Pro</title>
+    <title>Haushalts- & Budgetbuch Pro</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- jsPDF für den PDF-Report-Export -->
+    <!-- Chart.js für Finanz-Auswertungen -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF für PDF-Report -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Tesseract.js für OCR Texterkennung -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- QRCode.js für Sticker-Generierung -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #printStickerArea, #printStickerArea * { visibility: visible; }
+            #printStickerArea { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
 
     <!-- Header -->
-    <header class="bg-purple-600 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-3xl font-bold">💶 WG- & Haushaltskasse Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Ausgaben erfassen, automatisch aufteilen & Abrechnung starten</p>
+    <header class="bg-emerald-800 text-white shadow-lg py-6 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-center md:text-left">
+                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">📊 Haushalts- & Budgetbuch Pro</h1>
+                <p class="text-xs md:text-sm opacity-90 mt-1">Einnahmen, Ausgaben, Budgets, Sparziele, Kassenbons & Garantietracker</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="toggleGuide()" class="px-4 py-2 bg-emerald-900 hover:bg-emerald-950 border border-emerald-600 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2">
+                    📖 Gebrauchsanleitung & Hilfe
+                </button>
+            </div>
+        </div>
     </header>
 
+    <!-- Gebrauchsanleitung / Dokumentation (Aufklappbar) -->
+    <section id="guideSection" class="hidden bg-emerald-950 text-emerald-50 border-b border-emerald-800 p-6 transition-all duration-300">
+        <div class="max-w-7xl mx-auto space-y-4">
+            <div class="flex justify-between items-center border-b border-emerald-700 pb-3">
+                <h2 class="text-lg font-bold flex items-center gap-2">📘 Detaillierte Gebrauchsanleitung & Finanz-Guide</h2>
+                <button onclick="toggleGuide()" class="text-emerald-300 hover:text-white text-xl font-bold">&times;</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs leading-relaxed">
+                <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">1. Einnahmen & Ausgaben</h3>
+                    <p>Wähle im Formular den Typ aus: <strong>Ausgabe</strong>, <strong>Einnahme</strong> oder <strong>Fixkosten/Abo</strong>. Gib Betrag, Datum, Kategorie und Zahlungsart ein. Wiederkehrende Verträge (Miete, Abos) werden als Fixkosten gekennzeichnet.</p>
+                </div>
+                <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">2. Budgetierung & Limite</h3>
+                    <p>Trage monatliche Höchstgrenzen für Kategorien (z. B. Lebensmittel, Freizeit) ein. Das System berechnet deinen aktuellen Verbrauch und zeigt mit Farb-Balken (Grün/Gelb/Rot) an, wie viel Restbudget verbleibt.</p>
+                </div>
+                <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">3. Sparziele & Zeitwert</h3>
+                    <p>Lege Sparziele für Urlaub, Notgroschen oder Anschaffungen an und zahle schrittweise ein. Der automatische <strong>Hausrat-Zeitwert-Rechner</strong> berechnet den Restwert deiner Besitztümer anhand der Nutzungsdauer.</p>
+                </div>
+                <div class="bg-emerald-900/70 p-4 rounded-xl border border-emerald-700 space-y-2">
+                    <h3 class="font-bold text-sm text-emerald-200">4. Kassenbons, QR & Steuer</h3>
+                    <p>Nutze den <strong>OCR-Scan</strong> zur Texterkennung aus Fotos. Schärfe verblasste Thermobons über den Bildfilter. Exportiere steuerrelevante Posten als CSV oder drucke Geräte-QR-Sticker für deine Kartons.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
+    <main class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
         
         <!-- Navigation & Global Actions -->
-        <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
-            <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+            <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold transition-all">← Zurück zur Startseite</a>
             
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                <button onclick="exportWG_PDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF-Abrechnung</button>
-                <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup Export</button>
+                <button onclick="exportSteuerCSV()" class="px-4 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-xs font-bold shadow-sm">💼 Steuer-Export (CSV)</button>
+                <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 Finanz-Bericht (PDF)</button>
+                <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
                 <label class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
                     📂 Import <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
                 </label>
@@ -34,268 +87,947 @@
         </div>
 
         <!-- Dashboard Statistiken -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-purple-50 text-purple-700 rounded-xl font-bold">💰</div>
-                <div><p class="text-xs text-gray-500">Gesamtausgaben</p><h3 id="statTotal" class="text-lg font-bold">0,00 €</h3></div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-xs text-gray-500 font-medium">Monats-Einnahmen</p>
+                <h3 id="statIncome" class="text-lg font-bold text-emerald-600">0,00 €</h3>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">👥</div>
-                <div><p class="text-xs text-gray-500">Erfasste Posten</p><h3 id="statCount" class="text-lg font-bold">0</h3></div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-xs text-gray-500 font-medium">Monats-Ausgaben</p>
+                <h3 id="statExpense" class="text-lg font-bold text-red-600">0,00 €</h3>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">⚖️</div>
-                <div><p class="text-xs text-gray-500">Abrechnungs-Status</p><h3 id="statStatus" class="text-sm font-bold text-green-600">Ausgeglichen</h3></div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-xs text-gray-500 font-medium">Monats-Saldo (Überschuss)</p>
+                <h3 id="statBalance" class="text-lg font-bold text-blue-600">0,00 €</h3>
             </div>
-        </div>
-
-        <!-- Erfassung: Neue Ausgabe -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h2 class="text-lg font-bold">➕ Neue Ausgabe hinzufügen</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <input type="text" id="expDesc" placeholder="Wofür? (z.B. Wocheneinkauf)" class="p-3 border rounded-xl text-sm md:col-span-2">
-                <input type="text" id="expAmount" placeholder="Betrag in € (z.B. 45.50)" class="p-3 border rounded-xl text-sm">
-                <input type="text" id="expWho" placeholder="Bezahlt von (z.B. Anna)" class="p-3 border rounded-xl text-sm">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+                <p class="text-xs text-gray-500 font-medium">Fixkosten-Quote</p>
+                <h3 id="statFixRatio" class="text-lg font-bold text-purple-600">0 %</h3>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <select id="expCategory" class="p-3 border rounded-xl text-sm bg-white">
-                    <option value="Lebensmittel">🛒 Lebensmittel</option>
-                    <option value="Haushalt">🏠 Haushalt & Strom</option>
-                    <option value="Freizeit">🎉 Freizeit & Party</option>
-                    <option value="Sonstiges">📦 Sonstiges</option>
-                </select>
-                <input type="file" id="expPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-50 file:text-purple-700">
-            </div>
-            <button onclick="saveExpense()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Ausgabe eintragen</button>
-        </div>
-
-        <!-- SMART-SPLIT ABRECHNUNG (Wer schuldet wem?) -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-            <h3 class="font-bold text-lg">💡 Smart-Split Abrechnung (Ausgleichszahlungen)</h3>
-            <div id="settlementContainer" class="space-y-2">
-                <p class="text-sm text-gray-400 text-center py-2">Noch keine Berechnungen nötig.</p>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 col-span-2 md:col-span-1">
+                <p class="text-xs text-gray-500 font-medium">Hausrat-Zeitwert Gesamt</p>
+                <h3 id="statZeitwertTotal" class="text-lg font-bold text-amber-600">0,00 €</h3>
             </div>
         </div>
 
-        <!-- Ausgaben-Liste -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-3">
-                <h3 class="font-bold text-lg">📋 Alle Transaktionen</h3>
-                <input type="text" id="searchBox" oninput="renderApp()" placeholder="🔍 Suchen..." class="p-2 border rounded-xl text-sm w-full md:w-1/3">
+        <!-- Section: Charts & Budgets (Zweigeteilt) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Diagramme -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+                <h3 class="font-bold text-base text-gray-900 border-b pb-2">📊 Visuelle Finanz-Analyse</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 text-center mb-2">Ausgaben nach Kategorie</p>
+                        <div class="h-48 flex justify-center"><canvas id="categoryChart"></canvas></div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-gray-500 text-center mb-2">Monatsverlauf (Einnahmen vs. Ausgaben)</p>
+                        <div class="h-48 flex justify-center"><canvas id="cashflowChart"></canvas></div>
+                    </div>
+                </div>
             </div>
-            <div id="expensesList" class="space-y-3">
-                <p class="text-sm text-gray-400 text-center py-4">Noch keine Ausgaben erfasst.</p>
+
+            <!-- Kategorie-Budgets -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-base text-gray-900">🎯 Monats-Budgets & Limite</h3>
+                    <button onclick="openBudgetModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold">⚙️ Budgets anpassen</button>
+                </div>
+                <div id="budgetProgressList" class="space-y-3 max-h-56 overflow-y-auto pr-1">
+                    <p class="text-xs text-gray-400 text-center py-4">Lade Budgets...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Sparziele Widget -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-base text-gray-900">🐷 Sparschwein & Sparziele</h3>
+                <button onclick="openAddGoalModal()" class="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">+ Neues Sparziel</button>
+            </div>
+            <div id="savingsGoalsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>
+            </div>
+        </div>
+
+        <!-- Erfassung & Bearbeitung Formular -->
+        <div id="formCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h2 id="formTitle" class="text-lg font-bold text-gray-900">✍️ Neue Buchung / Kassenbon erfassen</h2>
+                <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden px-3 py-1 bg-gray-200 hover:bg-gray-300 text-xs font-bold rounded-lg text-gray-700">✕ Abbrechen</button>
+            </div>
+
+            <!-- Buchungstyp Wahl -->
+            <div class="flex gap-3">
+                <label class="flex-1 text-center py-2.5 rounded-xl border font-bold text-xs cursor-pointer transition-all bg-red-50 border-red-200 text-red-700 hover:bg-red-100">
+                    <input type="radio" name="entryType" value="ausgabe" checked onchange="updateFormUI()" class="hidden"> 🔻 Ausgabe
+                </label>
+                <label class="flex-1 text-center py-2.5 rounded-xl border font-bold text-xs cursor-pointer transition-all bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100">
+                    <input type="radio" name="entryType" value="einnahme" onchange="updateFormUI()" class="hidden"> 🔺 Einnahme
+                </label>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Titel / Verwendungszweck *:</label>
+                    <input type="text" id="receiptTitle" placeholder="z.B. Supermarkt Einkauf, Gehalt, Miete" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Händler / Partner / Quelle:</label>
+                    <input type="text" id="receiptStore" placeholder="z.B. Rewe, Arbeitgeber, Amazon" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Datum *:</label>
+                    <input type="date" id="receiptDate" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Betrag (€) *:</label>
+                    <input type="number" step="0.01" id="receiptPrice" placeholder="49.90" class="w-full p-3 border rounded-xl text-sm font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
+                    <select id="receiptCategory" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="Lebensmittel">🛒 Lebensmittel & Haushalt</option>
+                        <option value="Wohnen">🏠 Wohnen & Miete</option>
+                        <option value="Energie">⚡ Strom, Gas & Wasser</option>
+                        <option value="Auto">🚗 Auto, Tanken & ÖPNV</option>
+                        <option value="Freizeit">🎉 Freizeit, Gastronomie & Urlaub</option>
+                        <option value="Elektronik">📱 Elektronik & Technik</option>
+                        <option value="Gesundheit">💊 Gesundheit & Drogerie</option>
+                        <option value="Verträge">📜 Verträge & Abos</option>
+                        <option value="Einnahme">💶 Einnahmen & Gehalt</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zahlungsart:</label>
+                    <select id="receiptPaymentMethod" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="EC-Karte">💳 EC / Bankkarte</option>
+                        <option value="Bargeld">💵 Bargeld</option>
+                        <option value="Kreditkarte">💳 Kreditkarte</option>
+                        <option value="Überweisung">🏦 Überweisung / Dauerauftrag</option>
+                        <option value="PayPal">🅿️ PayPal</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Garantie (Monate):</label>
+                    <input type="number" id="receiptWarranty" value="0" placeholder="24" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nutzungsdauer (Jahre):</label>
+                    <input type="number" id="receiptLifespan" value="5" placeholder="5" class="w-full p-3 border rounded-xl text-sm" title="Erforderlich für den Hausrat-Zeitwert">
+                </div>
+            </div>
+
+            <!-- Fixkosten & Steuer Zusatzoptionen -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Seriennummer / S/N:</label>
+                    <input type="text" id="receiptSN" placeholder="z.B. SN-987456123" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Lagerort Karton / Zubehör:</label>
+                    <input type="text" id="receiptLocation" placeholder="z.B. Keller Kiste #2" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+                </div>
+                <div class="flex flex-col justify-center space-y-2 pt-1">
+                    <label class="inline-flex items-center cursor-pointer space-x-2">
+                        <input type="checkbox" id="receiptIsFixkosten" class="w-4 h-4 text-purple-600 rounded">
+                        <span class="text-xs font-bold text-gray-700">🔄 Wiederkehrende Fixkosten / Abo</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer space-x-2">
+                        <input type="checkbox" id="receiptIsTax" class="w-4 h-4 text-emerald-600 rounded">
+                        <span class="text-xs font-bold text-gray-700">💼 Steuerrelevant</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Beleg-Scan / Foto / OCR -->
+            <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <label class="block text-xs font-bold text-emerald-900">📷 Belegfoto, Mehrseiten-Scan & Thermopapier-Filter</label>
+                    <button type="button" onclick="runOCR()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">🔍 Text automatisch erkennen (OCR)</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+                    <input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full">
+                    <div id="ocrStatus" class="text-xs text-emerald-800 font-semibold hidden">🔍 Scanne Kassenbon... Bitte warten.</div>
+                </div>
+
+                <div id="uploadGalleryPreview" class="flex gap-2 overflow-x-auto py-2 hidden"></div>
+
+                <!-- Canvas Editor für Thermopapier Filter -->
+                <div id="canvasEditor" class="hidden space-y-2 pt-2 border-t border-emerald-200">
+                    <p class="text-[11px] text-emerald-800 font-medium">⚡ Thermopapier-Filter (Helligkeit/Kontrast anpassen):</p>
+                    <div class="flex gap-4 items-center flex-wrap">
+                        <label class="text-xs">Helligkeit: <input type="range" id="filterBrightness" min="-100" max="100" value="0" onchange="applyCanvasFilter()" class="align-middle"></label>
+                        <label class="text-xs">Kontrast: <input type="range" id="filterContrast" min="-100" max="100" value="0" onchange="applyCanvasFilter()" class="align-middle"></label>
+                    </div>
+                    <div class="max-h-48 overflow-hidden rounded-lg border bg-black flex justify-center">
+                        <canvas id="photoCanvas" class="max-h-48 object-contain"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
+                <input type="text" id="receiptNote" placeholder="z.B. Monatliche Abrechnung" class="w-full p-3 border rounded-xl text-sm">
+            </div>
+
+            <button id="saveBtn" onclick="saveReceipt()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition-colors">Buchung / Beleg speichern</button>
+        </div>
+
+        <!-- Transaktions-Historie -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+                <h3 class="font-bold text-lg text-gray-900">📋 Buchungshistorie & Kassenbons</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                        <option value="All">Alle Typen</option>
+                        <option value="ausgabe">🔻 Nur Ausgaben</option>
+                        <option value="einnahme">🔺 Nur Einnahmen</option>
+                        <option value="fixkosten">🔄 Nur Fixkosten/Abos</option>
+                    </select>
+                    <select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                        <option value="All">Alle Kategorien</option>
+                        <option value="Lebensmittel">🛒 Lebensmittel</option>
+                        <option value="Wohnen">🏠 Wohnen</option>
+                        <option value="Energie">⚡ Energie</option>
+                        <option value="Auto">🚗 Auto</option>
+                        <option value="Freizeit">🎉 Freizeit</option>
+                        <option value="Elektronik">📱 Elektronik</option>
+                        <option value="Gesundheit">💊 Gesundheit</option>
+                        <option value="Verträge">📜 Verträge</option>
+                        <option value="Einnahme">💶 Einnahmen</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
+                    </select>
+                </div>
+            </div>
+            <div id="receiptsList" class="space-y-3">
+                <p class="text-sm text-gray-400 text-center py-4">Noch keine Buchungen vorhanden.</p>
             </div>
         </div>
     </main>
 
-    <!-- MODAL: Foto Zoom -->
-    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeImageModal()">
-        <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
+    <!-- Modal: Budget Verwaltung -->
+    <div id="budgetModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">⚙️ Monats-Budgets festlegen</h3>
+                <button onclick="closeBudgetModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div id="budgetInputList" class="space-y-3 flex-grow overflow-y-auto pr-1 text-xs"></div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeBudgetModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveBudgetsFromModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Script Logik -->
+    <!-- Modal: Neues Sparziel -->
+    <div id="savingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">🐷 Neues Sparziel anlegen</h3>
+                <button onclick="closeSavingsModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">Bezeichnung des Zieles *:</label>
+                    <input type="text" id="goalTitle" placeholder="z.B. Urlaub 2027, Notgroschen" class="w-full p-2.5 border rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Zielbetrag (€) *:</label>
+                    <input type="number" step="0.01" id="goalTarget" placeholder="1500" class="w-full p-2.5 border rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Bereits gespart (€):</label>
+                    <input type="number" step="0.01" id="goalCurrent" value="0" class="w-full p-2.5 border rounded-xl">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-3 border-t">
+                <button onclick="closeSavingsModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveSavingsGoal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">Anlegen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Galerie -->
+    <div id="galleryModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-4 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 id="galleryTitle" class="text-lg font-bold">🖼️ Dokumenten-Galerie</h3>
+                <button onclick="closeGalleryModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div id="galleryContainer" class="flex-grow overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <div class="flex justify-end pt-2 border-t">
+                <button onclick="closeGalleryModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: QR-Code Sticker -->
+    <div id="qrModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-bold">🏷️ Geräte-Sticker drucken</h3>
+                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div id="printStickerArea" class="p-4 border-2 border-dashed border-gray-400 rounded-2xl bg-gray-50 flex flex-col items-center text-center space-y-3">
+                <h4 id="stickerTitle" class="font-bold text-sm text-gray-900"></h4>
+                <div id="qrcode" class="p-2 bg-white border rounded-xl shadow-sm min-w-[130px] min-h-[130px] flex items-center justify-center"></div>
+                <div class="text-[11px] text-gray-600 space-y-0.5">
+                    <p id="stickerStoreDate"></p>
+                    <p id="stickerSN"></p>
+                    <p id="stickerWarranty"></p>
+                </div>
+            </div>
+            <div class="flex justify-between gap-2 pt-2">
+                <button onclick="closeQRModal()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+                <button onclick="window.print()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">🖨️ Sticker Drucken</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skript Logik -->
     <script>
+        let currentUploadedPhotos = [];
+        let rawImage = null;
+        let editingReceiptId = null;
+
+        let categoryChartInstance = null;
+        let cashflowChartInstance = null;
+
+        const defaultCategories = [
+            "Lebensmittel", "Wohnen", "Energie", "Auto", "Freizeit", 
+            "Elektronik", "Gesundheit", "Verträge", "Sonstiges"
+        ];
+
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('receiptDate').valueAsDate = new Date();
+            initCharts();
             renderApp();
         });
 
+        function toggleGuide() {
+            document.getElementById('guideSection').classList.toggle('hidden');
+        }
+
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('wg_kasse_pro')) || { expenses: [] };
+                return JSON.parse(localStorage.getItem('kassenbon_data')) || [];
             } catch(e) {
-                return { expenses: [] };
+                return [];
             }
         }
 
         function saveData(data) {
-            localStorage.setItem('wg_kasse_pro', JSON.stringify(data));
+            localStorage.setItem('kassenbon_data', JSON.stringify(data));
         }
 
-        function saveExpense() {
-            const desc = document.getElementById('expDesc').value.trim();
-            const amount = parseFloat(document.getElementById('expAmount').value.replace(',', '.')) || 0;
-            const who = document.getElementById('expWho').value.trim();
-            const category = document.getElementById('expCategory').value;
-            const photoInput = document.getElementById('expPhotoInput');
-
-            if (!desc || amount <= 0 || !who) {
-                return alert("Bitte Beschreibung, gültigen Betrag und Zahler angeben!");
+        function getBudgets() {
+            try {
+                return JSON.parse(localStorage.getItem('budgetbuch_budgets')) || {
+                    "Lebensmittel": 400, "Wohnen": 800, "Energie": 150, "Auto": 250, 
+                    "Freizeit": 200, "Elektronik": 100, "Gesundheit": 80, "Verträge": 120, "Sonstiges": 100
+                };
+            } catch(e) {
+                return {};
             }
+        }
 
-            if (photoInput.files && photoInput.files[0]) {
+        function saveBudgets(budgets) {
+            localStorage.setItem('budgetbuch_budgets', JSON.stringify(budgets));
+        }
+
+        function getSavingsGoals() {
+            try {
+                return JSON.parse(localStorage.getItem('budgetbuch_goals')) || [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function saveSavingsGoals(goals) {
+            localStorage.setItem('budgetbuch_goals', JSON.stringify(goals));
+        }
+
+        function updateFormUI() {
+            const type = document.querySelector('input[name="entryType"]:checked').value;
+            const catSelect = document.getElementById('receiptCategory');
+            if (type === 'einnahme') {
+                catSelect.value = 'Einnahme';
+            } else if (catSelect.value === 'Einnahme') {
+                catSelect.value = 'Lebensmittel';
+            }
+        }
+
+        /* --- Chart.js Initialisierung --- */
+        function initCharts() {
+            const ctxCat = document.getElementById('categoryChart').getContext('2d');
+            categoryChartInstance = new Chart(ctxCat, {
+                type: 'doughnut',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6', '#64748b'] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            const ctxCF = document.getElementById('cashflowChart').getContext('2d');
+            cashflowChartInstance = new Chart(ctxCF, {
+                type: 'bar',
+                data: {
+                    labels: ['Einnahmen', 'Ausgaben'],
+                    datasets: [{ label: 'Betrag €', data: [0, 0], backgroundColor: ['#10b981', '#ef4444'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        /* --- Mehrseiten Scan & Canvas --- */
+        function loadPhotosToCanvas(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            currentUploadedPhotos = [];
+            const previewContainer = document.getElementById('uploadGalleryPreview');
+            previewContainer.innerHTML = "";
+            previewContainer.classList.remove('hidden');
+
+            Array.from(files).forEach((file, idx) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    storeExpenseData(desc, amount, who, category, e.target.result);
+                    currentUploadedPhotos.push(e.target.result);
+                    const imgThumb = document.createElement('img');
+                    imgThumb.src = e.target.result;
+                    imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
+                    previewContainer.appendChild(imgThumb);
+
+                    if (idx === 0) {
+                        const img = new Image();
+                        img.onload = function() {
+                            rawImage = img;
+                            document.getElementById('canvasEditor').classList.remove('hidden');
+                            applyCanvasFilter();
+                        };
+                        img.src = e.target.result;
+                    }
                 };
-                reader.readAsDataURL(photoInput.files[0]);
-            } else {
-                storeExpenseData(desc, amount, who, category, "");
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function applyCanvasFilter() {
+            if (!rawImage) return;
+            const canvas = document.getElementById('photoCanvas');
+            const ctx = canvas.getContext('2d');
+            const b = parseInt(document.getElementById('filterBrightness').value);
+            const c = parseInt(document.getElementById('filterContrast').value);
+
+            canvas.width = Math.min(rawImage.width, 600);
+            canvas.height = rawImage.height * (canvas.width / rawImage.width);
+            ctx.filter = `brightness(${100 + b}%) contrast(${100 + c}%)`;
+            ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
+
+            if (currentUploadedPhotos.length > 0) {
+                currentUploadedPhotos[0] = canvas.toDataURL('image/jpeg', 0.6);
             }
         }
 
-        function storeExpenseData(desc, amount, who, category, photo) {
+        /* --- Tesseract OCR --- */
+        async function runOCR() {
+            const input = document.getElementById('receiptPhotoInput');
+            if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
+            const statusEl = document.getElementById('ocrStatus');
+            statusEl.innerText = "🔍 Scanne Kassenbon... Bitte warten.";
+            statusEl.classList.remove('hidden');
+
+            try {
+                const worker = await Tesseract.createWorker('deu');
+                const ret = await worker.recognize(input.files[0]);
+                await worker.terminate();
+
+                const text = ret.data.text;
+                statusEl.innerText = "✅ OCR Scan erfolgreich!";
+
+                const priceMatch = text.match(/(\d+[\.,]\d{2})\s*(€|EUR)?/i);
+                if (priceMatch && !document.getElementById('receiptPrice').value) {
+                    document.getElementById('receiptPrice').value = priceMatch[1].replace(',', '.');
+                }
+                const dateMatch = text.match(/(\d{2})[\.\/](\d{2})[\.\/](\d{4})/);
+                if (dateMatch && !document.getElementById('receiptDate').value) {
+                    document.getElementById('receiptDate').value = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
+                }
+            } catch(e) {
+                statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+            }
+        }
+
+        /* --- Buchung Speichern --- */
+        function saveReceipt() {
+            const title = document.getElementById('receiptTitle').value.trim();
+            const store = document.getElementById('receiptStore').value.trim();
+            const date = document.getElementById('receiptDate').value;
+            const price = parseFloat(document.getElementById('receiptPrice').value) || 0;
+            const category = document.getElementById('receiptCategory').value;
+            const paymentMethod = document.getElementById('receiptPaymentMethod').value;
+            const warrantyMonths = parseInt(document.getElementById('receiptWarranty').value) || 0;
+            const lifespan = parseFloat(document.getElementById('receiptLifespan').value) || 5;
+            const sn = document.getElementById('receiptSN').value.trim();
+            const location = document.getElementById('receiptLocation').value.trim();
+            const isFixkosten = document.getElementById('receiptIsFixkosten').checked;
+            const isTax = document.getElementById('receiptIsTax').checked;
+            const note = document.getElementById('receiptNote').value.trim();
+            const entryType = document.querySelector('input[name="entryType"]:checked').value;
+
+            if (!title || !date || price <= 0) {
+                return alert("Bitte Titel, Kaufdatum und einen gültigen Betrag angeben!");
+            }
+
             let data = getData();
-            data.expenses.push({ id: Date.now(), desc, amount, who, category, photo, date: new Date().toLocaleDateString('de-DE') });
+
+            if (editingReceiptId) {
+                const index = data.findIndex(r => r.id === editingReceiptId);
+                if (index !== -1) {
+                    data[index] = {
+                        ...data[index],
+                        title, store, date, price, category, paymentMethod, warrantyMonths, lifespan, sn, location, isFixkosten, isTax, note, entryType,
+                        photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : (data[index].photos || [])
+                    };
+                }
+            } else {
+                data.push({
+                    id: Date.now(),
+                    title, store, date, price, category, paymentMethod, warrantyMonths, lifespan, sn, location, isFixkosten, isTax, note, entryType,
+                    photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : []
+                });
+            }
+
+            data.sort((a, b) => new Date(b.date) - new Date(a.date));
             saveData(data);
-            document.getElementById('expDesc').value = "";
-            document.getElementById('expAmount').value = "";
-            document.getElementById('expWho').value = "";
-            document.getElementById('expPhotoInput').value = "";
+
+            resetForm();
             renderApp();
         }
 
-        function deleteExpense(id) {
-            if (!confirm("Möchtest du diese Ausgabe wirklich löschen?")) return;
-            let data = getData();
-            data.expenses = data.expenses.filter(e => e.id !== id);
+        function editReceipt(id) {
+            const data = getData();
+            const r = data.find(item => item.id === id);
+            if (!r) return;
+
+            editingReceiptId = id;
+            document.getElementById('receiptTitle').value = r.title || '';
+            document.getElementById('receiptStore').value = r.store || '';
+            document.getElementById('receiptDate').value = r.date || '';
+            document.getElementById('receiptPrice').value = r.price || '';
+            document.getElementById('receiptCategory').value = r.category || 'Sonstiges';
+            document.getElementById('receiptPaymentMethod').value = r.paymentMethod || 'EC-Karte';
+            document.getElementById('receiptWarranty').value = r.warrantyMonths || 0;
+            document.getElementById('receiptLifespan').value = r.lifespan || 5;
+            document.getElementById('receiptSN').value = r.sn || '';
+            document.getElementById('receiptLocation').value = r.location || '';
+            document.getElementById('receiptIsFixkosten').checked = !!r.isFixkosten;
+            document.getElementById('receiptIsTax').checked = !!r.isTax;
+            document.getElementById('receiptNote').value = r.note || '';
+
+            const radio = document.querySelector(`input[name="entryType"][value="${r.entryType || 'ausgabe'}"]`);
+            if (radio) radio.checked = true;
+
+            const photos = r.photos || [];
+            currentUploadedPhotos = [...photos];
+            const previewContainer = document.getElementById('uploadGalleryPreview');
+            previewContainer.innerHTML = "";
+            if (photos.length > 0) {
+                previewContainer.classList.remove('hidden');
+                photos.forEach(src => {
+                    const imgThumb = document.createElement('img');
+                    imgThumb.src = src;
+                    imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
+                    previewContainer.appendChild(imgThumb);
+                });
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+
+            document.getElementById('formTitle').innerText = `✏️ Buchung bearbeiten: ${r.title}`;
+            document.getElementById('saveBtn').innerText = "💾 Änderungen speichern";
+            document.getElementById('cancelEditBtn').classList.remove('hidden');
+            document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEdit() { resetForm(); }
+
+        function resetForm() {
+            editingReceiptId = null;
+            document.getElementById('receiptTitle').value = "";
+            document.getElementById('receiptStore').value = "";
+            document.getElementById('receiptPrice').value = "";
+            document.getElementById('receiptSN').value = "";
+            document.getElementById('receiptLocation').value = "";
+            document.getElementById('receiptNote').value = "";
+            document.getElementById('receiptIsFixkosten').checked = false;
+            document.getElementById('receiptIsTax').checked = false;
+            document.getElementById('receiptPhotoInput').value = "";
+            document.getElementById('uploadGalleryPreview').classList.add('hidden');
+            document.getElementById('canvasEditor').classList.add('hidden');
+            document.getElementById('ocrStatus').classList.add('hidden');
+            document.getElementById('formTitle').innerText = "✍️ Neue Buchung / Kassenbon erfassen";
+            document.getElementById('saveBtn').innerText = "Buchung / Beleg speichern";
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+            document.getElementById('receiptDate').valueAsDate = new Date();
+            currentUploadedPhotos = [];
+        }
+
+        function deleteReceipt(id) {
+            if (!confirm("⚠️ Diese Buchung wirklich löschen?")) return;
+            let data = getData().filter(item => item.id !== id);
             saveData(data);
+            if (editingReceiptId === id) cancelEdit();
             renderApp();
         }
 
+        /* --- Render App, Stats, Charts & Budgets --- */
         function renderApp() {
             const data = getData();
-            const search = document.getElementById('searchBox').value.toLowerCase();
-            const listContainer = document.getElementById('expensesList');
-            const settlementContainer = document.getElementById('settlementContainer');
+            const budgets = getBudgets();
+            const now = new Date();
+            const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-            let total = data.expenses.reduce((sum, e) => sum + e.amount, 0);
-            document.getElementById('statTotal').innerText = total.toFixed(2).replace('.', ',') + ' €';
-            document.getElementById('statCount').innerText = data.expenses.length;
+            let totalIncome = 0;
+            let totalExpense = 0;
+            let fixExpense = 0;
+            let totalZeitwert = 0;
 
-            // Personenspezifische Salden berechnen
-            let paidByUser = {};
-            let participants = new Set();
+            const categoryExpenses = {};
+            defaultCategories.forEach(cat => categoryExpenses[cat] = 0);
 
-            data.expenses.forEach(e => {
-                participants.add(e.who);
-                paidByUser[e.who] = (paidByUser[e.who] || 0) + e.amount;
+            data.forEach(r => {
+                const isCurrentMonth = r.date && r.date.startsWith(currentMonthStr);
+                const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
+
+                if (isIncome) {
+                    if (isCurrentMonth) totalIncome += r.price;
+                } else {
+                    if (isCurrentMonth) {
+                        totalExpense += r.price;
+                        if (r.isFixkosten) fixExpense += r.price;
+                        categoryExpenses[r.category] = (categoryExpenses[r.category] || 0) + r.price;
+                    }
+                }
+
+                // Hausrat Zeitwert
+                const buyDate = new Date(r.date);
+                const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
+                const lifespan = r.lifespan || 5;
+                const zeitwert = Math.max(0, r.price * (1 - (ageYears / lifespan)));
+                if (!isIncome) totalZeitwert += zeitwert;
             });
 
-            let numPeople = participants.size;
-            let fairShare = numPeople > 0 ? total / numPeople : 0;
+            document.getElementById('statIncome').innerText = totalIncome.toFixed(2) + " €";
+            document.getElementById('statExpense').innerText = totalExpense.toFixed(2) + " €";
+            const balance = totalIncome - totalExpense;
+            const balanceEl = document.getElementById('statBalance');
+            balanceEl.innerText = balance.toFixed(2) + " €";
+            balanceEl.className = `text-lg font-bold ${balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`;
+            document.getElementById('statFixRatio').innerText = totalExpense > 0 ? ((fixExpense / totalExpense) * 100).toFixed(0) + " %" : "0 %";
+            document.getElementById('statZeitwertTotal').innerText = totalZeitwert.toFixed(2) + " €";
 
-            let balances = {};
-            participants.forEach(p => {
-                balances[p] = (paidByUser[p] || 0) - fairShare;
-            });
+            // Update Charts
+            if (categoryChartInstance && cashflowChartInstance) {
+                const catLabels = Object.keys(categoryExpenses).filter(k => categoryExpenses[k] > 0);
+                const catValues = catLabels.map(k => categoryExpenses[k]);
+                categoryChartInstance.data.labels = catLabels.length ? catLabels : ['Keine Ausgaben'];
+                categoryChartInstance.data.datasets[0].data = catValues.length ? catValues : [1];
+                categoryChartInstance.update();
 
-            // Smart-Split Algorithmus (Wer schuldet wem?)
-            let debtors = [];
-            let creditors = [];
-            for (let p in balances) {
-                if (balances[p] < -0.01) debtors.push({ name: p, amount: -balances[p] });
-                if (balances[p] > 0.01) creditors.push({ name: p, amount: balances[p] });
+                cashflowChartInstance.data.datasets[0].data = [totalIncome, totalExpense];
+                cashflowChartInstance.update();
             }
 
-            let settlements = [];
-            let i = 0, j = 0;
-            while (i < debtors.length && j < creditors.length) {
-                let d = debtors[i];
-                let c = creditors[j];
-                let amt = Math.min(d.amount, c.amount);
-                settlements.push(`${d.name} schuldet ${c.name}: ${amt.toFixed(2).replace('.', ',')} €`);
-                d.amount -= amt;
-                c.amount -= amt;
-                if (d.amount < 0.01) i++;
-                if (c.amount < 0.01) j++;
-            }
+            // Budget Fortschrittsbalken
+            const budgetContainer = document.getElementById('budgetProgressList');
+            budgetContainer.innerHTML = defaultCategories.map(cat => {
+                const limit = budgets[cat] || 0;
+                const spent = categoryExpenses[cat] || 0;
+                const percent = limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
+                let barColor = "bg-emerald-500";
+                if (percent > 80) barColor = "bg-amber-500";
+                if (percent >= 100) barColor = "bg-red-500";
 
-            if (settlements.length > 0) {
-                document.getElementById('statStatus').innerText = "Ausgleich nötig";
-                document.getElementById('statStatus').className = "text-sm font-bold text-amber-600";
-                settlementContainer.innerHTML = settlements.map(s => `
-                    <div class="p-3 bg-purple-50 border border-purple-100 rounded-xl text-sm flex justify-between items-center font-medium">
-                        <span>💸 ${s}</span>
-                        <button onclick="shareViaWhatsApp('${s}')" class="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs">WhatsApp senden</button>
-                    </div>
-                `).join('');
-            } else {
-                document.getElementById('statStatus').innerText = "Alles ausgeglichen";
-                document.getElementById('statStatus').className = "text-sm font-bold text-green-600";
-                settlementContainer.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">Keine offenen Ausgleichszahlungen erforderlich.</p>`;
-            }
-
-            // Ausgaben filtern & rendern
-            let filtered = data.expenses;
-            if (search) {
-                filtered = filtered.filter(e => e.desc.toLowerCase().includes(search) || e.who.toLowerCase().includes(search) || e.category.toLowerCase().includes(search));
-            }
-
-            listContainer.innerHTML = filtered.map(e => `
-                <div class="p-4 bg-gray-50 border rounded-2xl flex items-center justify-between shadow-sm gap-3">
-                    <div class="flex items-center space-x-3">
-                        ${e.photo ? `<img src="${e.photo}" onclick="zoomImage('${e.photo}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Beleg</div>'}
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <h4 class="font-bold text-sm">${e.desc}</h4>
-                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-semibold">${e.category}</span>
-                            </div>
-                            <p class="text-xs text-gray-500">Bezahlt von: <span class="font-semibold text-purple-700">${e.who}</span> am ${e.date}</p>
+                return `
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs">
+                            <span class="font-bold text-gray-700">${cat}</span>
+                            <span class="text-gray-500">${spent.toFixed(2)} € / <strong>${limit.toFixed(2)} €</strong></span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                            <div class="${barColor} h-2 transition-all" style="width: ${percent}%"></div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <span class="font-bold text-md text-gray-800">${e.amount.toFixed(2).replace('.', ',')} €</span>
-                        <button onclick="deleteExpense(${e.id})" class="text-xs text-red-500 hover:text-red-700">Löschen</button>
+                `;
+            }).join('');
+
+            renderSavingsGoals();
+            renderTransactionList();
+        }
+
+        /* --- Sparziele Render --- */
+        function renderSavingsGoals() {
+            const goals = getSavingsGoals();
+            const container = document.getElementById('savingsGoalsGrid');
+            if (goals.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>`;
+                return;
+            }
+            container.innerHTML = goals.map(g => {
+                const percent = Math.min(100, (g.current / g.target) * 100);
+                return `
+                    <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-sm text-emerald-900">${g.title}</span>
+                            <button onclick="deleteSavingsGoal(${g.id})" class="text-red-500 text-xs font-bold hover:opacity-80">✕</button>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-600">
+                            <span>Gespart: <strong>${g.current.toFixed(2)} €</strong></span>
+                            <span>Ziel: ${g.target.toFixed(2)} €</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden">
+                            <div class="bg-emerald-600 h-2.5 transition-all" style="width: ${percent}%"></div>
+                        </div>
+                        <div class="flex gap-2 pt-1">
+                            <button onclick="depositGoal(${g.id})" class="flex-1 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">+ Einzahlen</button>
+                        </div>
                     </div>
+                `;
+            }).join('');
+        }
+
+        /* --- Transaktionsliste Render --- */
+        function renderTransactionList() {
+            const data = getData();
+            const typeFilter = document.getElementById('filterType').value;
+            const catFilter = document.getElementById('filterCategory').value;
+            const container = document.getElementById('receiptsList');
+
+            let filtered = data;
+            if (typeFilter === 'ausgabe') filtered = filtered.filter(r => r.entryType !== 'einnahme');
+            if (typeFilter === 'einnahme') filtered = filtered.filter(r => r.entryType === 'einnahme');
+            if (typeFilter === 'fixkosten') filtered = filtered.filter(r => r.isFixkosten);
+            if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Buchungen gefunden.</p>`;
+                return;
+            }
+
+            const now = new Date();
+            container.innerHTML = filtered.map(r => {
+                const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
+                const photos = r.photos || [];
+
+                return `
+                    <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div class="flex items-start space-x-3">
+                            ${photos.length > 0 
+                                ? `<div class="relative cursor-pointer" onclick="openGalleryModal(${r.id})">
+                                     <img src="${photos[0]}" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
+                                     ${photos.length > 1 ? `<span class="absolute bottom-0 right-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br-xl">+${photos.length - 1}</span>` : ''}
+                                   </div>` 
+                                : `<div class="w-16 h-16 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-xl">${isIncome ? '🔺' : '🧾'}</div>`
+                            }
+                            <div class="space-y-1">
+                                <div class="flex items-center space-x-2 flex-wrap gap-1">
+                                    <span class="text-sm font-bold text-gray-900">${r.title}</span>
+                                    <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${r.category}</span>
+                                    ${r.isFixkosten ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">🔄 Fixkosten</span>` : ''}
+                                    ${r.isTax ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">💼 Steuer</span>` : ''}
+                                </div>
+                                <p class="text-xs text-gray-600">
+                                    Betrag: <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | Datum: ${r.date} | Zahlungsart: ${r.paymentMethod || 'k.A.'}
+                                </p>
+                                <p class="text-[11px] text-gray-500">
+                                    ${r.store ? 'Partner: ' + r.store + ' | ' : ''} ${r.sn ? 'S/N: ' + r.sn + ' | ' : ''} ${r.note ? 'Notiz: ' + r.note : ''}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
+                            <button onclick="editReceipt(${r.id})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold">✏️ Edit</button>
+                            ${r.warrantyMonths > 0 ? `<button onclick="openQRModal(${r.id})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold">🏷️ QR</button>` : ''}
+                            ${r.warrantyMonths > 0 ? `<button onclick="openGoogleCalendar(${r.id})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold">📅 Kalender</button>` : ''}
+                            <button onclick="deleteReceipt(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /* --- Modals Handling --- */
+        function openBudgetModal() {
+            const budgets = getBudgets();
+            const container = document.getElementById('budgetInputList');
+            container.innerHTML = defaultCategories.map(cat => `
+                <div class="flex justify-between items-center gap-2">
+                    <label class="font-semibold text-gray-700">${cat}:</label>
+                    <input type="number" step="10" data-cat="${cat}" value="${budgets[cat] || 0}" class="p-2 border rounded-xl w-32 text-right font-bold">
                 </div>
-            `).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine Ausgaben gefunden.</p>`;
+            `).join('');
+            document.getElementById('budgetModal').classList.remove('hidden');
+            document.getElementById('budgetModal').classList.add('flex');
         }
 
-        function shareViaWhatsApp(text) {
-            let msg = encodeURIComponent(`Hallo! Laut unserer WG-Kasse: ${text}. Schick mir kurz deinen PayPal-Link!`);
-            window.open(`https://wa.me/?text=${msg}`, '_blank');
+        function closeBudgetModal() {
+            document.getElementById('budgetModal').classList.remove('flex');
+            document.getElementById('budgetModal').classList.add('hidden');
         }
 
-        function zoomImage(src) {
-            document.getElementById('zoomedImage').src = src;
-            document.getElementById('imageModal').classList.remove('hidden');
-        }
-        function closeImageModal() { document.getElementById('imageModal').classList.add('hidden'); }
-
-        // PDF-Report Export via jsPDF
-        function exportWG_PDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let data = getData();
-
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(18);
-            doc.text("WG- & Haushaltskasse - Abrechnungsreport", 14, 20);
-
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
-
-            let y = 35;
-            let total = data.expenses.reduce((sum, e) => sum + e.amount, 0);
-
-            doc.setFont("helvetica", "bold");
-            doc.text(`Gesamtausgaben: ${total.toFixed(2)} EUR`, 14, y);
-            y += 10;
-
-            doc.setFont("helvetica", "underline");
-            doc.text("Transaktionen:", 14, y);
-            y += 7;
-
-            doc.setFont("helvetica", "normal");
-            data.expenses.forEach((e, idx) => {
-                if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`${idx + 1}. ${e.desc} - ${e.amount.toFixed(2)} EUR (Bezahlt von: ${e.who}) [${e.category}]`, 14, y);
-                y += 6;
+        function saveBudgetsFromModal() {
+            const budgets = {};
+            document.querySelectorAll('#budgetInputList input').forEach(input => {
+                budgets[input.getAttribute('data-cat')] = parseFloat(input.value) || 0;
             });
-
-            doc.save("wg-kassen-report.pdf");
+            saveBudgets(budgets);
+            closeBudgetModal();
+            renderApp();
         }
 
-        // Backup Export / Import
+        function openAddGoalModal() {
+            document.getElementById('savingsModal').classList.remove('hidden');
+            document.getElementById('savingsModal').classList.add('flex');
+        }
+
+        function closeSavingsModal() {
+            document.getElementById('savingsModal').classList.remove('flex');
+            document.getElementById('savingsModal').classList.add('hidden');
+        }
+
+        function saveSavingsGoal() {
+            const title = document.getElementById('goalTitle').value.trim();
+            const target = parseFloat(document.getElementById('goalTarget').value) || 0;
+            const current = parseFloat(document.getElementById('goalCurrent').value) || 0;
+            if (!title || target <= 0) return alert("Bitte gültiges Sparziel und Zielbetrag eingeben!");
+
+            const goals = getSavingsGoals();
+            goals.push({ id: Date.now(), title, target, current });
+            saveSavingsGoals(goals);
+
+            document.getElementById('goalTitle').value = "";
+            document.getElementById('goalTarget').value = "";
+            document.getElementById('goalCurrent').value = "0";
+            closeSavingsModal();
+            renderApp();
+        }
+
+        function depositGoal(id) {
+            const goals = getSavingsGoals();
+            const goal = goals.find(g => g.id === id);
+            if (!goal) return;
+            const amount = parseFloat(prompt(`Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
+            if (amount > 0) {
+                goal.current += amount;
+                saveSavingsGoals(goals);
+                renderApp();
+            }
+        }
+
+        function deleteSavingsGoal(id) {
+            if (!confirm("Sparziel löschen?")) return;
+            saveSavingsGoals(getSavingsGoals().filter(g => g.id !== id));
+            renderApp();
+        }
+
+        function openGalleryModal(id) {
+            const data = getData();
+            const r = data.find(item => item.id === id);
+            if (!r) return;
+            const photos = r.photos || [];
+            const container = document.getElementById('galleryContainer');
+            document.getElementById('galleryTitle').innerText = `🖼️ Galerie: ${r.title}`;
+            container.innerHTML = photos.map((src, idx) => `
+                <div class="space-y-1 text-center">
+                    <img src="${src}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
+                    <span class="text-xs text-gray-500">Seite ${idx + 1} von ${photos.length}</span>
+                </div>
+            `).join('');
+            document.getElementById('galleryModal').classList.remove('hidden');
+            document.getElementById('galleryModal').classList.add('flex');
+        }
+
+        function closeGalleryModal() {
+            document.getElementById('galleryModal').classList.remove('flex');
+            document.getElementById('galleryModal').classList.add('hidden');
+        }
+
+        function openQRModal(id) {
+            const data = getData();
+            const r = data.find(item => item.id === id);
+            if (!r) return;
+            const modal = document.getElementById('qrModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            document.getElementById('stickerTitle').innerText = r.title;
+            document.getElementById('stickerStoreDate').innerText = `Kauf: ${r.date} (${r.store || 'Garantie-Beleg'})`;
+            document.getElementById('stickerSN').innerText = `S/N: ${r.sn || 'keine'}`;
+            const buyDate = new Date(r.date);
+            const expDate = new Date(buyDate);
+            expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
+            document.getElementById('stickerWarranty').innerText = `Garantie bis: ${expDate.toLocaleDateString('de-DE')}`;
+
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+            const qrText = `GERÄT: ${r.title}\nKAUFDATUM: ${r.date}\nHÄNDLER: ${r.store || 'k.A.'}\nSERIENNR: ${r.sn || 'k.A.'}`;
+
+            if (typeof QRCode !== 'undefined') {
+                try { new QRCode(qrContainer, { text: qrText, width: 120, height: 120 }); } 
+                catch(e) { qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}">`; }
+            } else {
+                qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}">`;
+            }
+        }
+
+        function closeQRModal() {
+            document.getElementById('qrModal').classList.remove('flex');
+            document.getElementById('qrModal').classList.add('hidden');
+        }
+
+        function openGoogleCalendar(id) {
+            const data = getData();
+            const r = data.find(item => item.id === id);
+            if (!r) return;
+            const buyDate = new Date(r.date);
+            const expDate = new Date(buyDate);
+            expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
+            const fmtDate = (d) => d.toISOString().replace(/-|:|\.\d+/g, '').slice(0, 8);
+            const dateStr = fmtDate(expDate);
+
+            const title = encodeURIComponent(`Garantie-Ablauf: ${r.title}`);
+            const details = encodeURIComponent(`Garantie für ${r.title} (${r.store}) läuft heute ab.\nKaufdatum: ${r.date}\nPreis: ${r.price.toFixed(2)} €\nS/N: ${r.sn || 'k.A.'}`);
+            window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${dateStr}&details=${details}`, '_blank');
+        }
+
+        /* --- Export & Import --- */
+        function exportSteuerCSV() {
+            const data = getData().filter(r => r.isTax);
+            if (data.length === 0) return alert("Keine steuerrelevanten Buchungen gefunden!");
+            let csv = "Datum;Typ;Titel;Haendler;Kategorie;Preis_EUR;Zahlungsart;Seriennummer;Notiz\n";
+            data.forEach(r => {
+                csv += `"${r.date}";"${r.entryType}";"${r.title}";"${r.store}";"${r.category}";"${r.price.toFixed(2)}";"${r.paymentMethod}";"${r.sn}";"${r.note}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `steuer-buchungen-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
         function exportBackup() {
-            let data = JSON.stringify(getData());
-            let blob = new Blob([data], { type: 'application/json' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = `wg-kasse-backup-${new Date().toISOString().split('T')[0]}.json`;
+            const backupObj = {
+                data: getData(),
+                budgets: getBudgets(),
+                goals: getSavingsGoals()
+            };
+            const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `haushaltsbuch-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
         }
 
@@ -306,18 +1038,39 @@
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed.expenses) {
+                    if (Array.isArray(parsed)) {
                         saveData(parsed);
-                        renderApp();
-                        alert("Backup erfolgreich importiert!");
                     } else {
-                        alert("Ungültiges Format.");
+                        if (parsed.data) saveData(parsed.data);
+                        if (parsed.budgets) saveBudgets(parsed.budgets);
+                        if (parsed.goals) saveSavingsGoals(parsed.goals);
                     }
-                } catch (err) {
-                    alert("Fehler beim Lesen der Datei.");
-                }
+                    renderApp();
+                    alert("Backup erfolgreich importiert!");
+                } catch(err) { alert("Fehler beim Import."); }
             };
             reader.readAsText(file);
+        }
+
+        function exportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const data = getData();
+
+            doc.setFontSize(16);
+            doc.text("Haushalts- & Finanz-Übersicht", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+
+            let y = 38;
+            data.forEach((r) => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
+                doc.text(`${r.date} | ${r.title} (${r.category}): ${sign}${r.price.toFixed(2)} € [${r.paymentMethod || 'k.A.'}]`, 14, y);
+                y += 8;
+            });
+
+            doc.save(`finanz-bericht-${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
 </body>
