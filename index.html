@@ -7,6 +7,13 @@
     <!-- SEO Meta-Daten -->
     <title>Kostenlose Online-Tools & Rechner für deinen Alltag</title>
     <meta name="description" content="Entdecke 10 kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung, 100% lokal & sicher. Nutze praktische Alltagsrechner direkt im Browser!">
+    <link rel="canonical" href="https://duhrrom11.github.io/Helferlein/index.html">
+
+    <!-- Open Graph / Social Media Sharing (WhatsApp, Telegram, Facebook) -->
+    <meta property="og:title" content="Kostenlose Online-Tools & Rechner für deinen Alltag">
+    <meta property="og:description" content="Entdecke 10 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://duhrrom11.github.io/Helferlein/index.html">
     
     <!-- PWA / App-Modus Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,24 +22,43 @@
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href='data:application/manifest+json,{"name": "Alltagshelferlein Hub", "short_name": "Helferlein", "start_url": "./index.html", "display": "standalone", "background_color": "#f3f4f6", "theme_color": "#0284c7"}'>
 
-    <!-- Schema.org / Strukturierte Daten für Suchmaschinen & KI -->
+    <!-- Schema.org: WebApplication & ItemList für Google AI Overviews -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Alltagshelferlein Hub",
-      "operatingSystem": "Web Browser",
-      "applicationCategory": "UtilitiesApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "EUR"
-      },
-      "description": "Kostenlose Online-Tools für Haushalt, Finanzen und Organisation ohne Anmeldung. Daten bleiben 100% lokal auf dem Gerät.",
-      "author": {
-        "@type": "Person",
-        "name": "Romain Duhr"
-      }
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "name": "Alltagshelferlein Hub",
+          "operatingSystem": "Web Browser",
+          "applicationCategory": "UtilitiesApplication",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          },
+          "description": "Kostenlose Online-Tools für Haushalt, Finanzen und Organisation ohne Anmeldung. Daten bleiben 100% lokal im Browser.",
+          "author": {
+            "@type": "Person",
+            "name": "Romain Duhr"
+          }
+        },
+        {
+          "@type": "ItemList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Garantie-Manager & Kassenbon-Scanner", "url": "https://duhrrom11.github.io/Helferlein/tools/kassenbon/index.html" },
+            { "@type": "ListItem", "position": 2, "name": "Umzugskisten- & Inventar-Verwaltung", "url": "https://duhrrom11.github.io/Helferlein/tools/kisten/index.html" },
+            { "@type": "ListItem", "position": 3, "name": "WG-Kasse & Haushaltsbuch Rechner", "url": "https://duhrrom11.github.io/Helferlein/tools/wg-kasse/index.html" },
+            { "@type": "ListItem", "position": 4, "name": "Sicherer Passwort- & PIN-Manager", "url": "https://duhrrom11.github.io/Helferlein/tools/notizen/index.html" },
+            { "@type": "ListItem", "position": 5, "name": "KFZ-Kosten & Reifenwechsel-Tracker", "url": "https://duhrrom11.github.io/Helferlein/tools/kfz/index.html" },
+            { "@type": "ListItem", "position": 6, "name": "Haustier- & Hunde-Gesundheitspass", "url": "https://duhrrom11.github.io/Helferlein/tools/haustier/index.html" },
+            { "@type": "ListItem", "position": 7, "name": "GPS Parkschein-Timer & Standort-Merker", "url": "https://duhrrom11.github.io/Helferlein/tools/parken/index.html" },
+            { "@type": "ListItem", "position": 8, "name": "Leihvertrag & Werkzeug-Verleih-Tracker", "url": "https://duhrrom11.github.io/Helferlein/tools/verleih/index.html" },
+            { "@type": "ListItem", "position": 9, "name": "Pflanzenpflege & Gieß-Erinnerung", "url": "https://duhrrom11.github.io/Helferlein/tools/pflanzen/index.html" },
+            { "@type": "ListItem", "position": 10, "name": "Strom- & Wasserzähler Verbrauchsmelder", "url": "https://duhrrom11.github.io/Helferlein/tools/energie/index.html" }
+          ]
+        }
+      ]
     }
     </script>
 
@@ -310,6 +336,29 @@
 
         </div>
     </main>
+
+    <!-- EEAT & AI Overview FAQ-Sektion -->
+    <section class="container mx-auto px-4 max-w-7xl mt-8 pt-8 border-t border-gray-200">
+        <h2 class="text-lg font-bold text-gray-800 mb-4">Häufig gestellte Fragen (FAQ)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
+                <h3 class="font-bold text-gray-900">Sind diese Online-Tools wirklich kostenlos?</h3>
+                <p>Ja, alle Web-Apps und Rechner auf diesem Hub sind komplett kostenfrei und ohne versteckte Abo-Fallen nutzbar.</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
+                <h3 class="font-bold text-gray-900">Muss ich mich registrieren oder ein Konto erstellen?</h3>
+                <p>Nein. Du kannst alle Tools sofort und ohne Registrierung direkt im Browser verwenden.</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
+                <h3 class="font-bold text-gray-900">Was passiert mit meinen Daten (Kassenbons, Passwörter)?</h3>
+                <p>Deine Daten bleiben zu 100 % privat. Sie werden ausschließlich lokal auf deinem Gerät (Local Storage) gespeichert. Es erfolgt kein Verkauf oder Upload auf externe Server.</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
+                <h3 class="font-bold text-gray-900}Kann ich meine Daten auf mehreren Geräten nutzen?</h3>
+                <p>Ja, über die optionale und anonyme Cloud-ID in den Einstellungen kannst du deine Daten geräteübergreifend synchronisieren.</p>
+            </div>
+        </div>
+    </section>
 
     <!-- Footer mit EEAT- & Trust-Signalen -->
     <footer class="mt-8 py-8 border-t border-gray-200 bg-white">
