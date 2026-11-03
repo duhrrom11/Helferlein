@@ -9,65 +9,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für PDF-Report -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <!-- Global Theme Switcher & CSS overrides -->
-    <script>
-        (function() {
-            const theme = localStorage.getItem('hub_theme') || 'light';
-            if (theme === 'dark') document.documentElement.classList.add('dark-mode');
-            if (theme === 'cyber') document.documentElement.classList.add('cyber-mode');
-        })();
-    </script>
-
-    <style>
-        /* Dunkelmodus Übersteuerungen */
-        html.dark-mode body {
-            background-color: #0f172a !important;
-            color: #f8fafc !important;
-        }
-        html.dark-mode header,
-        html.dark-mode .bg-white,
-        html.dark-mode .bg-gray-50 {
-            background-color: #1e293b !important;
-            border-color: #334155 !important;
-            color: #f8fafc !important;
-        }
-        html.dark-mode input, 
-        html.dark-mode select {
-            background-color: #0f172a !important;
-            color: #f8fafc !important;
-            border-color: #475569 !important;
-        }
-        html.dark-mode .text-gray-500, 
-        html.dark-mode .text-gray-600 {
-            color: #94a3b8 !important;
-        }
-
-        /* Cyberpunk / Hoher Kontrast Übersteuerungen */
-        html.cyber-mode body {
-            background-color: #030712 !important;
-            color: #00ffcc !important;
-        }
-        html.cyber-mode header,
-        html.cyber-mode .bg-white,
-        html.cyber-mode .bg-gray-50 {
-            background-color: #090d16 !important;
-            border-color: #00ffcc !important;
-            color: #00ffcc !important;
-        }
-        html.cyber-mode input, 
-        html.cyber-mode select {
-            background-color: #030712 !important;
-            color: #00ffcc !important;
-            border-color: #00ffcc !important;
-        }
-        html.cyber-mode .text-gray-500, 
-        html.cyber-mode .text-gray-600 {
-            color: #38bdf8 !important;
-        }
-    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col transition-colors duration-300">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
     <!-- Header -->
     <header class="bg-sky-700 text-white shadow-md py-6 px-4 text-center">
@@ -496,7 +439,7 @@
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
 
             let y = 38;
-            data.readings.forEach((r, idx) => {
+            data.readings.forEach((r) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let unit = r.type === 'Strom' ? 'kWh' : 'm³';
                 doc.text(`${r.date} | ${r.type} (${r.name}): ${r.value} ${unit} ${r.note ? '- Note: ' + r.note : ''}`, 14, y);
