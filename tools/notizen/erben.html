@@ -141,14 +141,15 @@
     </div>
 
     <script>
-        /* --- FIREBASE KONFIGURATION --- */
+        /* --- FIREBASE KONFIGURATION (VON DEINEM SCREENSHOT) --- */
         const firebaseConfig = {
-            apiKey: "DEINE_FIREBASE_API_KEY",
-            authDomain: "DEIN_PROJECT.firebaseapp.com",
-            projectId: "DEIN_PROJECT_ID",
-            storageBucket: "DEIN_PROJECT.appspot.com",
-            messagingSenderId: "DEINE_SENDER_ID",
-            appId: "DEINE_APP_ID"
+            apiKey: "AIzaSyAMWtuQHTGhMMd3WmIgW46NbvT6bQoBwm8",
+            authDomain: "nachlass-app-99df8.firebaseapp.com",
+            projectId: "nachlass-app-99df8",
+            storageBucket: "nachlass-app-99df8.firebasestorage.app",
+            messagingSenderId: "593798150622",
+            appId: "1:593798150622:web:e4e980c9fb6b06201ec54f",
+            measurementId: "G-LWRZKYPJXC"
         };
         
         if (!firebase.apps.length) {
@@ -202,7 +203,6 @@
                 document.getElementById('loadingState').classList.add('hidden');
                 document.getElementById('heirUnlockCard').classList.remove('hidden');
 
-                // Automatisch entsperren, wenn der Schlüssel im QR-Code enthalten war
                 if (keyParam) {
                     unlockVault();
                 }
