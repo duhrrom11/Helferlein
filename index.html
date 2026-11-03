@@ -73,6 +73,40 @@
             border-color: #334155 !important;
             color: #f8fafc !important;
         }
+
+        /* Cyberpunk / Hoher Kontrast Styles */
+        body.cyber-mode {
+            background-color: #030712 !important;
+            color: #00ffcc !important;
+        }
+        body.cyber-mode header,
+        body.cyber-mode .bg-white {
+            background-color: #090d16 !important;
+            border-color: #00ffcc !important;
+            color: #00ffcc !important;
+        }
+        body.cyber-mode .tool-card {
+            background-color: #090d16 !important;
+            border-color: #facc15 !important;
+            color: #f8fafc !important;
+            box-shadow: 0 0 12px rgba(0, 255, 204, 0.25);
+        }
+        body.cyber-mode h1, body.cyber-mode h3, body.cyber-mode h2 {
+            color: #00ffcc !important;
+        }
+        body.cyber-mode input, body.cyber-mode select {
+            background-color: #030712 !important;
+            color: #00ffcc !important;
+            border-color: #00ffcc !important;
+        }
+        body.cyber-mode .text-gray-500, body.cyber-mode .text-gray-600 {
+            color: #38bdf8 !important;
+        }
+        body.cyber-mode .bg-gray-50 {
+            background-color: #030712 !important;
+            border-color: #38bdf8 !important;
+            color: #f8fafc !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
@@ -92,11 +126,11 @@
 
             <!-- Top Controls -->
             <div class="flex flex-wrap items-center gap-2">
-                <button type="button" onclick="openMonthlyReport()" class="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 text-xs font-bold rounded-xl border border-sky-200 dark:border-sky-800 shadow-sm cursor-pointer transition-all">
+                <button type="button" onclick="window.openMonthlyReport()" class="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 text-xs font-bold rounded-xl border border-sky-200 dark:border-sky-800 shadow-sm cursor-pointer transition-all">
                     📊 Report
                 </button>
                 <!-- Zahnrad-Button -->
-                <button type="button" onclick="openSettings()" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-base rounded-xl shadow-sm border border-gray-300 dark:border-slate-700 cursor-pointer flex items-center justify-center transition-all" title="Einstellungen & Sync">
+                <button type="button" onclick="window.openSettings()" class="w-10 h-10 bg-gray-200 hover:bg-gray-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-base rounded-xl shadow-sm border border-gray-300 dark:border-slate-700 cursor-pointer flex items-center justify-center transition-all" title="Einstellungen & Sync">
                     ⚙️
                 </button>
                 <a href="https://ko-fi.com/DEIN_KOFI_NAME" target="_blank" rel="noopener" class="px-3.5 py-2 bg-gradient-to-r from-sky-500 to-cyan-500 hover:opacity-90 text-xs font-bold rounded-xl shadow-md text-white flex items-center gap-1.5 transition-all">
@@ -234,15 +268,4 @@
                 </div>
                 <div class="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">📅 Kalender</span>
-                    <a href="tools/kfz/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen →</a>
-                </div>
-            </div>
-
-            <!-- Tool 6 -->
-            <div class="tool-card bg-white hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700/80 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-name="haustier hund katze gesundheit impfpass tierarzt kosten">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 dark:border-teal-800 shadow-inner">🐾</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 dark:text-slate-600 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="haustier">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-
+                    <a href="tools/kfz/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py
