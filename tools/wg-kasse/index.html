@@ -7,13 +7,13 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js für Finanz- & Budget-Analysen -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- jsPDF für PDF-Berichte -->
+    <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Tesseract.js für OCR Texterkennung -->
+    <!-- Tesseract.js -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <!-- QRCode.js für Sticker & WLAN QR-Code -->
+    <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
@@ -22,6 +22,11 @@
             #printStickerArea, #printStickerArea *, #wlanQrModal, #wlanQrModal * { visibility: visible; }
             #printStickerArea { position: absolute; left: 0; top: 0; width: 100%; }
         }
+        .note-yellow { background-color: #fef08a; border-color: #fde047; color: #713f12; }
+        .note-pink { background-color: #fbcfe8; border-color: #f472b6; color: #831843; }
+        .note-green { background-color: #bbf7d0; border-color: #4ade80; color: #14532d; }
+        .note-blue { background-color: #bae6fd; border-color: #38bdf8; color: #0c4a6e; }
+        .note-purple { background-color: #e9d5ff; border-color: #c084fc; color: #581c87; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
@@ -31,7 +36,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="text-center md:text-left">
                 <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">🏠 WG-Organisator Ultimate Pro</h1>
-                <p class="text-xs md:text-sm opacity-90 mt-1">Haushaltsbuch, WG-Kasse, Putz- & Kochplan, Kalender (Wasch-Slots & Gäste), Inventar & Allergie-Matrix</p>
+                <p class="text-xs md:text-sm opacity-90 mt-1">Haushaltsbuch, Pinnwand mit Sticky Notes, Putz-/Kochplan, Kalender, Inventar & Infoboard</p>
             </div>
             <div class="flex flex-wrap gap-2">
                 <button onclick="openMitbewohnerModal()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 rounded-xl text-xs font-bold shadow-sm">
@@ -44,29 +49,29 @@
         </div>
     </header>
 
-    <!-- Gebrauchsanleitung / Doku -->
+    <!-- Handbuch (Aufklappbar) -->
     <section id="guideSection" class="hidden bg-emerald-950 text-emerald-50 border-b border-emerald-800 p-6 transition-all duration-300">
         <div class="max-w-7xl mx-auto space-y-4">
             <div class="flex justify-between items-center border-b border-emerald-700 pb-3">
-                <h2 class="text-lg font-bold">📘 Ultimate WG-Handbuch</h2>
+                <h2 class="text-lg font-bold">📘 WG-Ultimate Handbuch</h2>
                 <button onclick="toggleGuide()" class="text-emerald-300 hover:text-white text-xl font-bold">&times;</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs leading-relaxed">
                 <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">1. Finanzen & Kasse</h3>
-                    <p>Haushaltsbuch mit Einnahmen/Ausgaben, OCR-Bonscan, Ampel-Budgets und Schuldenminimierer.</p>
+                    <h3 class="font-bold text-emerald-200">1. Digitale Pinnwand & Notizen</h3>
+                    <p>Farbige Sticky Notes erstellen, wichtige Zettel oben anpinnen📌, Autor wählen und Notizen per Klick verwalten.</p>
                 </div>
                 <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">2. Termine & Wasch-Slots</h3>
-                    <p>WG-Kalender für Ereignisse, Party/Lärm-Ankündigungen, Besuch sowie direkte Zeit-Buchung für Waschmaschine & Trockner.</p>
+                    <h3 class="font-bold text-emerald-200">2. Finanzen & Kasse</h3>
+                    <p>Einnahmen/Ausgaben erfassen, Belege per OCR-Kamera scannen und Schulden automatisch ausgleichen.</p>
                 </div>
                 <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">3. Inventar & Auszug</h3>
-                    <p>Gemeinsame WG-Anschaffungen erfassen. Der Restwert-Rechner zeigt, wer beim Auszug wie viel Auszahlung erhält.</p>
+                    <h3 class="font-bold text-emerald-200">3. Termine & Wasch-Slots</h3>
+                    <p>WG-Kalender für Waschmaschine, Trockner, Übernachtungsgäste oder Partys nutzen.</p>
                 </div>
                 <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">4. Küche & Alltag</h3>
-                    <p>Rotierender Putzplan, Kochplaner mit Zutaten-Sync, Amazon-Einkaufsliste (<code>duhrrom-21</code>) & Allergie-Matrix.</p>
+                    <h3 class="font-bold text-emerald-200">4. Küche & Inventar</h3>
+                    <p>Rotierender Putzplan, Kochplan mit Zutaten-Sync, Amazon-Einkaufsliste (<code>duhrrom-21</code>) & Inventar-Restwert-Rechner.</p>
                 </div>
             </div>
         </div>
@@ -75,7 +80,7 @@
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
         
-        <!-- Action Bar & Export/Backup -->
+        <!-- Action Bar & Backup -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold transition-all">← Zurück zur Startseite</a>
             
@@ -112,26 +117,62 @@
                 <h3 id="statFixRatio" class="text-sm md:text-base font-bold text-purple-600">0 %</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">WG-Inventar Restwert</p>
+                <p class="text-[10px] text-gray-500 font-medium">Inventar Restwert</p>
                 <h3 id="statInventoryValue" class="text-sm md:text-base font-bold text-teal-600">0,00 €</h3>
             </div>
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
-                <p class="text-[10px] text-gray-500 font-medium">Mitbewohner</p>
-                <h3 id="statFlatmateCount" class="text-sm md:text-base font-bold text-indigo-600">0</h3>
+                <p class="text-[10px] text-gray-500 font-medium">Aktive Sticky Notes</p>
+                <h3 id="statNoteCount" class="text-sm md:text-base font-bold text-amber-500">0</h3>
             </div>
         </div>
 
-        <!-- SECTION: WG-KALENDER (INCL. WASCHMASCHINE, TROCKNER, GÄSTE, PARTY) -->
+        <!-- DIGITALE PINNWAND WITH STICKY NOTES -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
             <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
                 <div>
-                    <h3 class="font-bold text-base text-gray-900">📅 WG-Kalender: Termine, Wasch-Slots & Gäste-Radar</h3>
-                    <p class="text-xs text-gray-500">Buche hier Waschmaschine/Trockner, kündige Besuch an oder trage Partys/Termine ein.</p>
+                    <h3 class="font-bold text-base text-gray-900">📌 Digitale WG-Pinnwand & Sticky Notes</h3>
+                    <p class="text-xs text-gray-500">Nachrichten, Hinweise oder Einkaufs-Zettel für die Küche anpinnen</p>
                 </div>
-                <button onclick="openAddEventModal()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm">+ Termin / Slot buchen</button>
+                <button onclick="openNoteModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5">
+                    ✏️ Neue Sticky Note
+                </button>
             </div>
-            <div id="eventList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-1">
-                <p class="text-xs text-gray-400 text-center col-span-3 py-4">Keine anstehenden Termine oder Wasch-Slots.</p>
+            <div id="stickyNotesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[420px] overflow-y-auto pr-1 p-1">
+                <p class="text-xs text-gray-400 text-center col-span-4 py-6">Die Pinnwand ist noch leer. Erstelle die erste Sticky Note!</p>
+            </div>
+        </div>
+
+        <!-- STAMMDATEN & WG-KALENDER -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Stammdaten Card -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 lg:col-span-1">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <h3 class="font-bold text-base text-gray-900">ℹ️ WG-Stammdaten</h3>
+                    <div class="flex gap-1.5">
+                        <button onclick="openWLANQRModal()" class="px-2.5 py-1 bg-sky-700 hover:bg-sky-800 text-white rounded-lg text-xs font-bold">📶 WLAN QR</button>
+                        <button onclick="openInfoboardModal()" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✏️ Edit</button>
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-50 border rounded-2xl text-xs space-y-2.5">
+                    <p>📶 <strong>WLAN-Passwort:</strong> <br><span id="infoWifi" class="font-mono bg-white px-2 py-1 rounded border block mt-1 text-center font-bold">Lade...</span></p>
+                    <p>🏠 <strong>Vermieter:</strong> <br><span id="infoLandlord" class="font-semibold text-gray-700">Lade...</span></p>
+                    <p>🛠️ <strong>Hausmeister / Notdienst:</strong> <br><span id="infoCaretaker" class="font-semibold text-gray-700">Lade...</span></p>
+                    <p>🗑️ <strong>Müllabfuhr:</strong> <br><span id="infoTrash" class="font-semibold text-gray-700">Lade...</span></p>
+                </div>
+            </div>
+
+            <!-- WG-Kalender Card -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 lg:col-span-2">
+                <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
+                    <div>
+                        <h3 class="font-bold text-base text-gray-900">📅 WG-Kalender & Slots</h3>
+                        <p class="text-xs text-gray-500">Wasch-Slots, Gäste-Übernachtungen & Events</p>
+                    </div>
+                    <button onclick="openAddEventModal()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm">+ Slot / Termin</button>
+                </div>
+                <div id="eventList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-56 overflow-y-auto pr-1">
+                    <p class="text-xs text-gray-400 text-center col-span-2 py-4">Keine anstehenden Termine oder Slots.</p>
+                </div>
             </div>
         </div>
 
@@ -153,7 +194,7 @@
 
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
-                    <h3 class="font-bold text-base text-gray-900">🎯 Monats-Budgets & Ampel-Limits</h3>
+                    <h3 class="font-bold text-base text-gray-900">🎯 Monats-Budgets & Limits</h3>
                     <button onclick="openBudgetModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold">⚙️ Anpassen</button>
                 </div>
                 <div id="budgetProgressList" class="space-y-2.5 max-h-52 overflow-y-auto pr-1">
@@ -173,7 +214,7 @@
             </div>
         </div>
 
-        <!-- FORMULAR: EXPENSE / BUCHUNG / OCR -->
+        <!-- FORMULAR: BUCHUNG / OCR -->
         <div id="formCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
                 <h2 id="formTitle" class="text-lg font-bold text-gray-900">✍️ Buchung / WG-Kassenbon erfassen</h2>
@@ -225,7 +266,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Zahlungsart / Bezahlt von:</label>
+                    <label class="block font-semibold text-gray-600 mb-1">Bezahlt von:</label>
                     <select id="receiptPaymentPayer" class="w-full p-2.5 border rounded-xl bg-white"></select>
                 </div>
                 <div>
@@ -331,14 +372,14 @@
             <div class="flex justify-between items-center border-b pb-2">
                 <div>
                     <h3 class="font-bold text-base text-gray-900">📦 WG-Inventar & Auszugs-Restwert-Rechner</h3>
-                    <p class="text-xs text-gray-500">Erfasse gemeinsame Möbel/Geräte. Berechnet den fairen Zeitwert & Auszahlungsanspruch bei Auszug.</p>
+                    <p class="text-xs text-gray-500">Berechnet den fairen Zeitwert & Auszahlungsanspruch bei Auszug.</p>
                 </div>
                 <button onclick="openAddInventoryModal()" class="px-3 py-1 bg-emerald-700 text-white hover:bg-emerald-800 rounded-lg text-xs font-bold shadow-sm">+ Gegenstand erfassen</button>
             </div>
             <div id="inventoryList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- PUTZPLAN & EINKAUFSLISTE (Amazon Affiliate duhrrom-21) -->
+        <!-- PUTZPLAN & EINKAUFSLISTE -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
@@ -354,7 +395,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">🛒 WG-Einkaufsliste</h3>
-                    <span class="text-xs text-gray-500">Inkl. Amazon-Bestelllink & Kassen-Sync</span>
+                    <span class="text-xs text-gray-500">Inkl. Amazon-Link & Kassen-Sync</span>
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Spülmittel, Tabs" class="flex-grow p-2.5 border rounded-xl text-xs">
@@ -364,7 +405,7 @@
             </div>
         </div>
 
-        <!-- KOCHPLANER & ERNÄHRUNGS-/ALLERGIE-MATRIX -->
+        <!-- KOCHPLANER & ERNÄHRUNGS-MATRIX -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
@@ -383,38 +424,66 @@
             </div>
         </div>
 
-        <!-- VERTRÄGE & INFOBOARD (MIT WLAN QR) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-                <div class="flex justify-between items-center border-b pb-2">
-                    <h3 class="font-bold text-base text-gray-900">📜 WG-Verträge & Abo-Manager</h3>
-                    <button onclick="openContractModal()" class="px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold">+ Vertrag</button>
-                </div>
-                <div id="contractList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
+        <!-- VERTRÄGE -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-bold text-base text-gray-900">📜 WG-Verträge & Abo-Manager</h3>
+                <button onclick="openContractModal()" class="px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold">+ Vertrag</button>
             </div>
-
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-                <div class="flex justify-between items-center border-b pb-2">
-                    <h3 class="font-bold text-base text-gray-900">📌 WG-Infoboard & WLAN QR</h3>
-                    <div class="flex gap-1.5">
-                        <button onclick="openWLANQRModal()" class="px-2.5 py-1 bg-sky-700 hover:bg-sky-800 text-white rounded-lg text-xs font-bold">📶 WLAN QR</button>
-                        <button onclick="openInfoboardModal()" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✏️ Edit</button>
-                    </div>
-                </div>
-                <div class="p-3.5 bg-gray-50 border rounded-xl text-xs space-y-2">
-                    <p>📶 <strong>WLAN-Passwort:</strong> <span id="infoWifi" class="font-mono bg-white px-2 py-0.5 rounded border">Lade...</span></p>
-                    <p>🏠 <strong>Vermieter:</strong> <span id="infoLandlord">Lade...</span></p>
-                    <p>🛠️ <strong>Hausmeister:</strong> <span id="infoCaretaker">Lade...</span></p>
-                    <p>🗑️ <strong>Müllabfuhr:</strong> <span id="infoTrash">Lade...</span></p>
-                </div>
-            </div>
+            <div id="contractList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
     </main>
 
     <!-- MODALS -->
 
-    <!-- Modal: Termin / Wasch-Slot buchen -->
+    <!-- Modal: Sticky Note Erstellen / Bearbeiten -->
+    <div id="noteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 id="noteModalTitle" class="text-lg font-bold">✏️ Neue Sticky Note</h3>
+                <button onclick="closeNoteModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">Titel / Betreff *:</label>
+                    <input type="text" id="noteTitleInput" placeholder="z. B. Paket im Flur, Handwerker kommt" class="w-full p-2.5 border rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Nachricht / Notiz *:</label>
+                    <textarea id="noteContentInput" rows="3" placeholder="Notiere hier wichtige Infos für die WG..." class="w-full p-2.5 border rounded-xl resize-none"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-semibold mb-1">Erstellt von:</label>
+                        <select id="noteAuthorInput" class="w-full p-2.5 border rounded-xl bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Zettel-Farbe:</label>
+                        <select id="noteColorInput" class="w-full p-2.5 border rounded-xl bg-white font-semibold">
+                            <option value="yellow">🨨 Gelb</option>
+                            <option value="pink">🌸 Rosa</option>
+                            <option value="green">🌿 Grün</option>
+                            <option value="blue">🌊 Blau</option>
+                            <option value="purple">🔮 Violett</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="pt-1">
+                    <label class="inline-flex items-center cursor-pointer space-x-2">
+                        <input type="checkbox" id="notePinnedInput" class="w-4 h-4 text-amber-500 rounded">
+                        <span class="font-bold text-gray-800">📌 Oben anpinnen (Wichtige Notiz)</span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2 border-t">
+                <button onclick="closeNoteModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Abbrechen</button>
+                <button onclick="saveNote()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Termin / Slot buchen -->
     <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
@@ -468,7 +537,7 @@
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block font-semibold mb-1">Gegenstand *:</label>
-                    <input type="text" id="invTitle" placeholder="z. B. Mikrowelle, Ledersofa, Kaffeemaschine" class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="invTitle" placeholder="z. B. Mikrowelle, Kaffeemaschine" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -717,6 +786,7 @@
         let categoryChartInstance = null;
         let cashflowChartInstance = null;
         let editingReceiptId = null;
+        let editingNoteId = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('receiptDate').valueAsDate = new Date();
@@ -730,6 +800,16 @@
         /* Storage Helper */
         function getFlatmates() { try { return JSON.parse(localStorage.getItem('wg_flatmates')) || ["Ich / Privat", "Alex", "Sam"]; } catch(e) { return ["Ich / Privat", "Alex", "Sam"]; } }
         function saveFlatmates(data) { localStorage.setItem('wg_flatmates', JSON.stringify(data)); }
+
+        function getNotes() {
+            try {
+                return JSON.parse(localStorage.getItem('wg_notes')) || [
+                    { id: 1, title: "📦 Paket im Flur", content: "Postbote hat ein Paket für Sam abgegeben, steht neben dem Schuhregal.", author: "Alex", color: "yellow", pinned: true, date: "2026-11-02" },
+                    { id: 2, title: "🧹 Küchen-Dienst", content: "Bitte nach dem Kochen das Schneidebrett gründlich abwischen!", author: "Sam", color: "pink", pinned: false, date: "2026-11-03" }
+                ];
+            } catch(e) { return []; }
+        }
+        function saveNotes(data) { localStorage.setItem('wg_notes', JSON.stringify(data)); }
 
         function getData() { try { return JSON.parse(localStorage.getItem('kassenbon_data')) || []; } catch(e) { return []; } }
         function saveData(data) { localStorage.setItem('kassenbon_data', JSON.stringify(data)); }
@@ -793,14 +873,13 @@
             const flatmates = getFlatmates();
             const data = getData();
             const budgets = getBudgets();
+            const notes = getNotes();
             const now = new Date();
             const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-            // Dropdowns & Checkboxes
-            const payerSelect = document.getElementById('receiptPaymentPayer');
-            const splitContainer = document.getElementById('splitCheckboxes');
-            payerSelect.innerHTML = flatmates.map(m => `<option value="${m}">${m}</option>`).join('');
-            splitContainer.innerHTML = flatmates.map(m => `
+            // Dropdowns
+            document.getElementById('receiptPaymentPayer').innerHTML = flatmates.map(m => `<option value="${m}">${m}</option>`).join('');
+            document.getElementById('splitCheckboxes').innerHTML = flatmates.map(m => `
                 <label class="flex items-center space-x-2 cursor-pointer">
                     <input type="checkbox" name="splitMate" value="${m}" checked class="rounded text-emerald-600">
                     <span>${m}</span>
@@ -810,6 +889,7 @@
             document.getElementById('cleanTaskAssignee').innerHTML = flatmates.map(m => `<option value="${m}">${m}</option>`).join('');
             document.getElementById('contractPayer').innerHTML = flatmates.map(m => `<option value="${m}">${m}</option>`).join('');
             document.getElementById('eventOwner').innerHTML = flatmates.map(m => `<option value="${m}">${m}</option>`).join('');
+            document.getElementById('noteAuthorInput').innerHTML = flatmates.map(m => `<option value="${m}">${m}</option>`).join('');
 
             // Metrics
             let totalIncome = 0;
@@ -840,7 +920,7 @@
             balanceEl.innerText = balance.toFixed(2) + " €";
             balanceEl.className = `text-sm md:text-base font-bold ${balance >= 0 ? 'text-emerald-600' : 'text-red-600'}`;
             document.getElementById('statFixRatio').innerText = totalExpense > 0 ? ((fixExpense / totalExpense) * 100).toFixed(0) + " %" : "0 %";
-            document.getElementById('statFlatmateCount').innerText = flatmates.length;
+            document.getElementById('statNoteCount').innerText = notes.length;
 
             // Update Charts
             if (categoryChartInstance && cashflowChartInstance) {
@@ -877,6 +957,7 @@
                 `;
             }).join('');
 
+            renderStickyNotes();
             renderEvents();
             renderInventory();
             renderDietMatrix();
@@ -890,24 +971,125 @@
             renderFlatmateModalList();
         }
 
+        /* Sticky Notes Pinnwand Render */
+        function renderStickyNotes() {
+            const notes = getNotes();
+            const container = document.getElementById('stickyNotesGrid');
+
+            if (notes.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-4 py-6">Die Pinnwand ist noch leer. Erstelle die erste Sticky Note!</p>`;
+                return;
+            }
+
+            // Pinned notes first
+            const sortedNotes = [...notes].sort((a, b) => (b.pinned === a.pinned) ? 0 : b.pinned ? 1 : -1);
+
+            container.innerHTML = sortedNotes.map(n => `
+                <div class="p-4 rounded-2xl border-2 shadow-sm flex flex-col justify-between space-y-3 relative transition-transform hover:-translate-y-0.5 note-${n.color || 'yellow'}">
+                    ${n.pinned ? `<span class="absolute -top-2 -right-2 text-xl drop-shadow">📌</span>` : ''}
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-extrabold text-sm leading-tight">${n.title}</h4>
+                        </div>
+                        <p class="text-xs leading-relaxed whitespace-pre-line opacity-90">${n.content}</p>
+                    </div>
+                    <div class="pt-2 border-t border-black/10 flex justify-between items-center text-[10px] font-semibold opacity-80">
+                        <span>👤 ${n.author} (${n.date || 'Heute'})</span>
+                        <div class="flex items-center gap-1">
+                            <button onclick="togglePinNote(${n.id})" title="${n.pinned ? 'Entpinnen' : 'Anpinnen'}" class="hover:opacity-100 p-0.5">${n.pinned ? '📌' : '📍'}</button>
+                            <button onclick="editNote(${n.id})" title="Bearbeiten" class="hover:opacity-100 p-0.5">✏️</button>
+                            <button onclick="deleteNote(${n.id})" title="Löschen" class="hover:opacity-100 text-red-700 font-bold p-0.5">&times;</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openNoteModal() {
+            editingNoteId = null;
+            document.getElementById('noteTitleInput').value = "";
+            document.getElementById('noteContentInput').value = "";
+            document.getElementById('noteColorInput').value = "yellow";
+            document.getElementById('notePinnedInput').checked = false;
+            document.getElementById('noteModalTitle').innerText = "✏️ Neue Sticky Note";
+            document.getElementById('noteModal').classList.remove('hidden');
+            document.getElementById('noteModal').classList.add('flex');
+        }
+
+        function closeNoteModal() {
+            document.getElementById('noteModal').classList.remove('flex');
+            document.getElementById('noteModal').classList.add('hidden');
+        }
+
+        function saveNote() {
+            const title = document.getElementById('noteTitleInput').value.trim();
+            const content = document.getElementById('noteContentInput').value.trim();
+            const author = document.getElementById('noteAuthorInput').value;
+            const color = document.getElementById('noteColorInput').value;
+            const pinned = document.getElementById('notePinnedInput').checked;
+
+            if (!title || !content) return alert("Bitte Titel und Nachricht ausfüllen!");
+
+            const notes = getNotes();
+            const today = new Date().toISOString().split('T')[0];
+
+            if (editingNoteId) {
+                const idx = notes.findIndex(n => n.id === editingNoteId);
+                if (idx !== -1) {
+                    notes[idx] = { ...notes[idx], title, content, author, color, pinned };
+                }
+            } else {
+                notes.unshift({ id: Date.now(), title, content, author, color, pinned, date: today });
+            }
+
+            saveNotes(notes);
+            closeNoteModal();
+            renderApp();
+        }
+
+        function editNote(id) {
+            const notes = getNotes();
+            const n = notes.find(item => item.id === id);
+            if (!n) return;
+
+            editingNoteId = id;
+            document.getElementById('noteTitleInput').value = n.title || "";
+            document.getElementById('noteContentInput').value = n.content || "";
+            document.getElementById('noteAuthorInput').value = n.author || getFlatmates()[0];
+            document.getElementById('noteColorInput').value = n.color || "yellow";
+            document.getElementById('notePinnedInput').checked = !!n.pinned;
+            document.getElementById('noteModalTitle').innerText = "✏️ Sticky Note bearbeiten";
+
+            document.getElementById('noteModal').classList.remove('hidden');
+            document.getElementById('noteModal').classList.add('flex');
+        }
+
+        function togglePinNote(id) {
+            const notes = getNotes();
+            const n = notes.find(item => item.id === id);
+            if (n) {
+                n.pinned = !n.pinned;
+                saveNotes(notes);
+                renderStickyNotes();
+            }
+        }
+
+        function deleteNote(id) {
+            saveNotes(getNotes().filter(n => n.id !== id));
+            renderApp();
+        }
+
         /* WG Kalender & Wasch-Slots Render */
         function renderEvents() {
             const events = getEvents();
             const container = document.getElementById('eventList');
 
             if (events.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">Keine anstehenden Termine oder Wasch-Slots.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-2 py-4">Keine anstehenden Termine oder Slots.</p>`;
                 return;
             }
 
-            const icons = {
-                "Waschmaschine": "🧺",
-                "Trockner": "💨",
-                "Gäste": "👤",
-                "Party": "🎉",
-                "Allgemein": "📅"
-            };
-
+            const icons = { "Waschmaschine": "🧺", "Trockner": "💨", "Gäste": "👤", "Party": "🎉", "Allgemein": "📅" };
             const colors = {
                 "Waschmaschine": "bg-purple-50 border-purple-200 text-purple-900",
                 "Trockner": "bg-indigo-50 border-indigo-200 text-indigo-900",
@@ -950,18 +1132,14 @@
             renderApp();
         }
 
-        function deleteEvent(id) {
-            saveEvents(getEvents().filter(e => e.id !== id));
-            renderApp();
-        }
+        function deleteEvent(id) { saveEvents(getEvents().filter(e => e.id !== id)); renderApp(); }
 
-        /* WG-Inventar & Auszugs-Restwert-Rechner */
+        /* WG-Inventar */
         function renderInventory() {
             const items = getInventory();
             const container = document.getElementById('inventoryList');
             const flatmates = getFlatmates();
             const now = new Date();
-
             let totalZeitwert = 0;
 
             if (items.length === 0) {
@@ -976,7 +1154,6 @@
                 const lifespan = item.lifespan || 5;
                 const zeitwert = Math.max(0, item.price * (1 - (ageYears / lifespan)));
                 totalZeitwert += zeitwert;
-
                 const sharePerMate = flatmates.length > 0 ? (zeitwert / flatmates.length) : 0;
 
                 return `
@@ -987,8 +1164,8 @@
                         </div>
                         <p class="text-gray-600 text-[11px]">Kauf: ${item.price.toFixed(2)} € (${item.date})</p>
                         <div class="pt-1 border-t border-teal-200 flex justify-between items-center text-[11px]">
-                            <span>Aktueller Zeitwert: <strong class="text-teal-900">${zeitwert.toFixed(2)} €</strong></span>
-                            <span class="text-teal-800 font-semibold" title="Auszahlungsanspruch pro Person bei Auszug">Auszug: ${sharePerMate.toFixed(2)} €/p.P.</span>
+                            <span>Zeitwert: <strong class="text-teal-900">${zeitwert.toFixed(2)} €</strong></span>
+                            <span class="text-teal-800 font-semibold">Auszug: ${sharePerMate.toFixed(2)} €/p.P.</span>
                         </div>
                     </div>
                 `;
@@ -999,34 +1176,21 @@
 
         function openAddInventoryModal() { document.getElementById('inventoryModal').classList.remove('hidden'); document.getElementById('inventoryModal').classList.add('flex'); }
         function closeAddInventoryModal() { document.getElementById('inventoryModal').classList.remove('flex'); document.getElementById('inventoryModal').classList.add('hidden'); }
-
         function saveInventoryItem() {
             const title = document.getElementById('invTitle').value.trim();
             const price = parseFloat(document.getElementById('invPrice').value) || 0;
             const date = document.getElementById('invDate').value;
             const lifespan = parseFloat(document.getElementById('invLifespan').value) || 5;
-
-            if (!title || price <= 0 || !date) return alert("Bitte Gegenstand, Betrag und Kaufdatum angeben!");
-
-            const items = getInventory();
-            items.push({ id: Date.now(), title, price, date, lifespan });
-            saveInventory(items);
-            closeAddInventoryModal();
-            renderApp();
+            if (!title || price <= 0 || !date) return alert("Bitte Angaben vervollständigen!");
+            const items = getInventory(); items.push({ id: Date.now(), title, price, date, lifespan }); saveInventory(items); closeAddInventoryModal(); renderApp();
         }
+        function deleteInventoryItem(id) { saveInventory(getInventory().filter(i => i.id !== id)); renderApp(); }
 
-        function deleteInventoryItem(id) {
-            saveInventory(getInventory().filter(i => i.id !== id));
-            renderApp();
-        }
-
-        /* Ernährungs- & Allergie-Matrix */
+        /* Ernährungs-Matrix */
         function renderDietMatrix() {
             const flatmates = getFlatmates();
             const diets = getDiets();
-            const container = document.getElementById('dietMatrixList');
-
-            container.innerHTML = flatmates.map(m => {
+            document.getElementById('dietMatrixList').innerHTML = flatmates.map(m => {
                 const info = diets[m] || { pref: "Allesesser", allergy: "Keine" };
                 return `
                     <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
@@ -1039,114 +1203,60 @@
                 `;
             }).join('');
         }
-
         function openDietModal() {
-            const flatmates = getFlatmates();
-            const diets = getDiets();
-            const container = document.getElementById('dietInputContainer');
-
-            container.innerHTML = flatmates.map(m => {
+            const flatmates = getFlatmates(); const diets = getDiets();
+            document.getElementById('dietInputContainer').innerHTML = flatmates.map(m => {
                 const info = diets[m] || { pref: "Allesesser", allergy: "Keine" };
                 return `
                     <div class="p-3 bg-gray-50 border rounded-xl space-y-2">
                         <span class="font-bold text-gray-900">${m}</span>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" data-mate="${m}" class="dietPref input w-full p-2 border rounded" placeholder="z. B. Vegan, Veggie" value="${info.pref}">
-                            <input type="text" data-mate="${m}" class="dietAllergy input w-full p-2 border rounded" placeholder="z. B. Laktose, Nüsse" value="${info.allergy}">
+                            <input type="text" data-mate="${m}" class="dietPref input w-full p-2 border rounded" placeholder="z. B. Vegan" value="${info.pref}">
+                            <input type="text" data-mate="${m}" class="dietAllergy input w-full p-2 border rounded" placeholder="z. B. Laktose" value="${info.allergy}">
                         </div>
                     </div>
                 `;
             }).join('');
-
-            document.getElementById('dietModal').classList.remove('hidden');
-            document.getElementById('dietModal').classList.add('flex');
+            document.getElementById('dietModal').classList.remove('hidden'); document.getElementById('dietModal').classList.add('flex');
         }
-
         function closeDietModal() { document.getElementById('dietModal').classList.remove('flex'); document.getElementById('dietModal').classList.add('hidden'); }
-
         function saveDietMatrix() {
-            const diets = {};
-            const prefInputs = document.querySelectorAll('.dietPref');
-            const allergyInputs = document.querySelectorAll('.dietAllergy');
-
-            prefInputs.forEach((input, idx) => {
-                const mate = input.getAttribute('data-mate');
-                diets[mate] = {
-                    pref: input.value.trim() || "Allesesser",
-                    allergy: allergyInputs[idx].value.trim() || "Keine"
-                };
-            });
-
-            saveDiets(diets);
-            closeDietModal();
-            renderDietMatrix();
+            const diets = {}; const prefInputs = document.querySelectorAll('.dietPref'); const allergyInputs = document.querySelectorAll('.dietAllergy');
+            prefInputs.forEach((input, idx) => { const mate = input.getAttribute('data-mate'); diets[mate] = { pref: input.value.trim() || "Allesesser", allergy: allergyInputs[idx].value.trim() || "Keine" }; });
+            saveDiets(diets); closeDietModal(); renderDietMatrix();
         }
 
         /* Schuldenminimierer */
         function calculateSettlements() {
-            const flatmates = getFlatmates();
-            const data = getData();
-
-            const netBalances = {};
+            const flatmates = getFlatmates(); const data = getData(); const netBalances = {};
             flatmates.forEach(m => netBalances[m] = 0);
-
             data.forEach(e => {
                 if (e.entryType === 'einnahme') return;
-                const amount = e.price;
-                const payer = e.payer || flatmates[0];
-                const splitWith = e.splitWith && e.splitWith.length > 0 ? e.splitWith : flatmates;
-                const share = amount / splitWith.length;
-
+                const amount = e.price; const payer = e.payer || flatmates[0]; const splitWith = e.splitWith && e.splitWith.length > 0 ? e.splitWith : flatmates; const share = amount / splitWith.length;
                 if (netBalances[payer] !== undefined) netBalances[payer] += amount;
-                splitWith.forEach(m => {
-                    if (netBalances[m] !== undefined) netBalances[m] -= share;
-                });
+                splitWith.forEach(m => { if (netBalances[m] !== undefined) netBalances[m] -= share; });
             });
-
-            const debtors = [];
-            const creditors = [];
-
-            Object.keys(netBalances).forEach(m => {
-                const bal = netBalances[m];
-                if (bal < -0.01) debtors.push({ name: m, amount: -bal });
-                else if (bal > 0.01) creditors.push({ name: m, amount: bal });
-            });
-
-            debtors.sort((a, b) => b.amount - a.amount);
-            creditors.sort((a, b) => b.amount - a.amount);
-
-            const transactions = [];
-            let i = 0, j = 0;
-
+            const debtors = []; const creditors = [];
+            Object.keys(netBalances).forEach(m => { const bal = netBalances[m]; if (bal < -0.01) debtors.push({ name: m, amount: -bal }); else if (bal > 0.01) creditors.push({ name: m, amount: bal }); });
+            debtors.sort((a, b) => b.amount - a.amount); creditors.sort((a, b) => b.amount - a.amount);
+            const transactions = []; let i = 0, j = 0;
             while (i < debtors.length && j < creditors.length) {
-                const debtor = debtors[i];
-                const creditor = creditors[j];
-                const min = Math.min(debtor.amount, creditor.amount);
-
-                transactions.push({ from: debtor.name, to: creditor.name, amount: min });
-                debtor.amount -= min;
-                creditor.amount -= min;
-
-                if (debtor.amount < 0.01) i++;
-                if (creditor.amount < 0.01) j++;
+                const debtor = debtors[i]; const creditor = creditors[j]; const min = Math.min(debtor.amount, creditor.amount);
+                transactions.push({ from: debtor.name, to: creditor.name, amount: min }); debtor.amount -= min; creditor.amount -= min;
+                if (debtor.amount < 0.01) i++; if (creditor.amount < 0.01) j++;
             }
-
             return transactions;
         }
 
         function renderSettlementAndExpenses() {
-            const settlements = calculateSettlements();
-            const container = document.getElementById('settlementList');
-            let totalVolume = 0;
-
-            if (settlements.length === 0) {
-                container.innerHTML = `<p class="text-emerald-700 font-medium">✨ Alle Schulden sind ausgeglichen!</p>`;
-            } else {
+            const settlements = calculateSettlements(); const container = document.getElementById('settlementList'); let totalVolume = 0;
+            if (settlements.length === 0) { container.innerHTML = `<p class="text-emerald-700 font-medium">✨ Alle Schulden ausgeglichen!</p>`; } 
+            else {
                 container.innerHTML = settlements.map(s => {
                     totalVolume += s.amount;
                     return `
-                        <div class="flex justify-between items-center py-1 border-b border-emerald-100 last:border-0">
-                            <span>👤 <strong>${s.from}</strong> zahlt an <strong>${s.to}</strong>:</span>
+                        <div class="flex justify-between items-center py-1 border-b border-emerald-100 last:border-0 text-xs">
+                            <span>👤 <strong>${s.from}</strong> an <strong>${s.to}</strong>:</span>
                             <span class="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">${s.amount.toFixed(2)} €</span>
                         </div>
                     `;
@@ -1154,86 +1264,48 @@
             }
             document.getElementById('statDebtVolume').innerText = totalVolume.toFixed(2) + " €";
 
-            // Transactions Render
-            const data = getData();
-            const typeFilter = document.getElementById('filterType').value;
-            const catFilter = document.getElementById('filterCategory').value;
-            const listContainer = document.getElementById('receiptsList');
-
-            const now = new Date();
+            const data = getData(); const typeFilter = document.getElementById('filterType').value; const catFilter = document.getElementById('filterCategory').value; const listContainer = document.getElementById('receiptsList');
             let filtered = data;
             if (typeFilter === 'ausgabe') filtered = filtered.filter(r => r.entryType !== 'einnahme');
             if (typeFilter === 'einnahme') filtered = filtered.filter(r => r.entryType === 'einnahme');
             if (typeFilter === 'fixkosten') filtered = filtered.filter(r => r.isFixkosten);
-            if (typeFilter === 'garantie') filtered = filtered.filter(r => {
-                if (!r.warrantyMonths) return false;
-                const buyDate = new Date(r.date);
-                const expDate = new Date(buyDate);
-                expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
-                return expDate >= now;
-            });
             if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
 
-            if (filtered.length === 0) {
-                listContainer.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine passenden Buchungen.</p>`;
-                return;
-            }
-
+            if (filtered.length === 0) { listContainer.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine passenden Buchungen.</p>`; return; }
             listContainer.innerHTML = filtered.map(r => {
                 const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
-
                 return `
-                    <div class="p-3 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-2 text-xs">
-                        <div class="flex items-start space-x-3">
-                            <div class="w-10 h-10 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-base">${isIncome ? '🔺' : '🧾'}</div>
+                    <div class="p-3 bg-gray-50 border rounded-2xl flex justify-between items-center text-xs">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-9 h-9 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-sm">${isIncome ? '🔺' : '🧾'}</div>
                             <div>
-                                <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                    <span class="font-bold text-gray-900">${r.title}</span>
-                                    <span class="text-[10px] bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${r.category}</span>
-                                    ${r.payer ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">Zahler: ${r.payer}</span>` : ''}
-                                    ${r.isFixkosten ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">🔄 Fixkosten</span>` : ''}
-                                </div>
-                                <p class="text-[11px] text-gray-600 mt-0.5">
-                                    Betrag: <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | Datum: ${r.date}
-                                </p>
+                                <span class="font-bold text-gray-900">${r.title}</span>
+                                <p class="text-[11px] text-gray-600"><strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | ${r.payer || 'Privat'} | ${r.date}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-1.5 self-end md:self-center flex-wrap">
-                            <button onclick="editReceipt(${r.id})" class="px-2 py-1 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg text-xs font-bold">✏️ Edit</button>
-                            ${r.warrantyMonths > 0 ? `<button onclick="openQRModal(${r.id})" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold">🏷️ QR</button>` : ''}
-                            <button onclick="deleteReceipt(${r.id})" class="px-2 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-semibold">✕</button>
+                        <div class="flex gap-1">
+                            <button onclick="editReceipt(${r.id})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-bold">✏️</button>
+                            <button onclick="deleteReceipt(${r.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">✕</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        /* OCR Scan */
+        /* OCR */
         async function runOCR() {
             const input = document.getElementById('receiptPhotoInput');
-            if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
-            const statusEl = document.getElementById('ocrStatus');
-            statusEl.innerText = "🔍 Scanne Kassenbon...";
-            statusEl.classList.remove('hidden');
-
+            if (!input.files || !input.files[0]) return alert("Bitte Belegfoto auswählen!");
+            const statusEl = document.getElementById('ocrStatus'); statusEl.innerText = "🔍 Scanne Kassenbon..."; statusEl.classList.remove('hidden');
             try {
                 const worker = await Tesseract.createWorker('deu');
-                const ret = await worker.recognize(input.files[0]);
-                await worker.terminate();
-
-                const text = ret.data.text;
-                statusEl.innerText = "✅ OCR Scan erfolgreich!";
-
-                const priceMatch = text.match(/(\d+[\.,]\d{2})\s*(€|EUR)?/i);
-                if (priceMatch && !document.getElementById('receiptPrice').value) {
-                    document.getElementById('receiptPrice').value = priceMatch[1].replace(',', '.');
-                }
-            } catch(e) {
-                statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
-            }
+                const ret = await worker.recognize(input.files[0]); await worker.terminate();
+                const priceMatch = ret.data.text.match(/(\d+[\.,]\d{2})\s*(€|EUR)?/i);
+                if (priceMatch) document.getElementById('receiptPrice').value = priceMatch[1].replace(',', '.');
+                statusEl.innerText = "✅ OCR Erfolgreich!";
+            } catch(e) { statusEl.innerText = "❌ Texterkennung fehlgeschlagen."; }
         }
 
-        /* Save Transaction */
         function saveReceipt() {
             const title = document.getElementById('receiptTitle').value.trim();
             const store = document.getElementById('receiptStore').value.trim();
@@ -1241,157 +1313,72 @@
             const price = parseFloat(document.getElementById('receiptPrice').value) || 0;
             const category = document.getElementById('receiptCategory').value;
             const payer = document.getElementById('receiptPaymentPayer').value;
-            const warrantyMonths = parseInt(document.getElementById('receiptWarranty').value) || 0;
-            const returnDays = parseInt(document.getElementById('receiptReturnDays').value) || 0;
-            const lifespan = parseFloat(document.getElementById('receiptLifespan').value) || 5;
-            const sn = document.getElementById('receiptSN').value.trim();
-            const location = document.getElementById('receiptLocation').value.trim();
             const isFixkosten = document.getElementById('receiptIsFixkosten').checked;
             const isTax = document.getElementById('receiptIsTax').checked;
             const entryType = document.querySelector('input[name="entryType"]:checked').value;
             const splitWith = Array.from(document.querySelectorAll('input[name="splitMate"]:checked')).map(cb => cb.value);
 
-            if (!title || !date || price <= 0) return alert("Bitte Titel, Datum und Betrag angeben!");
+            if (!title || !date || price <= 0) return alert("Bitte Pflichtfelder ausfüllen!");
 
             let data = getData();
             if (editingReceiptId) {
                 const idx = data.findIndex(r => r.id === editingReceiptId);
-                if (idx !== -1) {
-                    data[idx] = { ...data[idx], title, store, date, price, category, payer, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, entryType, splitWith };
-                }
+                if (idx !== -1) data[idx] = { ...data[idx], title, store, date, price, category, payer, isFixkosten, isTax, entryType, splitWith };
             } else {
-                data.unshift({ id: Date.now(), title, store, date, price, category, payer, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, entryType, splitWith });
+                data.unshift({ id: Date.now(), title, store, date, price, category, payer, isFixkosten, isTax, entryType, splitWith });
             }
-
-            saveData(data);
-            resetForm();
-            renderApp();
+            saveData(data); resetForm(); renderApp();
         }
 
         function editReceipt(id) {
-            const data = getData();
-            const r = data.find(item => item.id === id);
-            if (!r) return;
-
+            const r = getData().find(item => item.id === id); if (!r) return;
             editingReceiptId = id;
-            document.getElementById('receiptTitle').value = r.title || '';
-            document.getElementById('receiptStore').value = r.store || '';
-            document.getElementById('receiptDate').value = r.date || '';
-            document.getElementById('receiptPrice').value = r.price || '';
-            document.getElementById('receiptCategory').value = r.category || 'Sonstiges';
-            document.getElementById('receiptPaymentPayer').value = r.payer || '';
-            document.getElementById('receiptWarranty').value = r.warrantyMonths || 0;
-            document.getElementById('receiptReturnDays').value = r.returnDays || 14;
-            document.getElementById('receiptLifespan').value = r.lifespan || 5;
-            document.getElementById('receiptSN').value = r.sn || '';
-            document.getElementById('receiptLocation').value = r.location || '';
-            document.getElementById('receiptIsFixkosten').checked = !!r.isFixkosten;
-            document.getElementById('receiptIsTax').checked = !!r.isTax;
-
-            document.getElementById('formTitle').innerText = `✏️ Buchung bearbeiten: ${r.title}`;
-            document.getElementById('saveBtn').innerText = "💾 Änderungen speichern";
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
-            document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('receiptTitle').value = r.title || ''; document.getElementById('receiptStore').value = r.store || ''; document.getElementById('receiptDate').value = r.date || ''; document.getElementById('receiptPrice').value = r.price || ''; document.getElementById('receiptCategory').value = r.category || 'Sonstiges'; document.getElementById('receiptPaymentPayer').value = r.payer || ''; document.getElementById('receiptIsFixkosten').checked = !!r.isFixkosten; document.getElementById('receiptIsTax').checked = !!r.isTax;
+            document.getElementById('formTitle').innerText = `✏️ Buchung bearbeiten: ${r.title}`; document.getElementById('saveBtn').innerText = "💾 Speichern"; document.getElementById('cancelEditBtn').classList.remove('hidden'); document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
         }
-
         function cancelEdit() { resetForm(); }
-
-        function resetForm() {
-            editingReceiptId = null;
-            document.getElementById('receiptTitle').value = "";
-            document.getElementById('receiptStore').value = "";
-            document.getElementById('receiptPrice').value = "";
-            document.getElementById('receiptSN').value = "";
-            document.getElementById('receiptLocation').value = "";
-            document.getElementById('formTitle').innerText = "✍️ Buchung / WG-Kassenbon erfassen";
-            document.getElementById('saveBtn').innerText = "Buchung / Kassenbon speichern";
-            document.getElementById('cancelEditBtn').classList.add('hidden');
-            document.getElementById('receiptDate').valueAsDate = new Date();
-        }
-
-        function deleteReceipt(id) {
-            if (!confirm("Buchung wirklich löschen?")) return;
-            saveData(getData().filter(item => item.id !== id));
-            renderApp();
-        }
-
-        function settleAllDebts() {
-            if (!confirm("⚠️ Möchtest du wirklich alle aktuellen WG-Schulden ausgleichen?")) return;
-            saveData([]);
-            renderApp();
-        }
+        function resetForm() { editingReceiptId = null; document.getElementById('receiptTitle').value = ""; document.getElementById('receiptStore').value = ""; document.getElementById('receiptPrice').value = ""; document.getElementById('formTitle').innerText = "✍️ Buchung / WG-Kassenbon erfassen"; document.getElementById('saveBtn').innerText = "Buchung / Kassenbon speichern"; document.getElementById('cancelEditBtn').classList.add('hidden'); document.getElementById('receiptDate').valueAsDate = new Date(); }
+        function deleteReceipt(id) { saveData(getData().filter(item => item.id !== id)); renderApp(); }
+        function settleAllDebts() { if (confirm("WG-Schulden ausgleichen?")) { saveData([]); renderApp(); } }
 
         /* Sparziele */
         function renderSavingsGoals() {
-            const goals = getSavingsGoals();
-            const container = document.getElementById('savingsGoalsGrid');
-            if (goals.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>`;
-                return;
-            }
+            const goals = getSavingsGoals(); const container = document.getElementById('savingsGoalsGrid');
+            if (goals.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-2">Noch keine Sparziele angelegt.</p>`; return; }
             container.innerHTML = goals.map(g => {
                 const percent = Math.min(100, (g.current / g.target) * 100);
                 return `
-                    <div class="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2">
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold text-xs text-emerald-900">${g.title}</span>
-                            <button onclick="deleteSavingsGoal(${g.id})" class="text-red-500 text-xs font-bold">✕</button>
-                        </div>
-                        <div class="flex justify-between text-[11px] text-gray-600">
-                            <span>Gespart: <strong>${g.current.toFixed(2)} €</strong></span>
-                            <span>Ziel: ${g.target.toFixed(2)} €</span>
-                        </div>
-                        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                            <div class="bg-emerald-600 h-2 transition-all" style="width: ${percent}%"></div>
-                        </div>
-                        <button onclick="depositGoal(${g.id})" class="w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">+ Einzahlen</button>
+                    <div class="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 text-xs">
+                        <div class="flex justify-between font-bold text-emerald-900"><span>${g.title}</span><button onclick="deleteSavingsGoal(${g.id})" class="text-red-500">✕</button></div>
+                        <div class="flex justify-between text-[11px]"><span>Gespart: <strong>${g.current.toFixed(2)} €</strong></span><span>Ziel: ${g.target.toFixed(2)} €</span></div>
+                        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-2 transition-all" style="width: ${percent}%"></div></div>
+                        <button onclick="depositGoal(${g.id})" class="w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">+ Einzahlen</button>
                     </div>
                 `;
             }).join('');
         }
-
         function openAddGoalModal() { document.getElementById('savingsModal').classList.remove('hidden'); document.getElementById('savingsModal').classList.add('flex'); }
         function closeSavingsModal() { document.getElementById('savingsModal').classList.remove('flex'); document.getElementById('savingsModal').classList.add('hidden'); }
-        function saveSavingsGoal() {
-            const title = document.getElementById('goalTitle').value.trim();
-            const target = parseFloat(document.getElementById('goalTarget').value) || 0;
-            const current = parseFloat(document.getElementById('goalCurrent').value) || 0;
-            if (!title || target <= 0) return alert("Bitte Ziel und Betrag eingeben!");
-            const goals = getSavingsGoals();
-            goals.push({ id: Date.now(), title, target, current });
-            saveSavingsGoals(goals);
-            closeSavingsModal();
-            renderApp();
-        }
-        function depositGoal(id) {
-            const goals = getSavingsGoals();
-            const goal = goals.find(g => g.id === id);
-            if (!goal) return;
-            const amount = parseFloat(prompt(`Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
-            if (amount > 0) { goal.current += amount; saveSavingsGoals(goals); renderApp(); }
-        }
+        function saveSavingsGoal() { const title = document.getElementById('goalTitle').value.trim(); const target = parseFloat(document.getElementById('goalTarget').value) || 0; const current = parseFloat(document.getElementById('goalCurrent').value) || 0; if (!title || target <= 0) return; const goals = getSavingsGoals(); goals.push({ id: Date.now(), title, target, current }); saveSavingsGoals(goals); closeSavingsModal(); renderApp(); }
+        function depositGoal(id) { const goals = getSavingsGoals(); const goal = goals.find(g => g.id === id); if (!goal) return; const amount = parseFloat(prompt(`Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50")); if (amount > 0) { goal.current += amount; saveSavingsGoals(goals); renderApp(); } }
         function deleteSavingsGoal(id) { saveSavingsGoals(getSavingsGoals().filter(g => g.id !== id)); renderApp(); }
 
         /* Putzplan */
         function renderCleaningPlan() {
-            const plan = getCleaningPlan();
-            const container = document.getElementById('cleaningPlanList');
-            if (plan.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine Aufgaben im Putzplan.</p>`; return; }
+            const plan = getCleaningPlan(); const container = document.getElementById('cleaningPlanList');
+            if (plan.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Putzplan ist leer.</p>`; return; }
             container.innerHTML = plan.map(p => `
-                <div class="p-2.5 ${p.done ? 'bg-emerald-50/50 border-emerald-200' : 'bg-gray-50 border-gray-200'} border rounded-xl flex justify-between items-center text-xs">
+                <div class="p-2.5 ${p.done ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'} border rounded-xl flex justify-between items-center text-xs">
                     <div class="flex items-center space-x-2">
                         <input type="checkbox" ${p.done ? 'checked' : ''} onchange="toggleCleanTask(${p.id})" class="w-4 h-4 text-emerald-600 rounded">
-                        <div>
-                            <p class="font-bold ${p.done ? 'line-through text-gray-400' : 'text-gray-900'}">${p.task}</p>
-                            <p class="text-[10px] text-gray-500">Zuständig: <strong class="text-purple-700">${p.assignee}</strong></p>
-                        </div>
+                        <span class="${p.done ? 'line-through text-gray-400' : 'font-bold text-gray-900'}">${p.task} (${p.assignee})</span>
                     </div>
                     <button onclick="deleteCleanTask(${p.id})" class="text-gray-400 hover:text-red-500 font-bold">&times;</button>
                 </div>
             `).join('');
         }
         function toggleCleanTask(id) { const plan = getCleaningPlan(); const item = plan.find(p => p.id === id); if (item) { item.done = !item.done; saveCleaningPlan(plan); renderCleaningPlan(); } }
-        function rotateCleaningPlan() { const plan = getCleaningPlan(); const mates = getFlatmates(); if (mates.length === 0) return; plan.forEach(p => { const curr = mates.indexOf(p.assignee); p.assignee = mates[(curr + 1) % mates.length]; p.done = false; }); saveCleaningPlan(plan); renderCleaningPlan(); }
+        function rotateCleaningPlan() { const plan = getCleaningPlan(); const mates = getFlatmates(); plan.forEach(p => { const curr = mates.indexOf(p.assignee); p.assignee = mates[(curr + 1) % mates.length]; p.done = false; }); saveCleaningPlan(plan); renderCleaningPlan(); }
         function openAddCleanTaskModal() { document.getElementById('cleanTaskModal').classList.remove('hidden'); document.getElementById('cleanTaskModal').classList.add('flex'); }
         function closeAddCleanTaskModal() { document.getElementById('cleanTaskModal').classList.remove('flex'); document.getElementById('cleanTaskModal').classList.add('hidden'); }
         function saveCleanTask() { const task = document.getElementById('cleanTaskTitle').value.trim(); const assignee = document.getElementById('cleanTaskAssignee').value; if (!task) return; const plan = getCleaningPlan(); plan.push({ id: Date.now(), task, assignee, done: false }); saveCleaningPlan(plan); closeAddCleanTaskModal(); renderApp(); }
@@ -1399,46 +1386,32 @@
 
         /* Einkaufsliste */
         function renderShoppingList() {
-            const items = getShoppingList();
-            const container = document.getElementById('shoppingList');
+            const items = getShoppingList(); const container = document.getElementById('shoppingList');
             if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Einkaufsliste ist leer.</p>`; return; }
-            container.innerHTML = items.map(item => {
-                const amazonUrl = `https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}`;
-                return `
-                    <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                        <span class="font-medium text-gray-800">${item.title}</span>
-                        <div class="flex gap-1.5">
-                            <a href="${amazonUrl}" target="_blank" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
-                            <button onclick="transferShoppingToExpense(${item.id})" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
-                            <button onclick="deleteShoppingItem(${item.id})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
-                        </div>
+            container.innerHTML = items.map(item => `
+                <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
+                    <span class="font-medium text-gray-800">${item.title}</span>
+                    <div class="flex gap-1.5">
+                        <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
+                        <button onclick="transferShoppingToExpense(${item.id})" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
+                        <button onclick="deleteShoppingItem(${item.id})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
                     </div>
-                `;
-            }).join('');
+                </div>
+            `).join('');
         }
         function addShoppingItem(customTitle) { const title = customTitle || document.getElementById('newShoppingItem').value.trim(); if (!title) return; const items = getShoppingList(); items.push({ id: Date.now(), title }); saveShoppingList(items); if (!customTitle) document.getElementById('newShoppingItem').value = ""; renderShoppingList(); }
         function deleteShoppingItem(id) { saveShoppingList(getShoppingList().filter(i => i.id !== id)); renderShoppingList(); }
         function transferShoppingToExpense(id) {
-            const items = getShoppingList();
-            const item = items.find(i => i.id === id);
-            if (!item) return;
-            const flatmates = getFlatmates();
-            const payer = prompt(`Wer hat "${item.title}" bezahlt? (${flatmates.join(', ')})`, flatmates[0]);
-            if (!payer) return;
-            const price = parseFloat(prompt(`Kaufpreis (€):`, "3.50"));
-            if (!price) return;
-            const data = getData();
-            data.unshift({ id: Date.now(), title: item.title, price: price, payer: payer, date: new Date().toISOString().split('T')[0], category: "Haushalt", entryType: "ausgabe", splitWith: flatmates });
-            saveData(data);
-            deleteShoppingItem(id);
-            renderApp();
+            const item = getShoppingList().find(i => i.id === id); if (!item) return; const flatmates = getFlatmates();
+            const payer = prompt(`Wer hat "${item.title}" bezahlt?`, flatmates[0]); if (!payer) return;
+            const price = parseFloat(prompt(`Kaufpreis (€):`, "3.50")); if (!price) return;
+            const data = getData(); data.unshift({ id: Date.now(), title: item.title, price: price, payer: payer, date: new Date().toISOString().split('T')[0], category: "Haushalt", entryType: "ausgabe", splitWith: flatmates });
+            saveData(data); deleteShoppingItem(id); renderApp();
         }
 
         /* Kochplaner */
         function renderCookingPlan() {
-            const plan = getCookingPlan();
-            const container = document.getElementById('cookingPlanList');
-            container.innerHTML = plan.map((p, idx) => `
+            document.getElementById('cookingPlanList').innerHTML = getCookingPlan().map((p, idx) => `
                 <div class="p-2 bg-gray-50 border rounded-xl flex justify-between items-center">
                     <div><span class="font-bold">${p.day}:</span> <span class="text-emerald-800">${p.dish || 'Frei'}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${p.chef}</span>` : ''}</div>
                     ${p.ingredients ? `<button onclick="syncIngredientsToShopping(${idx})" class="px-2 py-0.5 bg-amber-50 text-amber-800 border rounded text-[10px] font-bold">🛒 Zutaten</button>` : ''}
@@ -1446,32 +1419,27 @@
             `).join('');
         }
         function openCookingModal() {
-            const plan = getCookingPlan();
-            const flatmates = getFlatmates();
+            const plan = getCookingPlan(); const flatmates = getFlatmates();
             document.getElementById('cookingInputList').innerHTML = plan.map((p, idx) => `
                 <div class="p-2.5 bg-gray-50 border rounded-xl space-y-1.5">
                     <div class="flex justify-between font-bold"><span>${p.day}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">Frei</option>${flatmates.map(m => `<option value="${m}" ${p.chef === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
                     <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="Gericht" value="${p.dish || ''}">
-                    <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="Zutaten durch Komma getrennt" value="${p.ingredients || ''}">
+                    <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="Zutaten getrennt mit Komma" value="${p.ingredients || ''}">
                 </div>
             `).join('');
             document.getElementById('cookingModal').classList.remove('hidden'); document.getElementById('cookingModal').classList.add('flex');
         }
         function closeCookingModal() { document.getElementById('cookingModal').classList.remove('flex'); document.getElementById('cookingModal').classList.add('hidden'); }
         function saveCookingPlanFromModal() {
-            const plan = getCookingPlan();
-            const chefs = document.querySelectorAll('.chefSelect');
-            const dishes = document.querySelectorAll('.dishInput');
-            const ingredients = document.querySelectorAll('.ingredientsInput');
+            const plan = getCookingPlan(); const chefs = document.querySelectorAll('.chefSelect'); const dishes = document.querySelectorAll('.dishInput'); const ingredients = document.querySelectorAll('.ingredientsInput');
             plan.forEach((p, idx) => { p.chef = chefs[idx].value; p.dish = dishes[idx].value.trim(); p.ingredients = ingredients[idx].value.trim(); });
             saveCookingPlan(plan); closeCookingModal(); renderCookingPlan();
         }
-        function syncIngredientsToShopping(idx) { const item = getCookingPlan()[idx]; if (!item || !item.ingredients) return; item.ingredients.split(',').forEach(i => addShoppingItem(i.trim())); alert("Zutaten wurden hinzugefügt!"); }
+        function syncIngredientsToShopping(idx) { const item = getCookingPlan()[idx]; if (!item || !item.ingredients) return; item.ingredients.split(',').forEach(i => addShoppingItem(i.trim())); alert("Zutaten übernommen!"); }
 
         /* Verträge */
         function renderContracts() {
-            const contracts = getContracts();
-            const container = document.getElementById('contractList');
+            const contracts = getContracts(); const container = document.getElementById('contractList');
             if (contracts.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine Verträge eingetragen.</p>`; return; }
             container.innerHTML = contracts.map(c => `
                 <div class="p-2.5 bg-indigo-50 border rounded-xl flex justify-between items-center text-xs">
@@ -1488,10 +1456,7 @@
         /* Infoboard & WLAN QR */
         function renderInfoBoard() {
             const info = getInfoData();
-            document.getElementById('infoWifi').innerText = info.wifi || 'k.A.';
-            document.getElementById('infoLandlord').innerText = info.landlord || 'k.A.';
-            document.getElementById('infoCaretaker').innerText = info.caretaker || 'k.A.';
-            document.getElementById('infoTrash').innerText = info.trash || 'k.A.';
+            document.getElementById('infoWifi').innerText = info.wifi || 'k.A.'; document.getElementById('infoLandlord').innerText = info.landlord || 'k.A.'; document.getElementById('infoCaretaker').innerText = info.caretaker || 'k.A.'; document.getElementById('infoTrash').innerText = info.trash || 'k.A.';
         }
         function openInfoboardModal() { const info = getInfoData(); document.getElementById('editWifi').value = info.wifi || ''; document.getElementById('editLandlord').value = info.landlord || ''; document.getElementById('editCaretaker').value = info.caretaker || ''; document.getElementById('editTrash').value = info.trash || ''; document.getElementById('infoboardModal').classList.remove('hidden'); document.getElementById('infoboardModal').classList.add('flex'); }
         function closeInfoboardModal() { document.getElementById('infoboardModal').classList.remove('flex'); document.getElementById('infoboardModal').classList.add('hidden'); }
@@ -1505,7 +1470,7 @@
         }
         function closeWLANQRModal() { document.getElementById('wlanQrModal').classList.remove('flex'); document.getElementById('wlanQrModal').classList.add('hidden'); }
 
-        /* Modals & Sticker QR */
+        /* Modals & Budget */
         function openBudgetModal() {
             const budgets = getBudgets();
             document.getElementById('budgetInputList').innerHTML = defaultCategories.map(cat => `
@@ -1515,19 +1480,6 @@
         }
         function closeBudgetModal() { document.getElementById('budgetModal').classList.remove('flex'); document.getElementById('budgetModal').classList.add('hidden'); }
         function saveBudgetsFromModal() { const budgets = {}; document.querySelectorAll('#budgetInputList input').forEach(input => { budgets[input.getAttribute('data-cat')] = parseFloat(input.value) || 0; }); saveBudgets(budgets); closeBudgetModal(); renderApp(); }
-
-        function openQRModal(id) {
-            const r = getData().find(item => item.id === id); if (!r) return;
-            document.getElementById('qrModal').classList.remove('hidden'); document.getElementById('qrModal').classList.add('flex');
-            document.getElementById('stickerTitle').innerText = r.title;
-            document.getElementById('stickerStoreDate').innerText = `Kauf: ${r.date}`;
-            document.getElementById('stickerSN').innerText = `S/N: ${r.sn || 'keine'}`;
-            const qrContainer = document.getElementById('qrcode'); qrContainer.innerHTML = "";
-            const qrText = `GERÄT: ${r.title}\nKAUFDATUM: ${r.date}\nSERIENNR: ${r.sn || 'k.A.'}`;
-            if (typeof QRCode !== 'undefined') new QRCode(qrContainer, { text: qrText, width: 120, height: 120 });
-            else qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}">`;
-        }
-        function closeQRModal() { document.getElementById('qrModal').classList.remove('flex'); document.getElementById('qrModal').classList.add('hidden'); }
 
         /* Mitbewohner Modal */
         function openMitbewohnerModal() { document.getElementById('mitbewohnerModal').classList.remove('hidden'); document.getElementById('mitbewohnerModal').classList.add('flex'); }
@@ -1542,25 +1494,21 @@
 
         /* Export & Backup */
         function exportSteuerCSV() {
-            const data = getData().filter(r => r.isTax);
-            if (data.length === 0) return alert("Keine steuerrelevanten Buchungen!");
+            const data = getData().filter(r => r.isTax); if (data.length === 0) return alert("Keine steuerrelevanten Buchungen!");
             let csv = "Datum;Typ;Titel;Händler;Kategorie;Preis_EUR;Zahler\n";
             data.forEach(r => csv += `"${r.date}";"${r.entryType}";"${r.title}";"${r.store}";"${r.category}";"${r.price.toFixed(2)}";"${r.payer}"\n`);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `steuer-export.csv`; a.click();
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `steuer-export.csv`; a.click();
         }
         function exportBackup() {
-            const backupObj = { flatmates: getFlatmates(), data: getData(), budgets: getBudgets(), goals: getSavingsGoals(), events: getEvents(), inventory: getInventory(), diets: getDiets(), cleaning: getCleaningPlan(), shopping: getShoppingList(), cooking: getCookingPlan(), contracts: getContracts(), infoboard: getInfoData() };
-            const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `wg-ultimate-backup-${new Date().toISOString().split('T')[0]}.json`; a.click();
+            const backupObj = { flatmates: getFlatmates(), notes: getNotes(), data: getData(), budgets: getBudgets(), goals: getSavingsGoals(), events: getEvents(), inventory: getInventory(), diets: getDiets(), cleaning: getCleaningPlan(), shopping: getShoppingList(), cooking: getCookingPlan(), contracts: getContracts(), infoboard: getInfoData() };
+            const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `wg-ultimate-backup-${new Date().toISOString().split('T')[0]}.json`; a.click();
         }
         function importBackup(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
+            const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed.flatmates) saveFlatmates(parsed.flatmates); if (parsed.data) saveData(parsed.data); if (parsed.budgets) saveBudgets(parsed.budgets); if (parsed.goals) saveSavingsGoals(parsed.goals); if (parsed.events) saveEvents(parsed.events); if (parsed.inventory) saveInventory(parsed.inventory); if (parsed.diets) saveDiets(parsed.diets); if (parsed.cleaning) saveCleaningPlan(parsed.cleaning); if (parsed.shopping) saveShoppingList(parsed.shopping); if (parsed.cooking) saveCookingPlan(parsed.cooking); if (parsed.contracts) saveContracts(parsed.contracts); if (parsed.infoboard) saveInfoData(parsed.infoboard);
+                    if (parsed.flatmates) saveFlatmates(parsed.flatmates); if (parsed.notes) saveNotes(parsed.notes); if (parsed.data) saveData(parsed.data); if (parsed.budgets) saveBudgets(parsed.budgets); if (parsed.goals) saveSavingsGoals(parsed.goals); if (parsed.events) saveEvents(parsed.events); if (parsed.inventory) saveInventory(parsed.inventory); if (parsed.diets) saveDiets(parsed.diets); if (parsed.cleaning) saveCleaningPlan(parsed.cleaning); if (parsed.shopping) saveShoppingList(parsed.shopping); if (parsed.cooking) saveCookingPlan(parsed.cooking); if (parsed.contracts) saveContracts(parsed.contracts); if (parsed.infoboard) saveInfoData(parsed.infoboard);
                     renderApp(); alert("Backup erfolgreich importiert!");
                 } catch(err) { alert("Fehler beim Import."); }
             }; reader.readAsText(file);
