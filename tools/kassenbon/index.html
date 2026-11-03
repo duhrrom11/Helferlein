@@ -1,194 +1,505 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garantie- & Kassenbon-Manager Pro</title>
+    <title>Garantie & Kassenbon Pro</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@v5/dist/tesseract.min.js"></script>
+    <!-- jsPDF für PDF-Report -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Tesseract.js für OCR Texterkennung -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-    <header class="bg-blue-600 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-2xl font-bold">🛡️ Garantie- & Kassenbon-Manager</h1>
-        <p class="text-sm opacity-90 mt-1">Foto-Scan, Ampel-System & PDF-Export</p>
+    <!-- Header -->
+    <header class="bg-emerald-700 text-white shadow-md py-6 px-4 text-center">
+        <h1 class="text-3xl font-bold">🧾 Garantie & Kassenbon Pro</h1>
+        <p class="text-sm opacity-90 mt-1">Garantieüberwachung, OCR-Scanner, Steuer-Filter & .ics-Kalenderexport</p>
     </header>
 
-    <main class="flex-grow container mx-auto p-4 max-w-4xl space-y-6">
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto p-4 max-w-6xl space-y-6">
         
-        <div class="flex justify-between items-center">
+        <!-- Navigation & Global Actions -->
+        <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
-            <div class="flex gap-2">
-                <button onclick="exportWarrantyPDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">📄 PDF-Report</button>
+            
+            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                <button onclick="exportSteuerCSV()" class="px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold shadow-sm">💼 Steuer-Export (CSV)</button>
+                <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF-Bericht</button>
+                <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
+                <label class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
+                    📂 Import <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                </label>
             </div>
         </div>
 
-        <!-- Dashboard -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Dashboard Statistiken (Feature 6) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">🛡️</div>
-                <div><p class="text-xs text-gray-500">Aktive Garantien</p><h3 id="statActive" class="text-lg font-bold">0</h3></div>
+                <div class="p-3 bg-emerald-50 text-emerald-700 rounded-xl font-bold">💶</div>
+                <div><p class="text-xs text-gray-500">Aktiver Garantiewert</p><h3 id="statTotalValue" class="text-lg font-bold">0,00 €</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-yellow-50 text-yellow-600 rounded-xl font-bold">⚠️</div>
-                <div><p class="text-xs text-gray-500">Läuft bald ab (30 Tage)</p><h3 id="statExpiring" class="text-lg font-bold">0</h3></div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold">🧾</div>
+                <div><p class="text-xs text-gray-500">Gespeicherte Belege</p><h3 id="statTotalCount" class="text-lg font-bold">0</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
-                <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">💰</div>
-                <div><p class="text-xs text-gray-500">Gesamtwert</p><h3 id="statValue" class="text-lg font-bold">0,00 €</h3></div>
+                <div class="p-3 bg-purple-50 text-purple-600 rounded-xl font-bold">💼</div>
+                <div><p class="text-xs text-gray-500">Steuerrelevant Gesamt</p><h3 id="statTaxValue" class="text-lg font-bold">0,00 €</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">⏱️</div>
+                <div><p class="text-xs text-gray-500">Aktive Rückgabefristen</p><h3 id="statReturnCount" class="text-lg font-bold">0</h3></div>
             </div>
         </div>
 
-        <!-- Aktionen -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border flex flex-col md:flex-row justify-between items-center gap-4">
+        <!-- Erfassung: Neuer Kassenbon -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <h2 class="text-lg font-bold">✍️ Neuen Kassenbon / Beleg erfassen</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Produkt / Artikelbezeichnung *:</label>
+                    <input type="text" id="receiptTitle" placeholder="z.B. Waschmaschine Siemens iQ300" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Händler / Geschäft:</label>
+                    <input type="text" id="receiptStore" placeholder="z.B. MediaMarkt" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kaufdatum *:</label>
+                    <input type="date" id="receiptDate" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kaufpreis (€):</label>
+                    <input type="number" step="0.01" id="receiptPrice" placeholder="299.99" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Garantiedauer (Monate):</label>
+                    <input type="number" id="receiptWarranty" value="24" placeholder="24" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Rückgabefrist (Tage) [Feature 5]:</label>
+                    <input type="number" id="receiptReturnDays" value="14" placeholder="14" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
+                    <select id="receiptCategory" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="Elektronik">📱 Elektronik & Technik</option>
+                        <option value="Haushalt">Möbel & Haushalt</option>
+                        <option value="Werkzeug">🛠️ Werkzeug & Garten</option>
+                        <option value="Kleidung">👔 Kleidung & Sport</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Feature 7: Seriennummer & Lagerort -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Seriennummer / S/N:</label>
+                    <input type="text" id="receiptSN" placeholder="z.B. SN-987456123" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Lagerort Karton / Zubehör:</label>
+                    <input type="text" id="receiptLocation" placeholder="z.B. Keller Kiste #2" class="w-full p-2.5 border rounded-lg text-xs bg-white">
+                </div>
+                <div class="flex items-center pt-4">
+                    <label class="inline-flex items-center cursor-pointer space-x-2">
+                        <input type="checkbox" id="receiptIsTax" class="w-4 h-4 text-emerald-600 rounded">
+                        <span class="text-xs font-bold text-gray-700">💼 Steuer- / Werbungskosten-relevant</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Feature 1 & 3: Photo Upload, OCR Scanner & Thermopapier-Restaurator -->
+            <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <label class="block text-xs font-bold text-emerald-900">📷 Belegfoto & Thermopapier-Restaurator (Canvas Filter)</label>
+                    <button type="button" onclick="runOCR()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">🔍 Text automatisch erkennen (OCR)</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+                    <input type="file" id="receiptPhotoInput" accept="image/*" onchange="loadPhotoToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full">
+                    <div id="ocrStatus" class="text-xs text-emerald-800 font-semibold hidden">🔍 Scanne Kassenbon... Bitte warten.</div>
+                </div>
+
+                <!-- Canvas Editor für Thermopapier Filter -->
+                <div id="canvasEditor" class="hidden space-y-2 pt-2 border-t border-emerald-200">
+                    <p class="text-[11px] text-emerald-800 font-medium">⚡ Verblassten Kassenbon lesbar machen (Helligkeit/Kontrast anpassen):</p>
+                    <div class="flex gap-4 items-center flex-wrap">
+                        <label class="text-xs">Helligkeit: <input type="range" id="filterBrightness" min="-100" max="100" value="0" onchange="applyCanvasFilter()" class="align-middle"></label>
+                        <label class="text-xs">Kontrast: <input type="range" id="filterContrast" min="-100" max="100" value="0" onchange="applyCanvasFilter()" class="align-middle"></label>
+                    </div>
+                    <div class="max-h-48 overflow-hidden rounded-lg border bg-black flex justify-center">
+                        <canvas id="photoCanvas" class="max-h-48 object-contain"></canvas>
+                    </div>
+                </div>
+            </div>
+
             <div>
-                <h2 class="text-lg font-bold">Neues Gerät erfassen</h2>
-                <p class="text-sm text-gray-600">Fotografiere den Bon oder füge ihn manuell hinzu.</p>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
+                <input type="text" id="receiptNote" placeholder="z.B. Inkl. 3 Jahre Zusatz-Garantieversicherung" class="w-full p-3 border rounded-xl text-sm">
             </div>
-            <div class="flex gap-2 w-full md:w-auto">
-                <input type="file" id="bonCamera" accept="image/*" capture="environment" class="hidden" onchange="handleImageCapture(event)">
-                <button onclick="document.getElementById('bonCamera').click()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-5 rounded-xl text-sm">📷 Bon fotografieren</button>
-                <button onclick="openModalForNew()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-5 rounded-xl text-sm">➕ Manuell</button>
-            </div>
+
+            <button onclick="saveReceipt()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-3 rounded-xl text-sm shadow-sm transition-colors">Beleg & Garantie speichern</button>
         </div>
 
-        <div id="scanStatus" class="hidden bg-blue-50 border border-blue-200 text-blue-800 text-xs p-3 rounded-xl text-center font-medium animate-pulse">
-            🔍 Analysiere Foto auf dem Tablet... Bitte kurz warten.
-        </div>
-
-        <!-- Liste -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-            <h3 class="font-bold text-lg mb-4">📋 Gespeicherte Geräte</h3>
-            <div id="deviceList" class="space-y-3">
-                <p class="text-sm text-gray-400 text-center py-4">Noch keine Geräte erfasst.</p>
+        <!-- Verlauf & Historie mit Filtern -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+                <h3 class="font-bold text-lg">📋 Gespeicherte Kassenbons & Garantien</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                        <option value="All">Alle Kategorien</option>
+                        <option value="Elektronik">📱 Elektronik</option>
+                        <option value="Haushalt">Haushalt</option>
+                        <option value="Werkzeug">🛠️ Werkzeug</option>
+                        <option value="Kleidung">👔 Kleidung</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
+                    </select>
+                    <select id="filterTax" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                        <option value="All">Alle Belege</option>
+                        <option value="TaxOnly">💼 Nur Steuerrelevant</option>
+                    </select>
+                </div>
+            </div>
+            <div id="receiptsList" class="space-y-3">
+                <p class="text-sm text-gray-400 text-center py-4">Noch keine Kassenbons erfasst.</p>
             </div>
         </div>
     </main>
 
-    <!-- Modal -->
-    <div id="deviceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-xl space-y-4">
-            <h3 id="modalTitle" class="text-lg font-bold">Gerät bearbeiten</h3>
-            <input type="hidden" id="editIndex" value="-1">
-            <input type="hidden" id="receiptImageBase64" value="">
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Name:</label><input type="text" id="devName" class="w-full p-3 border rounded-xl text-sm"></div>
-            <div class="grid grid-cols-2 gap-3">
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Preis (€):</label><input type="text" id="devPrice" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Kaufdatum:</label><input type="date" id="devDate" class="w-full p-3 border rounded-xl text-sm"></div>
-            </div>
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
-                <button onclick="saveDevice()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold">Speichern</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Skript Logik -->
     <script>
-        document.addEventListener('DOMContentLoaded', renderWarrantyList);
+        let rawImage = null;
 
-        function StorageGet() { try { return JSON.parse(localStorage.getItem('warranty_devices')) || []; } catch(e) { return []; } }
-        function StorageSet(data) { try { localStorage.setItem('warranty_devices', JSON.stringify(data)); } catch(e) {} }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('receiptDate').valueAsDate = new Date();
+            renderApp();
+        });
 
-        async function handleImageCapture(event) {
+        function getData() {
+            try {
+                return JSON.parse(localStorage.getItem('kassenbon_data')) || [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function saveData(data) {
+            localStorage.setItem('kassenbon_data', JSON.stringify(data));
+        }
+
+        /* --- Thermopapier Canvas Filter (Feature 3) --- */
+        function loadPhotoToCanvas(event) {
             const file = event.target.files[0];
             if (!file) return;
-            document.getElementById('scanStatus').classList.remove('hidden');
             const reader = new FileReader();
-            reader.onload = async function(e) {
-                const base64 = e.target.result;
-                try {
-                    const { data: { text } } = await Tesseract.recognize(base64, 'deu');
-                    const match = text.match(/\b(0[1-9]|[12][0-9]|3[01])[.\/-](0[1-9]|1[0-2])[.\/-](19|20)\d\d\b/);
-                    let isoDate = new Date().toISOString().split('T')[0];
-                    if (match) {
-                        const p = match[0].split(/[.\/-]/);
-                        isoDate = `${p[2]}-${p[1]}-${p[0]}`;
-                    }
-                    document.getElementById('scanStatus').classList.add('hidden');
-                    openModalForNew(isoDate, "", base64);
-                } catch (err) {
-                    document.getElementById('scanStatus').classList.add('hidden');
-                    openModalForNew(null, "", base64);
-                }
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    rawImage = img;
+                    document.getElementById('canvasEditor').classList.remove('hidden');
+                    applyCanvasFilter();
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
-        function openModalForNew(date = null, price = "", imageBase64 = "") {
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('devName').value = "";
-            document.getElementById('devPrice').value = price;
-            document.getElementById('devDate').value = date || new Date().toISOString().split('T')[0];
-            document.getElementById('receiptImageBase64').value = imageBase64;
-            document.getElementById('deviceModal').classList.remove('hidden');
+        function applyCanvasFilter() {
+            if (!rawImage) return;
+            const canvas = document.getElementById('photoCanvas');
+            const ctx = canvas.getContext('2d');
+            const b = parseInt(document.getElementById('filterBrightness').value);
+            const c = parseInt(document.getElementById('filterContrast').value);
+
+            canvas.width = Math.min(rawImage.width, 600);
+            canvas.height = rawImage.height * (canvas.width / rawImage.width);
+
+            ctx.filter = `brightness(${100 + b}%) contrast(${100 + c}%)`;
+            ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
         }
 
-        function closeModal() { document.getElementById('deviceModal').classList.add('hidden'); }
+        /* --- Tesseract OCR Scanner (Feature 1) --- */
+        async function runOCR() {
+            const input = document.getElementById('receiptPhotoInput');
+            if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
+            
+            const statusEl = document.getElementById('ocrStatus');
+            statusEl.innerText = "🔍 Scanne Kassenbon... Bitte warten.";
+            statusEl.classList.remove('hidden');
 
-        function saveDevice() {
-            const index = parseInt(document.getElementById('editIndex').value);
-            const name = document.getElementById('devName').value.trim() || "Unbenannt";
-            const price = parseFloat(document.getElementById('devPrice').value.replace(',', '.')) || 0;
-            const date = document.getElementById('devDate').value;
-            const image = document.getElementById('receiptImageBase64').value;
+            try {
+                const worker = await Tesseract.createWorker('deu');
+                const ret = await worker.recognize(input.files[0]);
+                await worker.terminate();
 
-            let devices = StorageGet();
-            const data = { name, price, date, warrantyYears: 2, image };
-            if (index === -1) devices.push(data); else devices[index] = data;
-            StorageSet(devices);
-            closeModal();
-            renderWarrantyList();
+                const text = ret.data.text;
+                statusEl.innerText = "✅ OCR Scan erfolgreich!";
+
+                // Betrag-Erkennung
+                const priceMatch = text.match(/(\d+[\.,]\d{2})\s*(€|EUR)?/i);
+                if (priceMatch && !document.getElementById('receiptPrice').value) {
+                    document.getElementById('receiptPrice').value = priceMatch[1].replace(',', '.');
+                }
+
+                // Datums-Erkennung (DD.MM.YYYY)
+                const dateMatch = text.match(/(\d{2})[\.\/](\d{2})[\.\/](\d{4})/);
+                if (dateMatch && !document.getElementById('receiptDate').value) {
+                    document.getElementById('receiptDate').value = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
+                }
+            } catch(e) {
+                statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+            }
         }
 
-        function renderWarrantyList() {
-            const list = document.getElementById('deviceList');
-            let devices = StorageGet();
-            let active = 0, expiring = 0, totalVal = 0;
-            const today = new Date();
+        /* --- Beleg Speichern --- */
+        function saveReceipt() {
+            const title = document.getElementById('receiptTitle').value.trim();
+            const store = document.getElementById('receiptStore').value.trim();
+            const date = document.getElementById('receiptDate').value;
+            const price = parseFloat(document.getElementById('receiptPrice').value) || 0;
+            const warrantyMonths = parseInt(document.getElementById('receiptWarranty').value) || 0;
+            const returnDays = parseInt(document.getElementById('receiptReturnDays').value) || 0;
+            const category = document.getElementById('receiptCategory').value;
+            const sn = document.getElementById('receiptSN').value.trim();
+            const location = document.getElementById('receiptLocation').value.trim();
+            const isTax = document.getElementById('receiptIsTax').checked;
+            const note = document.getElementById('receiptNote').value.trim();
 
-            list.innerHTML = devices.map((d, index) => {
-                totalVal += d.price;
-                let expiryDate = new Date(d.date);
-                expiryDate.setFullYear(expiryDate.getFullYear() + d.warrantyYears);
-                let diffDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
-                let badge = diffDays < 0 ? "🔴 Abgelaufen" : (diffDays <= 30 ? `🟡 ${diffDays} T. ab` : "🟢 Aktiv");
-                if (diffDays >= 0) active++;
-                if (diffDays <= 30 && diffDays >= 0) expiring++;
+            if (!title || !date) {
+                return alert("Bitte mindestens Bezeichnung und Kaufdatum angeben!");
+            }
+
+            let photo = "";
+            const canvas = document.getElementById('photoCanvas');
+            if (!document.getElementById('canvasEditor').classList.contains('hidden')) {
+                photo = canvas.toDataURL('image/jpeg', 0.6);
+            }
+
+            let data = getData();
+            data.push({
+                id: Date.now(),
+                title, store, date, price, warrantyMonths, returnDays, category, sn, location, isTax, note, photo
+            });
+
+            data.sort((a, b) => new Date(b.date) - new Date(a.date));
+            saveData(data);
+
+            // Form Reset
+            document.getElementById('receiptTitle').value = "";
+            document.getElementById('receiptStore').value = "";
+            document.getElementById('receiptPrice').value = "";
+            document.getElementById('receiptSN').value = "";
+            document.getElementById('receiptLocation').value = "";
+            document.getElementById('receiptNote').value = "";
+            document.getElementById('receiptIsTax').checked = false;
+            document.getElementById('receiptPhotoInput').value = "";
+            document.getElementById('canvasEditor').classList.add('hidden');
+            document.getElementById('ocrStatus').classList.add('hidden');
+
+            renderApp();
+        }
+
+        function deleteReceipt(id) {
+            if (!confirm("⚠️ Diesen Beleg wirklich löschen?")) return;
+            let data = getData();
+            data = data.filter(item => item.id !== id);
+            saveData(data);
+            renderApp();
+        }
+
+        /* --- App Render & Dashboard --- */
+        function renderApp() {
+            let data = getData();
+            const catFilter = document.getElementById('filterCategory').value;
+            const taxFilter = document.getElementById('filterTax').value;
+            const container = document.getElementById('readingsList');
+
+            let filtered = data;
+            if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
+            if (taxFilter === 'TaxOnly') filtered = filtered.filter(r => r.isTax);
+
+            // Dashboard Stats
+            const now = new Date();
+            let totalVal = 0;
+            let taxVal = 0;
+            let activeReturns = 0;
+
+            data.forEach(r => {
+                const buyDate = new Date(r.date);
+                const expDate = new Date(buyDate);
+                expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
+
+                if (expDate >= now) totalVal += r.price;
+                if (r.isTax) taxVal += r.price;
+
+                const retDate = new Date(buyDate);
+                retDate.setDate(retDate.getDate() + (r.returnDays || 0));
+                if (retDate >= now) activeReturns++;
+            });
+
+            document.getElementById('statTotalValue').innerText = totalVal.toFixed(2) + " €";
+            document.getElementById('statTotalCount').innerText = data.length;
+            document.getElementById('statTaxValue').innerText = taxVal.toFixed(2) + " €";
+            document.getElementById('statReturnCount').innerText = activeReturns;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Belege gefunden.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(r => {
+                const buyDate = new Date(r.date);
+                const expDate = new Date(buyDate);
+                expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
+
+                const diffDaysWarranty = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+                const isWarrantyActive = diffDaysWarranty >= 0;
+
+                const retDate = new Date(buyDate);
+                retDate.setDate(retDate.getDate() + (r.returnDays || 0));
+                const diffDaysReturn = Math.ceil((retDate - now) / (1000 * 60 * 60 * 24));
+                const isReturnActive = diffDaysReturn >= 0;
 
                 return `
-                    <div class="flex justify-between items-center p-4 bg-gray-50 border rounded-2xl">
-                        <div>
-                            <h4 class="font-bold text-sm">${d.name} <span class="text-[10px] px-2 py-0.5 rounded bg-gray-200">${badge}</span></h4>
-                            <p class="text-xs text-gray-500">Garantie bis: ${expiryDate.toLocaleDateString('de-DE')} | ${d.price.toFixed(2)} €</p>
+                    <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div class="flex items-start space-x-3">
+                            ${r.photo ? `<img src="${r.photo}" class="w-16 h-16 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="window.open('${r.photo}')">` : `<div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center font-bold text-xl">🧾</div>`}
+                            <div class="space-y-1">
+                                <div class="flex items-center space-x-2 flex-wrap gap-1">
+                                    <span class="text-sm font-bold text-gray-900">${r.title}</span>
+                                    <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${r.category}</span>
+                                    ${r.isTax ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">💼 Steuer</span>` : ''}
+                                    ${isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Garantie aktiv (${diffDaysWarranty} Tage)</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Garantie abgelaufen</span>`}
+                                    ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">⏱️ Rückgabe: noch ${diffDaysReturn} Tage</span>` : ''}
+                                </div>
+                                <p class="text-xs text-gray-600">
+                                    Händler: <strong>${r.store || 'k.A.'}</strong> | Preis: <strong>${r.price.toFixed(2)} €</strong> | Kaufdatum: ${r.date}
+                                </p>
+                                <p class="text-[11px] text-gray-500">
+                                    ${r.sn ? 'S/N: ' + r.sn + ' | ' : ''} ${r.location ? 'Karton: ' + r.location + ' | ' : ''} ${r.note ? 'Notiz: ' + r.note : ''}
+                                </p>
+                            </div>
                         </div>
-                        <button onclick="deleteDevice(${index})" class="text-xs text-red-500">Löschen</button>
-                    </div>`;
-            }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine Geräte erfasst.</p>`;
-
-            document.getElementById('statActive').innerText = active;
-            document.getElementById('statExpiring').innerText = expiring;
-            document.getElementById('statValue').innerText = totalVal.toFixed(2) + ' €';
+                        <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
+                            <button onclick="downloadICS(${r.id})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold">📅 .ics Kalender</button>
+                            <button onclick="deleteReceipt(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕ Löschen</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        function deleteDevice(index) {
-            let devices = StorageGet();
-            devices.splice(index, 1);
-            StorageSet(devices);
-            renderWarrantyList();
+        /* --- .ics Kalender-Export (Feature 2) --- */
+        function downloadICS(id) {
+            const data = getData();
+            const r = data.find(item => item.id === id);
+            if (!r) return;
+
+            const buyDate = new Date(r.date);
+            const expDate = new Date(buyDate);
+            expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
+
+            // Reminder 30 Tage vor Ablauf
+            const reminderDate = new Date(expDate);
+            reminderDate.setDate(reminderDate.getDate() - 30);
+
+            const fmt = (d) => d.toISOString().replace(/-|:|\.\d+/g, '').slice(0, 8);
+
+            const ics = 
+`BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Alltagshelferlein//Garantie Tracker//DE
+BEGIN:VEVENT
+SUMMARY:Garantie ablauf: ${r.title}
+DESCRIPTION:Die Garantie für ${r.title} (${r.store}) läuft am ${expDate.toLocaleDateString('de-DE')} ab.\\nS/N: ${r.sn || 'k.A.'}\\nKarton-Lagerort: ${r.location || 'k.A.'}
+DTSTART;VALUE=DATE:${fmt(reminderDate)}
+DTEND;VALUE=DATE:${fmt(reminderDate)}
+STATUS:CONFIRMED
+BEGIN:VALARM
+TRIGGER:-PT9H
+ACTION:DISPLAY
+DESCRIPTION:Erinnerung: Garantie läuft in 30 Tagen ab!
+END:VALARM
+END:VEVENT
+END:VCALENDAR`;
+
+            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `garantie-${r.title.toLowerCase().replace(/\s+/g, '-')}.ics`;
+            a.click();
         }
 
-        function exportWarrantyPDF() {
+        /* --- CSV Export Steuer --- */
+        function exportSteuerCSV() {
+            const data = getData().filter(r => r.isTax);
+            if (data.length === 0) return alert("Keine als steuerrelevant markierten Belege gefunden!");
+
+            let csv = "Kaufdatum;Titel;Haendler;Kategorie;Preis_EUR;Seriennummer;Notiz\n";
+            data.forEach(r => {
+                csv += `"${r.date}";"${r.title}";"${r.store}";"${r.category}";"${r.price.toFixed(2)}";"${r.sn}";"${r.note}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `steuerrelevant-belege-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        /* --- Backup & PDF --- */
+        function exportBackup() {
+            const blob = new Blob([JSON.stringify(getData())], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `kassenbon-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    saveData(JSON.parse(e.target.result));
+                    renderApp();
+                    alert("Backup erfolgreich importiert!");
+                } catch(err) {
+                    alert("Fehler beim Import.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            doc.text("Garantie-Report", 14, 20);
-            let devices = StorageGet();
-            let y = 30;
-            devices.forEach((d, i) => {
-                doc.text(`${i+1}. ${d.name} - ${d.price} EUR`, 14, y);
-                y += 10;
+            const data = getData();
+
+            doc.setFontSize(16);
+            doc.text("Garantie- & Kassenbon-Übersicht", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+
+            let y = 38;
+            data.forEach((r) => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                doc.text(`${r.date} | ${r.title} (${r.store}): ${r.price.toFixed(2)} € - Kat: ${r.category}`, 14, y);
+                y += 8;
             });
-            doc.save("garantie-report.pdf");
+
+            doc.save(`kassenbon-bericht-${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
 </body>
