@@ -2,626 +2,123 @@
 <html lang="de" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helferlein & Kostenlose Online-Tools</title>
     
-    <!-- SEO Meta-Daten -->
-    <title>✨ Kostenlose Online-Tools & clevere Rechner ✨ | Helferlein</title>
-    <meta name="description" content="Entdecke 10 kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung, 100% lokal & sicher. Nutze praktische Tools direkt im Browser!">
-    <link rel="canonical" href="https://duhrrom11.github.io/Helferlein/index.html">
-
-    <!-- Open Graph / Social Media Sharing (WhatsApp, Telegram, Facebook) -->
-    <meta property="og:title" content="Kostenlose Online-Tools & clevere Rechner | Helferlein">
-    <meta property="og:description" content="Entdecke 10 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://duhrrom11.github.io/Helferlein/index.html">
-    
-    <!-- PWA / App-Modus Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Alltags-Tools">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href='data:application/manifest+json,{"name": "Alltagshelferlein Hub", "short_name": "Helferlein", "start_url": "./index.html", "display": "standalone", "background_color": "#f3f4f6", "theme_color": "#0284c7"}'>
-
-    <!-- Schema.org: WebApplication & ItemList für Google AI Overviews -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebApplication",
-          "name": "Kostenlose Online-Tools & clevere Rechner | Helferlein",
-          "operatingSystem": "Web Browser",
-          "applicationCategory": "UtilitiesApplication",
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "EUR"
-          },
-          "description": "Kostenlose Online-Tools für Haushalt, Finanzen und Organisation ohne Anmeldung. Daten bleiben 100% lokal im Browser.",
-          "author": {
-            "@type": "Person",
-            "name": "Romain Duhr"
-          }
-        },
-        {
-          "@type": "ItemList",
-          "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Garantie-Manager & Kassenbon-Scanner", "url": "https://duhrrom11.github.io/Helferlein/tools/kassenbon/index.html" },
-            { "@type": "ListItem", "position": 2, "name": "Umzugskisten- & Inventar-Verwaltung", "url": "https://duhrrom11.github.io/Helferlein/tools/kisten/index.html" },
-            { "@type": "ListItem", "position": 3, "name": "WG-Kasse & Haushaltsbuch Rechner", "url": "https://duhrrom11.github.io/Helferlein/tools/wg-kasse/index.html" },
-            { "@type": "ListItem", "position": 4, "name": "Sicherer Passwort- & PIN-Manager", "url": "https://duhrrom11.github.io/Helferlein/tools/notizen/index.html" },
-            { "@type": "ListItem", "position": 5, "name": "KFZ-Kosten & Reifenwechsel-Tracker", "url": "https://duhrrom11.github.io/Helferlein/tools/kfz/index.html" },
-            { "@type": "ListItem", "position": 6, "name": "Haustier- & Hunde-Gesundheitspass", "url": "https://duhrrom11.github.io/Helferlein/tools/haustier/index.html" },
-            { "@type": "ListItem", "position": 7, "name": "GPS Parkschein-Timer & Standort-Merker", "url": "https://duhrrom11.github.io/Helferlein/tools/parken/index.html" },
-            { "@type": "ListItem", "position": 8, "name": "Leihvertrag & Werkzeug-Verleih-Tracker", "url": "https://duhrrom11.github.io/Helferlein/tools/verleih/index.html" },
-            { "@type": "ListItem", "position": 9, "name": "Pflanzenpflege & Gieß-Erinnerung", "url": "https://duhrrom11.github.io/Helferlein/tools/pflanzen/index.html" },
-            { "@type": "ListItem", "position": 10, "name": "Strom- & Wasserzähler Verbrauchsmelder", "url": "https://duhrrom11.github.io/Helferlein/tools/energie/index.html" }
-          ]
-        }
-      ]
-    }
-    </script>
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .tool-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .tool-card:hover::before {
-            opacity: 1;
-        }
-    </style>
 </head>
-<body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
-    <!-- Header / Navbar -->
-    <header class="bg-white/95 backdrop-blur-md shadow-lg py-4 px-4 border-b border-gray-200 sticky top-0 z-40 transition-colors duration-300">
-        <div class="max-w-3xl mx-auto text-center">
-            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-600 via-teal-600 to-sky-600 bg-clip-text text-transparent inline-flex items-center justify-center gap-2">
-                ✨ Kostenlose Online-Tools & clevere Rechner ✨
-            </h1>
-            <p class="text-xs md:text-sm text-gray-500 mt-1">Entdecke 10 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.</p>
-        </div>
-
-        <!-- Suchleiste & Einstellungen auf einer Höhe -->
-        <div class="mt-4 max-w-2xl mx-auto px-4 flex items-center gap-2">
-            <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder gespeicherte Einträge durchsuchen..." class="w-full px-4 py-2.5 rounded-xl text-sm bg-gray-50 text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-200 transition-colors">
-            <button type="button" id="settingsBtn" class="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl border border-gray-300 shadow-sm cursor-pointer whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0">
-                ⚙️ Einstellungen & Sync
-            </button>
+    <!-- HEADER -->
+    <header class="bg-slate-950 border-b border-slate-800 text-white py-4 px-6 shadow-xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-indigo-600 rounded-xl text-xl">⚡</div>
+                <div>
+                    <h1 class="text-base md:text-lg font-black tracking-tight">Helferlein & Tools</h1>
+                    <p class="text-[10px] md:text-[11px] text-slate-400">Kostenlose Alltagshelfer & Open-Source-Safes</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <!-- KO-FI ZUFALLS-BUTTON -->
+                <a href="https://ko-fi.com/duhrrom" target="_blank" id="kofiButton" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-amber-500/10 animate-pulse transition-all hover:scale-105">
+                    <span class="text-sm">☕</span> 
+                    <span id="kofiText">Kaffee statt Paywall</span>
+                </a>
+            </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
-
-        <!-- Favoriten-Sektion -->
-        <div id="favoritesSection" class="hidden space-y-3">
-            <h2 class="text-xs font-bold text-sky-700 uppercase tracking-wider flex items-center gap-1.5">⭐ Deine Favoriten & Schnellstart</h2>
-            <div id="favoritesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
+        
+        <!-- INTRO / PHILOSOPHIE -->
+        <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-3 shadow-xl">
+            <h2 class="text-base font-bold text-slate-100">🛡️ Freie Tools für den Alltag</h2>
+            <p class="text-xs text-slate-400 leading-relaxed">
+                Das Leben ist teuer genug. Da sollten kleine Online-Tools nicht auch noches Geld kosten. Ich bin ein ferventer Verfechter von Open Source und Free-for-All-Projekten. Keine Paywalls, keine Abos, kein Bullshit.
+            </p>
         </div>
 
-        <!-- Hauptgrid Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-2">
-            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 10 kostenlosen Online-Tools im Überblick</h2>
-            <div class="flex gap-3 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                <span>🔒 100% Local Storage</span>
-                <span>🚫 Keine Cloud-Falle</span>
-            </div>
-        </div>
-
-        <!-- Tools Grid (Alle 10 Tools) -->
-        <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            <!-- Tool 1 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-name="garantie manager kassenbon scanner beleg">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-200 shadow-inner" aria-hidden="true">🧾</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kassenbon', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kassenbon" aria-label="Als Favorit speichern">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Pro</span>
-                        </div>
+        <!-- TOOL-ÜBERSICHT -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Tool 1: Digitaler Nachlassverwalter -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl flex flex-col justify-between">
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xl">🏛️</span>
+                        <h3 class="font-bold text-sm text-slate-100">Digitaler Nachlassverwalter</h3>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Garantie-Manager & Kassenbon-Scanner</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Scanne Rechnungen sicher lokal ein, überwache Garantiefristen und erstelle PDF-Exporte im Schadensfall.</p>
-                    <div id="stats-kassenbon" class="mt-3 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <p class="text-xs text-slate-400">
+                        Zero-Knowledge Safe für Passwörter, Verträge und Krypto-Assets. Inklusive Totmannschalter und 24h-Notfall-Trigger für Vertrauenspersonen.
+                    </p>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">📄 PDF-Export</span>
-                    <a href="tools/kassenbon/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Kassenbon Scanner</span> &rarr;</a>
-                </div>
+                <a href="nachlass.html" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs text-center shadow-md block">
+                    Zum Digitalen Nachlassverwalter ➔
+                </a>
             </div>
 
-            <!-- Tool 2 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-name="umzugskisten inventar verwaltung keller">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-200 shadow-inner" aria-hidden="true">📦</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kisten', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kisten" aria-label="Als Favorit speichern">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Lager</span>
-                        </div>
+            <!-- Platzhalter für weitere Tools (z.B. Zähler-Tracker) -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl flex flex-col justify-between">
+                <div class="space-y-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xl">⚡</span>
+                        <h3 class="font-bold text-sm text-slate-100">Zähler- & Energiemanager</h3>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Umzugskisten- & Inventar-Verwaltung</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Finde Gegenstände in Keller und Garage sofort wieder. Generiere QR-Codes zum Ausdrucken für deine Boxen.</p>
-                    <div id="stats-kisten" class="mt-3 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <p class="text-xs text-slate-400">
+                        Behalte Strom-, Wasser- und Gasverbräuche im Blick – mit Vorjahresvergleich, HT/NT-Tarifen und intelligenten Spar-Tipps.
+                    </p>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">🖨️ QR-Druck</span>
-                    <a href="tools/kisten/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Inventar-Verwaltung</span> &rarr;</a>
-                </div>
-            </div>
-
-            <!-- Tool 3 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-name="wg kasse haushaltsbuch rechner ausgaben">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-200 shadow-inner" aria-hidden="true">💶</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('wg-kasse', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wg-kasse" aria-label="Als Favorit speichern">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Budget</span>
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">WG-Kasse & Haushaltsbuch Rechner</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erfasse gemeinsame Einkäufe im Haushalt und teile Kosten fair auf. Automatische Salden- und Schuldenberechnung.</p>
-                    <div id="stats-wg-kasse" class="mt-3 text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">⚡ Live-Calc</span>
-                    <a href="tools/wg-kasse/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">WG Kasse</span> &rarr;</a>
-                </div>
-            </div>
-
-            <!-- Tool 4 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-name="passwort pin manager notizen wlan">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold border border-purple-200 shadow-inner" aria-hidden="true">🔐</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('notizen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="notizen" aria-label="Als Favorit speichern">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Secure</span>
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Sicherer Passwort- & PIN-Manager</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Speichere WLAN-Codes, Kofferschlösser und sensible Notizen lokal ab. Keine Cloud-Speicherung, maximale Sicherheit.</p>
-                    <div id="stats-notizen" class="mt-3 text-[11px] font-semibold text-purple-600 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">🛡️ AES-Local</span>
-                    <a href="tools/notizen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Passwort-Manager</span> &rarr;</a>
-                </div>
-            </div>
-
-            <!-- Tool 5 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-name="kfz kosten auto reifenwechsel tracker tüv">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl font-bold border border-red-200 shadow-inner" aria-hidden="true">🚗</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('kfz', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kfz" aria-label="Als Favorit speichern">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Tracker</span>
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">KFZ-Kosten & Reifenwechsel-Tracker</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Verwalte TÜV-Termine, protokolliere Reifentiefe, Tankkosten und Werkstattreparaturen für dein Auto.</p>
-                    <div id="stats-kfz" class="mt-3 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">📅 Kalender</span>
-                    <a href="tools/kfz/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">KFZ-Tracker</span> &rarr;</a>
-                </div>
-            </div>
-
-            <!-- Tool 6 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-name="haustier hunde gesundheitspass impfpass tierarzt">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 shadow-inner" aria-hidden="true">🐾</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="haustier" aria-label="Als Favorit speichern">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Care</span>
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Haustier- & Hunde-Gesundheitspass</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte den Überblick über Impfungen, Tierarztkosten und Medikamente für deinen Hund oder deine Katze.</p>
-                    <div id="stats-haustier" class="mt-3 text-[11px] font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">🩺 Vorsorge</span>
-                    <a href="tools/haustier/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Gesundheitspass</span> &rarr;</a>
-                </div>
-            </div>
-
-            <!-- Tool 7 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-name="gps parkschein timer standort merker auto">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-200 shadow-inner" aria-hidden="true">🅿️</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('parken', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="parken" aria-label="Als Favorit speichern">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Timer</span>
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">GPS Parkschein-Timer & Standort-Merker</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Vermeide Strafzettel durch den visuellen Park-Countdown. Finde dein geparktes Auto per GPS-Standort wieder.</p>
-                    <div id="stats-parken" class="mt-3 text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">📍 GPS-Save</span>
-                    <a href="tools/parken/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Park-Timer</span> &rarr;</a>
-                </div>
-            </div>
-
-            <!-- Tool 8 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-name="leihvertrag werkzeug verleih tracker kaution">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-200 shadow-inner" aria-hidden="true">🤝</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('verleih', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="verleih" aria-label="Als Favorit speichern">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Share</span>
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Leihvertrag & Werkzeug-Verleih-Tracker</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Notiere verliehenes Werkzeug oder Bücher. Generiere Kaution-Details und automatische WhatsApp-Erinnerungen.</p>
-                    <div id="stats-verleih" class="mt-3 text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">💬 WhatsApp</span>
-                    <a href="tools/verleih/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Verleih-Tracker</span> &rarr;</a>
-                </div>
-            </div>
-
-            <!-- Tool 9 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-name="pflanzenpflege gieß erinnerung garten pass">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-lime-50 text-lime-600 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-200 shadow-inner" aria-hidden="true">🌱</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('pflanzen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="pflanzen" aria-label="Als Favorit speichern">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Green</span>
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Pflanzenpflege & Gieß-Erinnerung</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erstelle Profile für deine Zimmerpflanzen, notiere Gieß-Intervalle, Dünge-Historie und ideale Standorte.</p>
-                    <div id="stats-pflanzen" class="mt-3 text-[11px] font-semibold text-lime-600 bg-lime-50 border border-lime-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">💧 Reminder</span>
-                    <a href="tools/pflanzen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Pflanzen-Pass</span> &rarr;</a>
-                </div>
-            </div>
-
-            <!-- Tool 10 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-name="strom wasserzähler verbrauchsmelder tracker gas">
-                <div>
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-200 shadow-inner" aria-hidden="true">⚡</div>
-                        <div class="flex items-center gap-2">
-                            <button type="button" onclick="toggleFavorite('energie', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="energie" aria-label="Als Favorit speichern">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Energy</span>
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Strom- & Wasserzähler Verbrauchsmelder</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erfasse monatliche Zählerstände, behalte deinen Verbrauch im Blick und erstelle Reports für Nachzahlungen.</p>
-                    <div id="stats-energie" class="mt-3 text-[11px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
-                </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">📊 Charts</span>
-                    <a href="tools/energie/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Energie Tracker</span> &rarr;</a>
-                </div>
+                <a href="zaehler.html" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs text-center shadow-md block">
+                    Zum Zähler-Tracker ➔
+                </a>
             </div>
 
         </div>
+
     </main>
 
-    <!-- EEAT & AI Overview FAQ-Sektion -->
-    <section class="container mx-auto px-4 max-w-7xl mt-8 pt-8 border-t border-gray-200">
-        <h2 class="text-lg font-bold text-gray-800 mb-4">Häufig gestellte Fragen (FAQ)</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
-                <h3 class="font-bold text-gray-900">Sind diese Online-Tools wirklich kostenlos?</h3>
-                <p>Ja, absolut! Alle Web-Apps sind komplett gratis. Wer mag, darf uns aber gerne per <a href="https://ko-fi.com/DEIN_KOFI_NAME" target="_blank" rel="noopener" class="text-sky-600 hover:underline font-semibold">Ko-fi</a> einen Kaffee spendieren – denn auch Code läuft nicht nur mit Wasser und Liebe! ☕😄</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
-                <h3 class="font-bold text-gray-900">Muss ich mich registrieren oder ein Konto erstellen?</h3>
-                <p>Nein. Du kannst alle Tools sofort und ohne Registrierung direkt im Browser verwenden.</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
-                <h3 class="font-bold text-gray-900">Was passiert mit meinen Daten (Kassenbons, Passwörter)?</h3>
-                <p>Deine Daten bleiben zu 100 % privat. Sie werden ausschließlich lokal auf deinem Gerät (Local Storage) gespeichert. Es erfolgt kein Verkauf oder Upload auf externe Server.</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
-                <h3 class="font-bold text-gray-900">Kann ich meine Daten auf mehreren Geräten nutzen?</h3>
-                <p>Ja, über die optionale und anonyme Cloud-ID in den Einstellungen kannst du deine Daten geräteübergreifend synchronisieren.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer mit EEAT- & Trust-Signalen -->
-    <footer class="mt-8 py-8 border-t border-gray-200 bg-white">
-        <div class="container mx-auto px-4 max-w-7xl text-center space-y-3">
-            <h2 class="text-sm font-bold text-gray-800">Über Helferlein</h2>
-            <p class="text-xs text-gray-500 leading-relaxed max-w-2xl mx-auto">
-                Diese Sammlung kostenloser Online-Tools wurde konzipiert, um alltägliche Probleme (Haushalt, Finanzen, Auto) einfach und effizient im Browser zu lösen. 
-                <strong>Ohne versteckte Kosten, ohne Account-Zwang. Nichts dergleichen.</strong>
-            </p>
-            <p class="text-xs text-gray-500">
-                Entwickelt mit ❤️ und 💡 von Romain Duhr. 
-                <span class="font-semibold text-emerald-600">Datenschutz hat Priorität:</span> Deine Eingaben werden ausschließlich im Local Storage deines Browsers verarbeitet.
-            </p>
-            <div class="flex justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
-                <a href="datenschutz.html" class="text-xs text-sky-600 hover:text-sky-800 font-medium transition-colors">Datenschutzerklärung</a>
-                <a href="impressum.html" class="text-xs text-sky-600 hover:text-sky-800 font-medium transition-colors">Impressum</a>
-            </div>
-        </div>
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-4 px-6 text-center text-xs text-slate-500">
+        <p>100% Free for All & Open Source. Gemacht mit Kaffee und Code. ☕🐝</p>
     </footer>
 
-    <!-- Einstellungs-Modal -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
-                <h3 class="text-lg font-bold text-gray-900">⚙️ Einstellungen & Cloud-Sync</h3>
-                <button type="button" id="closeSettingsBtn" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">&times;</button>
-            </div>
-            
-            <div class="space-y-5">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">☁️ Geräte-Synchronisation</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="globalSyncId" placeholder="z.B. helfer-9f8a-4c21" class="w-full px-3 py-2 text-sm rounded-xl bg-gray-50 border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-sky-500">
-                        <button type="button" id="genSyncKeyBtn" class="px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 text-xs font-bold rounded-xl border border-sky-200 whitespace-nowrap cursor-pointer">Schlüssel erstellen</button>
-                    </div>
-                    <p class="text-[11px] text-gray-400 mt-1">Trage hier deine Cloud-ID ein, um Daten automatisch mit all deinen Geräten zu synchronisieren.</p>
-                </div>
-
-                <div class="border-t border-gray-200 pt-4">
-                    <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
-                    <div class="flex gap-2">
-                        <button type="button" onclick="exportGlobalBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Backup</button>
-                        <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
-                            📤 Restore <input type="file" accept=".json" onchange="importGlobalBackup(event)" class="hidden">
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
-                <button type="button" id="cancelSettingsBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Abbrechen</button>
-                <button type="button" id="saveSettingsBtn" class="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-xs font-bold rounded-xl text-white cursor-pointer shadow-md">Speichern & Sync</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- UI SKRIPT -->
     <script>
-        function openSettings() {
-            const modal = document.getElementById('settingsModal');
-            if (modal) {
-                const syncInput = document.getElementById('globalSyncId');
-                if (syncInput) syncInput.value = localStorage.getItem('hub_sync_id') || '';
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            }
-        }
+        // Deine handverlesene Ko-fi Spruch-Sammlung für den Zufallsmodus
+        const kofiPhrases = [
+            "Premium Kaffee statt Premium App",
+            "Tools für die Welt, Kaffee fürs Helferlein",
+            "Code gratis, Kaffee freiwillig",
+            "Bezahlt mit Karma (oder Kaffee)",
+            "0 € Software, 100 % Kaffee",
+            "Bienenfutter & Programmier-Kaffee",
+            "Spende einen Kaffee, rette den Tag",
+            "Ein Kaffee hält den Bug-Teufel fern",
+            "Koffein-gesteuerter Open-Source-Wahnsinn",
+            "Weil Abos fürstlich nerven",
+            "Gratis-App-Überlebenshilfe",
+            "Mach mir einen Kaffee, ich mach dir ein Tool",
+            "Bohnen statt Bitcoin",
+            "Weil gute Tools viel Kaffee kosten",
+            "Lieber ein Kaffeefleck im Code als eine Paywall im Gesicht",
+            "Anti-Abo-Initiative (jetzt mit Koffein)",
+            "Weil 'kostenlos' auch mal 'ne Tasse Kaffee wert ist",
+            "Für mehr freie Tools und weniger Software-Gedöns",
+            "Halte den Rechner kühl und den Kaffee heiß",
+            "Hier könnte dein Lieblingsspruch stehen (oder ein Kaffee)"
+        ];
 
-        function closeSettings() {
-            const modal = document.getElementById('settingsModal');
-            if (modal) {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
-            }
-        }
-
-        function generateSyncKey() {
-            const syncInput = document.getElementById('globalSyncId');
-            if (syncInput) {
-                syncInput.value = 'hub-' + Math.random().toString(36).substring(2, 8) + '-' + Math.random().toString(36).substring(2, 8);
-            }
-        }
-
-        async function saveSettings() {
-            const syncInput = document.getElementById('globalSyncId');
-            if (syncInput) {
-                localStorage.setItem('hub_sync_id', syncInput.value.trim());
-            }
-            alert('Einstellungen erfolgreich gespeichert!');
-            closeSettings();
-            if (window.syncToCloud) await window.syncToCloud();
-            if (window.syncFromCloud) window.syncFromCloud();
-        }
-
-        function toggleFavorite(toolId, event) {
-            if(event) { event.preventDefault(); event.stopPropagation(); }
-            let favs = JSON.parse(localStorage.getItem('hub_favorites') || '[]');
-            favs = favs.includes(toolId) ? favs.filter(id => id !== toolId) : [...favs, toolId];
-            localStorage.setItem('hub_favorites', JSON.stringify(favs));
-            initFavorites();
-            if (window.syncToCloud) window.syncToCloud();
-        }
-
-        function initFavorites() {
-            const favs = JSON.parse(localStorage.getItem('hub_favorites') || '[]');
-            const section = document.getElementById('favoritesSection');
-            const grid = document.getElementById('favoritesGrid');
-            if (!grid || !section) return;
-            grid.innerHTML = '';
-            if (favs.length === 0) { section.classList.add('hidden'); return; }
-            section.classList.remove('hidden');
-            favs.forEach(id => {
-                const card = document.querySelector(`#toolsGrid .tool-card[data-id="${id}"]`);
-                if (card) {
-                    const clone = card.cloneNode(true);
-                    const btn = clone.querySelector('.fav-btn');
-                    if(btn) {
-                        btn.style.color = '#f59e0b';
-                        btn.onclick = (e) => toggleFavorite(id, e);
-                    }
-                    grid.appendChild(clone);
-                }
-            });
-            document.querySelectorAll('#toolsGrid .tool-card').forEach(c => {
-                const btn = c.querySelector('.fav-btn');
-                if(btn) btn.style.color = favs.includes(c.getAttribute('data-id')) ? '#f59e0b' : '#d1d5db';
-            });
-        }
-
-        function filterTools() {
-            const query = document.getElementById('searchBox').value.toLowerCase().trim();
-            document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
-                const name = card.getAttribute('data-name') || '', text = card.innerText.toLowerCase(), id = card.getAttribute('data-id');
-                let found = false;
-                if (query.length > 1) {
-                    for (let i = 0; i < localStorage.length; i++) {
-                        let k = localStorage.key(i);
-                        if (k.includes(id) && (localStorage.getItem(k) || '').toLowerCase().includes(query)) { found = true; break; }
-                    }
-                }
-                card.style.display = (name.includes(query) || text.includes(query) || found) ? "flex" : "none";
-            });
-        }
-
-        function loadStats() {
-            const setStat = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
-            const getCount = (keys) => {
-                for (let k of keys) {
-                    let v = localStorage.getItem(k);
-                    if (v) { try { let p = JSON.parse(v); return Array.isArray(p) ? p.length : Object.keys(p).length; } catch(e){} }
-                }
-                return 0;
-            };
-            setStat('stats-kassenbon', `${getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts'])} Belege gespeichert`);
-            setStat('stats-kisten', `${getCount(['kisten_data', 'kisten', 'boxes', 'inventar'])} Kisten im Bestand`);
-            setStat('stats-wg-kasse', `${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])} Ausgaben erfasst`);
-            setStat('stats-notizen', `${getCount(['secure_notes', 'notes', 'notizen_data', 'notizen'])} Notizen gesichert`);
-            setStat('stats-kfz', `${getCount(['kfz_pass', 'kfz_data', 'vehicles', 'autos'])} Fahrzeuge aktiv`);
-            setStat('stats-haustier', `${getCount(['haustier_pass', 'haustier_data', 'pets', 'tiere'])} Haustiere erfasst`);
-            setStat('stats-verleih', `${getCount(['verleih_pass', 'verleih_data', 'verleih', 'items'])} Verleih-Objekte`);
-            setStat('stats-pflanzen', `${getCount(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants'])} Pflanzen im Bestand`);
-            setStat('stats-energie', `${getCount(['energie_tracker_pro', 'energie_data', 'energie', 'readings'])} Ablesungen erfasst`);
-        }
-
-        async function exportGlobalBackup() {
-            if (window.syncToCloud) await window.syncToCloud();
-            let globalBackup = {};
-            for (let i = 0; i < localStorage.length; i++) globalBackup[localStorage.key(i)] = localStorage.getItem(localStorage.key(i));
-            const blob = new Blob([JSON.stringify(globalBackup)], { type: 'application/json' });
-            const file = new File([blob], `alltagshilfe-backup-${new Date().toISOString().split('T')[0]}.json`, { type: 'application/json' });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Backup' }); return; }
-            let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
-        }
-
-        async function importGlobalBackup(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    for (let key in parsed) localStorage.setItem(key, parsed[key]);
-                    loadStats(); initFavorites(); if (window.syncToCloud) await window.syncToCloud(); alert("Backup eingespielt & gesichert!");
-                } catch (err) { alert("Fehler beim Import."); }
-            };
-            reader.readAsText(file);
-        }
-
-        // Global exportieren
-        window.openSettings = openSettings;
-        window.closeSettings = closeSettings;
-        window.generateSyncKey = generateSyncKey;
-        window.saveSettings = saveSettings;
-        window.toggleFavorite = toggleFavorite;
-        window.filterTools = filterTools;
-        window.exportGlobalBackup = exportGlobalBackup;
-        window.importGlobalBackup = importGlobalBackup;
-
+        // Wähle beim Laden der Seite zufällig einen Spruch aus
         document.addEventListener('DOMContentLoaded', () => {
-            const settingsBtn = document.getElementById('settingsBtn');
-            const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-            const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
-            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
-            const genSyncKeyBtn = document.getElementById('genSyncKeyBtn');
-
-            if(settingsBtn) settingsBtn.addEventListener('click', openSettings);
-            if(closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
-            if(cancelSettingsBtn) cancelSettingsBtn.addEventListener('click', closeSettings);
-            if(saveSettingsBtn) saveSettingsBtn.addEventListener('click', saveSettings);
-            if(genSyncKeyBtn) genSyncKeyBtn.addEventListener('click', generateSyncKey);
-
-            loadStats();
-            initFavorites();
+            const textSpan = document.getElementById('kofiText');
+            if (textSpan && kofiPhrases.length > 0) {
+                const randomIndex = Math.floor(Math.random() * kofiPhrases.length);
+                textSpan.innerText = kofiPhrases[randomIndex];
+            }
         });
-    </script>
-
-    <!-- FIREBASE CLOUD-SYNC -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyD5g2Pq2rszkCGgabJSfZkrpDRSgLw16-s",
-            authDomain: "helferlein-966e1.firebaseapp.com",
-            projectId: "helferlein-966e1",
-            storageBucket: "helferlein-966e1.firebasestorage.app",
-            messagingSenderId: "219792138235",
-            appId: "1:219792138235:web:c0174e41f1c1076386b55e",
-            measurementId: "G-8HZ5E6FGF8"
-        };
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-
-            window.syncFromCloud = async function() {
-                const cloudId = localStorage.getItem('hub_sync_id'); 
-                if (!cloudId) return;
-                try {
-                    const docSnap = await getDoc(doc(db, "hubs", cloudId));
-                    if (docSnap.exists()) {
-                        const cloudData = docSnap.data();
-                        for (const key in cloudData) { 
-                            if (cloudData[key]) localStorage.setItem(key, typeof cloudData[key] === 'object' ? JSON.stringify(cloudData[key]) : cloudData[key]); 
-                        }
-                        if(window.loadStats) window.loadStats(); 
-                        if(window.initFavorites) window.initFavorites();
-                    } else { 
-                        await window.syncToCloud(); 
-                    }
-                } catch (error) { 
-                    console.error("Firebase Sync-Fehler (unkritisch):", error); 
-                }
-            };
-
-            window.syncToCloud = async function() {
-                const cloudId = localStorage.getItem('hub_sync_id'); 
-                if (!cloudId) return;
-                try {
-                    let globalBackup = {};
-                    for (let i = 0; i < localStorage.length; i++) {
-                        let key = localStorage.key(i); 
-                        let val = localStorage.getItem(key);
-                        try { globalBackup[key] = JSON.parse(val); } catch(e) { globalBackup[key] = val; }
-                    }
-                    await setDoc(doc(db, "hubs", cloudId), globalBackup);
-                    localStorage.setItem('hub_last_sync', new Date().toLocaleTimeString());
-                } catch (error) { 
-                    console.error("Firebase Save-Fehler (unkritisch):", error); 
-                }
-            };
-
-            window.syncFromCloud();
-        } catch (e) {
-            console.warn("Firebase konnte nicht geladen werden.", e);
-        }
     </script>
 </body>
 </html>
