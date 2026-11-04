@@ -243,6 +243,9 @@
         <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
     </div>
 
+    <!-- Unsichtbares Element zur temporären QR-Generierung für den PDF-Export -->
+    <div id="hiddenQrContainer" class="hidden"></div>
+
     <!-- Script Logik -->
     <script>
         let html5QrCode = null;
@@ -254,7 +257,6 @@
             renderInventory();
         });
 
-        // Funktion zum Ein- und Ausklappen der Anleitung
         function toggleHelp() {
             const helpBox = document.getElementById('helpBox');
             const toggleBtn = document.getElementById('helpToggleBtn');
@@ -647,7 +649,35 @@
             doc.save("kisten-inventar-report.pdf");
         }
 
-        function exportQrLabelsPDF() {
+        // Hilfsfunktion: Erzeugt ein unsichtbares QR-Canvas und gibt das Bild als Base64 zurück
+        async function generateQrDataUrl(text) {
+            return new Promise((resolve) => {
+                const tempDiv = document.getElementById('hiddenQrContainer');
+                tempDiv.innerHTML = "";
+                
+                new QRCode(tempDiv, {
+                    text: text,
+                    width: 120,
+                    height: 120
+                });
+
+                // Kurze Wartezeit, damit das Canvas im DOM gerendert ist
+                setTimeout(() => {
+                    const canvas = tempDiv.querySelector('canvas');
+                    const img = tempDiv.querySelector('img');
+                    if (canvas) {
+                        resolve(canvas.toDataURL('image/png'));
+                    } else if (img) {
+                        resolve(img.src);
+                    } else {
+                        resolve(null);
+                    }
+                }, 50);
+            });
+        }
+
+        // QR-Etiketten PDF mit echten grafischen QR-Codes
+        async function exportQrLabelsPDF() {
             let data = getData();
             if (data.boxes.length === 0) return alert("Keine Kisten vorhanden.");
 
@@ -660,32 +690,49 @@
             doc.setFontSize(16);
             doc.text("Mini-HomeBox Pro - QR-Etiketten (Deep-Link)", 14, 12);
 
-            data.boxes.forEach((b) => {
-                if (y + rowHeight > 280) { doc.addPage(); y = 20; }
+            for (let i = 0; i < data.boxes.length; i++) {
+                let b = data.boxes[i];
+                if (y + rowHeight > 280) { 
+                    doc.addPage(); 
+                    y = 20; 
+                }
 
                 const loc = data.locations.find(l => l.id === b.locId);
                 const locName = loc ? `${loc.icon || ''} ${loc.name}` : "Unbekannt";
+                const deepLinkUrl = `${window.location.origin}${window.location.pathname}?box=${b.id}`;
 
+                // Rahmen für das Etikett
                 doc.setDrawColor(200);
                 doc.roundedRect(x, y, colWidth, rowHeight - 5, 3, 3);
 
+                // QR-Code als Bild generieren und einfügen
+                const qrDataUrl = await generateQrDataUrl(deepLinkUrl);
+                if (qrDataUrl) {
+                    // addImage(imageData, format, x, y, w, h)
+                    doc.addImage(qrDataUrl, 'PNG', x + 5, y + 4, 32, 32);
+                }
+
+                // Text auf dem Etikett (rechts neben dem QR-Code)
+                let textX = x + 40;
                 doc.setFont("helvetica", "bold");
-                doc.setFontSize(11);
-                doc.text(`Kiste: ${b.name}`, x + 5, y + 8);
+                doc.setFontSize(10);
+                doc.text(`Kiste: ${b.name}`, textX, y + 8);
 
                 doc.setFont("helvetica", "normal");
-                doc.setFontSize(9);
-                doc.text(`Standort: ${locName}`, x + 5, y + 14);
-                doc.text(`Inhalt: ${b.desc || '-'}`, x + 5, y + 20);
-                doc.text(`Wert: ${(b.value || 0).toFixed(2)} € | Tag: ${b.tag || 'Standard'}`, x + 5, y + 26);
+                doc.setFontSize(8);
+                doc.text(`Ort: ${locName}`, textX, y + 14);
+                doc.text(`Inhalt: ${b.desc || '-'}`, textX, y + 20);
+                doc.text(`Wert: ${(b.value || 0).toFixed(2)} €`, textX, y + 26);
+                doc.text(`Tag: ${b.tag || 'Standard'}`, textX, y + 32);
 
-                doc.setFontSize(7);
-                doc.setTextColor(100);
-                doc.text(`ID (Deep-Link): ${b.id}`, x + 5, y + 34);
-                doc.setTextColor(0);
-
-                if (x === 14) { x = 110; } else { x = 14; y += rowHeight; }
-            });
+                // Spaltenwechsel (2 Spalten pro Seite)
+                if (x === 14) { 
+                    x = 110; 
+                } else { 
+                    x = 14; 
+                    y += rowHeight; 
+                }
+            }
 
             doc.save("kisten-qr-etiketten.pdf");
         }
