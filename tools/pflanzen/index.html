@@ -8,24 +8,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für PDF-Report -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- qrcodejs für QR-Codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
     <!-- Header -->
     <header class="bg-lime-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🌱 Pflanzen- & Garten-Pflege-Pass Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Ausklappbare Rechner, Gieß- & Dünge-Tracker mit Benachrichtigungen</p>
+        <p class="text-sm opacity-90 mt-1">Gesamt-Wasserbedarf, Schädlings-Diagnose, Ernte-Countdown, Licht-Zonen & Topf-Rechner</p>
     </header>
 
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-6xl space-y-6">
-        
+                
         <!-- Navigation & Global Actions -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
             
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                <button id="pushGlobalBtn" onclick="togglePushNotifications()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors">🔔 Benachrichtigungen aktivieren</button>
+                <button onclick="openDiagnosisModal()" class="px-4 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold shadow-sm">🩺 Schädlings-Doktor</button>
+                <button id="pushGlobalBtn" onclick="togglePushNotifications()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors">🔔 Benachrichtigungen</button>
                 <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF-Report</button>
                 <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
                 <label class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
@@ -34,44 +37,85 @@
             </div>
         </div>
 
-        <!-- Dashboard Statistiken -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+        <!-- Dashboard Statistiken & Gesamt-Wasserbedarf -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-lime-50 text-lime-700 rounded-xl font-bold">🌱</div>
-                <div><p class="text-xs text-gray-500">Pflanzen im Bestand</p><h3 id="statPlants" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500">Bestand</p><h3 id="statPlants" class="text-base font-bold">0</h3></div>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">💧</div>
-                <div><p class="text-xs text-gray-500">Bald gießen fällig</p><h3 id="statDueSoon" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500">Bald fällig</p><h3 id="statDueSoon" class="text-base font-bold">0</h3></div>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-red-50 text-red-600 rounded-xl font-bold">🚨</div>
-                <div><p class="text-xs text-gray-500">Dringend gießen (&gt; Intervall)</p><h3 id="statOverdue" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500">Überfällig</p><h3 id="statOverdue" class="text-base font-bold">0</h3></div>
             </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
+                <div class="p-3 bg-sky-50 text-sky-700 rounded-xl font-bold">🚿</div>
+                <div><p class="text-[11px] text-gray-500">Heutiger Gießbedarf</p><h3 id="statWaterNeeded" class="text-base font-bold">0 ml</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex flex-col justify-center space-y-1.5 sm:col-span-2 md:col-span-1">
+                <p class="text-[10px] font-bold text-gray-500 uppercase">Wetter-Modus</p>
+                <div class="grid grid-cols-2 gap-1">
+                    <button onclick="applyWeatherMode('heatwave')" class="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-900 rounded-lg text-[10px] font-bold" title="Hitzewelle: Intervalle verkürzen">🔥 Hitze</button>
+                    <button onclick="applyWeatherMode('normal')" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-[10px] font-bold" title="Normal">🔄 Normal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📅 MONATLICHER GARTEN-KALENDER -->
+        <div class="bg-gradient-to-r from-lime-50 to-emerald-50 p-5 rounded-2xl shadow-sm border border-lime-200 space-y-2">
+            <div class="flex justify-between items-center">
+                <h3 id="calendarMonthTitle" class="font-bold text-sm text-lime-900 flex items-center gap-2">📅 Garten-Saisonkalender (Monatstipp)</h3>
+                <span class="text-[10px] bg-lime-200 text-lime-800 font-bold px-2.5 py-0.5 rounded-full">Automatischer Leitfaden</span>
+            </div>
+            <p id="calendarTodoText" class="text-xs text-lime-800 leading-relaxed"></p>
         </div>
 
         <!-- Erfassung: Neue Pflanze -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
             <h2 class="text-lg font-bold">🌿 Neue Pflanze erfassen</h2>
-
+            
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="text" id="plantName" placeholder="Pflanzenname (z.B. Monstera im Flur)" class="p-3 border rounded-xl text-sm">
-                <input type="text" id="plantSpecies" placeholder="Pflanzenart (z.B. Monstera deliciosa)" class="p-3 border rounded-xl text-sm">
-                <input type="text" id="plantLocation" placeholder="Standort (z.B. Wohnzimmer Hell)" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="plantName" placeholder="Pflanzenname (z.B. Tomate Balkon)" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="plantSpecies" placeholder="Pflanzenart (z.B. Solanum lycopersicum)" class="p-3 border rounded-xl text-sm">
+                <input type="text" id="plantLocation" placeholder="Standort / Raum (z.B. Balkon Süd)" class="p-3 border rounded-xl text-sm">
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Tage:</label>
-                    <input type="number" id="plantInterval" placeholder="z.B. 7" class="w-full p-3 border rounded-xl text-sm">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Lichtverhältnis:</label>
+                    <select id="plantLight" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="Südfenster / Volle Sonne">☀️ Südfenster / Volle Sonne</option>
+                        <option value="Ost/West (Halbschatten)" selected>⛅ Ost/West (Halbschatten)</option>
+                        <option value="Nordfenster / Schatten">🌥️ Nordfenster / Schatten</option>
+                        <option value="Pflanzenlampe / Indoor">💡 Pflanzenlampe</option>
+                    </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Dünge-Tage:</label>
-                    <input type="number" id="plantFertInterval" placeholder="z.B. 30" class="w-full p-3 border rounded-xl text-sm">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Topf-Größe (Ø):</label>
+                    <select id="plantPotSize" onchange="calculateWaterAmount()" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="10">Klein (10 cm ~ 120ml)</option>
+                        <option value="15" selected>Mittel (15 cm ~ 300ml)</option>
+                        <option value="20">Groß (20 cm ~ 600ml)</option>
+                        <option value="30">Sehr groß (30+ cm ~ 1.5L)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Ernte- / Blüte-Datum:</label>
+                    <input type="date" id="plantHarvestDate" class="w-full p-3 border rounded-xl text-sm" title="Voraussichtliche Ernte oder Hauptblüte">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Düngerart:</label>
-                    <input type="text" id="plantFertType" placeholder="z.B. Flüssigdünger" class="w-full p-3 border rounded-xl text-sm">
+                    <input type="text" id="plantFertType" placeholder="Flüssigdünger" class="w-full p-3 border rounded-xl text-sm">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Tage (Intervall):</label>
+                    <input type="number" id="plantInterval" placeholder="z.B. 5" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Gießen:</label>
@@ -83,6 +127,10 @@
                 </div>
             </div>
 
+            <div id="waterMlHint" class="text-xs text-sky-700 bg-sky-50 p-2.5 rounded-xl border border-sky-100 font-medium">
+                💧 Empfohlene Gießmenge für diesen Topf: ca. 250 - 350 ml pro Gießvorgang
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <textarea id="plantNote" placeholder="Wichtige Anmerkungen &amp; Pflegehinweise..." class="w-full p-3 border rounded-xl text-sm h-20 resize-none"></textarea>
                 <div>
@@ -91,103 +139,83 @@
                 </div>
             </div>
 
-            <!-- 🧮 AUSKLAPPBARE RECHNER (Gießen & Düngen) -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-2">
-
-                <!-- 1. GIESSRECHNER -->
-                <div class="bg-white rounded-2xl shadow-sm border border-lime-100 overflow-hidden">
-                    <button onclick="toggleCalculator('waterCalcBody', 'waterToggleIcon')" class="w-full p-4 bg-sky-50 hover:bg-sky-100 flex justify-between items-center transition-colors">
-                        <span class="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-2">💧 Interaktiver Gießrechner <span class="text-[10px] bg-sky-200 text-sky-800 px-2 py-0.5 rounded-full">Öffnen</span></span>
-                        <span id="waterToggleIcon" class="text-sky-700 font-bold text-xs">▼</span>
-                    </button>
-                    <div id="waterCalcBody" class="p-4 space-y-3 hidden border-t border-sky-100">
-                        <div class="text-center bg-sky-50 p-3 rounded-xl border border-sky-100">
-                            <p class="text-[10px] text-sky-600 uppercase font-bold tracking-wider">Empfohlenes Gießintervall</p>
-                            <h2 id="calcResultTitle" class="text-xl font-extrabold text-sky-900 mt-0.5">Alle 7 Tage</h2>
-                            <p id="calcResultMl" class="text-[11px] text-gray-600 mt-0.5">ca. 150-300 ml pro Gießvorgang</p>
-                            <button onclick="applyWaterCalculator()" class="mt-2 px-3 py-1.5 bg-lime-600 hover:bg-lime-700 text-white text-[11px] font-bold rounded-lg shadow-sm">⬇️ Gieß-Wert übernehmen</button>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Pflanzentyp (Gießen)</label>
-                            <div class="grid grid-cols-3 gap-1" id="group-type">
-                                <button type="button" onclick="setWaterCalc('type', 7, this)" class="w-btn-type p-1.5 rounded-lg border text-[11px] font-semibold text-center bg-lime-700 text-white border-lime-700 shadow-sm" data-val="7">🌿 Tropisch</button>
-                                <button type="button" onclick="setWaterCalc('type', 10, this)" class="w-btn-type p-1.5 rounded-lg border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="10">🍃 Blatt</button>
-                                <button type="button" onclick="setWaterCalc('type', 21, this)" class="w-btn-type p-1.5 rounded-lg border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50" data-val="21">🌵 Sukkulente</button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Standort &amp; Saison</label>
-                            <div class="grid grid-cols-2 gap-1">
-                                <select id="waterLoc" onchange="runWaterCalculator()" class="p-1.5 border rounded-lg text-[11px] bg-white">
-                                    <option value="0.8">☀️ Sonnig / Südfenster</option>
-                                    <option value="1.0" selected>⛅ Hell / Normal</option>
-                                    <option value="1.3">🌥️ Schattig / Nord</option>
-                                </select>
-                                <select id="waterSeason" onchange="runWaterCalculator()" class="p-1.5 border rounded-lg text-[11px] bg-white">
-                                    <option value="0.8">☀️ Sommer (Wachstum)</option>
-                                    <option value="1.0" selected>🌷 Frühling / Herbst</option>
-                                    <option value="1.4">❄️ Winter (Ruhephase)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. DÜNGERECHNER -->
-                <div class="bg-white rounded-2xl shadow-sm border border-sky-100 overflow-hidden">
-                    <button onclick="toggleCalculator('fertCalcBody', 'fertToggleIcon')" class="w-full p-4 bg-amber-50 hover:bg-amber-100 flex justify-between items-center transition-colors">
-                        <span class="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-2">🧪 Interaktiver Düngerechner <span class="text-[10px] bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">Öffnen</span></span>
-                        <span id="fertToggleIcon" class="text-amber-700 font-bold text-xs">▼</span>
-                    </button>
-                    <div id="fertCalcBody" class="p-4 space-y-3 hidden border-t border-amber-100">
-                        <div class="text-center bg-amber-50 p-3 rounded-xl border border-amber-100">
-                            <p class="text-[10px] text-amber-700 uppercase font-bold tracking-wider">Empfohlenes Düngeintervall</p>
-                            <h2 id="fertCalcResultTitle" class="text-xl font-extrabold text-amber-900 mt-0.5">Alle 30 Tage</h2>
-                            <p id="fertCalcResultType" class="text-[11px] text-gray-600 mt-0.5">Düngerart: Flüssigdünger</p>
-                            <button onclick="applyFertCalculator()" class="mt-2 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-bold rounded-lg shadow-sm">⬇️ Dünge-Wert übernehmen</button>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Nährstoffbedarf (Düngen)</label>
-                            <div class="grid grid-cols-3 gap-1" id="group-ferttype">
-                                <button type="button" onclick="setFertCalc('demand', 14, 'Blühpflanzendünger', this)" class="f-btn-demand p-1.5 rounded-lg border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50">🌸 Starkzehrer (14T)</button>
-                                <button type="button" onclick="setFertCalc('demand', 30, 'Grünpflanzendünger', this)" class="f-btn-demand p-1.5 rounded-lg border text-[11px] font-semibold text-center bg-sky-700 text-white border-sky-700 shadow-sm">🌿 Normal (30T)</button>
-                                <button type="button" onclick="setFertCalc('demand', 60, 'Kakteendünger', this)" class="f-btn-demand p-1.5 rounded-lg border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50">🌵 Wenig (60T)</button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Wachstumsphase &amp; Dünger</label>
-                            <div class="grid grid-cols-2 gap-1">
-                                <select id="fertSeason" onchange="runFertCalculator()" class="p-1.5 border rounded-lg text-[11px] bg-white">
-                                    <option value="1.0" selected>☀️ Hauptwachstum (Standard)</option>
-                                    <option value="2.0">❄️ Winterpause (Kein Dünger / selten)</option>
-                                </select>
-                                <select id="fertKind" onchange="runFertCalculator()" class="p-1.5 border rounded-lg text-[11px] bg-white">
-                                    <option value="Flüssigdünger" selected>💧 Flüssigdünger</option>
-                                    <option value="Stäbchen / Langzeit">🪵 Langzeit-Stäbchen</option>
-                                    <option value="Orchideendünger">🌸 Spezieller Dünger</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
             <button onclick="savePlant()" class="w-full bg-lime-600 hover:bg-lime-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Pflanze speichern</button>
         </div>
 
-        <!-- Pflanzen-Liste -->
+        <!-- Pflanzen-Liste mit Filter -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h3 class="font-bold text-lg">📋 Meine Pflanzen &amp; Pflege-Timer</h3>
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                <h3 class="font-bold text-lg">📋 Meine Pflanzen &amp; Tagebuch</h3>
+                <select id="filterLocation" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
+                    <option value="">Alle Standorte / Räume</option>
+                </select>
+            </div>
             <div id="plantsList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Keine Pflanzen erfasst.</p>
             </div>
         </div>
     </main>
+
+    <!-- MODAL: Schädlings-Doktor (Schnell-Diagnose) -->
+    <div id="diagnosisModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeDiagnosisModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-sky-900">🩺 Schädlings- & Krankheiten-Doktor</h3>
+                <button onclick="closeDiagnosisModal()" class="text-gray-400 font-bold hover:text-gray-700">✕</button>
+            </div>
+            <p class="text-xs text-gray-500">Wähle das Symptom deiner Pflanze aus, um sofort die Ursache und den Behandlungstipp zu erhalten:</p>
+            
+            <div class="space-y-3 text-xs">
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+                    <h4 class="font-bold text-amber-900">🟡 Gelbe Blätter (Unterste Blätter)</h4>
+                    <p class="text-gray-700"><b>Mögliche Ursache:</b> Meistens Staunässe (zu viel Wasser) oder Nährstoffmangel (Stickstoff).</p>
+                    <p class="text-emerald-800 font-semibold">💡 Sofort-Tipp: Erde trocknen lassen, Drainage im Topf prüfen, ggf. mäßig düngen.</p>
+                </div>
+                <div class="p-3 bg-red-50 border border-red-200 rounded-xl space-y-1">
+                    <h4 class="font-bold text-red-900">🐛 Klebrige Blätter & kleine grüne/schwarze Insekten</h4>
+                    <p class="text-gray-700"><b>Mögliche Ursache:</b> Blattläuse. Sie saugen den Pflanzensaft und hinterlassen Honigtau.</p>
+                    <p class="text-emerald-800 font-semibold">💡 Sofort-Tipp: Mit Seifenlauge (Schmierseife + Wasser) abduschen oder Niemöl verwenden.</p>
+                </div>
+                <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl space-y-1">
+                    <h4 class="font-bold text-indigo-900">🕸️ Feine Gespinste & gelb gesprenkelte Blätter</h4>
+                    <p class="text-gray-700"><b>Mögliche Ursache:</b> Spinnmilben. Treten vor allem bei trockener Heizungsluft oder Hitze auf.</p>
+                    <p class="text-emerald-800 font-semibold">💡 Sofort-Tipp: Luftfeuchtigkeit erhöhen, Pflanze gründlich abduschen und mit Raubmilben oder Niemöl behandeln.</p>
+                </div>
+                <div class="p-3 bg-orange-50 border border-orange-200 rounded-xl space-y-1">
+                    <h4 class="font-bold text-orange-900">🟤 Braune Blattspitzen oder trockene Ränder</h4>
+                    <p class="text-gray-700"><b>Mögliche Ursache:</b> Zu trockene Raumluft oder unregelmäßiges Gießen (Ballentrockenheit).</p>
+                    <p class="text-emerald-800 font-semibold">💡 Sofort-Tipp: Blätter regelmäßig mit kalkarmem Wasser besprühen, Gießrhythmus einhalten.</p>
+                </div>
+            </div>
+            <button onclick="closeDiagnosisModal()" class="w-full py-2.5 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: QR Code & Steckbrief -->
+    <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+            <h3 id="qrTitle" class="font-bold text-lg text-lime-800">Pflanzen-Steckbrief</h3>
+            <div id="qrcode" class="flex justify-center p-4 bg-gray-50 rounded-xl border"></div>
+            <p id="qrSubtitle" class="text-xs text-gray-500">QR-Code für den Blumentopf</p>
+            <button onclick="closeQrModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Tagebuch hinzufügen -->
+    <div id="diaryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4">
+            <h3 class="text-lg font-bold">📖 Tagebucheintrag hinzufügen</h3>
+            <input type="hidden" id="diaryPlantId">
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Beobachtung / Notiz:</label>
+                <textarea id="diaryText" placeholder="z.B. Umgetopft in frische Erde, neuer Trieb..." class="w-full p-3 border rounded-xl text-sm h-24 resize-none"></textarea>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeDiaryModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
+                <button onclick="saveDiaryEntry()" class="px-5 py-2 bg-lime-600 text-white rounded-xl text-sm font-bold">Speichern</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL: Bearbeiten -->
     <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
@@ -196,17 +224,16 @@
             <input type="hidden" id="editId">
             <div class="grid grid-cols-2 gap-2">
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Name:</label><input type="text" id="editName" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Art / Sorte:</label><input type="text" id="editSpecies" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Art:</label><input type="text" id="editSpecies" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
             <div class="grid grid-cols-3 gap-2">
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Standort:</label><input type="text" id="editLocation" class="w-full p-3 border rounded-xl text-sm"></div>
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Tage:</label><input type="number" id="editInterval" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Dünge-Tage:</label><input type="number" id="editFertInterval" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Ernte-Datum:</label><input type="date" id="editHarvestDate" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
-            <div class="grid grid-cols-3 gap-2">
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Düngerart:</label><input type="text" id="editFertType" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div class="grid grid-cols-2 gap-2">
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Gießen:</label><input type="date" id="editLastWatered" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Düngen:</label><input type="date" id="editLastFertilized" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Düngerart:</label><input type="text" id="editFertType" class="w-full p-3 border rounded-xl text-sm"></div>
             </div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Anmerkungen:</label><textarea id="editNote" class="w-full p-3 border rounded-xl text-sm h-20 resize-none"></textarea></div>
             <div class="flex justify-end space-x-2 pt-2">
@@ -218,158 +245,106 @@
 
     <!-- Script Logik -->
     <script>
+        const gartenKalender = {
+            0: "Januar: Zimmerpflanzen sparsam gießen, nicht düngen. Schutz vor Zugluft und Heizungsluft.",
+            1: "Februar: Erste Knollen vorkühlen. Aussaat von Gemüse (Tomaten, Paprika) auf der Fensterbank starten.",
+            2: "März: Frühlingsschnitt bei Rosen und Obstbäumen. Zimmerpflanzen umtopfen und langsam wieder düngen.",
+            3: "April: Aussaat im Freiland (Radieschen, Salat). Kübelpflanzen nach draußen holen, wenn kein Frost droht.",
+            4: "Mai: Eisheilige abwarten! Danach empfindliche Sommerblumen und Tomaten ins Freiland pflanzen.",
+            5: "Juni: Hauptwachstumsphase! Regelmäßig wöchentlich düngen. Bei Hitze morgens oder abends gießen.",
+            6: "July: Verblühte Blüten abschneiden. Rasen bei extremer Trockenheit sprengen.",
+            7: "August: Erntezeit für Obst und Gemüse! Stecklinge schneiden.",
+            8: "September: Zwiebelblüher (Tulpen, Narzissen) für das nächste Frühjahr stecken.",
+            9: "Oktober: Letzter Rückschnitt. Empfindliche Kübelpflanzen ins Winterquartier einräumen.",
+            10: "November: Garten winterfest machen. Laub auf Beeten als Frostschutz liegen lassen.",
+            11: "Dezember: Zimmerpflanzen genießen, sparsam gießen. Werkzeuge reinigen und einlagern."
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentMonth = new Date().getMonth();
+            document.getElementById('calendarTodoText').innerText = gartenKalender[currentMonth] || "Pflege deine Pflanzen und halte den Boden feucht.";
+            
+            updatePushStatusButton();
+            document.getElementById('plantLastWatered').valueAsDate = new Date();
+            document.getElementById('plantLastFertilized').valueAsDate = new Date();
+            calculateWaterAmount();
+            loadLocationDropdown();
+            renderApp();
+        });
+
+        function calculateWaterAmount() {
+            const potSize = parseInt(document.getElementById('plantPotSize').value);
+            let ml = potSize <= 10 ? 120 : (potSize <= 15 ? 300 : (potSize <= 20 ? 600 : 1500));
+            document.getElementById('waterMlHint').innerText = `💧 Empfohlene Gießmenge für diesen Topf: ca. ${ml >= 1000 ? (ml/1000) + ' Liter' : ml + ' ml'} pro Gießvorgang`;
+        }
+
+        function getMlForPot(potSize) {
+            let ps = parseInt(potSize) || 15;
+            return ps <= 10 ? 120 : (ps <= 15 ? 300 : (ps <= 20 ? 600 : 1500));
+        }
+
         function updatePushStatusButton() {
             const btn = document.getElementById('pushGlobalBtn');
             if (!btn) return;
-            if (!("Notification" in window)) {
-                btn.innerText = "🔔 Nicht unterstützt";
-                btn.className = "px-4 py-2 bg-gray-300 text-gray-600 rounded-xl text-xs font-bold shadow-sm cursor-not-allowed";
-                return;
-            }
-
+            if (!("Notification" in window)) { btn.innerText = "🔔 Nicht unterstützt"; return; }
             const pushEnabled = localStorage.getItem('push_enabled') === 'true' && Notification.permission === 'granted';
-
-            if (pushEnabled) {
-                btn.innerText = "🔔 Benachrichtigungen deaktivieren";
-                btn.className = "px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors";
-            } else {
-                btn.innerText = "🔔 Benachrichtigungen aktivieren";
-                btn.className = "px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors";
-            }
+            btn.innerText = pushEnabled ? "🔔 Benachrichtigungen aktiv" : "🔔 Benachrichtigungen aktivieren";
+            btn.className = pushEnabled ? "px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors" : "px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors";
         }
 
         function togglePushNotifications() {
-            if (!("Notification" in window)) {
-                alert("Dein Browser unterstützt keine Benachrichtigungen.");
-                return;
-            }
-
+            if (!("Notification" in window)) return alert("Keine Benachrichtigungs-Unterstützung.");
             const pushEnabled = localStorage.getItem('push_enabled') === 'true';
-
             if (pushEnabled) {
                 localStorage.setItem('push_enabled', 'false');
                 updatePushStatusButton();
-                alert("Benachrichtigungen wurden deaktiviert.");
             } else {
                 Notification.requestPermission().then(permission => {
                     if (permission === "granted") {
                         localStorage.setItem('push_enabled', 'true');
                         updatePushStatusButton();
-                        alert("Benachrichtigungen erfolgreich aktiviert! 🎉");
+                        alert("Benachrichtigungen aktiviert!");
                     } else {
                         localStorage.setItem('push_enabled', 'false');
                         updatePushStatusButton();
-                        alert("Berechtigung für Benachrichtigungen wurde verweigert.");
                     }
                 });
             }
         }
 
-        function toggleCalculator(bodyId, iconId) {
-            let body = document.getElementById(bodyId);
-            let icon = document.getElementById(iconId);
-            if (body.classList.contains('hidden')) {
-                body.classList.remove('hidden');
-                icon.innerText = "▲";
-            } else {
-                body.classList.add('hidden');
-                icon.innerText = "▼";
-            }
-        }
-
-        let waterState = { type: 7 };
-        let calculatedWaterDaysFinal = 7;
-
-        let fertState = { baseDays: 30, typeName: "Flüssigdünger" };
-        let calculatedFertDaysFinal = 30;
-        let calculatedFertTypeFinal = "Flüssigdünger";
-
-        function setWaterCalc(group, val, btn) {
-            waterState[group] = val;
-            document.querySelectorAll(`.w-btn-${group}`).forEach(b => {
-                b.className = `w-btn-${group} p-1.5 rounded-lg border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50`;
-            });
-            btn.className = `w-btn-${group} p-1.5 rounded-lg border text-[11px] font-semibold text-center bg-lime-700 text-white border-lime-700 shadow-sm`;
-            runWaterCalculator();
-        }
-
-        function runWaterCalculator() {
-            let base = waterState.type;
-            let locMult = parseFloat(document.getElementById('waterLoc').value);
-            let seasonMult = parseFloat(document.getElementById('waterSeason').value);
-
-            let days = Math.round(base * locMult * seasonMult);
-            if (days < 2) days = 2;
-            calculatedWaterDaysFinal = days;
-
-            let mlText = days <= 5 ? "ca. 250-400 ml" : (days <= 12 ? "ca. 150-300 ml" : "ca. 100-200 ml");
-            document.getElementById('calcResultTitle').innerText = `Alle ${days} Tage`;
-            document.getElementById('calcResultMl').innerText = mlText + " pro Gießvorgang";
-        }
-
-        function applyWaterCalculator() {
-            document.getElementById('plantInterval').value = calculatedWaterDaysFinal;
-            alert(`Gieß-Intervall von ${calculatedWaterDaysFinal} Tagen übernommen!`);
-        }
-
-        function setFertCalc(group, daysVal, nameVal, btn) {
-            fertState.baseDays = daysVal;
-            fertState.typeName = nameVal;
-            document.querySelectorAll(`.f-btn-${group}`).forEach(b => {
-                b.className = `f-btn-${group} p-1.5 rounded-lg border text-[11px] font-semibold text-center bg-white text-gray-700 border-gray-200 hover:bg-gray-50`;
-            });
-            btn.className = `f-btn-${group} p-1.5 rounded-lg border text-[11px] font-semibold text-center bg-sky-700 text-white border-sky-700 shadow-sm`;
-            runFertCalculator();
-        }
-
-        function runFertCalculator() {
-            let base = fertState.baseDays;
-            let seasonMult = parseFloat(document.getElementById('fertSeason').value);
-            let kind = document.getElementById('fertKind').value;
-
-            let days = Math.round(base * seasonMult);
-            if (seasonMult > 1.5) days = 120;
-            calculatedFertDaysFinal = days;
-            calculatedFertTypeFinal = kind;
-
-            document.getElementById('fertCalcResultTitle').innerText = `Alle ${days} Tage`;
-            document.getElementById('fertCalcResultType').innerText = `Düngerart: ${kind}`;
-        }
-
-        function applyFertCalculator() {
-            document.getElementById('plantFertInterval').value = calculatedFertDaysFinal;
-            document.getElementById('plantFertType').value = calculatedFertTypeFinal;
-            alert(`Dünge-Intervall (${calculatedFertDaysFinal} Tage) und Düngerart übernommen!`);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updatePushStatusButton();
-            document.getElementById('plantLastWatered').valueAsDate = new Date();
-            document.getElementById('plantLastFertilized').valueAsDate = new Date();
-            runWaterCalculator();
-            runFertCalculator();
-            renderApp();
-        });
+        function openDiagnosisModal() { document.getElementById('diagnosisModal').classList.remove('hidden'); }
+        function closeDiagnosisModal() { document.getElementById('diagnosisModal').classList.add('hidden'); }
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('pflanzen_pass')) || { plants: [] };
+                return JSON.parse(localStorage.getItem('pflanzen_pass_v4')) || { plants: [] };
             } catch(e) {
                 return { plants: [] };
             }
         }
 
         function saveData(data) {
-            localStorage.setItem('pflanzen_pass', JSON.stringify(data));
+            localStorage.setItem('pflanzen_pass_v4', JSON.stringify(data));
+        }
+
+        function loadLocationDropdown() {
+            let data = getData();
+            const filterLoc = document.getElementById('filterLocation');
+            const locations = [...new Set(data.plants.map(p => p.location).filter(Boolean))];
+            filterLoc.innerHTML = '<option value="">Alle Standorte / Räume</option>' + 
+                locations.map(loc => `<option value="${loc}">${loc}</option>`).join('');
         }
 
         function savePlant() {
             const name = document.getElementById('plantName').value.trim();
             const species = document.getElementById('plantSpecies').value.trim();
             const location = document.getElementById('plantLocation').value.trim();
-            const interval = parseInt(document.getElementById('plantInterval').value) || calculatedWaterDaysFinal;
-            const fertInterval = parseInt(document.getElementById('plantFertInterval').value) || calculatedFertDaysFinal;
-            const fertType = document.getElementById('plantFertType').value.trim() || calculatedFertTypeFinal;
+            const light = document.getElementById('plantLight').value;
+            const potSize = document.getElementById('plantPotSize').value;
+            const harvestDate = document.getElementById('plantHarvestDate').value;
+            const interval = parseInt(document.getElementById('plantInterval').value) || 7;
+            const fertInterval = 30;
+            const fertType = document.getElementById('plantFertType').value.trim() || "Flüssigdünger";
             const lastWatered = document.getElementById('plantLastWatered').value;
             const lastFertilized = document.getElementById('plantLastFertilized').value || lastWatered;
             const note = document.getElementById('plantNote').value.trim();
@@ -379,10 +354,10 @@
 
             if (photoInput.files && photoInput.files[0]) {
                 compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, lastFertilized, note, compressedPhoto);
+                    storePlant(name, species, location, light, potSize, harvestDate, interval, fertInterval, fertType, lastWatered, lastFertilized, note, compressedPhoto);
                 });
             } else {
-                storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, lastFertilized, note, "");
+                storePlant(name, species, location, light, potSize, harvestDate, interval, fertInterval, fertType, lastWatered, lastFertilized, note, "");
             }
         }
 
@@ -412,43 +387,86 @@
             reader.readAsDataURL(file);
         }
 
-        function storePlant(name, species, location, interval, fertInterval, fertType, lastWatered, lastFertilized, note, photo) {
+        function storePlant(name, species, location, light, potSize, harvestDate, interval, fertInterval, fertType, lastWatered, lastFertilized, note, photo) {
             let data = getData();
-            data.plants.push({ id: Date.now(), name, species, location, interval, fertInterval, fertType, lastWatered, lastFertilized, note, photo });
+            data.plants.push({ 
+                id: Date.now(), 
+                name, species, location, light, potSize, harvestDate, interval, fertInterval, fertType, 
+                lastWatered, lastFertilized, note, photo,
+                waterHistory: [lastWatered],
+                diary: []
+            });
             saveData(data);
 
             document.getElementById('plantName').value = "";
             document.getElementById('plantSpecies').value = "";
             document.getElementById('plantLocation').value = "";
+            document.getElementById('plantHarvestDate').value = "";
             document.getElementById('plantInterval').value = "";
-            document.getElementById('plantFertInterval').value = "";
             document.getElementById('plantFertType').value = "";
             document.getElementById('plantNote').value = "";
             document.getElementById('plantPhotoInput').value = "";
             document.getElementById('plantLastWatered').valueAsDate = new Date();
-            document.getElementById('plantLastFertilized').valueAsDate = new Date();
             
+            loadLocationDropdown();
             renderApp();
+            alert("Pflanze erfolgreich gespeichert!");
         }
 
         function waterPlant(id) {
             let data = getData();
             let p = data.plants.find(item => item.id === id);
             if (p) {
-                p.lastWatered = new Date().toISOString().split('T')[0];
+                let todayStr = new Date().toISOString().split('T')[0];
+                p.lastWatered = todayStr;
+                if(!p.waterHistory) p.waterHistory = [];
+                p.waterHistory.unshift(todayStr);
+                if(p.waterHistory.length > 5) p.waterHistory.pop();
                 saveData(data);
                 renderApp();
             }
         }
 
-        function fertilizePlant(id) {
+        function openDiaryModal(id) {
+            document.getElementById('diaryPlantId').value = id;
+            document.getElementById('diaryText').value = "";
+            document.getElementById('diaryModal').classList.remove('hidden');
+        }
+
+        function closeDiaryModal() { document.getElementById('diaryModal').classList.add('hidden'); }
+
+        function saveDiaryEntry() {
+            const id = parseInt(document.getElementById('diaryPlantId').value);
+            const text = document.getElementById('diaryText').value.trim();
+            if(!text) return alert("Bitte Tagebucheintrag eingeben!");
+
             let data = getData();
             let p = data.plants.find(item => item.id === id);
             if (p) {
-                p.lastFertilized = new Date().toISOString().split('T')[0];
+                if(!p.diary) p.diary = [];
+                let dateStr = new Date().toLocaleDateString('de-DE');
+                p.diary.unshift({ date: dateStr, text: text });
                 saveData(data);
-                renderApp();
             }
+            closeDiaryModal();
+            renderApp();
+            alert("Tagebuch gespeichert!");
+        }
+
+        function applyWeatherMode(mode) {
+            let data = getData();
+            if (data.plants.length === 0) return alert("Keine Pflanzen im Bestand.");
+            
+            data.plants.forEach(p => {
+                if (mode === 'heatwave') {
+                    p.interval = Math.max(2, Math.round(p.interval * 0.7));
+                } else if (mode === 'normal') {
+                    p.interval = Math.max(3, Math.round(p.interval * 1.3));
+                }
+            });
+            saveData(data);
+            renderApp();
+            alert(mode === 'heatwave' ? "🔥 Hitzewellen-Modus aktiv: Intervalle verkürzt!" : "🔄 Standard-Modus wiederhergestellt!");
         }
 
         function deletePlant(id) {
@@ -456,6 +474,7 @@
             let data = getData();
             data.plants = data.plants.filter(item => item.id !== id);
             saveData(data);
+            loadLocationDropdown();
             renderApp();
         }
 
@@ -469,17 +488,14 @@
             document.getElementById('editSpecies').value = p.species || "";
             document.getElementById('editLocation').value = p.location || "";
             document.getElementById('editInterval').value = p.interval;
-            document.getElementById('editFertInterval').value = p.fertInterval || 30;
-            document.getElementById('editFertType').value = p.fertType || "";
+            document.getElementById('editHarvestDate').value = p.harvestDate || "";
             document.getElementById('editLastWatered').value = p.lastWatered;
-            document.getElementById('editLastFertilized').value = p.lastFertilized || p.lastWatered;
+            document.getElementById('editFertType').value = p.fertType || "";
             document.getElementById('editNote').value = p.note || "";
             document.getElementById('editModal').classList.remove('hidden');
         }
 
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
-        }
+        function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
 
         function updatePlant() {
             const id = parseInt(document.getElementById('editId').value);
@@ -487,10 +503,9 @@
             const species = document.getElementById('editSpecies').value.trim();
             const location = document.getElementById('editLocation').value.trim();
             const interval = parseInt(document.getElementById('editInterval').value) || 7;
-            const fertInterval = parseInt(document.getElementById('editFertInterval').value) || 30;
-            const fertType = document.getElementById('editFertType').value.trim();
+            const harvestDate = document.getElementById('editHarvestDate').value;
             const lastWatered = document.getElementById('editLastWatered').value;
-            const lastFertilized = document.getElementById('editLastFertilized').value;
+            const fertType = document.getElementById('editFertType').value.trim();
             const note = document.getElementById('editNote').value.trim();
 
             if (!name || !lastWatered) return alert("Bitte Name und Datum angeben!");
@@ -502,77 +517,114 @@
                 p.species = species;
                 p.location = location;
                 p.interval = interval;
-                p.fertInterval = fertInterval;
-                p.fertType = fertType;
+                p.harvestDate = harvestDate;
                 p.lastWatered = lastWatered;
-                p.lastFertilized = lastFertilized;
+                p.fertType = fertType;
                 p.note = note;
                 saveData(data);
             }
             closeEditModal();
+            loadLocationDropdown();
             renderApp();
         }
+
+        function showQrCode(name, species, location, interval) {
+            document.getElementById('qrTitle').innerText = name;
+            document.getElementById('qrSubtitle').innerText = `${species || 'Pflanze'} | ${location || 'Standort'} | Alle ${interval}T gießen`;
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: `Pflanze: ${name} (${species || '-'}) | Standort: ${location || '-'} | Gieß-Intervall: alle ${interval} Tage`,
+                width: 160,
+                height: 160
+            });
+            document.getElementById('qrModal').classList.remove('hidden');
+        }
+        function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
 
         function renderApp() {
             let data = getData();
             const container = document.getElementById('plantsList');
+            const locFilter = document.getElementById('filterLocation').value;
 
             let totalCount = data.plants.length;
             let dueSoonCount = 0;
             let overdueCount = 0;
+            let totalWaterTodayMl = 0;
             const today = new Date();
 
-            if (totalCount === 0) {
-                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Pflanzen erfasst.</p>`;
+            let filteredPlants = data.plants;
+            if (locFilter !== "") {
+                filteredPlants = filteredPlants.filter(p => p.location === locFilter);
+            }
+
+            if (filteredPlants.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Pflanzen für diesen Filter erfasst.</p>`;
             } else {
-                container.innerHTML = data.plants.map(p => {
+                container.innerHTML = filteredPlants.map(p => {
                     let lastWater = new Date(p.lastWatered);
                     let nextWater = new Date(lastWater);
                     nextWater.setDate(lastWater.getDate() + p.interval);
                     let diffWater = Math.ceil((nextWater - today) / (1000 * 60 * 60 * 24));
 
-                    let fertInt = p.fertInterval || 30;
-                    let lastFert = new Date(p.lastFertilized || p.lastWatered);
-                    let nextFert = new Date(lastFert);
-                    nextFert.setDate(lastFert.getDate() + fertInt);
-                    let diffFert = Math.ceil((nextFert - today) / (1000 * 60 * 60 * 24));
+                    if (diffWater <= 0) {
+                        totalWaterTodayMl += getMlForPot(p.potSize);
+                    }
 
                     let badge = "";
                     if (diffWater < 0) {
                         overdueCount++;
-                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Gießen überfällig (${Math.abs(diffWater)}T)</span>`;
+                        badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig (${Math.abs(diffWater)}T)</span>`;
                     } else if (diffWater <= 2) {
                         dueSoonCount++;
-                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 Gießen in ${diffWater}T</span>`;
+                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 Fällig in ${diffWater}T</span>`;
                     } else {
-                        badge = `<span class="text-[10px] bg-lime-100 text-lime-800 font-semibold px-2 py-0.5 rounded-full">🟢 Gießen in ${diffWater}T</span>`;
+                        badge = `<span class="text-[10px] bg-lime-100 text-lime-800 font-semibold px-2 py-0.5 rounded-full">🟢 Fällig in ${diffWater}T</span>`;
                     }
 
-                    let fertBadge = diffFert < 0 ? 
-                        `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🧪 Düngen überfällig</span>` : 
-                        `<span class="text-[10px] bg-sky-100 text-sky-800 font-semibold px-2 py-0.5 rounded-full">🧪 Düngen in ${diffFert}T</span>`;
+                    let harvestBadge = "";
+                    if (p.harvestDate) {
+                        let hDate = new Date(p.harvestDate);
+                        let hDiff = Math.ceil((hDate - today) / (1000 * 60 * 60 * 24));
+                        if(hDiff >= 0) {
+                            harvestBadge = `<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🍅 Ernte in ${hDiff}T</span>`;
+                        } else {
+                            harvestBadge = `<span class="text-[10px] bg-purple-50 text-purple-600 font-semibold px-2 py-0.5 rounded-full">🍅 Erntezeit erreicht!</span>`;
+                        }
+                    }
+
+                    let historyText = p.waterHistory && p.waterHistory.length > 0 ? `<p class="text-[10px] text-gray-400 mt-0.5">Letzte Gieß-Daten: ${p.waterHistory.join(', ')}</p>` : '';
+                    
+                    let diaryHtml = "";
+                    if (p.diary && p.diary.length > 0) {
+                        diaryHtml = `<div class="mt-2 bg-amber-50 border border-amber-100 p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 Tagebuch:</span>` + 
+                            p.diary.map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold text-gray-800">${d.date}:</span> ${d.text}</div>`).join('') + `</div>`;
+                    }
 
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                             <div class="flex items-center space-x-3">
-                                ${p.photo ? `<img src="${p.photo}" class="w-12 h-12 object-cover rounded-xl border shadow-sm">` : `<div class="w-12 h-12 bg-lime-100 text-lime-700 rounded-xl flex items-center justify-center font-bold text-xs">🌱</div>`}
+                                ${p.photo ? `<img src="${p.photo}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="showQrCode('${p.name}', '${p.species}', '${p.location}', ${p.interval})">` : `<div onclick="showQrCode('${p.name}', '${p.species}', '${p.location}', ${p.interval})" class="w-12 h-12 bg-lime-100 text-lime-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer">📱 QR</div>`}
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <span class="text-xs font-bold text-gray-800">${p.name}</span>
                                         ${p.species ? `<span class="text-xs text-lime-700 font-semibold">(${p.species})</span>` : ''}
                                         ${badge}
-                                        ${fertBadge}
+                                        ${harvestBadge}
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">
-                                        ${p.location ? 'Ort: ' + p.location + ' | ' : ''}
-                                        Gießen: alle ${p.interval}T ${p.fertType ? '| Dünger: ' + p.fertType + ' (alle ' + fertInt + 'T)' : ''}
+                                        ${p.location ? '📍 ' + p.location + ' | ' : ''}
+                                        ${p.light ? p.light + ' | ' : ''}
+                                        Gießen: alle ${p.interval}T (~${getMlForPot(p.potSize)}ml)
                                     </p>
+                                    ${historyText}
                                     ${p.note ? `<p class="text-[11px] text-gray-400 mt-0.5 whitespace-pre-line">${p.note}</p>` : ''}
+                                    ${diaryHtml}
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
-                                <button onclick="waterPlant(${p.id})" class="px-3 py-1.5 bg-lime-600 hover:bg-lime-700 text-white rounded-xl text-xs font-semibold">💧 Gegossen!</button>
-                                <button onclick="fertilizePlant(${p.id})" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-semibold">🧪 Gedüngt!</button>
+                                <button onclick="waterPlant(${p.id})" class="px-3 py-1.5 bg-lime-600 hover:bg-lime-700 text-white rounded-xl text-xs font-semibold">💧 Gießen</button>
+                                <button onclick="openDiaryModal(${p.id})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold" title="Tagebuch">📖</button>
+                                <button onclick="showQrCode('${p.name}', '${p.species}', '${p.location}', ${p.interval})" class="px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="QR-Code">📱</button>
                                 <button onclick="openEditModal(${p.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
                                 <button onclick="deletePlant(${p.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
@@ -584,6 +636,7 @@
             document.getElementById('statPlants').innerText = totalCount;
             document.getElementById('statDueSoon').innerText = dueSoonCount;
             document.getElementById('statOverdue').innerText = overdueCount;
+            document.getElementById('statWaterNeeded').innerText = totalWaterTodayMl >= 1000 ? (totalWaterTodayMl / 1000).toFixed(1) + ' Liter' : totalWaterTodayMl + ' ml';
         }
 
         function exportPDF() {
@@ -607,7 +660,7 @@
             doc.setFont("helvetica", "normal");
             data.plants.forEach(p => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`- ${p.name} (${p.species || 'keine Art'}), Ort: ${p.location || 'k.A.'}, Gießen: ${p.interval}T, Düngen: ${p.fertInterval || 30}T`, 14, y);
+                doc.text(`- ${p.name} (${p.species || 'keine Art'}), Ort: ${p.location || 'k.A.'}, Gießen: ${p.interval}T`, 14, y);
                 y += 6;
             });
 
@@ -633,6 +686,7 @@
                     const parsed = JSON.parse(e.target.result);
                     if (parsed.plants) {
                         saveData(parsed);
+                        loadLocationDropdown();
                         renderApp();
                         alert("Backup erfolgreich importiert!");
                     } else {
