@@ -209,7 +209,7 @@
             </div>
         </div>
 
-        <!-- TAB 5: EINSTELLUNGEN (NEU) -->
+        <!-- TAB 5: EINSTELLUNGEN -->
         <div id="section-settings" class="tab-section hidden space-y-6">
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
                 <h3 class="text-sm font-bold text-slate-100">⚙️ Eigene Daten (Tresor-Inhaber)</h3>
@@ -234,9 +234,9 @@
     </main>
 
     <script>
-        // GLOBALE FEHLERABFANG-ROUTINEN
+        // GLOBALE FEHLERABFANG-ROUTINEN (Korrigiert)
         try {
-            if (typeof  !== "undefined") {
+            if (typeof emailjs !== "undefined") {
                 emailjs.init("Z1iQ0xhr3cpIXVC0j");
             } else {
                 console.warn("EmailJS konnte nicht geladen werden (Werbeblocker?).");
@@ -310,7 +310,7 @@
             bindClick('addAlarmPersonBtn', addAlarmPerson);
             bindClick('saveTrusteesBtn', saveTrustees);
             bindClick('generatePdfBtn', generatePrintableKitPDF);
-            bindClick('saveSettingsBtn', saveSettings); // NEUER EINSTELLUNGEN-BUTTON
+            bindClick('saveSettingsBtn', saveSettings);
 
             // DELEGIERTE KLICKS
             document.addEventListener('click', (e) => {
@@ -396,7 +396,7 @@
                 cfg = {
                     vaultId: vaultId,
                     ownerName: "Dein Name",
-                    ownerEmail: "", // NEU: Initial leer
+                    ownerEmail: "",
                     masterKeyHex: currentMasterKeyHex,
                     checkInIntervalDays: 30,
                     lastCheckIn: new Date().toISOString(),
@@ -437,7 +437,7 @@
                 await db.collection("vaults").doc(cfg.vaultId).set({
                     vaultId: cfg.vaultId,
                     ownerName: cfg.ownerName || "",
-                    ownerEmail: cfg.ownerEmail || "", // NEU: Email an Firebase übertragen
+                    ownerEmail: cfg.ownerEmail || "",
                     lastCheckIn: cfg.lastCheckIn,
                     checkInIntervalDays: cfg.checkInIntervalDays,
                     alarmPersons: cfg.alarmPersons || [],
@@ -548,7 +548,6 @@
                 `).join('');
             }
 
-            // Einstellungen-Tab Felder füllen
             const ownerNameInput = document.getElementById('ownerNameInput');
             if (ownerNameInput) ownerNameInput.value = cfg.ownerName || "";
             
@@ -606,7 +605,6 @@
             }).join('');
         }
 
-        // FUNKTION ZUM SPEICHERN DER NEUEN EINSTELLUNGEN
         async function saveSettings() {
             const nameInput = document.getElementById('ownerNameInput').value.trim();
             const emailInput = document.getElementById('ownerEmailInput').value.trim();
