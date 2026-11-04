@@ -51,11 +51,23 @@
                 </div>
             </div>
 
-            <!-- FREIGEGEBEN-ZUSTAND -->
+            <!-- 24-STUNDEN-ALARM AKTIV (Karenzzeit läuft) -->
+            <div id="alarmActiveStateBox" class="p-5 bg-red-950/30 border border-red-800/60 rounded-xl space-y-3 hidden">
+                <h3 class="font-bold text-red-400 text-sm">🚨 Notfall-Alarm aktiv (24h-Sperrfrist)</h3>
+                <p class="text-xs text-slate-300">
+                    Der Notfall-Alarm wurde ausgelöst. Der Inhaber wurde per E-Mail benachrichtigt. Um Missbrauch zu verhindern, ist der Tresor für eine Sicherheitsfrist von 24 Stunden gesperrt, es sei denn, der Inhaber gibt vorher Entwarnung.
+                </p>
+                <div class="p-3 bg-slate-900 border border-slate-800 rounded-lg text-center space-y-1">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Verbleibende Sperrzeit:</span>
+                    <div id="countdownTimer" class="font-mono text-base font-bold text-red-400">Berechne...</div>
+                </div>
+            </div>
+
+            <!-- FREIGEGEBEN-ZUSTAND (Frist abgelaufen) -->
             <div id="unlockedStateBox" class="space-y-4 hidden">
                 <div class="p-4 bg-emerald-950/40 border border-emerald-800/60 rounded-xl space-y-2">
                     <h3 class="font-bold text-emerald-400 text-sm">🔓 Safe freigegeben</h3>
-                    <p class="text-xs text-slate-300">Die Inaktivitätsfrist ist abgelaufen oder der Notfall-Alarm wurde bestätigt. Du kannst den Nachlass jetzt entschlüsseln.</p>
+                    <p class="text-xs text-slate-300">Die Inaktivitätsfrist oder die 24-Stunden-Sperrfrist nach dem Alarm ist abgelaufen. Du kannst den Nachlass jetzt entschlüsseln.</p>
                 </div>
                 <button onclick="decryptVaultData()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg transition-all">
                     🔓 Nachlass anzeigen
@@ -90,7 +102,6 @@
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.firestore();
 
-        // EmailJS Initialisierung mit deinem Public Key
         try {
             if (typeof emailjs !== "undefined") {
                 emailjs.init("Z1iQ0xhr3cpIXVC0j");
@@ -117,7 +128,7 @@
                 document.getElementById('loadingStatus').innerHTML = `
                     <div class="p-4 bg-red-950/80 border border-red-800 rounded-xl space-y-2">
                         <p class="text-xs font-bold text-red-400">❌ Fehler: Keine Vault-ID in der URL gefunden.</p>
-                        <p class="text-[11px] text-slate-300">Bitte stelle sicher, dass du den vollständigen Link inklusive <code class="bg-slate-900 px-1 py-0.5 rounded text-indigo-300">?vaultId=...</code> im Browser aufrufst.</p>
+                        <p class="text-[11px] text-slate-300">Bitte stelle sicher, dass du den vollständigen Link verwendest.</p>
                     </div>
                 `;
                 return;
@@ -137,37 +148,52 @@
                 ownerNameGlobal = data.ownerName || "Inhaber";
                 ownerEmailGlobal = data.ownerEmail || "";
                 
-                // Name der Person aus den Alarm-Personen ermitteln, falls vorhanden
                 if (data.alarmPersons) {
                     const foundP = data.alarmPersons.find(p => p.id === personKey);
                     if (foundP) personNameGlobal = foundP.name;
                 }
 
                 document.getElementById('ownerNameDisplay').innerText = `Inhaber: ${ownerNameGlobal}`;
-
                 document.getElementById('loadingStatus').classList.add('hidden');
 
+                // 1. Prüfen auf normale Inaktivität
                 const lastCheckIn = new Date(data.lastCheckIn || data.updatedAt);
                 const intervalDays = data.checkInIntervalDays || 30;
                 const diffDays = Math.floor((new Date() - lastCheckIn) / (1000 * 60 * 60 * 24));
                 const isInactiveExpired = diffDays >= intervalDays;
 
-                let isAlarmTriggered = false;
+                // 2. Prüfen auf Notfall-Alarm & 24h-Frist
+                let activeAlarmTriggerTime = null;
                 if (data.emergencyTriggers) {
                     for (let p in data.emergencyTriggers) {
                         const tr = data.emergencyTriggers[p];
                         if (tr && (tr.status === "active" || tr.status === "test_active")) {
-                            isAlarmTriggered = true;
+                            activeAlarmTriggerTime = new Date(tr.triggeredAt);
                         }
                     }
                 }
 
-                if (isInactiveExpired || isAlarmTriggered) {
+                if (isInactiveExpired) {
+                    // Normale Inaktivität abgelaufen -> Sofort frei
                     document.getElementById('unlockedStateBox').classList.remove('hidden');
+                } else if (activeAlarmTriggerTime) {
+                    // Alarm aktiv -> 24 Stunden Frist prüfen!
+                    const now = new Date();
+                    const hoursPassed = (now - activeAlarmTriggerTime) / (1000 * 60 * 60);
+
+                    if (hoursPassed >= 24) {
+                        // 24 Stunden sind um -> Freigeben!
+                        document.getElementById('unlockedStateBox').classList.remove('hidden');
+                    } else {
+                        // Noch in der 24h-Sperrfrist -> Zeige Countdown
+                        document.getElementById('alarmActiveStateBox').classList.remove('hidden');
+                        startCountdown(activeAlarmTriggerTime);
+                    }
                 } else {
+                    // Alles sicher und aktiv
                     document.getElementById('lockedStateBox').classList.remove('hidden');
                     document.getElementById('lockedExplanationText').innerText = 
-                        `Der Inhaber (${ownerNameGlobal}) ist aktiv. Nächster fälliger Check-in in ca. ${intervalDays - diffDays} Tagen. Der Safe bleibt streng verschlossen.`;
+                        `Der Inhaber (${ownerNameGlobal}) ist aktiv. Nächster fälliger Check-in in ca. ${intervalDays - diffDays} Tagen.`;
                 }
 
             } catch(e) {
@@ -176,6 +202,31 @@
             }
         });
 
+        function startCountdown(triggerTime) {
+            const timerEl = document.getElementById('countdownTimer');
+            
+            const updateTimer = () => {
+                const targetTime = new Date(triggerTime.getTime() + (24 * 60 * 60 * 1000));
+                const now = new Date();
+                const diff = targetTime - now;
+
+                if (diff <= 0) {
+                    timerEl.innerText = "Frist abgelaufen - Bitte Seite neu laden.";
+                    location.reload();
+                    return;
+                }
+
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                timerEl.innerText = `${hours} Std. ${minutes} Min. ${seconds} Sek.`;
+            };
+
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        }
+
         async function triggerEmergencyAlarm() {
             if (!confirm(`Möchtest du den 24-Stunden-Notfall-Alarm für ${ownerNameGlobal} auslösen?`)) return;
 
@@ -183,7 +234,7 @@
             const feedback = document.getElementById('alarmFeedbackText');
             btn.disabled = true;
             feedback.classList.remove('hidden');
-            feedback.innerText = "Alarm wird an Firebase übermittelt & E-Mail wird gesendet...";
+            feedback.innerText = "Alarm wird übermittelt & E-Mail an Inhaber gesendet...";
 
             try {
                 const triggerTime = new Date().toISOString();
@@ -196,7 +247,6 @@
                     lastEmergencyTriggerAt: triggerTime
                 });
 
-                // HIER WIRD DIE ALARM-E-MAIL ÜBER EMAILJS AN DEN INHABER GESENDET
                 if (ownerEmailGlobal && typeof emailjs !== "undefined") {
                     const alarmParams = {
                         owner_email: ownerEmailGlobal,
@@ -205,13 +255,11 @@
                         app_link: window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1) + 'index.html'
                     };
 
-                    // HINWEIS: Trage hier unten deine in EmailJS erstellte Template-ID für den Alarm ein (z.B. 'template_xxxxxxx')
-                    await emailjs.send('service_z2papfs', 'template_nw0jpkv', alarmParams);
+                    await emailjs.send('service_z2papfs', 'template_xmidqv9', alarmParams);
                 }
 
-                btn.className = "w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs";
-                btn.innerText = "✅ Alarm erfolgreich ausgelöst!";
-                feedback.innerText = "Der Inhaber wurde per E-Mail benachrichtigt und hat 24 Stunden Zeit zur Entwarnung.";
+                alert("✅ Alarm erfolgreich ausgelöst! Die 24-Stunden-Sperrfrist hat begonnen.");
+                location.reload();
             } catch (e) {
                 btn.disabled = false;
                 feedback.innerText = `Fehler: ${e.message}`;
