@@ -92,9 +92,14 @@
             <p class="text-xs md:text-sm text-gray-500 mt-1">Entdecke 10 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.</p>
         </div>
 
-        <!-- Suchleiste & Einstellungen auf einer Höhe -->
-        <div class="mt-4 max-w-2xl mx-auto px-4 flex items-center gap-2">
-            <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder gespeicherte Einträge durchsuchen..." class="w-full px-4 py-2.5 rounded-xl text-sm bg-gray-50 text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-200 transition-colors">
+        <!-- Ko-fi Button & Einstellungen auf einer Höhe -->
+        <div class="mt-4 max-w-xl mx-auto px-4 flex items-center justify-center gap-2">
+            <!-- KO-FI ZUFALLS-BUTTON IM HEADER -->
+            <a href="https://ko-fi.com/duhrrom" target="_blank" id="kofiButton" class="px-3.5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/10 animate-pulse transition-all hover:scale-105 whitespace-nowrap shrink-0">
+                <span class="text-sm">☕</span> 
+                <span id="kofiText">Kaffee statt Paywall</span>
+            </a>
+
             <button type="button" id="settingsBtn" class="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl border border-gray-300 shadow-sm cursor-pointer whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0">
                 ⚙️ Einstellungen & Sync
             </button>
@@ -110,12 +115,11 @@
             <div id="favoritesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <!-- Hauptgrid Header -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-2">
+        <!-- Hauptgrid Header mit Suchleiste anstelle des Badges -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-3">
             <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 10 kostenlosen Online-Tools im Überblick</h2>
-            <div class="flex gap-3 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                <span>🔒 100% Local Storage</span>
-                <span>🚫 Keine Cloud-Falle</span>
+            <div class="w-full md:w-80">
+                <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder Inhalt durchsuchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
             </div>
         </div>
 
@@ -331,7 +335,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
                 <h3 class="font-bold text-gray-900">Sind diese Online-Tools wirklich kostenlos?</h3>
-                <p>Ja, absolut! Alle Web-Apps sind komplett gratis. Wer mag, darf uns aber gerne per <a href="https://ko-fi.com/DEIN_KOFI_NAME" target="_blank" rel="noopener" class="text-sky-600 hover:underline font-semibold">Ko-fi</a> einen Kaffee spendieren – denn auch Code läuft nicht nur mit Wasser und Liebe! ☕😄</p>
+                <p>Ja, absolut! Alle Web-Apps sind komplett gratis. Wer mag, darf uns aber gerne per <a href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener" class="text-sky-600 hover:underline font-semibold">Ko-fi</a> einen Kaffee spendieren – denn auch Code läuft nicht nur mit Wasser und Liebe! ☕😄</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
                 <h3 class="font-bold text-gray-900">Muss ich mich registrieren oder ein Konto erstellen?</h3>
@@ -405,6 +409,30 @@
 
     <!-- UI SKRIPT -->
     <script>
+        // Ko-fi Zufalls-Spruch Generator
+        const kofiPhrases = [
+            "Premium Kaffee statt Premium App",
+            "Tools für die Welt, Kaffee fürs Helferlein",
+            "Code gratis, Kaffee freiwillig",
+            "Bezahlt mit Karma (oder Kaffee)",
+            "0 € Software, 100 % Kaffee",
+            "Bienenfutter & Programmier-Kaffee",
+            "Spende einen Kaffee, rette den Tag",
+            "Ein Kaffee hält den Bug-Teufel fern",
+            "Koffein-gesteuerter Open-Source-Wahnsinn",
+            "Weil Abos fürstlich nerven",
+            "Gratis-App-Überlebenshilfe",
+            "Mach mir einen Kaffee, ich mach dir ein Tool",
+            "Bohnen statt Bitcoin",
+            "Weil gute Tools viel Kaffee kosten",
+            "Lieber ein Kaffeefleck im Code als eine Paywall im Gesicht",
+            "Anti-Abo-Initiative (jetzt mit Koffein)",
+            "Weil 'kostenlos' auch mal 'ne Tasse Kaffee wert ist",
+            "Für mehr freie Tools und weniger Software-Gedöns",
+            "Halte den Rechner kühl und den Kaffee heiß",
+            "Hier könnte dein Lieblingsspruch stehen (oder ein Kaffee)"
+        ];
+
         function openSettings() {
             const modal = document.getElementById('settingsModal');
             if (modal) {
@@ -545,6 +573,13 @@
         window.importGlobalBackup = importGlobalBackup;
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Ko-fi Spruch beim Laden der Seite zufällig auswählen
+            const textSpan = document.getElementById('kofiText');
+            if (textSpan && kofiPhrases.length > 0) {
+                const randomIndex = Math.floor(Math.random() * kofiPhrases.length);
+                textSpan.innerText = kofiPhrases[randomIndex];
+            }
+
             const settingsBtn = document.getElementById('settingsBtn');
             const closeSettingsBtn = document.getElementById('closeSettingsBtn');
             const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
