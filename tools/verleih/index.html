@@ -16,12 +16,12 @@
     <!-- Header -->
     <header class="bg-indigo-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🤝 Leih- & Verleih-Tracker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Kontakte, Filter nach Person & Gegenstand, Kautionen & QR-Codes</p>
+        <p class="text-sm opacity-90 mt-1">Verlängerungen, WhatsApp-Vorlagen, Verluststatus, Kautionen & QR-Codes</p>
     </header>
 
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
-        
+                
         <!-- Navigation & Global Actions -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
@@ -36,22 +36,26 @@
         </div>
 
         <!-- Dashboard Statistiken -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold">📦</div>
-                <div><p class="text-xs text-gray-500">Aktiv verliehen</p><h3 id="statActive" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500">Aktiv</p><h3 id="statActive" class="text-base font-bold">0</h3></div>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-red-50 text-red-600 rounded-xl font-bold">⏰</div>
-                <div><p class="text-xs text-gray-500">Überfällig (&gt; 30T)</p><h3 id="statOverdue" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500">Überfällig (&gt;30T)</p><h3 id="statOverdue" class="text-base font-bold">0</h3></div>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
+                <div class="p-3 bg-amber-50 text-amber-700 rounded-xl font-bold">⚠️</div>
+                <div><p class="text-[11px] text-gray-500">Verloren/Defekt</p><h3 id="statLost" class="text-base font-bold">0</h3></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-green-50 text-green-600 rounded-xl font-bold">✅</div>
-                <div><p class="text-xs text-gray-500">Zurückerhalten</p><h3 id="statReturned" class="text-lg font-bold">0</h3></div>
+                <div><p class="text-[11px] text-gray-500">Zurück</p><h3 id="statReturned" class="text-base font-bold">0</h3></div>
             </div>
-            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-4">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3 sm:col-span-2 md:col-span-1">
                 <div class="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold">💶</div>
-                <div><p class="text-xs text-gray-500">Offene Kaution</p><h3 id="statDeposit" class="text-lg font-bold">0,00 €</h3></div>
+                <div><p class="text-[11px] text-gray-500">Offene Kaution</p><h3 id="statDeposit" class="text-base font-bold">0,00 €</h3></div>
             </div>
         </div>
 
@@ -147,14 +151,14 @@
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('verleih_tracker_pro')) || { items: [], contacts: [] };
+                return JSON.parse(localStorage.getItem('verleih_tracker_pro_v2')) || { items: [], contacts: [] };
             } catch(e) {
                 return { items: [], contacts: [] };
             }
         }
 
         function saveData(data) {
-            localStorage.setItem('verleih_tracker_pro', JSON.stringify(data));
+            localStorage.setItem('verleih_tracker_pro_v2', JSON.stringify(data));
         }
 
         function saveContact() {
@@ -182,7 +186,7 @@
             const contacts = data.contacts || [];
             personSelect.innerHTML = '<option value="">-- Kontakt wählen --</option><option value="custom">+ Neuen Namen eingeben</option>' + 
                 contacts.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-
+            
             filterPerson.innerHTML = '<option value="">Alle Personen</option>' + 
                 [...new Set(data.items.map(i => i.person))].map(p => `<option value="${p}">${p}</option>`).join('');
 
@@ -234,11 +238,13 @@
                     const MAX_HEIGHT = 300;
                     let width = img.width;
                     let height = img.height;
+
                     if (width > height) {
                         if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                     } else {
                         if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
                     }
+
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
@@ -252,7 +258,7 @@
 
         function storeData(title, person, date, returnDate, deposit, note, photo) {
             let data = getData();
-            data.items.push({ id: Date.now(), title, person, date, returnDate, deposit, note, photo, returned: false });
+            data.items.push({ id: Date.now(), title, person, date, returnDate, deposit, note, photo, status: 'active' });
             saveData(data);
 
             document.getElementById('itemTitle').value = "";
@@ -269,13 +275,28 @@
             renderApp();
         }
 
-        function toggleReturn(id) {
+        // Status ändern: active, returned, lost
+        function setStatus(id, newStatus) {
             let data = getData();
             let item = data.items.find(i => i.id === id);
             if (item) {
-                item.returned = !item.returned;
+                item.status = newStatus;
                 saveData(data);
                 renderApp();
+            }
+        }
+
+        // Schnell-Verlängerung (+7 oder +14 Tage)
+        function extendReturnDate(id, days) {
+            let data = getData();
+            let item = data.items.find(i => i.id === id);
+            if (item) {
+                let baseDate = item.returnDate ? new Date(item.returnDate) : new Date();
+                baseDate.setDate(baseDate.getDate() + days);
+                item.returnDate = baseDate.toISOString().split('T')[0];
+                saveData(data);
+                renderApp();
+                alert(`Rückgabedatum um ${days} Tage verlängert!`);
             }
         }
 
@@ -367,13 +388,13 @@
             const personFilter = document.getElementById('filterPerson').value;
             const itemFilter = document.getElementById('filterItem').value;
 
-            let activeCount = data.items.filter(i => !i.returned).length;
-            let returnedCount = data.items.filter(i => i.returned).length;
+            let activeCount = data.items.filter(i => i.status === 'active').length;
+            let returnedCount = data.items.filter(i => i.status === 'returned').length;
+            let lostCount = data.items.filter(i => i.status === 'lost').length;
             let overdueCount = 0;
-            let totalDeposit = data.items.filter(i => !i.returned).reduce((sum, i) => sum + (i.deposit || 0), 0);
+            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + (i.deposit || 0), 0);
 
             const today = new Date();
-
             let filteredItems = data.items;
             if (personFilter !== "") {
                 filteredItems = filteredItems.filter(i => i.person === personFilter);
@@ -390,39 +411,63 @@
                     let diff = Math.ceil((today - d) / (1000 * 60 * 60 * 24));
                     
                     let badge = "";
-                    if (i.returned) {
+                    if (i.status === 'returned') {
                         badge = `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">✅ Zurückgegeben</span>`;
+                    } else if (i.status === 'lost') {
+                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">⚠️ Verloren / Defekt</span>`;
                     } else if (diff > 30) {
                         overdueCount++;
                         badge = `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig (${diff}T)</span>`;
-                    } else if (diff > 14) {
-                        badge = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 vor ${diff}T</span>`;
                     } else {
-                        badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">🟢 vor ${diff}T</span>`;
+                        badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">🟢 aktiv (${diff}T)</span>`;
                     }
 
-                    // Prüfen ob Kontakt eine Telefonnummer hat
+                    // WhatsApp Vorlagen
                     let contact = (data.contacts || []).find(c => c.name === i.person);
                     let phone = contact ? contact.phone : "";
-                    let whatsappBtn = "";
-                    if (phone && !i.returned) {
+                    let whatsappDropdown = "";
+                    if (phone && i.status === 'active') {
                         let cleanPhone = phone.replace(/[^0-9+]/g, '');
-                        let msg = encodeURIComponent(`Hallo ${i.person}, du hast dir meinen Gegenstand "${i.title}" geliehen. Wollte kurz nachhören, wann du ihn zurückbringen kannst?`);
-                        whatsappBtn = `<a href="https://wa.me/${cleanPhone}?text=${msg}" target="_blank" class="px-2.5 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-xl text-xs font-semibold" title="WhatsApp Erinnerung">💬 WhatsApp</a>`;
-                    }
-
-                    let calButtons = "";
-                    if (i.returnDate && !i.returned) {
-                        let rd = new Date(i.returnDate);
-                        let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Rückgabe: ' + i.title + ' (' + i.person + ')')}&dates=${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Verleih-Rückgabe fällig')}`;
-                        calButtons = `
-                            <a href="${googleCalUrl}" target="_blank" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
-                            <button onclick="downloadICS('${i.title}', '${i.returnDate}', '${i.person}')" class="px-2 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>
+                        let msgFriendly = encodeURIComponent(`Hi ${i.person}! Wollte kurz nachhören, wie es mit meinem "${i.title}" läuft und wann du es ca. zurückbringen kannst? Liebe Grüße!`);
+                        let msgUrgent = encodeURIComponent(`Hallo ${i.person}, ich benötige meinen Gegenstand "${i.title}" in den nächsten Tagen wieder. Sag mir bitte Bescheid, wann das klappt. Danke!`);
+                        
+                        whatsappDropdown = `
+                            <select onchange="if(this.value) { window.open(this.value, '_blank'); this.value=''; }" class="p-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-xl text-xs font-semibold border border-green-200">
+                                <option value="">💬 WhatsApp...</option>
+                                <option value="https://wa.me/${cleanPhone}?text=${msgFriendly}">Freundliche Erinnerung</option>
+                                <option value="https://wa.me/${cleanPhone}?text=${msgUrgent}">Dringende Rückgabe</option>
+                            </select>
                         `;
                     }
 
+                    let extendButtons = "";
+                    let calButtons = "";
+                    if (i.status === 'active') {
+                        extendButtons = `
+                            <button onclick="extendReturnDate(${i.id}, 7)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold" title="+7 Tage">+7T</button>
+                            <button onclick="extendReturnDate(${i.id}, 14)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold" title="+14 Tage">+14T</button>
+                        `;
+
+                        if (i.returnDate) {
+                            let rd = new Date(i.returnDate);
+                            let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Rückgabe: ' + i.title + ' (' + i.person + ')')}&dates=${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Verleih-Rückgabe fällig')}`;
+                            calButtons = `
+                                <a href="${googleCalUrl}" target="_blank" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
+                                <button onclick="downloadICS('${i.title}', '${i.returnDate}', '${i.person}')" class="px-2 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>
+                            `;
+                        }
+                    }
+
+                    let statusDropdown = `
+                        <select onchange="setStatus(${i.id}, this.value)" class="p-1.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold border">
+                            <option value="active" ${i.status === 'active' ? 'selected' : ''}>📌 Status: Aktiv</option>
+                            <option value="returned" ${i.status === 'returned' ? 'selected' : ''}>✅ Zurückgegeben</option>
+                            <option value="lost" ${i.status === 'lost' ? 'selected' : ''}>⚠️ Verloren / Defekt</option>
+                        </select>
+                    `;
+
                     return `
-                        <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 ${i.returned ? 'opacity-60' : ''}">
+                        <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 ${i.status !== 'active' ? 'opacity-60' : ''}">
                             <div class="flex items-center space-x-3">
                                 ${i.photo ? `<img src="${i.photo}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="showQrCode('${i.title}', '${i.person}')">` : `<div onclick="showQrCode('${i.title}', '${i.person}')" class="w-12 h-12 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer" title="QR-Code anzeigen">📱 QR</div>`}
                                 <div>
@@ -433,12 +478,13 @@
                                         ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">Kaution: ${i.deposit.toFixed(2).replace('.', ',')} €</span>` : ''}
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">Ausleihe: ${d.toLocaleDateString('de-DE')} ${i.returnDate ? '| Rückgabe: ' + new Date(i.returnDate).toLocaleDateString('de-DE') : ''} ${i.note ? '| Notiz: ' + i.note : ''}</p>
+                                    ${i.status === 'active' ? `<div class="flex gap-1 mt-1.5 items-center"><span class="text-[10px] text-gray-400">Verlängern:</span> ${extendButtons}</div>` : ''}
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
-                                ${whatsappBtn}
+                                ${whatsappDropdown}
                                 ${calButtons}
-                                <button onclick="toggleReturn(${i.id})" class="px-3 py-1.5 ${i.returned ? 'bg-gray-200 text-gray-700' : 'bg-green-600 text-white'} rounded-xl text-xs font-semibold">${i.returned ? 'Wieder ausleihen' : 'Zurück erhalten'}</button>
+                                ${statusDropdown}
                                 <button onclick="openEditModal(${i.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
                                 <button onclick="deleteItem(${i.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
@@ -449,6 +495,7 @@
 
             document.getElementById('statActive').innerText = activeCount;
             document.getElementById('statOverdue').innerText = overdueCount;
+            document.getElementById('statLost').innerText = lostCount;
             document.getElementById('statReturned').innerText = returnedCount;
             document.getElementById('statDeposit').innerText = totalDeposit.toFixed(2).replace('.', ',') + ' €';
         }
@@ -467,7 +514,8 @@
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
             let y = 35;
-            let totalDeposit = data.items.filter(i => !i.returned).reduce((sum, i) => sum + (i.deposit || 0), 0);
+            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + (i.deposit || 0), 0);
+
             doc.setFont("helvetica", "bold");
             doc.text(`Offene Kaution / Wert: ${totalDeposit.toFixed(2)} EUR`, 14, y);
             y += 10;
@@ -479,9 +527,9 @@
             doc.setFont("helvetica", "normal");
             data.items.forEach(i => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                let status = i.returned ? "[ZURÜCK]" : "[AKTIV]";
+                let statusLabel = i.status === 'returned' ? "[ZURÜCK]" : (i.status === 'lost' ? "[VERLOREN/DEFEKT]" : "[AKTIV]");
                 let depText = i.deposit > 0 ? ` (Kaution: ${i.deposit.toFixed(2)} EUR)` : "";
-                doc.text(`- ${status} ${i.title} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 14, y);
+                doc.text(`- ${statusLabel} ${i.title} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 14, y);
                 y += 6;
             });
 
