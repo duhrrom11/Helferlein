@@ -236,8 +236,8 @@
     <script>
         // GLOBALE FEHLERABFANG-ROUTINEN
         try {
-            if (typeof emailjs !== "undefined") {
-                emailjs.init("Z1IQ0xhr3cplXVC0j");
+            if (typeof  !== "undefined") {
+                emailjs.init("Z1iQ0xhr3cpIXVC0j");
             } else {
                 console.warn("EmailJS konnte nicht geladen werden (Werbeblocker?).");
             }
@@ -666,7 +666,7 @@
                 person_link: link
             };
 
-            emailjs.send('service_8gzihbf', 'template_xmidqv9', templateParams)
+            emailjs.send('service_z2papfs', 'template_xmidqv9', templateParams)
                 .then(function(response) {
                     alert(`✅ E-Mail erfolgreich an ${name} (${email}) gesendet!`);
                 }, function(error) {
