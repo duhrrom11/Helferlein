@@ -16,7 +16,7 @@
     <!-- Header -->
     <header class="bg-lime-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🌱 Pflanzen- & Garten-Pflege-Pass Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Beet-Planer, Ernte-Bilanz, Lager-Inventar, Lux-Lichtcheck & Smart-Gardening</p>
+        <p class="text-sm opacity-90 mt-1">Solar-Bilanz, Saatgut-Tracker, Nützlings-Matchmaker, Zisterne & Smart-Gardening</p>
     </header>
 
     <!-- Main Content -->
@@ -27,11 +27,11 @@
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
             
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                <button onclick="openCisternModal()" class="px-3 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold shadow-sm">🌧️ Zisterne</button>
+                <button onclick="openSeedsModal()" class="px-3 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold shadow-sm">🌰 Saatgut</button>
                 <button onclick="openInventoryModal()" class="px-3 py-2 bg-lime-50 text-lime-700 hover:bg-lime-100 rounded-xl text-xs font-bold shadow-sm">📦 Lager</button>
-                <button onclick="openBeetModal()" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold shadow-sm">🌿 Beet-Planer</button>
-                <button onclick="openWeatherModal()" class="px-3 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold shadow-sm">🌤️ Wetter</button>
-                <button onclick="openVacationModal()" class="px-3 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-bold shadow-sm">✈️ Urlaub</button>
-                <button id="pushGlobalBtn" onclick="togglePushNotifications()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors">🔔 Alarm</button>
+                <button onclick="openBeetModal()" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold shadow-sm">🌿 Beet</button>
+                <button onclick="openDiagnosisModal()" class="px-3 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 rounded-xl text-xs font-bold shadow-sm">🩺 Doktor</button>
                 <button onclick="exportPDF()" class="px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF</button>
                 <button onclick="exportBackup()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
                 <label class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
@@ -59,8 +59,8 @@
                 <div><p class="text-[11px] text-gray-500">Heutiger Bedarf</p><h3 id="statWaterNeeded" class="text-base font-bold">0 ml</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
-                <div class="p-3 bg-blue-50 text-blue-700 rounded-xl font-bold">📊</div>
-                <div><p class="text-[11px] text-gray-500">Monats-Wasser</p><h3 id="statMonthWater" class="text-base font-bold">0 L</h3></div>
+                <div class="p-3 bg-blue-50 text-blue-700 rounded-xl font-bold">🌧️</div>
+                <div><p class="text-[11px] text-gray-500">Zisternen-Stand</p><h3 id="statCistern" class="text-base font-bold">500 L</h3></div>
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border flex items-center space-x-3">
                 <div class="p-3 bg-purple-50 text-purple-700 rounded-xl font-bold">🍅</div>
@@ -72,7 +72,7 @@
         <div class="bg-gradient-to-r from-lime-50 to-emerald-50 p-5 rounded-2xl shadow-sm border border-lime-200 space-y-2">
             <div class="flex justify-between items-center">
                 <h3 id="calendarMonthTitle" class="font-bold text-sm text-lime-900 flex items-center gap-2">📅 Garten-Saisonkalender (Monatstipp)</h3>
-                <span class="text-[10px] bg-lime-200 text-lime-800 font-bold px-2.5 py-0.5 rounded-full">Automatischer Leitfaden</span>
+                <span class="text-[10px] bg-lime-200 text-lime-800 font-bold px-2.5 py-0.5 rounded-full">Leitfaden</span>
             </div>
             <p id="calendarTodoText" class="text-xs text-lime-800 leading-relaxed"></p>
         </div>
@@ -87,16 +87,15 @@
                 <input type="text" id="plantLocation" placeholder="Standort / Beet (z.B. Gewächshaus)" class="p-3 border rounded-xl text-sm">
             </div>
 
-            <!-- Mischkultur Hinweis Box -->
             <div id="companionAlertBox" class="hidden text-xs bg-amber-50 p-3 rounded-xl border border-amber-200 text-amber-900"></div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Lichtbedarf (Lux-Stufe):</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Lichtbedarf & Solar-Stufen:</label>
                     <select id="plantLight" class="w-full p-3 border rounded-xl text-sm bg-white">
-                        <option value="☀️ Volle Sonne (> 50.000 Lux)">☀️ Volle Sonne (> 50.000 Lux)</option>
-                        <option value="⛅ Halbschatten (10.000 - 30.000 Lux)" selected>⛅ Halbschatten (10k-30k Lux)</option>
-                        <option value="🌥️ Schatten / Zimmer (< 5.000 Lux)">🌥️ Schatten / Indoor (< 5.000 Lux)</option>
+                        <option value="sun">☀️ Volle Sonne (ca. 7-8 Std. Sonne)</option>
+                        <option value="half" selected>⛅ Halbschatten (ca. 4-5 Std. Sonne)</option>
+                        <option value="shade">🌥️ Schatten / Indoor (ca. 1-2 Std. Licht)</option>
                     </select>
                 </div>
                 <div>
@@ -136,7 +135,7 @@
         <!-- Pflanzen-Liste mit Filter -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-                <h3 class="font-bold text-lg">📋 Meine Pflanzen &amp; Galerie</h3>
+                <h3 class="font-bold text-lg">📋 Meine Pflanzen &amp; Solar-Bilanz</h3>
                 <select id="filterLocation" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
                     <option value="">Alle Standorte / Räume</option>
                 </select>
@@ -147,70 +146,102 @@
         </div>
     </main>
 
-    <!-- MODAL: Visueller Beet-Planer -->
+    <!-- MODAL: Zisternen- & Wassertonnen-Verwaltung -->
+    <div id="cisternModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeCisternModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+            <h3 class="font-bold text-lg text-sky-900">🌧️ Zisternen- & Regentonnen-Manager</h3>
+            <p class="text-xs text-gray-500">Verwalte hier das Gesamtvolumen deiner Regentonne oder Zisterne:</p>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Maximales Fassungsvermögen (Liter):</label>
+                <input type="number" id="cisternMaxLiters" value="500" class="w-full p-3 border rounded-xl text-sm" onchange="updateCisternCapacity()">
+            </div>
+            <div class="bg-sky-50 p-4 rounded-xl border border-sky-100 text-center space-y-1">
+                <p class="text-xs text-sky-700 font-bold uppercase">Aktueller Restbestand</p>
+                <h2 id="cisternDisplayLiters" class="text-2xl font-extrabold text-sky-900">500 L</h2>
+                <p id="cisternPercentText" class="text-xs text-gray-500">100% gefüllt</p>
+            </div>
+            <button onclick="refillCistern()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold">💧 Tonne komplett auffüllen (Regenfall)</button>
+            <button onclick="closeCisternModal()" class="w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Saatgut- & Keimfähigkeits-Tracker -->
+    <div id="seedsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeSeedsModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-amber-900">🌰 Saatgut- & Keimfähigkeits-Lager</h3>
+                <button onclick="closeSeedsModal()" class="text-gray-400 font-bold">✕</button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" id="seedName" placeholder="Sorte (z.B. Radieschen Sorte X)" class="p-2.5 border rounded-xl text-xs">
+                <input type="number" id="seedYear" placeholder="Ernte- / Kaufjahr (z.B. 2024)" class="p-2.5 border rounded-xl text-xs">
+            </div>
+            <button onclick="addSeedItem()" class="w-full py-2 bg-amber-600 text-white rounded-xl text-xs font-bold">Saatgut-Tüte hinzufügen</button>
+            <div id="seedList" class="space-y-2 pt-2"></div>
+            <button onclick="closeSeedsModal()" class="w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Biologischer Schädlings- & Nützlings-Doktor -->
+    <div id="diagnosisModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeDiagnosisModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-rose-900">🩺 Schädlings- & Biologischer Nützlings-Doktor</h3>
+                <button onclick="closeDiagnosisModal()" class="text-gray-400 font-bold">✕</button>
+            </div>
+            <p class="text-xs text-gray-500">Wähle das Problem, um sofort den biologischen Nützling zur Bekämpfung zu erfahren:</p>
+            <div class="space-y-3 text-xs">
+                <div class="p-3 bg-red-50 border border-red-200 rounded-xl space-y-1">
+                    <h4 class="font-bold text-red-900">🐛 Blattläuse (klebrige Blätter)</h4>
+                    <p class="text-gray-700"><b>Biologischer Nützling:</b> Marienkäfer-Larven oder Florfliegen.</p>
+                    <p class="text-emerald-800 font-semibold">💡 Tipp: Nützlinge aussetzen oder mit Schmierseife abduschen.</p>
+                </div>
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+                    <h4 class="font-bold text-amber-900">🪰 Trauermücken (kleine Fliegen in Blumenerde)</h4>
+                    <p class="text-gray-700"><b>Biologischer Nützling:</b> Nematoden (Steinernema feltiae) oder Gelbtafeln.</p>
+                    <p class="text-emerald-800 font-semibold">💡 Tipp: Erde antrocknen lassen, Nematoden gießen.</p>
+                </div>
+                <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl space-y-1">
+                    <h4 class="font-bold text-indigo-900">🕸️ Spinnmilben (feine Netze)</h4>
+                    <p class="text-gray-700"><b>Biologischer Nützling:</b> Raubmilben (Phytoseiulus persimilis).</p>
+                    <p class="text-emerald-800 font-semibold">💡 Tipp: Luftfeuchtigkeit massiv erhöhen.</p>
+                </div>
+            </div>
+            <button onclick="closeDiagnosisModal()" class="w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Weitere Modals (Beet, Inventar, Ernte, Galerie, etc.) -->
     <div id="beetModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeBeetModal()">
         <div class="bg-white p-6 rounded-2xl max-w-xl w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg text-emerald-900">🌿 Visueller 4x4 Beet-Planer</h3>
-                <button onclick="closeBeetModal()" class="text-gray-400 font-bold">✕</button>
-            </div>
-            <p class="text-xs text-gray-500">Klicke auf ein Beet-Feld, um eine deiner erfassten Pflanzen dort zu platzieren:</p>
+            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-emerald-900">🌿 Beet-Planer</h3><button onclick="closeBeetModal()" class="text-gray-400 font-bold">✕</button></div>
             <div id="beetGrid" class="grid grid-cols-4 gap-3"></div>
             <button onclick="closeBeetModal()" class="w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
         </div>
     </div>
 
-    <!-- MODAL: Lager & Inventar -->
     <div id="inventoryModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeInventoryModal()">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg text-lime-900">📦 Garten-Lager & Inventar</h3>
-                <button onclick="closeInventoryModal()" class="text-gray-400 font-bold">✕</button>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-                <input type="text" id="invItemName" placeholder="Artikel (z.B. Flüssigdünger)" class="p-2.5 border rounded-xl text-xs col-span-2">
-                <input type="text" id="invItemQty" placeholder="Menge (z.B. 2 L)" class="p-2.5 border rounded-xl text-xs">
-            </div>
-            <button onclick="addInventoryItem()" class="w-full py-2 bg-lime-600 text-white rounded-xl text-xs font-bold">Artikel hinzufügen</button>
+            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-lime-900">📦 Lager & Dünger</h3><button onclick="closeInventoryModal()" class="text-gray-400 font-bold">✕</button></div>
+            <div class="grid grid-cols-3 gap-2"><input type="text" id="invItemName" placeholder="Artikel" class="p-2.5 border rounded-xl text-xs col-span-2"><input type="text" id="invItemQty" placeholder="Menge" class="p-2.5 border rounded-xl text-xs"></div>
+            <button onclick="addInventoryItem()" class="w-full py-2 bg-lime-600 text-white rounded-xl text-xs font-bold">Hinzufügen</button>
             <div id="inventoryList" class="space-y-2 pt-2"></div>
             <button onclick="closeInventoryModal()" class="w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
         </div>
     </div>
 
-    <!-- MODAL: Ernte-Eingabe -->
     <div id="harvestModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full space-y-4 shadow-2xl">
             <h3 class="font-bold text-lg text-purple-900">🍅 Ernte erfassen</h3>
             <input type="hidden" id="harvestPlantId">
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Geerntete Menge in Gramm (g):</label>
-                <input type="number" id="harvestWeightGrams" placeholder="z.B. 500" class="w-full p-3 border rounded-xl text-sm">
-            </div>
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeHarvestModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-xs">Abbrechen</button>
-                <button onclick="saveHarvest()" class="px-5 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold">Ernte speichern</button>
-            </div>
+            <input type="number" id="harvestWeightGrams" placeholder="Gramm (g)" class="w-full p-3 border rounded-xl text-sm">
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeHarvestModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-xs">Abbrechen</button><button onclick="saveHarvest()" class="px-5 py-2 bg-purple-600 text-white rounded-xl text-xs font-bold">Speichern</button></div>
         </div>
     </div>
 
-    <!-- MODAL: Wetter -->
-    <div id="weatherModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeWeatherModal()">
-        <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl" onclick="event.stopPropagation()">
-            <h3 class="font-bold text-lg text-sky-900">🌤️ Smart-Wetter & Regen-Modus</h3>
-            <input type="text" id="userPlz" placeholder="PLZ (z.B. 66701)" class="w-full p-3 border rounded-xl text-sm">
-            <button onclick="checkWeatherApi()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold">Wetter prüfen</button>
-            <div id="weatherResult" class="text-xs text-gray-700 bg-sky-50 p-3 rounded-xl border hidden"></div>
-            <button onclick="closeWeatherModal()" class="w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
-        </div>
-    </div>
-
-    <!-- MODAL: Foto-Galerie -->
     <div id="galleryModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeGalleryModal()">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center">
-                <h3 id="galleryTitle" class="font-bold text-lg text-lime-800">📸 Wachstums-Verlauf</h3>
-                <button onclick="closeGalleryModal()" class="text-gray-400 font-bold">✕</button>
-            </div>
+            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-lime-800">📸 Wachstums-Verlauf</h3><button onclick="closeGalleryModal()" class="text-gray-400 font-bold">✕</button></div>
             <input type="hidden" id="galleryPlantId">
             <input type="file" id="newGalleryPhoto" accept="image/*" class="text-xs p-2 border rounded-xl w-full">
             <button onclick="addGalleryPhoto()" class="w-full py-2 bg-lime-600 text-white rounded-xl text-xs font-bold">Foto hinzufügen</button>
@@ -218,19 +249,14 @@
         </div>
     </div>
 
-    <!-- MODAL: Urlaubs-Plan -->
     <div id="vacationModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeVacationModal()">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
-            <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg text-indigo-900">✈️ Urlaubs-Gießplan</h3>
-                <button onclick="closeVacationModal()" class="text-gray-400 font-bold">✕</button>
-            </div>
+            <div class="flex justify-between items-center"><h3 class="font-bold text-lg text-indigo-900">✈️ Urlaubs-Gießplan</h3><button onclick="closeVacationModal()" class="text-gray-400 font-bold">✕</button></div>
             <div id="vacationPlanContent" class="space-y-2 text-xs border p-3 rounded-xl bg-indigo-50"></div>
             <button onclick="window.print()" class="w-full py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold">🖨️ Ausdrucken</button>
         </div>
     </div>
 
-    <!-- MODAL: QR Code & Bearbeiten & Tagebuch -->
     <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
         <div class="bg-white p-6 rounded-2xl max-w-sm w-full text-center space-y-4 shadow-2xl" onclick="event.stopPropagation()">
             <h3 id="qrTitle" class="font-bold text-lg text-lime-800">Pflanzen-Steckbrief</h3>
@@ -244,10 +270,7 @@
             <h3 class="text-lg font-bold">📖 Tagebucheintrag</h3>
             <input type="hidden" id="diaryPlantId">
             <textarea id="diaryText" placeholder="Notiz eingeben..." class="w-full p-3 border rounded-xl text-sm h-24 resize-none"></textarea>
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeDiaryModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
-                <button onclick="saveDiaryEntry()" class="px-5 py-2 bg-lime-600 text-white rounded-xl text-sm font-bold">Speichern</button>
-            </div>
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeDiaryModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button><button onclick="saveDiaryEntry()" class="px-5 py-2 bg-lime-600 text-white rounded-xl text-sm font-bold">Speichern</button></div>
         </div>
     </div>
 
@@ -255,20 +278,10 @@
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full shadow-xl space-y-4">
             <h3 class="text-lg font-bold">Pflanze bearbeiten</h3>
             <input type="hidden" id="editId">
-            <div class="grid grid-cols-2 gap-2">
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Name:</label><input type="text" id="editName" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Art:</label><input type="text" id="editSpecies" class="w-full p-3 border rounded-xl text-sm"></div>
-            </div>
-            <div class="grid grid-cols-3 gap-2">
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Standort:</label><input type="text" id="editLocation" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Tage:</label><input type="number" id="editInterval" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Gießen:</label><input type="date" id="editLastWatered" class="w-full p-3 border rounded-xl text-sm"></div>
-            </div>
+            <div class="grid grid-cols-2 gap-2"><div><label class="block text-xs font-semibold text-gray-600 mb-1">Name:</label><input type="text" id="editName" class="w-full p-3 border rounded-xl text-sm"></div><div><label class="block text-xs font-semibold text-gray-600 mb-1">Art:</label><input type="text" id="editSpecies" class="w-full p-3 border rounded-xl text-sm"></div></div>
+            <div class="grid grid-cols-3 gap-2"><div><label class="block text-xs font-semibold text-gray-600 mb-1">Standort:</label><input type="text" id="editLocation" class="w-full p-3 border rounded-xl text-sm"></div><div><label class="block text-xs font-semibold text-gray-600 mb-1">Gieß-Tage:</label><input type="number" id="editInterval" class="w-full p-3 border rounded-xl text-sm"></div><div><label class="block text-xs font-semibold text-gray-600 mb-1">Letztes Gießen:</label><input type="date" id="editLastWatered" class="w-full p-3 border rounded-xl text-sm"></div></div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Anmerkungen:</label><textarea id="editNote" class="w-full p-3 border rounded-xl text-sm h-20 resize-none"></textarea></div>
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
-                <button onclick="updatePlant()" class="px-5 py-2 bg-lime-600 text-white rounded-xl text-sm font-bold">Speichern</button>
-            </div>
+            <div class="flex justify-end space-x-2 pt-2"><button onclick="closeEditModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button><button onclick="updatePlant()" class="px-5 py-2 bg-lime-600 text-white rounded-xl text-sm font-bold">Speichern</button></div>
         </div>
     </div>
 
@@ -298,12 +311,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             const currentMonth = new Date().getMonth();
             document.getElementById('calendarTodoText').innerText = gartenKalender[currentMonth] || "Pflege deine Pflanzen.";
-            updatePushStatusButton();
             document.getElementById('plantLastWatered').valueAsDate = new Date();
             calculateWaterAmount();
             loadLocationDropdown();
             renderApp();
-            checkBackgroundPushAlarm();
+            updateCisternDisplay();
         });
 
         function checkCompanionPlanting(speciesName) {
@@ -317,9 +329,7 @@
             if(match) {
                 box.innerHTML = `🤝 <b>Mischkultur-Tipp:</b> Liebt Nachbarschaft mit ${match.gute.join(', ')}. Vermeide ${match.schlechte.join(', ')}.`;
                 box.classList.remove('hidden');
-            } else {
-                box.classList.add('hidden');
-            }
+            } else { box.classList.add('hidden'); }
         }
 
         function calculateWaterAmount() {
@@ -333,133 +343,143 @@
             return ps <= 10 ? 120 : (ps <= 15 ? 300 : (ps <= 20 ? 600 : 1500));
         }
 
-        function updatePushStatusButton() {
-            const btn = document.getElementById('pushGlobalBtn');
-            if (!btn) return;
-            if (!("Notification" in window)) return;
-            const pushEnabled = localStorage.getItem('push_enabled') === 'true' && Notification.permission === 'granted';
-            btn.innerText = pushEnabled ? "🔔 Alarm Aktiv" : "🔔 Alarm";
+        // Zisternen Manager
+        function openCisternModal() {
+            let data = getData();
+            document.getElementById('cisternMaxLiters').value = data.cisternMax || 500;
+            updateCisternDisplay();
+            document.getElementById('cisternModal').classList.remove('hidden');
+        }
+        function closeCisternModal() { document.getElementById('cisternModal').classList.add('hidden'); }
+
+        function updateCisternCapacity() {
+            let max = parseInt(document.getElementById('cisternMaxLiters').value) || 500;
+            let data = getData();
+            data.cisternMax = max;
+            if(data.cisternCurrent === undefined) data.cisternCurrent = max;
+            saveData(data);
+            updateCisternDisplay();
         }
 
-        function togglePushNotifications() {
-            if (!("Notification" in window)) return alert("Nicht unterstützt.");
-            Notification.requestPermission().then(permission => {
-                localStorage.setItem('push_enabled', permission === 'granted' ? 'true' : 'false');
-                updatePushStatusButton();
-                if(permission === 'granted') alert("Push-Benachrichtigungen aktiviert!");
-            });
+        function refillCistern() {
+            let data = getData();
+            data.cisternMax = data.cisternMax || 500;
+            data.cisternCurrent = data.cisternMax;
+            saveData(data);
+            updateCisternDisplay();
+            alert("Regentonne / Zisterne vollständig aufgefüllt!");
         }
 
-        function checkBackgroundPushAlarm() {
-            if(localStorage.getItem('push_enabled') === 'true' && Notification.permission === 'granted') {
-                let lastCheck = localStorage.getItem('last_push_date');
-                let todayStr = new Date().toDateString();
-                if(lastCheck !== todayStr) {
-                    let data = getData();
-                    let dueCount = data.plants.filter(p => {
-                        let nextW = new Date(p.lastWatered);
-                        nextW.setDate(nextW.getDate() + p.interval);
-                        return nextW <= new Date();
-                    }).length;
-                    if(dueCount > 0) {
-                        new Notification("🌱 Pflanzen-Alarm", { body: `${dueCount} Pflanzen müssen heute gegossen werden!` });
-                        localStorage.setItem('last_push_date', todayStr);
-                    }
-                }
-            }
+        function updateCisternDisplay() {
+            let data = getData();
+            let max = data.cisternMax || 500;
+            if(data.cisternCurrent === undefined) data.cisternCurrent = max;
+            let cur = data.cisternCurrent;
+            let percent = Math.round((cur / max) * 100);
+            document.getElementById('statCistern').innerText = cur >= 1000 ? (cur/1000).toFixed(1) + ' m³' : cur + ' L';
+            document.getElementById('cisternDisplayLiters').innerText = cur + ' L / ' + max + ' L';
+            document.getElementById('cisternPercentText').innerText = percent + '% gefüllt';
+        }
+
+        // Saatgut Manager
+        function openSeedsModal() {
+            renderSeedList();
+            document.getElementById('seedsModal').classList.remove('hidden');
+        }
+        function closeSeedsModal() { document.getElementById('seedsModal').classList.add('hidden'); }
+
+        function renderSeedList() {
+            let data = getData();
+            if(!data.seeds) data.seeds = [];
+            let list = document.getElementById('seedList');
+            let currentYear = new Date().getFullYear();
+            list.innerHTML = data.seeds.map((s, idx) => {
+                let age = currentYear - s.year;
+                let warning = age > 3 ? `<span class="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-bold">⚠️ Keimfähigkeit evtl. gering (${age}J alt)</span>` : `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">✅ Gut (${age}J alt)</span>`;
+                return `
+                    <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
+                        <div><b>${s.name}</b> (Ernte: ${s.year})<br>${warning}</div>
+                        <button onclick="removeSeedItem(${idx})" class="text-red-500 font-bold hover:text-red-700">✕</button>
+                    </div>
+                `;
+            }).join('') || `<p class="text-xs text-gray-400 text-center py-2">Kein Saatgut im Lager.</p>`;
+        }
+
+        function addSeedItem() {
+            let name = document.getElementById('seedName').value.trim();
+            let year = parseInt(document.getElementById('seedYear').value) || new Date().getFullYear();
+            if(!name) return alert("Bitte Sorte eingeben.");
+            let data = getData();
+            if(!data.seeds) data.seeds = [];
+            data.seeds.push({ name, year });
+            saveData(data);
+            document.getElementById('seedName').value = "";
+            document.getElementById('seedYear').value = "";
+            renderSeedList();
+        }
+
+        function removeSeedItem(idx) {
+            let data = getData();
+            data.seeds.splice(idx, 1);
+            saveData(data);
+            renderSeedList();
         }
 
         // Beet Planer
-        function openBeetModal() {
-            renderBeetGrid();
-            document.getElementById('beetModal').classList.remove('hidden');
-        }
+        function openBeetModal() { renderBeetGrid(); document.getElementById('beetModal').classList.remove('hidden'); }
         function closeBeetModal() { document.getElementById('beetModal').classList.add('hidden'); }
-
         function renderBeetGrid() {
             let data = getData();
             if(!data.beetSlots) data.beetSlots = Array(16).fill(null);
             let grid = document.getElementById('beetGrid');
-            
             grid.innerHTML = data.beetSlots.map((plantId, index) => {
                 let p = data.plants.find(item => item.id === plantId);
-                return `
-                    <div onclick="assignToBeet(${index})" class="h-24 border-2 border-dashed border-emerald-300 rounded-xl p-2 flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 cursor-pointer text-center">
-                        <span class="text-[10px] text-emerald-600 font-bold">Beet-Feld ${index+1}</span>
-                        <span class="text-xs font-bold text-emerald-900 mt-1">${p ? p.name : '+ Belegen'}</span>
-                    </div>
-                `;
+                return `<div onclick="assignToBeet(${index})" class="h-24 border-2 border-dashed border-emerald-300 rounded-xl p-2 flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-100 cursor-pointer text-center"><span class="text-[10px] text-emerald-600 font-bold">Feld ${index+1}</span><span class="text-xs font-bold text-emerald-900 mt-1">${p ? p.name : '+ Belegen'}</span></div>`;
             }).join('');
         }
-
         function assignToBeet(slotIndex) {
             let data = getData();
             let plantNames = data.plants.map(p => `${p.id}: ${p.name}`).join('\n');
-            let input = prompt(`Welche Pflanze (ID oder Name) soll in Beet-Feld ${slotIndex+1}?\n\nVerfügbar:\n${plantNames}\n\n(Zum Leeren 'leer' eingeben)`);
+            let input = prompt(`Pflanze für Beet-Feld ${slotIndex+1}:\n\n${plantNames}\n\n('leer' zum Leeren)`);
             if(!input) return;
-            if(input.toLowerCase() === 'leer') {
-                data.beetSlots[slotIndex] = null;
-            } else {
+            if(input.toLowerCase() === 'leer') data.beetSlots[slotIndex] = null;
+            else {
                 let found = data.plants.find(p => p.id == input || p.name.toLowerCase().includes(input.toLowerCase()));
                 if(found) data.beetSlots[slotIndex] = found.id;
-                else alert("Pflanze nicht gefunden.");
+                else alert("Nicht gefunden.");
             }
             saveData(data);
             renderBeetGrid();
         }
 
-        // Inventar / Lager
-        function openInventoryModal() {
-            renderInventoryList();
-            document.getElementById('inventoryModal').classList.remove('hidden');
-        }
+        // Inventar
+        function openInventoryModal() { renderInventoryList(); document.getElementById('inventoryModal').classList.remove('hidden'); }
         function closeInventoryModal() { document.getElementById('inventoryModal').classList.add('hidden'); }
-
         function renderInventoryList() {
             let data = getData();
             if(!data.inventory) data.inventory = [];
-            let list = document.getElementById('inventoryList');
-            list.innerHTML = data.inventory.map((item, idx) => `
-                <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                    <span><b>${item.name}</b> (${item.qty})</span>
-                    <button onclick="removeInventoryItem(${idx})" class="text-red-500 font-bold hover:text-red-700">✕</button>
-                </div>
-            `).join('') || `<p class="text-xs text-gray-400 text-center py-2">Lager ist leer.</p>`;
+            document.getElementById('inventoryList').innerHTML = data.inventory.map((item, idx) => `<div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs"><span><b>${item.name}</b> (${item.qty})</span><button onclick="removeInventoryItem(${idx})" class="text-red-500 font-bold">✕</button></div>`).join('') || `<p class="text-xs text-gray-400 text-center py-2">Lager ist leer.</p>`;
         }
-
         function addInventoryItem() {
             let name = document.getElementById('invItemName').value.trim();
             let qty = document.getElementById('invItemQty').value.trim();
-            if(!name) return alert("Bitte Artikel eingeben.");
+            if(!name) return;
             let data = getData();
             if(!data.inventory) data.inventory = [];
             data.inventory.push({ name, qty: qty || '1 Stk' });
             saveData(data);
-            document.getElementById('invItemName').value = "";
-            document.getElementById('invItemQty').value = "";
+            document.getElementById('invItemName').value = ""; document.getElementById('invItemQty').value = "";
             renderInventoryList();
         }
+        function removeInventoryItem(idx) { let data = getData(); data.inventory.splice(idx, 1); saveData(data); renderInventoryList(); }
 
-        function removeInventoryItem(idx) {
-            let data = getData();
-            data.inventory.splice(idx, 1);
-            saveData(data);
-            renderInventoryList();
-        }
-
-        // Ernte erfassen
-        function openHarvestModal(plantId) {
-            document.getElementById('harvestPlantId').value = plantId;
-            document.getElementById('harvestWeightGrams').value = "";
-            document.getElementById('harvestModal').classList.remove('hidden');
-        }
+        // Ernte
+        function openHarvestModal(plantId) { document.getElementById('harvestPlantId').value = plantId; document.getElementById('harvestWeightGrams').value = ""; document.getElementById('harvestModal').classList.remove('hidden'); }
         function closeHarvestModal() { document.getElementById('harvestModal').classList.add('hidden'); }
-
         function saveHarvest() {
             let plantId = parseInt(document.getElementById('harvestPlantId').value);
             let grams = parseInt(document.getElementById('harvestWeightGrams').value) || 0;
-            if(grams <= 0) return alert("Bitte gültiges Gewicht in Gramm eingeben.");
-            
+            if(grams <= 0) return;
             let data = getData();
             let p = data.plants.find(item => item.id === plantId);
             if(p) {
@@ -467,68 +487,30 @@
                 p.harvestLog.push({ date: new Date().toLocaleDateString('de-DE'), grams });
                 data.totalHarvestGrams = (data.totalHarvestGrams || 0) + grams;
                 saveData(data);
-                closeHarvestModal();
-                renderApp();
-                alert(`Ernte von ${grams}g erfolgreich eingetragen!`);
+                closeHarvestModal(); renderApp();
             }
         }
 
-        function openWeatherModal() { document.getElementById('weatherModal').classList.remove('hidden'); }
-        function closeWeatherModal() { document.getElementById('weatherModal').classList.add('hidden'); }
-
-        async function checkWeatherApi() {
-            const plz = document.getElementById('userPlz').value.trim();
-            const resBox = document.getElementById('weatherResult');
-            if(!plz) return alert("Bitte PLZ eingeben.");
-            resBox.classList.remove('hidden');
-            resBox.innerText = "Lese Wetterdaten ein...";
-            try {
-                let response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${plz}&count=1&language=de&format=json`);
-                let json = await response.json();
-                if(json.results && json.results.length > 0) {
-                    let city = json.results[0].name;
-                    resBox.innerHTML = `<b>Standort:</b> ${city} (${plz})<br><span class="text-emerald-700 font-bold">✅ Wetter analysiert: Angenehm, optimale Bedingungen!</span>`;
-                } else { resBox.innerText = "Ort nicht gefunden."; }
-            } catch(e) {
-                resBox.innerText = "Wetterabfrage simuliert: 21°C, keine Niederschläge.";
-            }
-        }
-
-        function openGalleryModal(id) {
-            document.getElementById('galleryPlantId').value = id;
-            renderGalleryGrid(id);
-            document.getElementById('galleryModal').classList.remove('hidden');
-        }
+        function openGalleryModal(id) { document.getElementById('galleryPlantId').value = id; renderGalleryGrid(id); document.getElementById('galleryModal').classList.remove('hidden'); }
         function closeGalleryModal() { document.getElementById('galleryModal').classList.add('hidden'); }
-
         function renderGalleryGrid(plantId) {
             let data = getData();
             let p = data.plants.find(item => item.id === plantId);
             if(!p) return;
-            let grid = document.getElementById('galleryGrid');
             let photos = p.galleryPhotos || (p.photo ? [p.photo] : []);
-            grid.innerHTML = photos.map((img, idx) => `
-                <div class="relative group border rounded-xl overflow-hidden bg-gray-100">
-                    <img src="${img}" class="w-full h-32 object-cover">
-                    <span class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[9px] px-1.5 py-0.5 rounded">Foto ${idx+1}</span>
-                </div>
-            `).join('') || `<p class="col-span-2 text-xs text-gray-400 text-center py-4">Keine Fotos im Verlauf.</p>`;
+            document.getElementById('galleryGrid').innerHTML = photos.map((img, idx) => `<div class="relative group border rounded-xl overflow-hidden bg-gray-100"><img src="${img}" class="w-full h-32 object-cover"><span class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[9px] px-1.5 py-0.5 rounded">Foto ${idx+1}</span></div>`).join('') || `<p class="col-span-2 text-xs text-gray-400 text-center py-4">Keine Fotos.</p>`;
         }
-
         function addGalleryPhoto() {
             const plantId = parseInt(document.getElementById('galleryPlantId').value);
             const fileInput = document.getElementById('newGalleryPhoto');
-            if(!fileInput.files || !fileInput.files[0]) return alert("Bitte Foto auswählen.");
+            if(!fileInput.files || !fileInput.files[0]) return;
             compressImage(fileInput.files[0], (compressed) => {
                 let data = getData();
                 let p = data.plants.find(item => item.id === plantId);
                 if(p) {
                     if(!p.galleryPhotos) p.galleryPhotos = p.photo ? [p.photo] : [];
                     p.galleryPhotos.push(compressed);
-                    saveData(data);
-                    renderGalleryGrid(plantId);
-                    fileInput.value = "";
-                    alert("Foto hinzugefügt!");
+                    saveData(data); renderGalleryGrid(plantId); fileInput.value = "";
                 }
             });
         }
@@ -540,23 +522,21 @@
             let planHtml = "";
             data.plants.forEach(p => {
                 let lastWater = new Date(p.lastWatered);
-                let nextWater = new Date(lastWater);
-                nextWater.setDate(lastWater.getDate() + p.interval);
-                let diff = Math.ceil((nextWater - today) / (1000 * 60 * 60 * 24));
-                if(diff < 0) diff = 0;
-                planHtml += `<div class="p-2 bg-white rounded-lg border flex justify-between items-center"><div><b>${p.name}</b> (${p.location || 'Standort k.A.'})</div><div class="text-indigo-800 font-semibold">Gießen in ${diff}T (~${getMlForPot(p.potSize)}ml)</div></div>`;
+                let nextWater = new Date(lastWater); nextWater.setDate(lastWater.getDate() + p.interval);
+                let diff = Math.ceil((nextWater - today) / (1000 * 60 * 60 * 24)); if(diff < 0) diff = 0;
+                planHtml += `<div class="p-2 bg-white rounded-lg border flex justify-between items-center"><div><b>${p.name}</b> (${p.location || 'k.A.'})</div><div class="text-indigo-800 font-semibold">Gießen in ${diff}T (~${getMlForPot(p.potSize)}ml)</div></div>`;
             });
-            content.innerHTML = planHtml || "<p class='text-center text-gray-500'>Keine Pflanzen vorhanden.</p>";
+            content.innerHTML = planHtml || "<p class='text-center text-gray-500'>Keine Pflanzen.</p>";
             document.getElementById('vacationModal').classList.remove('hidden');
         }
         function closeVacationModal() { document.getElementById('vacationModal').classList.add('hidden'); }
 
         function getData() {
-            try { return JSON.parse(localStorage.getItem('pflanzen_pass_v7')) || { plants: [], monthWaterLiters: 0, totalHarvestGrams: 0, inventory: [], beetSlots: Array(16).fill(null) }; }
-            catch(e) { return { plants: [], monthWaterLiters: 0, totalHarvestGrams: 0, inventory: [], beetSlots: Array(16).fill(null) }; }
+            try { return JSON.parse(localStorage.getItem('pflanzen_pass_v8')) || { plants: [], monthWaterLiters: 0, totalHarvestGrams: 0, inventory: [], seeds: [], beetSlots: Array(16).fill(null), cisternMax: 500, cisternCurrent: 500 }; }
+            catch(e) { return { plants: [], monthWaterLiters: 0, totalHarvestGrams: 0, inventory: [], seeds: [], beetSlots: Array(16).fill(null), cisternMax: 500, cisternCurrent: 500 }; }
         }
 
-        function saveData(data) { localStorage.setItem('pflanzen_pass_v7', JSON.stringify(data)); }
+        function saveData(data) { localStorage.setItem('pflanzen_pass_v8', JSON.stringify(data)); }
 
         function loadLocationDropdown() {
             let data = getData();
@@ -638,31 +618,26 @@
                 if(p.waterHistory.length > 5) p.waterHistory.pop();
                 let ml = getMlForPot(p.potSize);
                 data.monthWaterLiters = (data.monthWaterLiters || 0) + (ml / 1000);
+                
+                // Zisternen-Stand verringern
+                data.cisternCurrent = Math.max(0, (data.cisternCurrent || data.cisternMax || 500) - (ml / 1000));
+
                 saveData(data);
                 renderApp();
+                updateCisternDisplay();
             }
         }
 
-        function openDiaryModal(id) {
-            document.getElementById('diaryPlantId').value = id;
-            document.getElementById('diaryText').value = "";
-            document.getElementById('diaryModal').classList.remove('hidden');
-        }
+        function openDiaryModal(id) { document.getElementById('diaryPlantId').value = id; document.getElementById('diaryText').value = ""; document.getElementById('diaryModal').classList.remove('hidden'); }
         function closeDiaryModal() { document.getElementById('diaryModal').classList.add('hidden'); }
-
         function saveDiaryEntry() {
             const id = parseInt(document.getElementById('diaryPlantId').value);
             const text = document.getElementById('diaryText').value.trim();
             if(!text) return;
             let data = getData();
             let p = data.plants.find(item => item.id === id);
-            if (p) {
-                if(!p.diary) p.diary = [];
-                p.diary.unshift({ date: new Date().toLocaleDateString('de-DE'), text: text });
-                saveData(data);
-            }
-            closeDiaryModal();
-            renderApp();
+            if(p) { if(!p.diary) p.diary = []; p.diary.unshift({ date: new Date().toLocaleDateString('de-DE'), text: text }); saveData(data); }
+            closeDiaryModal(); renderApp();
         }
 
         function deletePlant(id) {
@@ -670,9 +645,7 @@
             let data = getData();
             data.plants = data.plants.filter(item => item.id !== id);
             data.beetSlots = data.beetSlots.map(slotId => slotId === id ? null : slotId);
-            saveData(data);
-            loadLocationDropdown();
-            renderApp();
+            saveData(data); loadLocationDropdown(); renderApp();
         }
 
         function openEditModal(id) {
@@ -703,18 +676,13 @@
                 p.note = document.getElementById('editNote').value.trim();
                 saveData(data);
             }
-            closeEditModal();
-            loadLocationDropdown();
-            renderApp();
+            closeEditModal(); loadLocationDropdown(); renderApp();
         }
 
         function showQrCode(name, species, location, interval) {
             document.getElementById('qrTitle').innerText = name;
             document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), {
-                text: `Pflanze: ${name} (${species || '-'}) | Standort: ${location || '-'} | Gießen: alle ${interval}T`,
-                width: 160, height: 160
-            });
+            new QRCode(document.getElementById("qrcode"), { text: `Pflanze: ${name} | Gießen: alle ${interval}T`, width: 160, height: 160 });
             document.getElementById('qrModal').classList.remove('hidden');
         }
         function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
@@ -738,8 +706,7 @@
             } else {
                 container.innerHTML = filteredPlants.map(p => {
                     let lastWater = new Date(p.lastWatered);
-                    let nextWater = new Date(lastWater);
-                    nextWater.setDate(lastWater.getDate() + p.interval);
+                    let nextWater = new Date(lastWater); nextWater.setDate(lastWater.getDate() + p.interval);
                     let diffWater = Math.ceil((nextWater - today) / (1000 * 60 * 60 * 24));
                     if (diffWater <= 0) totalWaterTodayMl += getMlForPot(p.potSize);
 
@@ -747,8 +714,12 @@
                                 (diffWater <= 2 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🟡 Fällig in ${diffWater}T</span>` :
                                                 `<span class="text-[10px] bg-lime-100 text-lime-800 font-semibold px-2 py-0.5 rounded-full">🟢 Fällig in ${diffWater}T</span>`);
 
+                    // Solar-Stunden Badge
+                    let solarHours = p.light === 'sun' ? '~7-8 Std. Sonne' : (p.light === 'half' ? '~4-5 Std. Sonne' : '~1-2 Std. Licht');
+                    let solarBadge = `<span class="text-[10px] bg-sky-100 text-sky-800 font-semibold px-2 py-0.5 rounded-full">☀️ ${solarHours}</span>`;
+
                     let harvestSum = p.harvestLog ? p.harvestLog.reduce((acc, h) => acc + h.grams, 0) : 0;
-                    let harvestBadge = harvestSum > 0 ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🍅 Geerntet: ${harvestSum >= 1000 ? (harvestSum/1000).toFixed(1)+'kg' : harvestSum+'g'}</span>` : '';
+                    let harvestBadge = harvestSum > 0 ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🍅 ${harvestSum >= 1000 ? (harvestSum/1000).toFixed(1)+'kg' : harvestSum+'g'}</span>` : '';
 
                     let diaryHtml = p.diary && p.diary.length > 0 ? `<div class="mt-2 bg-amber-50 border p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 Tagebuch:</span>` + 
                         p.diary.map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${d.date}:</span> ${d.text}</div>`).join('') + `</div>` : '';
@@ -762,11 +733,11 @@
                                         <span class="text-xs font-bold text-gray-800">${p.name}</span>
                                         ${p.species ? `<span class="text-xs text-lime-700 font-semibold">(${p.species})</span>` : ''}
                                         ${badge}
+                                        ${solarBadge}
                                         ${harvestBadge}
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">
                                         ${p.location ? '📍 ' + p.location + ' | ' : ''}
-                                        ${p.light ? p.light + ' | ' : ''}
                                         Gießen: alle ${p.interval}T (~${getMlForPot(p.potSize)}ml)
                                     </p>
                                     ${p.note ? `<p class="text-[11px] text-gray-400 mt-0.5">${p.note}</p>` : ''}
@@ -775,7 +746,7 @@
                             </div>
                             <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
                                 <button onclick="waterPlant(${p.id})" class="px-3 py-1.5 bg-lime-600 hover:bg-lime-700 text-white rounded-xl text-xs font-semibold">💧 Gießen</button>
-                                <button onclick="openHarvestModal(${p.id})" class="px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-xs font-semibold" title="Ernte erfassen">🍅</button>
+                                <button onclick="openHarvestModal(${p.id})" class="px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-xs font-semibold" title="Ernte">🍅</button>
                                 <button onclick="openGalleryModal(${p.id})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-semibold" title="Galerie">📸</button>
                                 <button onclick="openDiaryModal(${p.id})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold" title="Tagebuch">📖</button>
                                 <button onclick="showQrCode('${p.name}', '${p.species}', '${p.location}', ${p.interval})" class="px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="QR-Code">📱</button>
@@ -791,7 +762,6 @@
             document.getElementById('statDueSoon').innerText = dueSoonCount;
             document.getElementById('statOverdue').innerText = overdueCount;
             document.getElementById('statWaterNeeded').innerText = totalWaterTodayMl >= 1000 ? (totalWaterTodayMl / 1000).toFixed(1) + ' L' : totalWaterTodayMl + ' ml';
-            document.getElementById('statMonthWater').innerText = (data.monthWaterLiters || 0).toFixed(1) + ' L';
             let totalKg = (data.totalHarvestGrams || 0) / 1000;
             document.getElementById('statTotalHarvest').innerText = totalKg >= 1 ? totalKg.toFixed(1) + ' kg' : (data.totalHarvestGrams || 0) + ' g';
         }
@@ -827,7 +797,7 @@
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed.plants) { saveData(parsed); loadLocationDropdown(); renderApp(); alert("Backup importiert!"); }
+                    if (parsed.plants) { saveData(parsed); loadLocationDropdown(); renderApp(); updateCisternDisplay(); alert("Backup importiert!"); }
                 } catch (err) { alert("Fehler beim Lesen."); }
             };
             reader.readAsText(file);
