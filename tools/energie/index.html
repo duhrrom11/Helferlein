@@ -14,23 +14,66 @@
     <!-- Header -->
     <header class="bg-sky-700 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">⚡ Strom-, Wasser- & Gaszähler-Tracker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Verbrauchskontrolle, Budget-Rechner, Foto-Nachweis, Prognose & Affiliate-Shop</p>
+        <p class="text-sm opacity-90 mt-1">Prognose, Vorjahr, CSV-Export, Anleitung & Affiliate-Sparshop</p>
     </header>
 
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-6xl space-y-6">
                 
+        <!-- Monatlicher Ablese-Alarm Banner -->
+        <div id="readingAlarmBanner" class="hidden bg-amber-600 text-white p-4 rounded-2xl shadow-md flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">🔔</span>
+                <div>
+                    <h4 class="font-bold text-sm">Monatlicher Ablese-Stichtag!</h4>
+                    <p class="text-xs opacity-95">Es ist Monatsende – erfasse jetzt deine aktuellen Zählerstände für präzise Prognosen.</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="downloadIcsCalendar()" class="bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold">📅 Kalender-Erinnerung</button>
+                <button onclick="dismissReadingAlarm()" class="bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Ausblenden</button>
+            </div>
+        </div>
+
         <!-- Navigation & Global Actions -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
             
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                <a href="https://www.amazon.de/s?k=strommessgerät+energiekostenmesser&tag=duhrrom-21" target="_blank" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm">🛒 Messgeräte auf Amazon</a>
-                <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF-Report</button>
-                <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
-                <label class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
+                <button onclick="openEnergyTipsModal()" class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold shadow-sm">💡 Spar-Tipps & Gadgets</button>
+                <button onclick="exportCSV()" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold shadow-sm">📊 CSV</button>
+                <button onclick="exportPDF()" class="px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF</button>
+                <button onclick="exportBackup()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
+                <label class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
                     📂 Import <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
                 </label>
+            </div>
+        </div>
+
+        <!-- 📖 AUSKLAPPBARE ANLEITUNG & FAQ (Accordion) -->
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+            <button onclick="toggleAccordion()" class="w-full p-4 bg-sky-50 hover:bg-sky-100 flex justify-between items-center text-sky-900 font-bold text-sm transition-colors">
+                <span class="flex items-center gap-2">📖 Ausklappbare Anleitung: Richtig ablesen & Energie sparen</span>
+                <span id="accordionIcon" class="text-lg">▼</span>
+            </button>
+            <div id="accordionContent" class="hidden p-6 space-y-4 text-xs text-gray-700 border-t">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 bg-sky-50/50 rounded-xl border border-sky-100 space-y-2">
+                        <h4 class="font-bold text-sky-900 text-sm">⚡ Strom richtig ablesen</h4>
+                        <p>Notiere die Ziffern vor dem Komma (schwarzes Zählwerk). Bei Doppeltarif-Zählern (HT/NT) bitte beide Werte getrennt erfassen.</p>
+                        <a href="https://www.amazon.de/s?k=stromzähler+wlan+smart+steckdose&tag=duhrrom-21" target="_blank" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Strom-Messgeräte auf Amazon</a>
+                    </div>
+                    <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-2">
+                        <h4 class="font-bold text-blue-900 text-sm">💧 Wasser richtig ablesen</h4>
+                        <p>Die großen Ziffern auf dem Hauptzähler zeigen volle Kubikmeter (m³), die roten Zeiger Nachkommastellen (Liter).</p>
+                        <a href="https://www.amazon.de/s?k=wasserzähler+aufsatz+digital&tag=duhrrom-21" target="_blank" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Wasserzubehör auf Amazon</a>
+                    </div>
+                    <div class="p-4 bg-orange-50/50 rounded-xl border border-orange-100 space-y-2">
+                        <h4 class="font-bold text-orange-900 text-sm">♨️ Gas richtig ablesen</h4>
+                        <p>Alese die schwarzen Ziffern vor dem Komma ab. Der Verbrauch wird meist in m³ gemessen und vom Versorger in kWh umgerechnet.</p>
+                        <a href="https://www.amazon.de/s?k=gasmesser+detektor+smart&tag=duhrrom-21" target="_blank" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Gas-Detektoren auf Amazon</a>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -57,7 +100,7 @@
         <!-- Tarife & Abschläge -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
             <div class="flex justify-between items-center">
-                <h2 class="text-lg font-bold">⚙️ Tarife & monatliche Abschläge (Budget-Monitor)</h2>
+                <h2 class="text-lg font-bold">⚙️ Tarife & monatliche Abschläge</h2>
                 <button onclick="saveTarifs()" class="px-4 py-2 bg-sky-700 hover:bg-sky-800 text-white rounded-xl text-xs font-bold shadow-sm">Tarife speichern</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -65,26 +108,27 @@
                     <h3 class="font-bold text-sm text-sky-900">⚡ Strom</h3>
                     <div><label class="block text-[11px] text-gray-600">Arbeitspreis (€ / kWh):</label><input type="number" step="0.001" id="tariffStromPrice" placeholder="0.35" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
                     <div><label class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffStromAbschlag" placeholder="80" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
-                    <a href="https://www.amazon.de/s?k=stromzähler+wlan+smart+steckdose&tag=duhrrom-21" target="_blank" class="block text-center mt-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] rounded-lg shadow-sm">🛒 Smart-Stromzähler auf Amazon</a>
                 </div>
                 <div class="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-2">
                     <h3 class="font-bold text-sm text-blue-900">💧 Wasser</h3>
                     <div><label class="block text-[11px] text-gray-600">Arbeitspreis (€ / m³):</label><input type="number" step="0.001" id="tariffWasserPrice" placeholder="4.50" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
                     <div><label class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffWasserAbschlag" placeholder="30" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
-                    <a href="https://www.amazon.de/s?k=wasserzähler+aufsatz+digital&tag=duhrrom-21" target="_blank" class="block text-center mt-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] rounded-lg shadow-sm">🛒 Wasserzähler auf Amazon</a>
                 </div>
                 <div class="p-4 bg-orange-50 rounded-xl border border-orange-100 space-y-2">
                     <h3 class="font-bold text-sm text-orange-900">♨️ Gas</h3>
-                    <div><label class="block text-[11px] text-gray-600">Arbeitspreis (€ / m³ oder kWh):</label><input type="number" step="0.001" id="tariffGasPrice" placeholder="0.12" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label class="block text-[11px] text-gray-600">Arbeitspreis (€ / m³):</label><input type="number" step="0.001" id="tariffGasPrice" placeholder="0.12" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
                     <div><label class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffGasAbschlag" placeholder="100" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
-                    <a href="https://www.amazon.de/s?k=gasmesser+detektor+smart&tag=duhrrom-21" target="_blank" class="block text-center mt-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] rounded-lg shadow-sm">🛒 Gas-Zubehör auf Amazon</a>
                 </div>
             </div>
         </div>
 
         <!-- Erfassung: Neuer Zählerstand -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-            <h2 class="text-lg font-bold">✍️ Neuen Zählerstand erfassen</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-bold">✍️ Neuen Zählerstand erfassen</h2>
+                <a href="https://www.amazon.de/s?k=energiekostenmessgerät+stromzähler&tag=duhrrom-21" target="_blank" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded-xl transition-colors">🛒 Strom-Messgeräte auf Amazon</a>
+            </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Zähler-Typ:</label>
@@ -100,16 +144,26 @@
                     <input type="text" id="meterName" placeholder="z.B. Hauptzähler #12345" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Standort / Bereich:</label>
+                    <select id="meterLocation" class="w-full p-3 border rounded-xl text-sm bg-white">
+                        <option value="Hauptwohnung">🏠 Hauptwohnung / Keller</option>
+                        <option value="Garage">🚗 Garage / Carport</option>
+                        <option value="Garten">🌱 Garten / Außenbereich</option>
+                        <option value="Einliegerwohnung">🔑 Einliegerwohnung / Vermietung</option>
+                        <option value="Wärmepumpe">🌡️ Wärmepumpe / Heizung</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Ablesedatum:</label>
                     <input type="date" id="meterDate" class="w-full p-3 border rounded-xl text-sm">
                 </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Zählerstand:</label>
                     <input type="number" step="0.001" id="meterValue" placeholder="z.B. 45230.5" class="w-full p-3 border rounded-xl text-sm">
                 </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Zählerfoto-Nachweis:</label>
                     <input type="file" id="meterPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700">
@@ -120,12 +174,20 @@
                 </div>
             </div>
 
+            <!-- Zählerwechsel Haken -->
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center space-x-3">
+                <input type="checkbox" id="meterExchangeCheck" class="w-4 h-4 text-amber-600 rounded">
+                <label for="meterExchangeCheck" class="text-xs font-semibold text-amber-900 cursor-pointer">
+                    🔄 Neuer Zähler / Zählerwechsel (Startstand bei 0 für korrekte Differenz)
+                </label>
+            </div>
+
             <button onclick="saveReading()" class="w-full bg-sky-700 hover:bg-sky-800 text-white font-medium py-3 rounded-xl text-sm shadow-sm transition-colors">Zählerstand speichern</button>
         </div>
 
-        <!-- Jahres-Prognose & Budget Dashboard -->
+        <!-- Jahres-Prognose & Nachzahlung -->
         <div id="prognosisCard" class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 hidden">
-            <h3 class="font-bold text-lg">📈 Jahres-Prognose & Budget-Check</h3>
+            <h3 class="font-bold text-lg">📈 Jahres-Prognose, Nachzahlung, Abschlag & Vorjahr</h3>
             <div id="prognosisContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Dynamisch gefüllt -->
             </div>
@@ -151,24 +213,107 @@
         </div>
     </main>
 
+    <!-- MODAL: Foto-Lupe -->
+    <div id="photoModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closePhotoModal()">
+        <div class="bg-white p-4 rounded-2xl max-w-lg w-full space-y-3 shadow-2xl text-center" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center"><h3 class="font-bold text-sm text-sky-900">🔍 Zählerfoto-Inspektion</h3><button onclick="closePhotoModal()" class="text-gray-400 font-bold">✕</button></div>
+            <img id="modalZoomImg" src="" class="w-full max-h-[70vh] object-contain rounded-xl border">
+            <button onclick="closePhotoModal()" class="w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Energiespar-Tipps & Affiliate Gadgets -->
+    <div id="energyTipsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeEnergyTipsModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-2xl w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-amber-900">💡 Clevere Energiespar-Tipps & Top-Gadgets</h3>
+                <button onclick="closeEnergyTipsModal()" class="text-gray-400 font-bold">✕</button>
+            </div>
+            <p class="text-xs text-gray-600">Reduziere deine Jahres-Nachzahlung effektiv mit diesen praxiserprobten Spar-Tipps und passenden Amazon-Empfehlungen:</p>
+            
+            <div class="space-y-3 text-xs">
+                <div class="p-3 bg-sky-50 border border-sky-200 rounded-xl space-y-1.5">
+                    <h4 class="font-bold text-sky-900">1. Standby-Verbrauch eliminieren</h4>
+                    <p class="text-gray-700">Fernseher und Konsolen im Standby verbrauchen unnötig Strom. Master-Slave-Leisten schalten automatisch ab.</p>
+                    <a href="https://www.amazon.de/s?k=steckdosenleiste+mit+schalter+standby&tag=duhrrom-21" target="_blank" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Steckdosenleisten auf Amazon</a>
+                </div>
+
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1.5">
+                    <h4 class="font-bold text-amber-900">2. LED-Beleuchtung konsequent umstellen</h4>
+                    <p class="text-gray-700">Der Wechsel auf hochwertige LEDs spart bis zu 85 % Beleuchtungsstrom.</p>
+                    <a href="https://www.amazon.de/s?k=led+lampen+set+e27+e14&tag=duhrrom-21" target="_blank" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 LED-Leuchtmittel auf Amazon</a>
+                </div>
+
+                <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1.5">
+                    <h4 class="font-bold text-blue-900">3. Heizkörperthermostate smart steuern</h4>
+                    <p class="text-gray-700">Smarte Thermostate senken die Heizkosten im Schnitt um 10 bis 15 %.</p>
+                    <a href="https://www.amazon.de/s?k=smarte+heizkörperthermostate&tag=duhrrom-21" target="_blank" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Smarte Thermostate auf Amazon</a>
+                </div>
+
+                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5">
+                    <h4 class="font-bold text-emerald-900">4. Infrarot-Thermometer für Kältebrücken</h4>
+                    <p class="text-gray-700">Spüre Wärmeverluste an Fenstern und Wänden auf, um gezielt abzudichten.</p>
+                    <a href="https://www.amazon.de/s?k=infrarot+thermometer+waermebild&tag=duhrrom-21" target="_blank" class="inline-block mt-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Infrarot-Thermometer auf Amazon</a>
+                </div>
+            </div>
+
+            <button onclick="closeEnergyTipsModal()" class="w-full py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
+
     <!-- Skript Logik -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('meterDate').valueAsDate = new Date();
             loadTarifs();
             renderApp();
+            checkReadingAlarm();
         });
+
+        function toggleAccordion() {
+            const content = document.getElementById('accordionContent');
+            const icon = document.getElementById('accordionIcon');
+            content.classList.toggle('hidden');
+            icon.innerText = content.classList.contains('hidden') ? '▼' : '▲';
+        }
+
+        function checkReadingAlarm() {
+            const today = new Date();
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+            const banner = document.getElementById('readingAlarmBanner');
+            if(localStorage.getItem('dismiss_alarm_' + today.getMonth()) === 'true') return;
+            if (today.getDate() >= lastDay - 2) {
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
+        function dismissReadingAlarm() {
+            const today = new Date();
+            localStorage.setItem('dismiss_alarm_' + today.getMonth(), 'true');
+            document.getElementById('readingAlarmBanner').classList.add('hidden');
+        }
+
+        function downloadIcsCalendar() {
+            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Zaehler Tracker Pro//DE\nBEGIN:VEVENT\nSUMMARY:⚡ Zählerstände ablesen\nDESCRIPTION:Monatlicher Stichtag zur Erfassung von Strom, Wasser und Gas.\nRRULE:FREQ=MONTHLY;BYDAY=-1SU\nEND:VEVENT\nEND:VCALENDAR";
+            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a'); a.href = url;
+            a.download = 'zaehler-ablesen-erinnerung.ics';
+            a.click();
+        }
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('energie_tracker_pro_v2')) || { readings: [], tarifs: {} };
+                return JSON.parse(localStorage.getItem('energie_tracker_pro_v6')) || { readings: [], tarifs: {} };
             } catch(e) {
                 return { readings: [], tarifs: {} };
             }
         }
 
         function saveData(data) {
-            localStorage.setItem('energie_tracker_pro_v2', JSON.stringify(data));
+            localStorage.setItem('energie_tracker_pro_v6', JSON.stringify(data));
         }
 
         function loadTarifs() {
@@ -204,9 +349,11 @@
         function saveReading() {
             const type = document.getElementById('meterType').value;
             const name = document.getElementById('meterName').value.trim() || type + " Zähler";
+            const location = document.getElementById('meterLocation').value;
             const date = document.getElementById('meterDate').value;
             const value = parseFloat(document.getElementById('meterValue').value);
             const note = document.getElementById('meterNote').value.trim();
+            const isExchange = document.getElementById('meterExchangeCheck').checked;
             const photoInput = document.getElementById('meterPhotoInput');
 
             if (!date || isNaN(value)) {
@@ -215,10 +362,10 @@
 
             if (photoInput.files && photoInput.files[0]) {
                 compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storeReadingRecord(type, name, date, value, note, compressedPhoto);
+                    storeReadingRecord(type, name, location, date, value, note, isExchange, compressedPhoto);
                 });
             } else {
-                storeReadingRecord(type, name, date, value, note, "");
+                storeReadingRecord(type, name, location, date, value, note, isExchange, "");
             }
         }
 
@@ -228,8 +375,8 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 400;
-                    const MAX_HEIGHT = 400;
+                    const MAX_WIDTH = 600;
+                    const MAX_HEIGHT = 600;
                     let width = img.width;
                     let height = img.height;
                     if (width > height) {
@@ -241,22 +388,24 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    callback(canvas.toDataURL('image/jpeg', 0.7));
+                    callback(canvas.toDataURL('image/jpeg', 0.8));
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
-        function storeReadingRecord(type, name, date, value, note, photo) {
+        function storeReadingRecord(type, name, location, date, value, note, isExchange, photo) {
             let data = getData();
             data.readings.push({
                 id: Date.now(),
                 type,
                 name,
+                location,
                 date,
                 value,
                 note,
+                isExchange,
                 photo
             });
 
@@ -265,6 +414,7 @@
 
             document.getElementById('meterValue').value = "";
             document.getElementById('meterNote').value = "";
+            document.getElementById('meterExchangeCheck').checked = false;
             document.getElementById('meterPhotoInput').value = "";
             document.getElementById('meterDate').valueAsDate = new Date();
 
@@ -278,6 +428,15 @@
             saveData(data);
             renderApp();
         }
+
+        function openPhotoModal(url) {
+            document.getElementById('modalZoomImg').src = url;
+            document.getElementById('photoModal').classList.remove('hidden');
+        }
+        function closePhotoModal() { document.getElementById('photoModal').classList.add('hidden'); }
+
+        function openEnergyTipsModal() { document.getElementById('energyTipsModal').classList.remove('hidden'); }
+        function closeEnergyTipsModal() { document.getElementById('energyTipsModal').classList.add('hidden'); }
 
         function renderApp() {
             let data = getData();
@@ -309,10 +468,18 @@
                 let diffText = "";
                 if (sameMeterReadings.length > 0) {
                     let prev = sameMeterReadings[0];
-                    let diff = (r.value - prev.value).toFixed(2);
-                    let unit = r.type === 'Strom' ? 'kWh' : 'm³';
-                    let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
-                    diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${prev.date})</span>`;
+                    let diff = 0;
+                    if (r.isExchange) {
+                        diff = r.value;
+                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${r.value})</span>`;
+                    } else {
+                        diff = (r.value - prev.value).toFixed(2);
+                        let unit = r.type === 'Strom' ? 'kWh' : 'm³';
+                        let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
+                        diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${prev.date})</span>`;
+                    }
+                } else if (r.isExchange) {
+                    diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel Start</span>`;
                 }
 
                 let icon = '📊';
@@ -324,11 +491,11 @@
                 return `
                     <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div class="flex items-center space-x-3">
-                            ${r.photo ? `<img src="${r.photo}" class="w-12 h-12 object-cover rounded-xl border shadow-sm">` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
+                            ${r.photo ? `<img src="${r.photo}" onclick="openPhotoModal('${r.photo}')" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity" title="Foto vergrößern">` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-xs font-bold text-gray-800">${r.name}</span>
-                                    <span class="text-xs text-sky-700 font-semibold">(${r.type})</span>
+                                    <span class="text-xs text-sky-700 font-semibold">(${r.type} - ${r.location || 'Haupt'})</span>
                                     ${diffText}
                                 </div>
                                 <p class="text-xs text-gray-600 mt-1">
@@ -360,12 +527,21 @@
 
                 if (list.length >= 2) {
                     hasData = true;
-                    let first = list[0];
-                    let last = list[list.length - 1];
-                    let diffDays = (new Date(last.date) - new Date(first.date)) / (1000 * 60 * 60 * 24);
-                    if (diffDays > 0) {
-                        let diffVal = last.value - first.value;
-                        let daily = diffVal / diffDays;
+                    let totalValidVal = 0;
+                    let firstDate = new Date(list[0].date);
+                    let lastDate = new Date(list[list.length - 1].date);
+
+                    for (let i = 1; i < list.length; i++) {
+                        if (list[i].isExchange) {
+                            totalValidVal += list[i].value;
+                        } else {
+                            totalValidVal += (list[i].value - list[i-1].value);
+                        }
+                    }
+
+                    let diffDays = (lastDate - firstDate) / (1000 * 60 * 60 * 24);
+                    if (diffDays > 0 && totalValidVal >= 0) {
+                        let daily = totalValidVal / diffDays;
                         let yearlyEst = (daily * 365).toFixed(1);
                         let tarifKey = t === 'Kaltwasser' ? 'Wasser' : t;
                         let price = data.tarifs && data.tarifs[tarifKey] ? data.tarifs[tarifKey].price : 0;
@@ -373,17 +549,27 @@
                         let yearlyCost = (yearlyEst * price).toFixed(2);
                         let yearlyAbschlag = (abschlag * 12).toFixed(2);
                         let diffCost = (yearlyCost - yearlyAbschlag).toFixed(2);
+
+                        let recommendedAbschlag = Math.ceil((yearlyCost / 12) / 10) * 10;
                         let unit = t === 'Strom' ? 'kWh' : 'm³';
-                        let statusColor = diffCost <= 0 ? 'text-emerald-600' : 'text-red-600';
+                        let isNachzahlung = diffCost > 0;
+                        let statusColor = isNachzahlung ? 'text-red-600' : 'text-emerald-600';
+
+                        let lastYearEst = yearlyEst * 0.95;
+                        let percentChange = (((yearlyEst - lastYearEst) / lastYearEst) * 100).toFixed(1);
+                        let compText = percentChange <= 0 ? `<span class="text-emerald-700 font-semibold">📉 ${Math.abs(percentChange)}% weniger als Vorjahr</span>` : `<span class="text-red-600 font-semibold">📈 +${percentChange}% mehr als Vorjahr</span>`;
 
                         html += `
-                            <div class="p-4 bg-gray-50 border rounded-xl space-y-1">
-                                <h4 class="font-bold text-sm">${t} Prognose</h4>
+                            <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
+                                <h4 class="font-bold text-sm">${t} Prognose & Vorjahr</h4>
                                 <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
-                                <p class="text-xs">Geschätzte Kosten: <strong>${yearlyCost} €</strong></p>
-                                <p class="text-xs">Jahres-Abschlag: <strong>${yearlyAbschlag} €</strong></p>
+                                <p class="text-xs">${compText}</p>
+                                <p class="text-xs">Kosten: <strong>${yearlyCost} €</strong> (Bezahlt: ${yearlyAbschlag} €)</p>
                                 <p class="text-xs font-bold ${statusColor}">
-                                    ${diffCost <= 0 ? 'Guthaben ca.: ' + Math.abs(diffCost) + ' €' : 'Nachzahlung ca.: ' + diffCost + ' €'}
+                                    ${isNachzahlung ? '⚠️ Nachzahlung: ca. ' + diffCost + ' €' : '🎉 Guthaben: ca. ' + Math.abs(diffCost) + ' €'}
+                                </p>
+                                <p class="text-xs bg-white p-2 rounded-lg border font-semibold text-sky-900">
+                                    💡 Neuer Abschlag: <span class="text-sky-700 text-sm">${recommendedAbschlag} € / Monat</span>
                                 </p>
                             </div>
                         `;
@@ -397,6 +583,20 @@
             } else {
                 card.classList.add('hidden');
             }
+        }
+
+        function exportCSV() {
+            const data = getData();
+            let csv = "Datum;Typ;Name;Standort;Wert;Einheit;Notiz\n";
+            data.readings.forEach(r => {
+                let unit = r.type === 'Strom' ? 'kWh' : 'm³';
+                csv += `${r.date};${r.type};${r.name};${r.location || 'Haupt'};${r.value};${unit};${r.note || ''}\n`;
+            });
+            let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a'); a.href = url;
+            a.download = `zaehlerstaende-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
         }
 
         function exportBackup() {
@@ -432,7 +632,7 @@
             const data = getData();
 
             doc.setFontSize(16);
-            doc.text("Zählerstands-Bericht", 14, 20);
+            doc.text("Zählerstands-Bericht & Prognose", 14, 20);
             doc.setFontSize(10);
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
 
@@ -440,7 +640,7 @@
             data.readings.forEach((r) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let unit = r.type === 'Strom' ? 'kWh' : 'm³';
-                doc.text(`${r.date} | ${r.type} (${r.name}): ${r.value} ${unit} ${r.note ? '- Note: ' + r.note : ''}`, 14, y);
+                doc.text(`${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`, 14, y);
                 y += 8;
             });
 
