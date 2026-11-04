@@ -18,7 +18,7 @@
     <!-- Header -->
     <header class="bg-amber-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">📦 Mini-HomeBox Pro (Inventar-Zentrale)</h1>
-        <p class="text-sm opacity-90 mt-1">Standorte, Kisten, Fotos, Werte, QR-Codes & PDF-Reports</p>
+        <p class="text-sm opacity-90 mt-1">Standorte, Kisten, Ausleihe, Barcodes, Ablaufdaten & Deep-Linking</p>
     </header>
 
     <!-- Main Content -->
@@ -29,9 +29,9 @@
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
             
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                <button onclick="exportInventoryPDF()" class="px-3.5 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 Inventar PDF</button>
-                <button onclick="exportQrLabelsPDF()" class="px-3.5 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl text-xs font-bold shadow-sm">🖨️ QR-Etiketten PDF</button>
-                <button onclick="openScannerModal()" class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm">🔍 QR-Scanner</button>
+                <button onclick="exportInventoryPDF()" class="px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 Inventar PDF</button>
+                <button onclick="exportQrLabelsPDF()" class="px-3 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl text-xs font-bold shadow-sm">🖨️ QR-Etiketten PDF</button>
+                <button onclick="openScannerModal()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm">🔍 Scanner (QR / Barcode)</button>
                 <button onclick="exportBackup()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
                 <label class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
                     📂 Import <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
@@ -58,9 +58,7 @@
         <!-- Standort-Wert-Übersicht -->
         <div id="locationValueStatsCard" class="bg-white p-5 rounded-2xl shadow-sm border space-y-2 hidden">
             <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">📊 Wertverteilung nach Standorten</h4>
-            <div id="locationValueStatsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                <!-- Dynamisch befüllt -->
-            </div>
+            <div id="locationValueStatsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
         </div>
 
         <!-- Erfassung: Standort & Kiste -->
@@ -83,6 +81,13 @@
                     <input type="text" id="boxValue" placeholder="Wert in € (optional)" class="p-3 border rounded-xl text-sm">
                 </div>
                 <input type="text" id="boxDesc" placeholder="Inhalt / Beschreibung (z.B. Lichterketten)" class="w-full p-3 border rounded-xl text-sm">
+                
+                <!-- Neue Felder: Barcode, Ausleihe & Ablaufdatum -->
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="boxBarcode" placeholder="Barcode / EAN (optional)" class="p-3 border rounded-xl text-sm font-mono">
+                    <input type="date" id="boxExpiry" class="p-3 border rounded-xl text-sm bg-white" title="Garantie / Ablaufdatum">
+                </div>
+
                 <div class="grid grid-cols-2 gap-2">
                     <select id="boxTag" class="p-3 border rounded-xl text-sm bg-white">
                         <option value="Standard">🏷️ Standard</option>
@@ -122,7 +127,7 @@
         </div>
     </main>
 
-    <!-- MODAL: Kiste Bearbeiten (inkl. Standort-Wechsel) -->
+    <!-- MODAL: Kiste Bearbeiten (inkl. Standort-Wechsel, Ausleihe & Ablaufdatum) -->
     <div id="editBoxModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 class="text-lg font-bold">Kiste bearbeiten</h3>
@@ -137,6 +142,14 @@
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Wert (€):</label><input type="text" id="editBoxValue" class="w-full p-3 border rounded-xl text-sm"></div>
                 <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tag:</label><select id="editBoxTag" class="w-full p-3 border rounded-xl text-sm bg-white"><option value="Standard">Standard</option><option value="Zerbrechlich">Zerbrechlich</option><option value="Wertvoll">Wertvoll</option><option value="Saison">Saison</option></select></div>
             </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Barcode / EAN:</label><input type="text" id="editBoxBarcode" class="w-full p-3 border rounded-xl text-sm font-mono"></div>
+                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Ablauf / Garantie:</label><input type="date" id="editBoxExpiry" class="w-full p-3 border rounded-xl text-sm bg-white"></div>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Ausgeliehen an (Name / leer = im Regal):</label>
+                <input type="text" id="editBoxLentTo" placeholder="z.B. Max Mustermann" class="w-full p-3 border rounded-xl text-sm">
+            </div>
             <div class="flex justify-end space-x-2 pt-2">
                 <button onclick="closeEditBoxModal()" class="px-4 py-2 bg-gray-100 rounded-xl text-sm">Abbrechen</button>
                 <button onclick="updateBox()" class="px-5 py-2 bg-amber-600 text-white rounded-xl text-sm font-bold">Speichern</button>
@@ -144,20 +157,21 @@
         </div>
     </div>
 
-    <!-- MODAL: QR Code anzeigen -->
+    <!-- MODAL: QR Code anzeigen & Deep-Link -->
     <div id="qrModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="closeQrModal()">
         <div class="bg-white p-6 rounded-2xl text-center space-y-3 shadow-2xl" onclick="event.stopPropagation()">
             <h3 id="qrModalTitle" class="font-bold text-lg">QR-Code</h3>
             <div id="qrcode" class="flex justify-center p-2 bg-white border rounded-xl"></div>
-            <p class="text-xs text-gray-500">Drucke diesen Code aus und klebe ihn auf die Kiste.</p>
+            <p id="qrLinkInfo" class="text-[11px] text-indigo-600 font-mono break-all"></p>
+            <p class="text-xs text-gray-500">Drucke diesen Code aus. Beim Scannen öffnet sich die Kiste direkt in der App!</p>
             <button onclick="closeQrModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
         </div>
     </div>
 
-    <!-- MODAL: Live QR Scanner -->
+    <!-- MODAL: Live QR & Barcode Scanner -->
     <div id="scannerModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white p-6 rounded-2xl max-w-md w-full shadow-2xl space-y-4 text-center">
-            <h3 class="font-bold text-lg">🔍 Live QR-Code Scanner</h3>
+            <h3 class="font-bold text-lg">🔍 Live Scanner</h3>
             <div id="reader" class="w-full rounded-xl overflow-hidden border"></div>
             <div id="scanResult" class="text-xs font-semibold text-amber-700 bg-amber-50 p-2 rounded-xl hidden"></div>
             <button onclick="closeScannerModal()" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">Scanner schließen</button>
@@ -175,6 +189,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadLocationsDropdown();
+            checkDeepLink();
             renderInventory();
         });
 
@@ -188,6 +203,15 @@
 
         function saveData(data) {
             localStorage.setItem('mini_homebox_pro', JSON.stringify(data));
+        }
+
+        // Deep-Link Prüfung beim Aufruf über QR-Code URL (?box=ID)
+        function checkDeepLink() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const boxIdParam = urlParams.get('box');
+            if (boxIdParam) {
+                document.getElementById('searchBox').value = boxIdParam;
+            }
         }
 
         function saveLocation() {
@@ -238,6 +262,8 @@
             const desc = document.getElementById('boxDesc').value.trim();
             const value = parseFloat(document.getElementById('boxValue').value.replace(',', '.')) || 0;
             const tag = document.getElementById('boxTag').value;
+            const barcode = document.getElementById('boxBarcode').value.trim();
+            const expiry = document.getElementById('boxExpiry').value;
             const photoInput = document.getElementById('boxPhotoInput');
 
             if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
@@ -245,21 +271,34 @@
             if (photoInput.files && photoInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    storeBoxData(locId, name, desc, value, tag, e.target.result);
+                    storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", e.target.result);
                 };
                 reader.readAsDataURL(photoInput.files[0]);
             } else {
-                storeBoxData(locId, name, desc, value, tag, "");
+                storeBoxData(locId, name, desc, value, tag, barcode, expiry, "", "");
             }
         }
 
-        function storeBoxData(locId, name, desc, value, tag, photo) {
+        function storeBoxData(locId, name, desc, value, tag, barcode, expiry, lentTo, photo) {
             let data = getData();
-            data.boxes.push({ id: Date.now(), locId: parseInt(locId), name, desc, value, tag, photo });
+            data.boxes.push({ 
+                id: Date.now(), 
+                locId: parseInt(locId), 
+                name, 
+                desc, 
+                value, 
+                tag, 
+                barcode, 
+                expiry, 
+                lentTo: lentTo || "", 
+                photo 
+            });
             saveData(data);
             document.getElementById('boxName').value = "";
             document.getElementById('boxDesc').value = "";
             document.getElementById('boxValue').value = "";
+            document.getElementById('boxBarcode').value = "";
+            document.getElementById('boxExpiry').value = "";
             document.getElementById('boxPhotoInput').value = "";
             renderInventory();
         }
@@ -275,6 +314,9 @@
             document.getElementById('editBoxDesc').value = box.desc;
             document.getElementById('editBoxValue').value = box.value || 0;
             document.getElementById('editBoxTag').value = box.tag || "Standard";
+            document.getElementById('editBoxBarcode').value = box.barcode || "";
+            document.getElementById('editBoxExpiry').value = box.expiry || "";
+            document.getElementById('editBoxLentTo').value = box.lentTo || "";
             document.getElementById('editBoxModal').classList.remove('hidden');
         }
 
@@ -289,6 +331,9 @@
             const desc = document.getElementById('editBoxDesc').value.trim();
             const value = parseFloat(document.getElementById('editBoxValue').value.replace(',', '.')) || 0;
             const tag = document.getElementById('editBoxTag').value;
+            const barcode = document.getElementById('editBoxBarcode').value.trim();
+            const expiry = document.getElementById('editBoxExpiry').value;
+            const lentTo = document.getElementById('editBoxLentTo').value.trim();
 
             if (!locId || !name) return alert("Bitte Standort und Kisten-Name angeben!");
 
@@ -300,6 +345,9 @@
                 box.desc = desc;
                 box.value = value;
                 box.tag = tag;
+                box.barcode = barcode;
+                box.expiry = expiry;
+                box.lentTo = lentTo;
                 saveData(data);
             }
             closeEditBoxModal();
@@ -329,7 +377,7 @@
             document.getElementById('statLocs').innerText = totalLocs;
             document.getElementById('statValue').innerText = totalVal.toFixed(2).replace('.', ',') + ' €';
 
-            // Standort-Wert-Statistiken aktualisieren
+            // Standort-Wert-Statistiken
             const statsCard = document.getElementById('locationValueStatsCard');
             const statsList = document.getElementById('locationValueStatsList');
             if (totalLocs > 0 && totalVal > 0) {
@@ -347,20 +395,25 @@
                 return;
             }
 
+            const today = new Date().toISOString().split('T')[0];
+
             container.innerHTML = data.locations.map(loc => {
                 let locBoxes = data.boxes.filter(b => b.locId === loc.id);
                 
-                // Tag-Filter anwenden
                 if (tagFilter) {
                     locBoxes = locBoxes.filter(b => (b.tag || 'Standard') === tagFilter);
                 }
 
-                // Suchfilter anwenden
                 if (search) {
-                    locBoxes = locBoxes.filter(b => b.name.toLowerCase().includes(search) || b.desc.toLowerCase().includes(search) || (b.tag && b.tag.toLowerCase().includes(search)));
+                    locBoxes = locBoxes.filter(b => 
+                        b.name.toLowerCase().includes(search) || 
+                        b.desc.toLowerCase().includes(search) || 
+                        (b.tag && b.tag.toLowerCase().includes(search)) ||
+                        (b.barcode && b.barcode.toLowerCase().includes(search)) ||
+                        (b.id.toString() === search)
+                    );
                 }
 
-                // Sortierung anwenden
                 locBoxes.sort((a, b) => {
                     if (sortFilter === 'value-desc') return (b.value || 0) - (a.value || 0);
                     if (sortFilter === 'value-asc') return (a.value || 0) - (b.value || 0);
@@ -379,33 +432,44 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            ${locBoxes.length > 0 ? locBoxes.map(b => `
-                                <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3">
-                                    <div class="flex items-center space-x-3">
-                                        ${b.photo ? `<img src="${b.photo}" onclick="zoomImage('${b.photo}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
-                                        <div>
-                                            <div class="flex items-center space-x-2">
-                                                <h5 class="font-bold text-sm">📦 ${b.name}</h5>
-                                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${b.tag || 'Standard'}</span>
+                            ${locBoxes.length > 0 ? locBoxes.map(b => {
+                                const isExpired = b.expiry && b.expiry < today;
+                                const isLent = b.lentTo && b.lentTo.trim() !== "";
+
+                                return `
+                                    <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3 ${isExpired ? 'border-red-400 bg-red-50/30' : ''}">
+                                        <div class="flex items-center space-x-3">
+                                            ${b.photo ? `<img src="${b.photo}" onclick="zoomImage('${b.photo}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
+                                            <div>
+                                                <div class="flex items-center space-x-2 flex-wrap gap-1">
+                                                    <h5 class="font-bold text-sm">📦 ${b.name}</h5>
+                                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${b.tag || 'Standard'}</span>
+                                                    ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="Ausgeliehen an: ${b.lentTo}">🤝 Ausgeliehen (${b.lentTo})</span>` : ''}
+                                                    ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="Ablaufdatum überschritten!">⚠️ Ablaufdatum</span>` : ''}
+                                                </div>
+                                                <p class="text-xs text-gray-600 mt-0.5">${b.desc || 'Keine Beschreibung'}</p>
+                                                <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5">
+                                                    <span class="font-semibold text-green-600">Wert: ${(b.value || 0).toFixed(2).replace('.', ',')} €</span>
+                                                    ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${b.barcode}</span>` : ''}
+                                                    ${b.expiry ? `<span>Ablauf: ${b.expiry.split('-').reverse().join('.')}</span>` : ''}
+                                                </div>
                                             </div>
-                                            <p class="text-xs text-gray-600 mt-0.5">${b.desc || 'Keine Beschreibung'}</p>
-                                            <p class="text-xs font-semibold text-green-600 mt-0.5">Wert: ${(b.value || 0).toFixed(2).replace('.', ',')} €</p>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <button onclick="showQrCode(${b.id}, '${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100" title="QR-Code & Deep-Link">🖨️</button>
+                                            <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200" title="Bearbeiten">✏️</button>
+                                            <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-1">
-                                        <button onclick="showQrCode('${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100" title="QR-Code">🖨️</button>
-                                        <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200" title="Bearbeiten">✏️</button>
-                                        <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
-                                    </div>
-                                </div>
-                            `).join('') : '<p class="text-xs text-gray-400 col-span-2">Keine passenden Kisten an diesem Standort.</p>'}
+                                `;
+                            }).join('') : '<p class="text-xs text-gray-400 col-span-2">Keine passenden Kisten an diesem Standort.</p>'}
                         </div>
                     </div>
                 `;
             }).join('') || `<p class="text-sm text-gray-400 text-center py-4">Keine passenden Einträge gefunden.</p>`;
         }
 
-        // PDF-Report Export via jsPDF
+        // PDF-Report Export
         function exportInventoryPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -420,36 +484,32 @@
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
             let y = 35;
+            data.locations.forEach(loc => {
+                if (y > 270) { doc.addPage(); y = 20; }
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.text(`Standort: ${loc.name}`, 14, y);
+                y += 7;
 
-            if (data.locations.length === 0) {
-                doc.text("Keine Standorte erfasst.", 14, y);
-            } else {
-                data.locations.forEach(loc => {
-                    if (y > 270) { doc.addPage(); y = 20; }
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(12);
-                    doc.text(`Standort: ${loc.name}`, 14, y);
-                    y += 7;
-
-                    let locBoxes = data.boxes.filter(b => b.locId === loc.id);
-                    if (locBoxes.length === 0) {
-                        doc.setFont("helvetica", "italic");
+                let locBoxes = data.boxes.filter(b => b.locId === loc.id);
+                if (locBoxes.length === 0) {
+                    doc.setFont("helvetica", "italic");
+                    doc.setFontSize(10);
+                    doc.text("  (Keine Kisten)", 14, y);
+                    y += 6;
+                } else {
+                    locBoxes.forEach(b => {
+                        if (y > 270) { doc.addPage(); y = 20; }
+                        doc.setFont("helvetica", "normal");
                         doc.setFontSize(10);
-                        doc.text("  (Keine Kisten an diesem Standort)", 14, y);
+                        const statusText = b.lentTo ? ` [Ausgeliehen an: ${b.lentTo}]` : '';
+                        doc.text(`  • ${b.name}${statusText}`, 14, y);
+                        doc.text(`Wert: ${(b.value || 0).toFixed(2)} EUR | Inhalt: ${b.desc || '-'}`, 100, y);
                         y += 6;
-                    } else {
-                        locBoxes.forEach(b => {
-                            if (y > 270) { doc.addPage(); y = 20; }
-                            doc.setFont("helvetica", "normal");
-                            doc.setFontSize(10);
-                            doc.text(`  • ${b.name} [Tag: ${b.tag || 'Standard'}]`, 14, y);
-                            doc.text(`Inhalt: ${b.desc || 'k.A.'} | Wert: ${(b.value || 0).toFixed(2)} EUR`, 110, y);
-                            y += 6;
-                        });
-                    }
-                    y += 4;
-                });
-            }
+                    });
+                }
+                y += 4;
+            });
 
             let totalVal = data.boxes.reduce((sum, b) => sum + (b.value || 0), 0);
             if (y > 270) { doc.addPage(); y = 20; }
@@ -460,10 +520,10 @@
             doc.save("kisten-inventar-report.pdf");
         }
 
-        // NEU: Massen-Export aller QR-Codes als Etiketten-PDF
+        // QR-Etiketten PDF mit Deep-Link URL
         function exportQrLabelsPDF() {
             let data = getData();
-            if (data.boxes.length === 0) return alert("Keine Kisten vorhanden, für die QR-Codes erstellt werden können.");
+            if (data.boxes.length === 0) return alert("Keine Kisten vorhanden.");
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -472,18 +532,14 @@
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
-            doc.text("Mini-HomeBox Pro - QR-Etiketten Übersicht", 14, 12);
+            doc.text("Mini-HomeBox Pro - QR-Etiketten (Deep-Link)", 14, 12);
 
-            data.boxes.forEach((b, index) => {
-                if (y + rowHeight > 280) {
-                    doc.addPage();
-                    y = 20;
-                }
+            data.boxes.forEach((b) => {
+                if (y + rowHeight > 280) { doc.addPage(); y = 20; }
 
                 const loc = data.locations.find(l => l.id === b.locId);
                 const locName = loc ? loc.name : "Unbekannt";
 
-                // Rahmen für Etikett
                 doc.setDrawColor(200);
                 doc.roundedRect(x, y, colWidth, rowHeight - 5, 3, 3);
 
@@ -497,30 +553,29 @@
                 doc.text(`Inhalt: ${b.desc || '-'}`, x + 5, y + 20);
                 doc.text(`Wert: ${(b.value || 0).toFixed(2)} € | Tag: ${b.tag || 'Standard'}`, x + 5, y + 26);
 
-                // Platzhalter-Text für den gedruckten QR-Inhalt
                 doc.setFontSize(7);
                 doc.setTextColor(100);
-                doc.text(`ID: ${b.id}`, x + 5, y + 35);
+                doc.text(`ID (Deep-Link): ${b.id}`, x + 5, y + 34);
                 doc.setTextColor(0);
 
-                // Spaltenwechsel (2 Spalten pro Seite)
-                if (x === 14) {
-                    x = 110;
-                } else {
-                    x = 14;
-                    y += rowHeight;
-                }
+                if (x === 14) { x = 110; } else { x = 14; y += rowHeight; }
             });
 
             doc.save("kisten-qr-etiketten.pdf");
         }
 
-        function showQrCode(name, desc) {
+        // QR-Code anzeigen mit echter Deep-Link URL
+        function showQrCode(boxId, name, desc) {
             document.getElementById('qrModalTitle').innerText = `QR-Code für: ${name}`;
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
+            
+            // Generiere absolute Deep-Link URL (z.B. https://deinname.github.io/repo/mini-homebox.html?box=ID)
+            const deepLinkUrl = `${window.location.origin}${window.location.pathname}?box=${boxId}`;
+            document.getElementById('qrLinkInfo').innerText = deepLinkUrl;
+
             new QRCode(qrContainer, {
-                text: `Mini-HomeBox | Kiste: ${name} | Inhalt: ${desc}`,
+                text: deepLinkUrl,
                 width: 128,
                 height: 128
             });
@@ -558,17 +613,13 @@
                         loadLocationsDropdown();
                         renderInventory();
                         alert("Backup erfolgreich importiert!");
-                    } else {
-                        alert("Ungültiges Format.");
-                    }
-                } catch (err) {
-                    alert("Fehler beim Lesen der Datei.");
-                }
+                    } else { alert("Ungültiges Format."); }
+                } catch (err) { alert("Fehler beim Lesen der Datei."); }
             };
             reader.readAsText(file);
         }
 
-        // Live QR Code Scanner via html5-qrcode
+        // Universal Live Scanner (QR-Codes & EAN-Barcodes)
         function openScannerModal() {
             document.getElementById('scannerModal').classList.remove('hidden');
             const resBox = document.getElementById('scanResult');
@@ -577,11 +628,20 @@
             html5QrCode = new Html5Qrcode("reader");
             html5QrCode.start(
                 { facingMode: "environment" },
-                { fps: 10, qrbox: { width: 200, height: 200 } },
+                { fps: 10, qrbox: { width: 220, height: 150 } },
                 (decodedText) => {
                     resBox.innerText = `Erkannt: ${decodedText}`;
                     resBox.classList.remove('hidden');
-                    document.getElementById('searchBox').value = decodedText.split('|')[1]?.replace('Kiste:', '').trim() || decodedText;
+
+                    // Wenn es eine Deep-Link URL ist, extrahiere die Box-ID
+                    if (decodedText.includes('?box=')) {
+                        const boxId = decodedText.split('?box=')[1];
+                        document.getElementById('searchBox').value = boxId;
+                    } else {
+                        // Ansonsten normal nach Barcode oder Text suchen
+                        document.getElementById('searchBox').value = decodedText;
+                    }
+
                     renderInventory();
                     setTimeout(() => closeScannerModal(), 1500);
                 },
@@ -594,9 +654,7 @@
 
         function closeScannerModal() {
             if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    html5QrCode.clear();
-                }).catch(err => {});
+                html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => {});
             }
             document.getElementById('scannerModal').classList.add('hidden');
         }
