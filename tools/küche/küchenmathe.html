@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>Backform-Rechner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#eef2ef;--ink:#14302a;--card:#fff;--acc:#1b5fa6;--hi:#f0c43c;--hit:#14302a;--line:#c5d3cb;--mut:#52665f;--bad:#b3261e;--ok:#1f7a45;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1d1a;--ink:#e6efe9;--card:#172a26;--acc:#7fb4ee;--line:#2d4540;--mut:#9db3aa;--bad:#ff8a80;--ok:#6fd49a;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#0f1d1a;--ink:#e6efe9;--card:#172a26;--acc:#7fb4ee;--line:#2d4540;--mut:#9db3aa;--bad:#ff8a80;--ok:#6fd49a;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:780px;margin:0 auto;padding:12px 14px 60px}
+h1{font:700 1.5rem Georgia,serif;margin:6px 0}h2{font:700 1.15rem Georgia,serif;margin:18px 0 8px}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
+button,select,input,textarea{font:inherit;color:inherit;background:var(--card);border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;min-height:46px}
+button{cursor:pointer;font-weight:600}button.on,button.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+:root[data-theme=dark] button.on,:root[data-theme=dark] button.pri{color:#0f1d1a}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) button.on,:root:not([data-theme=light]) button.pri{color:#0f1d1a}}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--hi);outline-offset:1px}
+fieldset,.card{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px 14px;margin:0 0 14px;min-width:0}
+legend{font-weight:700;padding:0 6px}
+label{display:grid;grid-template-columns:1fr 1.2fr;gap:8px;align-items:center;margin:6px 0}
+label>span{display:flex;gap:6px}label>span>*{flex:1;min-width:0}
+input,select,textarea{width:100%;min-width:0}textarea{min-height:140px;font-family:ui-monospace,monospace;font-size:16px}
+fieldset:not([data-t=rect]):not([data-t=kasten]):not([data-t=tray]) .b,fieldset:not([data-t=ring]) .c,fieldset:not([data-t=muffin]) .m{display:none}
+.fac{background:var(--hi);color:#14302a;border-radius:14px;padding:12px 16px;margin:6px 0 14px}
+.fac b{font:700 3.2rem/1 Georgia,serif;display:block}.fac small{font-size:1rem}
+.mut{color:var(--mut);font-size:.9rem}.bad{color:var(--bad);font-weight:700}.ok{color:var(--ok);font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}.row>*{flex:1 1 auto;width:auto}
+ul{padding-left:1.1rem;margin:6px 0}li{margin:4px 0}ul.chk{list-style:none;padding:0}ul.chk li{display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:6px 0}
+ul.chk input{width:26px;height:26px;min-height:0;flex:none}.done{text-decoration:line-through;opacity:.55}
+svg.sch{max-width:100%;height:auto;border:1px dashed var(--mut)}
+#pa,#ps{display:none}#timer{font:700 3rem Georgia,serif;text-align:center}
+@media print{#app{display:none}body.pr-r #pa,body.pr-s #ps{display:block}svg.sch{max-width:none;border:0}body{background:#fff;color:#000}}
+</style></head><body>
+<main id="app">
+<header><h1>Backform-Rechner</h1><button id="theme" aria-label="Hell/Dunkel">◐</button></header>
+<p class="mut">Läuft komplett auf deinem Gerät. Nichts wird hochgeladen, alles bleibt im Browser.</p>
+<nav id="tabs"></nav>
+
+<section id="tab-calc">
+<div id="pans"></div>
+<div class="card"><h2 style="margin-top:0">Backzeit und Temperatur</h2>
+<label>Zeit laut Rezept (Min.)<input id="t0" inputmode="decimal" value="60"></label>
+<label>Temperatur laut Rezept (°C)<input id="T0" inputmode="decimal" value="175"></label>
+<label>Rezept gilt für<select id="mode"><option value="ou">Ober-/Unterhitze</option><option value="ul">Umluft</option></select></label>
+<label>Material der Zielform<select id="mat"><option value="hell">Helles Metall</option><option value="dunkel">Dunkles Metall</option><option value="glas">Glas / Keramik</option><option value="sili">Silikon</option></select></label>
+<label>Rezeptmenge beibehalten<input id="keep" type="checkbox" style="width:26px;min-height:0;height:26px"></label>
+<label>Meinen Ofenfaktor nutzen<input id="usecal" type="checkbox" checked style="width:26px;min-height:0;height:26px"></label></div>
+<div class="fac"><small>Faktor für alle Zutaten</small><b id="fac">× 1</b><small id="facinfo"></small></div>
+<div class="card" id="res"></div>
+</section>
+
+<section id="tab-rec" hidden>
+<div class="card"><h2 style="margin-top:0">Rezept einfügen</h2>
+<label>Name<input id="rname" data-ns placeholder="z. B. Käsekuchen"></label>
+<textarea id="rtxt" placeholder="Eine Zutat pro Zeile, z. B.&#10;500 g Mehl&#10;3 Eier&#10;2 EL Zucker&#10;½ TL Salz&#10;1 Pck. Vanillezucker"></textarea>
+<div class="row"><button class="pri" id="saveRec">Rezept speichern</button><button id="share">Link erzeugen</button><button id="print">Drucken</button></div>
+<input id="shareout" data-ns readonly placeholder="Link erscheint hier" hidden></div>
+<div class="card"><h2 style="margin-top:0">Umgerechnet</h2><div id="scaled"></div><div class="row"><button id="toList">Zur Einkaufsliste</button></div></div>
+<div class="card"><h2 style="margin-top:0">Einkaufsliste</h2><ul class="chk" id="shop"></ul><div class="row"><button id="shopClean">Erledigte löschen</button><button id="shopClear">Alles leeren</button></div></div>
+<div class="card"><h2 style="margin-top:0">Gespeicherte Rezepte</h2><ul id="saved"></ul></div>
+</section>
+
+<section id="tab-tools" hidden>
+<div class="card"><h2 style="margin-top:0">Ofentemperatur</h2><div class="row"><input id="tv" inputmode="decimal" value="180"><select id="tm"><option value="ou">°C Ober-/Unterhitze</option><option value="ul">°C Umluft</option><option value="f">°F</option><option value="gm">Gas Mark</option></select></div><p id="tout"></p></div>
+<div class="card"><h2 style="margin-top:0">Cups und Gramm</h2><div class="row"><select id="ci"><option value="120">Mehl</option><option value="200">Zucker</option><option value="120">Puderzucker</option><option value="227">Butter</option><option value="240">Wasser / Milch</option><option value="340">Honig</option><option value="90">Haferflocken</option><option value="85">Kakao</option></select><input id="cv" inputmode="decimal" value="1"><select id="cd"><option value="c">Cups → g</option><option value="g">g → Cups</option></select></div><p id="cout"></p><p class="mut">Richtwerte. Mehl schwankt je nach Einfüllen um bis zu 20 %.</p></div>
+<div class="card"><h2 style="margin-top:0">Torte teilen</h2><label>Stücke<input id="pn" inputmode="numeric" value="12"></label><p id="pout"></p></div>
+<div class="card"><h2 style="margin-top:0">Glasur und Fondant (Zielform)</h2><label>Sorte<select id="gt"><option value="0.12">Zuckerguss (1 mm)</option><option value="0.42" selected>Fondant (3 mm)</option><option value="0.55">Ganache (5 mm)</option><option value="0.5">Buttercreme (5 mm)</option></select></label><label>Rand mit bedecken<input id="gs" type="checkbox" checked style="width:26px;min-height:0;height:26px"></label><p id="gout"></p></div>
+<div class="card"><h2 style="margin-top:0">Mehrere Böden</h2><label>Anzahl Böden<input id="nb" inputmode="numeric" value="3"></label><p id="bout"></p></div>
+<div class="card"><h2 style="margin-top:0">Mehrere Formen oder Muffins</h2><label>Anzahl kleine Formen<input id="kn" inputmode="numeric" value="2"></label><label>Ø jeder Form (cm)<input id="kd" inputmode="decimal" value="20"></label><p id="kout"></p></div>
+<div class="card"><h2 style="margin-top:0">Stromkosten</h2><label>Ofenleistung (kW)<input id="ek" inputmode="decimal" value="2.4"></label><label>Backzeit inkl. Vorheizen (Min.)<input id="em" inputmode="decimal" value="70"></label><label>Preis (€/kWh)<input id="ep" inputmode="decimal" value="0.35"></label><p id="eout"></p><p class="mut">Annahme: Heizung ist etwa 55 % der Zeit an.</p></div>
+<div class="card"><h2 style="margin-top:0">Höhenanpassung</h2><label>Höhe über NN (m)<input id="hm" inputmode="numeric" value="0"></label><p id="hout"></p></div>
+<div class="card"><h2 style="margin-top:0">Backpapier-Schablone (1:1)</h2><div id="sch"></div><div class="row"><button id="printS">Schablone drucken</button></div><p class="mut">Druck mit 100 % Skalierung, nicht „an Seite anpassen“.</p></div>
+<div class="card"><h2 style="margin-top:0">Kochmodus</h2><div id="timer">00:00</div><div class="row"><input id="tmin" inputmode="numeric" value="45" aria-label="Minuten"><button class="pri" id="tgo">Timer starten</button><button id="tstop">Stopp</button></div><div class="row"><button id="wake">Display anlassen</button></div><p class="mut" id="wout"></p></div>
+</section>
+
+<section id="tab-mine" hidden>
+<div class="card"><h2 style="margin-top:0">Meine Formen</h2><p class="mut">Speichere die Zielform und sieh, welche zu deinem Rezept passt.</p>
+<div class="row"><input id="pname" data-ns placeholder="Name, z. B. Oma-Springform"><button id="savePan">Zielform speichern</button></div><ul id="mypans"></ul></div>
+<div class="card"><h2 style="margin-top:0">Mein Ofen</h2><div class="row"><input id="c1" data-ns inputmode="decimal" placeholder="Rezept sagt (Min.)"><input id="c2" data-ns inputmode="decimal" placeholder="Wirklich (Min.)"><button id="cadd">Eintragen</button></div><p id="cout2"></p><button id="creset">Zurücksetzen</button></div>
+<div class="card"><h2 style="margin-top:0">Einstellungen und Daten</h2><label>Zoll und °F zusätzlich zeigen<input id="imp" type="checkbox" style="width:26px;min-height:0;height:26px"></label>
+<div class="row"><button id="exp">Export (JSON)</button><button id="imb">Import</button></div><textarea id="data" data-ns placeholder="JSON hier einfügen oder kopieren"></textarea></div>
+<p class="mut">Hinweise: Die Backzeit ist eine Faustregel, kein Naturgesetz. Mach immer die Stäbchenprobe. Geplant, aber nicht enthalten: Foto-OCR und Kalorien aus Open Food Facts (brauchen externe Daten).</p>
+</section>
+</main>
+<div id="pa"></div><div id="ps"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const n=id=>{const x=parseFloat(String($('#'+id).value).replace(',','.'));return isFinite(x)?x:0};
+const fmt=(x,d=1)=>(+x.toFixed(d)).toString().replace('.',',');
+const S={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const T={round:'Rund',rect:'Eckig',kasten:'Kastenform',ring:'Kranz / Gugelhupf',tray:'Backblech',muffin:'Muffinform'};
+const DEF={round:{a:24,h:6},rect:{a:24,b:24,h:5},kasten:{a:30,b:11,h:8},ring:{a:24,c:6,h:10},tray:{a:40,b:30,h:2},muffin:{a:7,m:12,h:3}};
+const lab=(p,k,t,c)=>`<label class="${c||''}">${t}<input id="${p}${k}" inputmode="decimal"></label>`;
+function panHTML(p,l){return `<fieldset id="${p}box" data-t="round"><legend>${l}</legend>
+<label>Form<select id="${p}t">${Object.entries(T).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label>
+<label>Ø oder Länge (cm)<span><select id="${p}p" aria-label="Preset"><option value="">Preset</option>${[18,20,22,24,26,28,30].map(x=>`<option>${x}</option>`).join('')}</select><input id="${p}a" inputmode="decimal"></span></label>
+${lab(p,'b','Breite (cm)','b')}${lab(p,'c','Loch Ø (cm)','c')}${lab(p,'m','Anzahl Mulden','m')}${lab(p,'h','Höhe (cm)')}${lab(p,'w','Wasser-Messung (l, optional)')}</fieldset>`}
+$('#pans').innerHTML=panHTML('s','Form im Rezept')+panHTML('d','Deine Form');
+function setPan(p,o){for(const k of['t','a','b','c','h','m','w'])$('#'+p+k).value=o[k]??'';$('#'+p+'box').dataset.t=$('#'+p+'t').value}
+setPan('s',{t:'round',a:26,h:6});setPan('d',{t:'round',a:20,h:6});
+const getPan=p=>Object.fromEntries(['t','a','b','c','h','m','w'].map(k=>[k,$('#'+p+k).value]));
+function pan(p){const t=$('#'+p+'t').value,a=n(p+'a'),b=n(p+'b'),c=n(p+'c'),h=n(p+'h')||DEF[t].h,m=n(p+'m')||1,w=n(p+'w');
+const A=t=='round'?Math.PI*a*a/4:t=='ring'?Math.PI*(a*a-c*c)/4:t=='muffin'?m*Math.PI*a*a/4:a*b;
+return{t,a,b,c,h,A,w,V:w?w*1000:A*h}}
+const factor=(s,d)=>((s.w&&d.w)||s.t=='ring'||d.t=='ring')?d.V/s.V:d.A/s.A;
+
+/* Parser */
+const UN={g:'g',kg:'kg',ml:'ml',l:'l',el:'EL',tl:'TL',msp:'Msp.','msp.':'Msp.',prise:'Prise',prisen:'Prise','pck.':'Pck.',pck:'Pck.',päckchen:'Pck.',pkt:'Pck.','pkt.':'Pck.',tasse:'Tasse',tassen:'Tasse',cup:'Cup',cups:'Cup'};
+const FR={'½':.5,'¼':.25,'¾':.75,'⅓':1/3,'⅔':2/3};
+function num(s){let t=0;for(const p of s.split(' ')){if(FR[p]!==undefined)t+=FR[p];else if(/^\d+\/\d+$/.test(p)){const[x,y]=p.split('/');t+=x/y}else if(/^\d+([.,]\d+)?$/.test(p))t+=parseFloat(p.replace(',','.'));else return NaN}return t}
+function parse(l){l=l.trim().replace(/([½¼¾⅓⅔])/g,' $1 ').replace(/\s+/g,' ').trim();
+const m=l.match(/^(\d+(?:[.,]\d+)?(?: (?:\d+\/\d+|[½¼¾⅓⅔]))?|\d+\/\d+|[½¼¾⅓⅔])\s*(.*)$/);if(!m)return null;
+const q=num(m[1]);if(!isFinite(q))return null;const w=m[2].split(/\s+/),u=UN[(w[0]||'').toLowerCase()];
+return u?{q,u,name:w.slice(1).join(' ')}:{q,u:'',name:m[2]}}
+function mass(o){const{q,u,name}=o;if(u=='g'||u=='ml')return q;if(u=='kg'||u=='l')return q*1000;if(u=='EL')return q*15;if(u=='TL')return q*5;if(u=='Tasse'||u=='Cup')return q*200;
+if(u=='Pck.')return q*(/vanill/i.test(name)?8:/backpulver/i.test(name)?15:/pudding/i.test(name)?40:10);if(!u&&/^eier?\b/i.test(name))return q*55;return 0}
+const G={0:'',.25:'¼',.5:'½',.75:'¾'};
+function fq(x,u){if(u=='g'&&x>=1000){x/=1000;u='kg'}if(u=='ml'&&x>=1000){x/=1000;u='l'}
+if(u=='kg'||u=='l')return fmt(Math.round(x*100)/100,2)+' '+u;
+if(u=='g'||u=='ml'){x=x<5?Math.round(x*2)/2:x<50?Math.round(x):x<200?Math.round(x/5)*5:Math.round(x/10)*10;return fmt(x)+' '+u}
+const st=u?.25:.5,r=Math.round(x/st)*st;if(r<=0)return'1 Prise';if(u=='Prise')return r<=1?'1 Prise':fmt(r)+' Prisen';
+const w=Math.floor(r),f=G[(r-w).toFixed(2)];return((w||'')+f||'0')+(u?' '+u:'')}
+function eggs(x){let W=Math.floor(x+1e-9),g=Math.round((x-W)*55/5)*5;if(g>=55){W++;g=0}if(W&&g<10)g=0;
+const E=W==1?'Ei':'Eier';if(!g)return W+' '+E;if(!W)return g+' g verquirltes Ei (ein Ei wiegt ca. 55 g)';return W+' '+E+' + '+g+' g verquirltes Ei'}
+const NL=/backpulver|natron|salz|hefe|gewürz|zimt|vanille|soda/i;
+function calAvg(){const a=S.get('bk_cal',[]);return a.length?a.reduce((x,y)=>x+y,0)/a.length:1}
+const GM={1:140,2:150,3:160,4:180,5:190,6:200,7:220,8:230,9:240};
+const gmOf=c=>Object.keys(GM).reduce((b,k)=>Math.abs(GM[k]-c)<Math.abs(GM[b]-c)?k:b,1);
+const toOU=(v,m)=>m=='ul'?v+20:m=='f'?(v-32)*5/9:m=='gm'?(GM[Math.round(v)]||0):v;
+const tempStr=(ou,imp)=>`<b>${Math.round(ou)} °C</b> Ober-/Unterhitze, <b>${Math.round(ou-20)} °C</b> Umluft, Gas Mark ${gmOf(ou)}${imp?`, ${Math.round(ou*9/5+32)} °F`:''}`;
+
+let ST={};
+function calc(){
+const s=pan('s'),d=pan('d'),imp=$('#imp').checked,keep=$('#keep').checked,f=s.A&&d.A?factor(s,d):0,fi=keep?1:f;
+$('#fac').textContent='× '+fmt(f,2);
+$('#facinfo').textContent=(((s.w&&d.w)||s.t=='ring'||d.t=='ring')?`Volumen ${Math.round(s.V)} → ${Math.round(d.V)} ml`:`Fläche ${Math.round(s.A)} → ${Math.round(d.A)} cm²`)+(imp?` · Zielform ${fmt(d.a/2.54)} in`:'')+(keep?' · Rezeptmenge bleibt gleich':'');
+const lines=$('#rtxt').value.split('\n').filter(x=>x.trim()),out=[];let M0=0;ST.items=[];
+for(const l of lines){const o=parse(l);if(!o){out.push(`<li>${l.replace(/</g,'&lt;')} <span class="mut">(nicht erkannt)</span></li>`);continue}
+M0+=mass(o);let t;if(!o.u&&/^eier?\b/i.test(o.name))t=eggs(o.q*fi);else t=fq(o.q*fi,o.u)+' '+o.name;
+const nl=NL.test(o.name)&&(fi<.7||fi>1.8);out.push(`<li>${t}${nl?' <span class="mut">(bei diesem Faktor nach Gefühl dosieren)</span>':''}</li>`);ST.items.push(t.trim())}
+$('#scaled').innerHTML=out.length?'<ul>'+out.join('')+'</ul>':'<p class="mut">Noch kein Rezept eingegeben.</p>';
+ST.M=M0*fi;
+/* Ergebnis */
+let h='';const fill=d.V?ST.M/d.V:0;
+if(M0){const c=fill>.8?'bad':fill>.67?'bad':fill<.2?'mut':'ok';h+=`<p>Füllstand: <span class="${c}">${Math.round(fill*100)} %</span> der Form ${fill>.8?'– zu voll, läuft über. Nimm eine größere Form oder teile den Teig.':fill>.67?'– knapp, die Form sollte nur zu etwa 50 bis 67 % gefüllt sein.':fill<.2?'– sehr flach, die Backzeit wird kurz.':'– passt.'}</p>`}
+else h+='<p class="mut">Gib im Tab „Rezept“ Zutaten ein, dann prüfe ich auch den Füllstand.</p>';
+const r=f?fi/f:1;let tm=r>1?1+.6*(r-1):Math.pow(r,.6);const dT=r>1.3?-20:r>1.1?-10:0;
+const mt={hell:[0,1],dunkel:[-10,.95],glas:[-10,.95],sili:[0,1.1]}[$('#mat').value];tm*=mt[1];
+if($('#usecal').checked)tm*=calAvg();
+const t0=n('t0'),T0=n('T0'),lo=Math.round(t0*tm*.9),hi=Math.round(t0*tm*1.1),Tn=T0+dT+mt[0],ou=$('#mode').value=='ul'?Tn+20:Tn;
+if(t0){h+=`<p>Backzeit: <b>${lo} bis ${hi} Min.</b>, Stäbchenprobe ab ${Math.max(5,lo-8)} Min.</p><p>Temperatur: ${tempStr(ou,imp)}</p>`;
+h+=`<p class="mut">${r>1.1?'Der Teig steht höher als im Rezept: Temperatur gesenkt, Ränder früh prüfen, bei Bräunung mit Backpapier abdecken. ':r<.9?'Der Teig ist flacher als im Rezept: kürzer backen, früh prüfen. ':'Gleiche Teighöhe wie im Rezept, die Zeit bleibt ungefähr gleich. '}${mt[0]?'Dunkle Formen und Glas bräunen schneller (−10 °C). ':''}${$('#mat').value=='sili'?'Silikon backt langsamer (+10 %). ':''}${$('#usecal').checked&&calAvg()!=1?'Dein Ofenfaktor ist eingerechnet. ':''}Faustregel, keine Garantie.</p>`}
+$('#res').innerHTML=h;ST.lo=lo;ST.hi=hi;ST.s=s;ST.d=d;ST.f=f;
+tools(s,d);mine(s,d,f);save();
+}
+function tools(s,d){
+const v=n('tv'),m=$('#tm').value,ou=toOU(v,m);$('#tout').innerHTML=ou?tempStr(ou,true):'Ungültig';
+const cv=n('cv'),g=+$('#ci').value;$('#cout').textContent=$('#cd').value=='c'?`${fmt(cv)} Cup = ${Math.round(cv*g)} g`:`${fmt(cv)} g = ${fmt(cv/g,2)} Cup`;
+const pn=n('pn')||1,per=d.t=='round'||d.t=='ring'?Math.PI*d.a/pn:2*(d.a+d.b)/pn;$('#pout').textContent=`${pn} Stücke: je ${fmt(360/pn)}° Winkel, ca. ${fmt(per)} cm Rand pro Stück (Fläche ${fmt(d.A/pn,0)} cm² je Stück). Tipp: erst halbieren, dann vierteln, dann gleichmäßig teilen.`;
+const per2=d.t=='round'?Math.PI*d.a:d.t=='ring'?Math.PI*(d.a+d.c):2*(d.a+d.b);const gA=d.A+($('#gs').checked?per2*d.h:0);$('#gout').textContent=`Fläche ${Math.round(gA)} cm², etwa ${Math.round(gA*(+$('#gt').value)/5)*5} g.`;
+const nb=n('nb')||1;$('#bout').textContent=ST.M?`Gesamtteig ca. ${Math.round(ST.M)} g, je Boden ca. ${Math.round(ST.M/nb)} g (auf der Waage teilen). Bei Backzeit pro Boden gilt die dünnere Schicht: deutlich kürzer.`:'Erst Zutaten im Tab „Rezept“ eingeben.';
+const kn=n('kn')||1,kd=n('kd'),kA=kn*Math.PI*kd*kd/4,sA=ST.s.A;const mu=Math.floor(sA*ST.s.h*.6/80);
+$('#kout').textContent=`${kn} × Ø${fmt(kd)} cm = ${Math.round(kA)} cm² (Original ${Math.round(sA)} cm², Faktor ${fmt(kA/sA,2)}), je Form ca. ${fmt(sA/kA*100,0)} % der Teigmenge. Aus dem Originalteig werden etwa ${mu} Muffins (je 80 ml).`;
+const kw=n('ek'),em=n('em'),ep=n('ep'),kwh=kw*.55*em/60;$('#eout').textContent=`${fmt(kwh,2)} kWh, ca. ${fmt(kwh*ep,2)} €`;
+const hm=n('hm');$('#hout').textContent=hm<900?'Unter 900 m ist keine Anpassung nötig.':`Backpulver ca. ${Math.round((hm-900)/500*10+10)} % weniger, Zucker ca. ${Math.round((hm-900)/500*5+5)} % weniger, Flüssigkeit etwas mehr, Ofen ca. 10 bis 15 °C heißer, Backzeit eher kürzer.`;
+/* Schablone */
+const rd=d.t=='round'||d.t=='ring',bw=rd?d.a:d.a,bh=rd?d.a:d.b,len=rd?Math.PI*d.a:2*(d.a+d.b),sh=d.h+1,W=Math.max(bw,len)+20,Hh=bh+sh+30;
+const svg=`<svg class="sch" width="${W*10}mm" height="${Hh*10}mm" viewBox="0 0 ${W} ${Hh}" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width=".15" stroke-dasharray=".6 .4">${rd?`<circle cx="${10+bw/2}" cy="${10+bw/2}" r="${bw/2}"/>${d.t=='ring'?`<circle cx="${10+bw/2}" cy="${10+bw/2}" r="${d.c/2}"/>`:''}`:`<rect x="10" y="10" width="${bw}" height="${bh}"/>`}<rect x="10" y="${20+bh}" width="${len}" height="${sh}"/><text x="10" y="${Hh-3}" font-size="1.2" stroke="none" fill="currentColor">Boden ${fmt(bw)} × ${fmt(bh)} cm, Randstreifen ${fmt(len)} × ${fmt(sh)} cm (1:1, Maße in cm)</text></svg>`.replace(/width="([\d.]+)mm"/,'width="$1cm"').replace(/height="([\d.]+)mm" viewBox/,'height="$1cm" viewBox');
+$('#sch').innerHTML=svg;$('#ps').innerHTML=svg+(W>19||Hh>27?'<p>Größer als A4: auf mehrere Blätter oder Rolle übertragen.</p>':'');
+}
+function mine(s,d,f){const a=S.get('bk_pans',[]);$('#mypans').innerHTML=a.length?'':'<li class="mut">Noch keine Formen gespeichert.</li>';
+const sc=a.map((o,i)=>{const t={t:o.t,a:+o.a||0,b:+o.b||0,c:+o.c||0,h:+o.h||DEF[o.t].h,m:+o.m||1,w:+o.w||0};const A=t.t=='round'?Math.PI*t.a*t.a/4:t.t=='ring'?Math.PI*(t.a*t.a-t.c*t.c)/4:t.t=='muffin'?t.m*Math.PI*t.a*t.a/4:t.a*t.b;const V=t.w?t.w*1000:A*t.h;const fa=factor(s,{...t,A,V}),fill=ST.M?ST.M/V:0;return{o,i,fa,fill}});
+const ok=sc.filter(x=>ST.M?x.fill<=.67:true);const best=ok.length?ok.reduce((b,x)=>(ST.M?Math.abs(x.fill-.5)<Math.abs(b.fill-.5):Math.abs(x.fa-1)<Math.abs(b.fa-1))?x:b):null;
+$('#mypans').innerHTML+=sc.map(x=>`<li><b>${x.o.name}</b> (${T[x.o.t]} ${x.o.a} cm): Faktor ${fmt(x.fa,2)}${ST.M?`, Füllung ${Math.round(x.fill*100)} %`:''} ${best&&x===best?'<span class="ok">beste Wahl</span>':''}<div class="row"><button data-use="${x.i}">Übernehmen</button><button data-del="${x.i}">Löschen</button></div></li>`).join('');
+const c=S.get('bk_cal',[]);$('#cout2').textContent=c.length?`${c.length} Messung(en): Dein Ofen braucht im Schnitt ${calAvg()>=1?'+':''}${fmt((calAvg()-1)*100,0)} % Zeit.`:'Noch keine Messung. Trage ein, wie lange ein Kuchen wirklich gebraucht hat.'}
+function lists(){const sh=S.get('bk_shop',[]);$('#shop').innerHTML=sh.length?sh.map((x,i)=>`<li><input type="checkbox" data-sh="${i}" ${x.d?'checked':''}><span class="${x.d?'done':''}">${x.t.replace(/</g,'&lt;')}</span></li>`).join(''):'<li class="mut">Leer.</li>';
+const r=S.get('bk_rec',[]);$('#saved').innerHTML=r.length?r.map((x,i)=>`<li><b>${x.n.replace(/</g,'&lt;')}</b><div class="row"><button data-load="${i}">Laden</button><button data-rdel="${i}">Löschen</button></div></li>`).join(''):'<li class="mut">Noch nichts gespeichert.</li>'}
+/* Zustand */
+const fields=()=>$$('#app input[id],#app select[id],#app textarea[id]').filter(e=>!e.hasAttribute('data-ns'));
+const getState=()=>Object.fromEntries(fields().map(e=>[e.id,e.type=='checkbox'?e.checked:e.value]));
+function setState(o){for(const k in o){const e=$('#'+k);if(e&&!e.hasAttribute('data-ns')){if(e.type=='checkbox')e.checked=!!o[k];else e.value=o[k]}}['s','d'].forEach(p=>$('#'+p+'box').dataset.t=$('#'+p+'t').value);calc()}
+function save(){S.set('bk_state',getState())}
+/* Events */
+document.addEventListener('input',e=>{const id=e.target.id;
+if(id=='st'||id=='dt'){const p=id[0];setPan(p,DEF[e.target.value]&&{t:e.target.value,...DEF[e.target.value]})}
+if(id=='sp'||id=='dp'){if(e.target.value)$('#'+id[0]+'a').value=e.target.value}
+calc()});
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const D=b.dataset,id=b.id;
+if(D.tab){$$('section').forEach(x=>x.hidden=x.id!='tab-'+D.tab);$$('#tabs button').forEach(x=>x.classList.toggle('on',x==b))}
+if(D.use!==undefined){setPan('d',S.get('bk_pans',[])[D.use]);calc()}
+if(D.del!==undefined){const a=S.get('bk_pans',[]);a.splice(D.del,1);S.set('bk_pans',a);calc()}
+if(D.load!==undefined){setState(S.get('bk_rec',[])[D.load].s);$('#rname').value=S.get('bk_rec',[])[D.load].n}
+if(D.rdel!==undefined){const a=S.get('bk_rec',[]);a.splice(D.rdel,1);S.set('bk_rec',a);lists()}
+if(id=='savePan'){const a=S.get('bk_pans',[]);a.push({name:$('#pname').value||'Form '+(a.length+1),...getPan('d')});S.set('bk_pans',a);$('#pname').value='';calc()}
+if(id=='saveRec'){const a=S.get('bk_rec',[]);a.push({n:$('#rname').value||'Rezept '+(a.length+1),s:getState()});S.set('bk_rec',a);lists()}
+if(id=='toList'){const a=S.get('bk_shop',[]);ST.items.forEach(t=>a.push({t,d:false}));S.set('bk_shop',a);lists()}
+if(id=='shopClean'){S.set('bk_shop',S.get('bk_shop',[]).filter(x=>!x.d));lists()}
+if(id=='shopClear'){S.set('bk_shop',[]);lists()}
+if(id=='share'){const u=location.href.split('#')[0]+'#r='+btoa(unescape(encodeURIComponent(JSON.stringify(getState()))));const o=$('#shareout');o.value=u;o.hidden=false;o.select();try{navigator.clipboard.writeText(u)}catch(x){}}
+if(id=='print'){$('#pa').innerHTML=`<h1>${($('#rname').value||'Rezept').replace(/</g,'&lt;')}</h1><p>Faktor × ${fmt(ST.f,2)}, Form: ${T[ST.d.t]} ${fmt(ST.d.a)} cm</p><ul>${$('#scaled').innerHTML.replace(/^<ul>|<\/ul>$/g,'')}</ul><p>${$('#res').innerText}</p>`;pr('pr-r')}
+if(id=='printS')pr('pr-s');
+if(id=='theme'){const r=document.documentElement,dk=r.dataset.theme?r.dataset.theme=='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=dk?'light':'dark'}
+if(id=='cadd'){const a=n('c1'),c=n('c2');if(a&&c){const l=S.get('bk_cal',[]);l.push(c/a);S.set('bk_cal',l);$('#c1').value=$('#c2').value='';calc()}}
+if(id=='creset'){S.set('bk_cal',[]);calc()}
+if(id=='exp')$('#data').value=JSON.stringify({rec:S.get('bk_rec',[]),pans:S.get('bk_pans',[]),cal:S.get('bk_cal',[]),shop:S.get('bk_shop',[])});
+if(id=='imb'){try{const o=JSON.parse($('#data').value);S.set('bk_rec',o.rec||[]);S.set('bk_pans',o.pans||[]);S.set('bk_cal',o.cal||[]);S.set('bk_shop',o.shop||[]);lists();calc()}catch(x){$('#data').value='Ungültiges JSON'}}
+if(id=='tgo')startT();if(id=='tstop')stopT();if(id=='wake')wake()});
+document.addEventListener('change',e=>{const i=e.target.dataset.sh;if(i!==undefined){const a=S.get('bk_shop',[]);a[i].d=e.target.checked;S.set('bk_shop',a);lists()}});
+function pr(c){document.body.classList.add(c);try{window.print()}catch(e){}setTimeout(()=>document.body.classList.remove(c),500)}
+/* Timer und Wake Lock */
+let tint,tend,wl;
+function stopT(){clearInterval(tint);$('#timer').textContent='00:00'}
+function startT(){stopT();tend=Date.now()+n('tmin')*60000;const tick=()=>{const l=Math.max(0,Math.round((tend-Date.now())/1000));$('#timer').textContent=String(Math.floor(l/60)).padStart(2,'0')+':'+String(l%60).padStart(2,'0');if(!l){clearInterval(tint);beep()}};tick();tint=setInterval(tick,500)}
+function beep(){try{const c=new AudioContext(),o=c.createOscillator();o.connect(c.destination);o.frequency.value=880;o.start();setTimeout(()=>o.stop(),1500)}catch(e){}try{navigator.vibrate([400,200,400])}catch(e){}}
+async function wake(){try{if(wl){await wl.release();wl=null;$('#wout').textContent='Display darf wieder ausgehen.';return}wl=await navigator.wakeLock.request('screen');$('#wout').textContent='Display bleibt an.'}catch(e){$('#wout').textContent='Wake Lock wird hier nicht unterstützt.'}}
+/* Start */
+$('#tabs').innerHTML=[['calc','Umrechnen'],['rec','Rezept'],['tools','Werkzeuge'],['mine','Formen & Ofen']].map(([k,v],i)=>`<button data-tab="${k}" class="${i?'':'on'}">${v}</button>`).join('');
+let init=S.get('bk_state',null);try{if(location.hash.startsWith('#r='))init=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3)))))}catch(e){}
+init?setState(init):calc();lists();
+</script></body></html>
