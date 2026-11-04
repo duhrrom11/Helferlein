@@ -11,6 +11,8 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans p-4">
 
@@ -88,14 +90,24 @@
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.firestore();
 
+        // EmailJS Initialisierung mit deinem Public Key
+        try {
+            if (typeof emailjs !== "undefined") {
+                emailjs.init("Z1iQ0xhr3cpIXVC0j");
+            }
+        } catch(e) {
+            console.error("EmailJS Init Fehler:", e);
+        }
+
         let remoteEncryptedData = null;
         let urlVaultId = null;
         let urlMasterKey = null;
         let personKey = "unbekannt";
         let ownerNameGlobal = "";
+        let ownerEmailGlobal = "";
+        let personNameGlobal = "Vertrauensperson";
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // URL-Parameter absolut robust auslesen
             const urlParams = new URLSearchParams(window.location.search);
             urlVaultId = urlParams.get('vaultId');
             urlMasterKey = urlParams.get('key');
@@ -123,17 +135,23 @@
                 const data = docRef.data();
                 remoteEncryptedData = data.encryptedData;
                 ownerNameGlobal = data.ownerName || "Inhaber";
+                ownerEmailGlobal = data.ownerEmail || "";
+                
+                // Name der Person aus den Alarm-Personen ermitteln, falls vorhanden
+                if (data.alarmPersons) {
+                    const foundP = data.alarmPersons.find(p => p.id === personKey);
+                    if (foundP) personNameGlobal = foundP.name;
+                }
+
                 document.getElementById('ownerNameDisplay').innerText = `Inhaber: ${ownerNameGlobal}`;
 
                 document.getElementById('loadingStatus').classList.add('hidden');
 
-                // Prüfen ob Inaktivität abgelaufen ist
                 const lastCheckIn = new Date(data.lastCheckIn || data.updatedAt);
                 const intervalDays = data.checkInIntervalDays || 30;
                 const diffDays = Math.floor((new Date() - lastCheckIn) / (1000 * 60 * 60 * 24));
                 const isInactiveExpired = diffDays >= intervalDays;
 
-                // Prüfen ob Notfall-Alarm aktiv ist
                 let isAlarmTriggered = false;
                 if (data.emergencyTriggers) {
                     for (let p in data.emergencyTriggers) {
@@ -165,7 +183,7 @@
             const feedback = document.getElementById('alarmFeedbackText');
             btn.disabled = true;
             feedback.classList.remove('hidden');
-            feedback.innerText = "Alarm wird an Firebase übermittelt...";
+            feedback.innerText = "Alarm wird an Firebase übermittelt & E-Mail wird gesendet...";
 
             try {
                 const triggerTime = new Date().toISOString();
@@ -178,9 +196,22 @@
                     lastEmergencyTriggerAt: triggerTime
                 });
 
+                // HIER WIRD DIE ALARM-E-MAIL ÜBER EMAILJS AN DEN INHABER GESENDET
+                if (ownerEmailGlobal && typeof emailjs !== "undefined") {
+                    const alarmParams = {
+                        owner_email: ownerEmailGlobal,
+                        owner_name: ownerNameGlobal,
+                        person_name: personNameGlobal,
+                        app_link: window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1) + 'index.html'
+                    };
+
+                    // HINWEIS: Trage hier unten deine in EmailJS erstellte Template-ID für den Alarm ein (z.B. 'template_xxxxxxx')
+                    await emailjs.send('service_z2papfs', 'HIER_DEINE_ALARM_TEMPLATE_ID_EINTRAGEN', alarmParams);
+                }
+
                 btn.className = "w-full py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs";
                 btn.innerText = "✅ Alarm erfolgreich ausgelöst!";
-                feedback.innerText = "Der Inhaber wurde benachrichtigt und hat 24 Stunden Zeit zur Entwarnung.";
+                feedback.innerText = "Der Inhaber wurde per E-Mail benachrichtigt und hat 24 Stunden Zeit zur Entwarnung.";
             } catch (e) {
                 btn.disabled = false;
                 feedback.innerText = `Fehler: ${e.message}`;
