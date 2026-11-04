@@ -14,7 +14,7 @@
     <!-- Header mit ausklappbarer Anleitung -->
     <header class="bg-red-600 text-white shadow-md py-6 px-4 text-center space-y-3">
         <div>
-            <h1 class="text-3xl font-bold">🚗 KFZ- & Reifen-Tracker</h1>
+            <h1 class="text-3xl font-bold">🚗 KFZ- & Reifenwechsel-Tracker Pro</h1>
             <p class="text-sm opacity-90 mt-1">Bordmappe, Papiere, Notfall-Kontakte, Tank-Statistik, Reifenlager & TCO</p>
         </div>
 
@@ -562,7 +562,6 @@
                     let kmNum = parseFloat(c.km) || 0;
                     let costPerKm = (kmNum > 0 && carTotalCost > 0) ? (carTotalCost / kmNum).toFixed(2) : null;
 
-                    // KM-Prognose (Laufleistung pro Tag)
                     let firstEvent = carEvents.sort((a,b) => new Date(a.date) - new Date(b.date))[0];
                     let kmPrognoseText = "";
                     if (firstEvent && firstEvent.km && kmNum > firstEvent.km) {
@@ -572,11 +571,21 @@
                         kmPrognoseText = `<p class="text-[11px] text-gray-500">Prognose: ca. <b>${annualKm.toLocaleString()} km</b> / Jahr</p>`;
                     }
 
+                    // Schönes SVG Auto-Icon als Platzhalter, falls kein Foto hochgeladen wurde
+                    const defaultCarIcon = `
+                        <div class="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center border border-red-100 shadow-sm flex-shrink-0">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m10 0a2 2 0 104 0"></path>
+                            </svg>
+                        </div>
+                    `;
+
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="flex items-center space-x-3">
-                                    ${c.photo ? `<img src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer" onclick="zoomImage('${c.photo}')" title="Foto vergrößern">` : '<div class="w-12 h-12 bg-red-100 text-red-700 font-bold rounded-full flex items-center justify-center text-sm">🚗</div>'}
+                                    ${c.photo ? `<img src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${c.photo}')" title="Foto vergrößern">` : defaultCarIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-red-800">${c.name}</h4>
                                         <p class="text-xs text-gray-600">${c.plate || 'k.Kennzeichen'} ${c.km ? '| ' + c.km + ' km' : ''}</p>
