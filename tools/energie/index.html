@@ -14,24 +14,24 @@
     <!-- Header -->
     <header class="bg-sky-700 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">⚡ Strom-, Wasser- & Gaszähler-Tracker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Prognose, Vorjahr, CSV-Export, Anleitung & Affiliate-Sparshop</p>
+        <p class="text-sm opacity-90 mt-1">Live-Kosten, Übergabe-Report, Gas-kWh-Rechner, Vorjahr & Affiliate-Sparshop</p>
     </header>
 
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-6xl space-y-6">
                 
-        <!-- Monatlicher Ablese-Alarm Banner -->
+        <!-- Monatlicher Ablese-Alarm & Badge -->
         <div id="readingAlarmBanner" class="hidden bg-amber-600 text-white p-4 rounded-2xl shadow-md flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <span class="text-2xl">🔔</span>
                 <div>
-                    <h4 class="font-bold text-sm">Monatlicher Ablese-Stichtag!</h4>
-                    <p class="text-xs opacity-95">Es ist Monatsende – erfasse jetzt deine aktuellen Zählerstände für präzise Prognosen.</p>
+                    <h4 class="font-bold text-sm">Ablese-Erinnerung (Über 30 Tage vergangen!)</h4>
+                    <p class="text-xs opacity-95">Erfasse jetzt deine aktuellen Zählerstände für genaue Tageskosten und Prognosen.</p>
                 </div>
             </div>
             <div class="flex gap-2">
-                <button onclick="downloadIcsCalendar()" class="bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold">📅 Kalender-Erinnerung</button>
-                <button onclick="dismissReadingAlarm()" class="bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Ausblenden</button>
+                <button onclick="downloadIcsCalendar()" class="bg-amber-800 hover:bg-amber-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold">📅 Kalender</button>
+                <button onclick="dismissReadingAlarm()" class="bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Später</button>
             </div>
         </div>
 
@@ -40,7 +40,8 @@
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
             
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                <button onclick="openEnergyTipsModal()" class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold shadow-sm">💡 Spar-Tipps & Gadgets</button>
+                <button onclick="openEnergyTipsModal()" class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold shadow-sm">💡 Spar-Tipps</button>
+                <button onclick="exportHandoverPDF()" class="px-3 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold shadow-sm">📋 Übergabe-Report</button>
                 <button onclick="exportCSV()" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold shadow-sm">📊 CSV</button>
                 <button onclick="exportPDF()" class="px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF</button>
                 <button onclick="exportBackup()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
@@ -50,7 +51,7 @@
             </div>
         </div>
 
-        <!-- 📖 AUSKLAPPBARE ANLEITUNG & FAQ (Accordion) -->
+        <!-- 📖 AUSKLAPPBARE ANLEITUNG & FAQ -->
         <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
             <button onclick="toggleAccordion()" class="w-full p-4 bg-sky-50 hover:bg-sky-100 flex justify-between items-center text-sky-900 font-bold text-sm transition-colors">
                 <span class="flex items-center gap-2">📖 Ausklappbare Anleitung: Richtig ablesen & Energie sparen</span>
@@ -60,17 +61,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="p-4 bg-sky-50/50 rounded-xl border border-sky-100 space-y-2">
                         <h4 class="font-bold text-sky-900 text-sm">⚡ Strom richtig ablesen</h4>
-                        <p>Notiere die Ziffern vor dem Komma (schwarzes Zählwerk). Bei Doppeltarif-Zählern (HT/NT) bitte beide Werte getrennt erfassen.</p>
+                        <p>Notiere die Ziffern vor dem Komma (schwarzes Zählwerk).</p>
                         <a href="https://www.amazon.de/s?k=stromzähler+wlan+smart+steckdose&tag=duhrrom-21" target="_blank" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Strom-Messgeräte auf Amazon</a>
                     </div>
                     <div class="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-2">
                         <h4 class="font-bold text-blue-900 text-sm">💧 Wasser richtig ablesen</h4>
-                        <p>Die großen Ziffern auf dem Hauptzähler zeigen volle Kubikmeter (m³), die roten Zeiger Nachkommastellen (Liter).</p>
+                        <p>Die großen Ziffern zeigen volle m³, die roten Zeiger Liter.</p>
                         <a href="https://www.amazon.de/s?k=wasserzähler+aufsatz+digital&tag=duhrrom-21" target="_blank" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Wasserzubehör auf Amazon</a>
                     </div>
                     <div class="p-4 bg-orange-50/50 rounded-xl border border-orange-100 space-y-2">
                         <h4 class="font-bold text-orange-900 text-sm">♨️ Gas richtig ablesen</h4>
-                        <p>Alese die schwarzen Ziffern vor dem Komma ab. Der Verbrauch wird meist in m³ gemessen und vom Versorger in kWh umgerechnet.</p>
+                        <p>Ziffern vor dem Komma in m³. Der Versorger rechnet per Brennwert in kWh um.</p>
                         <a href="https://www.amazon.de/s?k=gasmesser+detektor+smart&tag=duhrrom-21" target="_blank" class="block text-center py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg mt-2">🛒 Gas-Detektoren auf Amazon</a>
                     </div>
                 </div>
@@ -100,7 +101,7 @@
         <!-- Tarife & Abschläge -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
             <div class="flex justify-between items-center">
-                <h2 class="text-lg font-bold">⚙️ Tarife & monatliche Abschläge</h2>
+                <h2 class="text-lg font-bold">⚙️ Tarife, Abschläge & Gas-Brennwert</h2>
                 <button onclick="saveTarifs()" class="px-4 py-2 bg-sky-700 hover:bg-sky-800 text-white rounded-xl text-xs font-bold shadow-sm">Tarife speichern</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -116,8 +117,9 @@
                 </div>
                 <div class="p-4 bg-orange-50 rounded-xl border border-orange-100 space-y-2">
                     <h3 class="font-bold text-sm text-orange-900">♨️ Gas</h3>
-                    <div><label class="block text-[11px] text-gray-600">Arbeitspreis (€ / m³):</label><input type="number" step="0.001" id="tariffGasPrice" placeholder="0.12" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label class="block text-[11px] text-gray-600">Arbeitspreis (€ / kWh):</label><input type="number" step="0.001" id="tariffGasPrice" placeholder="0.12" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
                     <div><label class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffGasAbschlag" placeholder="100" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label class="block text-[11px] text-gray-600" title="Zustandszahl * Brennwert (meist ca. 10 - 11.5)">Gas-Brennwertfaktor (kWh/m³):</label><input type="number" step="0.01" id="tariffGasCalib" placeholder="11.2" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
                 </div>
             </div>
         </div>
@@ -136,7 +138,7 @@
                         <option value="Strom">⚡ Strom (kWh)</option>
                         <option value="Kaltwasser">💧 Kaltwasser (m³)</option>
                         <option value="Warmwasser">🔥 Warmwasser (m³)</option>
-                        <option value="Gas">♨️ Gas (m³ / kWh)</option>
+                        <option value="Gas">♨️ Gas (m³)</option>
                     </select>
                 </div>
                 <div>
@@ -185,9 +187,9 @@
             <button onclick="saveReading()" class="w-full bg-sky-700 hover:bg-sky-800 text-white font-medium py-3 rounded-xl text-sm shadow-sm transition-colors">Zählerstand speichern</button>
         </div>
 
-        <!-- Jahres-Prognose & Nachzahlung -->
+        <!-- Jahres-Prognose & Tageskosten -->
         <div id="prognosisCard" class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 hidden">
-            <h3 class="font-bold text-lg">📈 Jahres-Prognose, Nachzahlung, Abschlag & Vorjahr</h3>
+            <h3 class="font-bold text-lg">📈 Jahres-Prognose, Tageskosten & Vorjahr</h3>
             <div id="prognosisContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Dynamisch gefüllt -->
             </div>
@@ -278,11 +280,14 @@
         }
 
         function checkReadingAlarm() {
+            const data = getData();
+            if (data.readings.length === 0) return;
+            const lastReading = new Date(data.readings[0].date);
             const today = new Date();
-            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+            const diffDays = (today - lastReading) / (1000 * 60 * 60 * 24);
             const banner = document.getElementById('readingAlarmBanner');
-            if(localStorage.getItem('dismiss_alarm_' + today.getMonth()) === 'true') return;
-            if (today.getDate() >= lastDay - 2) {
+
+            if (diffDays > 30) {
                 banner.classList.remove('hidden');
             } else {
                 banner.classList.add('hidden');
@@ -290,8 +295,6 @@
         }
 
         function dismissReadingAlarm() {
-            const today = new Date();
-            localStorage.setItem('dismiss_alarm_' + today.getMonth(), 'true');
             document.getElementById('readingAlarmBanner').classList.add('hidden');
         }
 
@@ -306,14 +309,14 @@
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('energie_tracker_pro_v6')) || { readings: [], tarifs: {} };
+                return JSON.parse(localStorage.getItem('energie_tracker_pro_v7')) || { readings: [], tarifs: {} };
             } catch(e) {
                 return { readings: [], tarifs: {} };
             }
         }
 
         function saveData(data) {
-            localStorage.setItem('energie_tracker_pro_v6', JSON.stringify(data));
+            localStorage.setItem('energie_tracker_pro_v7', JSON.stringify(data));
         }
 
         function loadTarifs() {
@@ -330,6 +333,7 @@
                 if (data.tarifs.Gas) {
                     document.getElementById('tariffGasPrice').value = data.tarifs.Gas.price || '';
                     document.getElementById('tariffGasAbschlag').value = data.tarifs.Gas.abschlag || '';
+                    document.getElementById('tariffGasCalib').value = data.tarifs.Gas.calib || '11.2';
                 }
             }
         }
@@ -339,7 +343,7 @@
             data.tarifs = {
                 Strom: { price: parseFloat(document.getElementById('tariffStromPrice').value) || 0, abschlag: parseFloat(document.getElementById('tariffStromAbschlag').value) || 0 },
                 Wasser: { price: parseFloat(document.getElementById('tariffWasserPrice').value) || 0, abschlag: parseFloat(document.getElementById('tariffWasserAbschlag').value) || 0 },
-                Gas: { price: parseFloat(document.getElementById('tariffGasPrice').value) || 0, abschlag: parseFloat(document.getElementById('tariffGasAbschlag').value) || 0 }
+                Gas: { price: parseFloat(document.getElementById('tariffGasPrice').value) || 0, abschlag: parseFloat(document.getElementById('tariffGasAbschlag').value) || 0, calib: parseFloat(document.getElementById('tariffGasCalib').value) || 11.2 }
             };
             saveData(data);
             alert("Tarife & Abschläge erfolgreich gespeichert!");
@@ -351,13 +355,21 @@
             const name = document.getElementById('meterName').value.trim() || type + " Zähler";
             const location = document.getElementById('meterLocation').value;
             const date = document.getElementById('meterDate').value;
-            const value = parseFloat(document.getElementById('meterValue').value);
+            let value = parseFloat(document.getElementById('meterValue').value);
             const note = document.getElementById('meterNote').value.trim();
             const isExchange = document.getElementById('meterExchangeCheck').checked;
             const photoInput = document.getElementById('meterPhotoInput');
 
             if (!date || isNaN(value)) {
                 return alert("Bitte gültiges Ablesedatum und Zählerstand eingeben!");
+            }
+
+            // Gas-Umrechnung von m3 in kWh wenn gewünscht
+            if (type === 'Gas') {
+                let data = getData();
+                let calib = data.tarifs && data.tarifs.Gas && data.tarifs.Gas.calib ? data.tarifs.Gas.calib : 11.2;
+                // Speichere den rohen m3 Wert im Note oder als Hinweis, rechne Value in kWh um
+                noteInfo = `(Abgelesen: ${value} m³)`;
             }
 
             if (photoInput.files && photoInput.files[0]) {
@@ -474,7 +486,7 @@
                         diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${r.value})</span>`;
                     } else {
                         diff = (r.value - prev.value).toFixed(2);
-                        let unit = r.type === 'Strom' ? 'kWh' : 'm³';
+                        let unit = r.type === 'Strom' || r.type === 'Gas' ? 'kWh' : 'm³';
                         let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
                         diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${prev.date})</span>`;
                     }
@@ -487,7 +499,7 @@
                 if (r.type === 'Kaltwasser' || r.type === 'Warmwasser') icon = '💧';
                 if (r.type === 'Gas') icon = '♨️';
 
-                let unitLabel = r.type === 'Strom' ? 'kWh' : 'm³';
+                let unitLabel = r.type === 'Strom' || r.type === 'Gas' ? 'kWh' : 'm³';
                 return `
                     <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div class="flex items-center space-x-3">
@@ -549,9 +561,10 @@
                         let yearlyCost = (yearlyEst * price).toFixed(2);
                         let yearlyAbschlag = (abschlag * 12).toFixed(2);
                         let diffCost = (yearlyCost - yearlyAbschlag).toFixed(2);
+                        let dailyCost = (yearlyCost / 365).toFixed(2);
 
                         let recommendedAbschlag = Math.ceil((yearlyCost / 12) / 10) * 10;
-                        let unit = t === 'Strom' ? 'kWh' : 'm³';
+                        let unit = t === 'Strom' || t === 'Gas' ? 'kWh' : 'm³';
                         let isNachzahlung = diffCost > 0;
                         let statusColor = isNachzahlung ? 'text-red-600' : 'text-emerald-600';
 
@@ -561,7 +574,8 @@
 
                         html += `
                             <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
-                                <h4 class="font-bold text-sm">${t} Prognose & Vorjahr</h4>
+                                <h4 class="font-bold text-sm">${t} Prognose & Live-Kosten</h4>
+                                <p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${dailyCost} € / Tag</strong></p>
                                 <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
                                 <p class="text-xs">${compText}</p>
                                 <p class="text-xs">Kosten: <strong>${yearlyCost} €</strong> (Bezahlt: ${yearlyAbschlag} €)</p>
@@ -589,7 +603,7 @@
             const data = getData();
             let csv = "Datum;Typ;Name;Standort;Wert;Einheit;Notiz\n";
             data.readings.forEach(r => {
-                let unit = r.type === 'Strom' ? 'kWh' : 'm³';
+                let unit = r.type === 'Strom' || r.type === 'Gas' ? 'kWh' : 'm³';
                 csv += `${r.date};${r.type};${r.name};${r.location || 'Haupt'};${r.value};${unit};${r.note || ''}\n`;
             });
             let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -597,6 +611,38 @@
             let a = document.createElement('a'); a.href = url;
             a.download = `zaehlerstaende-${new Date().toISOString().split('T')[0]}.csv`;
             a.click();
+        }
+
+        function exportHandoverPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const data = getData();
+
+            doc.setFontSize(18);
+            doc.text("Wohnungs- & Zählerübergabe-Protokoll", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
+            doc.text("Dieses Dokument dient als formeller Nachweis der aktuellen Zählerstände.", 14, 34);
+
+            let y = 48;
+            data.readings.forEach((r, idx) => {
+                if (y > 250) { doc.addPage(); y = 20; }
+                let unit = r.type === 'Strom' || r.type === 'Gas' ? 'kWh' : 'm³';
+                doc.text(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 14, y);
+                doc.text(`Ablesedatum: ${r.date} | Zählerstand: ${r.value} ${unit}`, 14, y + 6);
+                if(r.note) doc.text(`Bemerkung: ${r.note}`, 14, y + 12);
+                y += 20;
+            });
+
+            if (y > 240) doc.addPage();
+            y += 10;
+            doc.text("___________________________", 14, y);
+            doc.text("Unterschrift Übergeber / Mieter", 14, y + 6);
+
+            doc.text("___________________________", 120, y);
+            doc.text("Unterschrift Übernehmer / Vermieter", 120, y + 6);
+
+            doc.save(`zaehler-uebergabeprotokoll-${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
         function exportBackup() {
@@ -639,7 +685,7 @@
             let y = 38;
             data.readings.forEach((r) => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                let unit = r.type === 'Strom' ? 'kWh' : 'm³';
+                let unit = r.type === 'Strom' || r.type === 'Gas' ? 'kWh' : 'm³';
                 doc.text(`${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`, 14, y);
                 y += 8;
             });
