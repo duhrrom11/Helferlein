@@ -219,6 +219,202 @@
         if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const db = firebase.firestore();
 
+        // EmailJS Initialisierung - OHNE eckige Klammern dahinter!
+        emailjs.init("Z1IQ0xhr3cplXVC0j");
+
+        let currentMasterKeyHex = null;
+        let currentDecryptedVault = { entries: [] };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await initVault();
+                renderApp();
+                await checkIncomingAlarms();
+                setupGlobalEventListeners();
+            } catch (err) {
+                console.error("Initialisierungsfehler:", err);
+            }
+        });
+
+        // Event Delegation für alle statischen und dynamischen Buttons
+        function setupGlobalEventListeners() {
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+            });
+
+            // Feste Buttons mit Fehlerabfang
+            const bindClick = (id, handler) => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('click', handler);
+            };
+
+            bindClick('manualSyncBtn', () => syncVaultToFirebase(false));
+            bindClick('closeModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
+            bindClick('clearAlarmBtn', clearEmergencyAlarm);
+            bindClick('saveEntryBtn', saveVaultEntry);
+            bindClick('checkInBtn', performCheckIn);
+            
+            const intervalSel = document.getElementById('deadmanIntervalSelect');
+            if (intervalSel) intervalSel.addEventListener('change', updateDeadmanInterval);
+
+            bindClick('addAlarmPersonBtn', addAlarmPerson);
+            bindClick('saveTrusteesBtn', saveTrustees);
+            bindClick('generatePdfBtn', generatePrintableKitPDF);
+
+            // Delegierte Klicks für dynamische Listen (Tresor-Einträge & Alarm-Personen)
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+
+                if (target.classList.contains('delete-entry-btn')) {
+                    const id = parseInt(target.getAttribute('data-id'));
+                    deleteVaultEntry(id);
+                }
+
+                if (target.classList.contains('copy-link-btn')) {
+                    const link = target.getAttribute('data-link');
+                    navigator.clipboard.writeText(link);
+                    alert('🔗 Link in die Zwischenablage kopiert!');
+                }
+
+                if (target.classList.contains('email-btn')) {
+                    const name = target.getAttribute('data-name');
+                    const email = target.getAttribute('data-email');
+                    const link = target.getAttribute('data-link');
+                    sendEmailToPerson(name, email, link);
+                }
+
+                if (target.classList.contains('delete-person-btn')) {
+                    const idx = parseInt(target.getAttribute('data-idx'));
+                    deleteAlarmPerson(idx);
+                }
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
+            const targetSec = document.getElementById(`section-${tabName}`);
+            if (targetSec) targetSec.classList.remove('hidden');
+
+            if (tabName === 'kit') renderPrintableKit();
+        }
+
+        async function getCryptoKeyFromHex(hexKey) {
+            const bytes = new Uint8Array(hexKey.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            return crypto.subtle.importKey("raw", bytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+        }
+
+        async function encryptVaultPayload(dataObj, hexKey) {
+            const encoder = new TextEncoder();
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const cryptoKey = await getCryptoKeyFromHex(hexKey);
+            const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, cryptoKey, encoder.encode(JSON.stringify(dataObj)));
+            const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+            return { ciphertext: b64(encrypted), iv: b64(iv) };
+        }
+
+        async function decryptVaultPayload(encryptedObj, hexKey) {
+            try {
+                if (!encryptedObj || !encryptedObj.iv || !encryptedObj.ciphertext) return null;
+                const b64toBuf = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+                const iv = b64toBuf(encryptedObj.iv);
+                const ciphertext = b64toBuf(encryptedObj.ciphertext);
+                const cryptoKey = await getCryptoKeyFromHex(hexKey);
+                const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, cryptoKey, ciphertext);
+                return JSON.parse(new TextDecoder().decode(decrypted));
+            } catch(e) { return null; }
+        }
+
+        async function initVault() {
+            let cfg = JSON.parse(localStorage.getItem('digital_estate_vault'));
+            if (!cfg || !cfg.masterKeyHex) {
+                const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+                currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+                const vaultId = "v_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+
+                currentDecryptedVault = { entries: [] };
+                cfg = {
+                    vaultId: vaultId,
+                    ownerName: "Romain Duhr",
+                    masterKeyHex: currentMasterKeyHex,
+                    checkInIntervalDays: 30,
+                    lastCheckIn: new Date().toISOString(),
+                    trustees: [
+                        { id: 1, name: "Isabelle", role: "Partnerin" },
+                        { id: 2, name: "Lynn Duhr", role: "Tochter" },
+                        { id: 3, name: "Notar", role: "Rechtsbeistand" }
+                    ],
+                    alarmPersons: [
+                        { id: "isabelle", name: "Isabelle", contact: "" }
+                    ],
+                    encryptedData: await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex)
+                };
+                localStorage.setItem('digitr">
+                        <button id="checkInBtn" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                            ✅ "Ich lebe noch!"
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PERSONEN FÜR NOTFALL-TRIGGER & EMAIL -->
+                <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
+                    <h4 class="text-xs font-bold text-indigo-400">👥 Personen für 24h-Notfall-Trigger & E-Mail-Versand</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                        <input type="text" id="newAlarmPersonName" placeholder="Name (z.B. Isabelle)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
+                        <input type="email" id="newAlarmPersonContact" placeholder="E-Mail-Adresse" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
+                        <button id="addAlarmPersonBtn" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md">
+                            ➕ Person anlegen
+                        </button>
+                    </div>
+                    <div id="alarmPersonsList" class="space-y-2 pt-2">
+                        <p class="text-xs text-slate-500">Noch keine Personen angelegt.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: VERTRAUENSPERSONEN -->
+        <div id="section-trustees" class="tab-section hidden space-y-6">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
+                <h3 class="text-sm font-bold text-slate-100">👥 Vertrauenspersonen verwalten</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs" id="trusteesGrid"></div>
+                <button id="saveTrusteesBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                    💾 Vertrauenspersonen speichern
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 4: PAPIER NOTFALL-KIT -->
+        <div id="section-kit" class="tab-section hidden space-y-6">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                <h3 class="text-sm font-bold text-slate-100">📄 Papier-Notfall-Kit (Cold Storage)</h3>
+                <button id="generatePdfBtn" class="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                    📄 Notfall-Kit als PDF exportieren
+                </button>
+                <div id="kitSharesPreview" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMWtuQHTGhMMd3WmIgW46NbvT6bQoBwm8",
+            authDomain: "nachlass-app-99df8.firebaseapp.com",
+            projectId: "nachlass-app-99df8",
+            storageBucket: "nachlass-app-99df8.firebasestorage.app",
+            messagingSenderId: "593798150622",
+            appId: "1:593798150622:web:e4e980c9fb6b06201ec54f",
+            measurementId: "G-LWRZKYPJXC"
+        };
+        
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.firestore();
+
         // EmailJS Initialisierung
         emailjs.init("Z1IQ0xhr3cplXVC0j");[span_0](start_span)[span_0](end_span)
 
