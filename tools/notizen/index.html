@@ -94,11 +94,12 @@
     <main class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
 
         <!-- TABS NAVIGATION -->
-        <div class="flex border-b border-slate-800 space-x-6 text-sm font-medium overflow-x-auto">
+        <div class="flex border-b border-slate-800 space-x-6 text-sm font-medium overflow-x-auto scrollbar-hide">
             <button data-tab="vault" class="tab-btn active pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">🔐 Tresor</button>
             <button data-tab="deadman" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">⏰ Totmannschalter</button>
             <button data-tab="trustees" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">👥 Vertrauenspersonen</button>
             <button data-tab="kit" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">📄 Notfall-Kit</button>
+            <button data-tab="settings" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">⚙️ Einstellungen</button>
         </div>
 
         <!-- TAB 1: TRESOR -->
@@ -208,13 +209,35 @@
             </div>
         </div>
 
+        <!-- TAB 5: EINSTELLUNGEN (NEU) -->
+        <div id="section-settings" class="tab-section hidden space-y-6">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
+                <h3 class="text-sm font-bold text-slate-100">⚙️ Eigene Daten (Tresor-Inhaber)</h3>
+                <p class="text-xs text-slate-400">Diese Kontaktdaten benötigen wir, um dich im Notfall per E-Mail zu benachrichtigen, falls eine Vertrauensperson den Alarm auslöst.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1">Dein Name:</label>
+                        <input type="text" id="ownerNameInput" placeholder="Dein Vor- und Nachname" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Deine E-Mail-Adresse (für Alarme):</label>
+                        <input type="email" id="ownerEmailInput" placeholder="name@beispiel.de" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
+                    </div>
+                </div>
+                <button id="saveSettingsBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                    💾 Daten speichern & Synchronisieren
+                </button>
+            </div>
+        </div>
+
     </main>
 
     <script>
-        // GLOBALE FEHLERABFANG-ROUTINEN (Verhindern, dass Fehler das Skript blockieren)
+        // GLOBALE FEHLERABFANG-ROUTINEN
         try {
             if (typeof emailjs !== "undefined") {
-                emailjs.init("Z1iQ0xhr3cpIXVC0j");
+                emailjs.init("Z1IQ0xhr3cplXVC0j");
             } else {
                 console.warn("EmailJS konnte nicht geladen werden (Werbeblocker?).");
             }
@@ -245,13 +268,11 @@
         let currentMasterKeyHex = null;
         let currentDecryptedVault = { entries: [] };
 
-        // 1. ZUERST EVENT-LISTENER LADEN (Bevor asynchrone Fehler passieren können!)
+        // 1. ZUERST EVENT-LISTENER LADEN
         document.addEventListener('DOMContentLoaded', () => {
-            
-            // Buttons und Tabs sofort aktivieren!
             setupGlobalEventListeners();
 
-            // 2. DANACH erst die komplexen Daten laden (abgekapselt in try-catch)
+            // 2. DANACH erst die komplexen Daten laden
             (async () => {
                 try {
                     await initVault();
@@ -271,7 +292,6 @@
                 btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
             });
 
-            // SICHERER KLICK-BINDER (Verhindert Fehler, falls ein Button fehlt)
             const bindClick = (id, handler) => {
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('click', handler);
@@ -290,8 +310,9 @@
             bindClick('addAlarmPersonBtn', addAlarmPerson);
             bindClick('saveTrusteesBtn', saveTrustees);
             bindClick('generatePdfBtn', generatePrintableKitPDF);
+            bindClick('saveSettingsBtn', saveSettings); // NEUER EINSTELLUNGEN-BUTTON
 
-            // DELEGIERTE KLICKS (Für Listen, die dynamisch generiert werden)
+            // DELEGIERTE KLICKS
             document.addEventListener('click', (e) => {
                 const target = e.target;
 
@@ -363,7 +384,6 @@
             try {
                 cfg = JSON.parse(localStorage.getItem('digital_estate_vault'));
             } catch(e) {
-                console.warn("Storage fehlerhaft, generiere neu.");
                 cfg = null;
             }
             
@@ -375,13 +395,14 @@
                 currentDecryptedVault = { entries: [] };
                 cfg = {
                     vaultId: vaultId,
-                    ownerName: "Romain Duhr",
+                    ownerName: "Dein Name",
+                    ownerEmail: "", // NEU: Initial leer
                     masterKeyHex: currentMasterKeyHex,
                     checkInIntervalDays: 30,
                     lastCheckIn: new Date().toISOString(),
                     trustees: [
-                        { id: 1, name: "Isabelle", role: "Partnerin" },
-                        { id: 2, name: "Lynn Duhr", role: "Tochter" },
+                        { id: 1, name: "Person 1", role: "Partner/in" },
+                        { id: 2, name: "Person 2", role: "Kind" },
                         { id: 3, name: "Notar", role: "Rechtsbeistand" }
                     ],
                     alarmPersons: []
@@ -415,7 +436,8 @@
 
                 await db.collection("vaults").doc(cfg.vaultId).set({
                     vaultId: cfg.vaultId,
-                    ownerName: cfg.ownerName,
+                    ownerName: cfg.ownerName || "",
+                    ownerEmail: cfg.ownerEmail || "", // NEU: Email an Firebase übertragen
                     lastCheckIn: cfg.lastCheckIn,
                     checkInIntervalDays: cfg.checkInIntervalDays,
                     alarmPersons: cfg.alarmPersons || [],
@@ -526,6 +548,13 @@
                 `).join('');
             }
 
+            // Einstellungen-Tab Felder füllen
+            const ownerNameInput = document.getElementById('ownerNameInput');
+            if (ownerNameInput) ownerNameInput.value = cfg.ownerName || "";
+            
+            const ownerEmailInput = document.getElementById('ownerEmailInput');
+            if (ownerEmailInput) ownerEmailInput.value = cfg.ownerEmail || "";
+
             renderVaultEntries();
             renderAlarmPersons();
         }
@@ -577,6 +606,25 @@
             }).join('');
         }
 
+        // FUNKTION ZUM SPEICHERN DER NEUEN EINSTELLUNGEN
+        async function saveSettings() {
+            const nameInput = document.getElementById('ownerNameInput').value.trim();
+            const emailInput = document.getElementById('ownerEmailInput').value.trim();
+            
+            if (!nameInput) {
+                alert("Bitte gib zumindest deinen Namen ein.");
+                return;
+            }
+            
+            const cfg = getVaultConfig();
+            cfg.ownerName = nameInput;
+            cfg.ownerEmail = emailInput;
+            
+            await saveLocalConfig(cfg);
+            await syncVaultToFirebase(true);
+            alert("✅ Deine Einstellungen wurden erfolgreich gespeichert und mit der Cloud synchronisiert!");
+        }
+
         async function addAlarmPerson() {
             const nameInput = document.getElementById('newAlarmPersonName');
             const contactInput = document.getElementById('newAlarmPersonContact');
@@ -614,11 +662,11 @@
             const templateParams = {
                 to_name: name,
                 to_email: email,
-                owner_name: getVaultConfig().ownerName || "Romain Duhr",
+                owner_name: getVaultConfig().ownerName || "Dein Name",
                 person_link: link
             };
 
-            emailjs.send('service_z2papfs', 'template_xmidqv9', templateParams)
+            emailjs.send('service_8gzihbf', 'template_xmidqv9', templateParams)
                 .then(function(response) {
                     alert(`✅ E-Mail erfolgreich an ${name} (${email}) gesendet!`);
                 }, function(error) {
