@@ -15,11 +15,21 @@
     <header class="bg-teal-600 text-white shadow-md py-6 px-4 text-center space-y-3">
         <div>
             <h1 class="text-3xl font-bold">🐾 Haustier-Gesundheits-Pass Pro</h1>
-            <p class="text-sm opacity-90 mt-1">Impfungen, Gewicht, Rechnungen, Notfall-Kontakte & Kalender-Export</p>
+            <p class="text-sm opacity-90 mt-1">Impfungen, Futter, EU-Ausweis, Notfall-Hotlines, Gewicht & Kalender-Export</p>
+        </div>
+
+        <!-- Notfall-Schnellwahl im Header -->
+        <div class="flex justify-center gap-2 pt-1">
+            <a href="tel:03019240" class="px-3 py-1 bg-red-700 hover:bg-red-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1">
+                🚨 Giftnotruf Zentrale
+            </a>
+            <a href="tel:112" class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1">
+                🏥 Notdienst / Tierklinik
+            </a>
         </div>
 
         <!-- Ausklappbarer Anleitung-Container -->
-        <div class="max-w-4xl mx-auto space-y-2">
+        <div class="max-w-4xl mx-auto space-y-2 pt-1">
             <button onclick="toggleHelp()" id="helpToggleBtn" class="px-4 py-1.5 bg-teal-700/90 hover:bg-teal-700 text-teal-100 rounded-xl text-xs font-semibold border border-teal-500/40 shadow-sm transition-all flex items-center gap-1.5 mx-auto">
                 📖 <span>Hilfe & Anleitung anzeigen</span>
             </button>
@@ -31,16 +41,16 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
                     <div class="bg-teal-800/50 p-2.5 rounded-xl border border-teal-600/30">
-                        <span class="font-bold text-teal-200 block mb-0.5">1. Haustier anlegen</span>
-                        Füge Tiere samt Chip-Nummer, Foto und Tierarzt-Notrufnummer hinzu.
+                        <span class="font-bold text-teal-200 block mb-0.5">1. Haustier & Futter</span>
+                        Trage Tiere, Chip, Futtermarke, Allergien und den EU-Heimtierausweis ein.
                     </div>
                     <div class="bg-teal-800/50 p-2.5 rounded-xl border border-teal-600/30">
-                        <span class="font-bold text-teal-200 block mb-0.5">2. Vorsorge & Belege</span>
-                        Erfasse Impfungen, Gewichte, Medikamente und hänge TA-Rechnungen an.
+                        <span class="font-bold text-teal-200 block mb-0.5">2. Vorsorge & Intervalle</span>
+                        Erfasse Impfungen, Gewichte, Entwurmungen und hänge TA-Rechnungen an.
                     </div>
                     <div class="bg-teal-800/50 p-2.5 rounded-xl border border-teal-600/30">
                         <span class="font-bold text-teal-200 block mb-0.5">3. Fristen im Blick</span>
-                        Erkenne sofort überfällige Impfungen oder anstehende Termine.
+                        Erkenne überfällige Impfungen und berechne automatische Entwurmungs-Intervalle.
                     </div>
                     <div class="bg-teal-800/50 p-2.5 rounded-xl border border-teal-600/30">
                         <span class="font-bold text-teal-200 block mb-0.5">4. Kalender & Export</span>
@@ -85,7 +95,7 @@
 
         <!-- Dringlichkeits-Banner & Nächste Fristen -->
         <div id="deadlinesCard" class="bg-white p-5 rounded-2xl shadow-sm border space-y-2 hidden">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">🚨 Anstehende Impfungen & Termine</h4>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">🚨 Anstehende Impfungen, Entwurmungen & Termine</h4>
             <div id="deadlinesList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
         </div>
 
@@ -93,16 +103,27 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- 1. Haustier anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-                <h2 class="text-lg font-bold">🐕 1. Haustier-Profil anlegen</h2>
+                <h2 class="text-lg font-bold">🐕 1. Haustier-Profil & Futter</h2>
                 <input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm">
                 <div class="grid grid-cols-2 gap-2">
                     <input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm">
                     <input type="text" id="petChip" placeholder="Chip-Nummer (optional)" class="p-3 border rounded-xl text-sm">
                 </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="petFood" placeholder="Futtermarke & Sorte" class="p-3 border rounded-xl text-xs">
+                    <input type="text" id="petAllergies" placeholder="Allergien / Unverträglichkeiten" class="p-3 border rounded-xl text-xs">
+                </div>
                 <input type="text" id="petVet" placeholder="Tierarzt / Praxis & Notfallnummer" class="w-full p-3 border rounded-xl text-sm">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Profilbild (Datei auswählen):</label>
-                    <input type="file" id="petPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700">
+                
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Profilbild:</label>
+                        <input type="file" id="petPhotoInput" accept="image/*" class="w-full text-[11px] p-1.5 border rounded-xl file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-teal-50 file:text-teal-700">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">EU-Heimtierausweis:</label>
+                        <input type="file" id="petPassportInput" accept="image/*" class="w-full text-[11px] p-1.5 border rounded-xl file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-gray-100 file:text-gray-700">
+                    </div>
                 </div>
                 <button onclick="savePet()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Haustier speichern</button>
             </div>
@@ -191,14 +212,14 @@
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('haustier_pass_pro_v2')) || { pets: [], events: [] };
+                return JSON.parse(localStorage.getItem('haustier_pass_pro_v3')) || { pets: [], events: [] };
             } catch(e) {
                 return { pets: [], events: [] };
             }
         }
 
         function saveData(data) {
-            localStorage.setItem('haustier_pass_pro_v2', JSON.stringify(data));
+            localStorage.setItem('haustier_pass_pro_v3', JSON.stringify(data));
         }
 
         function updateEventFormFields() {
@@ -215,17 +236,54 @@
             const name = document.getElementById('petName').value.trim();
             const species = document.getElementById('petSpecies').value.trim();
             const chip = document.getElementById('petChip').value.trim();
+            const food = document.getElementById('petFood').value.trim();
+            const allergies = document.getElementById('petAllergies').value.trim();
             const vet = document.getElementById('petVet').value.trim();
             const photoInput = document.getElementById('petPhotoInput');
+            const passportInput = document.getElementById('petPassportInput');
 
             if (!name) return alert("Bitte einen Namen für das Haustier eingeben!");
 
+            let photoData = "";
+            let passportData = "";
+
+            const processFiles = () => {
+                let data = getData();
+                data.pets.push({ id: Date.now(), name, species, chip, food, allergies, vet, photo: photoData, passport: passportData });
+                saveData(data);
+
+                document.getElementById('petName').value = "";
+                document.getElementById('petSpecies').value = "";
+                document.getElementById('petChip').value = "";
+                document.getElementById('petFood').value = "";
+                document.getElementById('petAllergies').value = "";
+                document.getElementById('petVet').value = "";
+                document.getElementById('petPhotoInput').value = "";
+                document.getElementById('petPassportInput').value = "";
+
+                loadPetDropdowns();
+                renderApp();
+            };
+
             if (photoInput.files && photoInput.files[0]) {
-                compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storePetData(name, species, chip, vet, compressedPhoto);
+                compressImage(photoInput.files[0], (compPhoto) => {
+                    photoData = compPhoto;
+                    if (passportInput.files && passportInput.files[0]) {
+                        compressImage(passportInput.files[0], (compPass) => {
+                            passportData = compPass;
+                            processFiles();
+                        });
+                    } else {
+                        processFiles();
+                    }
+                });
+            } else if (passportInput.files && passportInput.files[0]) {
+                compressImage(passportInput.files[0], (compPass) => {
+                    passportData = compPass;
+                    processFiles();
                 });
             } else {
-                storePetData(name, species, chip, vet, "");
+                processFiles();
             }
         }
 
@@ -235,8 +293,8 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 400;
-                    const MAX_HEIGHT = 400;
+                    const MAX_WIDTH = 450;
+                    const MAX_HEIGHT = 450;
                     let width = img.width;
                     let height = img.height;
 
@@ -255,21 +313,6 @@
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
-        }
-
-        function storePetData(name, species, chip, vet, photo) {
-            let data = getData();
-            data.pets.push({ id: Date.now(), name, species, chip, vet, photo });
-            saveData(data);
-
-            document.getElementById('petName').value = "";
-            document.getElementById('petSpecies').value = "";
-            document.getElementById('petChip').value = "";
-            document.getElementById('petVet').value = "";
-            document.getElementById('petPhotoInput').value = "";
-
-            loadPetDropdowns();
-            renderApp();
         }
 
         function deletePet(id) {
@@ -362,21 +405,28 @@
                 `;
 
                 petsContainer.innerHTML = data.pets.map(p => `
-                    <div class="p-4 bg-gray-50 border rounded-2xl flex items-center justify-between gap-3">
-                        <div class="flex items-center space-x-3">
-                            ${p.photo ? `<img src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${p.photo}')" title="Foto vergrößern">` : defaultPetIcon}
-                            <div>
-                                <h4 class="font-bold text-sm text-teal-800">${p.name}</h4>
-                                <p class="text-xs text-gray-600">${p.species || 'k.A.'} ${p.chip ? '| Chip: ' + p.chip : ''}</p>
-                                ${p.vet ? `<p class="text-xs text-teal-600 mt-0.5">🏥 ${p.vet}</p>` : ''}
+                    <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex items-center space-x-3">
+                                ${p.photo ? `<img src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${p.photo}')" title="Foto vergrößern">` : defaultPetIcon}
+                                <div>
+                                    <h4 class="font-bold text-sm text-teal-800">${p.name}</h4>
+                                    <p class="text-xs text-gray-600">${p.species || 'k.A.'} ${p.chip ? '| Chip: ' + p.chip : ''}</p>
+                                    ${p.vet ? `<p class="text-xs text-teal-600 mt-0.5">🏥 ${p.vet}</p>` : ''}
+                                </div>
                             </div>
+                            <button onclick="deletePet(${p.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
                         </div>
-                        <button onclick="deletePet(${p.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
+                        <div class="text-[11px] flex flex-wrap gap-2 text-gray-600 pt-1">
+                            ${p.food ? `<span>🥣 ${p.food}</span>` : ''}
+                            ${p.allergies ? `<span class="text-red-700 font-semibold">⚠️ Allergie: ${p.allergies}</span>` : ''}
+                            ${p.passport ? `<button onclick="zoomImage('${p.passport}')" class="text-blue-600 font-semibold underline">📄 EU-Ausweis anzeigen</button>` : ''}
+                        </div>
                     </div>
                 `).join('');
             }
 
-            // Dringlichkeits-Banner & Fristen
+            // Dringlichkeits-Banner & Fristen (inkl. Entwurmungs-Intervall Berechnung)
             const deadlinesCard = document.getElementById('deadlinesCard');
             const deadlinesList = document.getElementById('deadlinesList');
             const timelyEvents = data.events.filter(e => ['Impfung', 'Entwurmung', 'Medikament'].includes(e.type));
@@ -389,6 +439,16 @@
                     let petName = pet ? pet.name : "Unbekannt";
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+                    
+                    // Automatisches Intervall für Entwurmung (z.B. 90 Tage)
+                    let intervalHint = "";
+                    if (e.type === 'Entwurmung') {
+                        let nextWormDate = new Date(d);
+                        nextWormDate.setDate(nextWormDate.getDate() + 90);
+                        let wormDiff = Math.ceil((nextWormDate - today) / (1000 * 60 * 60 * 24));
+                        intervalHint = `<p class="text-[10px] text-teal-700 mt-0.5">🪱 Empfohlenes Intervall: in ${wormDiff} Tagen (${nextWormDate.toLocaleDateString('de-DE')})</p>`;
+                    }
+
                     let statusColor = diff < 0 ? "border-red-400 bg-red-50 text-red-800" : (diff <= 14 ? "border-amber-400 bg-amber-50 text-amber-800" : "border-gray-200 bg-gray-50 text-gray-800");
 
                     return `
@@ -396,6 +456,7 @@
                             <p class="text-[11px] font-bold text-gray-500">${petName} (${e.type})</p>
                             <p class="text-xs font-bold mt-0.5">${e.title}</p>
                             <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString('de-DE')})</p>
+                            ${intervalHint}
                         </div>
                     `;
                 }).join('');
@@ -480,13 +541,13 @@
 
             let y = 35;
             doc.setFont("helvetica", "bold");
-            doc.text("Haustiere:", 14, y);
+            doc.text("Haustiere & Futter:", 14, y);
             y += 7;
 
             doc.setFont("helvetica", "normal");
             data.pets.forEach(p => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`- ${p.name} (${p.species || 'Haustier'}), Chip: ${p.chip || 'k.A.'}, TA: ${p.vet || 'k.A.'}`, 14, y);
+                doc.text(`- ${p.name} (${p.species || 'Haustier'}), Chip: ${p.chip || 'k.A.'} | Futter: ${p.food || '-'}`, 14, y);
                 y += 6;
             });
 
