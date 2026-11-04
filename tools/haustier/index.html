@@ -475,7 +475,7 @@
             document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (data.pets.length === 0) {
-                petsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Haustiere erfasst.</p>';
+                petsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Noch keine Haustiere erfasst.</p>`;
             } else {
                 const defaultPetIcon = `
                     <div class="w-12 h-12 bg-teal-50 text-teal-700 rounded-full flex items-center justify-center border border-teal-100 shadow-sm flex-shrink-0">
@@ -603,7 +603,6 @@
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
                     let badge = diff < 0 ? "🔴 Überfällig" : (diff <= 30 ? `🟡 in ${diff} Tagen` : "🟢 Planmäßig");
 
-                    // Gewichts-Trend berechnen (Vergleich mit vorherigem Gewichtseintrag)
                     let weightBadge = "";
                     if (e.weight !== null && e.weight !== undefined) {
                         let petWeightEvents = data.events
