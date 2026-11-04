@@ -43,7 +43,6 @@
                 <button onclick="copyShareText()" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold shadow-sm">💬 WhatsApp/Mail Teilen</button>
                 <button onclick="openEnergyTipsModal()" class="px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-bold shadow-sm">💡 Spar-Tipps</button>
                 <button onclick="exportHandoverPDF()" class="px-3 py-2 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold shadow-sm">📋 Übergabe</button>
-                <button onclick="exportCSV()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-bold shadow-sm">📊 CSV</button>
                 <button onclick="exportPDF()" class="px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF</button>
                 <button onclick="exportBackup()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
                 <label class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
@@ -386,7 +385,6 @@
                 let diffVal = value - last.value;
                 if (daysBetween > 0 && diffVal > 0) {
                     let dailyRate = diffVal / daysBetween;
-                    // Prüfe ob Tagesverbrauch mehr als 50% über dem bisherigen Schnitt liegt
                     let prevDiffs = sameTypeReadings.length > 1 ? (sameTypeReadings[0].value - sameTypeReadings[sameTypeReadings.length-1].value) : diffVal;
                     let prevDays = sameTypeReadings.length > 1 ? (new Date(sameTypeReadings[0].date) - new Date(sameTypeReadings[sameTypeReadings.length-1].date)) / (1000 * 60 * 60 * 24) : daysBetween;
                     let avgDaily = prevDays > 0 ? prevDiffs / prevDays : dailyRate;
@@ -574,12 +572,10 @@
             const card = document.getElementById('chartCard');
             const container = document.getElementById('chartContainer');
             
-            // Gruppiere nach Monat
             let monthly = {};
             data.readings.forEach(r => {
-                let monthKey = r.date.substring(0, 7); // YYYY-MM
+                let monthKey = r.date.substring(0, 7);
                 if(!monthly[monthKey]) monthly[monthKey] = 0;
-                // Addiere vereinfacht die Standwerte oder Differenzen
                 monthly[monthKey] += r.value;
             });
 
@@ -686,20 +682,6 @@
             } else {
                 card.classList.add('hidden');
             }
-        }
-
-        function exportCSV() {
-            const data = getData();
-            let csv = "Datum;Typ;Name;Standort;Wert;Einheit;Notiz\n";
-            data.readings.forEach(r => {
-                let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
-                csv += `${r.date};${r.type};${r.name};${r.location || 'Haupt'};${r.value};${unit};${r.note || ''}\n`;
-            });
-            let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a'); a.href = url;
-            a.download = `zaehlerstaende-${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
         }
 
         function exportHandoverPDF() {
