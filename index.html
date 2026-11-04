@@ -6,12 +6,12 @@
     
     <!-- SEO Meta-Daten -->
     <title>✨ Kostenlose Online-Tools & clevere Rechner ✨ | Helferlein</title>
-    <meta name="description" content="Entdecke 10 kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung, 100% lokal & sicher. Nutze praktische Tools direkt im Browser!">
+    <meta name="description" content="Entdecke 11 kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung, 100% lokal & sicher. Nutze praktische Tools direkt im Browser!">
     <link rel="canonical" href="https://duhrrom11.github.io/Helferlein/index.html">
 
     <!-- Open Graph / Social Media Sharing (WhatsApp, Telegram, Facebook) -->
     <meta property="og:title" content="Kostenlose Online-Tools & clevere Rechner | Helferlein">
-    <meta property="og:description" content="Entdecke 10 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.">
+    <meta property="og:description" content="Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://duhrrom11.github.io/Helferlein/index.html">
     
@@ -55,7 +55,8 @@
             { "@type": "ListItem", "position": 7, "name": "GPS Parkschein-Timer & Standort-Merker", "url": "https://duhrrom11.github.io/Helferlein/tools/parken/index.html" },
             { "@type": "ListItem", "position": 8, "name": "Leihvertrag & Werkzeug-Verleih-Tracker", "url": "https://duhrrom11.github.io/Helferlein/tools/verleih/index.html" },
             { "@type": "ListItem", "position": 9, "name": "Pflanzenpflege & Gieß-Erinnerung", "url": "https://duhrrom11.github.io/Helferlein/tools/pflanzen/index.html" },
-            { "@type": "ListItem", "position": 10, "name": "Strom- & Wasserzähler Verbrauchsmelder", "url": "https://duhrrom11.github.io/Helferlein/tools/energie/index.html" }
+            { "@type": "ListItem", "position": 10, "name": "Strom- & Wasserzähler Verbrauchsmelder", "url": "https://duhrrom11.github.io/Helferlein/tools/energie/index.html" },
+            { "@type": "ListItem", "position": 11, "name": "Backform- & Küchenmathe-Rechner", "url": "https://duhrrom11.github.io/Helferlein/tools/küche/küchenmathe.html" }
           ]
         }
       ]
@@ -89,7 +90,7 @@
             <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-600 via-teal-600 to-sky-600 bg-clip-text text-transparent inline-flex items-center justify-center gap-2">
                 ✨ Kostenlose Online-Tools & clevere Rechner ✨
             </h1>
-            <p class="text-xs md:text-sm text-gray-500 mt-1">Entdecke 10 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.</p>
+            <p class="text-xs md:text-sm text-gray-500 mt-1">Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.</p>
         </div>
 
         <!-- Ko-fi Button & Einstellungen auf einer Höhe -->
@@ -117,13 +118,13 @@
 
         <!-- Hauptgrid Header mit Suchleiste anstelle des Badges -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-3">
-            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 10 kostenlosen Online-Tools im Überblick</h2>
+            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 11 kostenlosen Online-Tools im Überblick</h2>
             <div class="w-full md:w-80">
                 <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder Inhalt durchsuchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
             </div>
         </div>
 
-        <!-- Tools Grid (Alle 10 Tools) -->
+        <!-- Tools Grid (Alle 11 Tools) -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             <!-- Tool 1 -->
@@ -323,6 +324,26 @@
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <span class="text-[11px] text-gray-400">📊 Charts</span>
                     <a href="tools/energie/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Energie Tracker</span> &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 11 (Neu: Backform- & Küchenmathe-Rechner) -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="backform" data-name="backform rechner kuchen teig backzeit küche">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-pink-50 text-pink-600 rounded-xl flex items-center justify-center text-xl font-bold border border-pink-200 shadow-inner" aria-hidden="true">🍰</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('backform', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="backform" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Küche</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Backform- & Küchenmathe-Rechner</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Rechne Teigmengen, Backformen und Backzeiten sekundenschnell um. Mit Einkaufsliste & Ofen-Timer.</p>
+                    <div id="stats-backform" class="mt-3 text-[11px] font-semibold text-pink-600 bg-pink-50 border border-pink-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">🥧 100% Lokal</span>
+                    <a href="tools/küche/küchenmathe.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Backform-Rechner</span> &rarr;</a>
                 </div>
             </div>
 
@@ -537,6 +558,7 @@
             setStat('stats-verleih', `${getCount(['verleih_pass', 'verleih_data', 'verleih', 'items'])} Verleih-Objekte`);
             setStat('stats-pflanzen', `${getCount(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants'])} Pflanzen im Bestand`);
             setStat('stats-energie', `${getCount(['energie_tracker_pro', 'energie_data', 'energie', 'readings'])} Ablesungen erfasst`);
+            setStat('stats-backform', `${getCount(['bk_rec', 'bk_pans', 'bk_shop'])} Rezepte/Formen`);
         }
 
         async function exportGlobalBackup() {
