@@ -16,7 +16,7 @@
     <!-- Header -->
     <header class="bg-indigo-600 text-white shadow-md py-6 px-4 text-center">
         <h1 class="text-3xl font-bold">🤝 Leih- & Verleih-Tracker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">Verlängerungen, WhatsApp-Vorlagen, Verluststatus, Kautionen & QR-Codes</p>
+        <p class="text-sm opacity-90 mt-1">Stamm-Gegenstände, Seriennummern, GPS-Tracker, Kategorien & Verlängerungen</p>
     </header>
 
     <!-- Main Content -->
@@ -59,36 +59,87 @@
             </div>
         </div>
 
-        <!-- Erfassung: Neuer Verleih & Kontakt hinzufügen -->
+        <!-- Erfassung: Kontakte, Stamm-Gegenstände & Verleih -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- Kontakt hinzufügen -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 md:col-span-1">
-                <h2 class="text-lg font-bold">👤 1. Kontakt anlegen</h2>
-                <input type="text" id="contactName" placeholder="Name (z.B. Nachbar Müller)" class="w-full p-3 border rounded-xl text-sm">
-                <input type="text" id="contactPhone" placeholder="Telefon (für WhatsApp)" class="w-full p-3 border rounded-xl text-sm">
-                <button onclick="saveContact()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Kontakt speichern</button>
+            <!-- 1. Kontakte & Stamm-Gegenstände verwalten -->
+            <div class="space-y-4 md:col-span-1">
+                <!-- Kontakt anlegen -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
+                    <h2 class="text-base font-bold">👤 Kontakt anlegen</h2>
+                    <input type="text" id="contactName" placeholder="Name (z.B. Nachbar Müller)" class="w-full p-2.5 border rounded-xl text-xs">
+                    <input type="text" id="contactPhone" placeholder="Telefon (für WhatsApp)" class="w-full p-2.5 border rounded-xl text-xs">
+                    <button onclick="saveContact()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs">Kontakt speichern</button>
+                </div>
+
+                <!-- Stamm-Gegenstand (Inventar) anlegen -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border space-y-3">
+                    <h2 class="text-base font-bold">🛠️ Stamm-Gegenstand anlegen</h2>
+                    <input type="text" id="invTitle" placeholder="Bezeichnung (z.B. Bosch Bohrhammer)" class="w-full p-2.5 border rounded-xl text-xs">
+                    <select id="invCategory" class="w-full p-2.5 border rounded-xl text-xs bg-white">
+                        <option value="Werkzeug">🔨 Werkzeug</option>
+                        <option value="Elektronik">💻 Elektronik & IT</option>
+                        <option value="Bücher & Medien">📚 Bücher & Medien</option>
+                        <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
+                    </select>
+                    <input type="text" id="invSerial" placeholder="Seriennummer / ISBN / Barcode" class="w-full p-2.5 border rounded-xl text-xs">
+                    <input type="text" id="invGpsLink" placeholder="GPS-Tracker URL / AirTag Link (optional)" class="w-full p-2.5 border rounded-xl text-xs">
+                    <button onclick="saveInventoryItem()" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-medium py-2 rounded-xl text-xs">In Stamm-Inventar speichern</button>
+                </div>
             </div>
 
-            <!-- Gegenstand verliehen eintragen -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 md:col-span-2">
-                <h2 class="text-lg font-bold">➕ 2. Gegenstand verliehen eintragen</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input type="text" id="itemTitle" placeholder="Gegenstand (z.B. Bohrhammer)" class="p-3 border rounded-xl text-sm">
-                    <select id="itemPersonSelect" class="p-3 border rounded-xl text-sm bg-white" onchange="checkCustomPerson(this)">
-                        <option value="">-- Kontakt wählen --</option>
-                    </select>
+            <!-- 2. Gegenstand verliehen eintragen -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 md:col-span-2 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold mb-3">➕ Verleih-Vorgang erfassen</h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-600 mb-1">Gegenstand aus Inventar wählen:</label>
+                            <select id="itemInventorySelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="fillInventoryData(this)">
+                                <option value="">-- Gegenstand wählen --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-600 mb-1">Ausleiher wählen:</label>
+                            <select id="itemPersonSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="checkCustomPerson(this)">
+                                <option value="">-- Kontakt wählen --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <input type="text" id="itemCustomPerson" placeholder="Oder neuen Namen direkt eingeben..." class="w-full p-3 border rounded-xl text-sm mb-3 hidden">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-600 mb-1">Ausleihdatum:</label>
+                            <input type="date" id="itemDate" class="w-full p-3 border rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-600 mb-1">Geplante Rückgabe:</label>
+                            <input type="date" id="itemReturnDate" class="w-full p-3 border rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-600 mb-1">Kaution / Wert in €:</label>
+                            <input type="text" id="itemDeposit" placeholder="z.B. 50.00" class="w-full p-3 border rounded-xl text-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                        <input type="text" id="itemNote" placeholder="Notiz (optional)" class="p-3 border rounded-xl text-sm">
+                        <input type="file" id="itemPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700">
+                    </div>
                 </div>
-                <input type="text" id="itemCustomPerson" placeholder="Oder neuen Namen direkt eingeben..." class="w-full p-3 border rounded-xl text-sm hidden">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <input type="date" id="itemDate" class="p-3 border rounded-xl text-sm">
-                    <input type="date" id="itemReturnDate" placeholder="Rückgabe" class="p-3 border rounded-xl text-sm" title="Geplantes Rückgabedatum">
-                    <input type="text" id="itemDeposit" placeholder="Kaution / Wert in €" class="p-3 border rounded-xl text-sm">
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input type="text" id="itemNote" placeholder="Notiz (optional)" class="p-3 border rounded-xl text-sm">
-                    <input type="file" id="itemPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700">
-                </div>
-                <button onclick="saveItem()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Verleih speichern</button>
+
+                <button onclick="saveItem()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-xl text-sm shadow-sm">Verleih speichern</button>
+            </div>
+        </div>
+
+        <!-- Stamm-Inventar Übersicht -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
+            <h3 class="font-bold text-base">🛠️ Stamm-Inventar & Gegenstände (Mit Seriennummer & GPS)</h3>
+            <div id="inventoryList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                <p class="text-xs text-gray-400 italic">Keine Stamm-Gegenstände im Inventar hinterlegt.</p>
             </div>
         </div>
 
@@ -97,11 +148,16 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
                 <h3 class="font-bold text-lg">📋 Verleih-Zentrale & Historie</h3>
                 <div class="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
-                        <option value="">Alle Personen</option>
+                    <select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                        <option value="">Alle Kategorien</option>
+                        <option value="Werkzeug">🔨 Werkzeug</option>
+                        <option value="Elektronik">💻 Elektronik & IT</option>
+                        <option value="Bücher & Medien">📚 Bücher & Medien</option>
+                        <option value="Sport & Freizeit">⚽ Sport & Freizeit</option>
+                        <option value="Sonstiges">📦 Sonstiges</option>
                     </select>
-                    <select id="filterItem" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
-                        <option value="">Alle Gegenstände</option>
+                    <select id="filterPerson" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                        <option value="">Alle Personen</option>
                     </select>
                 </div>
             </div>
@@ -146,19 +202,20 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('itemDate').valueAsDate = new Date();
             loadDropdowns();
+            renderInventory();
             renderApp();
         });
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('verleih_tracker_pro_v2')) || { items: [], contacts: [] };
+                return JSON.parse(localStorage.getItem('verleih_tracker_pro_v3')) || { items: [], contacts: [], inventory: [] };
             } catch(e) {
-                return { items: [], contacts: [] };
+                return { items: [], contacts: [], inventory: [] };
             }
         }
 
         function saveData(data) {
-            localStorage.setItem('verleih_tracker_pro_v2', JSON.stringify(data));
+            localStorage.setItem('verleih_tracker_pro_v3', JSON.stringify(data));
         }
 
         function saveContact() {
@@ -177,21 +234,57 @@
             alert("Kontakt erfolgreich gespeichert!");
         }
 
+        function saveInventoryItem() {
+            const title = document.getElementById('invTitle').value.trim();
+            const category = document.getElementById('invCategory').value;
+            const serial = document.getElementById('invSerial').value.trim();
+            const gpsLink = document.getElementById('invGpsLink').value.trim();
+
+            if (!title) return alert("Bitte eine Bezeichnung für den Gegenstand angeben!");
+
+            let data = getData();
+            if(!data.inventory) data.inventory = [];
+            data.inventory.push({ id: Date.now(), title, category, serial, gpsLink });
+            saveData(data);
+
+            document.getElementById('invTitle').value = "";
+            document.getElementById('invSerial').value = "";
+            document.getElementById('invGpsLink').value = "";
+            loadDropdowns();
+            renderInventory();
+            alert("Gegenstand erfolgreich im Stamm-Inventar gespeichert!");
+        }
+
+        function deleteInventoryItem(id) {
+            if (!confirm("Diesen Stamm-Gegenstand wirklich löschen?")) return;
+            let data = getData();
+            data.inventory = data.inventory.filter(i => i.id !== id);
+            saveData(data);
+            loadDropdowns();
+            renderInventory();
+        }
+
         function loadDropdowns() {
             let data = getData();
+            const invSelect = document.getElementById('itemInventorySelect');
             const personSelect = document.getElementById('itemPersonSelect');
             const filterPerson = document.getElementById('filterPerson');
-            const filterItem = document.getElementById('filterItem');
 
+            const inventory = data.inventory || [];
             const contacts = data.contacts || [];
+
+            invSelect.innerHTML = '<option value="">-- Inventar-Gegenstand wählen --</option>' + 
+                inventory.map(i => `<option value="${i.title}" data-category="${i.category}" data-serial="${i.serial}" data-gps="${i.gpsLink}">${i.title} (${i.category}${i.serial ? ' | SN: ' + i.serial : ''})</option>`).join('');
+            
             personSelect.innerHTML = '<option value="">-- Kontakt wählen --</option><option value="custom">+ Neuen Namen eingeben</option>' + 
                 contacts.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
             
             filterPerson.innerHTML = '<option value="">Alle Personen</option>' + 
                 [...new Set(data.items.map(i => i.person))].map(p => `<option value="${p}">${p}</option>`).join('');
+        }
 
-            filterItem.innerHTML = '<option value="">Alle Gegenstände</option>' + 
-                [...new Set(data.items.map(i => i.title))].map(t => `<option value="${t}">${t}</option>`).join('');
+        function fillInventoryData(select) {
+            // Optional: Wenn man ein Inventar-Item wählt, könnte man direkt Zusatzfelder vorausfüllen falls gewünscht.
         }
 
         function checkCustomPerson(select) {
@@ -206,7 +299,23 @@
         }
 
         function saveItem() {
-            const title = document.getElementById('itemTitle').value.trim();
+            const invSelect = document.getElementById('itemInventorySelect');
+            let title = invSelect.value;
+            let category = "Sonstiges";
+            let serial = "";
+            let gpsLink = "";
+
+            if (invSelect.selectedOptions.length > 0 && invSelect.selectedOptions[0].dataset.category) {
+                category = invSelect.selectedOptions[0].dataset.category;
+                serial = invSelect.selectedOptions[0].dataset.serial || "";
+                gpsLink = invSelect.selectedOptions[0].dataset.gps || "";
+            }
+
+            if (!title) {
+                title = prompt("Bitte Namen des Gegenstands eingeben:");
+                if (!title) return;
+            }
+
             let person = document.getElementById('itemPersonSelect').value;
             if (person === 'custom' || !person) {
                 person = document.getElementById('itemCustomPerson').value.trim();
@@ -217,14 +326,14 @@
             const note = document.getElementById('itemNote').value.trim();
             const photoInput = document.getElementById('itemPhotoInput');
 
-            if (!title || !person || !date) return alert("Bitte Gegenstand, Person und Ausleihdatum angeben!");
+            if (!person || !date) return alert("Bitte Person und Ausleihdatum angeben!");
 
             if (photoInput.files && photoInput.files[0]) {
                 compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storeData(title, person, date, returnDate, deposit, note, compressedPhoto);
+                    storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, compressedPhoto);
                 });
             } else {
-                storeData(title, person, date, returnDate, deposit, note, "");
+                storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, "");
             }
         }
 
@@ -256,12 +365,12 @@
             reader.readAsDataURL(file);
         }
 
-        function storeData(title, person, date, returnDate, deposit, note, photo) {
+        function storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo) {
             let data = getData();
-            data.items.push({ id: Date.now(), title, person, date, returnDate, deposit, note, photo, status: 'active' });
+            data.items.push({ id: Date.now(), title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo, status: 'active' });
             saveData(data);
 
-            document.getElementById('itemTitle').value = "";
+            document.getElementById('itemInventorySelect').value = "";
             document.getElementById('itemPersonSelect').value = "";
             document.getElementById('itemCustomPerson').value = "";
             document.getElementById('itemCustomPerson').classList.add('hidden');
@@ -275,7 +384,6 @@
             renderApp();
         }
 
-        // Status ändern: active, returned, lost
         function setStatus(id, newStatus) {
             let data = getData();
             let item = data.items.find(i => i.id === id);
@@ -286,7 +394,6 @@
             }
         }
 
-        // Schnell-Verlängerung (+7 oder +14 Tage)
         function extendReturnDate(id, days) {
             let data = getData();
             let item = data.items.find(i => i.id === id);
@@ -382,11 +489,34 @@
             a.click();
         }
 
+        function renderInventory() {
+            let data = getData();
+            const container = document.getElementById('inventoryList');
+            const inventory = data.inventory || [];
+
+            if (inventory.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 italic">Keine Stamm-Gegenstände im Inventar hinterlegt.</p>`;
+                return;
+            }
+
+            container.innerHTML = inventory.map(i => `
+                <div class="p-3 border rounded-xl bg-gray-50 flex justify-between items-start text-xs">
+                    <div>
+                        <span class="font-bold text-indigo-800 block">${i.title}</span>
+                        <span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full inline-block mt-1">${i.category}</span>
+                        ${i.serial ? `<p class="text-gray-600 mt-1">SN/ISBN: <span class="font-mono">${i.serial}</span></p>` : ''}
+                        ${i.gpsLink ? `<a href="${i.gpsLink}" target="_blank" class="text-blue-600 font-semibold underline block mt-1">📍 GPS-Tracker öffnen</a>` : ''}
+                    </div>
+                    <button onclick="deleteInventoryItem(${i.id})" class="text-red-500 font-bold px-1.5 hover:bg-red-100 rounded">✕</button>
+                </div>
+            `).join('');
+        }
+
         function renderApp() {
             let data = getData();
             const container = document.getElementById('itemsList');
+            const categoryFilter = document.getElementById('filterCategory').value;
             const personFilter = document.getElementById('filterPerson').value;
-            const itemFilter = document.getElementById('filterItem').value;
 
             let activeCount = data.items.filter(i => i.status === 'active').length;
             let returnedCount = data.items.filter(i => i.status === 'returned').length;
@@ -396,11 +526,11 @@
 
             const today = new Date();
             let filteredItems = data.items;
+            if (categoryFilter !== "") {
+                filteredItems = filteredItems.filter(i => i.category === categoryFilter);
+            }
             if (personFilter !== "") {
                 filteredItems = filteredItems.filter(i => i.person === personFilter);
-            }
-            if (itemFilter !== "") {
-                filteredItems = filteredItems.filter(i => i.title === itemFilter);
             }
 
             if (filteredItems.length === 0) {
@@ -422,7 +552,6 @@
                         badge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">🟢 aktiv (${diff}T)</span>`;
                     }
 
-                    // WhatsApp Vorlagen
                     let contact = (data.contacts || []).find(c => c.name === i.person);
                     let phone = contact ? contact.phone : "";
                     let whatsappDropdown = "";
@@ -442,6 +571,12 @@
 
                     let extendButtons = "";
                     let calButtons = "";
+                    let gpsButton = "";
+
+                    if (i.gpsLink) {
+                        gpsButton = `<a href="${i.gpsLink}" target="_blank" class="px-2 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="GPS-Tracker">📍 GPS</a>`;
+                    }
+
                     if (i.status === 'active') {
                         extendButtons = `
                             <button onclick="extendReturnDate(${i.id}, 7)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold" title="+7 Tage">+7T</button>
@@ -453,7 +588,7 @@
                             let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('Rückgabe: ' + i.title + ' (' + i.person + ')')}&dates=${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${rd.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Verleih-Rückgabe fällig')}`;
                             calButtons = `
                                 <a href="${googleCalUrl}" target="_blank" class="px-2 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
-                                <button onclick="downloadICS('${i.title}', '${i.returnDate}', '${i.person}')" class="px-2 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>
+                                <button onclick="downloadICS('${i.title}', '${i.returnDate}', '${i.person}')" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="ICS Kalender">📥 ICS</button>
                             `;
                         }
                     }
@@ -473,8 +608,10 @@
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <span class="text-xs font-bold text-gray-800">📦 ${i.title}</span>
+                                        <span class="text-[10px] bg-gray-200 text-gray-700 font-semibold px-2 py-0.5 rounded-full">${i.category || 'Sonstiges'}</span>
                                         <span class="text-xs text-indigo-600 font-semibold">→ ${i.person}</span>
                                         ${badge}
+                                        ${i.serial ? `<span class="text-[10px] font-mono bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border">SN: ${i.serial}</span>` : ''}
                                         ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">Kaution: ${i.deposit.toFixed(2).replace('.', ',')} €</span>` : ''}
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">Ausleihe: ${d.toLocaleDateString('de-DE')} ${i.returnDate ? '| Rückgabe: ' + new Date(i.returnDate).toLocaleDateString('de-DE') : ''} ${i.note ? '| Notiz: ' + i.note : ''}</p>
@@ -482,6 +619,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
+                                ${gpsButton}
                                 ${whatsappDropdown}
                                 ${calButtons}
                                 ${statusDropdown}
@@ -528,8 +666,9 @@
             data.items.forEach(i => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let statusLabel = i.status === 'returned' ? "[ZURÜCK]" : (i.status === 'lost' ? "[VERLOREN/DEFEKT]" : "[AKTIV]");
-                let depText = i.deposit > 0 ? ` (Kaution: ${i.deposit.toFixed(2)} EUR)` : "";
-                doc.text(`- ${statusLabel} ${i.title} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 14, y);
+                let serialText = i.serial ? ` (SN: ${i.serial})` : "";
+                let depText = i.deposit > 0 ? ` [Kaution: ${i.deposit.toFixed(2)} EUR]` : "";
+                doc.text(`- ${statusLabel} ${i.title}${serialText} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 14, y);
                 y += 6;
             });
 
@@ -556,6 +695,7 @@
                     if (parsed.items) {
                         saveData(parsed);
                         loadDropdowns();
+                        renderInventory();
                         renderApp();
                         alert("Backup erfolgreich importiert!");
                     } else {
