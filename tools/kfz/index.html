@@ -14,8 +14,8 @@
     <!-- Header mit ausklappbarer Anleitung -->
     <header class="bg-red-600 text-white shadow-md py-6 px-4 text-center space-y-3">
         <div>
-            <h1 class="text-3xl font-bold">🚗 KFZ- & Reifenwechsel-Tracker Pro</h1>
-            <p class="text-sm opacity-90 mt-1">TÜV, Reifenlager, Belege, Fixkosten, TCO-Berechnung & Fristen</p>
+            <h1 class="text-3xl font-bold">🚗 KFZ- & Reifen-Tracker</h1>
+            <p class="text-sm opacity-90 mt-1">Bordmappe, Papiere, Notfall-Kontakte, Tank-Statistik, Reifenlager & TCO</p>
         </div>
 
         <!-- Ausklappbarer Anleitung-Container -->
@@ -31,20 +31,20 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
                     <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
-                        <span class="font-bold text-red-200 block mb-0.5">1. Fahrzeuge & Reifen</span>
-                        Verwalte Autos samt Kennzeichen, KM-Stand und lagere Sommer-/Winterreifen ein.
+                        <span class="font-bold text-red-200 block mb-0.5">1. Fahrzeug & Papiere</span>
+                        Trage Autos, Kennzeichen, KM-Stand, Fahrzeugschein und Notfallkontakte ein.
                     </div>
                     <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
-                        <span class="font-bold text-red-200 block mb-0.5">2. Wartung, Tanken & Belege</span>
-                        Erfasse TÜV, Inspektion, Steuern, Tanken und hänge Werkstatt-Belege als Foto an.
+                        <span class="font-bold text-red-200 block mb-0.5">2. Wartung & Tanken</span>
+                        Erfasse TÜV, Reparaturen, Tankfüllungen mit Liter/KM und Werkstatt-Belege.
                     </div>
                     <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
                         <span class="font-bold text-red-200 block mb-0.5">3. Fristen & TCO</span>
-                        Behalte TÜV, Versicherungsfälligkeiten und die Kosten pro Kilometer im Blick.
+                        Behalte Fristen, monatliche Spritkosten und Kosten pro Kilometer im Blick.
                     </div>
                     <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
-                        <span class="font-bold text-red-200 block mb-0.5">4. Kalender & Export</span>
-                        Nutze den Google/ICS Kalender-Export und lade saubere PDF-Reports herunter.
+                        <span class="font-bold text-red-200 block mb-0.5">4. Reifen & Backup</span>
+                        Verwalte den Reifenkeller, nutze Kalender-Exporte und PDF-Reports.
                     </div>
                 </div>
             </div>
@@ -83,9 +83,9 @@
             </div>
         </div>
 
-        <!-- Nächste Fristen & TÜV / Versicherungs-Übersicht -->
+        <!-- Dringlichkeits-Banner & Nächste Fristen -->
         <div id="deadlinesCard" class="bg-white p-5 rounded-2xl shadow-sm border space-y-2 hidden">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">🚨 Nächste TÜV-, Versicherungs- & Steuerfristen</h4>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">🚨 Dringende Fristen & Warnungen</h4>
             <div id="deadlinesList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
         </div>
 
@@ -93,15 +93,25 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- 1. Fahrzeug anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
-                <h2 class="text-lg font-bold">🚗 1. Fahrzeug-Profil anlegen</h2>
+                <h2 class="text-lg font-bold">🚗 1. Fahrzeug-Profil & Bordmappe</h2>
                 <input type="text" id="carName" placeholder="Fahrzeugname (z.B. Familien-Golf)" class="w-full p-3 border rounded-xl text-sm">
                 <div class="grid grid-cols-2 gap-2">
                     <input type="text" id="carPlate" placeholder="Kennzeichen (z.B. B-AB 1234)" class="p-3 border rounded-xl text-sm">
                     <input type="text" id="carKm" placeholder="KM-Stand (z.B. 125000)" class="p-3 border rounded-xl text-sm">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Fahrzeugbild (Upload):</label>
-                    <input type="file" id="carPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" id="carInsurance" placeholder="Versicherung & Pol.-Nr." class="p-3 border rounded-xl text-xs">
+                    <input type="text" id="carEmergency" placeholder="Notfall- / Pannen-Tel." class="p-3 border rounded-xl text-xs">
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Fahrzeugfoto:</label>
+                        <input type="file" id="carPhotoInput" accept="image/*" class="w-full text-[11px] p-1.5 border rounded-xl file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-red-50 file:text-red-700">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">Fahrzeugschein (Scan):</label>
+                        <input type="file" id="carPapersInput" accept="image/*" class="w-full text-[11px] p-1.5 border rounded-xl file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-gray-100 file:text-gray-700">
+                    </div>
                 </div>
                 <button onclick="saveCar()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Fahrzeug speichern</button>
             </div>
@@ -136,7 +146,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Beleg / Rechnung (Foto optional):</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Beleg / Rechnung (optional):</label>
                     <input type="file" id="eventReceiptInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700">
                 </div>
 
@@ -150,7 +160,7 @@
             <div class="space-y-6">
                 <!-- Meine Fahrzeuge -->
                 <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
-                    <h3 class="font-bold text-lg">🚙 Meine Fahrzeuge</h3>
+                    <h3 class="font-bold text-lg">🚙 Meine Fahrzeuge & Bordmappe</h3>
                     <div id="carsList" class="space-y-3">
                         <p class="text-sm text-gray-400 text-center py-4">Noch keine Fahrzeuge erfasst.</p>
                     </div>
@@ -184,6 +194,11 @@
                     <select id="filterCarSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
                         <option value="">Alle Fahrzeuge anzeigen</option>
                     </select>
+                </div>
+                <!-- Monatliche Sprit-Statistik -->
+                <div id="fuelStatsBox" class="bg-red-50 border border-red-200 p-3 rounded-xl text-xs space-y-1 hidden">
+                    <p class="font-bold text-red-800">⛽ Kraftstoff- & Tank-Statistik (Aktueller Monat)</p>
+                    <div id="fuelStatsContent" class="text-gray-700"></div>
                 </div>
                 <div id="eventsList" class="space-y-3">
                     <p class="text-sm text-gray-400 text-center py-4">Keine Einträge erfasst.</p>
@@ -250,14 +265,14 @@
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('kfz_tracker_pro_v2')) || { cars: [], events: [], tires: [] };
+                return JSON.parse(localStorage.getItem('kfz_tracker_pro_v3')) || { cars: [], events: [], tires: [] };
             } catch(e) {
                 return { cars: [], events: [], tires: [] };
             }
         }
 
         function saveData(data) {
-            localStorage.setItem('kfz_tracker_pro_v2', JSON.stringify(data));
+            localStorage.setItem('kfz_tracker_pro_v3', JSON.stringify(data));
         }
 
         function updateEventFormFields() {
@@ -283,14 +298,50 @@
             const name = document.getElementById('carName').value.trim();
             const plate = document.getElementById('carPlate').value.trim();
             const km = document.getElementById('carKm').value.trim();
+            const insurance = document.getElementById('carInsurance').value.trim();
+            const emergency = document.getElementById('carEmergency').value.trim();
             const photoInput = document.getElementById('carPhotoInput');
+            const papersInput = document.getElementById('carPapersInput');
+
             if (!name) return alert("Bitte einen Fahrzeugnamen eingeben!");
+
+            let photoData = "";
+            let papersData = "";
+
+            const processFiles = () => {
+                let data = getData();
+                data.cars.push({ id: Date.now(), name, plate, km, insurance, emergency, photo: photoData, papers: papersData });
+                saveData(data);
+                document.getElementById('carName').value = "";
+                document.getElementById('carPlate').value = "";
+                document.getElementById('carKm').value = "";
+                document.getElementById('carInsurance').value = "";
+                document.getElementById('carEmergency').value = "";
+                document.getElementById('carPhotoInput').value = "";
+                document.getElementById('carPapersInput').value = "";
+                loadCarDropdowns();
+                renderApp();
+            };
+
             if (photoInput.files && photoInput.files[0]) {
-                compressImage(photoInput.files[0], (compressedPhoto) => {
-                    storeCarData(name, plate, km, compressedPhoto);
+                compressImage(photoInput.files[0], (compPhoto) => {
+                    photoData = compPhoto;
+                    if (papersInput.files && papersInput.files[0]) {
+                        compressImage(papersInput.files[0], (compPapers) => {
+                            papersData = compPapers;
+                            processFiles();
+                        });
+                    } else {
+                        processFiles();
+                    }
+                });
+            } else if (papersInput.files && papersInput.files[0]) {
+                compressImage(papersInput.files[0], (compPapers) => {
+                    papersData = compPapers;
+                    processFiles();
                 });
             } else {
-                storeCarData(name, plate, km, "");
+                processFiles();
             }
         }
 
@@ -312,8 +363,8 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 400;
-                    const MAX_HEIGHT = 400;
+                    const MAX_WIDTH = 500;
+                    const MAX_HEIGHT = 500;
                     let width = img.width;
                     let height = img.height;
 
@@ -327,23 +378,11 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    callback(canvas.toDataURL('image/jpeg', 0.7));
+                    callback(canvas.toDataURL('image/jpeg', 0.75));
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
-        }
-
-        function storeCarData(name, plate, km, photo) {
-            let data = getData();
-            data.cars.push({ id: Date.now(), name, plate, km, photo });
-            saveData(data);
-            document.getElementById('carName').value = "";
-            document.getElementById('carPlate').value = "";
-            document.getElementById('carKm').value = "";
-            document.getElementById('carPhotoInput').value = "";
-            loadCarDropdowns();
-            renderApp();
         }
 
         function deleteCar(id) {
@@ -523,21 +562,38 @@
                     let kmNum = parseFloat(c.km) || 0;
                     let costPerKm = (kmNum > 0 && carTotalCost > 0) ? (carTotalCost / kmNum).toFixed(2) : null;
 
+                    // KM-Prognose (Laufleistung pro Tag)
+                    let firstEvent = carEvents.sort((a,b) => new Date(a.date) - new Date(b.date))[0];
+                    let kmPrognoseText = "";
+                    if (firstEvent && firstEvent.km && kmNum > firstEvent.km) {
+                        let daysDiff = Math.max(1, (new Date() - new Date(firstEvent.date)) / (1000 * 60 * 60 * 24));
+                        let kmPerDay = (kmNum - firstEvent.km) / daysDiff;
+                        let annualKm = Math.round(kmPerDay * 365);
+                        kmPrognoseText = `<p class="text-[11px] text-gray-500">Prognose: ca. <b>${annualKm.toLocaleString()} km</b> / Jahr</p>`;
+                    }
+
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="flex items-center space-x-3">
-                                    ${c.photo ? `<img src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer" onclick="zoomImage('${c.photo}')">` : '<div class="w-12 h-12 bg-red-100 text-red-700 font-bold rounded-full flex items-center justify-center text-sm">🚗</div>'}
+                                    ${c.photo ? `<img src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer" onclick="zoomImage('${c.photo}')" title="Foto vergrößern">` : '<div class="w-12 h-12 bg-red-100 text-red-700 font-bold rounded-full flex items-center justify-center text-sm">🚗</div>'}
                                     <div>
                                         <h4 class="font-bold text-sm text-red-800">${c.name}</h4>
                                         <p class="text-xs text-gray-600">${c.plate || 'k.Kennzeichen'} ${c.km ? '| ' + c.km + ' km' : ''}</p>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1.5">
                                     <button onclick="updateCarKm(${c.id})" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-semibold" title="KM aktualisieren">⚡ KM</button>
                                     <button onclick="deleteCar(${c.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
                                 </div>
                             </div>
+                            
+                            <div class="text-[11px] flex flex-wrap gap-2 text-gray-600 pt-1">
+                                ${c.insurance ? `<span>🛡️ ${c.insurance}</span>` : ''}
+                                ${c.emergency ? `<a href="tel:${c.emergency}" class="text-red-700 font-bold hover:underline">📞 Notruf: ${c.emergency}</a>` : ''}
+                                ${c.papers ? `<button onclick="zoomImage('${c.papers}')" class="text-blue-600 font-semibold underline">📄 Fahrzeugschein anzeigen</button>` : ''}
+                            </div>
+                            ${kmPrognoseText}
                             ${costPerKm ? `<div class="text-[11px] bg-white p-2 border rounded-xl flex justify-between text-gray-600"><span>Gesamtkosten: <b>${carTotalCost.toFixed(2).replace('.', ',')} €</b></span><span class="text-red-700 font-semibold">TCO: ${costPerKm.replace('.', ',')} € / km</span></div>` : ''}
                         </div>
                     `;
@@ -562,7 +618,7 @@
                 }
             }
 
-            // Nächste Fristen (TÜV, Inspektion, Versicherung, Steuer)
+            // Dringlichkeits-Banner & Fristen
             const deadlinesCard = document.getElementById('deadlinesCard');
             const deadlinesList = document.getElementById('deadlinesList');
             const timelyEvents = data.events.filter(e => ['TÜV / HU', 'Inspektion', 'Versicherung', 'Kfz-Steuer'].includes(e.type));
@@ -575,7 +631,7 @@
                     let carName = car ? car.name : "Unbekannt";
                     let d = new Date(e.date);
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
-                    let statusColor = diff < 0 ? "border-red-400 bg-red-50 text-red-800" : (diff <= 30 ? "border-amber-400 bg-amber-50 text-amber-800" : "border-gray-200 bg-gray-50 text-gray-800");
+                    let statusColor = diff < 0 ? "border-red-400 bg-red-50 text-red-800" : (diff <= 14 ? "border-amber-400 bg-amber-50 text-amber-800" : "border-gray-200 bg-gray-50 text-gray-800");
 
                     return `
                         <div class="p-3 border rounded-xl ${statusColor}">
@@ -592,6 +648,27 @@
             let filteredEvents = data.events;
             if (selectedFilter !== "") {
                 filteredEvents = filteredEvents.filter(e => e.carId === parseInt(selectedFilter));
+            }
+
+            // Monatliche Tank-Statistik
+            const fuelStatsBox = document.getElementById('fuelStatsBox');
+            const fuelStatsContent = document.getElementById('fuelStatsContent');
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            let monthTankEvents = filteredEvents.filter(e => {
+                let ed = new Date(e.date);
+                return e.type === 'Tanken' && ed.getMonth() === currentMonth && ed.getFullYear() === currentYear;
+            });
+
+            if (monthTankEvents.length > 0) {
+                fuelStatsBox.classList.remove('hidden');
+                let totalLitres = monthTankEvents.reduce((s, e) => s + (e.litres || 0), 0);
+                let totalTankCost = monthTankEvents.reduce((s, e) => s + (e.cost || 0), 0);
+                let validCons = monthTankEvents.filter(e => e.consumption).map(e => e.consumption);
+                let avgCons = validCons.length > 0 ? (validCons.reduce((a,b)=>a+b,0) / validCons.length).toFixed(1) : "-";
+                fuelStatsContent.innerHTML = `Getankt: <b>${totalLitres.toFixed(1)} Liter</b> | Kosten: <b>${totalTankCost.toFixed(2).replace('.', ',')} €</b> | Ø Verbrauch: <b>${avgCons.replace('.', ',')} l/100km</b>`;
+            } else {
+                fuelStatsBox.classList.add('hidden');
             }
 
             document.getElementById('statEvents').innerText = filteredEvents.length;
@@ -690,13 +767,13 @@
 
             let y = 35;
             doc.setFont("helvetica", "bold");
-            doc.text("Fahrzeuge & TCO:", 14, y);
+            doc.text("Fahrzeuge & Bordmappe:", 14, y);
             y += 7;
 
             doc.setFont("helvetica", "normal");
             data.cars.forEach(c => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`- ${c.name} (${c.plate || 'k.A.'}), KM: ${c.km || 'k.A.'}`, 14, y);
+                doc.text(`- ${c.name} (${c.plate || 'k.A.'}), KM: ${c.km || 'k.A.'} | Vers.: ${c.insurance || '-'}`, 14, y);
                 y += 6;
             });
 
