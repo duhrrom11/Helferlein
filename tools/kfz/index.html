@@ -11,10 +11,44 @@
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-red-600 text-white shadow-md py-6 px-4 text-center">
-        <h1 class="text-3xl font-bold">🚗 KFZ- & Reifenwechsel-Tracker Pro</h1>
-        <p class="text-sm opacity-90 mt-1">TÜV, Reifentiefe, Kostenrechner, Kalender-Export & Fahrzeug-Zentrale</p>
+    <!-- Header mit ausklappbarer Anleitung -->
+    <header class="bg-red-600 text-white shadow-md py-6 px-4 text-center space-y-3">
+        <div>
+            <h1 class="text-3xl font-bold">🚗 KFZ- & Reifenwechsel-Tracker Pro</h1>
+            <p class="text-sm opacity-90 mt-1">TÜV, Reifentiefe, Verbrauch, Kosten, Fristen & Kalender-Export</p>
+        </div>
+
+        <!-- Ausklappbarer Anleitung-Container -->
+        <div class="max-w-4xl mx-auto space-y-2">
+            <button onclick="toggleHelp()" id="helpToggleBtn" class="px-4 py-1.5 bg-red-700/90 hover:bg-red-700 text-red-100 rounded-xl text-xs font-semibold border border-red-500/40 shadow-sm transition-all flex items-center gap-1.5 mx-auto">
+                📖 <span>Hilfe & Anleitung anzeigen</span>
+            </button>
+
+            <div id="helpBox" class="bg-red-700/90 border border-red-500/40 rounded-2xl p-4 text-left text-xs text-red-50 space-y-2 shadow-inner hidden">
+                <div class="font-bold text-sm flex items-center justify-between border-b border-red-600 pb-1.5 text-white">
+                    <span>📖 Kurzanleitung – So funktioniert's:</span>
+                    <button onclick="toggleHelp()" class="text-red-200 hover:text-white text-xs px-1.5 py-0.5 rounded">✕ Schließen</button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
+                    <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
+                        <span class="font-bold text-red-200 block mb-0.5">1. Fahrzeug anlegen</span>
+                        Füge dein Auto mit Kennzeichen, KM-Stand und Foto hinzu.
+                    </div>
+                    <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
+                        <span class="font-bold text-red-200 block mb-0.5">2. Wartung & Tanken</span>
+                        Erfasse TÜV, Ölwechsel, Reifentiefe oder Tank-Einträge mit Liter & Kosten.
+                    </div>
+                    <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
+                        <span class="font-bold text-red-200 block mb-0.5">3. Fristen im Blick</span>
+                        Behalte TÜV-Fristen, Verbrauch (l/100km) und anstehende Termine im Auge.
+                    </div>
+                    <div class="bg-red-800/50 p-2.5 rounded-xl border border-red-600/30">
+                        <span class="font-bold text-red-200 block mb-0.5">4. Kalender & Export</span>
+                        Exportiere Termine zu Google/ICS oder generiere saubere PDF-Reports.
+                    </div>
+                </div>
+            </div>
+        </div>
     </header>
 
     <!-- Main Content -->
@@ -49,6 +83,12 @@
             </div>
         </div>
 
+        <!-- Nächste Fristen & TÜV Übersicht -->
+        <div id="deadlinesCard" class="bg-white p-5 rounded-2xl shadow-sm border space-y-2 hidden">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400">🚨 Nächste TÜV- & Wartungsfristen</h4>
+            <div id="deadlinesList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+        </div>
+
         <!-- Erfassung: Auto & Wartungs-Eintrag -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- 1. Fahrzeug anlegen -->
@@ -69,11 +109,11 @@
             <!-- 2. Wartung / Tanken / Reifen erfassen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🛠️ 2. Eintrag, Kosten & Reifentiefe</h2>
-                <select id="eventCarSelect" class="w-full p-3 border rounded-xl text-sm bg-white">
+                <select id="eventCarSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()">
                     <option value="">-- Fahrzeug wählen --</option>
                 </select>
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="toggleTreadInput()">
+                    <select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()">
                         <option value="TÜV / HU">🔍 TÜV / Hauptuntersuchung</option>
                         <option value="Inspektion">⚙️ Inspektion & Service</option>
                         <option value="Reifenwechsel">🛞 Reifenwechsel</option>
@@ -85,10 +125,14 @@
                     <input type="date" id="eventDate" class="p-3 border rounded-xl text-sm">
                 </div>
                 <input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Sommerreifen montiert)" class="w-full p-3 border rounded-xl text-sm">
-                <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="eventCost" placeholder="Kosten in € (z.B. 45.00)" class="p-3 border rounded-xl text-sm">
-                    <input type="text" id="eventTread" placeholder="Profiltiefe in mm (z.B. 4.5)" class="p-3 border rounded-xl text-sm hidden">
+                
+                <div class="grid grid-cols-3 gap-2">
+                    <input type="text" id="eventCost" placeholder="Kosten in €" class="p-3 border rounded-xl text-sm">
+                    <input type="text" id="eventTread" placeholder="Profil (mm)" class="p-3 border rounded-xl text-sm hidden">
+                    <input type="text" id="eventKm" placeholder="KM-Stand" class="p-3 border rounded-xl text-sm hidden" title="Aktueller KM-Stand beim Tanken">
+                    <input type="text" id="eventLitres" placeholder="Liter" class="p-3 border rounded-xl text-sm hidden" title="Getankte Liter">
                 </div>
+
                 <button onclick="saveEvent()" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Eintrag speichern</button>
             </div>
         </div>
@@ -155,6 +199,18 @@
             renderApp();
         });
 
+        function toggleHelp() {
+            const helpBox = document.getElementById('helpBox');
+            const toggleBtn = document.getElementById('helpToggleBtn');
+            if (helpBox.classList.contains('hidden')) {
+                helpBox.classList.remove('hidden');
+                toggleBtn.innerHTML = '📖 <span>Hilfe & Anleitung ausblenden</span>';
+            } else {
+                helpBox.classList.add('hidden');
+                toggleBtn.innerHTML = '📖 <span>Hilfe & Anleitung anzeigen</span>';
+            }
+        }
+
         function getData() {
             try {
                 return JSON.parse(localStorage.getItem('kfz_tracker_pro')) || { cars: [], events: [] };
@@ -167,13 +223,22 @@
             localStorage.setItem('kfz_tracker_pro', JSON.stringify(data));
         }
 
-        function toggleTreadInput() {
+        function updateEventFormFields() {
             const type = document.getElementById('eventType').value;
             const treadInput = document.getElementById('eventTread');
+            const kmInput = document.getElementById('eventKm');
+            const litresInput = document.getElementById('eventLitres');
+
+            treadInput.classList.add('hidden');
+            kmInput.classList.add('hidden');
+            litresInput.classList.add('hidden');
+
             if (type === 'Reifentiefe' || type === 'Reifenwechsel') {
                 treadInput.classList.remove('hidden');
-            } else {
-                treadInput.classList.add('hidden');
+            }
+            if (type === 'Tanken') {
+                kmInput.classList.remove('hidden');
+                litresInput.classList.remove('hidden');
             }
         }
 
@@ -182,15 +247,25 @@
             const plate = document.getElementById('carPlate').value.trim();
             const km = document.getElementById('carKm').value.trim();
             const photoInput = document.getElementById('carPhotoInput');
-
             if (!name) return alert("Bitte einen Fahrzeugnamen eingeben!");
-
             if (photoInput.files && photoInput.files[0]) {
                 compressImage(photoInput.files[0], (compressedPhoto) => {
                     storeCarData(name, plate, km, compressedPhoto);
                 });
             } else {
                 storeCarData(name, plate, km, "");
+            }
+        }
+
+        function updateCarKm(carId) {
+            let data = getData();
+            let car = data.cars.find(c => c.id === carId);
+            if (!car) return;
+            let newKm = prompt("Aktuellen Kilometerstand aktualisieren:", car.km || "");
+            if (newKm !== null) {
+                car.km = newKm.trim();
+                saveData(data);
+                renderApp();
             }
         }
 
@@ -226,12 +301,10 @@
             let data = getData();
             data.cars.push({ id: Date.now(), name, plate, km, photo });
             saveData(data);
-
             document.getElementById('carName').value = "";
             document.getElementById('carPlate').value = "";
             document.getElementById('carKm').value = "";
             document.getElementById('carPhotoInput').value = "";
-
             loadCarDropdowns();
             renderApp();
         }
@@ -253,17 +326,39 @@
             const title = document.getElementById('eventTitle').value.trim();
             const cost = parseFloat(document.getElementById('eventCost').value.replace(',', '.')) || 0;
             const tread = parseFloat(document.getElementById('eventTread').value.replace(',', '.')) || null;
+            const km = parseFloat(document.getElementById('eventKm').value.replace(',', '.')) || null;
+            const litres = parseFloat(document.getElementById('eventLitres').value.replace(',', '.')) || null;
 
             if (!carId || !date || !title) return alert("Bitte Fahrzeug, Datum und Bezeichnung angeben!");
 
+            // Verbrauch automatisch berechnen, wenn Tanken mit KM und Litern eingegeben wurde
+            let consumption = null;
+            if (type === 'Tanken' && km && litres) {
+                let data = getData();
+                let lastTankEvent = data.events
+                    .filter(e => e.carId === parseInt(carId) && e.type === 'Tanken' && e.km)
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+                
+                if (lastTankEvent && km > lastTankEvent.km) {
+                    let drivenKm = km - lastTankEvent.km;
+                    consumption = (litres * 100) / drivenKm; // l / 100km
+                }
+                
+                // KM-Stand des Autos direkt mit aktualisieren
+                let car = data.cars.find(c => c.id === parseInt(carId));
+                if (car) car.km = km.toString();
+            }
+
             let data = getData();
-            data.events.push({ id: Date.now(), carId: parseInt(carId), type, date, title, cost, tread });
+            data.events.push({ id: Date.now(), carId: parseInt(carId), type, date, title, cost, tread, km, litres, consumption });
             saveData(data);
 
             document.getElementById('eventDate').value = "";
             document.getElementById('eventTitle').value = "";
             document.getElementById('eventCost').value = "";
             document.getElementById('eventTread').value = "";
+            document.getElementById('eventKm').value = "";
+            document.getElementById('eventLitres').value = "";
             renderApp();
         }
 
@@ -322,7 +417,7 @@
             const eventSelect = document.getElementById('eventCarSelect');
             const filterSelect = document.getElementById('filterCarSelect');
 
-            const options = '<option value="">-- Fahrzeug wählen --</option>' + 
+            const options = '<option value="">-- Fahrzeug wählen --' + 
                 data.cars.map(c => `<option value="${c.id}">${c.name} (${c.plate || 'kein Kennzeichen'})</option>`).join('');
             
             const filterOptions = '<option value="">Alle Fahrzeuge anzeigen</option>' + 
@@ -352,18 +447,46 @@
                                 <p class="text-xs text-gray-600">${c.plate || 'k.Kennzeichen'} ${c.km ? '| ' + c.km + ' km' : ''}</p>
                             </div>
                         </div>
-                        <button onclick="deleteCar(${c.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="updateCarKm(${c.id})" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-semibold" title="KM aktualisieren">⚡ KM</button>
+                            <button onclick="deleteCar(${c.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
+                        </div>
                     </div>
                 `).join('');
             }
 
-            // Filter auf gefilterte Events anwenden
+            // Nächste Fristen & TÜV Übersicht berechnen
+            const deadlinesCard = document.getElementById('deadlinesCard');
+            const deadlinesList = document.getElementById('deadlinesList');
+            const tuevEvents = data.events.filter(e => e.type === 'TÜV / HU' || e.type === 'Inspektion');
+            const today = new Date();
+
+            if (tuevEvents.length > 0) {
+                deadlinesCard.classList.remove('hidden');
+                deadlinesList.innerHTML = tuevEvents.map(e => {
+                    let car = data.cars.find(c => c.id === e.carId);
+                    let carName = car ? car.name : "Unbekannt";
+                    let d = new Date(e.date);
+                    let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+                    let statusColor = diff < 0 ? "border-red-400 bg-red-50 text-red-800" : (diff <= 30 ? "border-amber-400 bg-amber-50 text-amber-800" : "border-gray-200 bg-gray-50 text-gray-800");
+
+                    return `
+                        <div class="p-3 border rounded-xl ${statusColor}">
+                            <p class="text-[11px] font-bold text-gray-500">${carName} (${e.type})</p>
+                            <p class="text-xs font-bold mt-0.5">${e.title}</p>
+                            <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString('de-DE')})</p>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                deadlinesCard.classList.add('hidden');
+            }
+
             let filteredEvents = data.events;
             if (selectedFilter !== "") {
                 filteredEvents = filteredEvents.filter(e => e.carId === parseInt(selectedFilter));
             }
 
-            // Dashboard Statistiken basierend auf den gefilterten Events aktualisieren
             document.getElementById('statEvents').innerText = filteredEvents.length;
             let totalCosts = filteredEvents.reduce((sum, e) => sum + (e.cost || 0), 0);
             document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
@@ -371,7 +494,6 @@
             if (filteredEvents.length === 0) {
                 eventsContainer.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge für diesen Filter erfasst.</p>`;
             } else {
-                const today = new Date();
                 eventsContainer.innerHTML = filteredEvents.map(e => {
                     let car = data.cars.find(c => c.id === e.carId);
                     let carName = car ? car.name : "Unbekannt";
@@ -379,14 +501,19 @@
                     let diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
                     let badge = diff < 0 ? "🔴 Überfällig" : (diff <= 30 ? `🟡 in ${diff} Tagen` : "🟢 Planmäßig");
 
-                    // Reifentiefe Ampel Badge
                     let treadBadge = "";
                     if (e.tread !== null && e.tread !== undefined && !isNaN(e.tread)) {
                         let treadColor = e.tread < 3 ? "bg-red-100 text-red-800" : (e.tread <= 4 ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800");
                         treadBadge = `<span class="text-[10px] ${treadColor} font-semibold px-2 py-0.5 rounded-full">📏 ${e.tread} mm</span>`;
                     }
 
-                    // Kalender-Buttons nur anzeigen, wenn es kein Reifentiefe-Check oder Tanken ist
+                    let tankBadge = "";
+                    if (e.type === 'Tanken') {
+                        if (e.litres) tankBadge += `<span class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">⛽ ${e.litres} L</span>`;
+                        if (e.consumption) tankBadge += `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">⚡ ${e.consumption.toFixed(1).replace('.', ',')} l/100km</span>`;
+                        if (e.km) tankBadge += `<span class="text-[10px] bg-gray-100 text-gray-800 font-semibold px-2 py-0.5 rounded-full">📍 ${e.km} km</span>`;
+                    }
+
                     let calendarButtons = "";
                     if (e.type !== 'Reifentiefe' && e.type !== 'Tanken') {
                         let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + carName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('KFZ-Termin für ' + carName)}`;
@@ -404,6 +531,7 @@
                                     <span class="text-xs font-bold text-gray-700">${carName}</span>
                                     ${e.cost > 0 ? `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${e.cost.toFixed(2).replace('.', ',')} €</span>` : ''}
                                     ${treadBadge}
+                                    ${tankBadge}
                                 </div>
                                 <h4 class="font-bold text-sm mt-1">${e.title} <span class="text-xs font-normal text-gray-500">(${badge})</span></h4>
                                 <p class="text-xs text-gray-500">Datum: ${d.toLocaleDateString('de-DE')}</p>
@@ -431,7 +559,7 @@
             a.click();
         }
 
-        // PDF Report Export via jsPDF
+        // PDF Report Export (bereinigt um Emojis)
         function exportPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -468,9 +596,12 @@
                 let car = data.cars.find(c => c.id === e.carId);
                 let cName = car ? car.name : "?";
                 totalCosts += (e.cost || 0);
+
                 if (y > 270) { doc.addPage(); y = 20; }
                 let treadText = e.tread ? ` | ${e.tread} mm` : "";
-                doc.text(`- [${e.type}] ${cName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${(e.cost || 0).toFixed(2)} EUR${treadText})`, 14, y);
+                let tankText = e.litres ? ` | ${e.litres} L` : "";
+                let consText = e.consumption ? ` | ${e.consumption.toFixed(1)} l/100km` : "";
+                doc.text(`- [${e.type}] ${cName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 14, y);
                 y += 6;
             });
 
