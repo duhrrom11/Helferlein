@@ -28,6 +28,72 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
+<!-- PIN SCHUTZ -->
+<div id="pinOverlay"
+     class="fixed inset-0 bg-slate-950 z-[9999] flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 space-y-5 shadow-2xl">
+
+        <div class="text-center space-y-3">
+            <div class="text-5xl">🔐</div>
+
+            <h2 class="text-xl font-bold text-red-400">
+                Sensible Daten geschützt
+            </h2>
+
+            <p class="text-sm text-slate-300">
+                Dieses Tool enthält hochsensible Informationen
+                wie Zugangsdaten, Vermögenswerte,
+                Verträge, Nachlassinformationen und
+                persönliche Dokumente.
+            </p>
+
+            <p class="text-xs text-amber-400">
+                Der Zugriff wird durch einen PIN geschützt.
+            </p>
+        </div>
+
+        <div id="pinSetupContainer" class="hidden space-y-3">
+            <input
+                type="password"
+                id="newPinInput"
+                maxlength="20"
+                placeholder="Neuen PIN festlegen"
+                class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white">
+
+            <button
+                id="saveNewPinBtn"
+                class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold">
+                PIN festlegen
+            </button>
+        </div>
+
+        <div id="pinLoginContainer" class="hidden space-y-3">
+
+            <input
+                type="password"
+                id="pinInput"
+                maxlength="20"
+                placeholder="PIN eingeben"
+                class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white">
+
+            <button
+                id="unlockBtn"
+                class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold">
+                Tresor öffnen
+            </button>
+
+        </div>
+
+        <p id="pinError"
+           class="hidden text-red-400 text-center text-sm font-bold">
+           Falscher PIN
+        </p>
+
+    </div>
+
+</div>
+
     <!-- SYNC MODAL -->
     <div id="syncModalOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
@@ -322,10 +388,131 @@
 
         let currentMasterKeyHex = null;
         let currentDecryptedVault = { entries: [] };
+async function hashPin(pin){
 
+    const msgUint8 = new TextEncoder()
+        .encode(pin);
+
+    const hashBuffer =
+        await crypto.subtle.digest(
+            'SHA-256',
+            msgUint8
+        );
+
+    const hashArray =
+        Array.from(
+            new Uint8Array(hashBuffer)
+        );
+
+    return hashArray
+        .map(b =>
+            b.toString(16)
+             .padStart(2, '0')
+        )
+        .join('');
+}
+
+function checkPinProtection() {
+
+    const existingPin =
+        localStorage.getItem('estate_pin');
+
+    const setup =
+        document.getElementById(
+            'pinSetupContainer'
+        );
+
+    const login =
+        document.getElementById(
+            'pinLoginContainer'
+        );
+
+    if(existingPin){
+
+        login.classList.remove('hidden');
+
+    }else{
+
+        setup.classList.remove('hidden');
+    }
+}
+
+function saveInitialPin(){
+
+    const pin =
+        document.getElementById(
+            'newPinInput'
+        ).value.trim();
+
+    if(pin.length < 4){
+
+        alert(
+            'PIN muss mindestens 4 Zeichen haben'
+        );
+
+        return;
+    }
+
+    localStorage.setItem(
+        'estate_pin',
+        hashPin(pin)
+    );
+
+    document
+        .getElementById('pinSetupContainer')
+        .classList.add('hidden');
+
+    document
+        .getElementById('pinLoginContainer')
+        .classList.remove('hidden');
+
+    alert(
+        'PIN erfolgreich gespeichert'
+    );
+}
+
+function unlockVault(){
+
+    const pin =
+        document.getElementById(
+            'pinInput'
+        ).value.trim();
+
+    const storedHash =
+        localStorage.getItem(
+            'estate_pin'
+        );
+
+    if(hashPin(pin) !== storedHash){
+
+        document
+            .getElementById('pinError')
+            .classList.remove('hidden');
+
+        return;
+    }
+
+    document
+        .getElementById('pinOverlay')
+        .remove();
+}
         document.addEventListener('DOMContentLoaded', () => {
             setupGlobalEventListeners();
+checkPinProtection();
 
+document
+.getElementById('saveNewPinBtn')
+?.addEventListener(
+    'click',
+    saveInitialPin
+);
+
+document
+.getElementById('unlockBtn')
+?.addEventListener(
+    'click',
+    unlockVault
+);
             (async () => {
                 try {
                     await initVault();
