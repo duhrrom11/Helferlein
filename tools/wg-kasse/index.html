@@ -899,7 +899,7 @@
             `;
         }
 
-        // WG-Daten aus Cloud laden
+        // KORRIGIERTE CLOUD-SYNC INITIALISIERUNG: WG-Daten aus Cloud laden
         async function ladeWGausCloud() {
             if (!wgBinId) return;
             try {
@@ -907,27 +907,29 @@
                 if (!response.ok) {
                     response = await fetch("https://jsonkeeper.com/b/" + wgBinId);
                 }
-                if (!response.ok) return;
-
-                const cloudObj = await response.json();
                 
-                if (cloudObj.flatmates) saveFlatmates(cloudObj.flatmates, false);
-                if (cloudObj.notes) saveNotes(cloudObj.notes, false);
-                if (cloudObj.data) saveData(cloudObj.data, false);
-                if (cloudObj.budgets) saveBudgets(cloudObj.budgets, false);
-                if (cloudObj.goals) saveSavingsGoals(cloudObj.goals, false);
-                if (cloudObj.events) saveEvents(cloudObj.events, false);
-                if (cloudObj.inventory) saveInventory(cloudObj.inventory, false);
-                if (cloudObj.diets) saveDiets(cloudObj.diets, false);
-                if (cloudObj.cleaning) saveCleaningPlan(cloudObj.cleaning, false);
-                if (cloudObj.shopping) saveShoppingList(cloudObj.shopping, false);
-                if (cloudObj.cooking) saveCookingPlan(cloudObj.cooking, false);
-                if (cloudObj.contracts) saveContracts(cloudObj.contracts, false);
-                if (cloudObj.infoboard) saveInfoData(cloudObj.infoboard, false);
+                if (response.ok) {
+                    const cloudObj = await response.json();
+                    
+                    // Auch leere Arrays/Objekte aus der Cloud übernehmen statt Fallbacks zu triggern
+                    if (cloudObj.flatmates !== undefined) saveFlatmates(cloudObj.flatmates, false);
+                    if (cloudObj.notes !== undefined) saveNotes(cloudObj.notes, false);
+                    if (cloudObj.data !== undefined) saveData(cloudObj.data, false);
+                    if (cloudObj.budgets !== undefined) saveBudgets(cloudObj.budgets, false);
+                    if (cloudObj.goals !== undefined) saveSavingsGoals(cloudObj.goals, false);
+                    if (cloudObj.events !== undefined) saveEvents(cloudObj.events, false);
+                    if (cloudObj.inventory !== undefined) saveInventory(cloudObj.inventory, false);
+                    if (cloudObj.diets !== undefined) saveDiets(cloudObj.diets, false);
+                    if (cloudObj.cleaning !== undefined) saveCleaningPlan(cloudObj.cleaning, false);
+                    if (cloudObj.shopping !== undefined) saveShoppingList(cloudObj.shopping, false);
+                    if (cloudObj.cooking !== undefined) saveCookingPlan(cloudObj.cooking, false);
+                    if (cloudObj.contracts !== undefined) saveContracts(cloudObj.contracts, false);
+                    if (cloudObj.infoboard !== undefined) saveInfoData(cloudObj.infoboard, false);
 
-                renderApp();
+                    renderApp();
+                }
             } catch (error) {
-                console.error("Fehler beim Laden:", error);
+                console.error("Fehler beim automatischen Polling-Laden:", error);
             }
         }
 
@@ -986,7 +988,7 @@
         let editingReceiptId = null;
         let editingNoteId = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             rotateKofiText();
             if (!wgBinId) {
                 zeigeErstellungsScreen();
@@ -995,7 +997,12 @@
             document.getElementById('receiptDate').valueAsDate = new Date();
             document.getElementById('eventDate').valueAsDate = new Date();
             initCharts();
-            ladeWGausCloud();
+            
+            // Erst Cloud-Daten laden
+            await ladeWGausCloud();
+            
+            // Initial-Upload sichern, damit npoint/jsonkeeper die ID sofort kennt
+            speichereWGinCloud();
         });
 
         function toggleGuide() { document.getElementById('guideSection').classList.toggle('hidden'); }
