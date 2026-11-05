@@ -80,11 +80,13 @@
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
         
-        <!-- Action Bar & Backup -->
+        <!-- Action Bar & Backup & Cloud Sync -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold transition-all">← Zurück zur Startseite</a>
             
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                <button onclick="kopiereWGLink()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm">🔗 Link teilen</button>
+                <button onclick="speichereWGinCloud()" class="px-3.5 py-2 bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200 rounded-xl text-xs font-bold shadow-sm">☁️ In Cloud sichern</button>
                 <button onclick="exportSteuerCSV()" class="px-3.5 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-xs font-bold shadow-sm">💼 Steuer (CSV)</button>
                 <button onclick="exportAbrechnungPDF()" class="px-3.5 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 Finanz-Bericht (PDF)</button>
                 <button onclick="exportBackup()" class="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
@@ -779,6 +781,141 @@
 
     <!-- Skript Logik -->
     <script>
+        // ==========================================
+        // AUTOMATISCHER NPOINT.IO CLOUD-SYNC
+        // ==========================================
+        const NPOINT_API_BASE = "https://api.npoint.io/";
+        const urlParams = new URLSearchParams(window.location.search);
+        let wgBinId = urlParams.get('id');
+
+        // Funktion zum Erstellen einer neuen Cloud-Datenbank
+        async function erstelleNeueWGKonfiguration() {
+            const statusText = document.getElementById('setup-status');
+            if (statusText) statusText.innerText = "Erstelle Cloud-Speicher im Hintergrund...";
+
+            const leereWG = {
+                erstelltAm: new Date().toISOString(),
+                flatmates: ["Ich / Privat", "Alex", "Sam"],
+                notes: [
+                    { id: 1, title: "📦 Paket im Flur", content: "Postbote hat ein Paket für Sam abgegeben, steht neben dem Schuhregal.", author: "Alex", color: "yellow", pinned: true, date: "2026-11-02" },
+                    { id: 2, title: "🧹 Küchen-Dienst", content: "Bitte nach dem Kochen das Schneidebrett gründlich abwischen!", author: "Sam", color: "pink", pinned: false, date: "2026-11-03" }
+                ],
+                data: [],
+                budgets: { "Lebensmittel": 400, "Wohnen": 800, "Energie": 150, "Auto": 250, "Freizeit": 200, "Elektronik": 100, "Gesundheit": 80, "Verträge": 120, "Sonstiges": 100 },
+                goals: [],
+                events: [],
+                inventory: [],
+                diets: {},
+                cleaning: [{ id: 1, task: "Badezimmer & WC wischen", assignee: "Alex", done: false }, { id: 2, task: "Küche & Herd reinigen", assignee: "Sam", done: false }],
+                shopping: [],
+                cooking: daysOfWeek.map(d => ({ day: d, chef: "Frei", dish: "", ingredients: "" })),
+                contracts: [],
+                infoboard: { wifi: "WG-Supernet-2026", landlord: "Hr. Weber (+49 170 1234567)", caretaker: "Hr. Müller (+49 171 9876543)", trash: "Bio (Di) | Restmüll (Fr)" }
+            };
+
+            try {
+                const response = await fetch(NPOINT_API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(leereWG)
+                });
+                const result = await response.json();
+                const neueId = result.id;
+                if (!neueId) throw new Error("Keine ID empfangen.");
+                window.location.href = window.location.pathname + "?id=" + neueId;
+            } catch (error) {
+                console.error("Fehler beim Erstellen:", error);
+                if (statusText) statusText.innerText = "Fehler beim Erstellen. Bitte erneut versuchen.";
+            }
+        }
+
+        // UI-Startbildschirm anzeigen, falls keine WG-ID da ist
+        function zeigeErstellungsScreen() {
+            document.body.innerHTML = `
+                <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+                    <div class="max-w-md w-full bg-white rounded-3xl p-8 border border-gray-200 shadow-xl text-center space-y-6">
+                        <div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-3xl mx-auto">🏠</div>
+                        <h2 class="text-xl font-black text-gray-900">Gemeinsamer WG-Planer</h2>
+                        <p class="text-xs text-gray-500 leading-relaxed">
+                            Erstelle mit nur einem Klick deinen sicheren WG-Planer für dich und deine Mitbewohner. Gemeinsam Ausgaben verwalten, Putzplan pflegen & Einkaufslisten teilen.
+                        </p>
+                        <button onclick="erstelleNeueWGKonfiguration()" class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl text-sm shadow-md transition-all">
+                            ✨ WG-Plan mit 1 Klick erstellen
+                        </button>
+                        <p id="setup-status" class="text-xs text-emerald-700 font-semibold h-4"></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // WG-Daten aus Cloud laden
+        async function ladeWGausCloud() {
+            if (!wgBinId) return;
+            try {
+                const response = await fetch(NPOINT_API_BASE + wgBinId);
+                if (!response.ok) throw new Error("Daten konnten nicht geladen werden.");
+                const cloudObj = await response.json();
+                
+                if (cloudObj.flatmates) saveFlatmates(cloudObj.flatmates, false);
+                if (cloudObj.notes) saveNotes(cloudObj.notes, false);
+                if (cloudObj.data) saveData(cloudObj.data, false);
+                if (cloudObj.budgets) saveBudgets(cloudObj.budgets, false);
+                if (cloudObj.goals) saveSavingsGoals(cloudObj.goals, false);
+                if (cloudObj.events) saveEvents(cloudObj.events, false);
+                if (cloudObj.inventory) saveInventory(cloudObj.inventory, false);
+                if (cloudObj.diets) saveDiets(cloudObj.diets, false);
+                if (cloudObj.cleaning) saveCleaningPlan(cloudObj.cleaning, false);
+                if (cloudObj.shopping) saveShoppingList(cloudObj.shopping, false);
+                if (cloudObj.cooking) saveCookingPlan(cloudObj.cooking, false);
+                if (cloudObj.contracts) saveContracts(cloudObj.contracts, false);
+                if (cloudObj.infoboard) saveInfoData(cloudObj.infoboard, false);
+
+                renderApp();
+            } catch (error) {
+                console.error("Fehler beim Laden:", error);
+            }
+        }
+
+        // Gesamten Datenbestand in die Cloud sichern
+        async function speichereWGinCloud() {
+            if (!wgBinId) return;
+            const backupObj = {
+                flatmates: getFlatmates(),
+                notes: getNotes(),
+                data: getData(),
+                budgets: getBudgets(),
+                goals: getSavingsGoals(),
+                events: getEvents(),
+                inventory: getInventory(),
+                diets: getDiets(),
+                cleaning: getCleaningPlan(),
+                shopping: getShoppingList(),
+                cooking: getCookingPlan(),
+                contracts: getContracts(),
+                infoboard: getInfoData()
+            };
+
+            try {
+                await fetch(NPOINT_API_BASE + wgBinId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(backupObj)
+                });
+                console.log("In Cloud gesichert.");
+            } catch (error) {
+                console.error("Fehler beim Speichern in Cloud:", error);
+            }
+        }
+
+        // Freigabelink in die Zwischenablage kopieren
+        function kopiereWGLink() {
+            navigator.clipboard.writeText(window.location.href);
+            alert("🔗 Link zum WG-Planer kopiert! Schicke ihn an deine Mitbewohner.");
+        }
+
+        // ==========================================
+        // HAUPTANWENDUNG
+        // ==========================================
         const AMAZON_AFFILIATE_TAG = "duhrrom-21";
         const daysOfWeek = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
         const defaultCategories = ["Lebensmittel", "Wohnen", "Energie", "Auto", "Freizeit", "Elektronik", "Gesundheit", "Verträge", "Sonstiges"];
@@ -789,17 +926,21 @@
         let editingNoteId = null;
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (!wgBinId) {
+                zeigeErstellungsScreen();
+                return;
+            }
             document.getElementById('receiptDate').valueAsDate = new Date();
             document.getElementById('eventDate').valueAsDate = new Date();
             initCharts();
-            renderApp();
+            ladeWGausCloud();
         });
 
         function toggleGuide() { document.getElementById('guideSection').classList.toggle('hidden'); }
 
-        /* Storage Helper */
+        /* Storage Helper mit integriertem Cloud-Sync Trigger */
         function getFlatmates() { try { return JSON.parse(localStorage.getItem('wg_flatmates')) || ["Ich / Privat", "Alex", "Sam"]; } catch(e) { return ["Ich / Privat", "Alex", "Sam"]; } }
-        function saveFlatmates(data) { localStorage.setItem('wg_flatmates', JSON.stringify(data)); }
+        function saveFlatmates(data, sync = true) { localStorage.setItem('wg_flatmates', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getNotes() {
             try {
@@ -809,40 +950,40 @@
                 ];
             } catch(e) { return []; }
         }
-        function saveNotes(data) { localStorage.setItem('wg_notes', JSON.stringify(data)); }
+        function saveNotes(data, sync = true) { localStorage.setItem('wg_notes', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getData() { try { return JSON.parse(localStorage.getItem('kassenbon_data')) || []; } catch(e) { return []; } }
-        function saveData(data) { localStorage.setItem('kassenbon_data', JSON.stringify(data)); }
+        function saveData(data, sync = true) { localStorage.setItem('kassenbon_data', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getBudgets() { try { return JSON.parse(localStorage.getItem('budgetbuch_budgets')) || { "Lebensmittel": 400, "Wohnen": 800, "Energie": 150, "Auto": 250, "Freizeit": 200, "Elektronik": 100, "Gesundheit": 80, "Verträge": 120, "Sonstiges": 100 }; } catch(e) { return {}; } }
-        function saveBudgets(data) { localStorage.setItem('budgetbuch_budgets', JSON.stringify(data)); }
+        function saveBudgets(data, sync = true) { localStorage.setItem('budgetbuch_budgets', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getSavingsGoals() { try { return JSON.parse(localStorage.getItem('budgetbuch_goals')) || []; } catch(e) { return []; } }
-        function saveSavingsGoals(data) { localStorage.setItem('budgetbuch_goals', JSON.stringify(data)); }
+        function saveSavingsGoals(data, sync = true) { localStorage.setItem('budgetbuch_goals', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getEvents() { try { return JSON.parse(localStorage.getItem('wg_events')) || []; } catch(e) { return []; } }
-        function saveEvents(data) { localStorage.setItem('wg_events', JSON.stringify(data)); }
+        function saveEvents(data, sync = true) { localStorage.setItem('wg_events', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getInventory() { try { return JSON.parse(localStorage.getItem('wg_inventory')) || []; } catch(e) { return []; } }
-        function saveInventory(data) { localStorage.setItem('wg_inventory', JSON.stringify(data)); }
+        function saveInventory(data, sync = true) { localStorage.setItem('wg_inventory', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getDiets() { try { return JSON.parse(localStorage.getItem('wg_diets')) || {}; } catch(e) { return {}; } }
-        function saveDiets(data) { localStorage.setItem('wg_diets', JSON.stringify(data)); }
+        function saveDiets(data, sync = true) { localStorage.setItem('wg_diets', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getCleaningPlan() { try { return JSON.parse(localStorage.getItem('wg_cleaning')) || [{ id: 1, task: "Badezimmer & WC wischen", assignee: "Alex", done: false }, { id: 2, task: "Küche & Herd reinigen", assignee: "Sam", done: false }]; } catch(e) { return []; } }
-        function saveCleaningPlan(data) { localStorage.setItem('wg_cleaning', JSON.stringify(data)); }
+        function saveCleaningPlan(data, sync = true) { localStorage.setItem('wg_cleaning', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getShoppingList() { try { return JSON.parse(localStorage.getItem('wg_shopping')) || []; } catch(e) { return []; } }
-        function saveShoppingList(data) { localStorage.setItem('wg_shopping', JSON.stringify(data)); }
+        function saveShoppingList(data, sync = true) { localStorage.setItem('wg_shopping', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getCookingPlan() { try { return JSON.parse(localStorage.getItem('wg_cooking')) || daysOfWeek.map(d => ({ day: d, chef: "Frei", dish: "", ingredients: "" })); } catch(e) { return []; } }
-        function saveCookingPlan(data) { localStorage.setItem('wg_cooking', JSON.stringify(data)); }
+        function saveCookingPlan(data, sync = true) { localStorage.setItem('wg_cooking', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getContracts() { try { return JSON.parse(localStorage.getItem('wg_contracts')) || []; } catch(e) { return []; } }
-        function saveContracts(data) { localStorage.setItem('wg_contracts', JSON.stringify(data)); }
+        function saveContracts(data, sync = true) { localStorage.setItem('wg_contracts', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getInfoData() { try { return JSON.parse(localStorage.getItem('wg_infoboard')) || { wifi: "WG-Supernet-2026", landlord: "Hr. Weber (+49 170 1234567)", caretaker: "Hr. Müller (+49 171 9876543)", trash: "Bio (Di) | Restmüll (Fr)" }; } catch(e) { return {}; } }
-        function saveInfoData(data) { localStorage.setItem('wg_infoboard', JSON.stringify(data)); }
+        function saveInfoData(data, sync = true) { localStorage.setItem('wg_infoboard', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function updateFormUI() {
             const type = document.querySelector('input[name="entryType"]:checked').value;
@@ -981,7 +1122,6 @@
                 return;
             }
 
-            // Pinned notes first
             const sortedNotes = [...notes].sort((a, b) => (b.pinned === a.pinned) ? 0 : b.pinned ? 1 : -1);
 
             container.innerHTML = sortedNotes.map(n => `
