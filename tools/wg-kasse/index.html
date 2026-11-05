@@ -80,13 +80,16 @@
     <!-- Main Content -->
     <main class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
         
-        <!-- Action Bar Sauber Anordnet -->
+        <!-- Action Bar Sauber Anordnet mit Sync Button -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
             <a href="../../index.html" class="w-full sm:w-auto text-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold border border-gray-200 transition-all">
                 ← Zurück zur Startseite
             </a>
             
             <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-stretch sm:justify-end">
+                <button onclick="manuelleSynchronisation()" class="flex-1 sm:flex-none px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-xl text-xs font-bold shadow-sm transition-all">
+                    🔄 Manuell Synchronisieren
+                </button>
                 <button onclick="exportAbrechnungPDF()" class="flex-1 sm:flex-none px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-xl text-xs font-bold shadow-sm transition-all">
                     📄 Finanz-Bericht (PDF)
                 </button>
@@ -235,22 +238,22 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                 <div>
                     <label class="block font-semibold text-gray-600 mb-1">Titel / Artikel *:</label>
-                    <input type="text" id="receiptTitle" placeholder="z. B. Spülmittel, Miete, Gehalt" class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="receiptTitle" placeholder="z. B. Spülmittel, Miete, Gehalt" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Händler / Partner / Quelle:</label>
+                    <label class="block font-semibold text-gray-600 mb-1">Händler / Partner / Quelle (optional):</label>
                     <input type="text" id="receiptStore" placeholder="z. B. Rewe, MediaMarkt, Arbeitgeber" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
                     <label class="block font-semibold text-gray-600 mb-1">Kaufdatum *:</label>
-                    <input type="date" id="receiptDate" class="w-full p-2.5 border rounded-xl">
+                    <input type="date" id="receiptDate" required class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
                 <div>
                     <label class="block font-semibold text-gray-600 mb-1">Betrag (€) *:</label>
-                    <input type="number" step="0.01" id="receiptPrice" placeholder="29.90" class="w-full p-2.5 border rounded-xl font-bold">
+                    <input type="number" step="0.01" id="receiptPrice" placeholder="29.90" required class="w-full p-2.5 border rounded-xl font-bold">
                 </div>
                 <div>
                     <label class="block font-semibold text-gray-600 mb-1">Kategorie:</label>
@@ -287,11 +290,11 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200 text-xs">
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Seriennummer / S/N:</label>
+                    <label class="block font-semibold text-gray-600 mb-1">Seriennummer / S/N (optional):</label>
                     <input type="text" id="receiptSN" placeholder="z. B. SN-987456123" class="w-full p-2 border rounded-lg bg-white">
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Lagerort Karton / Zubehör:</label>
+                    <label class="block font-semibold text-gray-600 mb-1">Lagerort Karton (optional):</label>
                     <input type="text" id="receiptLocation" placeholder="z. B. Keller Regal 2" class="w-full p-2 border rounded-lg bg-white">
                 </div>
                 <div class="flex flex-col justify-center space-y-1.5 pt-1">
@@ -435,11 +438,11 @@
             <div id="contractList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- KO-FI SUPPORT BUTTON -->
-        <div class="pt-6 pb-2 text-center">
-            <a href="https://ko-fi.com/duhrrom11" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-3 bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold rounded-2xl text-xs shadow-md border border-amber-300 transition-all transform hover:-translate-y-0.5">
+        <!-- SPRÜCHE-ROTIERENDER KO-FI SUPPORT BUTTON (VOR DEM FOOTER) -->
+        <div class="pt-8 pb-4 text-center">
+            <a href="https://ko-fi.com/duhrrom11" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3.5 bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold rounded-2xl text-xs shadow-md border border-amber-300 transition-all transform hover:-translate-y-0.5">
                 <span>☕</span>
-                <span>Gefällt dir das Tool? Unterstütze mich auf Ko-fi</span>
+                <span id="kofiText">Spendier dem Entwickler einen Kaffee</span>
             </a>
         </div>
 
@@ -457,10 +460,10 @@
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block font-semibold mb-1">Titel / Betreff *:</label>
-                    <input type="text" id="noteTitleInput" placeholder="z. B. Paket im Flur, Handwerker kommt" class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="noteTitleInput" placeholder="z. B. Paket im Flur, Handwerker kommt" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Nachricht / Notiz *:</label>
+                    <label class="block font-semibold mb-1">Nachricht / Notiz (optional):</label>
                     <textarea id="noteContentInput" rows="3" placeholder="Notiere hier wichtige Infos für die WG..." class="w-full p-2.5 border rounded-xl resize-none"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
@@ -493,7 +496,7 @@
         </div>
     </div>
 
-    <!-- Modal: Termin -->
+    <!-- Modal: Termin (mit Time- & Date-Picker) -->
     <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
@@ -512,17 +515,21 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Bezeichnung / Details *:</label>
-                    <input type="text" id="eventTitle" placeholder="z. B. Kochwäsche 60°, Besuch von Anna" class="w-full p-2.5 border rounded-xl">
+                    <label class="block font-semibold mb-1">Titel / Bezeichnung *:</label>
+                    <input type="text" id="eventTitle" placeholder="z. B. Kochwäsche 60°, Besuch von Anna" required class="w-full p-2.5 border rounded-xl">
                 </div>
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-3 gap-2">
                     <div>
                         <label class="block font-semibold mb-1">Datum *:</label>
-                        <input type="date" id="eventDate" class="w-full p-2.5 border rounded-xl">
+                        <input type="date" id="eventDate" required class="w-full p-2 border rounded-xl bg-white">
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1">Uhrzeit / Slot:</label>
-                        <input type="text" id="eventTime" placeholder="z. B. 14:00 - 16:30 Uhr" class="w-full p-2.5 border rounded-xl">
+                        <label class="block font-semibold mb-1">Startzeit (opt.):</label>
+                        <input type="time" id="eventTimeStart" class="w-full p-2 border rounded-xl bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Endzeit (opt.):</label>
+                        <input type="time" id="eventTimeEnd" class="w-full p-2 border rounded-xl bg-white">
                     </div>
                 </div>
                 <div>
@@ -546,17 +553,17 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">Gegenstand *:</label>
-                    <input type="text" id="invTitle" placeholder="z. B. Mikrowelle, Kaffeemaschine" class="w-full p-2.5 border rounded-xl">
+                    <label class="block font-semibold mb-1">Gegenstand / Titel *:</label>
+                    <input type="text" id="invTitle" placeholder="z. B. Mikrowelle, Kaffeemaschine" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block font-semibold mb-1">Kaufpreis (€) *:</label>
-                        <input type="number" step="0.01" id="invPrice" placeholder="250.00" class="w-full p-2.5 border rounded-xl">
+                        <input type="number" step="0.01" id="invPrice" placeholder="250.00" required class="w-full p-2.5 border rounded-xl">
                     </div>
                     <div>
                         <label class="block font-semibold mb-1">Kaufdatum *:</label>
-                        <input type="date" id="invDate" class="w-full p-2.5 border rounded-xl">
+                        <input type="date" id="invDate" required class="w-full p-2.5 border rounded-xl">
                     </div>
                 </div>
                 <div>
@@ -610,12 +617,12 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">Bezeichnung des Zieles *:</label>
-                    <input type="text" id="goalTitle" placeholder="z. B. Urlaub, Kaution-Reserve" class="w-full p-2.5 border rounded-xl">
+                    <label class="block font-semibold mb-1">Titel / Bezeichnung *:</label>
+                    <input type="text" id="goalTitle" placeholder="z. B. Urlaub, Kaution-Reserve" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">Zielbetrag (€) *:</label>
-                    <input type="number" step="0.01" id="goalTarget" placeholder="1500" class="w-full p-2.5 border rounded-xl">
+                    <input type="number" step="0.01" id="goalTarget" placeholder="1500" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">Bereits gespart (€):</label>
@@ -683,7 +690,7 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div class="flex gap-2">
-                    <input type="text" id="newFlatmateName" placeholder="Name" class="flex-1 p-2.5 border rounded-xl">
+                    <input type="text" id="newFlatmateName" placeholder="Name" required class="flex-1 p-2.5 border rounded-xl">
                     <button onclick="addFlatmate()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl">+ Hinzufügen</button>
                 </div>
                 <div id="flatmateList" class="space-y-2 max-h-48 overflow-y-auto"></div>
@@ -704,7 +711,7 @@
             <div class="space-y-3 text-xs">
                 <div>
                     <label class="block font-semibold mb-1">Aufgabe / Bereich *:</label>
-                    <input type="text" id="cleanTaskTitle" placeholder="z. B. Badezimmer wischen" class="w-full p-2.5 border rounded-xl">
+                    <input type="text" id="cleanTaskTitle" placeholder="z. B. Badezimmer wischen" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">Zuständig gestartet mit:</label>
@@ -733,7 +740,7 @@
         </div>
     </div>
 
-    <!-- Modal: Vertrag -->
+    <!-- Modal: Vertrag (mit Kündigungsfrist Date-Picker) -->
     <div id="contractModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
@@ -742,20 +749,20 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">Vertragsname *:</label>
-                    <input type="text" id="contractName" placeholder="z. B. Vodafone, GEZ" class="w-full p-2.5 border rounded-xl">
+                    <label class="block font-semibold mb-1">Vertragsname / Titel *:</label>
+                    <input type="text" id="contractName" placeholder="z. B. Vodafone, GEZ" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">Monatliche Kosten (€) *:</label>
-                    <input type="number" step="0.01" id="contractPrice" placeholder="39.99" class="w-full p-2.5 border rounded-xl">
+                    <input type="number" step="0.01" id="contractPrice" placeholder="39.99" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
                     <label class="block font-semibold mb-1">Hauptzahler:</label>
                     <select id="contractPayer" class="w-full p-2.5 border rounded-xl bg-white"></select>
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Kündigungsfrist Datum:</label>
-                    <input type="date" id="contractNoticeDate" class="w-full p-2.5 border rounded-xl">
+                    <label class="block font-semibold mb-1">Kündigungsfrist Datum (optional):</label>
+                    <input type="date" id="contractNoticeDate" class="w-full p-2.5 border rounded-xl bg-white">
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2 border-t">
@@ -773,6 +780,35 @@
         const NPOINT_API_BASE = "https://api.npoint.io/";
         const urlParams = new URLSearchParams(window.location.search);
         let wgBinId = urlParams.get('id');
+
+        // KO-FI SPRÜCHE ROTATOR
+        const kofiSprueche = [
+            "Spendier dem Entwickler einen Kaffee ☕",
+            "Motivations-Kaffee für den WG-Planer nachwerfen 🍕",
+            "WG-Frieden bewahren & Kaffee spendieren 🚀",
+            "Code braucht Koffein – Support auf Ko-fi ☕",
+            "Dir gefällt das Tool? Spendier einen Kaffee! 🎉",
+            "Werkzeuge wie dieses kostenlos halten & Kaffee spendieren ☕"
+        ];
+
+        function rotateKofiText() {
+            const kofiEl = document.getElementById('kofiText');
+            if (kofiEl) {
+                const idx = Math.floor(Math.random() * kofiSprueche.length);
+                kofiEl.innerText = kofiSprueche[idx];
+            }
+        }
+
+        // Manuelle Synchronisation per Button
+        async function manuelleSynchronisation() {
+            if (!wgBinId) return alert("Keine WG-ID aktiv.");
+            try {
+                await ladeWGausCloud();
+                alert("✅ Erfolgreich mit der Cloud synchronisiert!");
+            } catch (e) {
+                alert("❌ Synchronisation fehlgeschlagen.");
+            }
+        }
 
         // Funktion zum Erstellen einer neuen Cloud-Datenbank
         async function erstelleNeueWGKonfiguration() {
@@ -819,7 +855,7 @@
                 console.warn("npoint.io nicht erreichbar, versuche Ausweich-Server...", e);
             }
 
-            // WEG 2 (FALLBACK): jsonkeeper.com ansteuern, falls npoint geblockt wird
+            // WEG 2 (FALLBACK): jsonkeeper.com ansteuern
             try {
                 const responseFallback = await fetch("https://jsonkeeper.com/b/new", {
                     method: 'POST',
@@ -838,7 +874,7 @@
                 console.error("Fallback ebenfalls fehlerhaft:", e2);
             }
 
-            // WEG 3 (NOT-ID GENERATOR): Erstelle eine lokale Session-ID, damit der Nutzer nicht blockiert wird
+            // WEG 3 (NOT-ID GENERATOR)
             const ersatzID = "wg_" + Math.random().toString(36).substring(2, 9);
             alert("Hinweis: Es wurde eine temporäre WG-ID erstellt. Du kannst den WG-Planer sofort nutzen!");
             window.location.href = window.location.pathname + "?id=" + ersatzID;
@@ -951,6 +987,7 @@
         let editingNoteId = null;
 
         document.addEventListener('DOMContentLoaded', () => {
+            rotateKofiText();
             if (!wgBinId) {
                 zeigeErstellungsScreen();
                 return;
@@ -1156,7 +1193,7 @@
                         <div class="flex justify-between items-start">
                             <h4 class="font-extrabold text-sm leading-tight">${n.title}</h4>
                         </div>
-                        <p class="text-xs leading-relaxed whitespace-pre-line opacity-90">${n.content}</p>
+                        ${n.content ? `<p class="text-xs leading-relaxed whitespace-pre-line opacity-90">${n.content}</p>` : ''}
                     </div>
                     <div class="pt-2 border-t border-black/10 flex justify-between items-center text-[10px] font-semibold opacity-80">
                         <span>👤 ${n.author} (${n.date || 'Heute'})</span>
@@ -1193,7 +1230,7 @@
             const color = document.getElementById('noteColorInput').value;
             const pinned = document.getElementById('notePinnedInput').checked;
 
-            if (!title || !content) return alert("Bitte Titel und Nachricht ausfüllen!");
+            if (!title) return alert("Bitte mindestens einen Titel angeben!");
 
             const notes = getNotes();
             const today = new Date().toISOString().split('T')[0];
@@ -1263,19 +1300,25 @@
                 "Allgemein": "bg-sky-50 border-sky-200 text-sky-900"
             };
 
-            container.innerHTML = events.map(ev => `
-                <div class="p-3 border rounded-xl flex justify-between items-start text-xs ${colors[ev.type] || 'bg-gray-50 border-gray-200'}">
-                    <div>
-                        <div class="flex items-center space-x-1 font-bold">
-                            <span>${icons[ev.type] || '📅'}</span>
-                            <span>${ev.title}</span>
+            container.innerHTML = events.map(ev => {
+                let timeStr = "";
+                if (ev.timeStart && ev.timeEnd) timeStr = ` | ⏰ ${ev.timeStart} - ${ev.timeEnd} Uhr`;
+                else if (ev.timeStart) timeStr = ` | ⏰ ${ev.timeStart} Uhr`;
+
+                return `
+                    <div class="p-3 border rounded-xl flex justify-between items-start text-xs ${colors[ev.type] || 'bg-gray-50 border-gray-200'}">
+                        <div>
+                            <div class="flex items-center space-x-1 font-bold">
+                                <span>${icons[ev.type] || '📅'}</span>
+                                <span>${ev.title}</span>
+                            </div>
+                            <p class="text-[11px] opacity-80 mt-1">📅 ${ev.date}${timeStr}</p>
+                            <p class="text-[10px] opacity-70">Gebucht von: <strong>${ev.owner}</strong></p>
                         </div>
-                        <p class="text-[11px] opacity-80 mt-1">📅 ${ev.date} ${ev.time ? '| ⏰ ' + ev.time : ''}</p>
-                        <p class="text-[10px] opacity-70">Gebucht von: <strong>${ev.owner}</strong></p>
+                        <button onclick="deleteEvent(${ev.id})" class="text-gray-400 hover:text-red-500 font-bold text-sm">&times;</button>
                     </div>
-                    <button onclick="deleteEvent(${ev.id})" class="text-gray-400 hover:text-red-500 font-bold text-sm">&times;</button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function openAddEventModal() { document.getElementById('eventModal').classList.remove('hidden'); document.getElementById('eventModal').classList.add('flex'); }
@@ -1285,13 +1328,14 @@
             const type = document.getElementById('eventType').value;
             const title = document.getElementById('eventTitle').value.trim();
             const date = document.getElementById('eventDate').value;
-            const time = document.getElementById('eventTime').value.trim();
+            const timeStart = document.getElementById('eventTimeStart').value;
+            const timeEnd = document.getElementById('eventTimeEnd').value;
             const owner = document.getElementById('eventOwner').value;
 
-            if (!title || !date) return alert("Bitte Titel und Datum angeben!");
+            if (!title || !date) return alert("Bitte mindestens einen Titel und ein Datum angeben!");
 
             const events = getEvents();
-            events.push({ id: Date.now(), type, title, date, time, owner });
+            events.push({ id: Date.now(), type, title, date, timeStart, timeEnd, owner });
             saveEvents(events);
             closeAddEventModal();
             renderApp();
@@ -1346,7 +1390,7 @@
             const price = parseFloat(document.getElementById('invPrice').value) || 0;
             const date = document.getElementById('invDate').value;
             const lifespan = parseFloat(document.getElementById('invLifespan').value) || 5;
-            if (!title || price <= 0 || !date) return alert("Bitte Angaben vervollständigen!");
+            if (!title || price <= 0 || !date) return alert("Bitte Pflichtfelder ausfüllen!");
             const items = getInventory(); items.push({ id: Date.now(), title, price, date, lifespan }); saveInventory(items); closeAddInventoryModal(); renderApp();
         }
         function deleteInventoryItem(id) { saveInventory(getInventory().filter(i => i.id !== id)); renderApp(); }
@@ -1376,8 +1420,8 @@
                     <div class="p-3 bg-gray-50 border rounded-xl space-y-2">
                         <span class="font-bold text-gray-900">${m}</span>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" data-mate="${m}" class="dietPref input w-full p-2 border rounded" placeholder="z. B. Vegan" value="${info.pref}">
-                            <input type="text" data-mate="${m}" class="dietAllergy input w-full p-2 border rounded" placeholder="z. B. Laktose" value="${info.allergy}">
+                            <input type="text" data-mate="${m}" class="dietPref input w-full p-2 border rounded" placeholder="Ernährung (z. B. Vegan)" value="${info.pref}">
+                            <input type="text" data-mate="${m}" class="dietAllergy input w-full p-2 border rounded" placeholder="Unverträglichkeiten (opt.)" value="${info.allergy}">
                         </div>
                     </div>
                 `;
@@ -1483,7 +1527,7 @@
             const entryType = document.querySelector('input[name="entryType"]:checked').value;
             const splitWith = Array.from(document.querySelectorAll('input[name="splitMate"]:checked')).map(cb => cb.value);
 
-            if (!title || !date || price <= 0) return alert("Bitte Pflichtfelder ausfüllen!");
+            if (!title || !date || price <= 0) return alert("Bitte mindestens Titel, Kaufdatum und Betrag angeben!");
 
             let data = getData();
             if (editingReceiptId) {
@@ -1524,7 +1568,7 @@
         }
         function openAddGoalModal() { document.getElementById('savingsModal').classList.remove('hidden'); document.getElementById('savingsModal').classList.add('flex'); }
         function closeSavingsModal() { document.getElementById('savingsModal').classList.remove('flex'); document.getElementById('savingsModal').classList.add('hidden'); }
-        function saveSavingsGoal() { const title = document.getElementById('goalTitle').value.trim(); const target = parseFloat(document.getElementById('goalTarget').value) || 0; const current = parseFloat(document.getElementById('goalCurrent').value) || 0; if (!title || target <= 0) return; const goals = getSavingsGoals(); goals.push({ id: Date.now(), title, target, current }); saveSavingsGoals(goals); closeSavingsModal(); renderApp(); }
+        function saveSavingsGoal() { const title = document.getElementById('goalTitle').value.trim(); const target = parseFloat(document.getElementById('goalTarget').value) || 0; const current = parseFloat(document.getElementById('goalCurrent').value) || 0; if (!title || target <= 0) return alert("Bitte mindestens Titel und Zielbetrag angeben!"); const goals = getSavingsGoals(); goals.push({ id: Date.now(), title, target, current }); saveSavingsGoals(goals); closeSavingsModal(); renderApp(); }
         function depositGoal(id) { const goals = getSavingsGoals(); const goal = goals.find(g => g.id === id); if (!goal) return; const amount = parseFloat(prompt(`Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50")); if (amount > 0) { goal.current += amount; saveSavingsGoals(goals); renderApp(); } }
         function deleteSavingsGoal(id) { saveSavingsGoals(getSavingsGoals().filter(g => g.id !== id)); renderApp(); }
 
@@ -1546,7 +1590,7 @@
         function rotateCleaningPlan() { const plan = getCleaningPlan(); const mates = getFlatmates(); plan.forEach(p => { const curr = mates.indexOf(p.assignee); p.assignee = mates[(curr + 1) % mates.length]; p.done = false; }); saveCleaningPlan(plan); renderCleaningPlan(); }
         function openAddCleanTaskModal() { document.getElementById('cleanTaskModal').classList.remove('hidden'); document.getElementById('cleanTaskModal').classList.add('flex'); }
         function closeAddCleanTaskModal() { document.getElementById('cleanTaskModal').classList.remove('flex'); document.getElementById('cleanTaskModal').classList.add('hidden'); }
-        function saveCleanTask() { const task = document.getElementById('cleanTaskTitle').value.trim(); const assignee = document.getElementById('cleanTaskAssignee').value; if (!task) return; const plan = getCleaningPlan(); plan.push({ id: Date.now(), task, assignee, done: false }); saveCleanTask(plan); closeAddCleanTaskModal(); renderApp(); }
+        function saveCleanTask() { const task = document.getElementById('cleanTaskTitle').value.trim(); const assignee = document.getElementById('cleanTaskAssignee').value; if (!task) return alert("Bitte mindestens eine Aufgabe angeben!"); const plan = getCleaningPlan(); plan.push({ id: Date.now(), task, assignee, done: false }); saveCleanTask(plan); closeAddCleanTaskModal(); renderApp(); }
         function deleteCleanTask(id) { saveCleaningPlan(getCleaningPlan().filter(p => p.id !== id)); renderApp(); }
 
         /* Einkaufsliste */
@@ -1564,7 +1608,7 @@
                 </div>
             `).join('');
         }
-        function addShoppingItem(customTitle) { const title = customTitle || document.getElementById('newShoppingItem').value.trim(); if (!title) return; const items = getShoppingList(); items.push({ id: Date.now(), title }); saveShoppingList(items); if (!customTitle) document.getElementById('newShoppingItem').value = ""; renderShoppingList(); }
+        function addShoppingItem(customTitle) { const title = customTitle || document.getElementById('newShoppingItem').value.trim(); if (!title) return alert("Bitte Bezeichnung eingeben!"); const items = getShoppingList(); items.push({ id: Date.now(), title }); saveShoppingList(items); if (!customTitle) document.getElementById('newShoppingItem').value = ""; renderShoppingList(); }
         function deleteShoppingItem(id) { saveShoppingList(getShoppingList().filter(i => i.id !== id)); renderShoppingList(); }
         function transferShoppingToExpense(id) {
             const item = getShoppingList().find(i => i.id === id); if (!item) return; const flatmates = getFlatmates();
@@ -1588,8 +1632,8 @@
             document.getElementById('cookingInputList').innerHTML = plan.map((p, idx) => `
                 <div class="p-2.5 bg-gray-50 border rounded-xl space-y-1.5">
                     <div class="flex justify-between font-bold"><span>${p.day}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">Frei</option>${flatmates.map(m => `<option value="${m}" ${p.chef === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
-                    <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="Gericht" value="${p.dish || ''}">
-                    <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="Zutaten getrennt mit Komma" value="${p.ingredients || ''}">
+                    <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="Gericht / Rezept (opt.)" value="${p.dish || ''}">
+                    <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="Zutaten mit Komma trennen (opt.)" value="${p.ingredients || ''}">
                 </div>
             `).join('');
             document.getElementById('cookingModal').classList.remove('hidden'); document.getElementById('cookingModal').classList.add('flex');
@@ -1615,7 +1659,7 @@
         }
         function openContractModal() { document.getElementById('contractModal').classList.remove('hidden'); document.getElementById('contractModal').classList.add('flex'); }
         function closeContractModal() { document.getElementById('contractModal').classList.remove('flex'); document.getElementById('contractModal').classList.add('hidden'); }
-        function saveContract() { const name = document.getElementById('contractName').value.trim(); const price = parseFloat(document.getElementById('contractPrice').value) || 0; const payer = document.getElementById('contractPayer').value; const noticeDate = document.getElementById('contractNoticeDate').value; if (!name || price <= 0) return; const contracts = getContracts(); contracts.push({ id: Date.now(), name, price, payer, noticeDate }); saveContracts(contracts); closeContractModal(); renderApp(); }
+        function saveContract() { const name = document.getElementById('contractName').value.trim(); const price = parseFloat(document.getElementById('contractPrice').value) || 0; const payer = document.getElementById('contractPayer').value; const noticeDate = document.getElementById('contractNoticeDate').value; if (!name || price <= 0) return alert("Bitte mindestens Vertragsname und Kosten angeben!"); const contracts = getContracts(); contracts.push({ id: Date.now(), name, price, payer, noticeDate }); saveContracts(contracts); closeContractModal(); renderApp(); }
         function deleteContract(id) { saveContracts(getContracts().filter(c => c.id !== id)); renderApp(); }
 
         /* Infoboard & WLAN QR */
@@ -1654,7 +1698,7 @@
                 <div class="flex justify-between items-center p-2 bg-gray-50 border rounded-xl"><span>${m}</span><button onclick="removeFlatmate(${idx})" class="text-red-500 font-bold">Löschen</button></div>
             `).join('');
         }
-        function addFlatmate() { const name = document.getElementById('newFlatmateName').value.trim(); if (!name) return; const mates = getFlatmates(); mates.push(name); saveFlatmates(mates); document.getElementById('newFlatmateName').value = ""; renderApp(); }
+        function addFlatmate() { const name = document.getElementById('newFlatmateName').value.trim(); if (!name) return alert("Bitte einen Namen eingeben!"); const mates = getFlatmates(); mates.push(name); saveFlatmates(mates); document.getElementById('newFlatmateName').value = ""; renderApp(); }
         function removeFlatmate(idx) { const mates = getFlatmates(); mates.splice(idx, 1); saveFlatmates(mates); renderApp(); }
 
         /* Export PDF */
