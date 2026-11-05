@@ -14,6 +14,11 @@
     <meta property="og:description" content="Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://duhrrom11.github.io/Helferlein/index.html">
+    <meta property="og:image"
+      content="https://duhrrom11.github.io/Helferlein/assets/preview.jpg">
+
+<meta name="twitter:card"
+      content="summary_large_image">
     
     <!-- PWA / App-Modus Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -556,7 +561,7 @@
             setStat('stats-kfz', `${getCount(['kfz_pass', 'kfz_data', 'vehicles', 'autos'])} Fahrzeuge aktiv`);
             setStat(
     'stats-haustier',
-    `{getCount([
+    `${getCount([
         'haustier_pass_pro_v5',
         'haustier_pass',
         'haustier_data',
@@ -604,7 +609,9 @@
         const key = localStorage.key(i);
         const value = localStorage.getItem(key);
 
-        backup.localStorage[key] = value;
+        if (!key.startsWith("firebase:")) {
+    backup.localStorage[key] = value;
+}
 
         const prefix =
             toolPrefixes.find(p => key.startsWith(p))
@@ -674,15 +681,25 @@
 
             let count = 0;
 
-            for (const key in backup.localStorage) {
+            const restoreData =
+    backup.localStorage || backup;
 
-                localStorage.setItem(
-                    key,
-                    backup.localStorage[key]
-                );
+for (const key in restoreData) {
 
-                count++;
-            }
+    if (
+        key === "version" ||
+        key === "app" ||
+        key === "created" ||
+        key === "tools"
+    ) continue;
+
+    localStorage.setItem(
+        key,
+        restoreData[key]
+    );
+
+    count++;
+}
 
             loadStats();
             initFavorites();
@@ -715,8 +732,10 @@
         window.saveSettings = saveSettings;
         window.toggleFavorite = toggleFavorite;
         window.filterTools = filterTools;
-        window.exportGlobalBackup = exportGlobalBackup;
-        window.importGlobalBackup = importGlobalBackup;
+window.loadStats = loadStats;
+window.initFavorites = initFavorites;
+window.exportGlobalBackup = exportGlobalBackup;
+window.importGlobalBackup = importGlobalBackup;
 
         document.addEventListener('DOMContentLoaded', () => {
             // Ko-fi Spruch beim Laden der Seite zufällig auswählen
@@ -788,8 +807,11 @@
                 try {
                     let globalBackup = {};
                     for (let i = 0; i < localStorage.length; i++) {
-                        let key = localStorage.key(i); 
-                        let val = localStorage.getItem(key);
+                        let key = localStorage.key(i);
+
+if (key.startsWith("firebase:")) continue;
+
+let val = localStorage.getItem(key);
                         try { globalBackup[key] = JSON.parse(val); } catch(e) { globalBackup[key] = val; }
                     }
                     await setDoc(doc(db, "hubs", cloudId), globalBackup);
