@@ -147,9 +147,9 @@
             </div>
         </div>
 
-        <!-- STAMMDATEN & KALENDER -->
+        <!-- STAMMDATEN -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 lg:col-span-1">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 lg:col-span-3">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">ℹ️ WG-Stammdaten</h3>
                     <div class="flex gap-1.5">
@@ -157,24 +157,11 @@
                         <button onclick="openInfoboardModal()" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✏️ Edit</button>
                     </div>
                 </div>
-                <div class="p-4 bg-gray-50 border rounded-2xl text-xs space-y-2.5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 border rounded-2xl text-xs">
                     <p>📶 <strong>WLAN-Passwort:</strong> <br><span id="infoWifi" class="font-mono bg-white px-2 py-1 rounded border block mt-1 text-center font-bold">Lade...</span></p>
-                    <p>🏠 <strong>Vermieter:</strong> <br><span id="infoLandlord" class="font-semibold text-gray-700">Lade...</span></p>
-                    <p>🛠️ <strong>Hausmeister / Notdienst:</strong> <br><span id="infoCaretaker" class="font-semibold text-gray-700">Lade...</span></p>
-                    <p>🗑️ <strong>Müllabfuhr:</strong> <br><span id="infoTrash" class="font-semibold text-gray-700">Lade...</span></p>
-                </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 lg:col-span-2">
-                <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
-                    <div>
-                        <h3 class="font-bold text-base text-gray-900">📅 WG-Kalender & Slots</h3>
-                        <p class="text-xs text-gray-500">Wasch-Slots, Gäste-Übernachtungen & Events</p>
-                    </div>
-                    <button onclick="openAddEventModal()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm">+ Slot / Termin</button>
-                </div>
-                <div id="eventList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-56 overflow-y-auto pr-1">
-                    <p class="text-xs text-gray-400 text-center col-span-2 py-4">Keine anstehenden Termine oder Slots.</p>
+                    <p>🏠 <strong>Vermieter:</strong> <br><span id="infoLandlord" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
+                    <p>🛠️ <strong>Hausmeister / Notdienst:</strong> <br><span id="infoCaretaker" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
+                    <p>🗑️ <strong>Müllabfuhr:</strong> <br><span id="infoTrash" class="font-semibold text-gray-700 block mt-1">Lade...</span></p>
                 </div>
             </div>
         </div>
@@ -380,6 +367,20 @@
                 <button onclick="openAddInventoryModal()" class="px-3 py-1 bg-emerald-700 text-white hover:bg-emerald-800 rounded-lg text-xs font-bold shadow-sm">+ Gegenstand erfassen</button>
             </div>
             <div id="inventoryList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- WG-KALENDER & SLOTS (HIER PLATZIERT VOR DEM PUTZPLAN) -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
+                <div>
+                    <h3 class="font-bold text-base text-gray-900">📅 WG-Kalender & Slots</h3>
+                    <p class="text-xs text-gray-500">Wasch-Slots, Gäste-Übernachtungen & Events</p>
+                </div>
+                <button onclick="openAddEventModal()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm">+ Slot / Termin</button>
+            </div>
+            <div id="eventList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-56 overflow-y-auto pr-1">
+                <p class="text-xs text-gray-400 text-center col-span-3 py-4">Keine anstehenden Termine oder Slots.</p>
+            </div>
         </div>
 
         <!-- PUTZPLAN & EINKAUFSLISTE -->
@@ -855,7 +856,6 @@
                 infoboard: { wifi: "WG-Supernet-2026", landlord: "Hr. Weber (+49 170 1234567)", caretaker: "Hr. Müller (+49 171 9876543)", trash: "Bio (Di) | Restmüll (Fr)" }
             };
 
-            // Migration von alten String-Arrays zu neuen Objekten falls nötig
             localStorage.setItem('wg_flatmates', JSON.stringify(leereWG.flatmates));
             localStorage.setItem('wg_notes', JSON.stringify(leereWG.notes));
             localStorage.setItem('kassenbon_data', JSON.stringify(leereWG.data));
@@ -922,7 +922,6 @@
                     const cloudObj = await response.json();
                     if (cloudObj && Object.keys(cloudObj).length > 0) {
                         if (cloudObj.flatmates !== undefined) {
-                            // Rückwärtskompatibilität: Falls alte Flatmates Strings waren, in Objekte konvertieren
                             let fm = cloudObj.flatmates.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
                             localStorage.setItem('wg_flatmates', JSON.stringify(fm));
                         }
@@ -1012,7 +1011,6 @@
         let editingReceiptId = null;
         let editingNoteId = null;
 
-        // GEFIXTER LADESTART: Wartet zwingend auf Cloud-Daten vor dem Rendern!
         document.addEventListener('DOMContentLoaded', async () => {
             rotateKofiText();
             if (!wgBinId) {
@@ -1283,7 +1281,7 @@
         /* Events */
         function renderEvents() {
             const events = getEvents(); const container = document.getElementById('eventList');
-            if (events.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-2 py-4">Keine anstehenden Termine oder Slots.</p>`; return; }
+            if (events.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center col-span-3 py-4">Keine anstehenden Termine oder Slots.</p>`; return; }
             const icons = { "Waschmaschine": "🧺", "Trockner": "💨", "Gäste": "👤", "Party": "🎉", "Allgemein": "📅" };
             container.innerHTML = events.map(ev => `
                 <div class="p-3 border rounded-xl flex justify-between items-start text-xs bg-gray-50">
@@ -1717,9 +1715,7 @@
             saveBudgets(budgets); closeBudgetModal(); renderApp();
         }
 
-        /* ========================================================
-           NEUE ERWEITERTE MITGLIEDER- & KONTAKTVERWALTUNG
-           ======================================================== */
+        /* Mitglieder & Kontakte */
         function openMitbewohnerModal() {
             resetMateForm();
             document.getElementById('mitbewohnerModal').classList.remove('hidden');
@@ -1821,9 +1817,8 @@
             }
         }
 
-        /* NATIVES HANDY-ADRESSBUCH IMPORTIEREN (navigator.contacts) */
+        /* Natives Handy-Adressbuch importieren */
         async function importPhoneContacts() {
-            // Prüfen ob die Contacts API vom Browser / Gerät unterstützt wird
             if ('contacts' in navigator && 'Picker' in window.ContactsManager || 'contacts' in navigator) {
                 try {
                     const supportedProperties = ['name', 'email', 'tel'];
@@ -1839,7 +1834,6 @@
                             const email = c.email && c.email[0] ? c.email[0] : "";
                             const phone = c.tel && c.tel[0] ? c.tel[0] : "";
 
-                            // Verhindern, dass exakt gleiche Nummer doppelt importiert wird
                             if (!mates.some(m => m.phone === phone && phone !== "")) {
                                 mates.push({ vorname, nachname, email, phone, insta: "", fb: "" });
                             }
@@ -1853,7 +1847,6 @@
                     alert("Import abgebrochen oder von diesem Browser auf dem Gerät eingeschränkt.");
                 }
             } else {
-                // Fallback für Browser, die die Contacts Picker API nicht unterstützen (z. B. Desktop Browser)
                 alert("ℹ️ Der direkte Handy-Kontakte-Zugriff wird von deinem aktuellen Browser/Gerät nicht direkt unterstützt (wird meist auf mobilen Android/iOS Chrome- oder Web-Browsern unterstützt). Du kannst Kontakte aber ganz bequem manuell über das Formular eintragen.");
             }
         }
