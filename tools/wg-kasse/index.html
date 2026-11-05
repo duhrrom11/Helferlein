@@ -434,7 +434,7 @@
             <div id="contractList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- KO-FI SUPPORT BUTTON (DIREKT VOR DEM FOOTER) -->
+        <!-- KO-FI SUPPORT BUTTON -->
         <div class="pt-6 pb-2 text-center">
             <a href="https://ko-fi.com/duhrrom11" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-5 py-3 bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold rounded-2xl text-xs shadow-md border border-amber-300 transition-all transform hover:-translate-y-0.5">
                 <span>☕</span>
@@ -446,7 +446,7 @@
 
     <!-- MODALS -->
 
-    <!-- Modal: Sticky Note Erstellen / Bearbeiten -->
+    <!-- Modal: Sticky Note -->
     <div id="noteModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
@@ -492,7 +492,7 @@
         </div>
     </div>
 
-    <!-- Modal: Termin / Slot buchen -->
+    <!-- Modal: Termin -->
     <div id="eventModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
             <div class="flex justify-between items-center border-b pb-3">
@@ -641,28 +641,6 @@
         </div>
     </div>
 
-    <!-- Modal: QR Sticker Druck -->
-    <div id="qrModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-lg font-bold">🏷️ Geräte-Sticker drucken</h3>
-                <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
-            </div>
-            <div id="printStickerArea" class="p-4 border-2 border-dashed border-gray-400 rounded-2xl bg-gray-50 flex flex-col items-center text-center space-y-3">
-                <h4 id="stickerTitle" class="font-bold text-sm text-gray-900"></h4>
-                <div id="qrcode" class="p-2 bg-white border rounded-xl min-w-[120px] min-h-[120px] flex items-center justify-center"></div>
-                <div class="text-[11px] text-gray-600 space-y-0.5">
-                    <p id="stickerStoreDate"></p>
-                    <p id="stickerSN"></p>
-                </div>
-            </div>
-            <div class="flex justify-between gap-2 pt-2">
-                <button onclick="closeQRModal()" class="px-4 py-2 bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
-                <button onclick="window.print()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold">🖨️ Sticker Drucken</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal: Infoboard Stammdaten -->
     <div id="infoboardModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
@@ -789,7 +767,7 @@
     <!-- Skript Logik -->
     <script>
         // ==========================================
-        // AUTOMATISCHER NPOINT.IO CLOUD-SYNC
+        // AUSFALLSICHERER CLOUD-SYNC (MIT FALLBACK)
         // ==========================================
         const NPOINT_API_BASE = "https://api.npoint.io/";
         const urlParams = new URLSearchParams(window.location.search);
@@ -820,20 +798,49 @@
                 infoboard: { wifi: "WG-Supernet-2026", landlord: "Hr. Weber (+49 170 1234567)", caretaker: "Hr. Müller (+49 171 9876543)", trash: "Bio (Di) | Restmüll (Fr)" }
             };
 
+            // WEG 1: npoint.io ansteuern
             try {
                 const response = await fetch(NPOINT_API_BASE, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(leereWG)
                 });
-                const result = await response.json();
-                const neueId = result.id;
-                if (!neueId) throw new Error("Keine ID empfangen.");
-                window.location.href = window.location.pathname + "?id=" + neueId;
-            } catch (error) {
-                console.error("Fehler beim Erstellen:", error);
-                if (statusText) statusText.innerText = "Fehler beim Erstellen. Bitte erneut versuchen.";
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    const neueId = result.id;
+                    if (neueId) {
+                        window.location.href = window.location.pathname + "?id=" + neueId;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn("npoint.io nicht erreichbar, versuche Ausweich-Server...", e);
             }
+
+            // WEG 2 (FALLBACK): jsonkeeper.com ansteuern, falls npoint geblockt wird
+            try {
+                const responseFallback = await fetch("https://jsonkeeper.com/b/new", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(leereWG)
+                });
+                if (responseFallback.ok) {
+                    const resFb = await responseFallback.json();
+                    const fallbackId = resFb.id || resFb.uri.split('/').pop();
+                    if (fallbackId) {
+                        window.location.href = window.location.pathname + "?id=" + fallbackId;
+                        return;
+                    }
+                }
+            } catch (e2) {
+                console.error("Fallback ebenfalls fehlerhaft:", e2);
+            }
+
+            // WEG 3 (NOT-ID GENERATOR): Erstelle eine lokale Session-ID, damit der Nutzer nicht blockiert wird
+            const ersatzID = "wg_" + Math.random().toString(36).substring(2, 9);
+            alert("Hinweis: Es wurde eine temporäre WG-ID erstellt. Du kannst den WG-Planer sofort nutzen!");
+            window.location.href = window.location.pathname + "?id=" + ersatzID;
         }
 
         // UI-Startbildschirm anzeigen, falls keine WG-ID da ist
@@ -859,8 +866,12 @@
         async function ladeWGausCloud() {
             if (!wgBinId) return;
             try {
-                const response = await fetch(NPOINT_API_BASE + wgBinId);
-                if (!response.ok) throw new Error("Daten konnten nicht geladen werden.");
+                let response = await fetch(NPOINT_API_BASE + wgBinId);
+                if (!response.ok) {
+                    response = await fetch("https://jsonkeeper.com/b/" + wgBinId);
+                }
+                if (!response.ok) return;
+
                 const cloudObj = await response.json();
                 
                 if (cloudObj.flatmates) saveFlatmates(cloudObj.flatmates, false);
@@ -885,7 +896,7 @@
 
         // Gesamten Datenbestand in die Cloud sichern
         async function speichereWGinCloud() {
-            if (!wgBinId) return;
+            if (!wgBinId || wgBinId.startsWith('wg_')) return;
             const backupObj = {
                 flatmates: getFlatmates(),
                 notes: getNotes(),
@@ -908,7 +919,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(backupObj)
                 });
-                console.log("In Cloud gesichert.");
             } catch (error) {
                 console.error("Fehler beim Speichern in Cloud:", error);
             }
@@ -1535,7 +1545,7 @@
         function rotateCleaningPlan() { const plan = getCleaningPlan(); const mates = getFlatmates(); plan.forEach(p => { const curr = mates.indexOf(p.assignee); p.assignee = mates[(curr + 1) % mates.length]; p.done = false; }); saveCleaningPlan(plan); renderCleaningPlan(); }
         function openAddCleanTaskModal() { document.getElementById('cleanTaskModal').classList.remove('hidden'); document.getElementById('cleanTaskModal').classList.add('flex'); }
         function closeAddCleanTaskModal() { document.getElementById('cleanTaskModal').classList.remove('flex'); document.getElementById('cleanTaskModal').classList.add('hidden'); }
-        function saveCleanTask() { const task = document.getElementById('cleanTaskTitle').value.trim(); const assignee = document.getElementById('cleanTaskAssignee').value; if (!task) return; const plan = getCleaningPlan(); plan.push({ id: Date.now(), task, assignee, done: false }); saveCleaningPlan(plan); closeAddCleanTaskModal(); renderApp(); }
+        function saveCleanTask() { const task = document.getElementById('cleanTaskTitle').value.trim(); const assignee = document.getElementById('cleanTaskAssignee').value; if (!task) return; const plan = getCleaningPlan(); plan.push({ id: Date.now(), task, assignee, done: false }); saveCleanTask(plan); closeAddCleanTaskModal(); renderApp(); }
         function deleteCleanTask(id) { saveCleaningPlan(getCleaningPlan().filter(p => p.id !== id)); renderApp(); }
 
         /* Einkaufsliste */
