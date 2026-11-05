@@ -810,7 +810,7 @@
             }
         }
 
-        // Funktion zum Erstellen einer neuen Cloud-Datenbank
+        // GEFIXTE FUNKTION: Lokales Befüllen + Cloud-POST beim Erstellen
         async function erstelleNeueWGKonfiguration() {
             const statusText = document.getElementById('setup-status');
             if (statusText) statusText.innerText = "Erstelle Cloud-Speicher im Hintergrund...";
@@ -834,6 +834,21 @@
                 contracts: [],
                 infoboard: { wifi: "WG-Supernet-2026", landlord: "Hr. Weber (+49 170 1234567)", caretaker: "Hr. Müller (+49 171 9876543)", trash: "Bio (Di) | Restmüll (Fr)" }
             };
+
+            // Lokale Standardwerte sofort im localStorage sichern, damit speichereWGinCloud() Daten vorfindet
+            localStorage.setItem('wg_flatmates', JSON.stringify(leereWG.flatmates));
+            localStorage.setItem('wg_notes', JSON.stringify(leereWG.notes));
+            localStorage.setItem('kassenbon_data', JSON.stringify(leereWG.data));
+            localStorage.setItem('budgetbuch_budgets', JSON.stringify(leereWG.budgets));
+            localStorage.setItem('budgetbuch_goals', JSON.stringify(leereWG.goals));
+            localStorage.setItem('wg_events', JSON.stringify(leereWG.events));
+            localStorage.setItem('wg_inventory', JSON.stringify(leereWG.inventory));
+            localStorage.setItem('wg_diets', JSON.stringify(leereWG.diets));
+            localStorage.setItem('wg_cleaning', JSON.stringify(leereWG.cleaning));
+            localStorage.setItem('wg_shopping', JSON.stringify(leereWG.shopping));
+            localStorage.setItem('wg_cooking', JSON.stringify(leereWG.cooking));
+            localStorage.setItem('wg_contracts', JSON.stringify(leereWG.contracts));
+            localStorage.setItem('wg_infoboard', JSON.stringify(leereWG.infoboard));
 
             // WEG 1: npoint.io ansteuern
             try {
@@ -899,7 +914,7 @@
             `;
         }
 
-        // KORRIGIERTE CLOUD-SYNC INITIALISIERUNG: WG-Daten aus Cloud laden
+        // WG-Daten aus Cloud laden
         async function ladeWGausCloud() {
             if (!wgBinId) return;
             try {
@@ -988,6 +1003,7 @@
         let editingReceiptId = null;
         let editingNoteId = null;
 
+        // GEFIXTER INITIALISIERUNGS-FLOW: Cloud-Daten holen & sofortigen Push durchführen!
         document.addEventListener('DOMContentLoaded', async () => {
             rotateKofiText();
             if (!wgBinId) {
@@ -998,11 +1014,13 @@
             document.getElementById('eventDate').valueAsDate = new Date();
             initCharts();
             
-            // Erst Cloud-Daten laden
+            // 1. Zuerst versuchen, bestehende Cloud-Daten zu holen
             await ladeWGausCloud();
             
-            // Initial-Upload sichern, damit npoint/jsonkeeper die ID sofort kennt
-            speichereWGinCloud();
+            // 2. SOFORT Daten zurück in die Cloud pushen!
+            // Falls die Bin-ID neu war und auf dem Server noch nichts lag,
+            // wird der Datenstand JETZT garantiert angelegt.
+            await speichereWGinCloud();
         });
 
         function toggleGuide() { document.getElementById('guideSection').classList.toggle('hidden'); }
