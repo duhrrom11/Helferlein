@@ -87,7 +87,7 @@
 </head>
 <body class="min-h-full flex flex-col">
 
-    <!-- Header & Navbar mit Titel, Zurück-Button & Ko-fi Button nebeneinander -->
+    <!-- Header mit Titel & Zurück-Button -->
     <header class="bg-white/90 backdrop-blur-md shadow-sm py-3 px-4 border-b border-gray-200 sticky top-0 z-40">
         <div class="max-w-4xl mx-auto flex justify-between items-center gap-3">
             <div class="flex items-center gap-3">
@@ -101,32 +101,35 @@
                     <p class="text-[10px] md:text-xs text-gray-500">Teigmenge, Formen & Backzeiten umrechnen</p>
                 </div>
             </div>
-            
-            <!-- Ko-fi Button direkt daneben -->
-            <a href="https://ko-fi.com/duhrrom" target="_blank" id="kofiButton" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/10 animate-pulse transition-all hover:scale-105 whitespace-nowrap shrink-0">
-                <span class="text-sm">☕</span> 
-                <span id="kofiText">Kaffee statt Paywall</span>
-            </a>
         </div>
     </header>
 
 <main id="app">
 
-    <!-- Ausklappbare Anleitung direkt darunter -->
+    <!-- Ausklappbare Anleitung mit integriertem Ko-fi Button -->
     <details class="card bg-teal-50/50 border-teal-200 my-4 cursor-pointer group">
         <summary class="font-bold text-teal-800 text-sm flex items-center justify-between select-none">
-            <span>📖 Anleitung & Hinweise anzeigen</span>
+            <span>📖 Anleitung & Support anzeigen</span>
             <span class="text-xs text-teal-600 group-open:rotate-180 transition-transform">▼</span>
         </summary>
-        <div class="mt-3 pt-3 border-t border-teal-100 text-xs text-gray-600 space-y-2">
+        <div class="mt-3 pt-3 border-t border-teal-100 text-xs text-gray-600 space-y-3">
             <p><strong>1. Umrechnen:</strong> Wähle die Form aus dem Rezept und deine Zielform. Der Rechner ermittelt automatisch den Teig-Faktor und passt Backzeit sowie Temperatur an.</p>
-            <p><strong>2. Rezepte & Einkaufsliste:</strong> Füge im zweiten Tab deine Zutaten ein. Der Rechner skaliert alle Mengen automatisch mit und du kannst sie direkt auf die Einkaufsliste setzen.</p>
-            <p><strong>3. Werkzeuge:</strong> Nutze nützliche Zusatz-Tools wie Ofentemperatur-Umrechner (Umluft/Gas Mark), Cups in Gramm, Kuchen-Teiler und Backpapier-Schablonen.</p>
-            <p class="text-teal-700 font-medium">💡 Läuft komplett lokal auf deinem Gerät – keine Registrierung, keine Cloud, absolut sicher im Browser.</p>
+            <p><strong>2. Rezepte & Einkaufsliste:</strong> Füge im zweiten Tab deine Zutaten ein. Der Rechner skaliert alle Mengen automatisch mit und setzt sie auf die Einkaufsliste.</p>
+            <p><strong>3. Werkzeuge:</strong> Nutze Ofentemperatur-Umrechner, Cups-zu-Gramm, Kuchen-Teiler und Backpapier-Schablonen.</p>
+            <p class="text-teal-700 font-medium">💡 Läuft 100 % lokal auf deinem Gerät – ohne Registrierung oder Cloud.</p>
+            
+            <!-- Ko-fi Button hier platziert -->
+            <div class="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-t border-teal-100">
+                <span class="text-gray-500">Gefällt dir das Tool? Unterstütze die Weiterentwicklung:</span>
+                <a href="https://ko-fi.com/duhrrom" target="_blank" id="kofiButton" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/10 animate-pulse transition-all hover:scale-105 whitespace-nowrap">
+                    <span class="text-sm">☕</span> 
+                    <span id="kofiText">Kaffee statt Paywall</span>
+                </a>
+            </div>
         </div>
     </details>
 
-    <!-- Besser verteilte Tabs (2 Spalten Mobil, 4 Spalten ab Tablet) -->
+    <!-- JavaScript-Tabs (Navigation) -->
     <nav id="tabs" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6"></nav>
 
     <section id="tab-calc" class="space-y-4">
@@ -311,4 +314,4 @@ const m=l.match(/^(\d+(?:[.,]\d+)?(?: (?:\d+\/\d+|[½¼¾⅓⅔]))?|\d+\/\d+|[½
 const q=num(m[1]);if(!isFinite(q))return null;const w=m[2].split(/\s+/),u=UN[(w[0]||'').toLowerCase()];
 return u?{q,u,name:w.slice(1).join(' ')}:{q,u:'',name:m[2]}}
 function mass(o){const{q,u,name}=o;if(u=='g'||u=='ml')return q;if(u=='kg'||u=='l')return q*1000;if(u=='EL')return q*15;if(u=='TL')return q*5;if(u=='Tasse'||u=='Cup')return q*200;
-if(u=='Pck.')return q*(/vanill/i.test(name)?8:/backpulver/i.test(name)?15:/pudding/i.test(name)?40:10);if(!u&&/^eier?\b/i.test(name))return q*55;ret
+if(u=='Pck.')return q*(/vanill/i.tes
