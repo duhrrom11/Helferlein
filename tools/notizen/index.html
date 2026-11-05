@@ -437,12 +437,13 @@ function checkPinProtection() {
     }
 }
 
-function saveInitialPin(){
+async function saveInitialPin(){
 
     const pin =
-        document.getElementById(
-            'newPinInput'
-        ).value.trim();
+        document
+        .getElementById('newPinInput')
+        .value
+        .trim();
 
     if(pin.length < 4){
 
@@ -453,9 +454,12 @@ function saveInitialPin(){
         return;
     }
 
+    const hash =
+        await hashPin(pin);
+
     localStorage.setItem(
         'estate_pin',
-        hashPin(pin)
+        hash
     );
 
     document
@@ -471,19 +475,25 @@ function saveInitialPin(){
     );
 }
 
-function unlockVault(){
+async function unlockVault(){
 
     const pin =
-        document.getElementById(
-            'pinInput'
-        ).value.trim();
+        document
+        .getElementById('pinInput')
+        .value
+        .trim();
+
+    const enteredHash =
+        await hashPin(pin);
 
     const storedHash =
         localStorage.getItem(
             'estate_pin'
         );
 
-    if(hashPin(pin) !== storedHash){
+    if(
+        enteredHash !== storedHash
+    ){
 
         document
             .getElementById('pinError')
