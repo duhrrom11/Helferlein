@@ -949,34 +949,59 @@
         }
 
         // Gesamten Datenbestand in die Cloud sichern
-        async function speichereWGinCloud() {
-            if (!wgBinId || wgBinId.startsWith('wg_')) return;
-            const backupObj = {
-                flatmates: getFlatmates(),
-                notes: getNotes(),
-                data: getData(),
-                budgets: getBudgets(),
-                goals: getSavingsGoals(),
-                events: getEvents(),
-                inventory: getInventory(),
-                diets: getDiets(),
-                cleaning: getCleaningPlan(),
-                shopping: getShoppingList(),
-                cooking: getCookingPlan(),
-                contracts: getContracts(),
-                infoboard: getInfoData()
-            };
+async function speichereWGinCloud() {
+    if (!wgBinId) return;
 
-            try {
-                await fetch(NPOINT_API_BASE + wgBinId, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(backupObj)
-                });
-            } catch (error) {
-                console.error("Fehler beim Speichern in Cloud:", error);
+    const backupObj = {
+        flatmates: getFlatmates(),
+        notes: getNotes(),
+        data: getData(),
+        budgets: getBudgets(),
+        goals: getSavingsGoals(),
+        events: getEvents(),
+        inventory: getInventory(),
+        diets: getDiets(),
+        cleaning: getCleaningPlan(),
+        shopping: getShoppingList(),
+        cooking: getCookingPlan(),
+        contracts: getContracts(),
+        infoboard: getInfoData()
+    };
+
+    // Falls es noch eine lokale wg_-ID ist, erzeugen wir jetzt sofort einen echten npoint.io Bin!
+    if (wgBinId.startsWith('wg_')) {
+        try {
+            const response = await fetch(NPOINT_API_BASE, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(backupObj)
+            });
+            if (response.ok) {
+                const result = await response.json();
+                if (result.id) {
+                    wgBinId = result.id;
+                    // URL im Browser ohne Neuladen auf die echte ID aktualisieren
+                    window.history.replaceState({}, '', window.location.pathname + "?id=" + wgBinId);
+                }
             }
+        } catch (e) {
+            console.error("Konnte keinen echten Cloud-Bin anlegen:", e);
         }
+        return;
+    }
+
+    // Normales Update für bestehende echte IDs
+    try {
+        await fetch(NPOINT_API_BASE + wgBinId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(backupObj)
+        });
+    } catch (error) {
+        console.error("Fehler beim Speichern in Cloud:", error);
+    }
+}
+
 
         // Freigabelink in die Zwischenablage kopieren
         function kopiereWGLink() {
