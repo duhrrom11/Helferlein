@@ -632,22 +632,28 @@
     const fileName =
         `helferlein-backup-${new Date().toISOString().split('T')[0]}.json`;
 
-    const file = new File(
-        [blob],
-        fileName,
-        { type: 'application/json' }
-    );
+    const blob = new Blob(
+    [JSON.stringify(backup, null, 2)],
+    { type: 'application/json' }
+);
 
-    if (
-        navigator.canShare &&
-        navigator.canShare({ files: [file] })
-    ) {
-        await navigator.share({
-            files: [file],
-            title: 'Helferlein Backup'
-        });
-        return;
-    }
+const url = URL.createObjectURL(blob);
+
+const a = document.createElement('a');
+
+a.href = url;
+a.download =
+    `helferlein-backup-${
+        new Date().toISOString().slice(0,10)
+    }.json`;
+
+document.body.appendChild(a);
+
+a.click();
+
+document.body.removeChild(a);
+
+URL.revokeObjectURL(url);
 
     let a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -704,9 +710,7 @@ for (const key in restoreData) {
             loadStats();
             initFavorites();
 
-            if (window.syncToCloud) {
-                await window.syncToCloud();
-            }
+            
 
             alert(
                 `${count} Einträge erfolgreich wiederhergestellt`
@@ -732,10 +736,10 @@ for (const key in restoreData) {
         window.saveSettings = saveSettings;
         window.toggleFavorite = toggleFavorite;
         window.filterTools = filterTools;
-window.loadStats = loadStats;
-window.initFavorites = initFavorites;
-window.exportGlobalBackup = exportGlobalBackup;
-window.importGlobalBackup = importGlobalBackup;
+        window.loadStats = loadStats;
+        window.initFavorites = initFavorites;
+        window.exportGlobalBackup = exportGlobalBackup;
+        window.importGlobalBackup = importGlobalBackup;
 
         document.addEventListener('DOMContentLoaded', () => {
             // Ko-fi Spruch beim Laden der Seite zufällig auswählen
