@@ -1,356 +1,750 @@
 <!DOCTYPE html>
 <html lang="de" class="h-full">
 <head>
-    <meta charset="utf-8">
-    <title>Backform-Rechner & Küchenmathe | Helferlein</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
+    <!-- SEO Meta-Daten -->
+    <title>✨ Kostenlose Online-Tools & clevere Rechner ✨ | Helferlein</title>
+    <meta name="description" content="Entdecke 11 kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung, 100% lokal & sicher. Nutze praktische Tools direkt im Browser!">
+    <link rel="canonical" href="https://duhrrom11.github.io/Helferlein/index.html">
+
+    <!-- Open Graph / Social Media Sharing (WhatsApp, Telegram, Facebook) -->
+    <meta property="og:title" content="Kostenlose Online-Tools & clevere Rechner | Helferlein">
+    <meta property="og:description" content="Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://duhrrom11.github.io/Helferlein/index.html">
+    <meta property="og:image"
+      content="https://duhrrom11.github.io/Helferlein/assets/preview.jpg">
+
+<meta name="twitter:card"
+      content="summary_large_image">
+    
+    <!-- PWA / App-Modus Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Alltags-Tools">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href='data:application/manifest+json,{"name": "Alltagshelferlein Hub", "short_name": "Helferlein", "start_url": "./index.html", "display": "standalone", "background_color": "#f3f4f6", "theme_color": "#0284c7"}'>
+
+    <!-- Schema.org: WebApplication & ItemList für Google AI Overviews -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "name": "Kostenlose Online-Tools & clevere Rechner | Helferlein",
+          "operatingSystem": "Web Browser",
+          "applicationCategory": "UtilitiesApplication",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          },
+          "description": "Kostenlose Online-Tools für Haushalt, Finanzen und Organisation ohne Anmeldung. Daten bleiben 100% lokal im Browser.",
+          "author": {
+            "@type": "Person",
+            "name": "Romain Duhr"
+          }
+        },
+        {
+          "@type": "ItemList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Garantie-Manager & Kassenbon-Scanner", "url": "https://duhrrom11.github.io/Helferlein/tools/kassenbon/index.html" },
+            { "@type": "ListItem", "position": 2, "name": "Umzugskisten- & Inventar-Verwaltung", "url": "https://duhrrom11.github.io/Helferlein/tools/kisten/index.html" },
+            { "@type": "ListItem", "position": 3, "name": "WG-Kasse & Haushaltsbuch Rechner", "url": "https://duhrrom11.github.io/Helferlein/tools/wg-kasse/index.html" },
+            { "@type": "ListItem", "position": 4, "name": "Sicherer Passwort- & PIN-Manager", "url": "https://duhrrom11.github.io/Helferlein/tools/notizen/index.html" },
+            { "@type": "ListItem", "position": 5, "name": "KFZ-Kosten & Reifenwechsel-Tracker", "url": "https://duhrrom11.github.io/Helferlein/tools/kfz/index.html" },
+            { "@type": "ListItem", "position": 6, "name": "Haustier- & Hunde-Gesundheitspass", "url": "https://duhrrom11.github.io/Helferlein/tools/haustier/index.html" },
+            { "@type": "ListItem", "position": 7, "name": "GPS Parkschein-Timer & Standort-Merker", "url": "https://duhrrom11.github.io/Helferlein/tools/parken/index.html" },
+            { "@type": "ListItem", "position": 8, "name": "Leihvertrag & Werkzeug-Verleih-Tracker", "url": "https://duhrrom11.github.io/Helferlein/tools/verleih/index.html" },
+            { "@type": "ListItem", "position": 9, "name": "Pflanzenpflege & Gieß-Erinnerung", "url": "https://duhrrom11.github.io/Helferlein/tools/pflanzen/index.html" },
+            { "@type": "ListItem", "position": 10, "name": "Strom- & Wasserzähler Verbrauchsmelder", "url": "https://duhrrom11.github.io/Helferlein/tools/energie/index.html" },
+            { "@type": "ListItem", "position": 11, "name": "Backform- & Küchenmathe-Rechner", "url": "https://duhrrom11.github.io/Helferlein/tools/küche/küchenmathe.html" }
+          ]
+        }
+      ]
+    }
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <style>
-        :root {
-            --bg: #f8fafc;
-            --ink: #0f172a;
-            --card: #ffffff;
-            --acc: #0d9488; /* Türkis */
-            --acc-hover: #0f766e;
-            --hi: #f59e0b; /* Orange */
-            --line: #e2e8f0;
-            --mut: #64748b;
-            --bad: #ef4444;
-            --ok: #10b981;
-            color-scheme: light;
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
-
-        *{box-sizing:border-box}
-        body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-        main{max-width:800px;margin:0 auto;padding:16px 14px 60px}
-        
-        h1{font-weight:800;margin:0}
-        h2{font-weight:700;font-size:1.1rem;margin:0 0 10px}
-        
-        button,select,input,textarea{font:inherit;color:inherit;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 14px;min-height:46px;transition:all .2s ease}
-        button{cursor:pointer;font-weight:600}
-        
-        /* Tab & Primär-Button Styling in Türkis/Orange */
-        button.on, button.pri{background:var(--acc);border-color:var(--acc);color:#fff}
-        button.on:hover, button.pri:hover{background:var(--acc-hover)}
-        
-        button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--hi);outline-offset:1px}
-        
-        .card{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:16px;margin:0 0 16px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.02)}
-        fieldset{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:16px;margin:0 0 16px;min-width:0}
-        legend{font-weight:700;padding:0 8px;color:var(--acc)}
-        
-        label{display:grid;grid-template-columns:1fr 1.2fr;gap:10px;align-items:center;margin:8px 0}
-        label>span{display:flex;gap:6px}
-        label>span>*{flex:1;min-width:0}
-        
-        input,select,textarea{width:100%;min-width:0}
-        textarea{min-height:140px;font-family:ui-monospace,monospace;font-size:15px}
-        
-        fieldset:not([data-t=rect]):not([data-t=kasten]):not([data-t=tray]) .b,
-        fieldset:not([data-t=ring]) .c,
-        fieldset:not([data-t=muffin]) .m{display:none}
-        
-        /* Faktor-Box in frischem Orange/Türkis-Mix */
-        .fac{background:linear-gradient(135deg, #f59e0b 0%, #0d9488 100%);color:#ffffff;border-radius:16px;padding:16px 20px;margin:8px 0 16px;box-shadow:0 10px 15px -3px rgba(245,158,11,0.2)}
-        .fac b{font:800 2.8rem/1 system-ui,sans-serif;display:block;letter-spacing:-0.02em}
-        .fac small{font-size:0.9rem;font-weight:600;opacity:0.95}
-        
-        .mut{color:var(--mut);font-size:.9rem}
-        .bad{color:var(--bad);font-weight:700}
-        .ok{color:var(--ok);font-weight:700}
-        
-        .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
-        .row>*{flex:1 1 auto;width:auto}
-        
-        ul{padding-left:1.2rem;margin:6px 0}
-        li{margin:6px 0}
-        ul.chk{list-style:none;padding:0}
-        ul.chk li{display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:8px 0}
-        ul.chk input{width:24px;height:24px;min-height:0;flex:none;accent-color:var(--acc)}
-        .done{text-decoration:line-through;opacity:.5}
-        
-        svg.sch{max-width:100%;height:auto;border:1px dashed var(--mut);border-radius:8px}
-        #pa,#ps{display:none}
-        #timer{font:800 3rem system-ui,sans-serif;text-align:center;color:var(--acc)}
-        
-        @media print{
-            #app{display:none}
-            body.pr-r #pa,body.pr-s #ps{display:block}
-            svg.sch{max-width:none;border:0}
-            body{background:#fff;color:#000}
+        .tool-card:hover::before {
+            opacity: 1;
         }
     </style>
 </head>
-<body class="min-h-full flex flex-col">
+<body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
 
-    <!-- Header mit Titel & Zurück-Button -->
-    <header class="bg-white/90 backdrop-blur-md shadow-sm py-3 px-4 border-b border-gray-200 sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto flex justify-between items-center gap-3">
-            <div class="flex items-center gap-3">
-                <a href="../../index.html" class="p-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 text-gray-700 shrink-0" aria-label="Zurück zur Übersicht">
-                    <span>←</span> <span class="hidden sm:inline">Übersicht</span>
-                </a>
-                <div>
-                    <h1 class="text-base md:text-lg font-extrabold tracking-tight text-gray-900 flex items-center gap-1.5">
-                        🍰 Backform-Rechner
-                    </h1>
-                    <p class="text-[10px] md:text-xs text-gray-500">Teigmenge, Formen & Backzeiten umrechnen</p>
-                </div>
-            </div>
+    <!-- Header / Navbar -->
+    <header class="bg-white/95 backdrop-blur-md shadow-lg py-4 px-4 border-b border-gray-200 sticky top-0 z-40 transition-colors duration-300">
+        <div class="max-w-3xl mx-auto text-center">
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-600 via-teal-600 to-sky-600 bg-clip-text text-transparent inline-flex items-center justify-center gap-2">
+                ✨ Kostenlose Online-Tools & clevere Rechner ✨
+            </h1>
+            <p class="text-xs md:text-sm text-gray-500 mt-1">Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.</p>
+        </div>
+
+        <!-- Ko-fi Button & Einstellungen auf einer Höhe -->
+        <div class="mt-4 max-w-xl mx-auto px-4 flex items-center justify-center gap-2">
+            <!-- KO-FI ZUFALLS-BUTTON IM HEADER -->
+            <a href="https://ko-fi.com/duhrrom" target="_blank" id="kofiButton" class="px-3.5 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/10 animate-pulse transition-all hover:scale-105 whitespace-nowrap shrink-0">
+                <span class="text-sm">☕</span> 
+                <span id="kofiText">Kaffee statt Paywall</span>
+            </a>
+
+            <button type="button" id="settingsBtn" class="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl border border-gray-300 shadow-sm cursor-pointer whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0">
+                ⚙️ Einstellungen
+            </button>
         </div>
     </header>
 
-<main id="app">
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
 
-    <!-- Ausklappbare Anleitung mit integriertem Ko-fi Button -->
-    <details class="card bg-teal-50/50 border-teal-200 my-4 cursor-pointer group">
-        <summary class="font-bold text-teal-800 text-sm flex items-center justify-between select-none">
-            <span>📖 Anleitung & Support anzeigen</span>
-            <span class="text-xs text-teal-600 group-open:rotate-180 transition-transform">▼</span>
-        </summary>
-        <div class="mt-3 pt-3 border-t border-teal-100 text-xs text-gray-600 space-y-3">
-            <p><strong>1. Umrechnen:</strong> Wähle die Form aus dem Rezept und deine Zielform. Der Rechner ermittelt automatisch den Teig-Faktor und passt Backzeit sowie Temperatur an.</p>
-            <p><strong>2. Rezepte & Einkaufsliste:</strong> Füge im zweiten Tab deine Zutaten ein. Der Rechner skaliert alle Mengen automatisch mit und setzt sie auf die Einkaufsliste.</p>
-            <p><strong>3. Werkzeuge:</strong> Nutze Ofentemperatur-Umrechner, Cups-zu-Gramm, Kuchen-Teiler und Backpapier-Schablonen.</p>
-            <p class="text-teal-700 font-medium">💡 Läuft 100 % lokal auf deinem Gerät – ohne Registrierung oder Cloud.</p>
-            
-            <!-- Ko-fi Button hier platziert -->
-            <div class="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-t border-teal-100">
-                <span class="text-gray-500">Gefällt dir das Tool? Unterstütze die Weiterentwicklung:</span>
-                <a href="https://ko-fi.com/duhrrom" target="_blank" id="kofiButton" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/10 animate-pulse transition-all hover:scale-105 whitespace-nowrap">
-                    <span class="text-sm">☕</span> 
-                    <span id="kofiText">Kaffee statt Paywall</span>
-                </a>
-            </div>
+        <!-- Favoriten-Sektion -->
+        <div id="favoritesSection" class="hidden space-y-3">
+            <h2 class="text-xs font-bold text-sky-700 uppercase tracking-wider flex items-center gap-1.5">⭐ Deine Favoriten & Schnellstart</h2>
+            <div id="favoritesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
-    </details>
 
-    <!-- JavaScript-Tabs (Navigation) -->
-    <nav id="tabs" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6"></nav>
-
-    <!-- TAB 1: UMRECHNEN -->
-    <section id="tab-calc" class="space-y-4">
-        <div id="pans" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-
-        <div class="card">
-            <h2>Backzeit und Temperatur</h2>
-            <div class="space-y-2">
-                <label>Zeit laut Rezept (Min.)<input id="t0" inputmode="decimal" value="60"></label>
-                <label>Temperatur laut Rezept (°C)<input id="T0" inputmode="decimal" value="175"></label>
-                <label>Rezept gilt für<select id="mode"><option value="ou">Ober-/Unterhitze</option><option value="ul">Umluft</option></select></label>
-                <label>Material der Zielform<select id="mat"><option value="hell">Helles Metall</option><option value="dunkel">Dunkles Metall</option><option value="glas">Glas / Keramik</option><option value="sili">Silikon</option></select></label>
-                <label>Rezeptmenge beibehalten<input id="keep" type="checkbox" style="width:24px;min-height:0;height:24px;accent-color:var(--acc)"></label>
-                <label>Meinen Ofenfaktor nutzen<input id="usecal" type="checkbox" checked style="width:24px;min-height:0;height:24px;accent-color:var(--acc)"></label>
+        <!-- Hauptgrid Header mit Suchleiste anstelle des Badges -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-3">
+            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 11 kostenlosen Online-Tools im Überblick</h2>
+            <div class="w-full md:w-80">
+                <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder Inhalt durchsuchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
             </div>
         </div>
 
-        <div class="fac">
-            <small>Faktor für alle Zutaten</small>
-            <b id="fac">× 1</b>
-            <small id="facinfo"></small>
-        </div>
+        <!-- Tools Grid (Alle 11 Tools) -->
+        <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <div class="card" id="res"></div>
-
-        <!-- Amazon Partner / Empfehlungs-Box -->
-        <div class="card border-teal-500/30 bg-teal-50/40 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div class="space-y-1 text-center md:text-left">
-                <span class="text-xs font-bold text-teal-600 uppercase tracking-wider">Tipp für die Backstube</span>
-                <h3 class="text-sm font-bold text-gray-900" style="margin:0">Fehlt dir die passende Springform oder eine Feinwaage?</h3>
-                <p class="text-xs text-gray-500" style="margin:0">Entdecke hochwertige Backformen und Küchenhelfer direkt bei Amazon.</p>
+            <!-- Tool 1 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-name="garantie manager kassenbon scanner beleg">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-200 shadow-inner" aria-hidden="true">🧾</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('kassenbon', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kassenbon" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Pro</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Garantie-Manager & Kassenbon-Scanner</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Scanne Rechnungen sicher lokal ein, überwache Garantiefristen und erstelle PDF-Exporte im Schadensfall.</p>
+                    <div id="stats-kassenbon" class="mt-3 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">📄 PDF-Export</span>
+                    <a href="tools/kassenbon/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Kassenbon Scanner</span> &rarr;</a>
+                </div>
             </div>
-            <a href="https://www.amazon.de/s?k=backform+springform+set&tag=duhrrom-21" target="_blank" rel="nofollow noopener" class="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs whitespace-nowrap shadow-sm transition-all shrink-0">
-                🛒 Bei Amazon ansehen
+
+            <!-- Tool 2 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-name="umzugskisten inventar verwaltung keller">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-200 shadow-inner" aria-hidden="true">📦</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('kisten', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kisten" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Lager</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Umzugskisten- & Inventar-Verwaltung</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Finde Gegenstände in Keller und Garage sofort wieder. Generiere QR-Codes zum Ausdrucken für deine Boxen.</p>
+                    <div id="stats-kisten" class="mt-3 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">🖨️ QR-Druck</span>
+                    <a href="tools/kisten/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Inventar-Verwaltung</span> &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 3 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-name="wg kasse haushaltsbuch rechner ausgaben">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-200 shadow-inner" aria-hidden="true">💶</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('wg-kasse', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wg-kasse" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Budget</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">WG-Kasse & Haushaltsbuch Rechner</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erfasse gemeinsame Einkäufe im Haushalt und teile Kosten fair auf. Automatische Salden- und Schuldenberechnung.</p>
+                    <div id="stats-wg-kasse" class="mt-3 text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">⚡ Live-Calc</span>
+                    <a href="tools/wg-kasse/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">WG Kasse</span> &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 4 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-name="passwort pin manager notizen wlan">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold border border-purple-200 shadow-inner" aria-hidden="true">🔐</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('notizen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="notizen" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Secure</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Sicherer Passwort- & PIN-Manager</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Speichere WLAN-Codes, Kofferschlösser und sensible Notizen lokal ab. Keine Cloud-Speicherung, maximale Sicherheit.</p>
+                    <div id="stats-notizen" class="mt-3 text-[11px] font-semibold text-purple-600 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">🛡️ AES-Local</span>
+                    <a href="tools/notizen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Passwort-Manager</span> &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 5 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-name="kfz kosten auto reifenwechsel tracker tüv">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl font-bold border border-red-200 shadow-inner" aria-hidden="true">🚗</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('kfz', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kfz" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Tracker</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">KFZ-Kosten & Reifenwechsel-Tracker</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Verwalte TÜV-Termine, protokolliere Reifentiefe, Tankkosten und Werkstattreparaturen für dein Auto.</p>
+                    <div id="stats-kfz" class="mt-3 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">📅 Kalender</span>
+                    <a href="tools/kfz/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">KFZ-Tracker</span> &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 6 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-name="haustier hunde gesundheitspass impfpass tierarzt">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 shadow-inner" aria-hidden="true">🐾</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="haustier" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Care</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Haustier- & Hunde-Gesundheitspass</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte den Überblick über Impfungen, Tierarztkosten und Medikamente für deinen Hund oder deine Katze.</p>
+                    <div id="stats-haustier" class="mt-3 text-[11px] font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">🩺 Vorsorge</span>
+                    <a href="tools/haustier/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Gesundheitspass</span> &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 7 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-name="gps parkschein timer standort merker auto">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-200 shadow-inner" aria-hidden="true">🅿️</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('parken', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="parken" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Timer</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">GPS Parkschein-Timer & Standort-Merker</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Vermeide Strafzettel durch den visuellen Park-Countdown. Finde dein geparktes Auto per GPS-Standort wieder.</p>
+                    <div id="stats-parken" class="mt-3 text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">📍 GPS-Save</span>
+                    <a href="tools/parken/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Park-Timer</span> &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 8 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-name="leihvertrag werkzeug verleih tracker kaution">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-200 shadow-inner" aria-hidden="true">🤝</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('verleih', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="verleih" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Share</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Leihvertrag & Werkzeug-Verleih-Tracker</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Notiere verliehenes Werkzeug oder Bücher. Generiere Kaution-Details und automatische WhatsApp-Erinnerungen.</p>
+                    <div id="stats-verleih" class="mt-3 text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">💬 WhatsApp</span>
+                    <a href="tools/verleih/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Verleih-Tracker</span> &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 9 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-name="pflanzenpflege gieß erinnerung garten pass">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-lime-50 text-lime-600 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-200 shadow-inner" aria-hidden="true">🌱</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('pflanzen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="pflanzen" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Green</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Pflanzenpflege & Gieß-Erinnerung</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erstelle Profile für deine Zimmerpflanzen, notiere Gieß-Intervalle, Dünge-Historie und ideale Standorte.</p>
+                    <div id="stats-pflanzen" class="mt-3 text-[11px] font-semibold text-lime-600 bg-lime-50 border border-lime-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">💧 Reminder</span>
+                    <a href="tools/pflanzen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Pflanzen-Pass</span> &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 10 -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-name="strom wasserzähler verbrauchsmelder tracker gas">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-200 shadow-inner" aria-hidden="true">⚡</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('energie', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="energie" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Energy</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Strom- & Wasserzähler Verbrauchsmelder</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erfasse monatliche Zählerstände, behalte deinen Verbrauch im Blick und erstelle Reports für Nachzahlungen.</p>
+                    <div id="stats-energie" class="mt-3 text-[11px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">📊 Charts</span>
+                    <a href="tools/energie/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Energie Tracker</span> &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Tool 11 (Neu: Backform- & Küchenmathe-Rechner) -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="backform" data-name="backform rechner kuchen teig backzeit küche">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-pink-50 text-pink-600 rounded-xl flex items-center justify-center text-xl font-bold border border-pink-200 shadow-inner" aria-hidden="true">🍰</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('backform', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="backform" aria-label="Als Favorit speichern">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Küche</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Backform- & Küchenmathe-Rechner</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Rechne Teigmengen, Backformen und Backzeiten sekundenschnell um. Mit Einkaufsliste & Ofen-Timer.</p>
+                    <div id="stats-backform" class="mt-3 text-[11px] font-semibold text-pink-600 bg-pink-50 border border-pink-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">🥧 100% Lokal</span>
+                    <a href="tools/küche/küchenmathe.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen <span class="sr-only">Backform-Rechner</span> &rarr;</a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- EEAT & AI Overview FAQ-Sektion -->
+    <section class="container mx-auto px-4 max-w-7xl mt-8 pt-8 border-t border-gray-200">
+        <h2 class="text-lg font-bold text-gray-800 mb-4">Häufig gestellte Fragen (FAQ)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
+                <h3 class="font-bold text-gray-900">Sind diese Online-Tools wirklich kostenlos?</h3>
+                <p>Ja, absolut! Alle Web-Apps sind komplett gratis. Wer mag, darf uns aber gerne per <a href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener" class="text-sky-600 hover:underline font-semibold">Ko-fi</a> einen Kaffee spendieren – denn auch Code läuft nicht nur mit Wasser und Liebe! ☕😄</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
+                <h3 class="font-bold text-gray-900">Muss ich mich registrieren oder ein Konto erstellen?</h3>
+                <p>Nein. Du kannst alle Tools sofort und ohne Registrierung direkt im Browser verwenden.</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
+                <h3 class="font-bold text-gray-900">Was passiert mit meinen Daten (Kassenbons, Passwörter)?</h3>
+                <p>Deine Daten bleiben zu 100 % privat. Sie werden ausschließlich lokal auf deinem Gerät (Local Storage) gespeichert. Es erfolgt kein Verkauf oder Upload auf externe Server.</p>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
+                <h3 class="font-bold text-gray-900">Wie kann ich meine Daten sichern?</h3>
+                <p>Du kannst in den Einstellungen jederzeit ein verschlüsseltes lokales Backup all deiner Daten herunterladen und auf anderen Geräten wiederherstellen.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEU: Ko-fi Sektion vor dem Footer -->
+    <section class="container mx-auto px-4 max-w-7xl mt-8 pt-4">
+        <div class="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-2xl p-6 md:p-8 text-center shadow-sm">
+            <h3 class="text-lg font-bold text-gray-900 mb-2">Gefallen dir die kostenlosen Tools? ☕</h3>
+            <p class="text-sm text-gray-600 max-w-2xl mx-auto mb-4">
+                Alle Web-Apps auf Helferlein bleiben 100% kostenlos, werbefrei und laufen komplett lokal auf deinem Gerät. Wenn du die Entwicklung unterstützen möchtest, freue ich mich riesig über einen Kaffee!
+            </p>
+            <a href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm shadow-md transition-all hover:scale-105">
+                <span class="text-lg">☕</span> Auf Ko-fi unterstützen
             </a>
         </div>
     </section>
 
-    <!-- TAB 2: REZEPT & EINKAUFSLISTE -->
-    <section id="tab-rec" hidden class="space-y-4">
-        <div class="card">
-            <h2>Rezept einfügen</h2>
-            <div class="space-y-3">
-                <label>Name<input id="rname" data-ns placeholder="z. B. Käsekuchen"></label>
-                <textarea id="rtxt" placeholder="Eine Zutat pro Zeile, z. B.&#10;500 g Mehl&#10;3 Eier&#10;2 EL Zucker&#10;½ TL Salz&#10;1 Pck. Vanillezucker"></textarea>
-                <div class="row">
-                    <button class="pri" id="saveRec">Rezept speichern</button>
-                    <button id="share">Link erzeugen</button>
-                    <button id="print">Drucken</button>
+    <!-- Footer mit EEAT- & Trust-Signalen -->
+    <footer class="mt-8 py-8 border-t border-gray-200 bg-white">
+        <div class="container mx-auto px-4 max-w-7xl text-center space-y-3">
+            <h2 class="text-sm font-bold text-gray-800">Über Helferlein</h2>
+            <p class="text-xs text-gray-500 leading-relaxed max-w-2xl mx-auto">
+                Diese Sammlung kostenloser Online-Tools wurde konzipiert, um alltägliche Probleme (Haushalt, Finanzen, Auto) einfach und effizient im Browser zu lösen. 
+                <strong>Ohne versteckte Kosten, ohne Account-Zwang. Nichts dergleichen.</strong>
+            </p>
+            <p class="text-xs text-gray-500">
+                Entwickelt mit ❤️ und 💡 von Romain Duhr. 
+                <span class="font-semibold text-emerald-600">Datenschutz hat Priorität:</span> Deine Eingaben werden ausschließlich im Local Storage deines Browsers verarbeitet.
+            </p>
+            <div class="flex justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
+                <a href="datenschutz.html" class="text-xs text-sky-600 hover:text-sky-800 font-medium transition-colors">Datenschutzerklärung</a>
+                <a href="impressum.html" class="text-xs text-sky-600 hover:text-sky-800 font-medium transition-colors">Impressum</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Einstellungs-Modal OHNE Sync, MIT Ko-Fi -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
+                <h3 class="text-lg font-bold text-gray-900">⚙️ Einstellungen</h3>
+                <button type="button" id="closeSettingsBtn" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">&times;</button>
+            </div>
+            
+            <div class="space-y-5">
+                <div class="border-b border-gray-200 pb-4">
+                    <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="exportGlobalBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Backup</button>
+                        <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                            📤 Restore <input type="file" accept=".json" onchange="importGlobalBackup(event)" class="hidden">
+                        </label>
+                    </div>
+                    <p class="text-[11px] text-gray-400 mt-1.5">Sichere deine lokal gespeicherten Daten als Datei oder stelle sie wieder her.</p>
                 </div>
-                <input id="shareout" data-ns readonly placeholder="Link erscheint hier" hidden>
+
+                <!-- NEU: Ko-Fi in Settings -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-2">☕ Projekt unterstützen</label>
+                    <a href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all hover:scale-105">
+                        <span>☕</span> Auf Ko-fi einen Kaffee spendieren
+                    </a>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+                <button type="button" id="cancelSettingsBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
             </div>
         </div>
+    </div>
 
-        <div class="card">
-            <h2>Umgerechnet</h2>
-            <div id="scaled"></div>
-            <div class="row pt-2"><button class="pri" id="toList">Zur Einkaufsliste</button></div>
-        </div>
+    <!-- UI SKRIPT -->
+    <script>
+        // Ko-fi Zufalls-Spruch Generator
+        const kofiPhrases = [
+            "Premium Kaffee statt Premium App",
+            "Tools für die Welt, Kaffee fürs Helferlein",
+            "Code gratis, Kaffee freiwillig",
+            "Bezahlt mit Karma (oder Kaffee)",
+            "0 € Software, 100 % Kaffee",
+            "Bienenfutter & Programmier-Kaffee",
+            "Spende einen Kaffee, rette den Tag",
+            "Ein Kaffee hält den Bug-Teufel fern",
+            "Koffein-gesteuerter Open-Source-Wahnsinn",
+            "Weil Abos fürstlich nerven",
+            "Gratis-App-Überlebenshilfe",
+            "Mach mir einen Kaffee, ich mach dir ein Tool",
+            "Bohnen statt Bitcoin",
+            "Weil gute Tools viel Kaffee kosten",
+            "Lieber ein Kaffeefleck im Code als eine Paywall im Gesicht",
+            "Anti-Abo-Initiative (jetzt mit Koffein)",
+            "Weil 'kostenlos' auch mal 'ne Tasse Kaffee wert ist",
+            "Für mehr freie Tools und weniger Software-Gedöns",
+            "Halte den Rechner kühl und den Kaffee heiß",
+            "Hier könnte dein Lieblingsspruch stehen (oder ein Kaffee)"
+        ];
 
-        <div class="card">
-            <h2>Einkaufsliste</h2>
-            <ul class="chk" id="shop"></ul>
-            <div class="row pt-2">
-                <button id="shopClean">Erledigte löschen</button>
-                <button id="shopClear">Alles leeren</button>
-            </div>
-        </div>
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
 
-        <div class="card">
-            <h2>Gespeicherte Rezepte</h2>
-            <ul id="saved" class="space-y-2"></ul>
-        </div>
-    </section>
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
 
-    <!-- TAB 3: WERKZEUGE -->
-    <section id="tab-tools" hidden class="space-y-4">
-        <div class="card">
-            <h2>Ofentemperatur</h2>
-            <div class="row"><input id="tv" inputmode="decimal" value="180"><select id="tm"><option value="ou">°C Ober-/Unterhitze</option><option value="ul">°C Umluft</option><option value="f">°F</option><option value="gm">Gas Mark</option></select></div>
-            <p id="tout" class="pt-2 font-semibold"></p>
-        </div>
+        function toggleFavorite(toolId, event) {
+            if(event) { event.preventDefault(); event.stopPropagation(); }
+            let favs = JSON.parse(localStorage.getItem('hub_favorites') || '[]');
+            favs = favs.includes(toolId) ? favs.filter(id => id !== toolId) : [...favs, toolId];
+            localStorage.setItem('hub_favorites', JSON.stringify(favs));
+            initFavorites();
+        }
 
-        <div class="card">
-            <h2>Cups und Gramm</h2>
-            <div class="row"><select id="ci"><option value="120">Mehl</option><option value="200">Zucker</option><option value="120">Puderzucker</option><option value="227">Butter</option><option value="240">Wasser / Milch</option><option value="340">Honig</option><option value="90">Haferflocken</option><option value="85">Kakao</option></select><input id="cv" inputmode="decimal" value="1"><select id="cd"><option value="c">Cups → g</option><option value="g">g → Cups</option></select></div>
-            <p id="cout" class="pt-2 font-semibold"></p><p class="mut">Richtwerte. Mehl schwankt je nach Einfüllen um bis zu 20 %.</p>
-        </div>
+        function initFavorites() {
+            const favs = JSON.parse(localStorage.getItem('hub_favorites') || '[]');
+            const section = document.getElementById('favoritesSection');
+            const grid = document.getElementById('favoritesGrid');
+            if (!grid || !section) return;
+            grid.innerHTML = '';
+            if (favs.length === 0) { section.classList.add('hidden'); return; }
+            section.classList.remove('hidden');
+            favs.forEach(id => {
+                const card = document.querySelector(`#toolsGrid .tool-card[data-id="${id}"]`);
+                if (card) {
+                    const clone = card.cloneNode(true);
+                    const btn = clone.querySelector('.fav-btn');
+                    if(btn) {
+                        btn.style.color = '#f59e0b';
+                        btn.onclick = (e) => toggleFavorite(id, e);
+                    }
+                    grid.appendChild(clone);
+                }
+            });
+            document.querySelectorAll('#toolsGrid .tool-card').forEach(c => {
+                const btn = c.querySelector('.fav-btn');
+                if(btn) btn.style.color = favs.includes(c.getAttribute('data-id')) ? '#f59e0b' : '#d1d5db';
+            });
+        }
 
-        <div class="card">
-            <h2>Torte teilen</h2>
-            <label>Stücke<input id="pn" inputmode="numeric" value="12"></label>
-            <p id="pout" class="pt-2"></p>
-        </div>
+        function filterTools() {
+            const query = document.getElementById('searchBox').value.toLowerCase().trim();
+            document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
+                const name = card.getAttribute('data-name') || '', text = card.innerText.toLowerCase(), id = card.getAttribute('data-id');
+                let found = false;
+                if (query.length > 1) {
+                    for (let i = 0; i < localStorage.length; i++) {
+                        let k = localStorage.key(i);
+                        if (k.includes(id) && (localStorage.getItem(k) || '').toLowerCase().includes(query)) { found = true; break; }
+                    }
+                }
+                card.style.display = (name.includes(query) || text.includes(query) || found) ? "flex" : "none";
+            });
+        }
 
-        <div class="card">
-            <h2>Glasur und Fondant (Zielform)</h2>
-            <label>Sorte<select id="gt"><option value="0.12">Zuckerguss (1 mm)</option><option value="0.42" selected>Fondant (3 mm)</option><option value="0.55">Ganache (5 mm)</option><option value="0.5">Buttercreme (5 mm)</option></select></label>
-            <label>Rand mit bedecken<input id="gs" type="checkbox" checked style="width:24px;min-height:0;height:24px;accent-color:var(--acc)"></label>
-            <p id="gout" class="pt-2"></p>
-        </div>
+        function loadStats() {
+            const setStat = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
+            const getCount = (keys) => {
+                for (let k of keys) {
+                    let v = localStorage.getItem(k);
+                    if (v) { try { let p = JSON.parse(v); return Array.isArray(p) ? p.length : Object.keys(p).length; } catch(e){} }
+                }
+                return 0;
+            };
+            setStat('stats-kassenbon', `${getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts'])} Belege gespeichert`);
+            setStat('stats-kisten', `${getCount(['kisten_data', 'kisten', 'boxes', 'inventar'])} Kisten im Bestand`);
+            setStat('stats-wg-kasse', `${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])} Ausgaben erfasst`);
+            setStat('stats-notizen', `${getCount(['secure_notes', 'notes', 'notizen_data', 'notizen'])} Notizen gesichert`);
+            setStat('stats-kfz', `${getCount(['kfz_pass', 'kfz_data', 'vehicles', 'autos'])} Fahrzeuge aktiv`);
+            setStat(
+    'stats-haustier',
+    `${getCount([
+        'haustier_pass_pro_v5',
+        'haustier_pass',
+        'haustier_data',
+        'pets',
+        'tiere'
+    ])} Haustiere erfasst`
+);
+            setStat('stats-verleih', `${getCount(['verleih_pass', 'verleih_data', 'verleih', 'items'])} Verleih-Objekte`);
+            setStat('stats-pflanzen', `${getCount(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants'])} Pflanzen im Bestand`);
+            setStat('stats-energie', `${getCount(['energie_tracker_pro', 'energie_data', 'energie', 'readings'])} Ablesungen erfasst`);
+            setStat('stats-backform', `${getCount(['bk_rec', 'bk_pans', 'bk_shop'])} Rezepte/Formen`);
+        }
 
-        <div class="card">
-            <h2>Mehrere Böden</h2>
-            <label>Anzahl Böden<input id="nb" inputmode="numeric" value="3"></label>
-            <p id="bout" class="pt-2"></p>
-        </div>
+        async function exportGlobalBackup() {
 
-        <div class="card">
-            <h2>Mehrere Formen oder Muffins</h2>
-            <label>Anzahl kleine Formen<input id="kn" inputmode="numeric" value="2"></label>
-            <label>Ø jeder Form (cm)<input id="kd" inputmode="decimal" value="20"></label>
-            <p id="kout" class="pt-2"></p>
-        </div>
+    try {
 
-        <div class="card">
-            <h2>Stromkosten</h2>
-            <label>Ofenleistung (kW)<input id="ek" inputmode="decimal" value="2.4"></label>
-            <label>Backzeit inkl. Vorheizen (Min.)<input id="em" inputmode="decimal" value="70"></label>
-            <label>Preis (€/kWh)<input id="ep" inputmode="decimal" value="0.35"></label>
-            <p id="eout" class="pt-2 font-semibold"></p><p class="mut">Annahme: Heizung ist etwa 55 % der Zeit an.</p>
-        </div>
+        const backup = {
+            version: "2.0",
+            app: "Helferlein",
+            created: new Date().toISOString(),
+            tools: {},
+            localStorage: {}
+        };
 
-        <div class="card">
-            <h2>Höhenanpassung</h2>
-            <label>Höhe über NN (m)<input id="hm" inputmode="numeric" value="0"></label>
-            <p id="hout" class="pt-2"></p>
-        </div>
+        const toolPrefixes = [
+            "kassenbon",
+            "kisten",
+            "wg",
+            "secure",
+            "notizen",
+            "kfz",
+            "haustier",
+            "verleih",
+            "pflanzen",
+            "energie",
+            "bk",
+            "hub"
+        ];
 
-        <div class="card">
-            <h2>Backpapier-Schablone (1:1)</h2>
-            <div id="sch" class="py-2"></div>
-            <div class="row pt-2"><button class="pri" id="printS">Schablone drucken</button></div>
-            <p class="mut">Druck mit 100 % Skalierung, nicht „an Seite anpassen“.</p>
-        </div>
+        for (let i = 0; i < localStorage.length; i++) {
 
-        <div class="card">
-            <h2>Kochmodus</h2>
-            <div id="timer">00:00</div>
-            <div class="row pt-2">
-                <input id="tmin" inputmode="numeric" value="45" aria-label="Minuten" style="max-width:100px">
-                <button class="pri" id="tgo">Timer starten</button>
-                <button id="tstop">Stopp</button>
-            </div>
-            <div class="row pt-2"><button id="wake">Display anlassen</button></div>
-            <p class="mut pt-2" id="wout"></p>
-        </div>
-    </section>
+            const key = localStorage.key(i);
 
-    <!-- TAB 4: FORMEN & OFEN -->
-    <section id="tab-mine" hidden class="space-y-4">
-        <div class="card">
-            <h2>Meine Formen</h2>
-            <p class="mut mb-2">Speichere die Zielform und sieh, welche zu deinem Rezept passt.</p>
-            <div class="row"><input id="pname" data-ns placeholder="Name, z. B. Oma-Springform"><button class="pri" id="savePan">Zielform speichern</button></div>
-            <ul id="mypans" class="space-y-2 mt-3"></ul>
-        </div>
+            if (key.startsWith("firebase:")) continue;
 
-        <div class="card">
-            <h2>Mein Ofen</h2>
-            <div class="row"><input id="c1" data-ns inputmode="decimal" placeholder="Rezept sagt (Min.)"><input id="c2" data-ns inputmode="decimal" placeholder="Wirklich (Min.)"><button class="pri" id="cadd">Eintragen</button></div>
-            <p id="cout2" class="py-2"></p>
-            <button id="creset">Zurücksetzen</button>
-        </div>
+            const value = localStorage.getItem(key);
 
-        <div class="card">
-            <h2>Einstellungen und Daten</h2>
-            <label>Zoll und °F zusätzlich zeigen<input id="imp" type="checkbox" style="width:24px;min-height:0;height:24px;accent-color:var(--acc)"></label>
-            <div class="row pt-2"><button id="exp">Export (JSON)</button><button id="imb">Import</button></div>
-            <textarea id="data" data-ns placeholder="JSON hier einfügen oder kopieren" class="mt-2"></textarea>
-        </div>
-        <p class="mut px-1">Hinweise: Die Backzeit ist eine Faustregel, kein Naturgesetz. Mach immer die Stäbchenprobe.</p>
-    </section>
-</main>
+            backup.localStorage[key] = value;
 
-<div id="pa"></div><div id="ps"></div>
+            const prefix =
+                toolPrefixes.find(p => key.startsWith(p))
+                || "sonstige";
 
-<script>
-// Ko-fi Zufalls-Spruch Generator
-const kofiPhrases = [
-    "Premium Kaffee statt Premium App",
-    "Tools für die Welt, Kaffee fürs Helferlein",
-    "Code gratis, Kaffee freiwillig",
-    "Bezahlt mit Karma (or Kaffee)",
-    "0 € Software, 100 % Kaffee",
-    "Bienenfutter & Programmier-Kaffee",
-    "Spende einen Kaffee, rette den Tag",
-    "Ein Kaffee hält den Bug-Teufel fern"
-];
-document.addEventListener('DOMContentLoaded', () => {
-    const textSpan = document.getElementById('kofiText');
-    if (textSpan && kofiPhrases.length > 0) {
-        textSpan.innerText = kofiPhrases[Math.floor(Math.random() * kofiPhrases.length)];
+            if (!backup.tools[prefix]) {
+                backup.tools[prefix] = [];
+            }
+
+            backup.tools[prefix].push(key);
+        }
+
+        const blob = new Blob(
+            [JSON.stringify(backup, null, 2)],
+            { type: 'application/json' }
+        );
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+
+        a.href = url;
+
+        a.download =
+            `helferlein-backup-${
+                new Date()
+                    .toISOString()
+                    .slice(0,10)
+            }.json`;
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        document.body.removeChild(a);
+
+        URL.revokeObjectURL(url);
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert('Backup konnte nicht erstellt werden');
     }
-});
+}
 
-const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-const n=id=>{const x=parseFloat(String($('#'+id).value).replace(',','.'));return isFinite(x)?x:0};
-const fmt=(x,d=1)=>(+x.toFixed(d)).toString().replace('.',',');
-const S={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const T={round:'Rund',rect:'Eckig',kasten:'Kastenform',ring:'Kranz / Gugelhupf',tray:'Backblech',muffin:'Muffinform'};
-const DEF={round:{a:24,h:6},rect:{a:24,b:24,h:5},kasten:{a:30,b:11,h:8},ring:{a:24,c:6,h:10},tray:{a:40,b:30,h:2},muffin:{a:7,m:12,h:3}};
-const lab=(p,k,t,c)=>`<label class="${c||''}">${t}<input id="${p}${k}" inputmode="decimal"></label>`;
+        async function importGlobalBackup(event) {
 
-function panHTML(p,l){return `<fieldset id="${p}box" data-t="round"><legend>${l}</legend>
-<label>Form<select id="${p}t">${Object.entries(T).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></label>
-<label>Ø oder Länge (cm)<span><select id="${p}p" aria-label="Preset"><option value="">Preset</option>${[18,20,22,24,26,28,30].map(x=>`<option>${x}</option>`).join('')}</select><input id="${p}a" inputmode="decimal"></span></label>
-${lab(p,'b','Breite (cm)','b')}${lab(p,'c','Loch Ø (cm)','c')}${lab(p,'m','Anzahl Mulden','m')}${lab(p,'h','Höhe (cm)')}${lab(p,'w','Wasser-Messung (l, optional)')}</fieldset>`}
+    const file = event.target.files[0];
 
-$('#pans').innerHTML=panHTML('s','Form im Rezept')+panHTML('d','Deine Zielform');
-function setPan(p,o){for(const k of['t','a','b','c','h','m','w'])$('#'+p+k).value=o[k]??'';$('#'+p+'box').dataset.t=$('#'+p+'t').value}
-setPan('s',{t:'round',a:26,h:6});setPan('d',{t:'round',a:20,h:6});
-const getPan=p=>Object.fromEntries(['t','a','b','c','h','m','w'].map(k=>[k,$('#'+p+k).value]));
+    if (!file) return;
 
-function pan(p){const t=$('#'+p+'t').value,a=n(p+'a'),b=n(p+'b'),c=n(p+'c'),h=n(p+'h')||DEF[t].h,m=n(p+'m')||1,w=n(p+'w');
-const A=t=='round'?Math.PI*a*a/4:t=='ring'?Math.PI*(a*a-c*c)/4:t=='muffin'?m*Math.PI*a*a/4:a*b;
-return{t,a,b,c,h,A,w,V:w?w*1000:A*h}}
-const factor=(s,d)=>((s.w&&d.w)||s.t=='ring'||d.t=='ring')?d.V/s.V:d.A/s.A;
+    const reader = new FileReader();
 
-/* Parser */
-const UN={g:'g',kg:'kg',ml:'ml',l:'l',el:'EL',tl:'TL',msp:'Msp.','msp.':'Msp.',prise:'Prise',prisen:'Prise','pck.':'Pck.',pck:'Pck.',päckchen:'Pck.',pkt:'Pck.','pkt.':'Pck.',tasse:'Tasse',tassen:'Tasse',cup:'Cup',cups:'Cup'};
-const FR={'½':.5,'¼':.25,'¾':.75,'⅓':1/3,'⅔':2/3};
-function num(s){let t=0;for(const p of s.split(' ')){if(FR[p]!==undefined)t+=FR[p];else if(/^\d+\/\d+$/.test(p)){const[x,y]=p.split('/');t+=x/y}else if(/^\d+([.,]\d+)?$/.test(p))
+    reader.onload = async function(e) {
+
+        try {
+
+            const backup =
+                JSON.parse(e.target.result);
+
+            if (!backup.localStorage) {
+
+                alert(
+                    "Ungültiges Helferlein Backup"
+                );
+
+                return;
+            }
+
+            let count = 0;
+
+            const restoreData =
+    backup.localStorage || backup;
+
+for (const key in restoreData) {
+
+    if (
+        key === "version" ||
+        key === "app" ||
+        key === "created" ||
+        key === "tools"
+    ) continue;
+
+    localStorage.setItem(
+        key,
+        restoreData[key]
+    );
+
+    count++;
+}
+
+            loadStats();
+            initFavorites();
+
+            
+
+            alert(
+                `${count} Einträge erfolgreich wiederhergestellt`
+            );
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                "Fehler beim Import des Backups"
+            );
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+        // Global exportieren
+        window.openSettings = openSettings;
+        window.closeSettings = closeSettings;
+        window.toggleFavorite = toggleFavorite;
+        window.filterTools = filterTools;
+        window.loadStats = loadStats;
+        window.initFavorites = initFavorites;
+        window.exportGlobalBackup = exportGlobalBackup;
+        window.importGlobalBackup = importGlobalBackup;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ko-fi Spruch beim Laden der Seite zufällig auswählen
+            const textSpan = document.getElementById('kofiText');
+            if (textSpan && kofiPhrases.length > 0) {
+                const randomIndex = Math.floor(Math.random() * kofiPhrases.length);
+                textSpan.innerText = kofiPhrases[randomIndex];
+            }
+
+            const settingsBtn = document.getElementById('settingsBtn');
+            const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+            const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
+
+            if(settingsBtn) settingsBtn.addEventListener('click', openSettings);
+            if(closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
+            if(cancelSettingsBtn) cancelSettingsBtn.addEventListener('click', closeSettings);
+
+            loadStats();
+            initFavorites();
+        });
+    </script>
+</body>
+</html>
