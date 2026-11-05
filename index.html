@@ -577,88 +577,84 @@
 
         async function exportGlobalBackup() {
 
-    if (window.syncToCloud) {
-        await window.syncToCloud();
-    }
+    try {
 
-    const backup = {
-        version: "2.0",
-        app: "Helferlein",
-        created: new Date().toISOString(),
-        tools: {},
-        localStorage: {}
-    };
+        const backup = {
+            version: "2.0",
+            app: "Helferlein",
+            created: new Date().toISOString(),
+            tools: {},
+            localStorage: {}
+        };
 
-    const toolPrefixes = [
-        "kassenbon",
-        "kisten",
-        "wg",
-        "secure",
-        "notizen",
-        "kfz",
-        "haustier",
-        "verleih",
-        "pflanzen",
-        "energie",
-        "bk",
-        "hub"
-    ];
+        const toolPrefixes = [
+            "kassenbon",
+            "kisten",
+            "wg",
+            "secure",
+            "notizen",
+            "kfz",
+            "haustier",
+            "verleih",
+            "pflanzen",
+            "energie",
+            "bk",
+            "hub"
+        ];
 
-    for (let i = 0; i < localStorage.length; i++) {
+        for (let i = 0; i < localStorage.length; i++) {
 
-        const key = localStorage.key(i);
-        const value = localStorage.getItem(key);
+            const key = localStorage.key(i);
 
-        if (!key.startsWith("firebase:")) {
-    backup.localStorage[key] = value;
-}
+            if (key.startsWith("firebase:")) continue;
 
-        const prefix =
-            toolPrefixes.find(p => key.startsWith(p))
-            || "sonstige";
+            const value = localStorage.getItem(key);
 
-        if (!backup.tools[prefix]) {
-            backup.tools[prefix] = [];
+            backup.localStorage[key] = value;
+
+            const prefix =
+                toolPrefixes.find(p => key.startsWith(p))
+                || "sonstige";
+
+            if (!backup.tools[prefix]) {
+                backup.tools[prefix] = [];
+            }
+
+            backup.tools[prefix].push(key);
         }
 
-        backup.tools[prefix].push(key);
+        const blob = new Blob(
+            [JSON.stringify(backup, null, 2)],
+            { type: 'application/json' }
+        );
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+
+        a.href = url;
+
+        a.download =
+            `helferlein-backup-${
+                new Date()
+                    .toISOString()
+                    .slice(0,10)
+            }.json`;
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        document.body.removeChild(a);
+
+        URL.revokeObjectURL(url);
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert('Backup konnte nicht erstellt werden');
     }
-
-    const blob = new Blob(
-        [JSON.stringify(backup, null, 2)],
-        { type: 'application/json' }
-    );
-
-    const fileName =
-        `helferlein-backup-${new Date().toISOString().split('T')[0]}.json`;
-
-    const blob = new Blob(
-    [JSON.stringify(backup, null, 2)],
-    { type: 'application/json' }
-);
-
-const url = URL.createObjectURL(blob);
-
-const a = document.createElement('a');
-
-a.href = url;
-a.download =
-    `helferlein-backup-${
-        new Date().toISOString().slice(0,10)
-    }.json`;
-
-document.body.appendChild(a);
-
-a.click();
-
-document.body.removeChild(a);
-
-URL.revokeObjectURL(url);
-
-    let a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = fileName;
-    a.click();
 }
 
         async function importGlobalBackup(event) {
