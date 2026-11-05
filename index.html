@@ -554,7 +554,16 @@
             setStat('stats-wg-kasse', `${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])} Ausgaben erfasst`);
             setStat('stats-notizen', `${getCount(['secure_notes', 'notes', 'notizen_data', 'notizen'])} Notizen gesichert`);
             setStat('stats-kfz', `${getCount(['kfz_pass', 'kfz_data', 'vehicles', 'autos'])} Fahrzeuge aktiv`);
-            setStat('stats-haustier', `${getCount(['haustier_pass', 'haustier_data', 'pets', 'tiere'])} Haustiere erfasst`);
+            setStat(
+    'stats-haustier',
+    `{getCount([
+        'haustier_pass_pro_v5',
+        'haustier_pass',
+        'haustier_data',
+        'pets',
+        'tiere'
+    ])} Haustiere erfasst`
+);
             setStat('stats-verleih', `${getCount(['verleih_pass', 'verleih_data', 'verleih', 'items'])} Verleih-Objekte`);
             setStat('stats-pflanzen', `${getCount(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants'])} Pflanzen im Bestand`);
             setStat('stats-energie', `${getCount(['energie_tracker_pro', 'energie_data', 'energie', 'readings'])} Ablesungen erfasst`);
@@ -562,27 +571,142 @@
         }
 
         async function exportGlobalBackup() {
-            if (window.syncToCloud) await window.syncToCloud();
-            let globalBackup = {};
-            for (let i = 0; i < localStorage.length; i++) globalBackup[localStorage.key(i)] = localStorage.getItem(localStorage.key(i));
-            const blob = new Blob([JSON.stringify(globalBackup)], { type: 'application/json' });
-            const file = new File([blob], `alltagshilfe-backup-${new Date().toISOString().split('T')[0]}.json`, { type: 'application/json' });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Backup' }); return; }
-            let a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
+
+    if (window.syncToCloud) {
+        await window.syncToCloud();
+    }
+
+    const backup = {
+        version: "2.0",
+        app: "Helferlein",
+        created: new Date().toISOString(),
+        tools: {},
+        localStorage: {}
+    };
+
+    const toolPrefixes = [
+        "kassenbon",
+        "kisten",
+        "wg",
+        "secure",
+        "notizen",
+        "kfz",
+        "haustier",
+        "verleih",
+        "pflanzen",
+        "energie",
+        "bk",
+        "hub"
+    ];
+
+    for (let i = 0; i < localStorage.length; i++) {
+
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+
+        backup.localStorage[key] = value;
+
+        const prefix =
+            toolPrefixes.find(p => key.startsWith(p))
+            || "sonstige";
+
+        if (!backup.tools[prefix]) {
+            backup.tools[prefix] = [];
         }
 
+        backup.tools[prefix].push(key);
+    }
+
+    const blob = new Blob(
+        [JSON.stringify(backup, null, 2)],
+        { type: 'application/json' }
+    );
+
+    const fileName =
+        `helferlein-backup-${new Date().toISOString().split('T')[0]}.json`;
+
+    const file = new File(
+        [blob],
+        fileName,
+        { type: 'application/json' }
+    );
+
+    if (
+        navigator.canShare &&
+        navigator.canShare({ files: [file] })
+    ) {
+        await navigator.share({
+            files: [file],
+            title: 'Helferlein Backup'
+        });
+        return;
+    }
+
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    a.click();
+}
+
         async function importGlobalBackup(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    for (let key in parsed) localStorage.setItem(key, parsed[key]);
-                    loadStats(); initFavorites(); if (window.syncToCloud) await window.syncToCloud(); alert("Backup eingespielt & gesichert!");
-                } catch (err) { alert("Fehler beim Import."); }
-            };
-            reader.readAsText(file);
+
+    const file = event.target.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = async function(e) {
+
+        try {
+
+            const backup =
+                JSON.parse(e.target.result);
+
+            if (!backup.localStorage) {
+
+                alert(
+                    "Ungültiges Helferlein Backup"
+                );
+
+                return;
+            }
+
+            let count = 0;
+
+            for (const key in backup.localStorage) {
+
+                localStorage.setItem(
+                    key,
+                    backup.localStorage[key]
+                );
+
+                count++;
+            }
+
+            loadStats();
+            initFavorites();
+
+            if (window.syncToCloud) {
+                await window.syncToCloud();
+            }
+
+            alert(
+                `${count} Einträge erfolgreich wiederhergestellt`
+            );
+
+        } catch (err) {
+
+            console.error(err);
+
+            alert(
+                "Fehler beim Import des Backups"
+            );
         }
+    };
+
+    reader.readAsText(file);
+}
 
         // Global exportieren
         window.openSettings = openSettings;
