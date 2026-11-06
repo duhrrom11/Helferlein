@@ -11,7 +11,7 @@
 <style>
 :root{--bg:#f8fafc;--ink:#1e293b;--card:#ffffff;--acc:#0ea5e9;--hi:#f59e0b;--hit:#1e293b;--line:#e2e8f0;--mut:#64748b;--bad:#ef4444;--ok:#22c55e;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f172a;--ink:#f1f5f9;--card:#1e293b;--acc:#38bdf8;--line:#334155;--mut:#94a3b8;--bad:#f87171;--ok:#4ade80;color-scheme:dark}}
+@media(prefers-color-scheme:light){:root:not([data-theme=light]){--bg:#0f172a;--ink:#f1f5f9;--card:#1e293b;--acc:#38bdf8;--line:#334155;--mut:#94a3b8;--bad:#f87171;--ok:#4ade80;color-scheme:dark}}
 :root[data-theme=dark]{--bg:#0f172a;--ink:#f1f5f9;--card:#1e293b;--acc:#38bdf8;--line:#334155;--mut:#94a3b8;--bad:#f87171;--ok:#4ade80;color-scheme:dark}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
 main{max-width:800px;margin:0 auto;padding:16px 16px 80px}
@@ -383,3 +383,4 @@ supabaseClient.auth.onAuthStateChange(async () => { updateUserDisplay(); });
 </script>
 </body>
 </html>
+```eof
