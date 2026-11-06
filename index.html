@@ -46,10 +46,9 @@
             <div class="font-bold text-sky-950 flex items-center gap-1.5 text-sm pb-1 border-b border-sky-200">
                 💡 So synchronisierst du alle deine Geräte über npoint.io
             </div>
-            <p>1. <strong>Cloud-Bin anlegen:</strong> Klicke auf dem Hauptgerät auf <em>„☁️ In Cloud speichern“</em>. npoint.io generiert eine ID und fügt sie oben in die Adresszeile ein (z. B. `?id=...`).</p>
-            <p>2. <strong>Auf anderen Geräten öffnen:</strong> Kopiere einfach die URL inklusive der ID und öffne sie auf deinem Smartphone oder PC. Sofort sind alle Fristen synchronisiert.</p>
-            <p>3. <strong>Auto-Sync:</strong> Das Hub prüft im Hintergrund alle 30 Sekunden automatisch auf Aktualisierungen in der Cloud.</p>
-            <p>4. <strong>Google Kalender Abo:</strong> Nutze den Kalender-Button, um die npoint.io-URL direkt in deinen Google Kalender einzubinden.</p>
+            <p>1. <strong>Neue Cloud-ID erstellen:</strong> Klicke auf <em>„☁️ In Cloud speichern“</em>. Wenn noch keine echte ID da ist, wird automatisch ein neuer npoint.io-Bin angelegt.</p>
+            <p>2. <strong>Auf anderen Geräten öffnen:</strong> Kopiere einfach die URL inklusive der neuen ID (z. B. `?id=xyz123`) und öffne sie auf deinem Smartphone oder PC.</p>
+            <p>3. <strong>Neue ID erzwingen:</strong> Mit dem Button <em>„🔄 Neue Cloud-ID“</em> kannst du jederzeit einen komplett frischen Cloud-Speicher anlegen.</p>
         </div>
     </header>
 
@@ -260,6 +259,9 @@
                     <p class="text-xs text-gray-500 mt-0.5">Geräteübergreifende npoint.io Cloud-Synchronisation.</p>
                 </div>
                 <div class="flex flex-wrap gap-2 items-center">
+                    <button onclick="erzwingeNeueCloudId()" class="px-3 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-md transition-all text-xs cursor-pointer">
+                        🔄 Neue Cloud-ID
+                    </button>
                     <button onclick="speichereInCloud()" class="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all text-xs cursor-pointer">
                         ☁️ In Cloud speichern
                     </button>
@@ -323,10 +325,14 @@
         const urlParams = new URLSearchParams(window.location.search);
         let hubBinId = urlParams.get('id');
 
-        // ID aus localStorage laden, falls keine in der URL steht
+        // Wenn die ID mit 'hub_' beginnt oder ungültig ist, ignorieren wir sie und holen eine echte npoint-ID
+        if (hubBinId && hubBinId.startsWith('hub_')) {
+            hubBinId = null;
+        }
+
         if (!hubBinId) {
             let savedId = localStorage.getItem('active_hub_bin_id');
-            if (savedId) {
+            if (savedId && !savedId.startsWith('hub_')) {
                 hubBinId = savedId;
             }
         } else {
@@ -372,6 +378,15 @@
             if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
         }
 
+        function erzwingeNeueCloudId() {
+            if (confirm("Möchtest du eine komplett neue npoint.io Cloud-ID generieren? Die bisherige Verknüpfung wird zurückgesetzt.")) {
+                localStorage.removeItem('active_hub_bin_id');
+                hubBinId = null;
+                window.history.replaceState({}, '', window.location.pathname);
+                speichereInCloud();
+            }
+        }
+
         async function speichereInCloud() {
             const alleTermine = sammleTermineAusAllenTools();
             const payload = {
@@ -380,8 +395,8 @@
             };
 
             try {
-                // 1. Wenn bereits eine echte Bin-ID existiert, aktualisieren per PUT
-                if (hubBinId) {
+                // Wenn wir eine echte Bin-ID haben, aktualisieren wir diese per PUT
+                if (hubBinId && !hubBinId.startsWith('hub_')) {
                     let response = await fetch(NPOINT_API_BASE + hubBinId, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
@@ -394,7 +409,7 @@
                     }
                 }
 
-                // 2. Ansonsten einen neuen Bin auf npoint.io anlegen
+                // Ansonsten legen wir einen neuen Bin per POST an
                 let response = await fetch(NPOINT_API_BASE, {
                     method: "POST",
                     headers: { 
@@ -411,7 +426,7 @@
                         hubBinId = newId;
                         localStorage.setItem('active_hub_bin_id', hubBinId);
                         window.history.replaceState({}, '', window.location.pathname + "?id=" + hubBinId);
-                        alert("✅ Neuer npoint.io Cloud-Bin erstellt!\n\nID: " + hubBinId + "\n\n(Du kannst diesen Link jetzt auf all deinen Geräten öffnen).");
+                        alert("✅ Neue npoint.io Cloud-ID erfolgreich erstellt!\n\nID: " + hubBinId + "\n\n(Kopiere diesen Link für deine anderen Geräte).");
                         await ladeDatenAusCloud();
                         return;
                     }
@@ -419,14 +434,14 @@
                 throw new Error("npoint.io hat keine ID zurückgegeben.");
             } catch (e) {
                 console.warn("Cloud-Speicherung fehlgeschlagen", e);
-                alert("⚠️ Cloud-Speicherung fehlgeschlagen. Bitte Internetverbindung prüfen.");
+                alert("⚠️ Konnte npoint.io nicht erreichen. Bitte Internetverbindung prüfen.");
             }
         }
 
         async function ladeDatenAusCloud() {
             const lokaleTermine = sammleTermineAusAllenTools();
 
-            if (!hubBinId) {
+            if (!hubBinId || hubBinId.startsWith('hub_')) {
                 sammleUndZeigeTermine({ events: lokaleTermine });
                 return;
             }
@@ -533,7 +548,7 @@
         }
 
         function fuegeZuGoogleKalenderHinzu() {
-            if (!hubBinId) {
+            if (!hubBinId || hubBinId.startsWith('hub_')) {
                 alert("⚠️ Bitte klicke zuerst auf '☁️ In Cloud speichern', um eine echte npoint.io-ID zu generieren.");
                 return;
             }
@@ -604,6 +619,7 @@
         window.speichereInCloud = speichereInCloud;
         window.ladeDatenAusCloud = ladeDatenAusCloud;
         window.fuegeZuGoogleKalenderHinzu = fuegeZuGoogleKalenderHinzu;
+        window.erzwingeNeueCloudId = erzwingeNeueCloudId;
         window.openSettings = openSettings;
         window.closeSettings = closeSettings;
     </script>
