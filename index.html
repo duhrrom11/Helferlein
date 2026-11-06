@@ -9,21 +9,6 @@
     <meta name="description" content="Entdecke 11 kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung, 100% lokal & sicher. Nutze praktische Tools direkt im Browser!">
     <link rel="canonical" href="https://duhrrom11.github.io/Helferlein/index.html">
 
-    <!-- Open Graph / Social Media Sharing -->
-    <meta property="og:title" content="Kostenlose Online-Tools & clevere Rechner | Helferlein">
-    <meta property="og:description" content="Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://duhrrom11.github.io/Helferlein/index.html">
-    <meta property="og:image" content="https://duhrrom11.github.io/Helferlein/assets/preview.jpg">
-    <meta name="twitter:card" content="summary_large_image">
-    
-    <!-- PWA / App-Modus Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Alltags-Tools">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href='data:application/manifest+json,{"name": "Alltagshelferlein Hub", "short_name": "Helferlein", "start_url": "./index.html", "display": "standalone", "background_color": "#f3f4f6", "theme_color": "#0284c7"}'>
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -430,10 +415,14 @@
         const urlParams = new URLSearchParams(window.location.search);
         let hubBinId = urlParams.get('id');
 
+        // Automatisches Abfangen: Wenn keine ID in der URL, nimm den Speicher oder generiere einen Fallback
+        if (!hubBinId) {
+            hubBinId = localStorage.getItem('active_wg_bin_id');
+        } else {
+            localStorage.setItem('active_wg_bin_id', hubBinId);
+        }
+
         document.addEventListener('DOMContentLoaded', async () => {
-            if (!hubBinId) {
-                hubBinId = localStorage.getItem('active_wg_bin_id');
-            }
             try { loadStats(); } catch(e){}
             try { initFavorites(); } catch(e){}
             await ladeDatenAusCloud();
@@ -441,8 +430,9 @@
 
         async function ladeDatenAusCloud() {
             if (!hubBinId) {
-                document.getElementById('databaseEventsList').innerHTML = `<p class="text-xs text-amber-500 text-center py-6">⚠️ Keine Datenbank-ID (?id=...) in der URL gefunden.</p>`;
-                return;
+                // Erstelle automatisch einen lokalen Fallback oder npoint-Container, falls komplett neu
+                hubBinId = "wg_" + Math.random().toString(36).substring(2, 9);
+                localStorage.setItem('active_wg_bin_id', hubBinId);
             }
 
             try {
@@ -533,7 +523,7 @@
         // Dynamischer Google-Kalender Abo-Button für den Nutzer / Kunden
         function fuegeZuGoogleKalenderHinzu() {
             if (!hubBinId) {
-                alert("⚠️ Keine aktive Datenbank-ID in der URL gefunden.");
+                alert("⚠️ Keine aktive Datenbank-ID vorhanden.");
                 return;
             }
             const kundenDatenUrl = `https://api.npoint.io/${hubBinId}`;
