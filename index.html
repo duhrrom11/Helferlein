@@ -56,6 +56,7 @@
         }
         .tool-card:hover::before { opacity: 1; }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
 
@@ -409,6 +410,21 @@
 
     <!-- UI SKRIPT -->
     <script>
+
+const SUPABASE_URL =
+  "https://avapuibsidubuzxjtyld.supabase.co";
+
+const SUPABASE_ANON_KEY =
+  "sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC";
+
+window.supabaseClient =
+  supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+console.log("✅ Supabase verbunden");
+        
         const kofiPhrases = [
             "Premium Kaffee statt Premium App", "Tools für die Welt, Kaffee fürs Helferlein",
             "Code gratis, Kaffee freiwillig", "Bezahlt mit Karma (oder Kaffee)",
