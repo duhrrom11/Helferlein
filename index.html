@@ -488,33 +488,38 @@ window.supabaseClient =
 
 console.log("✅ Supabase verbunden");
 async function registerUser() {
- 
-const email = prompt("E-Mail:");
- 
-if (!email) return;
- 
-const password = prompt("Passwort (mindestens 6 Zeichen):");
- 
-if (!password) return;
- 
-const { data, error } =
-await window.supabaseClient.auth.signUp({
-email,
-password
-});
- 
-if (error) {
- 
-alert("Fehler: " + error.message);
-console.error(error);
-return;
- 
+
+    const email = prompt("E-Mail:");
+
+    if (!email) return;
+
+    const password = prompt("Passwort (mindestens 6 Zeichen):");
+
+    if (!password) return;
+
+    const { data, error } =
+        await window.supabaseClient.auth.signUp({
+            email,
+            password
+        });
+
+    if (error) {
+
+        alert("Fehler: " + error.message);
+        console.error(error);
+        return;
+
+    }
+
+    alert("Registrierung erfolgreich. Du kannst dich jetzt anmelden.");
+
+    const modal = document.getElementById("settingsModal");
+
+    if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
 }
- 
-alert("Registrierung erfolgreich.");
- 
-console.log(data);
-}  
 async function loginUser() {
 
     const email = prompt("E-Mail:");
@@ -538,6 +543,19 @@ async function loginUser() {
         return;
 
     }
+
+    alert("Erfolgreich angemeldet.");
+
+    updateUserDisplay();
+
+    // Einstellungen schließen
+    const modal = document.getElementById("settingsModal");
+
+    if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+    }
+}
 
     alert("Erfolgreich angemeldet.");
 
