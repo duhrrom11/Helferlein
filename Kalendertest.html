@@ -67,7 +67,6 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!hubBinId) {
-                // Versuche die ID aus dem WG-Hub zu übernehmen falls im selben Browser genutzt
                 hubBinId = localStorage.getItem('active_wg_bin_id');
             }
             await ladeDatenAusCloud();
@@ -80,7 +79,7 @@
 
         async function ladeDatenAusCloud() {
             if (!hubBinId) {
-                document.getElementById('databaseEventsList').innerHTML = `<p class="text-xs text-amber-400 text-center py-6">⚠️ Keine Datenbank-ID (?id=...) in der URL gefunden. Bitte öffne den Hub über den Link deiner WG-Datenbank.</p>`;
+                document.getElementById('databaseEventsList').innerHTML = `<p class="text-xs text-amber-400 text-center py-6">⚠️ Keine Datenbank-ID gefunden. Bitte öffne den Kalender direkt aus deinem WG-Haushaltsbuch heraus oder über den korrekten Link mit ID.</p>`;
                 return;
             }
 
@@ -90,19 +89,28 @@
                     const cloudObj = await response.json();
                     sammleUndZeigeTermine(cloudObj);
                 } else {
-                    document.getElementById('databaseEventsList').innerHTML = `<p class="text-xs text-red-400 text-center py-6">❌ Konnte Datenbank nicht abrufen.</p>`;
+                    // Fallback falls die ID auf npoint direkt nicht existiert, zeige Testdaten aus localStorage
+                    console.warn("Cloud-Abruf fehlgeschlagen, nutze lokale Daten als Fallback.");
+                    sammleUndZeigeTermine({
+                        events: JSON.parse(localStorage.getItem('wg_events') || '[]'),
+                        contracts: JSON.parse(localStorage.getItem('wg_contracts') || '[]'),
+                        data: JSON.parse(localStorage.getItem('kassenbon_data') || '[]')
+                    });
                 }
             } catch (error) {
-                console.error("Fehler beim Auslesen:", error);
-                document.getElementById('databaseEventsList').innerHTML = `<p class="text-xs text-red-400 text-center py-6">❌ Verbindungsfehler zur Online-Datenbank.</p>`;
+                console.warn("Netzwerkfehler, nutze lokale Daten als Fallback:", error);
+                sammleUndZeigeTermine({
+                    events: JSON.parse(localStorage.getItem('wg_events') || '[]'),
+                    contracts: JSON.parse(localStorage.getItem('wg_contracts') || '[]'),
+                    data: JSON.parse(localStorage.getItem('kassenbon_data') || '[]')
+                });
             }
         }
 
         function sammleUndZeigeTermine(data) {
             let alleTermine = [];
 
-            // 1. Termine/Slots aus WG-Kalender Events
-            if (Array.isArray(data.events)) {
+            if (data && Array.isArray(data.events)) {
                 data.events.forEach(ev => {
                     alleTermine.push({
                         titel: ev.title || ev.type,
@@ -114,8 +122,7 @@
                 });
             }
 
-            // 2. Verträge mit Kündigungsfrist
-            if (Array.isArray(data.contracts)) {
+            if (data && Array.isArray(data.contracts)) {
                 data.contracts.forEach(c => {
                     if (c.noticeDate) {
                         alleTermine.push({
@@ -129,8 +136,7 @@
                 });
             }
 
-            // 3. Kassenbons / Buchungen mit Datum
-            if (Array.isArray(data.data)) {
+            if (data && Array.isArray(data.data)) {
                 data.data.forEach(r => {
                     if (r.date) {
                         alleTermine.push({
@@ -144,7 +150,6 @@
                 });
             }
 
-            // Nach Datum sortieren
             alleTermine.sort((a, b) => new Date(a.datum) - new Date(b.datum));
 
             const container = document.getElementById('databaseEventsList');
