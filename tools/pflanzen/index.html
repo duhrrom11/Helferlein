@@ -66,7 +66,7 @@
         </div>
     </div>
 
-    <!-- MODAL: Hilfe & Ausklappbare Anleitungen (Bereinigt) -->
+    <!-- MODAL: Hilfe & Ausklappbare Anleitungen -->
     <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleHelpModal()">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
@@ -87,9 +87,9 @@
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
-                    <summary class="font-bold cursor-pointer text-lime-700">Wie sichere ich meine Daten (Backup & PDF)?</summary>
+                    <summary class="font-bold cursor-pointer text-lime-700">Wie erstelle ich einen PDF-Report?</summary>
                     <p class="mt-2 text-gray-600 leading-relaxed">
-                        Nutze den Button „💾 Backup“, um all deine Pflanzen, Tagebucheinträge und Lagerbestände als JSON-Datei zu sichern, oder erstelle mit „📄 PDF“ einen kompakten Report.
+                        Nutze den Button „📄 PDF“, um jederzeit einen kompakten Report aller erfassten Pflanzen und Daten als Dokument zu generieren.
                     </p>
                 </details>
             </div>
@@ -112,7 +112,7 @@
             <button onclick="dismissFrostAlert()" class="bg-red-700 hover:bg-red-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold">Ausblenden</button>
         </div>
 
-        <!-- Navigation & Global Actions -->
+        <!-- Navigation & Global Actions (Ohne Backup/Import) -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
             
@@ -123,10 +123,6 @@
                 <button onclick="openInventoryModal()" class="px-3 py-2 bg-lime-50 text-lime-700 hover:bg-lime-100 rounded-xl text-xs font-bold shadow-sm">📦 Lager & Nachbestellen</button>
                 <button onclick="openBeetModal()" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold shadow-sm">🌿 Beet</button>
                 <button onclick="exportPDF()" class="px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF</button>
-                <button onclick="exportBackup()" class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
-                <label class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium cursor-pointer">
-                    📂 Import <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
-                </label>
             </div>
         </div>
 
@@ -949,28 +945,6 @@
                 y += 6;
             });
             doc.save("pflanzen-report.pdf");
-        }
-
-        function exportBackup() {
-            let data = JSON.stringify(getData());
-            let blob = new Blob([data], { type: 'application/json' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a'); a.href = url;
-            a.download = `pflanzen-backup-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-        }
-
-        function importBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    if (parsed.plants) { saveData(parsed); loadLocationDropdown(); renderApp(); updateCisternDisplay(); alert("Backup importiert!"); }
-                } catch (err) { alert("Fehler beim Lesen."); }
-            };
-            reader.readAsText(file);
         }
     </script>
 </body>
