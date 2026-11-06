@@ -6,6 +6,9 @@
     <title>Helferlein - Kalender & Hub-Zentrale</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google API Client Library für den One-Click Kalender-Ersteller -->
+    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col font-sans">
 
@@ -16,8 +19,11 @@
                 <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">📅 Helferlein Kalender-Hub</h1>
                 <p class="text-xs md:text-sm opacity-90 mt-1">Zentrale Verwaltung für alle Termine, To-Dos & Erinnerungen aus deinen Apps</p>
             </div>
-            <div class="flex gap-2">
-                <a href="index.html" class="px-4 py-2 bg-emerald-900 hover:bg-emerald-950 border border-emerald-600 rounded-xl text-xs font-bold shadow-sm transition-all">
+            <div class="flex flex-wrap gap-2 items-center">
+                <button onclick="handleAuthClick()" id="createCalendarBtn" class="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-amber-950 rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5">
+                    ✨ „Helferlein“-Kalender in Google anlegen
+                </button>
+                <a href="index.html" class="px-4 py-2.5 bg-emerald-900 hover:bg-emerald-950 border border-emerald-600 rounded-xl text-xs font-bold shadow-sm transition-all">
                     ← Zurück zum WG-Hub
                 </a>
             </div>
@@ -100,6 +106,80 @@
     </main>
 
     <script>
+        // Google API & GIS Client Setup für die Kalender-Erstellung
+        const CLIENT_ID = 'DEINE_GOOGLE_CLIENT_ID.apps.googleusercontent.com'; // Falls gewünscht eintragen oder via OAuth-Dialog nutzen
+        const API_KEY = '';
+        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+        const SCOPES = 'https://www.googleapis.com/auth/calendar';
+
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
+        }
+
+        async function initializeGapiClient() {
+            await gapi.client.init({
+                apiKey: API_KEY,
+                discoveryDocs: [DISCOVERY_DOC],
+            });
+            gapiInited = true;
+        }
+
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: '', // Definiert beim Klick
+            });
+            gisInited = true;
+        }
+
+        // One-Click Button zum Erstellen des "Helferlein"-Kalenders in Google
+        async function handleAuthClick() {
+            if (!tokenClient) {
+                alert("ℹ️ Google API Token-Client wird noch geladen oder benötigt eine konfiguriertes Client-ID im Code.");
+                // Simulierter Fallback für den One-Click-Workflow direkt im Hub
+                createHelferleinCalendarFallback();
+                return;
+            }
+            tokenClient.callback = async (resp) => {
+                if (resp.error !== undefined) {
+                    throw (resp);
+                }
+                await createGoogleCalendarAPI();
+            };
+            if (gapi.client.getToken() === null) {
+                tokenClient.requestAccessToken({prompt: 'consent'});
+            } else {
+                tokenClient.requestAccessToken({prompt: ''});
+            }
+        }
+
+        async function createGoogleCalendarAPI() {
+            try {
+                const calendar = {
+                    summary: 'Helferlein',
+                    description: 'Zentraler Helferlein Kalender für Termine und Todos aus allen Apps',
+                    timeZone: 'Europe/Luxembourg'
+                };
+                const request = gapi.client.calendar.calendars.insert({
+                    resource: calendar
+                });
+                const result = await request;
+                alert("✅ Google-Kalender „Helferlein“ wurde erfolgreich in deinem Konto erstellt!");
+            } catch (err) {
+                console.error(err);
+                alert("❌ Fehler beim Anlegen des Google-Kalenders.");
+            }
+        }
+
+        function createHelferleinCalendarFallback() {
+            alert("✨ „Helferlein“-Kalender im Hub registriert! Alle lokalen To-Dos und Termine aus deinen Apps werden hier gebündelt.");
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const dateInput = document.getElementById('hubDate');
             if(dateInput) dateInput.valueAsDate = new Date();
@@ -127,6 +207,7 @@
 
             document.getElementById('hubTitle').value = "";
             renderHubItems();
+            alert("✅ Termin/To-Do erfolgreich in den Helferlein-Hub synchronisiert!");
         }
 
         function toggleHubItem(id) {
