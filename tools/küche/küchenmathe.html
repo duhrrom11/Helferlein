@@ -32,35 +32,74 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col font-sans">
 
-    <!-- Header -->
+    <!-- Header mit Titel, Untertitel, Zurück-Button, Anleitung & Einstellungen -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Linker Bereich: Zurück zur Startseite, Icon, Titel & Untertitel -->
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-md shadow-orange-500/25">
+                <a href="../../index.html" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition flex items-center justify-center" title="Zurück zur Startseite">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                </a>
+                <div class="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-md shadow-orange-500/25 shrink-0">
                     <i data-lucide="cake" class="w-6 h-6"></i>
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-tight text-slate-900">Backform-Rechner Pro</h1>
-                    <p class="text-xs text-slate-500">Helperly Local Suite – 100% Client-Side</p>
+                    <p class="text-xs text-slate-500">Zutaten präzise umrechnen, Ofenzeiten anpassen & smart backen</p>
                 </div>
             </div>
-            
-            <!-- Auth & Navigation Controls -->
+
+            <!-- Rechter Bereich: Anleitung & Einstellungen-Button -->
             <div class="flex items-center space-x-2 sm:space-x-3">
-                <div id="header-user-info" class="hidden sm:block text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
-                    Nicht angemeldet
+                <button onclick="toggleHelp()" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium text-xs transition flex items-center gap-1.5">
+                    <i data-lucide="book-open" class="w-4 h-4 text-orange-600"></i> Anleitung
+                </button>
+                <button onclick="openSettings()" class="px-3.5 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-medium text-xs transition flex items-center gap-1.5 shadow-sm shadow-orange-500/20">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Einstellungen & Cloud
+                </button>
+            </div>
+        </div>
+
+        <!-- Ausklappbare Anleitung (Accordion im Header) -->
+        <div id="help-box" class="hidden border-t border-slate-100 bg-orange-50/40 px-4 sm:px-8 py-4">
+            <div class="max-w-4xl mx-auto space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-orange-900">Kurzanleitung – So funktioniert's:</h3>
+                    <button onclick="toggleHelp()" class="text-slate-400 hover:text-slate-600 text-xs">Schließen ✕</button>
                 </div>
-                <div class="flex items-center space-x-1 sm:space-x-2 overflow-x-auto py-2">
-                    <button onclick="openTab('rechner')" id="btn-tab-rechner" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-orange-50 text-orange-600 transition whitespace-nowrap">Rechner</button>
-                    <button onclick="openTab('finder')" id="btn-tab-finder" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Formen-Finder</button>
-                    <button onclick="openTab('substanz')" id="btn-tab-substanz" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Ersatz & Zucker</button>
-                    <button onclick="openTab('tools')" id="btn-tab-tools" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Extras & Kosten</button>
-                    <button onclick="openTab('rezepte')" id="btn-tab-rezepte" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Gespeicherte</button>
-                    <button onclick="openTab('einstellungen')" id="btn-tab-einstellungen" class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition flex items-center gap-1 text-xs sm:text-sm font-medium" title="Einstellungen"><i data-lucide="settings" class="w-5 h-5"></i> <span class="hidden md:inline">Einstellungen</span></button>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-600">
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">1. Rezept & Basis</strong>
+                        Gib Zeit, Temperatur und deine Zutaten im Rechner ein.
+                    </div>
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">2. Form vergleichen</strong>
+                        Wähle Original- und Zielform (oder 2er-Mix) aus.
+                    </div>
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">3. Cloud-Konto</strong>
+                        Verbinde dein Supabase-Konto für die Datensicherung.
+                    </div>
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">4. Kochmodus</strong>
+                        Starte den Multi-Timer direkt in der Küche!
+                    </div>
                 </div>
             </div>
         </div>
     </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-slate-200 px-4 sm:px-8 py-2">
+        <div class="max-w-7xl mx-auto flex items-center space-x-2 overflow-x-auto">
+            <button onclick="openTab('rechner')" id="btn-tab-rechner" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-orange-50 text-orange-600 transition whitespace-nowrap">Rechner</button>
+            <button onclick="openTab('finder')" id="btn-tab-finder" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Formen-Finder</button>
+            <button onclick="openTab('substanz')" id="btn-tab-substanz" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Ersatz & Zucker</button>
+            <button onclick="openTab('tools')" id="btn-tab-tools" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Extras & Kosten</button>
+            <button onclick="openTab('rezepte')" id="btn-tab-rezepte" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Gespeicherte</button>
+        </div>
+    </nav>
 
     <!-- Main Container -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -416,83 +455,6 @@
                 </div>
             </div>
 
-            <!-- TAB: EINSTELLUNGEN & SUPABASE ANMELDUNG -->
-            <div id="tab-einstellungen" class="hidden space-y-6">
-                
-                <!-- Ausklappbare Anleitung -->
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <button onclick="toggleHelp()" class="w-full px-6 py-4 flex items-center justify-between bg-orange-50/50 hover:bg-orange-50 transition text-left">
-                        <span class="text-sm font-semibold text-orange-900 flex items-center gap-2">
-                            <i data-lucide="book-open" class="w-4 h-4 text-orange-600"></i> Kurzanleitung – So funktioniert's
-                        </span>
-                        <i id="help-chevron" data-lucide="chevron-down" class="w-4 h-4 text-orange-600 transition-transform"></i>
-                    </button>
-                    <div id="help-content" class="hidden px-6 py-4 border-t border-slate-100 text-xs text-slate-600 space-y-3 bg-white">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                <strong class="text-slate-800 block mb-1">1. Rezept & Basisdaten</strong>
-                                Gib deine Grunddaten (Zeit, Temperatur) und deine Zutaten im Rechner-Tab ein.
-                            </div>
-                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                <strong class="text-slate-800 block mb-1">2. Form anpassen</strong>
-                                Wähle die Originalform aus dem Rezept und vergleiche sie mit deiner Zielform oder dem 2er-Kombinator.
-                            </div>
-                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                <strong class="text-slate-800 block mb-1">3. Cloud-Synchronisation</strong>
-                                Logge dich unten mit deinem Supabase-Konto ein, um deine Daten sicher geräteübergreifend zu synchronisieren.
-                            </div>
-                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                                <strong class="text-slate-800 block mb-1">4. Kochmodus nutzen</strong>
-                                Nutze den interaktiven Multi-Timer direkt beim Backen in der Küche!
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Supabase Cloud-Konto Anmeldung -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="cloud" class="w-5 h-5 text-orange-500"></i> Cloud-Konto (Supabase Auth)
-                    </h2>
-                    
-                    <div id="cloud-status-box" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
-                        <span id="cloud-status-text">Status: Nicht angemeldet</span>
-                        <span id="cloud-user-email" class="font-bold text-slate-900"></span>
-                    </div>
-
-                    <div class="space-y-3 pt-2">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">E-Mail-Adresse</label>
-                            <input type="email" id="auth-email" placeholder="name@beispiel.de" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Passwort</label>
-                            <input type="password" id="auth-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
-                        </div>
-                        <div class="grid grid-cols-2 gap-3 pt-2">
-                            <button onclick="supabaseLogin()" class="py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-xs transition shadow-sm">Anmelden</button>
-                            <button onclick="supabaseRegister()" class="py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-medium rounded-xl text-xs transition shadow-sm">Registrieren</button>
-                        </div>
-                        <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl text-xs transition">Abmelden</button>
-                    </div>
-                </div>
-
-                <!-- Ofenprofil Einstellungen -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="sliders" class="w-5 h-5 text-orange-500"></i> Ofenprofil & Feintuning
-                    </h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Dein individueller Ofenfaktor</label>
-                            <input type="number" step="0.05" id="user-oven-factor" value="1.0" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
-                        </div>
-                        <button onclick="saveSettings()" class="px-4 py-2 bg-orange-600 text-white font-medium rounded-xl text-xs hover:bg-orange-700 transition">Einstellungen speichern</button>
-                    </div>
-                </div>
-
-            </div>
-
         </div>
 
         <!-- Right Column: Results & Output Sidebar -->
@@ -566,6 +528,48 @@
 
     </main>
 
+    <!-- Einstellungs-Modal mit Supabase Auth -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white max-w-md w-full p-6 rounded-3xl shadow-2xl space-y-5">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-orange-500"></i> Einstellungen & Cloud-Konto
+                </h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+            </div>
+
+            <!-- Cloud-Konto Status & Login -->
+            <div class="space-y-3">
+                <div id="cloud-status-box" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
+                    <span id="cloud-status-text">Status: Nicht angemeldet</span>
+                    <span id="cloud-user-email" class="font-bold text-slate-900"></span>
+                </div>
+
+                <div class="space-y-2">
+                    <input type="email" id="auth-email" placeholder="E-Mail-Adresse" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                    <input type="password" id="auth-password" placeholder="Passwort" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="supabaseLogin()" class="py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-xs transition shadow-sm">Anmelden</button>
+                    <button onclick="supabaseRegister()" class="py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-medium rounded-xl text-xs transition shadow-sm">Registrieren</button>
+                </div>
+                <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl text-xs transition">Abmelden</button>
+            </div>
+
+            <!-- Ofenprofil Einstellungen -->
+            <div class="border-t border-slate-100 pt-3 space-y-3">
+                <label class="block text-xs font-medium text-slate-600">Individueller Ofenfaktor</label>
+                <input type="number" step="0.05" id="user-oven-factor" value="1.0" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
+            </div>
+
+            <div class="border-t border-slate-100 pt-3 flex justify-end gap-2">
+                <button onclick="saveSettings()" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-xs transition">Speichern</button>
+                <button onclick="closeSettings()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">Schließen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Kochmodus & Multi-Timer Modal -->
     <div id="cook-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white max-w-md w-full p-8 rounded-3xl shadow-2xl text-center space-y-6">
@@ -601,18 +605,18 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            const { error } = await supabaseClient.auth.signUp({ email, password });
             if(error) alert(error.message);
-            else { alert('Registrierung erfolgreich! Bitte E-Mail bestätigen falls nötig.'); checkUserSession(); }
+            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
         }
 
         async function supabaseLogin() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
-            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if(error) alert(error.message);
-            else { alert('Erfolgreich angemeldet!'); checkUserSession(); }
+            else { alert('Erfolgreich angemeldet!'); checkUserSession(); closeSettings(); }
         }
 
         async function supabaseLogout() {
@@ -625,32 +629,37 @@
             const { data: { user } } = await supabaseClient.auth.getUser();
             const statusText = document.getElementById('cloud-status-text');
             const userEmailSpan = document.getElementById('cloud-user-email');
-            const headerUserInfo = document.getElementById('header-user-info');
             const btnLogout = document.getElementById('btn-logout');
 
             if(user) {
-                statusText.innerText = "Status: Verbunden & Angemeldet";
+                statusText.innerText = "Status: Verbunden";
                 userEmailSpan.innerText = user.email;
-                headerUserInfo.innerText = "👤 " + user.email;
                 btnLogout.classList.remove('hidden');
             } else {
                 statusText.innerText = "Status: Nicht angemeldet";
                 userEmailSpan.innerText = "";
-                headerUserInfo.innerText = "Nicht angemeldet";
                 btnLogout.classList.add('hidden');
             }
         }
 
-        // Ausklappbare Anleitung
+        // Anleitung umschalten
         function toggleHelp() {
-            const content = document.getElementById('help-content');
-            const chevron = document.getElementById('help-chevron');
-            content.classList.toggle('hidden');
-            chevron.classList.toggle('rotate-180');
+            const box = document.getElementById('help-box');
+            box.classList.toggle('hidden');
+        }
+
+        // Einstellungen Modal öffnen / schließen
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            checkUserSession();
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
         }
 
         function openTab(tabId) {
-            ['rechner', 'finder', 'substanz', 'tools', 'rezepte', 'einstellungen'].forEach(id => {
+            ['rechner', 'finder', 'substanz', 'tools', 'rezepte'].forEach(id => {
                 document.getElementById('tab-' + id).classList.add('hidden');
                 document.getElementById('btn-tab-' + id)?.classList.remove('bg-orange-50', 'text-orange-600');
                 document.getElementById('btn-tab-' + id)?.classList.add('text-slate-600', 'hover:bg-slate-100');
@@ -886,7 +895,10 @@
             renderSavedRecipes();
         }
 
-        function saveSettings() { alert('Einstellungen gespeichert.'); }
+        function saveSettings() {
+            alert('Einstellungen erfolgreich gespeichert.');
+            closeSettings();
+        }
 
         // Multi-Timer Logik
         let timerInterval = null;
