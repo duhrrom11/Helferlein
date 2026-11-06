@@ -410,34 +410,57 @@
         <!-- CLOUD-KONTO -->
         <hr class="my-4">
 
-        <h3 class="font-bold text-lg mb-3">
-            ☁️ Cloud-Konto
-        </h3>
+        <hr class="my-4">
 
-        <div class="flex flex-col gap-2">
+<h3 class="font-bold text-lg mb-3">
+    ☁️ Cloud-Konto
+</h3>
 
-            <button
-                type="button"
-                onclick="registerUser()"
-                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                👤 Registrieren
-            </button>
+<div class="space-y-3">
 
-            <button
-                type="button"
-                onclick="loginUser()"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                🔑 Anmelden
-            </button>
+    <div id="cloudStatus"
+         class="text-sm bg-gray-100 rounded-lg p-3 text-gray-700">
+         Nicht angemeldet
+    </div>
 
-            <button
-                type="button"
-                onclick="logoutUser()"
-                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                🚪 Abmelden
-            </button>
+    <input
+        type="email"
+        id="loginEmail"
+        placeholder="E-Mail"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2">
 
-        </div>
+    <input
+        type="password"
+        id="loginPassword"
+        placeholder="Passwort"
+        class="w-full border border-gray-300 rounded-lg px-3 py-2">
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+
+        <button
+            type="button"
+            onclick="registerUser()"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+            👤 Registrieren
+        </button>
+
+        <button
+            type="button"
+            onclick="loginUser()"
+            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            🔑 Anmelden
+        </button>
+
+        <button
+            type="button"
+            onclick="logoutUser()"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+            🚪 Abmelden
+        </button>
+
+    </div>
+
+</div>
 
         <!-- HIER BEGINNEN DANACH DEINE BISHERIGEN EINSTELLUNGEN -->
 
@@ -489,111 +512,133 @@ window.supabaseClient =
 console.log("✅ Supabase verbunden");
 async function registerUser() {
 
-    const email = prompt("E-Mail:");
+    const email =
+        document.getElementById("loginEmail").value.trim();
 
-    if (!email) return;
+    const password =
+        document.getElementById("loginPassword").value;
 
-    const password = prompt("Passwort (mindestens 6 Zeichen):");
+    if (!email || !password) {
 
-    if (!password) return;
+        alert("Bitte E-Mail und Passwort eingeben.");
+        return;
 
-    const { data, error } =
-        await window.supabaseClient.auth.signUp({
+    }
+
+    const { error } =
+        await supabaseClient.auth.signUp({
             email,
             password
         });
 
     if (error) {
 
-        alert("Fehler: " + error.message);
-        console.error(error);
+        alert(error.message);
         return;
 
     }
 
-    alert("Registrierung erfolgreich. Du kannst dich jetzt anmelden.");
+    
 
-    const modal = document.getElementById("settingsModal");
-
-    if (modal) {
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-    }
-}
+    
 async function loginUser() {
 
-    const email = prompt("E-Mail:");
+    const email =
+        document.getElementById("loginEmail").value.trim();
 
-    if (!email) return;
+    const password =
+        document.getElementById("loginPassword").value;
 
-    const password = prompt("Passwort:");
+    if (!email || !password) {
 
-    if (!password) return;
+        alert("Bitte E-Mail und Passwort eingeben.");
+        return;
 
-    const { data, error } =
-        await window.supabaseClient.auth.signInWithPassword({
+    }
+
+    const { error } =
+        await supabaseClient.auth
+        .signInWithPassword({
             email,
             password
         });
 
     if (error) {
 
-        alert("Login fehlgeschlagen: " + error.message);
-        console.error(error);
+        alert(error.message);
         return;
 
     }
 
-    alert("Erfolgreich angemeldet.");
-
     updateUserDisplay();
 
-    // Einstellungen schließen
-    const modal = document.getElementById("settingsModal");
+    const modal =
+        document.getElementById("settingsModal");
 
-    if (modal) {
+    if(modal){
+
         modal.classList.add("hidden");
         modal.classList.remove("flex");
+
     }
 }
 
-    alert("Erfolgreich angemeldet.");
-
-    console.log(data);
-
-    updateUserDisplay();
-} 
+    
    async function logoutUser() {
 
-    await window.supabaseClient.auth.signOut();
-
-    alert("Abgemeldet.");
+    await supabaseClient.auth.signOut();
 
     updateUserDisplay();
-}   
+}
         async function updateUserDisplay() {
 
     const { data } =
-        await window.supabaseClient.auth.getUser();
+        await supabaseClient.auth.getUser();
 
     const user = data.user;
 
-    const userInfo =
+    const headerInfo =
         document.getElementById("userInfo");
 
-    if (!userInfo) return;
+    const cloudStatus =
+        document.getElementById("cloudStatus");
 
-    if (user) {
+    if(user){
 
-        userInfo.textContent =
-            "👤 " + user.email;
+        if(headerInfo){
+
+            headerInfo.textContent =
+                "👤 " + user.email;
+
+        }
+
+        if(cloudStatus){
+
+            cloudStatus.innerHTML = `
+                ✅ Angemeldet<br>
+                <strong>${user.email}</strong>
+            `;
+
+        }
 
     } else {
 
-        userInfo.textContent =
-            "Nicht angemeldet";
+        if(headerInfo){
+
+            headerInfo.textContent =
+                "Nicht angemeldet";
+
+        }
+
+        if(cloudStatus){
+
+            cloudStatus.innerHTML =
+                "Nicht angemeldet";
+
+        }
 
     }
+
 }
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -780,6 +825,11 @@ document.addEventListener("DOMContentLoaded", () => {
             try { loadStats(); } catch(e){}
             try { initFavorites(); } catch(e){}
         });
+        supabaseClient.auth.onAuthStateChange(
+    async () => {
+        updateUserDisplay();
+    }
+);
     </script>
 </body>
 </html>
