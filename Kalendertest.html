@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helferlein - Kalender & Hub-Zentrale</title>
+    <title>Helferlein - Kalender & Tool-Hub</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -17,11 +17,14 @@
                 <p class="text-xs md:text-sm opacity-90 mt-1">Liest alle Termine, Fristen & To-Dos aus deiner Online-Datenbank aus</p>
             </div>
             <div class="flex flex-wrap gap-2 items-center">
+                <button onclick="exportiereAlsICS()" class="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-amber-950 rounded-xl text-xs font-bold shadow-sm transition-all">
+                    📥 In Google Kalender importieren (.ics)
+                </button>
                 <button onclick="manuelleSynchronisation()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
-                    🔄 Aus Datenbank laden
+                    🔄 Laden
                 </button>
                 <a href="index.html" class="px-4 py-2 bg-emerald-900 hover:bg-emerald-950 border border-emerald-600 rounded-xl text-xs font-bold shadow-sm transition-all">
-                    ← Zurück zum WG-Hub
+                    ← Zurück
                 </a>
             </div>
         </div>
@@ -32,7 +35,7 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Linke Spalte: Google Kalender Live-Einbindung ("Helferlein") -->
+            <!-- Linke Spalte: Google Kalender Live-Einbindung -->
             <div class="bg-gray-800 p-5 rounded-2xl shadow-md border border-gray-700 space-y-4 lg:col-span-1 flex flex-col">
                 <h3 class="font-bold text-base text-white border-b border-gray-700 pb-2">🌐 Google Kalender</h3>
                 <p class="text-xs text-gray-400">Dein verbundener Google-Kalender:</p>
@@ -42,7 +45,7 @@
                 </div>
             </div>
 
-            <!-- Rechter Bereich: Automatisch aus Datenbank ausgelesene Termine & Fristen -->
+            <!-- Rechter Bereich: Ausgelesene Termine -->
             <div class="space-y-6 lg:col-span-2">
                 
                 <div class="bg-gray-800 p-5 rounded-2xl shadow-md border border-gray-700 space-y-3">
@@ -64,6 +67,7 @@
         const NPOINT_API_BASE = "https://api.npoint.io/";
         const urlParams = new URLSearchParams(window.location.search);
         let hubBinId = urlParams.get('id');
+        let aktuelleTermineListe = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!hubBinId) {
@@ -74,12 +78,11 @@
 
         async function manuelleSynchronisation() {
             await ladeDatenAusCloud();
-            alert("✅ Datenbank erfolgreich ausgelesen und Kalender aktualisiert!");
         }
 
         async function ladeDatenAusCloud() {
             if (!hubBinId) {
-                document.getElementById('databaseEventsList').innerHTML = `<p class="text-xs text-amber-400 text-center py-6">⚠️ Keine Datenbank-ID gefunden. Bitte öffne den Kalender direkt aus deinem WG-Haushaltsbuch heraus oder über den korrekten Link mit ID.</p>`;
+                document.getElementById('databaseEventsList').innerHTML = `<p class="text-xs text-amber-400 text-center py-6">⚠️ Keine Datenbank-ID gefunden.</p>`;
                 return;
             }
 
@@ -89,8 +92,6 @@
                     const cloudObj = await response.json();
                     sammleUndZeigeTermine(cloudObj);
                 } else {
-                    // Fallback falls die ID auf npoint direkt nicht existiert, zeige Testdaten aus localStorage
-                    console.warn("Cloud-Abruf fehlgeschlagen, nutze lokale Daten als Fallback.");
                     sammleUndZeigeTermine({
                         events: JSON.parse(localStorage.getItem('wg_events') || '[]'),
                         contracts: JSON.parse(localStorage.getItem('wg_contracts') || '[]'),
@@ -98,7 +99,6 @@
                     });
                 }
             } catch (error) {
-                console.warn("Netzwerkfehler, nutze lokale Daten als Fallback:", error);
                 sammleUndZeigeTermine({
                     events: JSON.parse(localStorage.getItem('wg_events') || '[]'),
                     contracts: JSON.parse(localStorage.getItem('wg_contracts') || '[]'),
@@ -108,11 +108,11 @@
         }
 
         function sammleUndZeigeTermine(data) {
-            let alleTermine = [];
+            aktuelleTermineListe = [];
 
             if (data && Array.isArray(data.events)) {
                 data.events.forEach(ev => {
-                    alleTermine.push({
+                    aktuelleTermineListe.push({
                         titel: ev.title || ev.type,
                         datum: ev.date,
                         kategorie: 'Termin / Slot (' + (ev.type || 'Allgemein') + ')',
@@ -125,7 +125,7 @@
             if (data && Array.isArray(data.contracts)) {
                 data.contracts.forEach(c => {
                     if (c.noticeDate) {
-                        alleTermine.push({
+                        aktuelleTermineListe.push({
                             titel: `Kündigungsfrist: ${c.name}`,
                             datum: c.noticeDate,
                             kategorie: 'Vertrag / Abo',
@@ -139,7 +139,7 @@
             if (data && Array.isArray(data.data)) {
                 data.data.forEach(r => {
                     if (r.date) {
-                        alleTermine.push({
+                        aktuelleTermineListe.push({
                             titel: `Buchung: ${r.title}`,
                             datum: r.date,
                             kategorie: 'Finanzen / Kassenbon',
@@ -150,15 +150,15 @@
                 });
             }
 
-            alleTermine.sort((a, b) => new Date(a.datum) - new Date(b.datum));
+            aktuelleTermineListe.sort((a, b) => new Date(a.datum) - new Date(b.datum));
 
             const container = document.getElementById('databaseEventsList');
-            if (alleTermine.length === 0) {
+            if (aktuelleTermineListe.length === 0) {
                 container.innerHTML = `<p class="text-xs text-gray-500 text-center py-6">Keine Termine oder Fristen in den Datenbank-Tools gefunden.</p>`;
                 return;
             }
 
-            container.innerHTML = alleTermine.map(item => `
+            container.innerHTML = aktuelleTermineListe.map(item => `
                 <div class="p-3 bg-gray-900 border border-gray-700 rounded-xl flex justify-between items-center text-xs">
                     <div>
                         <div class="flex items-center space-x-2">
@@ -169,6 +169,39 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        // ICS-Export Funktion für Google Kalender Import
+        function exportiereAlsICS() {
+            if (aktuelleTermineListe.length === 0) {
+                alert("Keine Termine zum Exportieren vorhanden.");
+                return;
+            }
+
+            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Helferlein Hub//DE\n";
+
+            aktuelleTermineListe.forEach((item, index) => {
+                const cleanDate = item.datum.replace(/-/g, '');
+                icsContent += "BEGIN:VEVENT\n";
+                icsContent += `UID:helferlein-${index}-${cleanDate}@hub\n`;
+                icsContent += `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z\n`;
+                icsContent += `DTSTART;VALUE=DATE:${cleanDate}\n`;
+                icsContent += `SUMMARY:${item.titel}\n`;
+                icsContent += `DESCRIPTION:${item.kategorie} - ${item.details}\n`;
+                icsContent += "END:VEVENT\n";
+            });
+
+            icsContent += "END:VCALENDAR";
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', 'helferlein-termine.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            alert("📥 ICS-Datei heruntergeladen! Du kannst sie jetzt in Google Kalender importieren (unter Einstellungen -> Importieren & Exportieren).");
         }
     </script>
 </body>
