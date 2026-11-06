@@ -76,7 +76,7 @@
                 <!-- Rechter Bereich: Termine aus allen Tools -->
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col lg:col-span-2 space-y-3">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-sm text-gray-800">📌 Ausgelesene Fristen & Termine</h3>
+                        <h3 class="font-bold text-sm text-gray-800">📌 Ausgelesene Fristen & Termine <span class="text-[10px] text-emerald-600 font-normal">(Auto-Sync aktiv ⏱️)</span></h3>
                         <button onclick="ladeDatenAusCloud()" class="text-xs px-2.5 py-1 bg-gray-200 hover:bg-gray-300 font-semibold rounded-lg text-gray-700 cursor-pointer">🔄 Aktualisieren</button>
                     </div>
                     <div id="databaseEventsList" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
@@ -310,13 +310,12 @@
         </div>
     </div>
 
-    <!-- Skript mit korrigierter npoint.io Bin-Generierung -->
+    <!-- Skript inklusive 30-Sekunden Auto-Sync Intervall -->
     <script>
         const NPOINT_API_BASE = "https://api.npoint.io/";
         const urlParams = new URLSearchParams(window.location.search);
         let hubBinId = urlParams.get('id');
 
-        // Ignoriere alte lokale hub_ IDs und erzwinge einen echten Cloud-Request
         if (hubBinId && hubBinId.startsWith('hub_')) {
             hubBinId = null;
         }
@@ -334,6 +333,11 @@
             try { loadStats(); } catch(e){}
             try { initFavorites(); } catch(e){}
             await ladeDatenAusCloud();
+
+            // Automatische 30-Sekunden-Aktualisierung wie beim WG-Planer
+            setInterval(async () => {
+                await ladeDatenAusCloud();
+            }, 30000);
 
             const settingsBtn = document.getElementById('settingsBtn');
             const closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -354,7 +358,7 @@
             if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
         }
 
-        // Erstellt oder aktualisiert einen ECHTEN npoint.io Bin
+        // Speichert bzw. aktualisiert den npoint.io Bin im Hintergrund
         async function speichereInCloud() {
             const alleTermine = sammleTermineAusAllenTools();
             const payload = {
@@ -408,7 +412,6 @@
                     const cloudObj = await response.json();
                     sammleUndZeigeTermine(cloudObj.events ? cloudObj : { events: lokaleTermine });
                 } else {
-                    console.warn("Cloud-Bin nicht gefunden, zeige lokale Daten.");
                     sammleUndZeigeTermine({ events: lokaleTermine });
                 }
             } catch (error) {
