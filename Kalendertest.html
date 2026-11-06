@@ -6,9 +6,6 @@
     <title>Helferlein - Kalender & Hub-Zentrale</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google API Client Library für den One-Click Kalender-Ersteller -->
-    <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
-    <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col font-sans">
 
@@ -17,11 +14,11 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">📅 Helferlein Kalender-Hub</h1>
-                <p class="text-xs md:text-sm opacity-90 mt-1">Zentrale Verwaltung für alle Termine, To-Dos & Erinnerungen aus deinen Apps</p>
+                <p class="text-xs md:text-sm opacity-90 mt-1">Zentrale Verwaltung & Cloud-Sync für alle Termine, To-Dos & Erinnerungen</p>
             </div>
             <div class="flex flex-wrap gap-2 items-center">
-                <button onclick="handleAuthClick()" id="createCalendarBtn" class="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-amber-950 rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5">
-                    ✨ „Helferlein“-Kalender in Google anlegen
+                <button onclick="kopiereHelferleinLink()" class="px-3.5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
+                    🔗 Hub-Link teilen
                 </button>
                 <a href="index.html" class="px-4 py-2.5 bg-emerald-900 hover:bg-emerald-950 border border-emerald-600 rounded-xl text-xs font-bold shadow-sm transition-all">
                     ← Zurück zum WG-Hub
@@ -45,17 +42,17 @@
                     <option value="Erinnerung">⏰ Erinnerung</option>
                 </select>
                 <button onclick="addHubItem()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl shadow-md transition-all">
-                    + In Hub speichern
+                    + In Cloud speichern
                 </button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            <!-- Linke Spalte: Google Kalender Live-Einbindung -->
+            <!-- Linke Spalte: Google Kalender Live-Einbindung ("Helferlein") -->
             <div class="bg-gray-800 p-5 rounded-2xl shadow-md border border-gray-700 space-y-4 lg:col-span-1 flex flex-col">
                 <h3 class="font-bold text-base text-white border-b border-gray-700 pb-2">🌐 Google Kalender („Helferlein“)</h3>
-                <p class="text-xs text-gray-400">Live-Ansicht deines Google-Hauptkalenders mit allen synchronisierten Ereignissen:</p>
+                <p class="text-xs text-gray-400">Live-Ansicht deines Google-Kalenders mit allen synchronisierten Ereignissen:</p>
                 <div class="flex-grow min-h-[350px] rounded-xl overflow-hidden border border-gray-700 bg-white">
                     <iframe src="https://calendar.google.com/calendar/embed?src=duhrrom%40gmail.com&ctz=Europe%2FLuxembourg&showTitle=0&showPrint=0&showTabs=0" 
                             style="border:0" width="100%" height="100%" frameborder="0" scrolling="no"></iframe>
@@ -89,14 +86,14 @@
                     </div>
                 </div>
 
-                <!-- Hub Lokale Einträge & To-Dos -->
+                <!-- Hub Lokale & Cloud-Synchronisierte Einträge & To-Dos -->
                 <div class="bg-gray-800 p-5 rounded-2xl shadow-md border border-gray-700 space-y-3">
                     <div class="flex justify-between items-center border-b border-gray-700 pb-2">
-                        <h3 class="font-bold text-base text-white">📋 Hub-Aufgaben & Erinnerungen</h3>
-                        <button onclick="clearHubItems()" class="text-xs text-red-400 hover:text-red-300 font-semibold">Alle löschen</button>
+                        <h3 class="font-bold text-base text-white">📋 Cloud-Synchronisierte Hub-Aufgaben</h3>
+                        <button onclick="clearHubItems()" class="text-xs text-red-400 hover:text-red-300 font-semibold">Alle leeren</button>
                     </div>
                     <div id="hubItemsList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1">
-                        <p class="text-xs text-gray-500 text-center py-4">Keine lokalen Hub-Einträge vorhanden.</p>
+                        <p class="text-xs text-gray-500 text-center py-4">Lade Einträge aus der Cloud...</p>
                     </div>
                 </div>
 
@@ -106,85 +103,108 @@
     </main>
 
     <script>
-        // Google API & GIS Client Setup für die Kalender-Erstellung
-        const CLIENT_ID = 'DEINE_GOOGLE_CLIENT_ID.apps.googleusercontent.com'; // Falls gewünscht eintragen oder via OAuth-Dialog nutzen
-        const API_KEY = '';
-        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
-        const SCOPES = 'https://www.googleapis.com/auth/calendar';
+        const NPOINT_API_BASE = "https://api.npoint.io/";
+        const urlParams = new URLSearchParams(window.location.search);
+        let hubBinId = urlParams.get('id');
 
-        let tokenClient;
-        let gapiInited = false;
-        let gisInited = false;
-
-        function gapiLoaded() {
-            gapi.load('client', initializeGapiClient);
-        }
-
-        async function initializeGapiClient() {
-            await gapi.client.init({
-                apiKey: API_KEY,
-                discoveryDocs: [DISCOVERY_DOC],
-            });
-            gapiInited = true;
-        }
-
-        function gisLoaded() {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID,
-                scope: SCOPES,
-                callback: '', // Definiert beim Klick
-            });
-            gisInited = true;
-        }
-
-        // One-Click Button zum Erstellen des "Helferlein"-Kalenders in Google
-        async function handleAuthClick() {
-            if (!tokenClient) {
-                alert("ℹ️ Google API Token-Client wird noch geladen oder benötigt eine konfiguriertes Client-ID im Code.");
-                // Simulierter Fallback für den One-Click-Workflow direkt im Hub
-                createHelferleinCalendarFallback();
-                return;
-            }
-            tokenClient.callback = async (resp) => {
-                if (resp.error !== undefined) {
-                    throw (resp);
-                }
-                await createGoogleCalendarAPI();
-            };
-            if (gapi.client.getToken() === null) {
-                tokenClient.requestAccessToken({prompt: 'consent'});
-            } else {
-                tokenClient.requestAccessToken({prompt: ''});
-            }
-        }
-
-        async function createGoogleCalendarAPI() {
-            try {
-                const calendar = {
-                    summary: 'Helferlein',
-                    description: 'Zentraler Helferlein Kalender für Termine und Todos aus allen Apps',
-                    timeZone: 'Europe/Luxembourg'
-                };
-                const request = gapi.client.calendar.calendars.insert({
-                    resource: calendar
-                });
-                const result = await request;
-                alert("✅ Google-Kalender „Helferlein“ wurde erfolgreich in deinem Konto erstellt!");
-            } catch (err) {
-                console.error(err);
-                alert("❌ Fehler beim Anlegen des Google-Kalenders.");
-            }
-        }
-
-        function createHelferleinCalendarFallback() {
-            alert("✨ „Helferlein“-Kalender im Hub registriert! Alle lokalen To-Dos und Termine aus deinen Apps werden hier gebündelt.");
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const dateInput = document.getElementById('hubDate');
             if(dateInput) dateInput.valueAsDate = new Date();
-            renderHubItems();
+
+            if (!hubBinId) {
+                await erstelleNeuenHubCloudSpeicher();
+            } else {
+                await ladeHubAusCloud();
+                renderHubItems();
+            }
         });
+
+        async function erstelleNeuenHubCloudSpeicher() {
+            const initialData = {
+                erstelltAm: new Date().toISOString(),
+                items: [
+                    { id: 1, title: "Willkommen im Helferlein-Hub", date: new Date().toISOString().split('T')[0], type: "Termin", done: false }
+                ]
+            };
+
+            localStorage.setItem('helferlein_hub_items', JSON.stringify(initialData.items));
+
+            try {
+                const response = await fetch(NPOINT_API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(initialData)
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.id) {
+                        window.location.href = window.location.pathname + "?id=" + result.id;
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn("Cloud-Erstellung im Hintergrund fehlgeschlagen, nutze lokalen Speicher.", e);
+            }
+
+            const ersatzID = "hub_" + Math.random().toString(36).substring(2, 9);
+            window.location.href = window.location.pathname + "?id=" + ersatzID;
+        }
+
+        async function ladeHubAusCloud() {
+            if (!hubBinId) return;
+            try {
+                let response = await fetch(NPOINT_API_BASE + hubBinId);
+                if (response.ok) {
+                    const cloudObj = await response.json();
+                    if (cloudObj && cloudObj.items !== undefined) {
+                        localStorage.setItem('helferlein_hub_items', JSON.stringify(cloudObj.items));
+                    }
+                }
+            } catch (error) {
+                console.error("Fehler beim Laden aus Cloud:", error);
+            }
+        }
+
+        async function speichereHubInCloud() {
+            if (!hubBinId) return;
+            const items = getHubItems();
+            const backupObj = { items: items };
+
+            if (hubBinId.startsWith('hub_')) {
+                try {
+                    const response = await fetch(NPOINT_API_BASE, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(backupObj)
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.id) {
+                            hubBinId = result.id;
+                            window.history.replaceState({}, '', window.location.pathname + "?id=" + hubBinId);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Konnte npoint Bin nicht anlegen:", e);
+                }
+                return;
+            }
+
+            try {
+                await fetch(NPOINT_API_BASE + hubBinId, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(backupObj)
+                });
+            } catch (error) {
+                console.error("Fehler beim Speichern in Cloud:", error);
+            }
+        }
+
+        function kopiereHelferleinLink() {
+            navigator.clipboard.writeText(window.location.href);
+            alert("🔗 Link zum Helferlein-Hub kopiert! Du kannst ihn auf all deinen Geräten öffnen.");
+        }
 
         function getHubItems() {
             try { return JSON.parse(localStorage.getItem('helferlein_hub_items')) || []; } catch(e) { return []; }
@@ -192,9 +212,10 @@
 
         function saveHubItems(items) {
             localStorage.setItem('helferlein_hub_items', JSON.stringify(items));
+            speichereHubInCloud();
         }
 
-        function addHubItem() {
+        async function addHubItem() {
             const title = document.getElementById('hubTitle').value.trim();
             const date = document.getElementById('hubDate').value;
             const type = document.getElementById('hubType').value;
@@ -207,7 +228,6 @@
 
             document.getElementById('hubTitle').value = "";
             renderHubItems();
-            alert("✅ Termin/To-Do erfolgreich in den Helferlein-Hub synchronisiert!");
         }
 
         function toggleHubItem(id) {
@@ -226,7 +246,7 @@
         }
 
         function clearHubItems() {
-            if(confirm("Möchtest du alle lokalen Hub-Einträge löschen?")) {
+            if(confirm("Möchtest du alle Einträge im Hub löschen?")) {
                 saveHubItems([]);
                 renderHubItems();
             }
@@ -237,7 +257,7 @@
             const container = document.getElementById('hubItemsList');
 
             if(items.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">Keine lokalen Hub-Einträge vorhanden.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-4">Keine Hub-Einträge vorhanden.</p>`;
                 return;
             }
 
