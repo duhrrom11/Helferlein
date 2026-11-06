@@ -86,7 +86,7 @@
             </div>
         </div>
 
-        <!-- Tools Grid (Alle 11 Tools) -->
+        <!-- Tools Grid -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Tool 1: Kassenbon -->
             <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 relative overflow-hidden" data-id="kassenbon" data-name="garantie manager kassenbon scanner beleg">
@@ -310,14 +310,22 @@
         </div>
     </div>
 
-    <!-- Footer Script mit npoint.io Integration & Modal Steuerung -->
+    <!-- Skript mit korrigierter npoint.io Bin-Generierung -->
     <script>
         const NPOINT_API_BASE = "https://api.npoint.io/";
         const urlParams = new URLSearchParams(window.location.search);
         let hubBinId = urlParams.get('id');
 
+        // Ignoriere alte lokale hub_ IDs und erzwinge einen echten Cloud-Request
+        if (hubBinId && hubBinId.startsWith('hub_')) {
+            hubBinId = null;
+        }
+
         if (!hubBinId) {
-            hubBinId = localStorage.getItem('active_hub_bin_id');
+            let savedId = localStorage.getItem('active_hub_bin_id');
+            if (savedId && !savedId.startsWith('hub_')) {
+                hubBinId = savedId;
+            }
         } else {
             localStorage.setItem('active_hub_bin_id', hubBinId);
         }
@@ -327,7 +335,6 @@
             try { initFavorites(); } catch(e){}
             await ladeDatenAusCloud();
 
-            // Event-Listener für das Einstellungs-Modal
             const settingsBtn = document.getElementById('settingsBtn');
             const closeSettingsBtn = document.getElementById('closeSettingsBtn');
             const cancelSettingsBtn = document.getElementById('cancelSettingsBtn');
@@ -347,6 +354,7 @@
             if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
         }
 
+        // Erstellt oder aktualisiert einen ECHTEN npoint.io Bin
         async function speichereInCloud() {
             const alleTermine = sammleTermineAusAllenTools();
             const payload = {
@@ -371,33 +379,25 @@
 
                 if (response.ok) {
                     const result = await response.json();
-                    if (result.id && !hubBinId) {
+                    if (result.id) {
                         hubBinId = result.id;
                         localStorage.setItem('active_hub_bin_id', hubBinId);
                         window.history.replaceState({}, '', window.location.pathname + "?id=" + hubBinId);
+                        alert("✅ Erfolgreich in der npoint.io Cloud gespeichert! ID: " + hubBinId);
+                        await ladeDatenAusCloud();
+                        return;
                     }
-                    alert("✅ Erfolgreich in der npoint.io Cloud gespeichert!");
-                    await ladeDatenAusCloud();
-                    return;
                 }
             } catch (e) {
-                console.warn("Cloud-Speicherung fehlgeschlagen, speichere lokal.", e);
+                console.error("Netzwerkfehler bei npoint.io", e);
+                alert("⚠️ Cloud-Speicherung fehlgeschlagen. Bitte Internetverbindung prüfen.");
             }
-
-            if (!hubBinId) {
-                hubBinId = "hub_" + Math.random().toString(36).substring(2, 9);
-                localStorage.setItem('active_hub_bin_id', hubBinId);
-                window.history.replaceState({}, '', window.location.pathname + "?id=" + hubBinId);
-            }
-            localStorage.setItem(hubBinId, JSON.stringify(payload));
-            alert("✅ Lokal im Browser-Container gesichert: " + hubBinId);
-            sammleUndZeigeTermine({ events: alleTermine });
         }
 
         async function ladeDatenAusCloud() {
             const lokaleTermine = sammleTermineAusAllenTools();
 
-            if (!hubBinId) {
+            if (!hubBinId || hubBinId.startsWith('hub_')) {
                 sammleUndZeigeTermine({ events: lokaleTermine });
                 return;
             }
@@ -408,6 +408,7 @@
                     const cloudObj = await response.json();
                     sammleUndZeigeTermine(cloudObj.events ? cloudObj : { events: lokaleTermine });
                 } else {
+                    console.warn("Cloud-Bin nicht gefunden, zeige lokale Daten.");
                     sammleUndZeigeTermine({ events: lokaleTermine });
                 }
             } catch (error) {
@@ -418,53 +419,55 @@
         function sammleTermineAusAllenTools() {
             let termine = [];
 
+            // 1. Kassenbon
             try {
                 let karten = JSON.parse(localStorage.getItem('kassenbon_data') || localStorage.getItem('kassenbon') || '[]');
                 karten.forEach(item => {
                     let datum = item.expiryDate || item.garantieBis || item.date;
-                    if (datum) {
-                        termine.push({ title: `Garantie: ${item.title || item.name || 'Beleg'}`, date: datum, type: 'Garantie', details: item.price ? item.price + ' €' : '' });
-                    }
+                    if (datum) termine.push({ title: `Garantie: ${item.title || item.name || 'Beleg'}`, date: datum, type: 'Garantie', details: item.price ? item.price + ' €' : '' });
                 });
             } catch(e){}
 
+            // 2. KFZ
             try {
-                let kfz = JSON.parse(localStorage.getItem('kfz_pass') || localStorage.getItem('kfz_data') || '[]');
+                let kfz = JSON.parse(localStorage.getItem('kfz_pass') || localStorage.getItem('kfz_data') || localStorage.getItem('kfz') || '[]');
                 kfz.forEach(item => {
                     let datum = item.tuevDate || item.tuv || item.date;
-                    if (datum) {
-                        termine.push({ title: `KFZ Termin: ${item.title || 'Wartung'}`, date: datum, type: 'KFZ', details: item.vehicle || '' });
-                    }
+                    if (datum) termine.push({ title: `KFZ: ${item.title || 'Wartung'}`, date: datum, type: 'KFZ', details: item.vehicle || '' });
                 });
             } catch(e){}
 
+            // 3. Haustier
             try {
-                let pets = JSON.parse(localStorage.getItem('haustier_pass_pro_v5') || localStorage.getItem('haustier_pass') || '[]');
+                let pets = JSON.parse(localStorage.getItem('haustier_pass_pro_v5') || localStorage.getItem('haustier_pass') || localStorage.getItem('haustier') || '[]');
                 pets.forEach(item => {
                     let datum = item.vetDate || item.nextVaccine || item.date;
-                    if (datum) {
-                        termine.push({ title: `Tierarzt: ${item.title || 'Vorsorge'}`, date: datum, type: 'Haustier', details: item.name || '' });
-                    }
+                    if (datum) termine.push({ title: `Tierarzt: ${item.title || 'Vorsorge'}`, date: datum, type: 'Haustier', details: item.name || '' });
                 });
             } catch(e){}
 
+            // 4. Verleih
             try {
-                let verleih = JSON.parse(localStorage.getItem('verleih_pass') || localStorage.getItem('verleih_data') || '[]');
+                let verleih = JSON.parse(localStorage.getItem('verleih') || localStorage.getItem('verleih_pass') || localStorage.getItem('verleih_data') || '[]');
                 verleih.forEach(item => {
-                    let datum = item.returnDate || item.date;
+                    let datum = item.returnDate || item.date || item.dueDate;
                     if (datum) {
-                        termine.push({ title: `Rückgabe: ${item.item || 'Gegenstand'}`, date: datum, type: 'Verleih', details: item.borrower || '' });
+                        termine.push({ 
+                            title: `Rückgabe: ${item.item || item.title || item.name || 'Gegenstand'}`, 
+                            date: datum, 
+                            type: 'Verleih', 
+                            details: `An: ${item.borrower || item.person || 'Person'}` 
+                        });
                     }
                 });
             } catch(e){}
 
+            // 5. Pflanzen
             try {
-                let pflanzen = JSON.parse(localStorage.getItem('pflanzen_pass') || localStorage.getItem('pflanzen_data') || '[]');
+                let pflanzen = JSON.parse(localStorage.getItem('pflanzen') || localStorage.getItem('pflanzen_pass') || localStorage.getItem('pflanzen_data') || '[]');
                 pflanzen.forEach(item => {
                     let datum = item.nextWatering || item.date;
-                    if (datum) {
-                        termine.push({ title: `🌱 Gießen: ${item.name || 'Pflanze'}`, date: datum, type: 'Pflanzen', details: item.room || '' });
-                    }
+                    if (datum) termine.push({ title: `🌱 Gießen: ${item.name || 'Pflanze'}`, date: datum, type: 'Pflanzen', details: item.room || '' });
                 });
             } catch(e){}
 
@@ -507,8 +510,8 @@
         }
 
         function fuegeZuGoogleKalenderHinzu() {
-            if (!hubBinId) {
-                alert("⚠️ Bitte speichere zuerst in der Cloud, um eine ID zu generieren.");
+            if (!hubBinId || hubBinId.startsWith('hub_')) {
+                alert("⚠️ Bitte klicke zuerst auf '☁️ In Cloud speichern', um eine echte npoint.io-ID zu generieren.");
                 return;
             }
             const kundenDatenUrl = `https://api.npoint.io/${hubBinId}`;
@@ -613,11 +616,11 @@
             setStat('stats-kisten', `${getCount(['kisten_data', 'kisten'])} Kisten`);
             setStat('stats-wg-kasse', `${getCount(['wg_kasse_data', 'wg_kasse'])} Ausgaben`);
             setStat('stats-notizen', `${getCount(['secure_notes', 'notizen'])} Notizen`);
-            setStat('stats-kfz', `${getCount(['kfz_pass', 'kfz_data'])} Autos`);
-            setStat('stats-haustier', `${getCount(['haustier_pass_pro_v5', 'haustier_pass'])} Haustiere`);
-            setStat('stats-parken', `${getCount(['parken_data'])} Timer`);
-            setStat('stats-verleih', `${getCount(['verleih_pass', 'verleih'])} Objekte`);
-            setStat('stats-pflanzen', `${getCount(['pflanzen_pass', 'pflanzen'])} Pflanzen`);
+            setStat('stats-kfz', `${getCount(['kfz_pass', 'kfz_data', 'kfz'])} Autos`);
+            setStat('stats-haustier', `${getCount(['haustier_pass_pro_v5', 'haustier_pass', 'haustier'])} Haustiere`);
+            setStat('stats-parken', `${getCount(['parken_data', 'parken'])} Timer`);
+            setStat('stats-verleih', `${getCount(['verleih', 'verleih_pass', 'verleih_data'])} Objekte`);
+            setStat('stats-pflanzen', `${getCount(['pflanzen', 'pflanzen_pass', 'pflanzen_data'])} Pflanzen`);
             setStat('stats-energie', `${getCount(['energie_tracker_pro', 'energie'])} Ablesungen`);
             setStat('stats-backform', `${getCount(['bk_rec'])} Rezepte`);
         }
