@@ -26,7 +26,6 @@
             color: #4f46e5 !important;
             font-weight: 700;
         }
-        /* QR-Code Container Anpassung */
         .qrcode-box img {
             margin: 0 auto;
             border-radius: 8px;
@@ -153,7 +152,7 @@
                     <span class="text-2xl">🔐</span>
                     <div>
                         <h4 class="font-bold text-xs text-slate-100">Sichere Passwörter & Hardware-Wallets</h4>
-                        <p class="text-[11px] text-slate-400">Verwalte deine Krypto-Assets und digitalen Schlüssel absolut sicher mit einer Hardware-Wallet</p>
+                        <p class="text-[11px] text-slate-400">Verwalte deine Krypto-Assets und digitalen Schlüssel absolut sicher mit einer Hardware-Wallet.</p>
                     </div>
                 </div>
                 <a href="https://www.amazon.de/s?k=hardware+wallet+krypto&tag=duhrrom-21" target="_blank" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm whitespace-nowrap">
@@ -248,15 +247,15 @@
                     <a href="https://www.amazon.de/s?k=feuerfester+dokumentenordner+tresor&tag=duhrrom-21" target="_blank" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
                         <span class="text-2xl">🔥</span>
                         <div>
-                            <p class="text-xs font-bold text-slate-100">Feuerfeste Dokumententasche[span_2](start_span)[span_2](end_span)</p>
-                            <p class="text-[10px] text-amber-400">Schützt Papier-Keys & Passwörter vor Brand →[span_3](start_span)[span_3](end_span)</p>
+                            <p class="text-xs font-bold text-slate-100">Feuerfeste Dokumententasche</p>
+                            <p class="text-[10px] text-amber-400">Schützt Papier-Keys & Passwörter vor Brand →</p>
                         </div>
                     </a>
                     <a href="https://www.amazon.de/s?k=lammiergeraet+set+a4&tag=duhrrom-21" target="_blank" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
                         <span class="text-2xl">📃</span>
                         <div>
-                            <p class="text-xs font-bold text-slate-100">Laminiergerät-Set[span_4](start_span)[span_4](end_span)</p>
-                            <p class="text-[10px] text-amber-400">Notfall-Kit wasserdicht & reißfest laminieren →[span_5](start_span)[span_5](end_span)</p>
+                            <p class="text-xs font-bold text-slate-100">Laminiergerät-Set</p>
+                            <p class="text-[10px] text-amber-400">Notfall-Kit wasserdicht & reißfest laminieren →</p>
                         </div>
                     </a>
                 </div>
@@ -269,15 +268,15 @@
                     <a href="https://www.amazon.de/s?k=vorsorgemappe+patientenverfügung+vollmacht&tag=duhrrom-21" target="_blank" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
                         <span class="text-2xl">📘</span>
                         <div>
-                            <p class="font-bold text-slate-100">Offizielle Vorsorgemappen[span_6](start_span)[span_6](end_span)</p>
-                            <p class="text-[10px] text-amber-400">Inkl. Vollmachten & Verfügungen →[span_7](start_span)[span_7](end_span)</p>
+                            <p class="font-bold text-slate-100">Offizielle Vorsorgemappen</p>
+                            <p class="text-[10px] text-amber-400">Inkl. Vollmachten & Verfügungen →</p>
                         </div>
                     </a>
                     <a href="https://www.amazon.de/s?k=hardware+verschlüsselter+usb+stick&tag=duhrrom-21" target="_blank" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
                         <span class="text-2xl">💾</span>
                         <div>
-                            <p class="font-bold text-slate-100">Verschlüsselte USB-Sticks[span_8](start_span)[span_8](end_span)</p>
-                            <p class="text-[10px] text-amber-400">Für lokale Offline-Backups →[span_9](start_span)[span_9](end_span)</p>
+                            <p class="font-bold text-slate-100">Verschlüsselte USB-Sticks</p>
+                            <p class="text-[10px] text-amber-400">Für lokale Offline-Backups →</p>
                         </div>
                     </a>
                 </div>
@@ -869,14 +868,14 @@
             alert("✅ Vertrauenspersonen gespeichert!");
         }
 
-        // Render Notfall-Kit Vorschau mit QR-Codes
+        // Render Notfall-Kit Vorschau mit QR-Codes (Zuverlässig für alle Personen)
         function renderPrintableKit() {
             const cfg = getVaultConfig();
             const container = document.getElementById('kitSharesPreview');
             if (!container) return;
 
             if (!cfg.alarmPersons || cfg.alarmPersons.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 col-span-full">Noch keine Vertrauenspersonen im Totmannschalter-Tab angelegt. Bitte dort Personen hinzufügen, um QR-Notfall-Kits zu generieren.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500 col-span-full">Noch keine Vertrauenspersonen im Tab "Totmannschalter" angelegt. Bitte dort Personen hinzufügen, um QR-Notfall-Kits zu generieren.</p>`;
                 return;
             }
 
@@ -886,7 +885,6 @@
                 const personLink = `${baseUrl}/erben.html?vaultId=${cfg.vaultId}&key=${cfg.masterKeyHex}&person=${p.id}`;
                 const qrcodeContainerId = `qrcode_preview_${idx}`;
                 
-                // QR Code nach dem Rendern erzeugen
                 setTimeout(() => {
                     const el = document.getElementById(qrcodeContainerId);
                     if (el && el.childElementCount === 0) {
@@ -899,7 +897,7 @@
                             correctLevel: QRCode.CorrectLevel.M
                         });
                     }
-                }, 100);
+                }, 50);
 
                 return `
                     <div class="p-4 bg-white text-slate-900 rounded-2xl space-y-3 shadow-md flex flex-col items-center text-center">
@@ -947,7 +945,6 @@
                     doc.text(`Persönlicher Notfall-Link:`, 14, yPos + 6);
                     doc.text(personLink, 14, yPos + 11);
 
-                    // Canvas-QR-Code in PDF einbetten
                     const tempDiv = document.createElement('div');
                     new QRCode(tempDiv, {
                         text: personLink,
