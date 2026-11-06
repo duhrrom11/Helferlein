@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digitaler Nachlassverwalter</title>
+    <title>Digitaler Nachlassverwalter & Tresor | Helferlein</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,6 +15,8 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
@@ -27,42 +29,6 @@
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
-
-<!-- PIN SCHUTZ / ANMELDUNG -->
-<div id="pinOverlay" class="fixed inset-0 bg-slate-950 z-[9999] flex items-center justify-center p-4">
-    <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 space-y-5 shadow-2xl">
-        <div class="text-center space-y-3">
-            <div class="text-5xl">🔐</div>
-            <h2 class="text-xl font-bold text-indigo-400">
-                Sensible Daten geschützt
-            </h2>
-            <p class="text-sm text-slate-300">
-                Dieses Tool enthält hochsensible Informationen wie Zugangsdaten, Vermögenswerte, Verträge, Nachlassinformationen und persönliche Dokumente.
-            </p>
-            <p class="text-xs text-amber-400">
-                Der Zugriff wird durch einen PIN geschützt.
-            </p>
-        </div>
-
-        <div id="pinSetupContainer" class="hidden space-y-3">
-            <input type="password" id="newPinInput" maxlength="20" placeholder="Neuen PIN festlegen" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-            <button id="saveNewPinBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold text-sm shadow-md transition-all">
-                PIN festlegen
-            </button>
-        </div>
-
-        <div id="pinLoginContainer" class="hidden space-y-3">
-            <input type="password" id="pinInput" maxlength="20" placeholder="PIN eingeben" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
-            <button id="unlockBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold text-sm shadow-md transition-all">
-                Tresor öffnen
-            </button>
-        </div>
-
-        <p id="pinError" class="hidden text-red-400 text-center text-sm font-bold">
-           Falscher PIN
-        </p>
-    </div>
-</div>
 
     <!-- SYNC MODAL -->
     <div id="syncModalOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
@@ -116,13 +82,16 @@
                 
                 <div class="p-2 bg-indigo-600 rounded-xl text-xl hidden md:block">🏛️</div>
                 <div>
-                    <h1 class="text-base md:text-lg font-black tracking-tight">Digitaler Nachlassverwalter</h1>
+                    <h1 class="text-base md:text-lg font-black tracking-tight">Digitaler Nachlassverwalter & Tresor</h1>
                     <p class="text-[10px] md:text-[11px] text-slate-400">Zero-Knowledge Safe</p>
                 </div>
             </div>
-            <button id="manualSyncBtn" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-md">
-                ☁️ Synch.
-            </button>
+            <div class="flex items-center space-x-2">
+                <span id="header-user-info" class="hidden sm:inline-block text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">Nicht angemeldet</span>
+                <button id="manualSyncBtn" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-md">
+                    ☁️ Synch.
+                </button>
+            </div>
         </div>
     </header>
 
@@ -279,7 +248,7 @@
                 </div>
             </div>
 
-            <!-- NEU: Zusätzliches Vorsorge- & USB-Stick Affiliate Widget -->
+            <!-- Zusätzliches Vorsorge- & USB-Stick Affiliate Widget -->
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
                 <h3 class="font-bold text-sm text-slate-100">🛡️ Empfohlene Vorsorge- & Sicherheits-Produkte</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
@@ -301,8 +270,38 @@
             </div>
         </div>
 
-        <!-- TAB 5: EINSTELLUNGEN -->
+        <!-- TAB 5: EINSTELLUNGEN & SUPABASE ANMELDUNG -->
         <div id="section-settings" class="tab-section hidden space-y-6">
+            
+            <!-- Supabase Cloud-Konto Anmeldung -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-5 shadow-xl">
+                <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                    <span class="text-indigo-400">☁️</span> Cloud-Konto (Supabase Auth)
+                </h3>
+                
+                <div id="cloud-status-box" class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 flex items-center justify-between">
+                    <span id="cloud-status-text">Status: Nicht angemeldet</span>
+                    <span id="cloud-user-email" class="font-bold text-indigo-400"></span>
+                </div>
+
+                <div class="space-y-3 pt-2 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1">E-Mail-Adresse</label>
+                        <input type="email" id="auth-email" placeholder="name@beispiel.de" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Passwort</label>
+                        <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <button onclick="supabaseLogin()" class="py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition shadow-md">Anmelden</button>
+                        <button onclick="supabaseRegister()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition shadow-md">Registrieren</button>
+                    </div>
+                    <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2.5 bg-red-950/80 hover:bg-red-900 text-red-400 border border-red-800 font-bold rounded-xl transition">Abmelden</button>
+                </div>
+            </div>
+
+            <!-- Eigene Daten (Tresor-Inhaber) -->
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
                 <h3 class="text-sm font-bold text-slate-100">⚙️ Eigene Daten (Tresor-Inhaber)</h3>
                 <p class="text-xs text-slate-400">Diese Kontaktdaten benötigen wir, um dich im Notfall per E-Mail zu benachrichtigen, falls eine Vertrauensperson den Alarm auslöst.</p>
@@ -356,70 +355,63 @@
             console.error("Firebase Fehler:", e);
         }
 
+        // Supabase Konfiguration & Instanz
+        const SUPABASE_URL = "https://avapuibsidubuzxjtyld.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function supabaseRegister() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if(error) alert(error.message);
+            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+        }
+
+        async function supabaseLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if(error) alert(error.message);
+            else { alert('Erfolgreich angemeldet!'); checkUserSession(); }
+        }
+
+        async function supabaseLogout() {
+            await supabaseClient.auth.signOut();
+            checkUserSession();
+            alert('Abgemeldet.');
+        }
+
+        async function checkUserSession() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            const statusText = document.getElementById('cloud-status-text');
+            const userEmailSpan = document.getElementById('cloud-user-email');
+            const headerUserInfo = document.getElementById('header-user-info');
+            const btnLogout = document.getElementById('btn-logout');
+
+            if(user) {
+                statusText.innerText = "Status: Verbunden & Angemeldet";
+                userEmailSpan.innerText = user.email;
+                headerUserInfo.innerText = "👤 " + user.email;
+                headerUserInfo.classList.remove('hidden');
+                btnLogout.classList.remove('hidden');
+            } else {
+                statusText.innerText = "Status: Nicht angemeldet";
+                userEmailSpan.innerText = "";
+                headerUserInfo.innerText = "Nicht angemeldet";
+                headerUserInfo.classList.add('hidden');
+                btnLogout.classList.add('hidden');
+            }
+        }
+
         let currentMasterKeyHex = null;
         let currentDecryptedVault = { entries: [] };
 
-        // PIN Logik (SHA-256 Hash-Validierung)
-        async function hashPin(pin) {
-            const msgUint8 = new TextEncoder().encode(pin);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        function checkPinProtection() {
-            const existingPin = localStorage.getItem('estate_pin');
-            const setup = document.getElementById('pinSetupContainer');
-            const login = document.getElementById('pinLoginContainer');
-
-            if (existingPin) {
-                login.classList.remove('hidden');
-                setup.classList.add('hidden');
-            } else {
-                setup.classList.remove('hidden');
-                login.classList.add('hidden');
-            }
-        }
-
-        async function saveInitialPin() {
-            const pin = document.getElementById('newPinInput').value.trim();
-            if (pin.length < 4) {
-                alert('PIN muss mindestens 4 Zeichen haben');
-                return;
-            }
-            const hash = await hashPin(pin);
-            localStorage.setItem('estate_pin', hash);
-            document.getElementById('pinSetupContainer').classList.add('hidden');
-            document.getElementById('pinLoginContainer').classList.remove('hidden');
-            alert('PIN erfolgreich gespeichert');
-        }
-
-        async function unlockVault() {
-            const pin = document.getElementById('pinInput').value.trim();
-            const enteredHash = await hashPin(pin);
-            const storedHash = localStorage.getItem('estate_pin');
-
-            if (enteredHash !== storedHash) {
-                document.getElementById('pinError').classList.remove('hidden');
-                return;
-            }
-            document.getElementById('pinOverlay').remove();
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             setupGlobalEventListeners();
-            checkPinProtection();
-
-            document.getElementById('saveNewPinBtn')?.addEventListener('click', saveInitialPin);
-            document.getElementById('unlockBtn')?.addEventListener('click', unlockVault);
-
-            // Enter-Taste für PIN-Eingabe unterstützen
-            document.getElementById('pinInput')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') unlockVault();
-            });
-            document.getElementById('newPinInput')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') saveInitialPin();
-            });
+            checkUserSession();
 
             (async () => {
                 try {
