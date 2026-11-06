@@ -70,10 +70,23 @@
         </div>
 
         <div class="mt-4 max-w-xl mx-auto px-4 flex items-center justify-center gap-2">
-            <button type="button" id="settingsBtn" class="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl border border-gray-300 shadow-sm cursor-pointer whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0">
-                ⚙️ Einstellungen
-            </button>
-        </div>
+
+    <button type="button" id="settingsBtn"
+        class="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl">
+
+        ⚙️ Einstellungen
+
+    </button>
+
+    <div id="userInfo"
+         class="text-xs text-gray-500 font-semibold">
+
+         Nicht angemeldet
+
+    </div>
+
+</div>
+        
     </header>
 
     <!-- Main Content -->
@@ -374,13 +387,63 @@
         </div>
     </footer>
 
-    <!-- Einstellungs-Modal OHNE Firebase-Sync -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors">
-            <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
-                <h3 class="text-lg font-bold text-gray-900">⚙️ Einstellungen</h3>
-                <button type="button" id="closeSettingsBtn" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">&times;</button>
-            </div>
+    <!-- Einstellungs-Modal -->
+<div id="settingsModal"
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+
+    <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors">
+
+        <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
+
+            <h3 class="text-lg font-bold text-gray-900">
+                ⚙️ Einstellungen
+            </h3>
+
+            <button type="button"
+                    id="closeSettingsBtn"
+                    class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">
+                &times;
+            </button>
+
+        </div>
+
+        <!-- CLOUD-KONTO -->
+        <hr class="my-4">
+
+        <h3 class="font-bold text-lg mb-3">
+            ☁️ Cloud-Konto
+        </h3>
+
+        <div class="flex flex-col gap-2">
+
+            <button
+                type="button"
+                onclick="registerUser()"
+                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                👤 Registrieren
+            </button>
+
+            <button
+                type="button"
+                onclick="loginUser()"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                🔑 Anmelden
+            </button>
+
+            <button
+                type="button"
+                onclick="logoutUser()"
+                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                🚪 Abmelden
+            </button>
+
+        </div>
+
+        <!-- HIER BEGINNEN DANACH DEINE BISHERIGEN EINSTELLUNGEN -->
+
+    </div>
+
+</div>
             
             <div class="space-y-5">
                 <div class="border-b border-gray-200 pb-4">
@@ -424,7 +487,101 @@ window.supabaseClient =
   );
 
 console.log("✅ Supabase verbunden");
-        
+async function registerUser() {
+ 
+const email = prompt("E-Mail:");
+ 
+if (!email) return;
+ 
+const password = prompt("Passwort (mindestens 6 Zeichen):");
+ 
+if (!password) return;
+ 
+const { data, error } =
+await window.supabaseClient.auth.signUp({
+email,
+password
+});
+ 
+if (error) {
+ 
+alert("Fehler: " + error.message);
+console.error(error);
+return;
+ 
+}
+ 
+alert("Registrierung erfolgreich.");
+ 
+console.log(data);
+}  
+async function loginUser() {
+
+    const email = prompt("E-Mail:");
+
+    if (!email) return;
+
+    const password = prompt("Passwort:");
+
+    if (!password) return;
+
+    const { data, error } =
+        await window.supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+
+    if (error) {
+
+        alert("Login fehlgeschlagen: " + error.message);
+        console.error(error);
+        return;
+
+    }
+
+    alert("Erfolgreich angemeldet.");
+
+    console.log(data);
+
+    updateUserDisplay();
+} 
+   async function logoutUser() {
+
+    await window.supabaseClient.auth.signOut();
+
+    alert("Abgemeldet.");
+
+    updateUserDisplay();
+}   
+        async function updateUserDisplay() {
+
+    const { data } =
+        await window.supabaseClient.auth.getUser();
+
+    const user = data.user;
+
+    const userInfo =
+        document.getElementById("userInfo");
+
+    if (!userInfo) return;
+
+    if (user) {
+
+        userInfo.textContent =
+            "👤 " + user.email;
+
+    } else {
+
+        userInfo.textContent =
+            "Nicht angemeldet";
+
+    }
+}
+document.addEventListener("DOMContentLoaded", () => {
+
+    updateUserDisplay();
+
+});        
         const kofiPhrases = [
             "Premium Kaffee statt Premium App", "Tools für die Welt, Kaffee fürs Helferlein",
             "Code gratis, Kaffee freiwillig", "Bezahlt mit Karma (oder Kaffee)",
