@@ -44,12 +44,12 @@
         <!-- Aufklappbare Anleitung -->
         <div id="guideSection" class="hidden max-w-2xl mx-auto mt-3 p-4 bg-sky-50/90 border border-sky-200 rounded-2xl text-xs text-sky-900 shadow-inner space-y-2">
             <div class="font-bold text-sky-950 flex items-center gap-1.5 text-sm pb-1 border-b border-sky-200">
-                💡 So funktioniert das Helferlein-Hub & die Datensicherung
+                💡 So synchronisierst du alle deine Geräte über npoint.io
             </div>
-            <p>1. <strong>Lokale Container-Speicherung:</strong> Alle Fristen und Daten deiner Tools werden automatisch im lokalen Speicher (LocalStorage) deines Browsers gesichert.</p>
-            <p>2. <strong>Cloud / Container anlegen:</strong> Klicke auf <em>„☁️ In Cloud speichern“</em>, um einen sicheren Container-Schlüssel zu generieren und oben in der Adresszeile zu hinterlegen.</p>
-            <p>3. <strong>Auto-Sync:</strong> Das Hub liest die Fristen aller Tools im Hintergrund alle 30 Sekunden automatisch aus und aktualisiert die Übersicht.</p>
-            <p>4. <strong>Google Kalender Abo:</strong> Mit dem Button <em>„📅 Google Kalender Abo“</em> kannst du deine gesammelten Termine direkt in deinen Google Kalender einbinden.</p>
+            <p>1. <strong>Cloud-Bin anlegen:</strong> Klicke auf dem Hauptgerät auf <em>„☁️ In Cloud speichern“</em>. npoint.io generiert eine eindeutige ID und fügt sie oben in die Adresszeile ein (z. B. `?id=abcdef...`).</p>
+            <p>2. <strong>Auf anderen Geräten öffnen:</strong> Kopiere einfach die URL inklusive der ID und öffne sie auf deinen anderen Geräten (Smartphone, Tablet, PC). Sofort sind alle Fristen synchronisiert.</p>
+            <p>3. <strong>Auto-Sync:</strong> Das Hub prüft im Hintergrund alle 30 Sekunden automatisch auf Aktualisierungen in der npoint.io Cloud.</p>
+            <p>4. <strong>Google Kalender Abo:</strong> Nutze den Kalender-Button, um die npoint.io-URL direkt in deinen Google Kalender zu abonnieren.</p>
         </div>
     </header>
 
@@ -257,7 +257,7 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4 gap-4">
                 <div>
                     <h2 class="text-xl font-extrabold text-gray-900 flex items-center gap-2">📅 Helferlein Kalender & Tool-Hub</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Zentrale Fristenverwaltung (inkl. lokalem Container-Sync).</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Geräteübergreifende npoint.io Cloud-Synchronisation.</p>
                 </div>
                 <div class="flex flex-wrap gap-2 items-center">
                     <button onclick="speichereInCloud()" class="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all text-xs cursor-pointer">
@@ -286,7 +286,7 @@
                         <button onclick="ladeDatenAusCloud()" class="text-xs px-2.5 py-1 bg-gray-200 hover:bg-gray-300 font-semibold rounded-lg text-gray-700 cursor-pointer">🔄 Aktualisieren</button>
                     </div>
                     <div id="databaseEventsList" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-                        <p class="text-xs text-gray-400 text-center py-8">Lade Daten aus dem lokalen Container...</p>
+                        <p class="text-xs text-gray-400 text-center py-8">Lade Daten aus der npoint.io Cloud...</p>
                     </div>
                 </div>
             </div>
@@ -323,10 +323,10 @@
         const urlParams = new URLSearchParams(window.location.search);
         let hubBinId = urlParams.get('id');
 
-        // Falls noch keine ID existiert oder eine alte hub_-ID vorliegt
+        // ID aus localStorage laden, falls keine in der URL steht
         if (!hubBinId) {
             let savedId = localStorage.getItem('active_hub_bin_id');
-            if (savedId) {
+            if (savedId && !savedId.startsWith('hub_')) {
                 hubBinId = savedId;
             }
         } else {
@@ -380,75 +380,49 @@
             };
 
             try {
-                // Wenn eine echte npoint.io Bin-ID vorliegt, versuchen wir den Upload
+                let endpoint = NPOINT_API_BASE;
+                let method = 'POST';
+                
+                // Falls bereits eine gültige Bin-ID existiert, aktualisieren wir diese (PUT)
                 if (hubBinId && !hubBinId.startsWith('hub_')) {
-                    let response = await fetch(NPOINT_API_BASE + hubBinId, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (response.ok) {
-                        alert("✅ Erfolgreich in der npoint.io Cloud aktualisiert!");
-                        await ladeDatenAusCloud();
-                        return;
-                    }
+                    endpoint = NPOINT_API_BASE + hubBinId;
+                    method = 'PUT';
                 }
 
-                // Neuer Cloud-Bin via Fallback-POST
-                let response = await fetch("https://api.npoint.io", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                let response = await fetch(endpoint, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
                     const result = await response.json();
-                    if (result.id) {
-                        hubBinId = result.id;
+                    const newId = result.id || result.binId || hubBinId;
+                    
+                    if (newId && !newId.startsWith('hub_')) {
+                        hubBinId = newId;
                         localStorage.setItem('active_hub_bin_id', hubBinId);
                         window.history.replaceState({}, '', window.location.pathname + "?id=" + hubBinId);
-                        alert("✅ Cloud-Bin erfolgreich erstellt! ID: " + hubBinId);
+                        alert("✅ Erfolgreich in der npoint.io Cloud gespeichert!\n\nLink für andere Geräte:\n" + window.location.href);
                         await ladeDatenAusCloud();
                         return;
                     }
                 }
-                throw new Error("API-Fehler");
+                throw new Error("npoint.io hat keine ID geliefert.");
             } catch (e) {
-                // Robuster lokaler Container-Fallback, falls API blockiert
-                if (!hubBinId || !hubBinId.startsWith('hub_')) {
-                    hubBinId = "hub_" + Math.random().toString(36).substring(2, 9);
-                    localStorage.setItem('active_hub_bin_id', hubBinId);
-                    window.history.replaceState({}, '', window.location.pathname + "?id=" + hubBinId);
-                }
-                localStorage.setItem(hubBinId, JSON.stringify(payload));
-                alert("✅ Erfolgreich im lokalen Browser-Container gesichert: " + hubBinId);
-                sammleUndZeigeTermine({ events: alleTermine });
+                console.warn("Cloud-Speicherung direkt fehlgeschlagen, versuche alternativen Init.", e);
+                alert("⚠️ Konnte npoint.io nicht direkt erreichen. Bitte prüfe die Internetverbindung.");
             }
         }
 
         async function ladeDatenAusCloud() {
             const lokaleTermine = sammleTermineAusAllenTools();
 
-            if (!hubBinId) {
+            if (!hubBinId || hubBinId.startsWith('hub_')) {
                 sammleUndZeigeTermine({ events: lokaleTermine });
                 return;
             }
 
-            // Wenn es ein lokaler Container ist
-            if (hubBinId.startsWith('hub_')) {
-                let localData = localStorage.getItem(hubBinId);
-                if (localData) {
-                    try {
-                        let parsed = JSON.parse(localData);
-                        sammleUndZeigeTermine(parsed);
-                        return;
-                    } catch(e){}
-                }
-                sammleUndZeigeTermine({ events: lokaleTermine });
-                return;
-            }
-
-            // Echte npoint.io Cloud-Abfrage
             try {
                 let response = await fetch(NPOINT_API_BASE + hubBinId);
                 if (response.ok) {
@@ -551,11 +525,11 @@
         }
 
         function fuegeZuGoogleKalenderHinzu() {
-            if (!hubBinId) {
-                alert("⚠️ Bitte klicke zuerst auf '☁️ In Cloud speichern'.");
+            if (!hubBinId || hubBinId.startsWith('hub_')) {
+                alert("⚠️ Bitte klicke zuerst auf '☁️ In Cloud speichern', um eine echte npoint.io-ID zu generieren.");
                 return;
             }
-            let kundenDatenUrl = hubBinId.startsWith('hub_') ? window.location.href : `https://api.npoint.io/${hubBinId}`;
+            const kundenDatenUrl = `https://api.npoint.io/${hubBinId}`;
             const googleCalendarAddUrl = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(kundenDatenUrl)}`;
             window.open(googleCalendarAddUrl, '_blank');
         }
@@ -618,6 +592,7 @@
 
         window.toggleFavorite = toggleFavorite;
         window.loadStats = loadStats;
+        window.initFavorites = ink.initFavorites;
         window.initFavorites = initFavorites;
         window.speichereInCloud = speichereInCloud;
         window.ladeDatenAusCloud = ladeDatenAusCloud;
