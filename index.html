@@ -6,7 +6,7 @@
     
     <!-- SEO Meta-Daten -->
     <title>✨ Kostenlose Online-Tools & clevere Rechner ✨ | Helferlein</title>
-    <meta name="description" content="Entdecke 11 kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung, 100% lokal & sicher. Nutze praktische Tools direkt im Browser!">
+    <meta name="description" content="Entdecke kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung, 100% lokal & sicher. Nutze praktische Tools direkt im Browser!">
     <link rel="canonical" href="https://duhrrom11.github.io/Helferlein/index.html">
 
     <!-- Tailwind CSS -->
@@ -32,7 +32,7 @@
             <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-600 via-teal-600 to-sky-600 bg-clip-text text-transparent inline-flex items-center justify-center gap-2">
                 ✨ Kostenlose Online-Tools & clevere Rechner ✨
             </h1>
-            <p class="text-xs md:text-sm text-gray-500 mt-1">Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.</p>
+            <p class="text-xs md:text-sm text-gray-500 mt-1">Entdecke praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.</p>
         </div>
 
         <div class="mt-4 max-w-xl mx-auto px-4 flex items-center justify-center gap-2">
@@ -56,12 +56,18 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4 gap-4">
                 <div>
                     <h2 class="text-xl font-extrabold text-gray-900 flex items-center gap-2">📅 Helferlein Kalender & Tool-Hub</h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Zentrale Verwaltung deiner Termine, Fristen und Buchungen aus allen Tools.</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Zentrale Verwaltung deiner Termine, Fristen und Buchungen aus allen Tools (exkl. WG-Planer).</p>
                 </div>
-                <!-- One-Click Google Kalender Abo-Button -->
-                <button onclick="fuegeZuGoogleKalenderHinzu()" class="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-xs cursor-pointer">
-                    📅 Abboniere diesen Kalender „Helferlein“
-                </button>
+                <div class="flex flex-wrap gap-2 items-center">
+                    <!-- Cloud-Speicher erstellen Button -->
+                    <button onclick="erstelleCloudDatenbank()" class="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition-all text-xs cursor-pointer">
+                        ☁️ Cloud-ID erstellen
+                    </button>
+                    <!-- One-Click Google Kalender Abo-Button -->
+                    <button onclick="fuegeZuGoogleKalenderHinzu()" class="px-3.5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl shadow-md transition-all text-xs cursor-pointer">
+                        📅 Google Kalender Abo
+                    </button>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -74,14 +80,14 @@
                     </div>
                 </div>
 
-                <!-- Rechter Bereich: Ausgelesene Online-Datenbank Termine -->
+                <!-- Rechter Bereich: Ausgelesene Online-Datenbank Termine (Alle Tools ausser WG) -->
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col lg:col-span-2 space-y-3">
                     <div class="flex justify-between items-center">
-                        <h3 class="font-bold text-sm text-gray-800">📌 Ausgelesene Termine & Fristen aus den Tools</h3>
+                        <h3 class="font-bold text-sm text-gray-800">📌 Ausgelesene Fristen & Termine (aus allen Tools)</h3>
                         <button onclick="ladeDatenAusCloud()" class="text-xs px-2.5 py-1 bg-gray-200 hover:bg-gray-300 font-semibold rounded-lg text-gray-700 cursor-pointer">🔄 Aktualisieren</button>
                     </div>
                     <div id="databaseEventsList" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-                        <p class="text-xs text-gray-400 text-center py-8">Lade Termine aus der Online-Datenbank...</p>
+                        <p class="text-xs text-gray-400 text-center py-8">Lade Termine aus allen Tools...</p>
                     </div>
                 </div>
             </div>
@@ -89,13 +95,13 @@
 
         <!-- Hauptgrid Header mit Suchleiste -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-3">
-            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 11 kostenlosen Online-Tools im Überblick</h2>
+            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle kostenlosen Online-Tools im Überblick</h2>
             <div class="w-full md:w-80">
                 <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder Inhalt durchsuchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
             </div>
         </div>
 
-        <!-- Tools Grid (Alle 11 Tools) -->
+        <!-- Tools Grid -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             <!-- Tool 1 -->
@@ -138,7 +144,7 @@
                 </div>
             </div>
 
-            <!-- Tool 3 -->
+            <!-- Tool 3 (WG-Kasse bleibt erhalten, wird aber im Kalender-Hub ausgeschlossen) -->
             <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-name="wg kasse haushaltsbuch rechner ausgaben">
                 <div>
                     <div class="flex justify-between items-start mb-4">
@@ -349,7 +355,7 @@
         <div class="bg-gradient-to-r from-amber-50 to-amber-100/50 border border-amber-200 rounded-2xl p-6 md:p-8 text-center shadow-sm">
             <h3 class="text-lg font-bold text-gray-900 mb-2">Dir gefallen diese kostenlosen Tools? ☕</h3>
             <p class="text-sm text-gray-600 max-w-2xl mx-auto mb-5">
-                Helferlein bleibt zu 100% kostenlos, werbefrei und sicher (lokal auf deinem Gerät). Wenn dir die Web-Apps den Alltag erleichtern, freue ich mich riesig über einen virtuellen Kaffee!
+                Helferlein bleibt zu 100% kostenlos, werbefrei und sicher. Wenn dir die Web-Apps den Alltag erleichtern, freue ich mich riesig über einen virtuellen Kaffee!
             </p>
             <a href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm shadow-md transition-all hover:scale-105">
                 <span class="text-lg">☕</span> Auf Ko-fi unterstützen
@@ -363,7 +369,7 @@
             <h2 class="text-sm font-bold text-gray-800">Über Helferlein</h2>
             <p class="text-xs text-gray-500 leading-relaxed max-w-2xl mx-auto">
                 Diese Sammlung kostenloser Online-Tools wurde konzipiert, um alltägliche Probleme (Haushalt, Finanzen, Auto) einfach und effizient im Browser zu lösen. 
-                <strong>Ohne versteckte Kosten, ohne Account-Zwang. Nichts dergleichen.</strong>
+                <strong>Ohne versteckte Kosten, ohne Account-Zwang.</strong>
             </p>
             <p class="text-xs text-gray-500">
                 Entwickelt mit ❤️ und 💡 von Romain Duhr. 
@@ -409,17 +415,16 @@
         </div>
     </div>
 
-    <!-- UI SKRIPT & KALENDER-HUB SYNCHRONISATION -->
+    <!-- UI SKRIPT & MULTI-TOOL KALENDER-HUB SYNCHRONISATION -->
     <script>
         const NPOINT_API_BASE = "https://api.npoint.io/";
         const urlParams = new URLSearchParams(window.location.search);
         let hubBinId = urlParams.get('id');
 
-        // Automatisches Abfangen: Wenn keine ID in der URL, nimm den Speicher oder generiere einen Fallback
         if (!hubBinId) {
-            hubBinId = localStorage.getItem('active_wg_bin_id');
+            hubBinId = localStorage.getItem('active_hub_bin_id');
         } else {
-            localStorage.setItem('active_wg_bin_id', hubBinId);
+            localStorage.setItem('active_hub_bin_id', hubBinId);
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -428,32 +433,221 @@
             await ladeDatenAusCloud();
         });
 
+        // Erstellt einen neuen Cloud-Datensatz auf npoint.io für alle Tools (exkl. WG-Kasse)
+        async function erstelleCloudDatenbank() {
+            const alleTermine = sammleTermineAusAllenTools();
+            const payload = {
+                erstelltAm: new Date().toISOString(),
+                events: alleTermine
+            };
+
+            try {
+                let response = await fetch(NPOINT_API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.id) {
+                        hubBinId = result.id;
+                        localStorage.setItem('active_hub_bin_id', hubBinId);
+                        window.history.replaceState({}, '', window.location.pathname + "?id=" + hubBinId);
+                        alert("✅ Neue Cloud-Datenbank erfolgreich erstellt! ID: " + hubBinId);
+                        await ladeDatenAusCloud();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn("npoint Erstellung fehlgeschlagen, nutze lokale Simulation.", e);
+            }
+
+            // Fallback ID wenn Offline/Fehler
+            hubBinId = "hub_" + Math.random().toString(36).substring(2, 9);
+            localStorage.setItem('active_hub_bin_id', hubBinId);
+            window.history.replaceState({}, '', window.location.pathname + "?id=" + hubBinId);
+            alert("✅ Lokaler Cloud-Container erstellt: " + hubBinId);
+            sammleUndZeigeTermine({ events: alleTermine });
+        }
+
         async function ladeDatenAusCloud() {
+            const lokaleTermine = sammleTermineAusAllenTools();
+
             if (!hubBinId) {
-                // Erstelle automatisch einen lokalen Fallback oder npoint-Container, falls komplett neu
-                hubBinId = "wg_" + Math.random().toString(36).substring(2, 9);
-                localStorage.setItem('active_wg_bin_id', hubBinId);
+                // Keine ID vorhanden -> zeige lokale Daten aus allen Tools an
+                sammleUndZeigeTermine({ events: lokaleTermine });
+                return;
             }
 
             try {
                 let response = await fetch(NPOINT_API_BASE + hubBinId);
                 if (response.ok) {
                     const cloudObj = await response.json();
-                    sammleUndZeigeTermine(cloudObj);
+                    // Wenn Cloud Daten hat, kombiniere oder zeige sie
+                    sammleUndZeigeTermine(cloudObj.events ? cloudObj : { events: lokaleTermine });
                 } else {
-                    sammleUndZeigeTermine({
-                        events: JSON.parse(localStorage.getItem('wg_events') || '[]'),
-                        contracts: JSON.parse(localStorage.getItem('wg_contracts') || '[]'),
-                        data: JSON.parse(localStorage.getItem('kassenbon_data') || '[]')
-                    });
+                    sammleUndZeigeTermine({ events: lokaleTermine });
                 }
             } catch (error) {
-                sammleUndZeigeTermine({
-                    events: JSON.parse(localStorage.getItem('wg_events') || '[]'),
-                    contracts: JSON.parse(localStorage.getItem('wg_contracts') || '[]'),
-                    data: JSON.parse(localStorage.getItem('kassenbon_data') || '[]')
-                });
+                sammleUndZeigeTermine({ events: lokaleTermine });
             }
+        }
+
+        // Sammelt Daten aus ALLEN Tools AUSSER dem WG-Planer
+        function sammleTermineAusAllenTools() {
+            let termine = [];
+
+            // 1. Kassenbon / Garantie-Manager (Garantiefristen)
+            try {
+                let karten = JSON.parse(localStorage.getItem('kassenbon_data') || localStorage.getItem('kassenbon') || '[]');
+                karten.forEach(item => {
+                    if (item.date || item.expiryDate || item.garantieBis) {
+                        termine.push({
+                            title: `Garantie / Beleg: ${item.title || item.name || 'Produkt'}`,
+                            date: item.expiryDate || item.garantieBis || item.date,
+                            type: 'Garantie / Kassenbon',
+                            details: `Betrag: ${item.price ? item.price + ' €' : 'k.A.'}`
+                        });
+                    }
+                });
+            } catch(e){}
+
+            // 2. Umzugskisten (Inhalt / Fristen)
+            try {
+                let kisten = JSON.parse(localStorage.getItem('kisten_data') || localStorage.getItem('kisten') || '[]');
+                kisten.forEach(item => {
+                    if (item.date) {
+                        termine.push({
+                            title: `Kiste / Inventar: ${item.name || item.title}`,
+                            date: item.date,
+                            type: 'Umzugskiste',
+                            details: `Standort: ${item.location || 'Lager'}`
+                        });
+                    }
+                });
+            } catch(e){}
+
+            // 3. Notizen / Passwort-Manager (Ablaufdaten / Erinnerungen)
+            try {
+                let notes = JSON.parse(localStorage.getItem('secure_notes') || localStorage.getItem('notizen') || '[]');
+                notes.forEach(item => {
+                    if (item.date) {
+                        termine.push({
+                            title: `Notiz-Frist: ${item.title || 'Wichtig'}`,
+                            date: item.date,
+                            type: 'Passwort / Notiz',
+                            details: 'Sichere Notiz'
+                        });
+                    }
+                });
+            } catch(e){}
+
+            // 4. KFZ-Kosten & Reifenwechsel-Tracker (TÜV, Reifenwechsel)
+            try {
+                let kfz = JSON.parse(localStorage.getItem('kfz_pass') || localStorage.getItem('kfz_data') || '[]');
+                kfz.forEach(item => {
+                    if (item.date || item.tuevDate || item.tuv) {
+                        termine.push({
+                            title: `KFZ Termin: ${item.title || item.name || 'TÜV / Wartung'}`,
+                            date: item.tuevDate || item.tuv || item.date,
+                            type: 'KFZ & Auto',
+                            details: `Fahrzeug: ${item.vehicle || 'Auto'}`
+                        });
+                    }
+                });
+            } catch(e){}
+
+            // 5. Haustier-Gesundheitspass (Impfungen, Tierarzt)
+            try {
+                let pets = JSON.parse(localStorage.getItem('haustier_pass_pro_v5') || localStorage.getItem('haustier_pass') || '[]');
+                pets.forEach(item => {
+                    if (item.date || item.nextVaccine || item.vetDate) {
+                        termine.push({
+                            title: `Tierarzt / Impfung: ${item.title || item.petName || 'Vorsorge'}`,
+                            date: item.vetDate || item.nextVaccine || item.date,
+                            type: 'Haustier',
+                            details: `Tier: ${item.name || 'Haustier'}`
+                        });
+                    }
+                });
+            } catch(e){}
+
+            // 6. Parkschein-Timer
+            try {
+                let park = JSON.parse(localStorage.getItem('parken_data') || localStorage.getItem('parken') || '[]');
+                park.forEach(item => {
+                    if (item.date || item.expires) {
+                        termine.push({
+                            title: `Parkschein Ablauf: ${item.location || 'Standort'}`,
+                            date: item.expires || item.date,
+                            type: 'Park-Timer',
+                            details: 'Achtung Parkzeit'
+                        });
+                    }
+                });
+            } catch(e){}
+
+            // 7. Leihvertrag & Werkzeug-Verleih
+            try {
+                let verleih = JSON.parse(localStorage.getItem('verleih_pass') || localStorage.getItem('verleih_data') || '[]');
+                verleih.forEach(item => {
+                    if (item.returnDate || item.date) {
+                        termine.push({
+                            title: `Rückgabe (Verleih): ${item.item || item.title || 'Gegenstand'}`,
+                            date: item.returnDate || item.date,
+                            type: 'Verleih',
+                            details: `An: ${item.borrower || 'Person'}`
+                        });
+                    }
+                });
+            } catch(e){}
+
+            // 8. Pflanzenpflege & Gieß-Erinnerung
+            try {
+                let pflanzen = JSON.parse(localStorage.getItem('pflanzen_pass') || localStorage.getItem('pflanzen_data') || '[]');
+                pflanzen.forEach(item => {
+                    if (item.nextWatering || item.date) {
+                        termine.push({
+                            title: `🌱 Gießen: ${item.name || 'Pflanze'}`,
+                            date: item.nextWatering || item.date,
+                            type: 'Pflanzenpflege',
+                            details: `Raum: ${item.room || 'Zimmer'}`
+                        });
+                    }
+                });
+            } catch(e){}
+
+            // 9. Strom- & Wasserzähler Verbrauchsmelder
+            try {
+                let energie = JSON.parse(localStorage.getItem('energie_tracker_pro') || localStorage.getItem('energie_data') || '[]');
+                energie.forEach(item => {
+                    if (item.date) {
+                        termine.push({
+                            title: `Zählerstand Ablesung: ${item.meter || 'Zähler'}`,
+                            date: item.date,
+                            type: 'Energie & Zähler',
+                            details: `Wert: ${item.value || ''}`
+                        });
+                    }
+                });
+            } catch(e){}
+
+            // 10. Backform- & Küchenmathe-Rechner
+            try {
+                let kueche = JSON.parse(localStorage.getItem('bk_rec') || '[]');
+                kueche.forEach(item => {
+                    if (item.date) {
+                        termine.push({
+                            title: `Back-Event: ${item.title || 'Kuchen'}`,
+                            date: item.date,
+                            type: 'Küche & Backen',
+                            details: 'Backform-Rechner'
+                        });
+                    }
+                });
+            } catch(e){}
+
+            return termine;
         }
 
         function sammleUndZeigeTermine(data) {
@@ -462,48 +656,21 @@
             if (data && Array.isArray(data.events)) {
                 data.events.forEach(ev => {
                     alleTermine.push({
-                        titel: ev.title || ev.type,
-                        datum: ev.date,
-                        kategorie: 'Termin / Slot (' + (ev.type || 'Allgemein') + ')',
-                        details: `Gebucht von: ${ev.owner || 'WG'} ${ev.timeStart ? '| ' + ev.timeStart : ''}`,
-                        farbe: 'text-emerald-600 bg-emerald-50 border-emerald-200'
+                        titel: ev.title || 'Eintrag',
+                        datum: ev.date || new Date().toISOString().split('T')[0],
+                        kategorie: ev.type || 'Allgemein',
+                        details: ev.details || '',
+                        farbe: 'text-sky-600 bg-sky-50 border-sky-200'
                     });
                 });
             }
 
-            if (data && Array.isArray(data.contracts)) {
-                data.contracts.forEach(c => {
-                    if (c.noticeDate) {
-                        alleTermine.push({
-                            titel: `Kündigungsfrist: ${c.name}`,
-                            datum: c.noticeDate,
-                            kategorie: 'Vertrag / Abo',
-                            details: `Kosten: ${c.price.toFixed(2)} € | Zahler: ${c.payer}`,
-                            farbe: 'text-purple-600 bg-purple-50 border-purple-200'
-                        });
-                    }
-                });
-            }
-
-            if (data && Array.isArray(data.data)) {
-                data.data.forEach(r => {
-                    if (r.date) {
-                        alleTermine.push({
-                            titel: `Buchung: ${r.title}`,
-                            datum: r.date,
-                            kategorie: 'Finanzen / Kassenbon',
-                            details: `Betrag: ${r.price.toFixed(2)} € | ${r.payer}`,
-                            farbe: 'text-sky-600 bg-sky-50 border-sky-200'
-                        });
-                    }
-                });
-            }
-
+            // Nach Datum sortieren
             alleTermine.sort((a, b) => new Date(a.datum) - new Date(b.datum));
 
             const container = document.getElementById('databaseEventsList');
             if (alleTermine.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">Keine Termine oder Fristen in den Datenbank-Tools gefunden.</p>`;
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">Keine Termine oder Fristen in den Tools vorhanden.</p>`;
                 return;
             }
 
@@ -523,7 +690,7 @@
         // Dynamischer Google-Kalender Abo-Button für den Nutzer / Kunden
         function fuegeZuGoogleKalenderHinzu() {
             if (!hubBinId) {
-                alert("⚠️ Keine aktive Datenbank-ID vorhanden.");
+                alert("⚠️ Bitte erstelle zuerst eine Cloud-ID über den Button 'Cloud-ID erstellen'.");
                 return;
             }
             const kundenDatenUrl = `https://api.npoint.io/${hubBinId}`;
@@ -668,6 +835,8 @@
         window.exportGlobalBackup = exportGlobalBackup;
         window.importGlobalBackup = importGlobalBackup;
         window.fuegeZuGoogleKalenderHinzu = fuegeZuGoogleKalenderHinzu;
+        window.erstelleCloudDatenbank = erstelleCloudDatenbank;
+        window.ladeDatenAusCloud = ladeDatenAusCloud;
 
         document.addEventListener('DOMContentLoaded', () => {
             try {
