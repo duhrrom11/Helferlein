@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digitaler Nachlassverwalter & Tresor | Helferlein</title>
+    <title>Digitaler Nachlassverwalter | Helperly</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,6 +25,13 @@
             border-bottom-color: #4f46e5 !important;
             color: #4f46e5 !important;
             font-weight: 700;
+        }
+        /* QR-Code Container Anpassung */
+        .qrcode-box img {
+            margin: 0 auto;
+            border-radius: 8px;
+            padding: 4px;
+            background: white;
         }
     </style>
 </head>
@@ -82,7 +89,7 @@
                 
                 <div class="p-2 bg-indigo-600 rounded-xl text-xl hidden md:block">🏛️</div>
                 <div>
-                    <h1 class="text-base md:text-lg font-black tracking-tight">Digitaler Nachlassverwalter & Tresor</h1>
+                    <h1 class="text-base md:text-lg font-black tracking-tight">Digitaler Nachlassverwalter</h1>
                     <p class="text-[10px] md:text-[11px] text-slate-400">Zero-Knowledge Safe</p>
                 </div>
             </div>
@@ -146,11 +153,11 @@
                     <span class="text-2xl">🔐</span>
                     <div>
                         <h4 class="font-bold text-xs text-slate-100">Sichere Passwörter & Hardware-Wallets</h4>
-                        <p class="text-[11px] text-slate-400">Verwalte deine Krypto-Assets und digitalen Schlüssel absolut sicher mit einer Hardware-Wallet[span_0](start_span)[span_0](end_span).</p>
+                        <p class="text-[11px] text-slate-400">Verwalte deine Krypto-Assets und digitalen Schlüssel absolut sicher mit einer Hardware-Wallet</p>
                     </div>
                 </div>
                 <a href="https://www.amazon.de/s?k=hardware+wallet+krypto&tag=duhrrom-21" target="_blank" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm whitespace-nowrap">
-                    🛒 Hardware-Wallets auf Amazon[span_1](start_span)[span_1](end_span)
+                    🛒 Hardware-Wallets auf Amazon
                 </a>
             </div>
 
@@ -217,14 +224,21 @@
             </div>
         </div>
 
-        <!-- TAB 4: PAPIER NOTFALL-KIT -->
+        <!-- TAB 4: PAPIER NOTFALL-KIT MIT QR-CODES -->
         <div id="section-kit" class="tab-section hidden space-y-6">
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
-                <h3 class="text-sm font-bold text-slate-100">📄 Papier-Notfall-Kit (Cold Storage)</h3>
-                <button id="generatePdfBtn" class="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-lg">
-                    📄 Notfall-Kit als PDF exportieren
-                </button>
-                <div id="kitSharesPreview" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2"></div>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-100">📄 Papier-Notfall-Kit mit QR-Codes (Cold Storage)</h3>
+                        <p class="text-xs text-slate-400">Jede Vertrauensperson erhält einen individuellen Notfall-Link mit direkt scannbarem QR-Code.</p>
+                    </div>
+                    <button id="generatePdfBtn" class="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-lg whitespace-nowrap">
+                        📄 Notfall-Kit als PDF exportieren
+                    </button>
+                </div>
+                <div id="kitSharesPreview" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                    <p class="text-xs text-slate-500">Bitte lege zuerst Personen im Tab "Totmannschalter" an, um personalisierte QR-Kits zu erhalten.</p>
+                </div>
             </div>
 
             <!-- Affiliate Empfehlung für Notfall-Kit & Dokumente -->
@@ -855,26 +869,109 @@
             alert("✅ Vertrauenspersonen gespeichert!");
         }
 
+        // Render Notfall-Kit Vorschau mit QR-Codes
         function renderPrintableKit() {
             const cfg = getVaultConfig();
             const container = document.getElementById('kitSharesPreview');
             if (!container) return;
-            container.innerHTML = cfg.trustees.map((t, idx) => `
-                <div class="p-3 bg-white text-slate-900 rounded-xl space-y-2 text-center text-xs">
-                    <h4 class="font-bold">${t.name} (${t.role})</h4>
-                    <p class="font-mono text-[9px] break-all bg-slate-100 p-1 rounded">Schlüssel: ${cfg.masterKeyHex}</p>
-                </div>
-            `).join('');
+
+            if (!cfg.alarmPersons || cfg.alarmPersons.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 col-span-full">Noch keine Vertrauenspersonen im Totmannschalter-Tab angelegt. Bitte dort Personen hinzufügen, um QR-Notfall-Kits zu generieren.</p>`;
+                return;
+            }
+
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+
+            container.innerHTML = cfg.alarmPersons.map((p, idx) => {
+                const personLink = `${baseUrl}/erben.html?vaultId=${cfg.vaultId}&key=${cfg.masterKeyHex}&person=${p.id}`;
+                const qrcodeContainerId = `qrcode_preview_${idx}`;
+                
+                // QR Code nach dem Rendern erzeugen
+                setTimeout(() => {
+                    const el = document.getElementById(qrcodeContainerId);
+                    if (el && el.childElementCount === 0) {
+                        new QRCode(el, {
+                            text: personLink,
+                            width: 110,
+                            height: 110,
+                            colorDark: "#0f172a",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    }
+                }, 100);
+
+                return `
+                    <div class="p-4 bg-white text-slate-900 rounded-2xl space-y-3 shadow-md flex flex-col items-center text-center">
+                        <div>
+                            <h4 class="font-bold text-sm">${p.name}</h4>
+                            <p class="text-[10px] text-slate-500">${p.contact || 'Notfall-Vertrauensperson'}</p>
+                        </div>
+                        <div id="${qrcodeContainerId}" class="qrcode-box p-1 bg-slate-100 rounded-xl border border-slate-200"></div>
+                        <p class="font-mono text-[8px] break-all text-slate-600 bg-slate-50 p-1.5 rounded w-full">${personLink}</p>
+                    </div>
+                `;
+            }).join('');
         }
 
         function generatePrintableKitPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const cfg = getVaultConfig();
+
+            doc.setFontSize(16);
             doc.text("DIGITALES NACHLASS-NOTFALL-KIT", 14, 20);
-            doc.text(`Vault-ID: ${cfg.vaultId}`, 14, 28);
-            doc.text(`Master-Key: ${cfg.masterKeyHex}`, 14, 36);
-            doc.save(`notfall-kit-${cfg.vaultId}.pdf`);
+            
+            doc.setFontSize(10);
+            doc.text(`Tresor-ID: ${cfg.vaultId}`, 14, 28);
+            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 34);
+
+            let yPos = 45;
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+
+            if (cfg.alarmPersons && cfg.alarmPersons.length > 0) {
+                cfg.alarmPersons.forEach((p, idx) => {
+                    if (yPos > 240) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+
+                    const personLink = `${baseUrl}/erben.html?vaultId=${cfg.vaultId}&key=${cfg.masterKeyHex}&person=${p.id}`;
+                    
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`Notfall-Zugang für: ${p.name} (${p.contact || 'Keine E-Mail'})`, 14, yPos);
+                    
+                    doc.setFontSize(8);
+                    doc.setFont(undefined, 'normal');
+                    doc.text(`Persönlicher Notfall-Link:`, 14, yPos + 6);
+                    doc.text(personLink, 14, yPos + 11);
+
+                    // Canvas-QR-Code in PDF einbetten
+                    const tempDiv = document.createElement('div');
+                    new QRCode(tempDiv, {
+                        text: personLink,
+                        width: 120,
+                        height: 120
+                    });
+
+                    setTimeout(() => {
+                        const canvas = tempDiv.querySelector('canvas');
+                        if (canvas) {
+                            const imgData = canvas.toDataURL('image/png');
+                            doc.addImage(imgData, 'PNG', 14, yPos + 15, 35, 35);
+                        }
+                    }, 50);
+
+                    yPos += 55;
+                });
+            } else {
+                doc.text("Keine Notfall-Personen definiert.", 14, yPos);
+            }
+
+            setTimeout(() => {
+                doc.save(`digitales-notfall-kit-${cfg.vaultId}.pdf`);
+            }, 300);
         }
     </script>
 </body>
