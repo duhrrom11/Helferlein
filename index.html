@@ -24,24 +24,6 @@
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href='data:application/manifest+json,{"name": "Alltagshelferlein Hub", "short_name": "Helferlein", "start_url": "./index.html", "display": "standalone", "background_color": "#f3f4f6", "theme_color": "#0284c7"}'>
 
-    <!-- Schema.org -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebApplication",
-          "name": "Kostenlose Online-Tools & clevere Rechner | Helferlein",
-          "operatingSystem": "Web Browser",
-          "applicationCategory": "UtilitiesApplication",
-          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-          "description": "Kostenlose Online-Tools für Haushalt, Finanzen und Organisation ohne Anmeldung. Daten bleiben 100% lokal im Browser.",
-          "author": { "@type": "Person", "name": "Romain Duhr" }
-        }
-      ]
-    }
-    </script>
-
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -82,6 +64,42 @@
         <div id="favoritesSection" class="hidden space-y-3">
             <h2 class="text-xs font-bold text-sky-700 uppercase tracking-wider flex items-center gap-1.5">⭐ Deine Favoriten & Schnellstart</h2>
             <div id="favoritesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+
+        <!-- KALENDER & HUB-ZENTRALE SEKTION -->
+        <div class="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-100 pb-4 gap-4">
+                <div>
+                    <h2 class="text-xl font-extrabold text-gray-900 flex items-center gap-2">📅 Helferlein Kalender & Tool-Hub</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Zentrale Verwaltung deiner Termine, Fristen und Buchungen aus allen Tools.</p>
+                </div>
+                <!-- One-Click Google Kalender Abo-Button -->
+                <button onclick="fuegeZuGoogleKalenderHinzu()" class="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-2 text-xs cursor-pointer">
+                    📅 Abboniere diesen Kalender „Helferlein“
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Linke Spalte: Google Kalender Live-Ansicht -->
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col lg:col-span-1">
+                    <h3 class="font-bold text-sm text-gray-800 mb-2">🌐 Google Kalender</h3>
+                    <div class="flex-grow min-h-[320px] rounded-lg overflow-hidden border border-gray-200 bg-white shadow-inner">
+                        <iframe src="https://calendar.google.com/calendar/embed?src=duhrrom%40gmail.com&ctz=Europe%2FLuxembourg&showTitle=0&showPrint=0&showTabs=0" 
+                                style="border:0" width="100%" height="100%" frameborder="0" scrolling="no"></iframe>
+                    </div>
+                </div>
+
+                <!-- Rechter Bereich: Ausgelesene Online-Datenbank Termine -->
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col lg:col-span-2 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-sm text-gray-800">📌 Ausgelesene Termine & Fristen aus den Tools</h3>
+                        <button onclick="ladeDatenAusCloud()" class="text-xs px-2.5 py-1 bg-gray-200 hover:bg-gray-300 font-semibold rounded-lg text-gray-700 cursor-pointer">🔄 Aktualisieren</button>
+                    </div>
+                    <div id="databaseEventsList" class="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                        <p class="text-xs text-gray-400 text-center py-8">Lade Termine aus der Online-Datenbank...</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Hauptgrid Header mit Suchleiste -->
@@ -373,7 +391,7 @@
         </div>
     </footer>
 
-    <!-- Einstellungs-Modal OHNE Firebase-Sync -->
+    <!-- Einstellungs-Modal -->
     <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors">
             <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
@@ -392,7 +410,6 @@
                     </div>
                 </div>
 
-                <!-- KO-FI BUTTON IN DEN EINSTELLUNGEN -->
                 <div class="pt-2">
                     <label class="block text-xs font-semibold text-gray-600 mb-2">☕ Projekt unterstützen</label>
                     <a href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all">
@@ -407,35 +424,131 @@
         </div>
     </div>
 
-    <!-- UI SKRIPT -->
+    <!-- UI SKRIPT & KALENDER-HUB SYNCHRONISATION -->
     <script>
-        const kofiPhrases = [
-            "Premium Kaffee statt Premium App", "Tools für die Welt, Kaffee fürs Helferlein",
-            "Code gratis, Kaffee freiwillig", "Bezahlt mit Karma (oder Kaffee)",
-            "0 € Software, 100 % Kaffee", "Bienenfutter & Programmier-Kaffee",
-            "Spende einen Kaffee, rette den Tag", "Ein Kaffee hält den Bug-Teufel fern",
-            "Koffein-gesteuerter Open-Source-Wahnsinn", "Weil Abos fürstlich nerven",
-            "Gratis-App-Überlebenshilfe", "Mach mir einen Kaffee, ich mach dir ein Tool",
-            "Bohnen statt Bitcoin", "Weil gute Tools viel Kaffee kosten",
-            "Lieber ein Kaffeefleck im Code als eine Paywall im Gesicht", "Anti-Abo-Initiative (jetzt mit Koffein)",
-            "Weil 'kostenlos' auch mal 'ne Tasse Kaffee wert ist", "Für mehr freie Tools und weniger Software-Gedöns",
-            "Halte den Rechner kühl und den Kaffee heiß", "Hier könnte dein Lieblingsspruch stehen (oder ein Kaffee)"
-        ];
+        const NPOINT_API_BASE = "https://api.npoint.io/";
+        const urlParams = new URLSearchParams(window.location.search);
+        let hubBinId = urlParams.get('id');
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!hubBinId) {
+                hubBinId = localStorage.getItem('active_wg_bin_id');
+            }
+            try { loadStats(); } catch(e){}
+            try { initFavorites(); } catch(e){}
+            await ladeDatenAusCloud();
+        });
+
+        async function ladeDatenAusCloud() {
+            if (!hubBinId) {
+                document.getElementById('databaseEventsList').innerHTML = `<p class="text-xs text-amber-500 text-center py-6">⚠️ Keine Datenbank-ID (?id=...) in der URL gefunden.</p>`;
+                return;
+            }
+
+            try {
+                let response = await fetch(NPOINT_API_BASE + hubBinId);
+                if (response.ok) {
+                    const cloudObj = await response.json();
+                    sammleUndZeigeTermine(cloudObj);
+                } else {
+                    sammleUndZeigeTermine({
+                        events: JSON.parse(localStorage.getItem('wg_events') || '[]'),
+                        contracts: JSON.parse(localStorage.getItem('wg_contracts') || '[]'),
+                        data: JSON.parse(localStorage.getItem('kassenbon_data') || '[]')
+                    });
+                }
+            } catch (error) {
+                sammleUndZeigeTermine({
+                    events: JSON.parse(localStorage.getItem('wg_events') || '[]'),
+                    contracts: JSON.parse(localStorage.getItem('wg_contracts') || '[]'),
+                    data: JSON.parse(localStorage.getItem('kassenbon_data') || '[]')
+                });
+            }
+        }
+
+        function sammleUndZeigeTermine(data) {
+            let alleTermine = [];
+
+            if (data && Array.isArray(data.events)) {
+                data.events.forEach(ev => {
+                    alleTermine.push({
+                        titel: ev.title || ev.type,
+                        datum: ev.date,
+                        kategorie: 'Termin / Slot (' + (ev.type || 'Allgemein') + ')',
+                        details: `Gebucht von: ${ev.owner || 'WG'} ${ev.timeStart ? '| ' + ev.timeStart : ''}`,
+                        farbe: 'text-emerald-600 bg-emerald-50 border-emerald-200'
+                    });
+                });
+            }
+
+            if (data && Array.isArray(data.contracts)) {
+                data.contracts.forEach(c => {
+                    if (c.noticeDate) {
+                        alleTermine.push({
+                            titel: `Kündigungsfrist: ${c.name}`,
+                            datum: c.noticeDate,
+                            kategorie: 'Vertrag / Abo',
+                            details: `Kosten: ${c.price.toFixed(2)} € | Zahler: ${c.payer}`,
+                            farbe: 'text-purple-600 bg-purple-50 border-purple-200'
+                        });
+                    }
+                });
+            }
+
+            if (data && Array.isArray(data.data)) {
+                data.data.forEach(r => {
+                    if (r.date) {
+                        alleTermine.push({
+                            titel: `Buchung: ${r.title}`,
+                            datum: r.date,
+                            kategorie: 'Finanzen / Kassenbon',
+                            details: `Betrag: ${r.price.toFixed(2)} € | ${r.payer}`,
+                            farbe: 'text-sky-600 bg-sky-50 border-sky-200'
+                        });
+                    }
+                });
+            }
+
+            alleTermine.sort((a, b) => new Date(a.datum) - new Date(b.datum));
+
+            const container = document.getElementById('databaseEventsList');
+            if (alleTermine.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">Keine Termine oder Fristen in den Datenbank-Tools gefunden.</p>`;
+                return;
+            }
+
+            container.innerHTML = alleTermine.map(item => `
+                <div class="p-3 bg-white border border-gray-200 rounded-xl flex justify-between items-center text-xs shadow-sm">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${item.farbe}">${item.kategorie}</span>
+                            <span class="font-bold text-gray-900 text-sm">${item.titel}</span>
+                        </div>
+                        <p class="text-gray-500 text-[11px] mt-1">📅 ${item.datum} | ${item.details}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Dynamischer Google-Kalender Abo-Button für den Nutzer / Kunden
+        function fuegeZuGoogleKalenderHinzu() {
+            if (!hubBinId) {
+                alert("⚠️ Keine aktive Datenbank-ID in der URL gefunden.");
+                return;
+            }
+            const kundenDatenUrl = `https://api.npoint.io/${hubBinId}`;
+            const googleCalendarAddUrl = `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(kundenDatenUrl)}`;
+            window.open(googleCalendarAddUrl, '_blank');
+        }
 
         function openSettings() {
             const modal = document.getElementById('settingsModal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            }
+            if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); }
         }
 
         function closeSettings() {
             const modal = document.getElementById('settingsModal');
-            if (modal) {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
-            }
+            if (modal) { modal.classList.remove('flex'); modal.classList.add('hidden'); }
         }
 
         function toggleFavorite(toolId, event) {
@@ -556,7 +669,6 @@
             reader.readAsText(file);
         }
 
-        // JS Funktionen Global machen
         window.openSettings = openSettings;
         window.closeSettings = closeSettings;
         window.toggleFavorite = toggleFavorite;
@@ -565,17 +677,9 @@
         window.initFavorites = initFavorites;
         window.exportGlobalBackup = exportGlobalBackup;
         window.importGlobalBackup = importGlobalBackup;
+        window.fuegeZuGoogleKalenderHinzu = fuegeZuGoogleKalenderHinzu;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Mit Try/Catch schützen, damit das Skript bei kleinen Fehlern niemals komplett abstürzt
-            try {
-                const textSpan = document.getElementById('kofiText');
-                if (textSpan && kofiPhrases.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * kofiPhrases.length);
-                    textSpan.innerText = kofiPhrases[randomIndex];
-                }
-            } catch(e){}
-
             try {
                 const settingsBtn = document.getElementById('settingsBtn');
                 const closeSettingsBtn = document.getElementById('closeSettingsBtn');
@@ -585,9 +689,6 @@
                 if(closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
                 if(cancelSettingsBtn) cancelSettingsBtn.addEventListener('click', closeSettings);
             } catch(e){}
-
-            try { loadStats(); } catch(e){}
-            try { initFavorites(); } catch(e){}
         });
     </script>
 </body>
