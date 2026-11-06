@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,14 +8,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für den PDF-Report-Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
     <!-- Header mit ausklappbarer Anleitung -->
-    <header class="bg-teal-600 text-white shadow-md py-6 px-4 text-center space-y-3">
+    <header class="bg-teal-600 text-white shadow-md py-6 px-4 text-center space-y-3 relative">
         <div>
             <h1 class="text-3xl font-bold">🐾 Haustier-Gesundheits-Pass Pro</h1>
             <p class="text-sm opacity-90 mt-1">Impf-Gültigkeit, Gewichts-Trends, Tasso, Apotheke & Praxis-Verzeichnis</p>
+        </div>
+
+        <!-- Einstellungen & Auth Info im Header -->
+        <div class="max-w-xl mx-auto px-4 flex items-center justify-center gap-2">
+            <button type="button" id="settingsBtn" onclick="openSettings()" class="px-3.5 py-2 bg-white/20 hover:bg-white/30 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer">
+                ⚙️ Einstellungen & Cloud-Konto
+            </button>
+            <div id="userInfo" class="text-xs text-white/90 font-semibold">
+                Nicht angemeldet
+            </div>
         </div>
 
         <!-- Ausklappbarer Anleitung-Container -->
@@ -216,11 +228,161 @@
         <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
     </div>
 
+    <!-- Einstellungs-Modal mit Supabase Auth -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors space-y-5">
+            <div class="flex justify-between items-center border-b border-gray-200 pb-3">
+                <h3 class="text-lg font-bold text-gray-900">
+                    ⚙️ Einstellungen & Cloud-Konto
+                </h3>
+                <button type="button" id="closeSettingsBtn" onclick="closeSettings()" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">
+                    &times;
+                </button>
+            </div>
+
+            <!-- CLOUD-KONTO -->
+            <div>
+                <h3 class="font-bold text-sm text-gray-800 mb-2">☁️ Cloud-Konto</h3>
+                <div class="space-y-3">
+                    <div id="cloudStatus" class="text-xs bg-gray-100 rounded-lg p-3 text-gray-700">
+                        Nicht angemeldet
+                    </div>
+
+                    <input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
+                    <input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
+                            👤 Registrieren
+                        </button>
+                        <button type="button" onclick="loginUser()" class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs font-semibold">
+                            🔑 Anmelden
+                        </button>
+                        <button type="button" onclick="logoutUser()" class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-semibold">
+                            🚪 Abmelden
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATENSICHERUNG -->
+            <div class="border-t border-gray-200 pt-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
+                <div class="flex gap-2">
+                    <button type="button" onclick="exportBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Backup</button>
+                    <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
+                        📤 Restore <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
+            <!-- KO-FI BUTTON -->
+            <div class="border-t border-gray-200 pt-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">☕ Projekt unterstützen</label>
+                <a href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all">
+                    <span class="text-sm">☕</span> Kaffee spendieren
+                </a>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+                <button type="button" id="cancelSettingsBtn" onclick="closeSettings()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Script Logik -->
     <script>
+        // Supabase Konfiguration
+        const SUPABASE_URL = "https://avapuibsidubuzxjtyld.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC";
+
+        window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("✅ Supabase verbunden");
+
+        async function registerUser() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            const { error } = await window.supabaseClient.auth.signUp({ email, password });
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            alert("Registrierung erfolgreich.");
+            updateUserDisplay();
+            closeSettings();
+        }
+
+        async function loginUser() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+
+            if (!email || !password) {
+                alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                alert(error.message);
+                return;
+            }
+
+            updateUserDisplay();
+            closeSettings();
+        }
+
+        async function logoutUser() {
+            await window.supabaseClient.auth.signOut();
+            updateUserDisplay();
+        }
+
+        async function updateUserDisplay() {
+            const { data } = await window.supabaseClient.auth.getUser();
+            const user = data?.user;
+
+            const headerInfo = document.getElementById("userInfo");
+            const cloudStatus = document.getElementById("cloudStatus");
+
+            if (user) {
+                if (headerInfo) headerInfo.textContent = "👤 " + user.email;
+                if (cloudStatus) cloudStatus.innerHTML = `✅ Angemeldet<br><strong>${user.email}</strong>`;
+            } else {
+                if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
+                if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
+            }
+        }
+
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadPetDropdowns();
             renderApp();
+            try { updateUserDisplay(); } catch(e){}
+        });
+
+        supabaseClient.auth.onAuthStateChange(async () => {
+            updateUserDisplay();
         });
 
         function toggleHelp() {
@@ -512,7 +674,6 @@
                 }).join('');
             }
 
-            // Apotheken-Bestand rendern (mit Vorratswarnung)
             if (!data.meds || data.meds.length === 0) {
                 medsContainer.innerHTML = `<p class="text-xs text-gray-400 italic">Keine Medikamente in der Apotheke hinterlegt.</p>`;
             } else {
@@ -532,7 +693,6 @@
                 }).join('');
             }
 
-            // Dringlichkeits-Banner & Impf-Abläufe
             const deadlinesCard = document.getElementById('deadlinesCard');
             const deadlinesList = document.getElementById('deadlinesList');
             const timelyEvents = data.events.filter(e => ['Impfung', 'Entwurmung', 'Medikament'].includes(e.type));
