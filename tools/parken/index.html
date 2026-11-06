@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parkschein- & Parkplatz-Timer Pro</title>
+    <title>Parkschein- & Parkplatz-Timer Pro | Helperly</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF für den PDF-Report-Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <!-- Header -->
@@ -23,7 +25,8 @@
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
             <a href="../../index.html" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold">← Zurück zur Startseite</a>
             
-            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+            <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end items-center">
+                <span id="header-user-info" class="hidden sm:inline-block text-xs text-gray-500 bg-gray-100 px-3 py-1.5 rounded-xl border">Nicht angemeldet</span>
                 <button onclick="requestNotificationPermission()" class="px-4 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold shadow-sm">🔔 Push-Alarm</button>
                 <button onclick="exportPDF()" class="px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-bold shadow-sm">📄 PDF-Report</button>
                 <button onclick="exportBackup()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-medium">💾 Backup</button>
@@ -79,7 +82,7 @@
                 </div>
 
                 <input type="text" id="parkDesc" placeholder="Standort / Parkhaus (z.B. P2 Innenstadt)" class="w-full p-2.5 border rounded-xl text-sm">
-                <!-- Neu: Tiefgaragen-Ebene & Sektor -->
+                <!-- Tiefgaragen-Ebene & Sektor -->
                 <input type="text" id="parkSector" placeholder="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" class="w-full p-2.5 border rounded-xl text-sm">
 
                 <div class="grid grid-cols-2 gap-2">
@@ -104,6 +107,88 @@
                 <p class="text-sm text-gray-400 text-center py-4">Keine Parkvorgänge gespeichert.</p>
             </div>
         </div>
+
+        <!-- NEU: EINSTELLUNGEN, SUPABASE ANMELDUNG & AUSKLOPPBARE ANLEITUNGEN -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-6">
+            <h3 class="font-bold text-lg text-gray-800 flex items-center gap-2">
+                <span>⚙️</span> Einstellungen & Cloud-Anbindung
+            </h3>
+
+            <!-- Supabase Cloud-Konto Anmeldung -->
+            <div class="p-5 bg-gray-50 rounded-2xl border space-y-4">
+                <h4 class="font-bold text-sm text-amber-700 flex items-center gap-2">
+                    <span>☁️</span> Cloud-Konto (Supabase Auth)
+                </h4>
+                
+                <div id="cloud-status-box" class="p-3 rounded-xl bg-white border text-xs text-gray-600 flex items-center justify-between shadow-sm">
+                    <span id="cloud-status-text">Status: Nicht angemeldet</span>
+                    <span id="cloud-user-email" class="font-bold text-amber-600"></span>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-gray-500 mb-1">E-Mail-Adresse</label>
+                        <input type="email" id="auth-email" placeholder="name@beispiel.de" class="w-full p-2.5 rounded-xl bg-white border text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-500 mb-1">Passwort</label>
+                        <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-2.5 rounded-xl bg-white border text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 pt-1">
+                        <button onclick="supabaseLogin()" class="py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition shadow-sm">Anmelden</button>
+                        <button onclick="supabaseRegister()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition shadow-sm">Registrieren</button>
+                    </div>
+                    <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
+                </div>
+            </div>
+
+            <!-- Ausklappbare Anleitungen -->
+            <div class="space-y-3 pt-2">
+                <h4 class="font-bold text-sm text-gray-700">📖 Hilfreiche Anleitungen & Tipps</h4>
+                
+                <details class="bg-gray-50 border rounded-xl p-3 text-xs">
+                    <summary class="font-bold cursor-pointer text-amber-700">Wie funktioniert die Parkscheiben-Funktion?</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Die Parkscheiben-Automatik rundet deine aktuelle Uhrzeit gemäß den gesetzlichen Vorschriften automatisch auf die nächste halbe Stunde auf (z.B. 14:12 Uhr wird zu 14:30 Uhr) und addiert standardmäßig 2 Stunden Parkzeit hinzu. Perfekt, um Verwarnungen zuverlässig zu vermeiden!
+                    </p>
+                </details>
+
+                <details class="bg-gray-50 border rounded-xl p-3 text-xs">
+                    <summary class="font-bold cursor-pointer text-amber-700">Wie nutze ich den GPS-Standort & die Navigation?</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Wenn du auf „GPS-Standort ermitteln & speichern“ klickst, speichert der Timer die exakten Koordinaten deines Autos[span_0](start_span)[span_0](end_span). In der Historie klickst du einfach auf den blauen **„🧭 Route“**-Button, um dich in Google Maps direkt zu deinem geparkten Fahrzeug zurückleiten zu lassen.
+                    </p>
+                </details>
+
+                <details class="bg-gray-50 border rounded-xl p-3 text-xs">
+                    <summary class="font-bold cursor-pointer text-amber-700">Wie sichere ich meine Daten (Backup & PDF)?</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Über den Button **„💾 Backup“** kannst du jederzeit eine Sicherheitskopie deiner Parkhistorie im JSON-Format herunterladen[span_1](start_span)[span_1](end_span). Mit **„📄 PDF-Report“** erstellst du eine übersichtliche Abrechnung aller Parkvorgänge und Gebühren für deine Unterlagen.
+                    </p>
+                </details>
+            </div>
+
+            <!-- Amazon Affiliate Empfehlungen mit ID duhrrom-21 -->
+            <div class="pt-2 border-t space-y-3">
+                <h4 class="font-bold text-sm text-gray-700">🛒 Nützliches PKW- & Park-Zubehör auf Amazon</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <a href="https://www.amazon.de/s?k=parkscheibe+mit+parkguthaben+uhr&tag=duhrrom-21" target="_blank" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                        <span class="text-2xl">🔵</span>
+                        <div>
+                            <p class="font-bold text-gray-800">Digitale Parkscheiben</p>
+                            <p class="text-[10px] text-amber-700">Mit Zulassung für die Windschutzscheibe →</p>
+                        </div>
+                    </a>
+                    <a href="https://www.amazon.de/s?k=kfz+smartphone+halterung+magsafe&tag=duhrrom-21" target="_blank" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                        <span class="text-2xl">📱</span>
+                        <div>
+                            <p class="font-bold text-gray-800">KFZ Smartphone-Halterungen</p>
+                            <p class="text-[10px] text-amber-700">Für sichere Navigation zum Parkplatz →</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- MODAL: Foto Zoom -->
@@ -113,6 +198,57 @@
 
     <!-- Script Logik -->
     <script>
+        // Supabase Konfiguration & Instanz
+        const SUPABASE_URL = "https://avapuibsidubuzxjtyld.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function supabaseRegister() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if(error) alert(error.message);
+            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+        }
+
+        async function supabaseLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if(error) alert(error.message);
+            else { alert('Erfolgreich angemeldet!'); checkUserSession(); }
+        }
+
+        async function supabaseLogout() {
+            await supabaseClient.auth.signOut();
+            checkUserSession();
+            alert('Abgemeldet.');
+        }
+
+        async function checkUserSession() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            const statusText = document.getElementById('cloud-status-text');
+            const userEmailSpan = document.getElementById('cloud-user-email');
+            const headerUserInfo = document.getElementById('header-user-info');
+            const btnLogout = document.getElementById('btn-logout');
+
+            if(user) {
+                statusText.innerText = "Status: Verbunden & Angemeldet";
+                userEmailSpan.innerText = user.email;
+                headerUserInfo.innerText = "👤 " + user.email;
+                headerUserInfo.classList.remove('hidden');
+                btnLogout.classList.remove('hidden');
+            } else {
+                statusText.innerText = "Status: Nicht angemeldet";
+                userEmailSpan.innerText = "";
+                headerUserInfo.innerText = "Nicht angemeldet";
+                headerUserInfo.classList.add('hidden');
+                btnLogout.classList.add('hidden');
+            }
+        }
+
         let activeEndTime = localStorage.getItem('park_end_time') ? parseInt(localStorage.getItem('park_end_time')) : null;
         let timerInterval = null;
         let currentGps = null;
@@ -120,6 +256,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (activeEndTime) runTimerLoop();
             renderParkingList();
+            checkUserSession();
         });
 
         function getData() {
