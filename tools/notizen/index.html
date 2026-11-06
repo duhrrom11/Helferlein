@@ -28,70 +28,40 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
-<!-- PIN SCHUTZ -->
-<div id="pinOverlay"
-     class="fixed inset-0 bg-slate-950 z-[9999] flex items-center justify-center p-4">
-
+<!-- PIN SCHUTZ / ANMELDUNG -->
+<div id="pinOverlay" class="fixed inset-0 bg-slate-950 z-[9999] flex items-center justify-center p-4">
     <div class="max-w-md w-full bg-slate-900 border border-slate-700 rounded-3xl p-6 space-y-5 shadow-2xl">
-
         <div class="text-center space-y-3">
             <div class="text-5xl">🔐</div>
-
-            <h2 class="text-xl font-bold text-red-400">
+            <h2 class="text-xl font-bold text-indigo-400">
                 Sensible Daten geschützt
             </h2>
-
             <p class="text-sm text-slate-300">
-                Dieses Tool enthält hochsensible Informationen
-                wie Zugangsdaten, Vermögenswerte,
-                Verträge, Nachlassinformationen und
-                persönliche Dokumente.
+                Dieses Tool enthält hochsensible Informationen wie Zugangsdaten, Vermögenswerte, Verträge, Nachlassinformationen und persönliche Dokumente.
             </p>
-
             <p class="text-xs text-amber-400">
                 Der Zugriff wird durch einen PIN geschützt.
             </p>
         </div>
 
         <div id="pinSetupContainer" class="hidden space-y-3">
-            <input
-                type="password"
-                id="newPinInput"
-                maxlength="20"
-                placeholder="Neuen PIN festlegen"
-                class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white">
-
-            <button
-                id="saveNewPinBtn"
-                class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold">
+            <input type="password" id="newPinInput" maxlength="20" placeholder="Neuen PIN festlegen" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+            <button id="saveNewPinBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-xl font-bold text-sm shadow-md transition-all">
                 PIN festlegen
             </button>
         </div>
 
         <div id="pinLoginContainer" class="hidden space-y-3">
-
-            <input
-                type="password"
-                id="pinInput"
-                maxlength="20"
-                placeholder="PIN eingeben"
-                class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white">
-
-            <button
-                id="unlockBtn"
-                class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold">
+            <input type="password" id="pinInput" maxlength="20" placeholder="PIN eingeben" class="w-full p-3 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+            <button id="unlockBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 py-3 rounded-xl font-bold text-sm shadow-md transition-all">
                 Tresor öffnen
             </button>
-
         </div>
 
-        <p id="pinError"
-           class="hidden text-red-400 text-center text-sm font-bold">
+        <p id="pinError" class="hidden text-red-400 text-center text-sm font-bold">
            Falscher PIN
         </p>
-
     </div>
-
 </div>
 
     <!-- SYNC MODAL -->
@@ -207,11 +177,11 @@
                     <span class="text-2xl">🔐</span>
                     <div>
                         <h4 class="font-bold text-xs text-slate-100">Sichere Passwörter & Hardware-Wallets</h4>
-                        <p class="text-[11px] text-slate-400">Verwalte deine Krypto-Assets und digitalen Schlüssel absolut sicher mit einer Hardware-Wallet.</p>
+                        <p class="text-[11px] text-slate-400">Verwalte deine Krypto-Assets und digitalen Schlüssel absolut sicher mit einer Hardware-Wallet[span_0](start_span)[span_0](end_span).</p>
                     </div>
                 </div>
                 <a href="https://www.amazon.de/s?k=hardware+wallet+krypto&tag=duhrrom-21" target="_blank" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm whitespace-nowrap">
-                    🛒 Hardware-Wallets auf Amazon
+                    🛒 Hardware-Wallets auf Amazon[span_1](start_span)[span_1](end_span)
                 </a>
             </div>
 
@@ -295,15 +265,15 @@
                     <a href="https://www.amazon.de/s?k=feuerfester+dokumentenordner+tresor&tag=duhrrom-21" target="_blank" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
                         <span class="text-2xl">🔥</span>
                         <div>
-                            <p class="text-xs font-bold text-slate-100">Feuerfeste Dokumententasche</p>
-                            <p class="text-[10px] text-amber-400">Schützt Papier-Keys & Passwörter vor Brand →</p>
+                            <p class="text-xs font-bold text-slate-100">Feuerfeste Dokumententasche[span_2](start_span)[span_2](end_span)</p>
+                            <p class="text-[10px] text-amber-400">Schützt Papier-Keys & Passwörter vor Brand →[span_3](start_span)[span_3](end_span)</p>
                         </div>
                     </a>
                     <a href="https://www.amazon.de/s?k=lammiergeraet+set+a4&tag=duhrrom-21" target="_blank" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
                         <span class="text-2xl">📃</span>
                         <div>
-                            <p class="text-xs font-bold text-slate-100">Laminiergerät-Set</p>
-                            <p class="text-[10px] text-amber-400">Notfall-Kit wasserdicht & reißfest laminieren →</p>
+                            <p class="text-xs font-bold text-slate-100">Laminiergerät-Set[span_4](start_span)[span_4](end_span)</p>
+                            <p class="text-[10px] text-amber-400">Notfall-Kit wasserdicht & reißfest laminieren →[span_5](start_span)[span_5](end_span)</p>
                         </div>
                     </a>
                 </div>
@@ -316,15 +286,15 @@
                     <a href="https://www.amazon.de/s?k=vorsorgemappe+patientenverfügung+vollmacht&tag=duhrrom-21" target="_blank" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
                         <span class="text-2xl">📘</span>
                         <div>
-                            <p class="font-bold text-slate-100">Offizielle Vorsorgemappen</p>
-                            <p class="text-[10px] text-amber-400">Inkl. Vollmachten & Verfügungen →</p>
+                            <p class="font-bold text-slate-100">Offizielle Vorsorgemappen[span_6](start_span)[span_6](end_span)</p>
+                            <p class="text-[10px] text-amber-400">Inkl. Vollmachten & Verfügungen →[span_7](start_span)[span_7](end_span)</p>
                         </div>
                     </a>
                     <a href="https://www.amazon.de/s?k=hardware+verschlüsselter+usb+stick&tag=duhrrom-21" target="_blank" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
                         <span class="text-2xl">💾</span>
                         <div>
-                            <p class="font-bold text-slate-100">Verschlüsselte USB-Sticks</p>
-                            <p class="text-[10px] text-amber-400">Für lokale Offline-Backups →</p>
+                            <p class="font-bold text-slate-100">Verschlüsselte USB-Sticks[span_8](start_span)[span_8](end_span)</p>
+                            <p class="text-[10px] text-amber-400">Für lokale Offline-Backups →[span_9](start_span)[span_9](end_span)</p>
                         </div>
                     </a>
                 </div>
@@ -388,141 +358,69 @@
 
         let currentMasterKeyHex = null;
         let currentDecryptedVault = { entries: [] };
-async function hashPin(pin){
 
-    const msgUint8 = new TextEncoder()
-        .encode(pin);
+        // PIN Logik (SHA-256 Hash-Validierung)
+        async function hashPin(pin) {
+            const msgUint8 = new TextEncoder().encode(pin);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
-    const hashBuffer =
-        await crypto.subtle.digest(
-            'SHA-256',
-            msgUint8
-        );
+        function checkPinProtection() {
+            const existingPin = localStorage.getItem('estate_pin');
+            const setup = document.getElementById('pinSetupContainer');
+            const login = document.getElementById('pinLoginContainer');
 
-    const hashArray =
-        Array.from(
-            new Uint8Array(hashBuffer)
-        );
+            if (existingPin) {
+                login.classList.remove('hidden');
+                setup.classList.add('hidden');
+            } else {
+                setup.classList.remove('hidden');
+                login.classList.add('hidden');
+            }
+        }
 
-    return hashArray
-        .map(b =>
-            b.toString(16)
-             .padStart(2, '0')
-        )
-        .join('');
-}
+        async function saveInitialPin() {
+            const pin = document.getElementById('newPinInput').value.trim();
+            if (pin.length < 4) {
+                alert('PIN muss mindestens 4 Zeichen haben');
+                return;
+            }
+            const hash = await hashPin(pin);
+            localStorage.setItem('estate_pin', hash);
+            document.getElementById('pinSetupContainer').classList.add('hidden');
+            document.getElementById('pinLoginContainer').classList.remove('hidden');
+            alert('PIN erfolgreich gespeichert');
+        }
 
-function checkPinProtection() {
+        async function unlockVault() {
+            const pin = document.getElementById('pinInput').value.trim();
+            const enteredHash = await hashPin(pin);
+            const storedHash = localStorage.getItem('estate_pin');
 
-    const existingPin =
-        localStorage.getItem('estate_pin');
+            if (enteredHash !== storedHash) {
+                document.getElementById('pinError').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('pinOverlay').remove();
+        }
 
-    const setup =
-        document.getElementById(
-            'pinSetupContainer'
-        );
-
-    const login =
-        document.getElementById(
-            'pinLoginContainer'
-        );
-
-    if(existingPin){
-
-        login.classList.remove('hidden');
-
-    }else{
-
-        setup.classList.remove('hidden');
-    }
-}
-
-async function saveInitialPin(){
-
-    const pin =
-        document
-        .getElementById('newPinInput')
-        .value
-        .trim();
-
-    if(pin.length < 4){
-
-        alert(
-            'PIN muss mindestens 4 Zeichen haben'
-        );
-
-        return;
-    }
-
-    const hash =
-        await hashPin(pin);
-
-    localStorage.setItem(
-        'estate_pin',
-        hash
-    );
-
-    document
-        .getElementById('pinSetupContainer')
-        .classList.add('hidden');
-
-    document
-        .getElementById('pinLoginContainer')
-        .classList.remove('hidden');
-
-    alert(
-        'PIN erfolgreich gespeichert'
-    );
-}
-
-async function unlockVault(){
-
-    const pin =
-        document
-        .getElementById('pinInput')
-        .value
-        .trim();
-
-    const enteredHash =
-        await hashPin(pin);
-
-    const storedHash =
-        localStorage.getItem(
-            'estate_pin'
-        );
-
-    if(
-        enteredHash !== storedHash
-    ){
-
-        document
-            .getElementById('pinError')
-            .classList.remove('hidden');
-
-        return;
-    }
-
-    document
-        .getElementById('pinOverlay')
-        .remove();
-}
         document.addEventListener('DOMContentLoaded', () => {
             setupGlobalEventListeners();
-checkPinProtection();
+            checkPinProtection();
 
-document
-.getElementById('saveNewPinBtn')
-?.addEventListener(
-    'click',
-    saveInitialPin
-);
+            document.getElementById('saveNewPinBtn')?.addEventListener('click', saveInitialPin);
+            document.getElementById('unlockBtn')?.addEventListener('click', unlockVault);
 
-document
-.getElementById('unlockBtn')
-?.addEventListener(
-    'click',
-    unlockVault
-);
+            // Enter-Taste für PIN-Eingabe unterstützen
+            document.getElementById('pinInput')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') unlockVault();
+            });
+            document.getElementById('newPinInput')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') saveInitialPin();
+            });
+
             (async () => {
                 try {
                     await initVault();
