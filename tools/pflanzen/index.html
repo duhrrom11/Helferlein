@@ -66,7 +66,7 @@
         </div>
     </div>
 
-    <!-- MODAL: Hilfe & Ausklappbare Anleitungen -->
+    <!-- MODAL: Hilfe & Ausklappbare Anleitungen (Bereinigt) -->
     <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleHelpModal()">
         <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
@@ -77,19 +77,19 @@
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-lime-700">Wie erfasse und verwalte ich meine Pflanzen?</summary>
                     <p class="mt-2 text-gray-600 leading-relaxed">
-                        Gib den Pflanzennamen, die Sorte und den Standort ein[span_0](start_span)[span_0](end_span). Die App berechnet anhand der Topfgröße automatisch die empfohlene Gießmenge in Millilitern[span_1](start_span)[span_1](end_span). Über den „💧 Gießen“-Button aktualisierst du den Rhythmus und ziehst Wasser von deiner Zisterne ab[span_2](start_span)[span_2](end_span).
+                        Gib den Pflanzennamen, die Sorte und den Standort ein. Die App berechnet anhand der Topfgröße automatisch die empfohlene Gießmenge in Millilitern. Über den „💧 Gießen“-Button aktualisierst du den Rhythmus und ziehst Wasser von deiner Zisterne ab.
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-lime-700">Wie nutze ich den Zisternen- & ROI-Rechner?</summary>
                     <p class="mt-2 text-gray-600 leading-relaxed">
-                        Im Zisternen-Manager kannst du dein Fassungsvermögen festlegen und den Wasserstand bei jedem Gießen automatisch reduzieren[span_3](start_span)[span_3](end_span). Der Garten-ROI-Rechner vergleicht deine Ausgaben mit dem Marktwert der geernteten Früchte (in kg)[span_4](start_span)[span_4](end_span).
+                        Im Zisternen-Manager kannst du dein Fassungsvermögen festlegen und den Wasserstand bei jedem Gießen automatisch reduzieren. Der Garten-ROI-Rechner vergleicht deine Ausgaben mit dem Marktwert der geernteten Früchte (in kg).
                     </p>
                 </details>
                 <details class="bg-gray-50 border rounded-xl p-3">
                     <summary class="font-bold cursor-pointer text-lime-700">Wie sichere ich meine Daten (Backup & PDF)?</summary>
                     <p class="mt-2 text-gray-600 leading-relaxed">
-                        Nutze den Button „💾 Backup“, um all deine Pflanzen, Tagebucheinträge und Lagerbestände als JSON-Datei zu sichern, oder erstelle mit „📄 PDF“ einen kompakten Report[span_5](start_span)[span_5](end_span).
+                        Nutze den Button „💾 Backup“, um all deine Pflanzen, Tagebucheinträge und Lagerbestände als JSON-Datei zu sichern, oder erstelle mit „📄 PDF“ einen kompakten Report.
                     </p>
                 </details>
             </div>
@@ -283,7 +283,7 @@
                 <h3 class="font-bold text-lg text-lime-900">📦 Garten-Lager & Amazon Nachbestellung</h3>
                 <button onclick="closeInventoryModal()" class="text-gray-400 font-bold">✕</button>
             </div>
-            <p class="text-xs text-gray-500">Verwalte dein Schuppen-Inventar[span_6](start_span)[span_6](end_span). Nutze den Nachbestell-Button, um Artikel direkt über deine Partner-ID bei Amazon zu ordern[span_7](start_span)[span_7](end_span):</p>
+            <p class="text-xs text-gray-500">Verwalte dein Schuppen-Inventar. Nutze den Nachbestell-Button, um Artikel direkt über deine Partner-ID bei Amazon zu ordern:</p>
             <div class="grid grid-cols-3 gap-2">
                 <input type="text" id="invItemName" placeholder="Artikel (z.B. Tomatendünger)" class="p-2.5 border rounded-xl text-xs col-span-2">
                 <input type="text" id="invItemQty" placeholder="Menge (z.B. 2 L)" class="p-2.5 border rounded-xl text-xs">
@@ -397,13 +397,11 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         function toggleSettingsModal() {
-            const m = document.getElementById('settingsModal');
-            m.classList.toggle('hidden');
+            document.getElementById('settingsModal').classList.toggle('hidden');
         }
 
         function toggleHelpModal() {
-            const m = document.getElementById('helpModal');
-            m.classList.toggle('hidden');
+            document.getElementById('helpModal').classList.toggle('hidden');
         }
 
         async function supabaseRegister() {
