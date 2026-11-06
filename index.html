@@ -410,8 +410,6 @@
         <!-- CLOUD-KONTO -->
         <hr class="my-4">
 
-        <hr class="my-4">
-
 <h3 class="font-bold text-lg mb-3">
     ☁️ Cloud-Konto
 </h3>
@@ -457,17 +455,6 @@
             class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
             🚪 Abmelden
         </button>
-
-    </div>
-
-</div>
-
-        <!-- HIER BEGINNEN DANACH DEINE BISHERIGEN EINSTELLUNGEN -->
-
-    </div>
-
-</div>
-            
             <div class="space-y-5">
                 <div class="border-b border-gray-200 pb-4">
                     <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
@@ -526,7 +513,7 @@ async function registerUser() {
     }
 
     const { error } =
-        await supabaseClient.auth.signUp({
+        await window.supabaseClient.auth.signUp({
             email,
             password
         });
@@ -538,9 +525,13 @@ async function registerUser() {
 
     }
 
-    
+    alert("Registrierung erfolgreich.");
 
-    
+    updateUserDisplay();
+
+    closeSettings();
+}
+
 async function loginUser() {
 
     const email =
@@ -557,11 +548,11 @@ async function loginUser() {
     }
 
     const { error } =
-        await supabaseClient.auth
-        .signInWithPassword({
-            email,
-            password
-        });
+        await window.supabaseClient.auth
+            .signInWithPassword({
+                email,
+                password
+            });
 
     if (error) {
 
@@ -572,28 +563,20 @@ async function loginUser() {
 
     updateUserDisplay();
 
-    const modal =
-        document.getElementById("settingsModal");
-
-    if(modal){
-
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-
-    }
+    closeSettings();
 }
 
-    
-   async function logoutUser() {
+async function logoutUser() {
 
-    await supabaseClient.auth.signOut();
+    await window.supabaseClient.auth.signOut();
 
     updateUserDisplay();
 }
-        async function updateUserDisplay() {
+
+async function updateUserDisplay() {
 
     const { data } =
-        await supabaseClient.auth.getUser();
+        await window.supabaseClient.auth.getUser();
 
     const user = data.user;
 
@@ -603,48 +586,40 @@ async function loginUser() {
     const cloudStatus =
         document.getElementById("cloudStatus");
 
-    if(user){
+    if (user) {
 
-        if(headerInfo){
+        if (headerInfo) {
 
             headerInfo.textContent =
                 "👤 " + user.email;
 
         }
 
-        if(cloudStatus){
+        if (cloudStatus) {
 
-            cloudStatus.innerHTML = `
-                ✅ Angemeldet<br>
-                <strong>${user.email}</strong>
-            `;
+            cloudStatus.innerHTML =
+                `✅ Angemeldet<br><strong>${user.email}</strong>`;
 
         }
 
     } else {
 
-        if(headerInfo){
+        if (headerInfo) {
 
             headerInfo.textContent =
                 "Nicht angemeldet";
 
         }
 
-        if(cloudStatus){
+        if (cloudStatus) {
 
-            cloudStatus.innerHTML =
+            cloudStatus.textContent =
                 "Nicht angemeldet";
 
         }
 
     }
-
 }
-document.addEventListener("DOMContentLoaded", () => {
-
-    updateUserDisplay();
-
-});        
         const kofiPhrases = [
             "Premium Kaffee statt Premium App", "Tools für die Welt, Kaffee fürs Helferlein",
             "Code gratis, Kaffee freiwillig", "Bezahlt mit Karma (oder Kaffee)",
