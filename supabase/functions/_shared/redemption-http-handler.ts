@@ -39,7 +39,7 @@ export async function handleRedemptionRequest(
   if (!authHeader || !/^Bearer [A-Za-z0-9._~-]+$/.test(authHeader)) {
     return response(401, "unauthorized", headers);
   }
-  let token: unknown;
+  // Require JSON and reject ambiguous requests before handling a bearer secret.\n  const contentType = request.headers.get("Content-Type");\n  if (!contentType || !/^application\\/json(?:\\s*;\\s*charset=utf-8)?$/i.test(contentType)) {\n    return response(415, "unsupported_media_type", headers);\n  }\n  let token: unknown;
   try {
     if (Number(request.headers.get("Content-Length")) > MAX_BYTES) {
       return response(413, "request_too_large", headers);
