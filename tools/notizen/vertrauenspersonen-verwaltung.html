@@ -57,7 +57,7 @@ function renderRows(items, listId, makeLabel){
   list.replaceChildren();
   if(items.length===0){
     const empty=document.createElement("li");
-    empty.textContent="Keine Einträge geladen.";
+    empty.textContent=state.kind==="unavailable"?"Keine Daten geladen (Server nicht verbunden).":"Keine Einträge vorhanden.";
     list.append(empty);
     return;
   }
