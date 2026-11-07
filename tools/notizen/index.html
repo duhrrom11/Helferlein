@@ -592,9 +592,20 @@
         let vaultSyncQueue = Promise.resolve();
 
         function syncVaultToFirebase(silent = false) {
-            const operation = vaultSyncQueue.then(() => performVaultSync(silent));
-            // Auch nach einem unerwarteten Fehler muss die Warteschlange weiterlaufen.
-            vaultSyncQueue = operation.then(() => undefined, () => undefined);
+            const operation = vaultSyncQueue.then(() => performVaultSync(silent)).catch(error => {
+                console.error("Unerwarteter Fehler bei der Cloud-Synchronisierung:", error);
+                if (!silent) {
+                    document.getElementById('syncErrorMessage').innerText =
+                        "Die Cloud-Synchronisierung konnte nicht abgeschlossen werden.";
+                    document.getElementById('syncStatusLoading').classList.add('hidden');
+                    document.getElementById('syncStatusSuccess').classList.add('hidden');
+                    document.getElementById('syncStatusError').classList.remove('hidden');
+                    document.getElementById('syncModalOverlay').classList.remove('hidden');
+                }
+                return false;
+            });
+            // Ein fehlgeschlagener Auftrag blockiert spätere Synchronisierungen nicht.
+            vaultSyncQueue = operation.then(() => undefined);
             return operation;
         }
 
