@@ -45,3 +45,29 @@ Deno.test("rejects non-JSON and extra fields without database access", async () 
   assert((await handleRedemptionRequest(req(JSON.stringify({ token, userId: uid })), deps)).status === 400, "client identity field accepted");
   assert(calls === 0, "invalid payload reached store");
 });
+
+Deno.test("denied and failing redemption never leak secrets or backend errors", async () => {
+  const token = "b".repeat(64);
+  const denied: AtomicRedemptionStore = { async redeemAtomically() { return false; } };
+  const failing: AtomicRedemptionStore = { async redeemAtomically() { throw Error("internal database detail"); } };
+  for (const candidate of [denied, failing]) {
+    const result = await handleRedemptionRequest(req(JSON.stringify({ token })), {
+      auth, store: candidate, enabled: true,
+    });
+    const body = await result.text();
+    assert(result.status === 404, "failure exposed distinct status");
+    assert(!body.includes(token) && !body.includes("database"), "secret leaked");
+    assert(result.headers.get("Cache-Control") === "no-store", "response cacheable");
+  }
+});
+Deno.test("preflight and unsupported methods do not invoke redemption store", async () => {
+  calls = 0;
+  const deps = { auth, store, enabled: true };
+  const options = await handleRedemptionRequest(new Request(url, {
+    method: "OPTIONS", headers: { Origin: "https://duhrrom11.github.io" },
+  }), deps);
+  assert(options.status === 204, "valid preflight failed");
+  const get = await handleRedemptionRequest(new Request(url, { method: "GET" }), deps);
+  assert(get.status === 405, "GET accepted");
+  assert(calls === 0, "non-POST request reached store");
+});
