@@ -69,3 +69,67 @@ for (const operation of ['saveSettings', 'checkIn']) {
     else assert.equal(h.cfg.ownerName, 'Testperson');
   });
 }
+
+const trusteeSource = extract('        async function saveTrustees()', '        // Render Notfall-Kit Vorschau');
+
+function setupTrustees(mode) {
+  const inputs = Object.fromEntries(Array.from({ length: 3 }, (_, i) => [
+    [`tName_${i}`, { value: ` Person ${i} ` }],
+    [`tRole_${i}`, { value: ` Rolle ${i} ` }]
+  ]).flat());
+  const alerts = [];
+  const errors = [];
+  const original = Array.from({ length: 3 }, () => ({ name: 'Alt', role: 'Alt' }));
+  let stored = structuredClone(original);
+  let cloudCalls = 0;
+  const context = vm.createContext({
+    document: { getElementById: id => inputs[id] },
+    updateLocalConfig: async mutate => {
+      const cfg = { trustees: structuredClone(stored) };
+      mutate(cfg);
+      if (mode === 'throw') throw new Error('Speicherfehler');
+      if (mode === false) return false;
+      stored = cfg.trustees;
+      return true;
+    },
+    syncVaultToFirebase: async () => {
+      cloudCalls++;
+      return mode !== 'cloud-fail';
+    },
+    alert: message => alerts.push(message),
+    console: { error: (...args) => errors.push(args) }
+  });
+  vm.runInContext(trusteeSource + '\nthis.save = saveTrustees;', context);
+  return { save: context.save, alerts, errors, inputs, original,
+    read: () => stored, cloudCalls: () => cloudCalls };
+}
+
+for (const mode of [false, 'throw']) {
+  test('Vertrauenspersonen: lokaler Fehler ' + mode + ' verhindert Cloud-Sync', async () => {
+    const h = setupTrustees(mode);
+    await h.save();
+    assert.equal(h.cloudCalls(), 0);
+    assert.deepEqual(h.read(), h.original);
+    assert.equal(h.inputs.tName_0.value, ' Person 0 ');
+    assert.match(h.alerts[0], /konnten nicht lokal gespeichert werden/);
+    assert.doesNotMatch(h.alerts[0], /✅/);
+    if (mode === 'throw') assert.equal(h.errors.length, 1);
+  });
+}
+
+test('Vertrauenspersonen: Cloud-Fehler nach lokaler Speicherung wird gemeldet', async () => {
+  const h = setupTrustees('cloud-fail');
+  await h.save();
+  assert.equal(h.cloudCalls(), 1);
+  assert.equal(h.read()[0].name, 'Person 0');
+  assert.equal(h.read()[2].role, 'Rolle 2');
+  assert.match(h.alerts[0], /nur lokal gespeichert/);
+});
+
+test('Vertrauenspersonen: erfolgreicher lokaler und Cloud-Speichervorgang', async () => {
+  const h = setupTrustees('ok');
+  await h.save();
+  assert.equal(h.cloudCalls(), 1);
+  assert.equal(h.read()[1].name, 'Person 1');
+  assert.match(h.alerts[0], /Cloud-Synchronisierung abgeschlossen/);
+});
