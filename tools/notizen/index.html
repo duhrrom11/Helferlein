@@ -937,9 +937,18 @@
             if (!title || !content) { alert("Titel und Inhalt erforderlich!"); return; }
 
             const entry = { id: Date.now(), title, category, content };
-            await updateLocalConfig(() => {
-                currentDecryptedVault.entries.unshift(entry);
-            });
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(() => {
+                    currentDecryptedVault.entries.unshift(entry);
+                });
+            } catch (error) {
+                console.error("Lokales Speichern des Tresoreintrags fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Tresoreintrag konnte nicht dauerhaft lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet. Bitte lade die Tresordaten neu, bevor du weitere Änderungen vornimmst.");
+                return;
+            }
             document.getElementById('entryTitle').value = "";
             document.getElementById('entryContent').value = "";
             renderVaultEntries();
@@ -950,9 +959,18 @@
         }
 
         async function deleteVaultEntry(id) {
-            await updateLocalConfig(() => {
-                currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
-            });
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(() => {
+                    currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
+                });
+            } catch (error) {
+                console.error("Lokales Löschen des Tresoreintrags fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Löschen des Tresoreintrags konnte nicht dauerhaft lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet. Bitte lade die Tresordaten neu, bevor du weitere Änderungen vornimmst.");
+                return;
+            }
             renderVaultEntries();
             const deletionCloudSaved = await syncVaultToFirebase(true);
             if (!deletionCloudSaved) {
