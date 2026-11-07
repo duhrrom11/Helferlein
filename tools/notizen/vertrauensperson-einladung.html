@@ -48,7 +48,8 @@ function updateStatus(){
   const value=token.value;
   document.getElementById("token-length").textContent=value.length+" von 64 Zeichen";
   status.className="";
-  token.setAttribute("aria-invalid",String(Boolean(value) && !validCode.test(value)));
+  if(!value) token.removeAttribute("aria-invalid");
+  else token.setAttribute("aria-invalid",String(!validCode.test(value)));
   if(!value){status.textContent="Bitte gib deinen Einladungscode ein.";return;}
   if(!validCode.test(value)){
     status.className="invalid";
