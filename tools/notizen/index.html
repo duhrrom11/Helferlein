@@ -745,13 +745,13 @@
                 return `
                     <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs">
                         <div>
-                            <span class="font-bold text-slate-100">${p.name}</span>
-                            ${p.contact ? `<span class="text-slate-400 text-[11px] ml-2">(${p.contact})</span>` : ''}
-                            <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">${personLink}</p>
+                            <span class="font-bold text-slate-100">${escapeHtml(p.name)}</span>
+                            ${p.contact ? `<span class="text-slate-400 text-[11px] ml-2">(${escapeHtml(p.contact)})</span>` : ''}
+                            <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">${escapeHtml(personLink)}</p>
                         </div>
                         <div class="flex gap-2 flex-wrap mt-2 md:mt-0">
-                            <button data-link="${personLink}" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px] copy-link-btn">Link kopieren</button>
-                            ${p.contact ? `<button data-name="${p.name}" data-email="${p.contact}" data-link="${personLink}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] email-btn">✉️ E-Mail senden</button>` : ''}
+                            <button data-link="${escapeHtml(personLink)}" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px] copy-link-btn">Link kopieren</button>
+                            ${p.contact ? `<button data-name="${escapeHtml(p.name)}" data-email="${escapeHtml(p.contact)}" data-link="${escapeHtml(personLink)}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] email-btn">✉️ E-Mail senden</button>` : ''}
                             <button data-idx="${idx}" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px] delete-person-btn">Löschen</button>
                         </div>
                     </div>
@@ -908,11 +908,11 @@
                 return `
                     <div class="p-4 bg-white text-slate-900 rounded-2xl space-y-3 shadow-md flex flex-col items-center text-center">
                         <div>
-                            <h4 class="font-bold text-sm">${p.name}</h4>
-                            <p class="text-[10px] text-slate-500">${p.contact || 'Notfall-Vertrauensperson'}</p>
+                            <h4 class="font-bold text-sm">${escapeHtml(p.name)}</h4>
+                            <p class="text-[10px] text-slate-500">${escapeHtml(p.contact || 'Notfall-Vertrauensperson')}</p>
                         </div>
                         <div id="${qrcodeContainerId}" class="qrcode-box p-1 bg-slate-100 rounded-xl border border-slate-200"></div>
-                        <p class="font-mono text-[8px] break-all text-slate-600 bg-slate-50 p-1.5 rounded w-full">${personLink}</p>
+                        <p class="font-mono text-[8px] break-all text-slate-600 bg-slate-50 p-1.5 rounded w-full">${escapeHtml(personLink)}</p>
                     </div>
                 `;
             }).join('');
