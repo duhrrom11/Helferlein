@@ -39,3 +39,11 @@ Deno.test("alarm: deny revoked, foreign, unaccepted and mismatched invitation", 
   assert(!canTriggerAlarm(accepted, ownership, { ...trusted, invitation_id: "other" }, "person-a").allowed, "mismatched invitation allowed");
   assert(!canTriggerAlarm(accepted, { ...ownership, owner_user_id: "owner-b" }, trusted, "person-a").allowed, "mismatched owner allowed");
 });
+
+Deno.test("deny missing records and malformed timestamps", () => {
+  assert(!canAcceptInvitation(null, ownership, "person-a", now).allowed, "missing invitation allowed");
+  assert(!canAcceptInvitation(invitation, null, "person-a", now).allowed, "missing ownership allowed");
+  assert(!canAcceptInvitation({ ...invitation, expires_at: "not-a-date" }, ownership, "person-a", now).allowed, "invalid expiry allowed");
+  assert(!canTriggerAlarm({ ...accepted, accepted_at: "not-a-date" }, ownership, trusted, "person-a").allowed, "invalid acceptance timestamp allowed");
+  assert(!canTriggerAlarm(accepted, ownership, null, "person-a").allowed, "missing trusted record allowed");
+});
