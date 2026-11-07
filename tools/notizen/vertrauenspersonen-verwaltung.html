@@ -22,7 +22,8 @@ small{color:#55616e}
 <div class="notice" role="status"><strong>Verwaltung noch nicht freigeschaltet.</strong> Ohne sichere Anmeldung und Serveranbindung werden keine Tresordaten geladen und keine Änderungen vorgenommen.</div>
 <section aria-labelledby="persons"><h2 id="persons">Aktive Vertrauenspersonen</h2>
 <p>Nach der Freischaltung erscheinen hier nur die Vertrauenspersonen deines eigenen Tresors.</p>
-<dl><dt>Status</dt><dd>Keine Daten geladen</dd><dt>Letzte Aktualisierung</dt><dd>–</dd></dl>
+<dl><dt>Status</dt><dd id="connection-status">Keine Daten geladen</dd><dt>Letzte Aktualisierung</dt><dd>–</dd></dl>
+<p id="loading-detail" role="status" aria-live="polite">Es besteht keine Verbindung zum Server.</p>
 <button type="button" disabled>Vertrauensperson entfernen</button></section>
 <section aria-labelledby="pending"><h2 id="pending">Offene Einladungen</h2>
 <p>Einladungen werden künftig mit Empfänger, Ablaufdatum und Status angezeigt. Einladungscodes werden nicht erneut angezeigt.</p>
@@ -31,4 +32,16 @@ small{color:#55616e}
 <section aria-labelledby="privacy"><h2 id="privacy">Datenschutz</h2>
 <p>Eine Vertrauensperson erhält erst nach einer gültigen Annahme die vorgesehenen Berechtigungen. Der Widerruf einer Berechtigung soll den künftigen Zugriff unterbinden.</p>
 <small>Vorschau · Keine Verbindung zu einer Datenbank · Keine Datenübertragung</small></section>
+<script>
+"use strict";
+// Fail-closed adapter: no simulated access grants or invitation records.
+const connectionStatus=document.getElementById("connection-status");
+const loadingDetail=document.getElementById("loading-detail");
+const state={kind:"unavailable",persons:[],invitations:[]};
+function renderUnavailable(){
+  connectionStatus.textContent="Nicht verbunden";
+  loadingDetail.textContent="Die sichere Anmeldung und Datenabfrage sind noch nicht aktiviert.";
+}
+renderUnavailable();
+</script>
 </main></body></html>
