@@ -649,6 +649,39 @@
                 normalized.includes('private_key');
         }
 
+        // Nur geprüfte Helferlein-Datenschlüssel sichern, niemals fremde Browserdaten.
+        const HELFERLEIN_BACKUP_KEYS = new Set([
+            "hub_favorites",
+            "kassenbon_data",
+            "budgetbuch_budgets",
+            "budgetbuch_goals",
+            "mini_homebox_pro",
+            "wg_active_bin_id",
+            "wg_flatmates",
+            "wg_notes",
+            "wg_events",
+            "wg_inventory",
+            "wg_diets",
+            "wg_cleaning",
+            "wg_shopping",
+            "wg_cooking",
+            "wg_contracts",
+            "wg_infoboard",
+            "digital_estate_vault",
+            "kfz_tracker_pro_v3",
+            "haustier_pass_pro_v5",
+            "park_end_time",
+            "park_history_pro_v3",
+            "verleih_tracker_pro_v3",
+            "dismiss_frost",
+            "pflanzen_pass_v10",
+            "energie_tracker_pro_v8",
+            "helperly_recipes_pro"
+        ]);
+        function isHelferleinBackupKey(key) {
+            return HELFERLEIN_BACKUP_KEYS.has(key) && !isAuthSessionStorageKey(key);
+        }
+
         async function exportGlobalBackup() {
             try {
                 const backup = { version: "2.0", app: "Helferlein", created: new Date().toISOString(), tools: Object.create(null), localStorage: Object.create(null) };
@@ -656,14 +689,18 @@
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
                     const value = localStorage.getItem(key);
-                    if (key === null || value === null || isAuthSessionStorageKey(key)) continue;
+                    if (key === null || value === null || !isHelferleinBackupKey(key)) continue;
                     backup.localStorage[key] = value;
                     const prefix = toolPrefixes.find(p => key.startsWith(p)) || "sonstige";
                     if (!backup.tools[prefix]) backup.tools[prefix] = [];
                     backup.tools[prefix].push(key);
                 }
                 if (Object.keys(backup.localStorage).length === 0) { alert("Keine Daten zum Sichern vorhanden."); return; }
-                if (!confirm("Dieses Backup ist NICHT verschlüsselt und kann persönliche Daten enthalten. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren. Trotzdem exportieren?")) return;
+                const containsVault = Object.prototype.hasOwnProperty.call(backup.localStorage, "digital_estate_vault");
+                const warning = containsVault
+                    ? "Dieses Backup enthält möglicherweise vertrauliche Nachlassdaten und ist NICHT verschlüsselt. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren. Trotzdem exportieren?"
+                    : "Dieses Backup ist NICHT verschlüsselt und kann persönliche Daten enthalten. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren. Trotzdem exportieren?";
+                if (!confirm(warning)) return;
                 const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -693,8 +730,13 @@
                     if (backup.version !== "2.0") { alert("Diese Backup-Version wird nicht unterstützt."); return; }
                     if (typeof backup.created !== "string" || !Number.isFinite(Date.parse(backup.created))) { alert("Das Backup enthält kein gültiges Sicherungsdatum."); return; }
                     const entries = Object.entries(backup.localStorage);
-                    if (!entries.every(([key, value]) => typeof key === "string" && key.length > 0 && key !== "__proto__" && key !== "constructor" && key !== "prototype" && !isAuthSessionStorageKey(key) && typeof value === "string")) {
+                    if (!entries.every(([key, value]) => typeof key === "string" && key.length > 0 && key !== "__proto__" && key !== "constructor" && key !== "prototype" && typeof value === "string")) {
                         alert("Backup enthält ungültige Einträge");
+                        return;
+                    }
+                    const rejected = entries.filter(([key]) => !isHelferleinBackupKey(key));
+                    if (rejected.length) {
+                        alert("Dieses Backup enthält " + rejected.length + " nicht unterstützte oder sicherheitskritische Schlüssel. Es wurden keine Daten importiert. Bitte ein aktuelles Helferlein-Backup verwenden.");
                         return;
                     }
                     const existing = entries.filter(([key]) => localStorage.getItem(key) !== null).length;
