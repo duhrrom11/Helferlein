@@ -1,0 +1,29 @@
+name: Production route smoke
+on:
+  pull_request:
+    paths:
+      - index.html
+      - tools/**
+      - tests/production-routes.test.cjs
+      - .github/workflows/production-routes.yml
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - tools/**
+      - tests/production-routes.test.cjs
+      - .github/workflows/production-routes.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  routes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check homepage links and tool documents
+        run: node tests/production-routes.test.cjs
