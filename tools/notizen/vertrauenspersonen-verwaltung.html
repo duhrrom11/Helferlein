@@ -78,6 +78,7 @@ function renderOverview(overview){
     Number(effectiveInvitationStatus(a)!=="pending")-
     Number(effectiveInvitationStatus(b)!=="pending") ||
     (Date.parse(b.expiresAt)||0)-(Date.parse(a.expiresAt)||0));
+  state.kind="loaded";
   connectionStatus.textContent="Daten geladen";
   loadingDetail.textContent=persons.length+" Vertrauenspersonen und "+invitations.length+" Einladungen in der Übersicht.";
   renderRows(persons,"person-list",person=>
@@ -91,6 +92,7 @@ function renderOverview(overview){
     " · Ablauf: "+formatDate(invitation.expiresAt));
 }
 function renderUnavailable(){
+  state.kind="unavailable";
   connectionStatus.textContent="Nicht verbunden";
   loadingDetail.textContent="Die sichere Anmeldung und Datenabfrage sind noch nicht aktiviert.";
   renderRows([],"person-list",()=> "");
