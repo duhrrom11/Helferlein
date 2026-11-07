@@ -17,8 +17,13 @@
     <meta property="og:title" content="Pflanzen- und Gartenpflege | Helferlein">
     <meta property="og:description" content="Pflanzen, Pflegeaufgaben und Garteninventar organisieren.">
     <meta name="referrer" content="strict-origin-when-cross-origin">
+    <style>
+        .skip-to-content { position: absolute; left: 0.75rem; top: -5rem; z-index: 9999; padding: 0.75rem 1rem; background: #fff; color: #111827; border: 2px solid #111827; border-radius: 0.5rem; font-weight: 700; }
+        .skip-to-content:focus { top: 0.75rem; outline: 3px solid #2563eb; outline-offset: 3px; }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <a class="skip-to-content" href="#hauptinhalt">Direkt zum Hauptinhalt</a>
 
     <!-- Header im exakten Mini-HomeBox-Stil -->
     <header class="bg-lime-600 text-white shadow-md py-6 px-4 text-center space-y-3">
@@ -103,7 +108,7 @@
     </div>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto p-4 max-w-6xl space-y-6 mt-2">
+    <main id="hauptinhalt" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-6xl space-y-6 mt-2">
                 
         <!-- Frost-Alarm Banner -->
         <div id="frostBanner" class="hidden bg-red-600 text-white p-4 rounded-2xl shadow-md flex justify-between items-center">
