@@ -12,7 +12,7 @@
 h1{font-size:1.7rem;margin-top:0}p{line-height:1.6}.notice{background:#fff4db;border-left:4px solid #a46a00;padding:1rem;border-radius:.3rem}label{display:block;font-weight:650;margin:1.5rem 0 .4rem}
 input{width:100%;font:inherit;padding:.85rem;border:1px solid #7d8b99;border-radius:.5rem}
 button{font:inherit;border:0;border-radius:.5rem;padding:.8rem 1.2rem;background:#24577c;color:white;cursor:pointer;margin-top:1rem}
-button:disabled{background:#6b7782;cursor:not-allowed}.hint{font-size:.9rem;color:#4d5a67}#status{min-height:1.5rem}footer{margin-top:2rem;font-size:.85rem;color:#566}
+button:disabled{background:#6b7782;cursor:not-allowed}.secondary{background:#e8edf2;color:#183b55;margin-left:.5rem}.valid{color:#17603d}.invalid{color:#a12d29}.hint{font-size:.9rem;color:#4d5a67}#status{min-height:1.5rem}footer{margin-top:2rem;font-size:.85rem;color:#566}
 </style>
 </head>
 <body><main>
@@ -24,6 +24,7 @@ button:disabled{background:#6b7782;cursor:not-allowed}.hint{font-size:.9rem;colo
 <input id="token" name="token" type="password" inputmode="text" maxlength="64" minlength="64" pattern="[a-f0-9]{64}" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="token-help" required>
 <p id="token-help" class="hint">64 Zeichen, bestehend aus den Ziffern 0–9 und den Buchstaben a–f. Teile diesen Code nicht mit anderen.</p>
 <button id="accept" type="submit" disabled>Einladung annehmen (noch nicht verfügbar)</button>
+<button id="clear" class="secondary" type="button">Code löschen</button>
 <p id="status" role="status" aria-live="polite"></p>
 </form>
 <footer>Helferlein · Vorschau ohne Datenübertragung. Es werden weder Einladungscodes gespeichert noch versendet.</footer>
@@ -32,9 +33,31 @@ button:disabled{background:#6b7782;cursor:not-allowed}.hint{font-size:.9rem;colo
 "use strict";
 const form=document.getElementById("invitation");
 const status=document.getElementById("status");
+const token=document.getElementById("token");
+const clear=document.getElementById("clear");
+const validCode=/^[a-f0-9]{64}$/;
+function updateStatus(){
+  const value=token.value;
+  status.className="";
+  if(!value){status.textContent="Bitte gib deinen Einladungscode ein.";return;}
+  if(!validCode.test(value)){
+    status.className="invalid";
+    status.textContent="Der Code muss genau 64 Zeichen aus 0–9 und a–f enthalten.";
+    return;
+  }
+  status.className="valid";
+  status.textContent="Das Format des Codes ist korrekt. Die Echtheit kann erst nach Freischaltung geprüft werden.";
+}
+token.addEventListener("input",updateStatus);
+clear.addEventListener("click",()=>{
+  token.value="";
+  updateStatus();
+  token.focus();
+});
 form.addEventListener("submit",event=>{
   event.preventDefault();
   status.textContent="Die Annahme ist noch nicht freigeschaltet. Es wurden keine Daten übertragen.";
 });
+updateStatus();
 </script>
 </body></html>
