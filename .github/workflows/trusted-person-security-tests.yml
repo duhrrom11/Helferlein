@@ -26,6 +26,9 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      - name: Check TypeScript types offline
+        run: |
+          deno check --no-remote supabase/functions/_shared/*.ts
       - name: Run all isolated security unit tests
         run: |
           deno test --no-remote --no-check supabase/functions/_shared/*_test.ts
