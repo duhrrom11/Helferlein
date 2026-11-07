@@ -41,6 +41,17 @@ small{color:#55616e}
 const connectionStatus=document.getElementById("connection-status");
 const loadingDetail=document.getElementById("loading-detail");
 const state={kind:"unavailable",persons:[],invitations:[]};
+function formatDate(value){
+  const date=new Date(value);
+  return Number.isFinite(date.getTime())
+    ? new Intl.DateTimeFormat("de-DE",{dateStyle:"medium",timeStyle:"short"}).format(date)
+    : "Unbekannt";
+}
+function effectiveInvitationStatus(invitation){
+  if(invitation.status==="pending" && Date.parse(invitation.expiresAt)<=Date.now())
+    return "expired";
+  return invitation.status;
+}
 function renderRows(items, listId, makeLabel){
   const list=document.getElementById(listId);
   list.replaceChildren();
@@ -52,12 +63,22 @@ function renderRows(items, listId, makeLabel){
 }
 function renderOverview(overview){
   // Called only after a future authenticated gateway supplies validated data.
-  renderRows(overview.trustedPersons,"person-list",person=>
-    "Vertrauensperson: "+person.userId+" · "+(person.status==="active"?"Aktiv":"Widerrufen"));
-  renderRows(overview.invitations,"invitation-list",invitation=>
+  const persons=[...overview.trustedPersons].sort((a,b)=>
+    Number(b.status==="active")-Number(a.status==="active") ||
+    (Date.parse(b.addedAt)||0)-(Date.parse(a.addedAt)||0));
+  const invitations=[...overview.invitations].sort((a,b)=>
+    Number(effectiveInvitationStatus(a)!=="pending")-
+    Number(effectiveInvitationStatus(b)!=="pending") ||
+    (Date.parse(b.expiresAt)||0)-(Date.parse(a.expiresAt)||0));
+  renderRows(persons,"person-list",person=>
+    "Vertrauensperson: "+person.userId+" · "+
+    (person.status==="active"?"Aktiv":"Widerrufen")+
+    " · Seit "+formatDate(person.addedAt));
+  renderRows(invitations,"invitation-list",invitation=>
     "Einladung: "+invitation.intendedUserId+" · "+({
       pending:"Offen",accepted:"Angenommen",expired:"Abgelaufen",revoked:"Widerrufen"
-    }[invitation.status]||"Unbekannt"));
+    }[effectiveInvitationStatus(invitation)]||"Unbekannt")+
+    " · Ablauf: "+formatDate(invitation.expiresAt));
 }
 function renderUnavailable(){
   connectionStatus.textContent="Nicht verbunden";
