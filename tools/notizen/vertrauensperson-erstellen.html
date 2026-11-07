@@ -40,6 +40,7 @@ function update(){
   const days=Number(duration.value);
   if(![1,3,7,14].includes(days)){expiry.textContent="Ungültige Gültigkeitsdauer.";summary.textContent="";feedback.textContent="Wähle eine erlaubte Gültigkeitsdauer.";return;}
   const date=new Date(Date.now()+days*86400000);
+  if(!Number.isFinite(date.getTime())){expiry.textContent="Ablaufdatum nicht berechenbar.";summary.textContent="";return;}
   expiry.textContent="Voraussichtliches Ablaufdatum: "+new Intl.DateTimeFormat("de-DE",{dateStyle:"full",timeStyle:"short"}).format(date);
   summary.textContent="Vorgesehene Gültigkeit: "+days+(days===1?" Tag":" Tage")+". Es wurde noch keine Einladung erstellt.";
   if(!recipient.value){recipient.setAttribute("aria-invalid","false");feedback.textContent="Bitte gib eine Benutzerkennung ein.";return;}
