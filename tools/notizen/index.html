@@ -398,7 +398,16 @@
         }
 
         async function checkUserSession() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            let user = null;
+            let sessionError = false;
+            try {
+                const result = await supabaseClient.auth.getUser();
+                user = result.data?.user ?? null;
+                sessionError = Boolean(result.error);
+            } catch (error) {
+                console.warn("Supabase-Anmeldestatus konnte nicht geprüft werden:", error);
+                sessionError = true;
+            }
             const statusText = document.getElementById('cloud-status-text');
             const userEmailSpan = document.getElementById('cloud-user-email');
             const headerUserInfo = document.getElementById('header-user-info');
@@ -411,7 +420,9 @@
                 headerUserInfo.classList.remove('hidden');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Status: Nicht angemeldet";
+                statusText.innerText = sessionError
+                    ? "Status: Anmeldestatus konnte nicht geprüft werden (Cloud-Synchronisierung nicht bestätigt)"
+                    : "Status: Nicht angemeldet";
                 userEmailSpan.innerText = "";
                 headerUserInfo.innerText = "Nicht angemeldet";
                 headerUserInfo.classList.add('hidden');
