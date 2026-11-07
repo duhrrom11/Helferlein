@@ -1022,9 +1022,18 @@
                 alert("Bitte ein gültiges Check-in-Intervall zwischen 1 und 365 Tagen wählen.");
                 return;
             }
-            await updateLocalConfig(cfg => {
-                cfg.checkInIntervalDays = interval;
-            });
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(cfg => {
+                    cfg.checkInIntervalDays = interval;
+                });
+            } catch (error) {
+                console.error("Lokales Speichern des Check-in-Intervalls fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Check-in-Intervall konnte nicht lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet; die Notfallüberwachung ist nicht zuverlässig verfügbar.");
+                return;
+            }
             const intervalCloudSaved = await syncVaultToFirebase(true);
             if (!intervalCloudSaved) {
                 alert("⚠️ Check-in-Intervall nur lokal gespeichert. Die Cloud-Frist wurde NICHT aktualisiert; die Notfallüberwachung ist derzeit nicht zuverlässig verfügbar.");
