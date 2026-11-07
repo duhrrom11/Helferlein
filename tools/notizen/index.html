@@ -791,7 +791,10 @@
             cfg.alarmPersons.push({ id: personId, name, contact: contactInput.value.trim() });
 
             await saveLocalConfig(cfg);
-            await syncVaultToFirebase(true);
+            const contactCloudSaved = await syncVaultToFirebase(true);
+            if (!contactCloudSaved) {
+                alert("⚠️ Notfallkontakt nur lokal hinzugefügt. Die Cloud ist nicht aktualisiert; der Notfallzugang ist derzeit nicht zuverlässig verfügbar.");
+            }
             nameInput.value = "";
             contactInput.value = "";
             renderAlarmPersons();
@@ -801,7 +804,10 @@
             const cfg = getVaultConfig();
             cfg.alarmPersons.splice(idx, 1);
             await saveLocalConfig(cfg);
-            await syncVaultToFirebase(true);
+            const deletionCloudSaved = await syncVaultToFirebase(true);
+            if (!deletionCloudSaved) {
+                alert("⚠️ Notfallkontakt nur lokal gelöscht. Die Cloud ist nicht aktualisiert; der bisherige Zugang kann nach einer späteren Freigabe weiterhin bestehen.");
+            }
             renderAlarmPersons();
         }
 
