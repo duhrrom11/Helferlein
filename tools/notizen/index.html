@@ -36,6 +36,10 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
+    <div role="alert" class="mx-auto mt-3 max-w-5xl rounded-xl border border-amber-700 bg-amber-950/70 px-4 py-3 text-sm text-amber-100">
+        <strong>Wichtiger Sicherheitshinweis:</strong> Der Schlüssel für die lokal verschlüsselten Nachlassdaten wird derzeit zusammen mit den Daten im Browser gespeichert. Wer Zugriff auf den Browser-Speicher oder ein vollständiges Nachlass-Backup erhält, kann diese Daten möglicherweise entschlüsseln. Bitte hier bis zur abgeschlossenen Sicherheitsüberarbeitung keine Passwörter, Zugangscodes oder anderen besonders vertraulichen Geheimnisse hinterlegen.
+    </div>
+
     <!-- SYNC MODAL -->
     <div id="syncModalOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
@@ -90,7 +94,7 @@
                 <div class="p-2 bg-indigo-600 rounded-xl text-xl hidden md:block">🏛️</div>
                 <div>
                     <h1 class="text-base md:text-lg font-black tracking-tight">Digitaler Nachlassverwalter</h1>
-                    <p class="text-[10px] md:text-[11px] text-slate-400">Zero-Knowledge Safe</p>
+                    <p class="text-[10px] md:text-[11px] text-slate-400">Lokal verschlüsselte Daten · Sicherheitsprüfung ausstehend</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
