@@ -67,7 +67,7 @@ export function validateInvitationDraft(
   ownerUserId: string,
   durationDays: number,
 ): InvitationDraftValidation {
-  if (!validateIdentifier(vaultId)) return { ok: false, reason: "invalid_vault" };
+  if (typeof vaultId !== "string" || !validateIdentifier(vaultId)) return { ok: false, reason: "invalid_vault" };
   if (!validateIdentifier(intendedUserId) || !validateIdentifier(ownerUserId)) {
     return { ok: false, reason: "invalid_recipient" };
   }
