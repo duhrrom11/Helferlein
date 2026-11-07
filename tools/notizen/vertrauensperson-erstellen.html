@@ -47,6 +47,7 @@ function update(){
     :"Bitte gib eine gültige UUID als Benutzerkennung ein.";
 }
 recipient.addEventListener("input",update);
+recipient.addEventListener("blur",()=>{recipient.value=recipient.value.trim().toLowerCase();update();});
 duration.addEventListener("change",update);
 document.getElementById("reset").addEventListener("click",()=>{
   recipient.value="";duration.value="7";update();recipient.focus();
