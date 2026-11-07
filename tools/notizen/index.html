@@ -946,24 +946,42 @@
 
         function sendEmailToPerson(name, email, link) {
             if (typeof emailjs === "undefined") {
-                alert("Der Email-Dienst wurde scheinbar von deinem Browser blockiert.");
+                alert("Der E-Mail-Dienst ist nicht verfügbar.");
                 return;
             }
-
-            if (!confirm(`Möchtest du den Notfall-Link automatisch per E-Mail an ${name} (${email}) senden?`)) return;
+            const recipient = String(email || '').trim();
+            if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipient) || recipient.length > 254) {
+                alert("Bitte eine gültige E-Mail-Adresse der Vertrauensperson hinterlegen.");
+                return;
+            }
+            let target;
+            try {
+                target = new URL(String(link || ''), window.location.href);
+            } catch (error) {
+                alert("Der Notfall-Link ist ungültig.");
+                return;
+            }
+            const cfg = getVaultConfig();
+            const expectedPath = new URL('erben.html', window.location.href).pathname;
+            if (target.origin !== window.location.origin || target.pathname !== expectedPath ||
+                target.searchParams.get('vaultId') !== String(cfg?.vaultId || '') ||
+                !/^#key=[a-f0-9]{64}$/i.test(target.hash)) {
+                alert("Der Notfall-Link ist nicht gültig oder gehört nicht zu diesem Tresor.");
+                return;
+            }
+            if (!confirm("ACHTUNG: Der Notfall-Link enthält den Entschlüsselungsschlüssel. Beim Versand erhält der externe E-Mail-Dienst diesen Schlüssel, und er verbleibt möglicherweise im Postfach der empfangenden Person. Nur an eine vertrauenswürdige Person senden. Fortfahren?")) return;
 
             const templateParams = {
-                to_name: name,
-                to_email: email,
-                owner_name: getVaultConfig().ownerName || "Dein Name",
-                person_link: link
+                to_name: String(name || ''),
+                to_email: recipient,
+                owner_name: cfg.ownerName || "Dein Name",
+                person_link: target.href
             };
-
             emailjs.send('service_z2papfs', 'template_xmidqv9', templateParams)
-                .then(function(response) {
-                    alert(`✅ E-Mail erfolgreich an ${name} (${email}) gesendet!`);
-                }, function(error) {
-                    alert(`❌ EmailJS Fehler: ${JSON.stringify(error)}`);
+                .then(function() {
+                    alert("E-Mail an " + recipient + " wurde vom E-Mail-Dienst angenommen.");
+                }, function() {
+                    alert("Der E-Mail-Versand ist fehlgeschlagen. Bitte die Adresse prüfen und später erneut versuchen.");
                 });
         }
 
