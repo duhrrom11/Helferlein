@@ -57,6 +57,39 @@ async function check(name, request, expectedStatuses) {
     method: 'OPTIONS',
     headers: { Origin: 'https://duhrrom11.github.io', 'access-control-request-method': 'POST' }
   }, [204]); // Browser-Preflight muss die Function erreichen.
+  // Erweiterte Tests nur mit zwei getrennten TEST-Konten und serverseitig
+  // dem Konto A zugeordnetem Test-Tresor aktivieren.
+  const tokenA = process.env.VAULT_API_TEST_TOKEN_A;
+  const tokenB = process.env.VAULT_API_TEST_TOKEN_B;
+  const testVaultId = process.env.VAULT_API_TEST_VAULT_ID;
+  const provided = [tokenA, tokenB, testVaultId].filter(Boolean).length;
+  if (provided !== 0 && provided !== 3) {
+    throw new Error('Fuer Eigentuemertests muessen TOKEN_A, TOKEN_B und VAULT_ID gemeinsam gesetzt sein.');
+  }
+  if (provided === 3) {
+    assert.match(testVaultId, /^v_[A-Za-z0-9_-]{8,80}$/);
+    assert.notEqual(tokenA, tokenB, 'Testkonten muessen verschiedene Tokens besitzen');
+    const post = token => ({
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + token, 'content-type': 'application/json' },
+      body: JSON.stringify({ vaultId: testVaultId })
+    });
+    await check('fremdes Konto darf Tresor nicht sehen', post(tokenB), [404]);
+    await check('Eigentuemer erhaelt noch keine Tresordaten', post(tokenA), [503]);
+    await check('ungueltige Tresor-ID mit gueltiger Anmeldung', {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + tokenA, 'content-type': 'application/json' },
+      body: JSON.stringify({ vaultId: '../invalid' })
+    }, [400]);
+    await check('uebergrosser JSON-Body mit gueltiger Anmeldung', {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + tokenA, 'content-type': 'application/json' },
+      body: JSON.stringify({ vaultId: testVaultId, padding: 'x'.repeat(5000) })
+    }, [413]);
+    console.log('Eigentuemer- und Body-Limit-Tests abgeschlossen.');
+  } else {
+    console.log('Eigentuemertests uebersprungen (keine Test-Tokens gesetzt).');
+  }
   console.log('Basistests abgeschlossen.');
 })().catch(error => {
   console.error('Smoke-Test fehlgeschlagen:', error.message);
