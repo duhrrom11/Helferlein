@@ -78,6 +78,8 @@ function renderOverview(overview){
     Number(effectiveInvitationStatus(a)!=="pending")-
     Number(effectiveInvitationStatus(b)!=="pending") ||
     (Date.parse(b.expiresAt)||0)-(Date.parse(a.expiresAt)||0));
+  connectionStatus.textContent="Daten geladen";
+  loadingDetail.textContent=persons.length+" Vertrauenspersonen und "+invitations.length+" Einladungen in der Übersicht.";
   renderRows(persons,"person-list",person=>
     "Vertrauensperson: "+person.userId+" · "+
     (person.status==="active"?"Aktiv":"Widerrufen")+
