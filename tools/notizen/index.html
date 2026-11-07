@@ -50,7 +50,8 @@
             </div>
             <div id="syncStatusSuccess" class="space-y-3 hidden">
                 <div class="inline-block p-4 bg-emerald-950/80 rounded-full text-emerald-400 border border-emerald-800"><span class="text-3xl">✅</span></div>
-                <h3 class="font-bold text-emerald-400 text-base">Erfolgreich gespeichert!</h3>
+                <h3 class="font-bold text-emerald-400 text-base">Cloud-Synchronisierung bestätigt!</h3>
+                <button id="closeSuccessModalBtn" class="w-full py-2 bg-slate-800 text-slate-200 rounded-xl text-xs">Schließen</button>
             </div>
             <div id="syncStatusError" class="space-y-3 hidden">
                 <div class="inline-block p-4 bg-red-950/80 rounded-full text-red-400 border border-red-800"><span class="text-3xl">❌</span></div>
@@ -460,6 +461,7 @@
 
             bindClick('manualSyncBtn', () => syncVaultToFirebase(false));
             bindClick('closeModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
+            bindClick('closeSuccessModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             bindClick('clearAlarmBtn', clearEmergencyAlarm);
             bindClick('saveEntryBtn', saveVaultEntry);
             bindClick('checkInBtn', performCheckIn);
