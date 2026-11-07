@@ -75,6 +75,9 @@ window.addEventListener("pageshow",event=>{
 window.addEventListener("pagehide",()=>{
   token.value="";
   token.type="password";
+  visibility.setAttribute("aria-pressed","false");
+  visibility.textContent="Code anzeigen";
+  updateStatus();
 });
 form.addEventListener("submit",event=>{
   event.preventDefault();
