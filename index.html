@@ -727,6 +727,8 @@
 
         async function importGlobalBackup(event) {
             const file = event.target.files[0];
+            // Reset immediately so the same file can be selected again after any error.
+            event.target.value = "";
             if (!file) return;
             if (!/\.json$/i.test(file.name)) { alert("Bitte eine JSON-Backupdatei auswählen."); return; }
             if (file.size > 20 * 1024 * 1024) { alert("Backup ist größer als 20 MB."); return; }
@@ -789,7 +791,6 @@
             };
             reader.onerror = () => alert("Backupdatei konnte nicht gelesen werden.");
             reader.readAsText(file);
-            event.target.value = "";
         }
 
         // JS Funktionen Global machen
