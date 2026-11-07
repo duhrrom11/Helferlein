@@ -90,7 +90,7 @@ const cases = [
     "key": "__proto__",
     "expected": false
   },
-  { "key": "mini_homebox_pro", "expected": true },
+  { "key": "unknown_personal_data", "expected": false },
   { "key": "wg_active_bin_id", "expected": true },
   { "key": "wg_diets", "expected": true },
   { "key": "wg_shopping", "expected": true },
