@@ -98,6 +98,18 @@ export type InvitationCreationResult = Readonly<{
   expiresAt: string;
 }>;
 
+export function validateInvitationCreationResult(value: unknown): value is InvitationCreationResult {
+  if (typeof value !== "object" || value === null) return false;
+  const result = value as Record<string, unknown>;
+  return typeof result.invitationId === "string" &&
+    validateIdentifier(result.invitationId) &&
+    typeof result.oneTimeCode === "string" &&
+    validateInvitationCode(result.oneTimeCode) &&
+    typeof result.expiresAt === "string" &&
+    Number.isFinite(Date.parse(result.expiresAt)) &&
+    Date.parse(result.expiresAt) > Date.now();
+}
+
 export type InvitationGateway = Readonly<{
   list(vaultId: string): Promise<TrustedPersonOverview>;
   create(draft: InvitationDraft): Promise<InvitationCreationResult>;
