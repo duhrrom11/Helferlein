@@ -690,8 +690,8 @@
                 trusteesGrid.innerHTML = cfg.trustees.map((t, idx) => `
                     <div class="p-3.5 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
                         <span class="font-bold text-indigo-400">Vertrauensperson #${idx + 1}</span>
-                        <input type="text" id="tName_${idx}" value="${t.name}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200">
-                        <input type="text" id="tRole_${idx}" value="${t.role}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200">
+                        <input type="text" id="tName_${idx}" value="${escapeHtml(t.name)}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200">
+                        <input type="text" id="tRole_${idx}" value="${escapeHtml(t.role)}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200">
                     </div>
                 `).join('');
             }
