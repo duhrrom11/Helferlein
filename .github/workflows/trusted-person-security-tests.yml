@@ -5,10 +5,12 @@ on:
   push:
     paths:
       - "supabase/functions/_shared/**"
+      - "supabase/functions/trusted-person-invite-test/**"
       - ".github/workflows/trusted-person-security-tests.yml"
   pull_request:
     paths:
       - "supabase/functions/_shared/**"
+      - "supabase/functions/trusted-person-invite-test/**"
       - ".github/workflows/trusted-person-security-tests.yml"
 
 permissions:
@@ -32,6 +34,7 @@ jobs:
       - name: Type-check staging runtime integration
         run: |
           deno check supabase/functions/trusted-person-invite-test/staging-runtime.ts
+          deno check --no-remote supabase/functions/trusted-person-invite-test/index.ts
       - name: Run all isolated security unit tests
         run: |
           deno test --no-remote --no-check supabase/functions/_shared/*_test.ts
