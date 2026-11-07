@@ -133,3 +133,66 @@ test('Vertrauenspersonen: erfolgreicher lokaler und Cloud-Speichervorgang', asyn
   assert.equal(h.read()[1].name, 'Person 1');
   assert.match(h.alerts[0], /Cloud-Synchronisierung abgeschlossen/);
 });
+
+const intervalSource = extract('        async function updateDeadmanInterval()', '        async function saveTrustees()');
+
+function setupInterval(mode) {
+  const input = { value: '7' };
+  const alerts = [];
+  const errors = [];
+  let storedInterval = 30;
+  let cloudCalls = 0;
+  const context = vm.createContext({
+    document: { getElementById: id => {
+      assert.equal(id, 'deadmanIntervalSelect');
+      return input;
+    } },
+    updateLocalConfig: async mutate => {
+      const cfg = { checkInIntervalDays: storedInterval };
+      mutate(cfg);
+      if (mode === 'throw') throw new Error('Speicherfehler');
+      if (mode === false) return false;
+      storedInterval = cfg.checkInIntervalDays;
+      return true;
+    },
+    syncVaultToFirebase: async () => {
+      cloudCalls++;
+      return mode !== 'cloud-fail';
+    },
+    alert: message => alerts.push(message),
+    console: { error: (...args) => errors.push(args) }
+  });
+  vm.runInContext(intervalSource + '\nthis.saveInterval = updateDeadmanInterval;', context);
+  return { save: context.saveInterval, input, alerts, errors,
+    storedInterval: () => storedInterval, cloudCalls: () => cloudCalls };
+}
+
+for (const mode of [false, 'throw']) {
+  test('Check-in-Intervall: lokaler Fehler ' + mode + ' verhindert Cloud-Sync', async () => {
+    const h = setupInterval(mode);
+    await h.save();
+    assert.equal(h.cloudCalls(), 0);
+    assert.equal(h.storedInterval(), 30);
+    assert.equal(h.input.value, '7');
+    assert.match(h.alerts[0], /konnte nicht lokal gespeichert werden/);
+    assert.doesNotMatch(h.alerts[0], /✅/);
+    if (mode === 'throw') assert.equal(h.errors.length, 1);
+  });
+}
+
+test('Check-in-Intervall: Cloud-Fehler nach lokaler Speicherung wird gemeldet', async () => {
+  const h = setupInterval('cloud-fail');
+  await h.save();
+  assert.equal(h.storedInterval(), 7);
+  assert.equal(h.cloudCalls(), 1);
+  assert.match(h.alerts[0], /nur lokal gespeichert/);
+  assert.match(h.alerts[0], /NICHT aktualisiert/);
+});
+
+test('Check-in-Intervall: erfolgreiche Speicherung ohne Fehlermeldung', async () => {
+  const h = setupInterval('ok');
+  await h.save();
+  assert.equal(h.storedInterval(), 7);
+  assert.equal(h.cloudCalls(), 1);
+  assert.equal(h.alerts.length, 0);
+});
