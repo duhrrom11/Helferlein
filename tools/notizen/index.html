@@ -888,8 +888,10 @@
                 cfg.trustees[i].role = document.getElementById(`tRole_${i}`).value.trim();
             }
             await saveLocalConfig(cfg);
-            await syncVaultToFirebase(true);
-            alert("✅ Vertrauenspersonen gespeichert!");
+            const trusteesCloudSaved = await syncVaultToFirebase(true);
+            alert(trusteesCloudSaved
+                ? "✅ Vertrauenspersonen lokal gespeichert. Cloud-Synchronisierung abgeschlossen."
+                : "⚠️ Vertrauenspersonen nur lokal gespeichert. Die Cloud-Synchronisierung ist derzeit nicht verfügbar. Daraus entsteht kein funktionierender Notfallzugang.");
         }
 
         // Render Notfall-Kit Vorschau mit QR-Codes (Zuverlässig für alle Personen)
