@@ -56,6 +56,42 @@ export function invitationStatusLabel(status: InvitationSummary["status"]): stri
   }
 }
 
+/** Safe view model: does not expose invitation bearer codes. */
+export type InvitationView = Readonly<{
+  id: string;
+  recipient: string;
+  expiresAt: string;
+  status: InvitationSummary["status"];
+  canRevoke: boolean;
+}>;
+
+/** Convert authenticated server data into a sorted, display-only list. */
+export function invitationViews(
+  invitations: readonly InvitationSummary[],
+  now: Date = new Date(),
+): readonly InvitationView[] {
+  const nowMs = now.getTime();
+  return invitations.map((invitation) => {
+    const expiryMs = Date.parse(invitation.expiresAt);
+    const status = invitation.status === "pending" &&
+        Number.isFinite(expiryMs) && expiryMs <= nowMs
+      ? "expired"
+      : invitation.status;
+    return {
+      id: invitation.id,
+      recipient: invitation.intendedUserId,
+      expiresAt: invitation.expiresAt,
+      status,
+      canRevoke: status === "pending",
+    };
+  }).sort((a, b) => {
+    const aPending = a.status === "pending" ? 0 : 1;
+    const bPending = b.status === "pending" ? 0 : 1;
+    if (aPending !== bPending) return aPending - bPending;
+    return (Date.parse(b.expiresAt) || 0) - (Date.parse(a.expiresAt) || 0);
+  });
+}
+
 export class InvitationGatewayUnavailableError extends Error {
   constructor() {
     super("Die sichere Einladungsverwaltung ist noch nicht freigeschaltet.");
