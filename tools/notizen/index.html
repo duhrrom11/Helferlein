@@ -880,10 +880,19 @@
 
             const personId = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.random().toString(36).substring(2, 6);
             const contact = contactInput.value.trim();
-            await updateLocalConfig(cfg => {
-                if (!cfg.alarmPersons) cfg.alarmPersons = [];
-                cfg.alarmPersons.push({ id: personId, name, contact });
-            });
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(cfg => {
+                    if (!cfg.alarmPersons) cfg.alarmPersons = [];
+                    cfg.alarmPersons.push({ id: personId, name, contact });
+                });
+            } catch (error) {
+                console.error("Lokales Speichern des Notfallkontakts fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Notfallkontakt konnte nicht lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet. Bitte versuche es erneut.");
+                return;
+            }
             const contactCloudSaved = await syncVaultToFirebase(true);
             if (!contactCloudSaved) {
                 alert("⚠️ Notfallkontakt nur lokal hinzugefügt. Die Cloud ist nicht aktualisiert; der Notfallzugang ist derzeit nicht zuverlässig verfügbar.");
