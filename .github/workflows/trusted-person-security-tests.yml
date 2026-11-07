@@ -35,4 +35,5 @@ jobs:
             supabase/functions/_shared/redemption-transaction-preflight_test.ts \
             supabase/functions/_shared/atomic-invitation-redemption_test.ts \
             supabase/functions/_shared/verified-redemption-request_test.ts \
-            supabase/functions/_shared/staging-redemption-store_test.ts
+            supabase/functions/_shared/staging-redemption-store_test.ts \
+            supabase/functions/_shared/redemption-http-handler_test.ts
