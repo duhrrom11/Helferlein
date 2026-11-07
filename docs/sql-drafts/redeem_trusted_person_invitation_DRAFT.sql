@@ -1,0 +1,44 @@
+-- REVIEW ONLY / NOT A MIGRATION / DO NOT EXECUTE OR DEPLOY.
+-- Isolated staging design sketch. Requires schema, permissions and concurrency review.
+-- Must be invoked only by a trusted server after auth.getUser verifies the caller.
+-- Never expose service-role credentials to the browser.
+--
+-- SECURITY NOTE: This sketch intentionally omits CREATE FUNCTION and GRANT.
+-- It is a transaction-body proposal, NOT a callable RPC.
+--
+-- Inputs supplied by trusted server:
+--   verified_user_id uuid (from auth.getUser, NOT from request body)
+--   invitation_token_digest bytea (SHA-256 of validated 256-bit token)
+--
+-- Required transaction isolation/locking contract:
+-- 1. BEGIN; use a single transaction for every operation below.
+-- 2. SELECT invitation by token_hash FOR UPDATE. Missing -> ROLLBACK.
+-- 3. After lock acquisition, compare intended_user_id to verified_user_id;
+--    require accepted_at IS NULL, revoked_at IS NULL,
+--    expires_at > clock_timestamp().
+-- 4. Lock the vault_ownership row consistently with invitation creation,
+--    revocation and ownership transfer; require matching vault_id and
+--    owner_user_id = invited_by_user_id. Missing/changed -> ROLLBACK.
+-- 5. Check no trusted-person row already exists, including revoked rows.
+--    A unique constraint on (vault_id, trusted_user_id) is the final
+--    concurrency backstop. Never use ON CONFLICT DO UPDATE to reactivate.
+-- 6. INSERT vault_trusted_persons with exactly invitation.vault_id,
+--    invitation.intended_user_id, invitation.invitation_id.
+-- 7. UPDATE invitation SET accepted_by_user_id = verified_user_id,
+--    accepted_at = clock_timestamp(), guarded by accepted_at IS NULL
+--    AND revoked_at IS NULL; require exactly one updated row.
+-- 8. COMMIT only if all statements succeed; otherwise ROLLBACK.
+--
+-- The composite FK in trusted_persons_staging_DRAFT.sql binds vault/user
+-- to invitation. It does not ensure the invitation was accepted: only the
+-- restricted atomic write path plus further DB enforcement can do that.
+--
+-- Before turning this into an actual RPC:
+-- * Design SECURITY INVOKER/DEFINER and explicit EXECUTE revocations.
+-- * Fix a global lock order for redemption, revocation and owner transfer.
+-- * Ensure no alternative privileged write path bypasses invariants.
+-- * Review current ownership schema, role permissions, RLS, audit,
+--   token handling, rate limiting, rollback and error disclosure.
+-- * Test parallel requests on synthetic isolated staging data.
+--
+-- No SQL statements below this line: intentionally inert.
