@@ -927,8 +927,10 @@
             const content = document.getElementById('entryContent').value.trim();
             if (!title || !content) { alert("Titel und Inhalt erforderlich!"); return; }
 
-            currentDecryptedVault.entries.unshift({ id: Date.now(), title, category, content });
-            await saveLocalConfig(getVaultConfig());
+            const entry = { id: Date.now(), title, category, content };
+            await updateLocalConfig(() => {
+                currentDecryptedVault.entries.unshift(entry);
+            });
             document.getElementById('entryTitle').value = "";
             document.getElementById('entryContent').value = "";
             renderVaultEntries();
@@ -939,8 +941,9 @@
         }
 
         async function deleteVaultEntry(id) {
-            currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
-            await saveLocalConfig(getVaultConfig());
+            await updateLocalConfig(() => {
+                currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
+            });
             renderVaultEntries();
             const deletionCloudSaved = await syncVaultToFirebase(true);
             if (!deletionCloudSaved) {
@@ -949,9 +952,10 @@
         }
 
         async function performCheckIn() {
-            const cfg = getVaultConfig();
-            cfg.lastCheckIn = new Date().toISOString();
-            await saveLocalConfig(cfg);
+            const checkInTime = new Date().toISOString();
+            await updateLocalConfig(cfg => {
+                cfg.lastCheckIn = checkInTime;
+            });
             renderApp();
             const cloudCheckInSaved = await syncVaultToFirebase(true);
             alert(cloudCheckInSaved
