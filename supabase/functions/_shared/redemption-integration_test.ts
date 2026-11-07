@@ -32,7 +32,7 @@ Deno.test("complete isolated redemption chain hashes secret and uses verified id
     assert(args.p_verified_user_id === uid, "unverified identity");
     assert(args.p_token_hash === "\\x" + digest, "raw or incorrect digest forwarded");
     return { data: true, error: null };
-  } }, true);
+  } }, true, "ojfoijljykjhveejvkfx");
   const response = await handleRedemptionRequest(request(), { auth, store, enabled: true });
   assert(response.status === 200 && rpcCalls === 1, "valid redemption not processed once");
   assert(!(await response.text()).includes(rawToken), "token leaked");
@@ -40,7 +40,7 @@ Deno.test("complete isolated redemption chain hashes secret and uses verified id
 Deno.test("invalid bearer and disabled store never call privileged RPC", async () => {
   let rpcCalls = 0;
   const rpc = { async rpc() { rpcCalls++; return { data: true, error: null }; } };
-  const enabledStore = createStagingRedemptionStore(rpc, true);
+  const enabledStore = createStagingRedemptionStore(rpc, true, "ojfoijljykjhveejvkfx");
   const denied = await handleRedemptionRequest(request(rawToken, "Bearer wrong.jwt"), {
     auth, store: enabledStore, enabled: true,
   });
