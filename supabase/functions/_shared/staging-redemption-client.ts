@@ -11,6 +11,9 @@ const STAGING_URL = "https://ojfoijljykjhveejvkfx.supabase.co";
 export function isIsolatedStagingUrl(value: string | null | undefined): boolean {
   if (typeof value !== "string") return false;
   try {
+    // Compare raw configuration too: URL parsing normalizes ports, case and paths.
+    // No alternate spelling of the privileged destination is permitted.
+    if (value !== STAGING_URL) return false;
     const url = new URL(value);
     return url.href === STAGING_URL + "/" &&
       url.username === "" && url.password === "" &&
