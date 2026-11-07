@@ -44,6 +44,7 @@ const validCode=/^[a-f0-9]{64}$/;
 function updateStatus(){
   const value=token.value;
   status.className="";
+  token.setAttribute("aria-invalid",String(Boolean(value) && !validCode.test(value)));
   if(!value){status.textContent="Bitte gib deinen Einladungscode ein.";return;}
   if(!validCode.test(value)){
     status.className="invalid";
