@@ -810,7 +810,15 @@
                             : "Import fehlgeschlagen. Der vorherige Datenstand wurde wiederhergestellt.");
                         return;
                     }
-                    loadStats(); initFavorites();
+                    // Storage writes have already succeeded. A display refresh error must not
+                    // incorrectly report that the restore failed or trigger a second import.
+                    try {
+                        loadStats();
+                        initFavorites();
+                    } catch (refreshError) {
+                        alert(`${count} Einträge wurden wiederhergestellt, aber die Anzeige konnte nicht aktualisiert werden. Bitte die Seite neu laden.`);
+                        return;
+                    }
                     alert(`${count} Einträge erfolgreich wiederhergestellt.${rejected.length ? " " + rejected.length + " nicht unterstützte Einträge wurden übersprungen." : ""}`);
                 } catch (err) { alert("Fehler beim Import des Backups"); }
             };
