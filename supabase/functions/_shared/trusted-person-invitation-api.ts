@@ -129,8 +129,7 @@ export function validateInvitationCode(code: string): boolean {
 }
 
 export function validateIdentifier(id: string): boolean {
-  if (typeof id !== "string") return false;
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+  return typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
 }
 
 export function invitationStatusLabel(status: InvitationSummary["status"]): string {
