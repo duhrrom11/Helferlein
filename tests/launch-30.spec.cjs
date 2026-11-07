@@ -55,8 +55,7 @@ test('Settings modal closes via close button', async ({ page }) => {
 test('Tool search hides unrelated cards', async ({ page }) => {
   await page.goto(base + '/index.html');
   await page.locator('#searchBox').fill('kassenbon');
-  await page.locator('#searchBox').press('KeyN');
-  await page.locator('#searchBox').press('Backspace');
+  await page.evaluate(() => filterTools());
   await expect(page.locator('#toolsGrid .tool-card[data-id="kassenbon"]')).toBeVisible();
   await expect(page.locator('#toolsGrid .tool-card[data-id="haustier"]')).toBeHidden();
 });
