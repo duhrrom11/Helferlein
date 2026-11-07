@@ -595,6 +595,19 @@
             return true;
         }
 
+        // Einstellungen seriell auf den jeweils neuesten lokalen Stand anwenden.
+        let localConfigUpdateQueue = Promise.resolve();
+
+        function updateLocalConfig(mutate) {
+            const operation = localConfigUpdateQueue.then(async () => {
+                const cfg = getVaultConfig();
+                mutate(cfg);
+                return saveLocalConfig(cfg);
+            });
+            localConfigUpdateQueue = operation.then(() => undefined, () => undefined);
+            return operation;
+        }
+
         // Synchronisierungen nacheinander ausführen: spätere Änderungen
         // dürfen nicht mit einem bereits laufenden Schreibvorgang verschmelzen.
         let vaultSyncQueue = Promise.resolve();
@@ -832,11 +845,10 @@
                 return;
             }
             
-            const cfg = getVaultConfig();
-            cfg.ownerName = nameInput;
-            cfg.ownerEmail = emailInput;
-            
-            await saveLocalConfig(cfg);
+            await updateLocalConfig(cfg => {
+                cfg.ownerName = nameInput;
+                cfg.ownerEmail = emailInput;
+            });
             const cloudSaved = await syncVaultToFirebase(true);
             alert(cloudSaved
                 ? "✅ Deine Einstellungen wurden lokal gespeichert und mit der Cloud synchronisiert!"
@@ -942,9 +954,9 @@
                 alert("Bitte ein gültiges Check-in-Intervall zwischen 1 und 365 Tagen wählen.");
                 return;
             }
-            const cfg = getVaultConfig();
-            cfg.checkInIntervalDays = interval;
-            await saveLocalConfig(cfg);
+            await updateLocalConfig(cfg => {
+                cfg.checkInIntervalDays = interval;
+            });
             const intervalCloudSaved = await syncVaultToFirebase(true);
             if (!intervalCloudSaved) {
                 alert("⚠️ Check-in-Intervall nur lokal gespeichert. Die Cloud-Frist wurde NICHT aktualisiert; die Notfallüberwachung ist derzeit nicht zuverlässig verfügbar.");
