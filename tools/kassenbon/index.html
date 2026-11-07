@@ -1050,7 +1050,7 @@
                         <div class="flex items-start space-x-3">
                             ${photos.length > 0 
                                 ? `<div class="relative cursor-pointer" onclick="openGalleryModal(${r.id})">
-                                     <img src="${photos[0]}" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
+                                     <img loading="lazy" src="${photos[0]}" class="w-16 h-16 object-cover rounded-xl border shadow-sm" alt="Belegfoto-Vorschau">
                                      ${photos.length > 1 ? `<span class="absolute bottom-0 right-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br-xl">+${photos.length - 1}</span>` : ''}
                                    </div>` 
                                 : `<div class="w-16 h-16 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-xl">${isIncome ? '🔺' : '🧾'}</div>`
@@ -1167,7 +1167,7 @@
             document.getElementById('galleryTitle').innerText = `🖼️ Galerie: ${r.title}`;
             container.innerHTML = photos.map((src, idx) => `
                 <div class="space-y-1 text-center">
-                    <img src="${src}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
+                    <img src="${src}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100" alt="Belegfoto in Großansicht">
                     <span class="text-xs text-gray-500">Seite ${idx + 1} von ${photos.length}</span>
                 </div>
             `).join('');
@@ -1202,9 +1202,9 @@
 
             if (typeof QRCode !== 'undefined') {
                 try { new QRCode(qrContainer, { text: qrText, width: 120, height: 120 }); } 
-                catch(e) { qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}">`; }
+                catch(e) { qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}" alt="QR-Code zum Beleg">`; }
             } else {
-                qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}">`;
+                qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}" alt="QR-Code zum Beleg">`;
             }
         }
 
