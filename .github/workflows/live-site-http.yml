@@ -1,25 +1,34 @@
 name: Live GitHub Pages HTTP check
 on:
   workflow_dispatch:
+  deployment_status:
   schedule:
     - cron: '17 7 * * 1'
 permissions:
   contents: read
 jobs:
   live-site:
+    if: github.event_name != 'deployment_status' || (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'github-pages')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v4
       - name: Verify published routes over HTTPS
         env:
           SITE: https://duhrrom11.github.io/Helferlein
         run: |
           python3 - <<'PY'
-          import os, urllib.request, urllib.error, sys
+          import os, urllib.request, urllib.error, sys, re, pathlib
           base = os.environ['SITE'].rstrip('/')
           routes = ['/', '/index.html', '/datenschutz.html', '/impressum.html',
                     '/tools/notizen/index.html', '/tools/verleih/index.html',
                     '/tools/wg-kasse/index.html']
+          homepage = pathlib.Path('index.html').read_text(encoding='utf-8')
+          tool_routes = sorted(set('/' + p for p in re.findall(r'href=["\\\'](tools/[^"\\\']+\\.html)["\\\']', homepage)))
+          if len(tool_routes) < 11:
+              print(f'FAIL: only {len(tool_routes)} tool routes found in homepage', file=sys.stderr)
+              sys.exit(1)
+          routes = sorted(set(routes + tool_routes))
           failed = []
           for route in routes:
               url = base + route
