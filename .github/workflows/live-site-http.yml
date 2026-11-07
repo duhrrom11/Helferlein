@@ -1,0 +1,41 @@
+name: Live GitHub Pages HTTP check
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 7 * * 1'
+permissions:
+  contents: read
+jobs:
+  live-site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify published routes over HTTPS
+        env:
+          SITE: https://duhrrom11.github.io/Helferlein
+        run: |
+          python3 - <<'PY'
+          import os, urllib.request, urllib.error, sys
+          base = os.environ['SITE'].rstrip('/')
+          routes = ['/', '/index.html', '/datenschutz.html', '/impressum.html',
+                    '/tools/notizen/index.html', '/tools/verleih/index.html',
+                    '/tools/wg-kasse/index.html']
+          failed = []
+          for route in routes:
+              url = base + route
+              try:
+                  req = urllib.request.Request(url, headers={'User-Agent':'Helferlein-live-smoke/1.0'})
+                  with urllib.request.urlopen(req, timeout=15) as response:
+                      body = response.read(300000).decode('utf-8', errors='replace')
+                      status = response.status
+                      ok = status == 200 and '<html' in body.lower() and '<title' in body.lower()
+                      print(f"{'OK' if ok else 'FAIL'} {status} {url}")
+                      if not ok: failed.append(url)
+              except (urllib.error.URLError, TimeoutError) as exc:
+                  print(f"FAIL {url}: {exc}")
+                  failed.append(url)
+          if failed:
+              print(f"{len(failed)} live route(s) failed", file=sys.stderr)
+              sys.exit(1)
+          print(f"All {len(routes)} public routes are accessible")
+          PY
