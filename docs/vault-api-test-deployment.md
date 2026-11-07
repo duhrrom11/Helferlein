@@ -52,3 +52,21 @@ Anfragen gehen per POST an `/functions/v1/vault-api` mit JSON `{"vaultId":"v_tes
 ## 5. Offene Punkte
 
 Diese Datei fuehrt weder Migration noch Deployment aus. Es gibt noch keine durchgefuehrten Laufzeit- oder Integrationstests. Das bisherige Erbenportal mit vorab verteilten Schluesseln muss vor einer echten sicheren Freigabe neu entworfen werden.
+
+## 6. HTTP-Smoke-Test ausschliesslich gegen das Testprojekt
+
+Vorbereitung: Eine **separate** Supabase-Projektinstanz erstellen und die unveraenderte, weiterhin gesperrte Vault-API dort bereitstellen. Die Testinstanz darf keine Verbindung zu produktiven Tresordaten oder produktiven Firebase-Zugangsdaten besitzen. Der Test benoetigt nur den **oeffentlichen anon/publishable-kompatiblen API-Key des Testprojekts**, niemals einen Service-Role-Key. Fuer eine Edge Function mit Gateway-JWT-Pruefung muss der verwendete apikey vom Gateway akzeptiert werden.
+
+Im lokalen Terminal (nicht in GitHub Actions mit produktiven Secrets):
+
+```sh
+export VAULT_API_TEST_URL="https://TESTPROJEKTREF.supabase.co/functions/v1/vault-api"
+export VAULT_API_TEST_ANON_KEY="TESTPROJEKT_ANON_KEY"
+node tests/vault-api-smoke.cjs
+```
+
+Das Skript akzeptiert ausschliesslich HTTPS-Adressen der Form `<20-zeichen-projektreferenz>.supabase.co/functions/v1/vault-api`, verweigert die bekannte produktive Projektadresse und folgt keinen Redirects. Nur Test-Zugangsdaten einsetzen. Der Test sendet **keine** gueltigen Benutzer-Tokens und greift **nicht** auf Tresordaten zu.
+
+**Abnahme:** Die beiden POST-Anfragen ohne gueltigen Token muessen 401/403 ergeben; der fremde Origin-Preflight 401/403; der erlaubte Origin-Preflight **204**. Falls das Gateway OPTIONS mit 401/403 abweist, gilt der Test als **fehlgeschlagen**: CORS/Gateway-Konfiguration in der isolierten Testumgebung klaeren, nicht die Browser-Sicherheit umgehen. Die Testergebnisse dokumentieren und erst dann die naechsten Integrationstests vorbereiten.
+
+**Einschraenkungen:** Dieser Smoke-Test prueft weder Eigentuemermigration noch gueltige Nutzer-Tokens, Tresorzugriff, Firestore oder Notfallfreigabe. Es erfolgt keine produktive Bereitstellung.
