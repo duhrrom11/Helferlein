@@ -13,7 +13,9 @@ if (!url || !anonKey) {
 }
 let parsed;
 try { parsed = new URL(url); } catch { console.error('Ungueltige Test-URL'); process.exit(2); }
-if (parsed.protocol !== 'https:' || !/^[a-z0-9]{20}\.supabase\.co$/.test(parsed.hostname) ||\n    parsed.pathname !== '/functions/v1/vault-api' || parsed.search || parsed.hash ||\n    parsed.username || parsed.password || parsed.port) {
+if (parsed.protocol !== 'https:' || !/^[a-z0-9]{20}\.supabase\.co$/.test(parsed.hostname) ||
+    parsed.pathname !== '/functions/v1/vault-api' || parsed.search || parsed.hash ||
+    parsed.username || parsed.password || parsed.port) {
   console.error('Nur HTTPS-URL einer vault-api Edge Function erlaubt.');
   process.exit(2);
 }
