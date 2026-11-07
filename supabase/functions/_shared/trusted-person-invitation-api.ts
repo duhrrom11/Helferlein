@@ -110,7 +110,7 @@ export function validateInvitationCreationResult(value: unknown): value is Invit
     typeof result.expiresAt === "string" &&
     Number.isFinite(Date.parse(result.expiresAt)) &&
     Date.parse(result.expiresAt) > now &&
-    Date.parse(result.expiresAt) <= now + 14 * 86400000 + 60000;
+    Date.parse(result.expiresAt) <= now + 14 * 86400000;
 }
 
 export type InvitationGateway = Readonly<{
