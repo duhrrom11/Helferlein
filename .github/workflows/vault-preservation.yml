@@ -1,0 +1,26 @@
+name: Vault data preservation
+on:
+  pull_request:
+    paths:
+      - tools/notizen/index.html
+      - tests/vault-fail-closed.test.cjs
+      - .github/workflows/vault-preservation.yml
+  push:
+    branches: [main]
+    paths:
+      - tools/notizen/index.html
+      - tests/vault-fail-closed.test.cjs
+      - .github/workflows/vault-preservation.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  vault-preservation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/vault-fail-closed.test.cjs
