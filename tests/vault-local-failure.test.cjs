@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const html = fs.readFileSync(path.join(__dirname, '../tools/notizen/index.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../tools/digitaler-nachlass/index.html'), 'utf8');
 function extract(startMarker, endMarker) {
   const start = html.indexOf(startMarker);
   const end = html.indexOf(endMarker, start);

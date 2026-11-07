@@ -1,7 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const html = fs.readFileSync('tools/notizen/index.html', 'utf8');
+const html = fs.readFileSync('tools/digitaler-nachlass/index.html', 'utf8');
 const emailFn = html.slice(html.indexOf('function sendEmailToPerson('), html.indexOf('async function saveVaultEntry('));
 const pdfFn = html.slice(html.indexOf('function generatePrintableKitPDF('), html.indexOf('</script>', html.indexOf('function generatePrintableKitPDF(')));
 const correctEmail = '/^[^' + '\\s@]+@[^' + '\\s@]+\\.[^' + '\\s@]+$/';
@@ -13,5 +13,5 @@ assert(pdfFn.includes(correctSlash), 'correct trailing slash removal');
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 for (const e of ['a@example.com','first.last+tag@example.co.uk']) assert(emailPattern.test(e), e);
 for (const e of ['a b@example.com','a@examplecom','a@ex ample.com']) assert(!emailPattern.test(e), e);
-assert.equal('https://example.org/tools/notizen/'.replace(/\/$/, ''), 'https://example.org/tools/notizen');
+assert.equal('https://example.org/tools/digitaler-nachlass/'.replace(/\/$/, ''), 'https://example.org/tools/digitaler-nachlass');
 console.log('Vault link regex checks passed');

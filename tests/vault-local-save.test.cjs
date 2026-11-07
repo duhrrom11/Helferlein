@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const html = fs.readFileSync(path.join(__dirname, '../tools/notizen/index.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../tools/digitaler-nachlass/index.html'), 'utf8');
 const start = html.indexOf('        let localSaveRevision = 0;');
 const end = html.indexOf('        // Synchronisierungen nacheinander ausf', start);
 assert.ok(start >= 0 && end > start, 'Lokaler Speicher-Code muss vorhanden sein');

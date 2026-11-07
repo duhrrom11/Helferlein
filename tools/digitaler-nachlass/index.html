@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitaler Nachlassverwalter – Sicherheitsprüfung | Helferlein</title>
+    <meta name="description" content="Digitalen Nachlass und Dokumente organisieren. Achtung: Die Sicherheitsprüfung der Verschlüsselung steht aus. Keine Passwörter, PINs oder Zugangsdaten eingeben.">
+    <link rel="canonical" href="https://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/index.html">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <style>
+        .tab-btn.active {
+            border-bottom-color: #4f46e5 !important;
+            color: #4f46e5 !important;
+            font-weight: 700;
+        }
+        .qrcode-box img {
+            margin: 0 auto;
+            border-radius: 8px;
+            padding: 4px;
+            background: white;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
+
+    <div role="alert" class="mx-auto mt-3 max-w-5xl rounded-xl border border-amber-700 bg-amber-950/70 px-4 py-3 text-sm text-amber-100">
+        <strong>Wichtiger Sicherheitshinweis:</strong> Der Schlüssel für die lokal verschlüsselten Nachlassdaten wird derzeit zusammen mit den Daten im Browser gespeichert. Wer Zugriff auf den Browser-Speicher oder ein vollständiges Nachlass-Backup erhält, kann diese Daten möglicherweise entschlüsseln. Bitte hier bis zur abgeschlossenen Sicherheitsüberarbeitung keine Passwörter, Zugangscodes oder anderen besonders vertraulichen Geheimnisse hinterlegen.
+    </div>
+
+    <!-- SYNC MODAL -->
+    <div id="syncModalOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
+            <div id="syncStatusLoading" class="space-y-3">
+                <div class="inline-block p-4 bg-indigo-950/60 rounded-full text-indigo-400 border border-indigo-800/50">
+                    <svg class="animate-spin h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <h3 class="font-bold text-slate-100 text-sm">Verschlüsselung & Cloud-Sync...</h3>
+            </div>
+            <div id="syncStatusSuccess" class="space-y-3 hidden">
+                <div class="inline-block p-4 bg-emerald-950/80 rounded-full text-emerald-400 border border-emerald-800"><span class="text-3xl">✅</span></div>
+                <h3 class="font-bold text-emerald-400 text-base">Cloud-Synchronisierung bestätigt!</h3>
+                <button id="closeSuccessModalBtn" class="w-full py-2 bg-slate-800 text-slate-200 rounded-xl text-xs">Schließen</button>
+            </div>
+            <div id="syncStatusError" class="space-y-3 hidden">
+                <div class="inline-block p-4 bg-red-950/80 rounded-full text-red-400 border border-red-800"><span class="text-3xl">❌</span></div>
+                <h3 class="font-bold text-red-400 text-base">Fehler</h3>
+                <p id="syncErrorMessage" class="text-xs text-slate-400 font-mono">-</p>
+                <button id="closeModalBtn" class="w-full py-2 bg-slate-800 text-slate-200 rounded-xl text-xs">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTFALL-ALARM BANNER -->
+    <div id="emergencyAlarmBanner" class="hidden bg-red-950 border-b border-red-800 p-4 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">🚨</span>
+                <div>
+                    <h3 class="font-black text-red-400 text-sm">ACHTUNG: Notfall-Alarm ausgelöst!</h3>
+                    <p id="alarmDetailsText" class="text-xs text-slate-300">Vertrauensperson hat Inaktivitäts-Alarm aktiviert.</p>
+                </div>
+            </div>
+            <button id="clearAlarmBtn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                ✅ Ich lebe noch (Entwarnung geben)
+            </button>
+        </div>
+    </div>
+
+    <!-- HEADER MIT ZURÜCK-BUTTON -->
+    <header class="bg-slate-950 border-b border-slate-800 text-white py-4 px-4 shadow-xl">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <!-- ZURÜCK BUTTON -->
+                <a href="../../index.html" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs flex items-center shadow-md border border-slate-700 mr-2 transition-all">
+                    ◀ Zurück zur Startseite
+                </a>
+                
+                <div class="p-2 bg-indigo-600 rounded-xl text-xl hidden md:block">🏛️</div>
+                <div>
+                    <h1 class="text-base md:text-lg font-black tracking-tight">Digitaler Nachlassverwalter</h1>
+                    <p class="text-[10px] md:text-[11px] text-slate-400">Sicherheitsprüfung ausstehend – bitte keine Passwörter, PINs oder vertraulichen Zugangsdaten speichern</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span id="header-user-info" class="hidden sm:inline-block text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">Nicht angemeldet</span>
+                <button id="manualSyncBtn" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-md">
+                    ☁️ Synch.
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
+
+        <!-- TABS NAVIGATION -->
+        <div class="flex border-b border-slate-800 space-x-6 text-sm font-medium overflow-x-auto scrollbar-hide">
+            <button data-tab="vault" class="tab-btn active pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">🔐 Tresor</button>
+            <button data-tab="deadman" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">⏰ Totmannschalter</button>
+            <button data-tab="trustees" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">👥 Vertrauenspersonen</button>
+            <button data-tab="kit" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">📄 Notfall-Kit</button>
+            <button data-tab="settings" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">⚙️ Einstellungen</button>
+        </div>
+
+        <!-- TAB 1: TRESOR -->
+        <div id="section-vault" class="tab-section space-y-6">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                <h2 class="text-sm font-bold text-slate-100">✍️ Neuen Nachlass-Eintrag erfassen</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1">Titel *:</label>
+                        <input type="text" id="entryTitle" placeholder="z. B. Sparkasse Konto" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Kategorie *:</label>
+                        <select id="entryCategory" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 font-semibold">
+                            <option value="Finanzen">💳 Finanzen & Krypto</option>
+                            <option value="Verträge">📜 Verträge & Abos</option>
+                            <option value="Digital">🌐 Digitales Erbe</option>
+                            <option value="Rechtliches">⚖️ Rechtliches</option>
+                            <option value="Posthum">💌 Posthume Botschaft</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Vertragspartner:</label>
+                        <input type="text" id="entryPartner" placeholder="z. B. Bank GmbH" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-slate-400 text-xs mb-1">Inhalt / Zugangsdaten *:</label>
+                    <textarea id="entryContent" rows="3" placeholder="IBAN, PINs, Logins..." class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-xs font-mono"></textarea>
+                </div>
+                <button id="saveEntryBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg">
+                    🔒 Verschlüsseln & speichern
+                </button>
+            </div>
+
+            <!-- Affiliate Empfehlung im Tresor -->
+            <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl">🔐</span>
+                    <div>
+                        <h4 class="font-bold text-xs text-slate-100">Sichere Passwörter & Hardware-Wallets</h4>
+                        <p class="text-[11px] text-slate-400">Verwalte deine Krypto-Assets und digitalen Schlüssel absolut sicher mit einer Hardware-Wallet.</p>
+                    </div>
+                </div>
+                <a href="https://www.amazon.de/s?k=hardware+wallet+krypto&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm whitespace-nowrap">
+                    🛒 Hardware-Wallets auf Amazon
+                </a>
+            </div>
+
+            <!-- Einträge Liste -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                <h3 class="font-bold text-slate-100 text-sm">📋 Gespeicherte Einträge</h3>
+                <div id="vaultEntriesList" class="space-y-3">
+                    <p class="text-xs text-slate-500 text-center py-4">Keine Einträge vorhanden.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: TOTMANNSCHALTER -->
+        <div id="section-deadman" class="tab-section hidden space-y-6">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
+                <h3 class="text-sm font-bold text-slate-100">⏰ Totmannschalter & 24h-Notfall-Trigger</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
+                        <p class="text-xs text-slate-400">Verbleibende Zeit</p>
+                        <h4 id="deadmanCountdown" class="text-2xl font-black text-emerald-400">30 Tage</h4>
+                        <p id="deadmanLastCheck" class="text-[10px] text-slate-500">Letzter Check-in: -</p>
+                    </div>
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
+                        <p class="text-xs text-slate-400">Prüf-Intervall</p>
+                        <select id="deadmanIntervalSelect" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-slate-200">
+                            <option value="30">Alle 30 Tage</option>
+                            <option value="60">Alle 60 Tage</option>
+                            <option value="90">Alle 90 Tage</option>
+                        </select>
+                    </div>
+                    <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col justify-center">
+                        <button id="checkInBtn" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                            ✅ "Ich lebe noch!"
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PERSONEN FÜR NOTFALL-TRIGGER & EMAIL -->
+                <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
+                    <h4 class="text-xs font-bold text-indigo-400">👥 Personen für 24h-Notfall-Trigger & E-Mail-Versand</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                        <input type="text" id="newAlarmPersonName" placeholder="Name (z.B. Isabelle)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
+                        <input type="email" id="newAlarmPersonContact" placeholder="E-Mail-Adresse" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
+                        <button id="addAlarmPersonBtn" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md">
+                            ➕ Person anlegen
+                        </button>
+                    </div>
+                    <div id="alarmPersonsList" class="space-y-2 pt-2">
+                        <p class="text-xs text-slate-500">Noch keine Personen angelegt.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: VERTRAUENSPERSONEN -->
+        <div id="section-trustees" class="tab-section hidden space-y-6">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
+                <h3 class="text-sm font-bold text-slate-100">👥 Vertrauenspersonen verwalten</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs" id="trusteesGrid"></div>
+                <button id="saveTrusteesBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                    💾 Vertrauenspersonen speichern
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 4: PAPIER NOTFALL-KIT MIT QR-CODES -->
+        <div id="section-kit" class="tab-section hidden space-y-6">
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-100">📄 Papier-Notfall-Kit mit QR-Codes (Cold Storage)</h3>
+                        <p class="text-xs text-slate-400">Jede Vertrauensperson erhält einen individuellen Notfall-Link mit direkt scannbarem QR-Code.</p>
+                    </div>
+                    <button id="generatePdfBtn" class="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-lg whitespace-nowrap">
+                        📄 Notfall-Kit als PDF exportieren
+                    </button>
+                </div>
+                <div id="kitSharesPreview" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                    <p class="text-xs text-slate-500">Bitte lege zuerst Personen im Tab "Totmannschalter" an, um personalisierte QR-Kits zu erhalten.</p>
+                </div>
+            </div>
+
+            <!-- Affiliate Empfehlung für Notfall-Kit & Dokumente -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                <h3 class="font-bold text-sm text-slate-100">🛡️ Empfohlenes Zubehör für das physische Notfall-Kit</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <a href="https://www.amazon.de/s?k=feuerfester+dokumentenordner+tresor&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
+                        <span class="text-2xl">🔥</span>
+                        <div>
+                            <p class="text-xs font-bold text-slate-100">Feuerfeste Dokumententasche</p>
+                            <p class="text-[10px] text-amber-400">Schützt Papier-Keys & Passwörter vor Brand →</p>
+                        </div>
+                    </a>
+                    <a href="https://www.amazon.de/s?k=lammiergeraet+set+a4&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
+                        <span class="text-2xl">📃</span>
+                        <div>
+                            <p class="text-xs font-bold text-slate-100">Laminiergerät-Set</p>
+                            <p class="text-[10px] text-amber-400">Notfall-Kit wasserdicht & reißfest laminieren →</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Zusätzliches Vorsorge- & USB-Stick Affiliate Widget -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
+                <h3 class="font-bold text-sm text-slate-100">🛡️ Empfohlene Vorsorge- & Sicherheits-Produkte</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <a href="https://www.amazon.de/s?k=vorsorgemappe+patientenverfügung+vollmacht&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
+                        <span class="text-2xl">📘</span>
+                        <div>
+                            <p class="font-bold text-slate-100">Offizielle Vorsorgemappen</p>
+                            <p class="text-[10px] text-amber-400">Inkl. Vollmachten & Verfügungen →</p>
+                        </div>
+                    </a>
+                    <a href="https://www.amazon.de/s?k=hardware+verschlüsselter+usb+stick&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
+                        <span class="text-2xl">💾</span>
+                        <div>
+                            <p class="font-bold text-slate-100">Verschlüsselte USB-Sticks</p>
+                            <p class="text-[10px] text-amber-400">Für lokale Offline-Backups →</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: EINSTELLUNGEN & SUPABASE ANMELDUNG -->
+        <div id="section-settings" class="tab-section hidden space-y-6">
+            
+            <!-- Supabase Cloud-Konto Anmeldung -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-5 shadow-xl">
+                <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                    <span class="text-indigo-400">☁️</span> Cloud-Konto (Supabase Auth)
+                </h3>
+                
+                <div id="cloud-status-box" class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 flex items-center justify-between">
+                    <span id="cloud-status-text">Status: Nicht angemeldet</span>
+                    <span id="cloud-user-email" class="font-bold text-indigo-400"></span>
+                </div>
+
+                <div class="space-y-3 pt-2 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1">E-Mail-Adresse</label>
+                        <input type="email" id="auth-email" placeholder="name@beispiel.de" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Passwort</label>
+                        <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 pt-2">
+                        <button onclick="supabaseLogin()" class="py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition shadow-md">Anmelden</button>
+                        <button onclick="supabaseRegister()" class="py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition shadow-md">Registrieren</button>
+                    </div>
+                    <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2.5 bg-red-950/80 hover:bg-red-900 text-red-400 border border-red-800 font-bold rounded-xl transition">Abmelden</button>
+                </div>
+            </div>
+
+            <!-- Eigene Daten (Tresor-Inhaber) -->
+            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
+                <h3 class="text-sm font-bold text-slate-100">⚙️ Eigene Daten (Tresor-Inhaber)</h3>
+                <p class="text-xs text-slate-400">Diese Kontaktdaten benötigen wir, um dich im Notfall per E-Mail zu benachrichtigen, falls eine Vertrauensperson den Alarm auslöst.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <label class="block text-slate-400 mb-1">Dein Name:</label>
+                        <input type="text" id="ownerNameInput" placeholder="Dein Vor- und Nachname" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 mb-1">Deine E-Mail-Adresse (für Alarme):</label>
+                        <input type="email" id="ownerEmailInput" placeholder="name@beispiel.de" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
+                    </div>
+                </div>
+                <button id="saveSettingsBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg">
+                    💾 Daten speichern & Synchronisieren
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        try {
+            if (typeof emailjs !== "undefined") {
+                emailjs.init("Z1iQ0xhr3cpIXVC0j");
+            } else {
+                console.warn("EmailJS konnte nicht geladen werden (Werbeblocker?).");
+            }
+        } catch (e) {
+            console.error("EmailJS Fehler:", e);
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMWtuQHTGhMMd3WmIgW46NbvT6bQoBwm8",
+            authDomain: "nachlass-app-99df8.firebaseapp.com",
+            projectId: "nachlass-app-99df8",
+            storageBucket: "nachlass-app-99df8.firebasestorage.app",
+            messagingSenderId: "593798150622",
+            appId: "1:593798150622:web:e4e980c9fb6b06201ec54f",
+            measurementId: "G-LWRZKYPJXC"
+        };
+        
+        let db;
+        try {
+            if (typeof firebase !== "undefined" && !firebase.apps.length) { 
+                firebase.initializeApp(firebaseConfig); 
+            }
+            db = firebase.firestore();
+        } catch (e) {
+            console.error("Firebase Fehler:", e);
+        }
+
+        // Supabase Konfiguration & Instanz
+        const SUPABASE_URL = "https://avapuibsidubuzxjtyld.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function supabaseRegister() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if(error) alert(error.message);
+            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+        }
+
+        async function supabaseLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if(error) alert(error.message);
+            else { alert('Erfolgreich angemeldet!'); checkUserSession(); }
+        }
+
+        async function supabaseLogout() {
+            await supabaseClient.auth.signOut();
+            checkUserSession();
+            alert('Abgemeldet.');
+        }
+
+        async function checkUserSession() {
+            let user = null;
+            let sessionError = false;
+            try {
+                const result = await supabaseClient.auth.getUser();
+                user = result.data?.user ?? null;
+                sessionError = Boolean(result.error);
+            } catch (error) {
+                console.warn("Supabase-Anmeldestatus konnte nicht geprüft werden:", error);
+                sessionError = true;
+            }
+            const statusText = document.getElementById('cloud-status-text');
+            const userEmailSpan = document.getElementById('cloud-user-email');
+            const headerUserInfo = document.getElementById('header-user-info');
+            const btnLogout = document.getElementById('btn-logout');
+
+            if(user) {
+                statusText.innerText = "Status: Bei Supabase angemeldet (Cloud-Synchronisierung separat prüfen)";
+                userEmailSpan.innerText = user.email;
+                headerUserInfo.innerText = "👤 " + user.email;
+                headerUserInfo.classList.remove('hidden');
+                btnLogout.classList.remove('hidden');
+            } else {
+                statusText.innerText = sessionError
+                    ? "Status: Anmeldestatus konnte nicht geprüft werden (Cloud-Synchronisierung nicht bestätigt)"
+                    : "Status: Nicht angemeldet";
+                userEmailSpan.innerText = "";
+                headerUserInfo.innerText = "Nicht angemeldet";
+                headerUserInfo.classList.add('hidden');
+                btnLogout.classList.add('hidden');
+            }
+        }
+
+        let currentMasterKeyHex = null;
+        let currentDecryptedVault = { entries: [] };
+        let vaultReady = false; // Erst nach erfolgreicher Entschlüsselung Schreibzugriff erlauben.
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupGlobalEventListeners();
+            checkUserSession();
+
+            (async () => {
+                try {
+                    await initVault();
+                    vaultReady = true;
+                    renderApp();
+                    await checkIncomingAlarms();
+                } catch (err) {
+                    console.error("Kritischer Fehler beim Laden der Tresordaten:", err);
+                    const notice = document.createElement('div');
+                    notice.setAttribute('role', 'alert');
+                    notice.className = 'fixed inset-x-4 bottom-4 z-[100] mx-auto max-w-2xl rounded-xl border-2 border-red-500 bg-red-950 p-5 text-white shadow-2xl';
+                    notice.textContent = "Tresor gesperrt: " + err.message + " Bitte vorhandene Backups sichern und keine neuen Einträge anlegen.";
+                    document.body.appendChild(notice);
+                }
+            })();
+        });
+
+        function setupGlobalEventListeners() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+            });
+
+            const bindClick = (id, handler) => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('click', handler);
+            };
+
+            bindClick('manualSyncBtn', () => syncVaultToFirebase(false));
+            bindClick('closeModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
+            bindClick('closeSuccessModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
+            bindClick('clearAlarmBtn', clearEmergencyAlarm);
+            bindClick('saveEntryBtn', saveVaultEntry);
+            bindClick('checkInBtn', performCheckIn);
+            
+            const intervalSel = document.getElementById('deadmanIntervalSelect');
+            if (intervalSel) intervalSel.addEventListener('change', updateDeadmanInterval);
+
+            bindClick('addAlarmPersonBtn', addAlarmPerson);
+            bindClick('saveTrusteesBtn', saveTrustees);
+            bindClick('generatePdfBtn', generatePrintableKitPDF);
+            bindClick('saveSettingsBtn', saveSettings);
+
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+
+                if (target.classList.contains('delete-entry-btn')) {
+                    const id = parseInt(target.getAttribute('data-id'));
+                    deleteVaultEntry(id);
+                }
+
+                if (target.classList.contains('copy-link-btn')) {
+                    const link = target.getAttribute('data-link');
+                    navigator.clipboard.writeText(link);
+                    alert('🔗 Link in die Zwischenablage kopiert!');
+                }
+
+                if (target.classList.contains('email-btn')) {
+                    const name = target.getAttribute('data-name');
+                    const email = target.getAttribute('data-email');
+                    const link = target.getAttribute('data-link');
+                    sendEmailToPerson(name, email, link);
+                }
+
+                if (target.classList.contains('delete-person-btn')) {
+                    const idx = parseInt(target.getAttribute('data-idx'));
+                    deleteAlarmPerson(idx);
+                }
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
+            const targetSec = document.getElementById(`section-${tabName}`);
+            if (targetSec) targetSec.classList.remove('hidden');
+
+            if (tabName === 'kit') renderPrintableKit();
+        }
+
+        async function getCryptoKeyFromHex(hexKey) {
+            const bytes = new Uint8Array(hexKey.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            return crypto.subtle.importKey("raw", bytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+        }
+
+        async function encryptVaultPayload(dataObj, hexKey) {
+            const encoder = new TextEncoder();
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const cryptoKey = await getCryptoKeyFromHex(hexKey);
+            const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, cryptoKey, encoder.encode(JSON.stringify(dataObj)));
+            const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+            return { ciphertext: b64(encrypted), iv: b64(iv) };
+        }
+
+        async function decryptVaultPayload(encryptedObj, hexKey) {
+            try {
+                if (!encryptedObj || !encryptedObj.iv || !encryptedObj.ciphertext) return null;
+                const b64toBuf = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+                const iv = b64toBuf(encryptedObj.iv);
+                const ciphertext = b64toBuf(encryptedObj.ciphertext);
+                const cryptoKey = await getCryptoKeyFromHex(hexKey);
+                const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, cryptoKey, ciphertext);
+                return JSON.parse(new TextDecoder().decode(decrypted));
+            } catch(e) { return null; }
+        }
+
+        async function initVault() {
+            const storedVault = localStorage.getItem('digital_estate_vault');
+            let cfg = null;
+            if (storedVault !== null) {
+                try {
+                    cfg = JSON.parse(storedVault);
+                } catch (error) {
+                    throw new Error("Vorhandene Tresordaten sind nicht lesbar. Der Datensatz wurde nicht überschrieben.");
+                }
+                if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg) ||
+                    !/^[a-f0-9]{64}$/i.test(cfg.masterKeyHex || '') ||
+                    !cfg.encryptedData || typeof cfg.encryptedData !== 'object') {
+                    throw new Error("Vorhandene Tresordaten sind unvollständig oder beschädigt. Der Datensatz wurde nicht überschrieben.");
+                }
+            }
+
+            if (storedVault === null) {
+                const randomBytes = crypto.getRandomValues(new Uint8Array(32));
+                currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+                const vaultId = "v_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+
+                currentDecryptedVault = { entries: [] };
+                cfg = {
+                    vaultId: vaultId,
+                    ownerName: "Dein Name",
+                    ownerEmail: "",
+                    masterKeyHex: currentMasterKeyHex,
+                    checkInIntervalDays: 30,
+                    lastCheckIn: new Date().toISOString(),
+                    trustees: [
+                        { id: 1, name: "Person 1", role: "Partner/in" },
+                        { id: 2, name: "Person 2", role: "Kind" },
+                        { id: 3, name: "Notar", role: "Rechtsbeistand" }
+                    ],
+                    alarmPersons: []
+                };
+                cfg.encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
+                localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+            } else {
+                currentMasterKeyHex = cfg.masterKeyHex;
+                if (!cfg.alarmPersons) cfg.alarmPersons = [];
+                const dec = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
+                if (!dec || !Array.isArray(dec.entries)) {
+                    throw new Error("Der Tresor konnte nicht entschlüsselt werden. Vorhandene Daten bleiben unverändert.");
+                }
+                currentDecryptedVault = dec;
+            }
+        }
+
+        function getVaultConfig() {
+            return JSON.parse(localStorage.getItem('digital_estate_vault'));
+        }
+
+        // Nur der zuletzt gestartete lokale Speichervorgang darf schreiben.
+        // Verschlüsselungen können in anderer Reihenfolge fertig werden.
+        let localSaveRevision = 0;
+
+        async function saveLocalConfig(cfg) {
+            const revision = ++localSaveRevision;
+            const encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
+            if (revision !== localSaveRevision) return false;
+            cfg.encryptedData = encryptedData;
+            localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+            return true;
+        }
+
+        // Einstellungen seriell auf den jeweils neuesten lokalen Stand anwenden.
+        let localConfigUpdateQueue = Promise.resolve();
+
+        function updateLocalConfig(mutate) {
+            if (!vaultReady) return Promise.reject(new Error('Tresor ist nicht entsperrt. Änderungen wurden nicht gespeichert.'));
+            const operation = localConfigUpdateQueue.then(async () => {
+                if (!vaultReady) throw new Error('Tresor ist nicht entsperrt.');
+                const cfg = getVaultConfig();
+                const previousEntries = typeof currentDecryptedVault !== 'undefined' ? currentDecryptedVault?.entries?.slice() : undefined;
+                try {
+                    mutate(cfg);
+                    const saved = await saveLocalConfig(cfg);
+                    if (!saved && previousEntries) currentDecryptedVault.entries = previousEntries;
+                    return saved;
+                } catch (error) {
+                    if (previousEntries) currentDecryptedVault.entries = previousEntries;
+                    throw error;
+                }
+            });
+            localConfigUpdateQueue = operation.then(() => undefined, () => undefined);
+            return operation;
+        }
+
+        // Synchronisierungen nacheinander ausführen: spätere Änderungen
+        // dürfen nicht mit einem bereits laufenden Schreibvorgang verschmelzen.
+        let vaultSyncQueue = Promise.resolve();
+
+        function syncVaultToFirebase(silent = false) {
+            const operation = vaultSyncQueue.then(() => performVaultSync(silent)).catch(error => {
+                console.error("Unerwarteter Fehler bei der Cloud-Synchronisierung:", error);
+                if (!silent) {
+                    document.getElementById('syncErrorMessage').innerText =
+                        "Die Cloud-Synchronisierung konnte nicht abgeschlossen werden.";
+                    document.getElementById('syncStatusLoading').classList.add('hidden');
+                    document.getElementById('syncStatusSuccess').classList.add('hidden');
+                    document.getElementById('syncStatusError').classList.remove('hidden');
+                    document.getElementById('syncModalOverlay').classList.remove('hidden');
+                }
+                return false;
+            });
+            // Ein fehlgeschlagener Auftrag blockiert spätere Synchronisierungen nicht.
+            vaultSyncQueue = operation.then(() => undefined);
+            return operation;
+        }
+
+        async function performVaultSync(silent = false) {
+            if (!vaultReady) {
+                if (!silent) alert('Tresor ist nicht entsperrt. Es wurden keine Daten synchronisiert.');
+                return false;
+            }
+            if (!silent) {
+                document.getElementById('syncStatusLoading').classList.remove('hidden');
+                document.getElementById('syncStatusSuccess').classList.add('hidden');
+                document.getElementById('syncStatusError').classList.add('hidden');
+                document.getElementById('syncModalOverlay').classList.remove('hidden');
+            }
+            if (!db) {
+                if (!silent) {
+                    document.getElementById('syncErrorMessage').innerText = "Firebase nicht verbunden.";
+                    document.getElementById('syncStatusLoading').classList.add('hidden');
+                    document.getElementById('syncStatusError').classList.remove('hidden');
+                }
+                return false;
+            }
+            
+            try {
+                const cfg = getVaultConfig();
+                cfg.encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
+
+                await db.collection("vaults").doc(cfg.vaultId).set({
+                    vaultId: cfg.vaultId,
+                    ownerName: cfg.ownerName || "",
+                    ownerEmail: cfg.ownerEmail || "",
+                    lastCheckIn: cfg.lastCheckIn,
+                    checkInIntervalDays: cfg.checkInIntervalDays,
+                    alarmPersons: cfg.alarmPersons || [],
+                    encryptedData: cfg.encryptedData,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                // Keine alte Konfiguration zurück in localStorage schreiben:
+                // Während des Cloud-Aufrufs können neuere lokale Änderungen entstanden sein.
+                if (!silent) {
+                    document.getElementById('syncStatusLoading').classList.add('hidden');
+                    document.getElementById('syncStatusSuccess').classList.remove('hidden');
+                }
+                // Der erfolgreiche Firestore-Schreibvorgang ist bereits bestätigt.
+                // Ein Fehler bei der nachgelagerten Alarmabfrage darf diesen Erfolg
+                // nicht nachträglich als fehlgeschlagene Speicherung darstellen.
+                try {
+                    await checkIncomingAlarms();
+                } catch (alarmError) {
+                    console.warn("Alarmprüfung nach Cloud-Speicherung fehlgeschlagen:", alarmError);
+                }
+                return true;
+            } catch(e) {
+                if (!silent) {
+                    document.getElementById('syncErrorMessage').innerText = e.message;
+                    document.getElementById('syncStatusLoading').classList.add('hidden');
+                    document.getElementById('syncStatusError').classList.remove('hidden');
+                }
+                return false;
+            }
+        }
+
+        async function checkIncomingAlarms() {
+            if (!db) return;
+            try {
+                const cfg = getVaultConfig();
+                if (!cfg || !cfg.vaultId) return;
+
+                const docRef = await db.collection("vaults").doc(cfg.vaultId).get();
+                if (!docRef.exists) return;
+
+                const data = docRef.data();
+                const banner = document.getElementById('emergencyAlarmBanner');
+                const detailsText = document.getElementById('alarmDetailsText');
+
+                let activeAlarmFound = false;
+                let alarmSender = "Vertrauensperson";
+
+                if (data.emergencyTriggers) {
+                    for (let personKey in data.emergencyTriggers) {
+                        const trigger = data.emergencyTriggers[personKey];
+                        if (trigger && (trigger.status === "active" || trigger.status === "test_active")) {
+                            activeAlarmFound = true;
+                            const foundPerson = (cfg.alarmPersons || []).find(p => p.id === personKey);
+                            alarmSender = foundPerson ? foundPerson.name : personKey;
+                        }
+                    }
+                }
+
+                if (activeAlarmFound) {
+                    banner.classList.remove('hidden');
+                    detailsText.innerText = `Der Alarm wurde von "${alarmSender}" ausgelöst. Klicke auf Entwarnung, um den Timer zurückzusetzen.`;
+                } else {
+                    banner.classList.add('hidden');
+                }
+            } catch (e) {
+                console.error("Fehler beim Prüfen der Alarme:", e);
+            }
+        }
+
+        async function clearEmergencyAlarm() {
+            if (!vaultReady) { alert('Tresor ist nicht entsperrt.'); return; }
+            if (!confirm("Möchtest du Entwarnung geben und den Alarm zurücksetzen?")) return;
+
+            try {
+                const cfg = getVaultConfig();
+                await db.collection("vaults").doc(cfg.vaultId).update({
+                    emergencyTriggers: {},
+                    lastCheckIn: new Date().toISOString()
+                });
+
+                cfg.lastCheckIn = new Date().toISOString();
+                localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+
+                document.getElementById('emergencyAlarmBanner').classList.add('hidden');
+                alert("✅ Entwarnung erfolgreich gesendet. Der Alarm wurde zurückgesetzt und dein Check-in erneuert.");
+                renderApp();
+            } catch (e) {
+                alert("Fehler beim Zurücksetzen: " + e.message);
+            }
+        }
+
+        function renderApp() {
+            const cfg = getVaultConfig();
+            if (!cfg) return;
+
+            const lastCheck = new Date(cfg.lastCheckIn);
+            const diffDays = Math.floor((new Date() - lastCheck) / (1000 * 60 * 60 * 24));
+            const remaining = (cfg.checkInIntervalDays || 30) - diffDays;
+
+            const countdownEl = document.getElementById('deadmanCountdown');
+            if (countdownEl) countdownEl.innerText = remaining <= 0 ? "0 Tage (Abgelaufen)" : `${remaining} Tage`;
+            
+            const lastCheckEl = document.getElementById('deadmanLastCheck');
+            if (lastCheckEl) lastCheckEl.innerText = `Letzter Check-in: ${lastCheck.toLocaleDateString('de-DE')}`;
+            
+            const intervalSel = document.getElementById('deadmanIntervalSelect');
+            if (intervalSel) intervalSel.value = cfg.checkInIntervalDays || 30;
+
+            const trusteesGrid = document.getElementById('trusteesGrid');
+            if (trusteesGrid) {
+                trusteesGrid.innerHTML = cfg.trustees.map((t, idx) => `
+                    <div class="p-3.5 bg-slate-900 border border-slate-800 rounded-xl space-y-2">
+                        <span class="font-bold text-indigo-400">Vertrauensperson #${idx + 1}</span>
+                        <input type="text" id="tName_${idx}" value="${escapeHtml(t.name)}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200">
+                        <input type="text" id="tRole_${idx}" value="${escapeHtml(t.role)}" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200">
+                    </div>
+                `).join('');
+            }
+
+            const ownerNameInput = document.getElementById('ownerNameInput');
+            if (ownerNameInput) ownerNameInput.value = cfg.ownerName || "";
+            
+            const ownerEmailInput = document.getElementById('ownerEmailInput');
+            if (ownerEmailInput) ownerEmailInput.value = cfg.ownerEmail || "";
+
+            renderVaultEntries();
+            renderAlarmPersons();
+        }
+
+        // Tresordaten beim Einfügen in HTML und Attribute sicher kodieren.
+        function escapeHtml(value) {
+            const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+            return String(value ?? "").replace(/[&<>"']/g, character => entities[character]);
+        }
+
+        function renderVaultEntries() {
+            const container = document.getElementById('vaultEntriesList');
+            if (!container) return;
+            const entries = currentDecryptedVault.entries || [];
+            if (entries.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">Keine Einträge vorhanden.</p>`;
+                return;
+            }
+            container.innerHTML = entries.map(e => `
+                <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center text-xs">
+                    <div>
+                        <span class="font-bold text-slate-100 text-sm">${escapeHtml(e.title)}</span> <span class="text-indigo-400">(${escapeHtml(e.category)})</span>
+                        <p class="text-slate-300 font-mono mt-1">${escapeHtml(e.content)}</p>
+                    </div>
+                    <button data-id="${escapeHtml(e.id)}" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg delete-entry-btn">Löschen</button>
+                </div>
+            `).join('');
+        }
+
+        function renderAlarmPersons() {
+            const cfg = getVaultConfig();
+            const container = document.getElementById('alarmPersonsList');
+            if (!container) return;
+            if (!cfg.alarmPersons || cfg.alarmPersons.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500">Noch keine Personen angelegt.</p>`;
+                return;
+            }
+            const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
+            container.innerHTML = cfg.alarmPersons.map((p, idx) => {
+                const personLink = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(p.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
+                return `
+                    <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs">
+                        <div>
+                            <span class="font-bold text-slate-100">${escapeHtml(p.name)}</span>
+                            ${p.contact ? `<span class="text-slate-400 text-[11px] ml-2">(${escapeHtml(p.contact)})</span>` : ''}
+                            <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">${escapeHtml(personLink)}</p>
+                        </div>
+                        <div class="flex gap-2 flex-wrap mt-2 md:mt-0">
+                            <button data-link="${escapeHtml(personLink)}" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px] copy-link-btn">Link kopieren</button>
+                            ${p.contact ? `<button data-name="${escapeHtml(p.name)}" data-email="${escapeHtml(p.contact)}" data-link="${escapeHtml(personLink)}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] email-btn">✉️ E-Mail senden</button>` : ''}
+                            <button data-idx="${idx}" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px] delete-person-btn">Löschen</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function saveSettings() {
+            const nameInput = document.getElementById('ownerNameInput').value.trim();
+            const emailInput = document.getElementById('ownerEmailInput').value.trim();
+            
+            if (!nameInput) {
+                alert("Bitte gib zumindest deinen Namen ein.");
+                return;
+            }
+            
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(cfg => {
+                    cfg.ownerName = nameInput;
+                    cfg.ownerEmail = emailInput;
+                });
+            } catch (error) {
+                console.error("Lokales Speichern der Einstellungen fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Einstellungen konnten nicht lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet.");
+                return;
+            }
+            const cloudSaved = await syncVaultToFirebase(true);
+            alert(cloudSaved
+                ? "✅ Deine Einstellungen wurden lokal gespeichert und mit der Cloud synchronisiert!"
+                : "⚠️ Deine Einstellungen wurden nur lokal gespeichert. Die Cloud-Synchronisierung ist derzeit nicht verfügbar. Bitte sichere deine lokalen Daten.");
+        }
+
+        async function addAlarmPerson() {
+            const nameInput = document.getElementById('newAlarmPersonName');
+            const contactInput = document.getElementById('newAlarmPersonContact');
+            const name = nameInput.value.trim();
+            if (!name) { alert("Bitte Namen eingeben!"); return; }
+
+            const personId = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.random().toString(36).substring(2, 6);
+            const contact = contactInput.value.trim();
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(cfg => {
+                    if (!cfg.alarmPersons) cfg.alarmPersons = [];
+                    cfg.alarmPersons.push({ id: personId, name, contact });
+                });
+            } catch (error) {
+                console.error("Lokales Speichern des Notfallkontakts fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Notfallkontakt konnte nicht lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet. Bitte versuche es erneut.");
+                return;
+            }
+            const contactCloudSaved = await syncVaultToFirebase(true);
+            if (!contactCloudSaved) {
+                alert("⚠️ Notfallkontakt nur lokal hinzugefügt. Die Cloud ist nicht aktualisiert; der Notfallzugang ist derzeit nicht zuverlässig verfügbar.");
+            }
+            nameInput.value = "";
+            contactInput.value = "";
+            renderAlarmPersons();
+        }
+
+        async function deleteAlarmPerson(idx) {
+            const personId = getVaultConfig().alarmPersons?.[idx]?.id;
+            if (!personId) {
+                alert("Notfallkontakt nicht gefunden. Bitte Liste aktualisieren.");
+                return;
+            }
+            const removed = await updateLocalConfig(cfg => {
+                const personIndex = (cfg.alarmPersons || []).findIndex(person => person.id === personId);
+                if (personIndex === -1) throw new Error("Notfallkontakt wurde bereits geändert.");
+                cfg.alarmPersons.splice(personIndex, 1);
+            }).catch(error => {
+                alert("Notfallkontakt konnte nicht gelöscht werden: " + error.message);
+                return false;
+            });
+            if (!removed) return;
+            const deletionCloudSaved = await syncVaultToFirebase(true);
+            if (!deletionCloudSaved) {
+                alert("⚠️ Notfallkontakt nur lokal gelöscht. Die Cloud ist nicht aktualisiert; der bisherige Zugang kann nach einer späteren Freigabe weiterhin bestehen.");
+            }
+            renderAlarmPersons();
+        }
+
+        function sendEmailToPerson(name, email, link) {
+            if (typeof emailjs === "undefined") {
+                alert("Der E-Mail-Dienst ist nicht verfügbar.");
+                return;
+            }
+            const recipient = String(email || '').trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient) || recipient.length > 254) {
+                alert("Bitte eine gültige E-Mail-Adresse der Vertrauensperson hinterlegen.");
+                return;
+            }
+            let target;
+            try {
+                target = new URL(String(link || ''), window.location.href);
+            } catch (error) {
+                alert("Der Notfall-Link ist ungültig.");
+                return;
+            }
+            const cfg = getVaultConfig();
+            const expectedPath = new URL('erben.html', window.location.href).pathname;
+            if (target.origin !== window.location.origin || target.pathname !== expectedPath ||
+                target.searchParams.get('vaultId') !== String(cfg?.vaultId || '') ||
+                !/^#key=[a-f0-9]{64}$/i.test(target.hash)) {
+                alert("Der Notfall-Link ist nicht gültig oder gehört nicht zu diesem Tresor.");
+                return;
+            }
+            if (!confirm("ACHTUNG: Der Notfall-Link enthält den Entschlüsselungsschlüssel. Beim Versand erhält der externe E-Mail-Dienst diesen Schlüssel, und er verbleibt möglicherweise im Postfach der empfangenden Person. Nur an eine vertrauenswürdige Person senden. Fortfahren?")) return;
+
+            const templateParams = {
+                to_name: String(name || ''),
+                to_email: recipient,
+                owner_name: cfg.ownerName || "Dein Name",
+                person_link: target.href
+            };
+            emailjs.send('service_z2papfs', 'template_xmidqv9', templateParams)
+                .then(function() {
+                    alert("E-Mail an " + recipient + " wurde vom E-Mail-Dienst angenommen.");
+                }, function() {
+                    alert("Der E-Mail-Versand ist fehlgeschlagen. Bitte die Adresse prüfen und später erneut versuchen.");
+                });
+        }
+
+        async function saveVaultEntry() {
+            const title = document.getElementById('entryTitle').value.trim();
+            const category = document.getElementById('entryCategory').value;
+            const content = document.getElementById('entryContent').value.trim();
+            if (!title || !content) { alert("Titel und Inhalt erforderlich!"); return; }
+
+            const entry = { id: Date.now(), title, category, content };
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(() => {
+                    currentDecryptedVault.entries.unshift(entry);
+                });
+            } catch (error) {
+                console.error("Lokales Speichern des Tresoreintrags fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Tresoreintrag konnte nicht dauerhaft lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet. Bitte lade die Tresordaten neu, bevor du weitere Änderungen vornimmst.");
+                return;
+            }
+            document.getElementById('entryTitle').value = "";
+            document.getElementById('entryContent').value = "";
+            renderVaultEntries();
+            const entryCloudSaved = await syncVaultToFirebase(true);
+            alert(entryCloudSaved
+                ? "✅ Tresoreintrag lokal gespeichert und mit der Cloud synchronisiert."
+                : "⚠️ Tresoreintrag nur lokal gespeichert. Die Cloud-Sicherung ist derzeit nicht verfügbar. Bitte sichere deine lokalen Daten.");
+        }
+
+        async function deleteVaultEntry(id) {
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(() => {
+                    currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
+                });
+            } catch (error) {
+                console.error("Lokales Löschen des Tresoreintrags fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Löschen des Tresoreintrags konnte nicht dauerhaft lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet. Bitte lade die Tresordaten neu, bevor du weitere Änderungen vornimmst.");
+                return;
+            }
+            renderVaultEntries();
+            const deletionCloudSaved = await syncVaultToFirebase(true);
+            if (!deletionCloudSaved) {
+                alert("⚠️ Tresoreintrag nur lokal gelöscht. Eine ältere verschlüsselte Kopie kann weiterhin in der Cloud vorhanden sein. Die Cloud-Löschung wurde NICHT bestätigt.");
+            }
+        }
+
+        async function performCheckIn() {
+            const checkInTime = new Date().toISOString();
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(cfg => {
+                    cfg.lastCheckIn = checkInTime;
+                });
+            } catch (error) {
+                console.error("Lokaler Check-in konnte nicht gespeichert werden:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Check-in konnte nicht lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet; die Notfallüberwachung ist nicht zuverlässig verfügbar.");
+                return;
+            }
+            renderApp();
+            const cloudCheckInSaved = await syncVaultToFirebase(true);
+            alert(cloudCheckInSaved
+                ? "✅ Check-in lokal und in der Cloud erneuert!"
+                : "⚠️ Check-in nur lokal gespeichert. Der Cloud-Check-in wurde NICHT erneuert. Die Notfallüberwachung ist derzeit nicht zuverlässig verfügbar.");
+        }
+
+        async function updateDeadmanInterval() {
+            const interval = Number(document.getElementById('deadmanIntervalSelect').value);
+            if (!Number.isSafeInteger(interval) || interval < 1 || interval > 365) {
+                alert("Bitte ein gültiges Check-in-Intervall zwischen 1 und 365 Tagen wählen.");
+                return;
+            }
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(cfg => {
+                    cfg.checkInIntervalDays = interval;
+                });
+            } catch (error) {
+                console.error("Lokales Speichern des Check-in-Intervalls fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Check-in-Intervall konnte nicht lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet; die Notfallüberwachung ist nicht zuverlässig verfügbar.");
+                return;
+            }
+            const intervalCloudSaved = await syncVaultToFirebase(true);
+            if (!intervalCloudSaved) {
+                alert("⚠️ Check-in-Intervall nur lokal gespeichert. Die Cloud-Frist wurde NICHT aktualisiert; die Notfallüberwachung ist derzeit nicht zuverlässig verfügbar.");
+            }
+        }
+
+        async function saveTrustees() {
+            const trusteeValues = Array.from({ length: 3 }, (_, i) => ({
+                name: document.getElementById(`tName_${i}`).value.trim(),
+                role: document.getElementById(`tRole_${i}`).value.trim()
+            }));
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(cfg => {
+                    trusteeValues.forEach((trustee, i) => {
+                        cfg.trustees[i].name = trustee.name;
+                        cfg.trustees[i].role = trustee.role;
+                    });
+                });
+            } catch (error) {
+                console.error("Lokales Speichern der Vertrauenspersonen fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Vertrauenspersonen konnten nicht lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet. Bitte versuche es erneut.");
+                return;
+            }
+            const trusteesCloudSaved = await syncVaultToFirebase(true);
+            alert(trusteesCloudSaved
+                ? "✅ Vertrauenspersonen lokal gespeichert. Cloud-Synchronisierung abgeschlossen."
+                : "⚠️ Vertrauenspersonen nur lokal gespeichert. Die Cloud-Synchronisierung ist derzeit nicht verfügbar. Daraus entsteht kein funktionierender Notfallzugang.");
+        }
+
+        // Render Notfall-Kit Vorschau mit QR-Codes (Zuverlässig für alle Personen)
+        function renderPrintableKit() {
+            const cfg = getVaultConfig();
+            const container = document.getElementById('kitSharesPreview');
+            if (!container) return;
+
+            if (!cfg.alarmPersons || cfg.alarmPersons.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 col-span-full">Noch keine Vertrauenspersonen im Tab "Totmannschalter" angelegt. Bitte dort Personen hinzufügen, um QR-Notfall-Kits zu generieren.</p>`;
+                return;
+            }
+
+            const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
+
+            container.innerHTML = cfg.alarmPersons.map((p, idx) => {
+                const personLink = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(p.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
+                const qrcodeContainerId = `qrcode_preview_${idx}`;
+                
+                setTimeout(() => {
+                    const el = document.getElementById(qrcodeContainerId);
+                    if (el && el.childElementCount === 0) {
+                        new QRCode(el, {
+                            text: personLink,
+                            width: 110,
+                            height: 110,
+                            colorDark: "#0f172a",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    }
+                }, 50);
+
+                return `
+                    <div class="p-4 bg-white text-slate-900 rounded-2xl space-y-3 shadow-md flex flex-col items-center text-center">
+                        <div>
+                            <h4 class="font-bold text-sm">${escapeHtml(p.name)}</h4>
+                            <p class="text-[10px] text-slate-500">${escapeHtml(p.contact || 'Notfall-Vertrauensperson')}</p>
+                        </div>
+                        <div id="${qrcodeContainerId}" class="qrcode-box p-1 bg-slate-100 rounded-xl border border-slate-200"></div>
+                        <p class="font-mono text-[8px] break-all text-slate-600 bg-slate-50 p-1.5 rounded w-full">${escapeHtml(personLink)}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function generatePrintableKitPDF() {
+            if (!window.jspdf?.jsPDF || typeof QRCode !== 'function') {
+                alert("PDF- oder QR-Code-Bibliothek ist nicht verfügbar. Bitte die Seite neu laden.");
+                return;
+            }
+            const cfg = getVaultConfig();
+            if (!cfg || !cfg.vaultId || !cfg.masterKeyHex) {
+                alert("Das Notfall-Kit kann ohne gültige Tresordaten nicht erstellt werden.");
+                return;
+            }
+            if (!confirm("Das Notfall-Kit enthält persönliche Zugangsschlüssel. Jede Person mit Zugriff auf die PDF-Datei kann damit möglicherweise Tresordaten lesen. Nur auf einem vertrauenswürdigen Gerät erstellen und sicher aufbewahren. Fortfahren?")) return;
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.setFontSize(16);
+                doc.text("DIGITALES NACHLASS-NOTFALL-KIT", 14, 20);
+                doc.setFontSize(10);
+                doc.text("Tresor-ID: " + cfg.vaultId, 14, 28);
+                doc.text("Erstellt am: " + new Date().toLocaleDateString('de-DE'), 14, 34);
+
+                let yPos = 45;
+                const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
+                const persons = Array.isArray(cfg.alarmPersons) ? cfg.alarmPersons : [];
+                if (!persons.length) doc.text("Keine Notfall-Personen definiert.", 14, yPos);
+
+                for (const person of persons) {
+                    if (yPos > 235) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    const personLink = baseUrl + "/erben.html?vaultId=" +
+                        encodeURIComponent(cfg.vaultId) + "&person=" +
+                        encodeURIComponent(person.id) + "#key=" +
+                        encodeURIComponent(cfg.masterKeyHex);
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'bold');
+                    doc.text("Notfall-Zugang für: " + (person.name || "Vertrauensperson") +
+                        " (" + (person.contact || "Keine E-Mail") + ")", 14, yPos);
+                    doc.setFontSize(8);
+                    doc.setFont(undefined, 'normal');
+                    doc.text("Persönlicher Notfall-Link:", 14, yPos + 6);
+                    const lines = doc.splitTextToSize(personLink, 180);
+                    doc.text(lines, 14, yPos + 11);
+                    const qrTop = yPos + 12 + lines.length * 3.5;
+
+                    const tempDiv = document.createElement('div');
+                    tempDiv.style.position = 'fixed';
+                    tempDiv.style.left = '-10000px';
+                    document.body.appendChild(tempDiv);
+                    try {
+                        new QRCode(tempDiv, { text: personLink, width: 120, height: 120 });
+                        const qrCanvas = tempDiv.querySelector('canvas');
+                        const qrImage = tempDiv.querySelector('img');
+                        if (qrCanvas && qrCanvas.width && qrCanvas.height) {
+                            doc.addImage(qrCanvas.toDataURL('image/png'), 'PNG', 14, qrTop, 35, 35);
+                        } else if (qrImage?.complete && qrImage.naturalWidth) {
+                            doc.addImage(qrImage.src, 'PNG', 14, qrTop, 35, 35);
+                        } else {
+                            throw new Error("QR-Code konnte nicht vollständig erzeugt werden.");
+                        }
+                    } finally {
+                        tempDiv.remove();
+                    }
+                    yPos = qrTop + 43;
+                }
+                doc.save("digitales-notfall-kit-" + cfg.vaultId + ".pdf");
+            } catch (error) {
+                console.error("Notfall-Kit konnte nicht erstellt werden:", error);
+                alert("Notfall-Kit konnte nicht vollständig erstellt werden. Bitte erneut versuchen.");
+            }
+        }
+
+    </script>
+</body>
+</html>

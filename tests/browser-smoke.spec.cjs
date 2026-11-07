@@ -2,6 +2,17 @@ const { test, expect } = require('@playwright/test');
 const base = 'http://127.0.0.1:8765';
 const routes = [
   '/', '/index.html', '/datenschutz.html', '/impressum.html',
+  '/tools/haushaltsbuch-kassenbon/index.html',
+  '/tools/umzugskisten-inventar/index.html',
+  '/tools/wg-organisator/index.html',
+  '/tools/digitaler-nachlass/index.html',
+  '/tools/autokosten-reifenwechsel/index.html',
+  '/tools/haustier-gesundheitspass/index.html',
+  '/tools/parkplatz-merker-parkschein-timer/index.html',
+  '/tools/verliehene-gegenstaende-verwalten/index.html',
+  '/tools/pflanzenpflege-giessplan/index.html',
+  '/tools/zaehlerstaende-erfassen/index.html',
+  '/tools/backform-umrechner/index.html',
   '/tools/kassenbon/index.html', '/tools/kisten/index.html',
   '/tools/wg-kasse/index.html', '/tools/notizen/index.html',
   '/tools/kfz/index.html', '/tools/haustier/index.html',

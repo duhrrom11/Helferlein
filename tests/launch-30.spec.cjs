@@ -1,17 +1,17 @@
 const { test, expect } = require('@playwright/test');
 const base = 'http://127.0.0.1:8765';
 const tools = [
-  ['kassenbon','tools/kassenbon/index.html'],
-  ['kisten','tools/kisten/index.html'],
-  ['wg-kasse','tools/wg-kasse/index.html'],
-  ['notizen','tools/notizen/index.html'],
-  ['kfz','tools/kfz/index.html'],
-  ['haustier','tools/haustier/index.html'],
-  ['parken','tools/parken/index.html'],
-  ['verleih','tools/verleih/index.html'],
-  ['pflanzen','tools/pflanzen/index.html'],
-  ['energie','tools/energie/index.html'],
-  ['backform','tools/küche/küchenmathe.html']
+  ['kassenbon','tools/haushaltsbuch-kassenbon/index.html'],
+  ['kisten','tools/umzugskisten-inventar/index.html'],
+  ['wg-kasse','tools/wg-organisator/index.html'],
+  ['notizen','tools/digitaler-nachlass/index.html'],
+  ['kfz','tools/autokosten-reifenwechsel/index.html'],
+  ['haustier','tools/haustier-gesundheitspass/index.html'],
+  ['parken','tools/parkplatz-merker-parkschein-timer/index.html'],
+  ['verleih','tools/verliehene-gegenstaende-verwalten/index.html'],
+  ['pflanzen','tools/pflanzenpflege-giessplan/index.html'],
+  ['energie','tools/zaehlerstaende-erfassen/index.html'],
+  ['backform','tools/backform-umrechner/index.html']
 ];
 // Steps 1-11: real homepage-to-tool navigation (not only direct HTTP requests).
 for (const [id, href] of tools) {
