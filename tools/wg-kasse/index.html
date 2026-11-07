@@ -867,6 +867,17 @@
 
     <!-- Skript Logik -->
     <script>
+        // Automatische Weiterleitung zur gespeicherten WG-ID aus dem Browser-Speicher
+        const urlParams = new URLSearchParams(window.location.search);
+        let wgBinId = urlParams.get('id');
+        const savedWgId = localStorage.getItem('wg_active_bin_id');
+
+        if (!wgBinId && savedWgId) {
+            window.location.replace(window.location.pathname + "?id=" + savedWgId);
+        } else if (wgBinId) {
+            localStorage.setItem('wg_active_bin_id', wgBinId);
+        }
+
         // Supabase Konfiguration & Instanz
         const SUPABASE_URL = "https://avapuibsidubuzxjtyld.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC";
@@ -929,8 +940,6 @@
         }
 
         const NPOINT_API_BASE = "https://api.npoint.io/";
-        const urlParams = new URLSearchParams(window.location.search);
-        let wgBinId = urlParams.get('id');
 
         const kofiSprueche = [
             "Spendier dem Entwickler einen Kaffee ☕",
@@ -1009,6 +1018,7 @@
                 if (response.ok) {
                     const result = await response.json();
                     if (result.id) {
+                        localStorage.setItem('wg_active_bin_id', result.id);
                         window.location.href = window.location.pathname + "?id=" + result.id;
                         return;
                     }
@@ -1018,6 +1028,7 @@
             }
 
             const ersatzID = "wg_" + Math.random().toString(36).substring(2, 9);
+            localStorage.setItem('wg_active_bin_id', ersatzID);
             window.location.href = window.location.pathname + "?id=" + ersatzID;
         }
 
@@ -1102,6 +1113,7 @@
                         const result = await response.json();
                         if (result.id) {
                             wgBinId = result.id;
+                            localStorage.setItem('wg_active_bin_id', wgBinId);
                             window.history.replaceState({}, '', window.location.pathname + "?id=" + wgBinId);
                         }
                     }
