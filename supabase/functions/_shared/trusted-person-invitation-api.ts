@@ -80,6 +80,17 @@ export function validateInvitationDraft(
   return { ok: true, draft: { vaultId, intendedUserId, durationDays } };
 }
 
+export function invitationDraftErrorMessage(
+  reason: Extract<InvitationDraftValidation, { ok: false }>["reason"],
+): string {
+  switch (reason) {
+    case "invalid_vault": return "Die Tresorkennung ist ungültig.";
+    case "invalid_recipient": return "Die Benutzerkennung ist ungültig.";
+    case "self_invitation": return "Du kannst dich nicht selbst einladen.";
+    case "invalid_duration": return "Wähle eine erlaubte Gültigkeitsdauer.";
+  }
+}
+
 export type InvitationCreationResult = Readonly<{
   invitationId: string;
   // Raw code may be returned once by a future secure gateway; never persist or log it.
