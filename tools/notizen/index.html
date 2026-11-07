@@ -959,7 +959,7 @@
                 return;
             }
             const recipient = String(email || '').trim();
-            if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(recipient) || recipient.length > 254) {
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient) || recipient.length > 254) {
                 alert("Bitte eine gültige E-Mail-Adresse der Vertrauensperson hinterlegen.");
                 return;
             }
@@ -1179,7 +1179,7 @@
                 doc.text("Erstellt am: " + new Date().toLocaleDateString('de-DE'), 14, 34);
 
                 let yPos = 45;
-                const baseUrl = new URL('.', window.location.href).href.replace(/\\/$/, '');
+                const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
                 const persons = Array.isArray(cfg.alarmPersons) ? cfg.alarmPersons : [];
                 if (!persons.length) doc.text("Keine Notfall-Personen definiert.", 14, yPos);
 
