@@ -1,0 +1,4 @@
+# Helferlein: Edge Functions nur mit gueltigem Supabase-JWT aufrufen.
+# Die Funktion prueft das Token zusaetzlich mit auth.getUser().
+[functions.vault-api]
+verify_jwt = true
