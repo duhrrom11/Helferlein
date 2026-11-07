@@ -65,11 +65,17 @@ BEGIN
     (vault_id, trusted_user_id, invitation_id, status)
   VALUES (v_inv.vault_id, p_verified_user_id, v_inv.invitation_id, 'active');
 
+  -- Recheck expiry at the write boundary: ownership checks or lock waits
+  -- may have consumed the remaining invitation lifetime. If this update
+  -- fails, the exception rolls back the trusted-person INSERT above.
   UPDATE public.trusted_person_invitations
      SET accepted_by_user_id = p_verified_user_id,
          accepted_at = clock_timestamp()
    WHERE invitation_id = v_inv.invitation_id
-     AND accepted_at IS NULL AND revoked_at IS NULL;
+     AND intended_user_id = p_verified_user_id
+     AND accepted_at IS NULL
+     AND revoked_at IS NULL
+     AND expires_at > clock_timestamp();
   IF NOT FOUND THEN
     RAISE EXCEPTION 'redemption_state_changed';
   END IF;
