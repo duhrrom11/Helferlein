@@ -861,12 +861,12 @@
             const name = nameInput.value.trim();
             if (!name) { alert("Bitte Namen eingeben!"); return; }
 
-            const cfg = getVaultConfig();
-            if (!cfg.alarmPersons) cfg.alarmPersons = [];
             const personId = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.random().toString(36).substring(2, 6);
-            cfg.alarmPersons.push({ id: personId, name, contact: contactInput.value.trim() });
-
-            await saveLocalConfig(cfg);
+            const contact = contactInput.value.trim();
+            await updateLocalConfig(cfg => {
+                if (!cfg.alarmPersons) cfg.alarmPersons = [];
+                cfg.alarmPersons.push({ id: personId, name, contact });
+            });
             const contactCloudSaved = await syncVaultToFirebase(true);
             if (!contactCloudSaved) {
                 alert("⚠️ Notfallkontakt nur lokal hinzugefügt. Die Cloud ist nicht aktualisiert; der Notfallzugang ist derzeit nicht zuverlässig verfügbar.");
@@ -877,9 +877,20 @@
         }
 
         async function deleteAlarmPerson(idx) {
-            const cfg = getVaultConfig();
-            cfg.alarmPersons.splice(idx, 1);
-            await saveLocalConfig(cfg);
+            const personId = getVaultConfig().alarmPersons?.[idx]?.id;
+            if (!personId) {
+                alert("Notfallkontakt nicht gefunden. Bitte Liste aktualisieren.");
+                return;
+            }
+            const removed = await updateLocalConfig(cfg => {
+                const personIndex = (cfg.alarmPersons || []).findIndex(person => person.id === personId);
+                if (personIndex === -1) throw new Error("Notfallkontakt wurde bereits geändert.");
+                cfg.alarmPersons.splice(personIndex, 1);
+            }).catch(error => {
+                alert("Notfallkontakt konnte nicht gelöscht werden: " + error.message);
+                return false;
+            });
+            if (!removed) return;
             const deletionCloudSaved = await syncVaultToFirebase(true);
             if (!deletionCloudSaved) {
                 alert("⚠️ Notfallkontakt nur lokal gelöscht. Die Cloud ist nicht aktualisiert; der bisherige Zugang kann nach einer späteren Freigabe weiterhin bestehen.");
@@ -964,12 +975,16 @@
         }
 
         async function saveTrustees() {
-            const cfg = getVaultConfig();
-            for (let i = 0; i < 3; i++) {
-                cfg.trustees[i].name = document.getElementById(`tName_${i}`).value.trim();
-                cfg.trustees[i].role = document.getElementById(`tRole_${i}`).value.trim();
-            }
-            await saveLocalConfig(cfg);
+            const trusteeValues = Array.from({ length: 3 }, (_, i) => ({
+                name: document.getElementById(`tName_${i}`).value.trim(),
+                role: document.getElementById(`tRole_${i}`).value.trim()
+            }));
+            await updateLocalConfig(cfg => {
+                trusteeValues.forEach((trustee, i) => {
+                    cfg.trustees[i].name = trustee.name;
+                    cfg.trustees[i].role = trustee.role;
+                });
+            });
             const trusteesCloudSaved = await syncVaultToFirebase(true);
             alert(trusteesCloudSaved
                 ? "✅ Vertrauenspersonen lokal gespeichert. Cloud-Synchronisierung abgeschlossen."
