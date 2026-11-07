@@ -89,7 +89,27 @@ const cases = [
   {
     "key": "__proto__",
     "expected": false
-  }
+  },
+  { "key": "mini_homebox_pro", "expected": true },
+  { "key": "wg_active_bin_id", "expected": true },
+  { "key": "wg_diets", "expected": true },
+  { "key": "wg_shopping", "expected": true },
+  { "key": "wg_cooking", "expected": true },
+  { "key": "wg_contracts", "expected": true },
+  { "key": "wg_infoboard", "expected": true },
+  { "key": "digital_estate_vault", "expected": true },
+  { "key": "kfz_tracker_pro_v3", "expected": true },
+  { "key": "haustier_pass_pro_v5", "expected": true },
+  { "key": "park_end_time", "expected": true },
+  { "key": "park_history_pro_v3", "expected": true },
+  { "key": "verleih_tracker_pro_v3", "expected": true },
+  { "key": "dismiss_frost", "expected": true },
+  { "key": "pflanzen_pass_v10", "expected": true },
+  { "key": "energie_tracker_pro_v8", "expected": true },
+  { "key": "helperly_recipes_pro", "expected": true },
+  { "key": "constructor", "expected": false },
+  { "key": "prototype", "expected": false },
+  { "key": "sb-other-project-auth-token", "expected": false }
 ];
 for (const [index, test] of cases.entries()) {
   assert.equal(isAllowed(test.key), test.expected, 'Check ' + (index + 1) + ': ' + test.key);
