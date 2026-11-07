@@ -756,11 +756,15 @@
                         return;
                     }
                     const existing = supported.filter(([key]) => localStorage.getItem(key) !== null).length;
+                    const containsVault = supported.some(([key]) => key === "digital_estate_vault");
+                    const vaultWarning = containsVault
+                        ? " WARNUNG: Das Backup enthält Nachlass-Tresordaten. Diese können Schlüsselmaterial enthalten und sind nicht als sicher verschlüsselte Sicherung zu behandeln."
+                        : "";
                     const ignoredMessage = rejected.length
                         ? " " + rejected.length + " unbekannte oder sicherheitskritische Einträge werden aus Sicherheitsgründen NICHT importiert."
                         : "";
                     if (!confirm("Backup mit " + supported.length + " unterstützten Einträgen importieren? " + existing +
-                        " vorhandene Einträge werden überschrieben." + ignoredMessage +
+                        " vorhandene Einträge werden überschrieben; andere lokale Daten bleiben bestehen." + ignoredMessage + vaultWarning +
                         " Bitte vorher eine Sicherung exportieren.")) return;
 
                     // Vollständiger Rollback, falls z.B. die Browser-Speicherquote erreicht wird.
