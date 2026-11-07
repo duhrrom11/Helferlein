@@ -220,10 +220,10 @@ export function unavailableInvitationGateway(): InvitationGateway {
   const deny = async (): Promise<never> => {
     throw new InvitationGatewayUnavailableError();
   };
-  return {
+  return Object.freeze({
     list: deny,
     create: deny,
     accept: deny,
     revoke: deny,
-  };
+  });
 }
