@@ -45,6 +45,7 @@ function update(){
   const allowed=["1","3","7","14"];
   if(!allowed.includes(duration.value)){expiry.textContent="Ungültige Gültigkeitsdauer.";summary.textContent="";feedback.textContent="Wähle eine erlaubte Gültigkeitsdauer.";return;}
   if(![1,3,7,14].includes(days)){expiry.textContent="Ungültige Gültigkeitsdauer.";summary.textContent="";feedback.textContent="Wähle eine erlaubte Gültigkeitsdauer.";return;}
+  duration.removeAttribute("aria-invalid");
   const date=new Date(Date.now()+days*86400000);
   if(!Number.isFinite(date.getTime())){expiry.textContent="Ablaufdatum nicht berechenbar.";summary.textContent="";return;}
   expiry.textContent="Voraussichtliches Ablaufdatum (Ortszeit): "+new Intl.DateTimeFormat("de-DE",{dateStyle:"full",timeStyle:"short"}).format(date);
