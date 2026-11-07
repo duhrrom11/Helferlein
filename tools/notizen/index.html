@@ -735,7 +735,7 @@
             }
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
             container.innerHTML = cfg.alarmPersons.map((p, idx) => {
-                const personLink = `${baseUrl}/erben.html?vaultId=${cfg.vaultId}&key=${cfg.masterKeyHex}&person=${p.id}`;
+                const personLink = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(p.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
                 return `
                     <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs">
                         <div>
@@ -882,7 +882,7 @@
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
 
             container.innerHTML = cfg.alarmPersons.map((p, idx) => {
-                const personLink = `${baseUrl}/erben.html?vaultId=${cfg.vaultId}&key=${cfg.masterKeyHex}&person=${p.id}`;
+                const personLink = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(p.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
                 const qrcodeContainerId = `qrcode_preview_${idx}`;
                 
                 setTimeout(() => {
@@ -934,7 +934,7 @@
                         yPos = 20;
                     }
 
-                    const personLink = `${baseUrl}/erben.html?vaultId=${cfg.vaultId}&key=${cfg.masterKeyHex}&person=${p.id}`;
+                    const personLink = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(p.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
                     
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'bold');
