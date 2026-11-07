@@ -187,14 +187,14 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
             <h4 class="font-bold text-sm text-gray-700">🛒 Nützliches PKW- & Park-Zubehör auf Amazon</h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <a href="https://www.amazon.de/s?k=parkscheibe+mit+parkguthaben+uhr&tag=duhrrom-21" target="_blank" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                <a href="https://www.amazon.de/s?k=parkscheibe+mit+parkguthaben+uhr&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
                     <span class="text-2xl">🔵</span>
                     <div>
                         <p class="font-bold text-gray-800">Digitale Parkscheiben</p>
                         <p class="text-[10px] text-amber-700">Mit Zulassung für die Windschutzscheibe →</p>
                     </div>
                 </a>
-                <a href="https://www.amazon.de/s?k=kfz+smartphone+halterung+magsafe&tag=duhrrom-21" target="_blank" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                <a href="https://www.amazon.de/s?k=kfz+smartphone+halterung+magsafe&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
                     <span class="text-2xl">📱</span>
                     <div>
                         <p class="font-bold text-gray-800">KFZ Smartphone-Halterungen</p>
@@ -473,7 +473,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        ${s.gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${s.gps.lat},${s.gps.lng}" target="_blank" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">🧭 Route</a>` : ''}
+                        ${s.gps ? `<a href="https://www.google.com/maps/search/?api=1&query=${s.gps.lat},${s.gps.lng}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold">🧭 Route</a>` : ''}
                         <button onclick="deleteSession(${s.id})" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                     </div>
                 </div>
