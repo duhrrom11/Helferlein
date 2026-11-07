@@ -21,10 +21,11 @@ export type InternalRpcClient = {
 export function createStagingRedemptionStore(
   client: InternalRpcClient,
   enabled = false,
+  projectRef: string | null = null,
 ): AtomicRedemptionStore {
   return {
     async redeemAtomically({ verifiedUserId, tokenHashHex }): Promise<boolean> {
-      if (!enabled) return false;
+      // Hard stop: even explicit enablement cannot target production or unknown projects.\n      if (!enabled || projectRef !== "ojfoijljykjhveejvkfx") return false;
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(verifiedUserId)) return false;
       if (!/^[a-f0-9]{64}$/.test(tokenHashHex)) return false;
       try {
