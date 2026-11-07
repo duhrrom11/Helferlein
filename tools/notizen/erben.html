@@ -5,6 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digitaler Nachlassverwalter - Erben Portal</title>
     
+    <meta name="referrer" content="no-referrer">
+    <script>
+        // Schlüssel vor dem Laden externer Skripte aus der URL entfernen.
+        // Alte ?key=-Links bleiben für bereits verteilte Notfallunterlagen lesbar.
+        const heirUrl = new URL(window.location.href);
+        const heirFragment = new URLSearchParams(heirUrl.hash.slice(1));
+        const heirMasterKey = heirFragment.get('key') || heirUrl.searchParams.get('key');
+        if (heirUrl.searchParams.has('key') || heirUrl.hash) {
+            heirUrl.searchParams.delete('key');
+            heirUrl.hash = '';
+            window.history.replaceState(null, '', heirUrl.pathname + heirUrl.search);
+        }
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -121,7 +135,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             urlVaultId = urlParams.get('vaultId');
-            urlMasterKey = urlParams.get('key');
+            urlMasterKey = heirMasterKey;
             personKey = urlParams.get('person') || "vertrauensperson";
 
             if (!urlVaultId) {
