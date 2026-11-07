@@ -51,9 +51,38 @@ Deno.serve(async (request) => {
   }
 
   // Der Client darf nur eine Tresor-ID anfragen, keine Eigentuemerdaten setzen.
+  // Begrenze die gelesenen Bytes unabhaengig von Content-Length.
+  // Die API erwartet nur eine kurze JSON-Nachricht mit einer Tresor-ID.
+  const MAX_BODY_BYTES = 4096;
   let body: unknown;
   try {
-    body = await request.json();
+    const reader = request.body?.getReader();
+    if (!reader) {
+      return new Response(JSON.stringify({ error: "invalid_request" }), { status: 400, headers });
+    }
+    const chunks: Uint8Array[] = [];
+    let received = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        received += value.byteLength;
+        if (received > MAX_BODY_BYTES) {
+          await reader.cancel();
+          return new Response(JSON.stringify({ error: "request_too_large" }), { status: 413, headers });
+        }
+        chunks.push(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    const bytes = new Uint8Array(received);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    body = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
   } catch {
     return new Response(JSON.stringify({ error: "invalid_request" }), { status: 400, headers });
   }
