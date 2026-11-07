@@ -6,16 +6,21 @@
        
     <!-- SEO Meta-Daten -->
     <title>✨ Kostenlose Online-Tools & clevere Rechner ✨ | Helferlein</title>
-    <meta name="description" content="Entdecke 11 kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung, 100% lokal & sicher. Nutze praktische Tools direkt im Browser!">
+    <meta name="description" content="Entdecke 11 kostenlose Online-Tools für Haushalt, Auto & Garten. Ohne Anmeldung nutzbar, mit optionalem Cloud-Konto. Nutze praktische Tools direkt im Browser!">
     <link rel="canonical" href="https://duhrrom11.github.io/Helferlein/index.html">
+    <meta name="robots" content="index,follow">
 
     <!-- Open Graph / Social Media Sharing -->
     <meta property="og:title" content="Kostenlose Online-Tools & clevere Rechner | Helferlein">
-    <meta property="og:description" content="Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.">
+    <meta property="og:description" content="Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – ohne Anmeldung nutzbar, mit optionalem Konto.">
     <meta property="og:type" content="website">
+    <meta property="og:locale" content="de_DE">
     <meta property="og:url" content="https://duhrrom11.github.io/Helferlein/index.html">
     <meta property="og:image" content="https://duhrrom11.github.io/Helferlein/assets/preview.jpg">
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Helferlein – praktische Alltagstools">
+    <meta name="twitter:description" content="Kostenlose Werkzeuge für Alltag und Haushalt, mit optionalem Konto.">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     
     <!-- PWA / App-Modus Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,6 +28,7 @@
     <meta name="apple-mobile-web-app-title" content="Alltags-Tools">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#0284c7">
 
     <!-- Schema.org -->
     <script type="application/ld+json">
@@ -35,7 +41,7 @@
           "operatingSystem": "Web Browser",
           "applicationCategory": "UtilitiesApplication",
           "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
-          "description": "Kostenlose Online-Tools für Haushalt, Finanzen und Organisation ohne Anmeldung. Daten bleiben 100% lokal im Browser.",
+          "description": "Kostenlose Online-Tools für Haushalt, Finanzen und Organisation ohne Anmeldung. Lokale Speicherung und optionale Online-Dienste je nach Tool.",
           "author": { "@type": "Person", "name": "Romain Duhr" }
         }
       ]
@@ -56,6 +62,7 @@
         }
         .tool-card:hover::before { opacity: 1; }
     </style>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
@@ -66,14 +73,14 @@
             <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-600 via-teal-600 to-sky-600 bg-clip-text text-transparent inline-flex items-center justify-center gap-2">
                 ✨ Kostenlose Online-Tools & clevere Rechner ✨
             </h1>
-            <p class="text-xs md:text-sm text-gray-500 mt-1">Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – 100% lokal & ohne Anmeldung.</p>
+            <p class="text-xs md:text-sm text-gray-500 mt-1">Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – ohne Anmeldung nutzbar, mit optionalem Konto.</p>
         </div>
 
         <div class="mt-4 max-w-xl mx-auto px-4 flex items-center justify-center gap-2">
-            <button type="button" id="settingsBtn" class="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
+            <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" class="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
                 ⚙️ Einstellungen
             </button>
-            <div id="userInfo" class="text-xs text-gray-500 font-semibold">
+            <div id="userInfo" role="status" aria-live="polite" class="text-xs text-gray-500 font-semibold">
                 Nicht angemeldet
             </div>
         </div>
@@ -92,7 +99,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-3">
             <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 11 kostenlosen Online-Tools im Überblick</h2>
             <div class="w-full md:w-80">
-                <input type="text" id="searchBox" onkeyup="filterTools()" placeholder="🔍 Tool oder Inhalt durchsuchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
+                <input type="search" id="searchBox" inputmode="search" autocomplete="off" aria-label="Alltagstools durchsuchen" onkeyup="filterTools()" placeholder="🔍 Tool oder Inhalt durchsuchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
             </div>
         </div>
 
@@ -332,15 +339,15 @@
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
                 <h3 class="font-bold text-gray-900">Muss ich mich registrieren oder ein Konto erstellen?</h3>
-                <p>Nein. Du kannst alle Tools sofort und ohne Registrierung direkt im Browser verwenden.</p>
+                <p>Viele Tools lassen sich ohne Registrierung nutzen. Für bestimmte Cloud-Funktionen kann ein Konto erforderlich sein.</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
                 <h3 class="font-bold text-gray-900">Was passiert mit meinen Daten (Kassenbons, Passwörter)?</h3>
-                <p>Deine Daten bleiben zu 100 % privat. Sie werden ausschließlich lokal auf deinem Gerät (Local Storage) gespeichert. Es erfolgt kein Verkauf oder Upload auf externe Server.</p>
+                <p>Viele Funktionen speichern Daten lokal im Browser. Einzelne Tools verwenden auch Online-Dienste wie Firebase oder Supabase. Prüfe vor der Nutzung sensibler Funktionen die Datenschutzerklärung.</p>
             </div>
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
                 <h3 class="font-bold text-gray-900">Wie kann ich meine Daten sichern?</h3>
-                <p>Du kannst in den Einstellungen jederzeit ein lokales Backup all deiner Daten herunterladen und auf anderen Geräten wiederherstellen.</p>
+                <p>Du kannst in den Einstellungen jederzeit eine lokale Sicherung der Browserdaten dieser Website herunterladen und auf anderen Geräten wiederherstellen.</p>
             </div>
         </div>
     </section>
@@ -350,7 +357,7 @@
         <div class="bg-gradient-to-r from-amber-50 to-amber-100/50 border border-amber-200 rounded-2xl p-6 md:p-8 text-center shadow-sm">
             <h3 class="text-lg font-bold text-gray-900 mb-2">Dir gefallen diese kostenlosen Tools? ☕</h3>
             <p class="text-sm text-gray-600 max-w-2xl mx-auto mb-5">
-                Helferlein bleibt zu 100% kostenlos, werbefrei und sicher (lokal auf deinem Gerät). Wenn dir die Web-Apps den Alltag erleichtern, freue ich mich riesig über einen virtuellen Kaffee!
+                Helferlein bleibt zu 100% kostenlos, kostenlos. Je nach Tool können externe Dienste eingebunden sein. Wenn dir die Web-Apps den Alltag erleichtern, freue ich mich riesig über einen virtuellen Kaffee!
             </p>
             <a href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm shadow-md transition-all hover:scale-105">
                 <span class="text-lg">☕</span> Auf Ko-fi unterstützen
@@ -364,11 +371,11 @@
             <h2 class="text-sm font-bold text-gray-800">Über Helferlein</h2>
             <p class="text-xs text-gray-500 leading-relaxed max-w-2xl mx-auto">
                 Diese Sammlung kostenloser Online-Tools wurde konzipiert, um alltägliche Probleme (Haushalt, Finanzen, Auto) einfach und effizient im Browser zu lösen. 
-                <strong>Ohne versteckte Kosten, ohne Account-Zwang. Nichts dergleichen.</strong>
+                <strong>Ohne versteckte Kosten und mit vielen Funktionen ohne Anmeldung.</strong>
             </p>
             <p class="text-xs text-gray-500">
                 Entwickelt mit ❤️ und 💡 von Romain Duhr. 
-                <span class="font-semibold text-emerald-600">Datenschutz hat Priorität:</span> Deine Eingaben werden ausschließlich im Local Storage deines Browsers verarbeitet.
+                <span class="font-semibold text-emerald-600">Datenschutz hat Priorität:</span> Viele Daten werden lokal gespeichert; einige Funktionen nutzen externe Dienste.
             </p>
             <div class="flex justify-center gap-6 mt-4 pt-4 border-t border-gray-100">
                 <a href="datenschutz.html" class="text-xs text-sky-600 hover:text-sky-800 font-medium transition-colors">Datenschutzerklärung</a>
@@ -378,13 +385,13 @@
     </footer>
 
     <!-- Einstellungs-Modal -->
-    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
         <div class="bg-white border border-gray-200 rounded-2xl w-full max-w-lg p-6 shadow-2xl transition-colors space-y-5">
             <div class="flex justify-between items-center border-b border-gray-200 pb-3">
-                <h3 class="text-lg font-bold text-gray-900">
+                <h3 id="settingsTitle" class="text-lg font-bold text-gray-900">
                     ⚙️ Einstellungen
                 </h3>
-                <button type="button" id="closeSettingsBtn" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">
+                <button type="button" id="closeSettingsBtn" aria-label="Einstellungen schließen" class="text-gray-400 hover:text-gray-600 text-xl font-bold cursor-pointer">
                     &times;
                 </button>
             </div>
@@ -393,12 +400,12 @@
             <div>
                 <h3 class="font-bold text-sm text-gray-800 mb-2">☁️ Cloud-Konto</h3>
                 <div class="space-y-3">
-                    <div id="cloudStatus" class="text-xs bg-gray-100 rounded-lg p-3 text-gray-700">
+                    <div id="cloudStatus" role="status" aria-live="polite" class="text-xs bg-gray-100 rounded-lg p-3 text-gray-700">
                         Nicht angemeldet
                     </div>
 
-                    <input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
-                    <input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
+                    <input type="email" id="loginEmail" aria-label="E-Mail-Adresse" autocomplete="email" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
+                    <input type="password" id="loginPassword" aria-label="Passwort" autocomplete="current-password" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
 
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
@@ -420,7 +427,7 @@
                 <div class="flex gap-2">
                     <button type="button" onclick="exportGlobalBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Backup</button>
                     <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
-                        📤 Restore <input type="file" accept=".json" onchange="importGlobalBackup(event)" class="hidden">
+                        📤 Restore <input type="file" accept=".json,application/json" aria-label="Helferlein-Backup auswählen" onchange="importGlobalBackup(event)" class="hidden">
                     </label>
                 </div>
             </div>
@@ -525,6 +532,10 @@
                 modal.classList.add('flex');
             }
         }
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") closeSettings();
+        });
 
         function closeSettings() {
             const modal = document.getElementById('settingsModal');
