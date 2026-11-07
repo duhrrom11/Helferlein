@@ -437,6 +437,7 @@
 
         let currentMasterKeyHex = null;
         let currentDecryptedVault = { entries: [] };
+        let vaultReady = false; // Erst nach erfolgreicher Entschlüsselung Schreibzugriff erlauben.
 
         document.addEventListener('DOMContentLoaded', () => {
             setupGlobalEventListeners();
@@ -445,6 +446,7 @@
             (async () => {
                 try {
                     await initVault();
+                    vaultReady = true;
                     renderApp();
                     await checkIncomingAlarms();
                 } catch (err) {
@@ -619,7 +621,9 @@
         let localConfigUpdateQueue = Promise.resolve();
 
         function updateLocalConfig(mutate) {
+            if (!vaultReady) return Promise.reject(new Error('Tresor ist nicht entsperrt. Änderungen wurden nicht gespeichert.'));
             const operation = localConfigUpdateQueue.then(async () => {
+                if (!vaultReady) throw new Error('Tresor ist nicht entsperrt.');
                 const cfg = getVaultConfig();
                 const previousEntries = typeof currentDecryptedVault !== 'undefined' ? currentDecryptedVault?.entries?.slice() : undefined;
                 try {
@@ -659,6 +663,10 @@
         }
 
         async function performVaultSync(silent = false) {
+            if (!vaultReady) {
+                if (!silent) alert('Tresor ist nicht entsperrt. Es wurden keine Daten synchronisiert.');
+                return false;
+            }
             if (!silent) {
                 document.getElementById('syncStatusLoading').classList.remove('hidden');
                 document.getElementById('syncStatusSuccess').classList.add('hidden');
@@ -753,6 +761,7 @@
         }
 
         async function clearEmergencyAlarm() {
+            if (!vaultReady) { alert('Tresor ist nicht entsperrt.'); return; }
             if (!confirm("Möchtest du Entwarnung geben und den Alarm zurücksetzen?")) return;
 
             try {
