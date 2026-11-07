@@ -25,7 +25,8 @@ export function createStagingRedemptionStore(
 ): AtomicRedemptionStore {
   return {
     async redeemAtomically({ verifiedUserId, tokenHashHex }): Promise<boolean> {
-      // Hard stop: even explicit enablement cannot target production or unknown projects.\n      if (!enabled || projectRef !== "ojfoijljykjhveejvkfx") return false;
+      // Hard stop: even explicit enablement cannot target production or unknown projects.
+      if (!enabled || projectRef !== "ojfoijljykjhveejvkfx") return false;
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(verifiedUserId)) return false;
       if (!/^[a-f0-9]{64}$/.test(tokenHashHex)) return false;
       try {
