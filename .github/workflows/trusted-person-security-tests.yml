@@ -30,4 +30,5 @@ jobs:
         run: |
           deno test --no-remote --no-check             supabase/functions/_shared/trusted-person-authorization_test.ts             supabase/functions/_shared/authorized-trusted-person_test.ts \
             supabase/functions/_shared/trusted-person-invitation-request_test.ts \
-            supabase/functions/_shared/invitation-token_test.ts
+            supabase/functions/_shared/invitation-token_test.ts \
+            supabase/functions/_shared/redeem-invitation_test.ts
