@@ -48,7 +48,7 @@ function update(){
   duration.removeAttribute("aria-invalid");
   const date=new Date(Date.now()+days*86400000);
   if(!Number.isFinite(date.getTime())){expiry.textContent="Ablaufdatum nicht berechenbar.";summary.textContent="";return;}
-  expiry.textContent="Voraussichtliches Ablaufdatum (Ortszeit): "+new Intl.DateTimeFormat("de-DE",{dateStyle:"full",timeStyle:"short"}).format(date);
+  expiry.textContent="Unverbindliche Vorschau des Ablaufdatums (Ortszeit): "+new Intl.DateTimeFormat("de-DE",{dateStyle:"full",timeStyle:"short"}).format(date);
   summary.textContent="Vorgesehene Gültigkeit: "+days+(days===1?" Tag":" Tage")+". Es wurde noch keine Einladung erstellt.";
   if(!recipient.value){recipient.removeAttribute("aria-invalid");feedback.textContent="Bitte gib eine Benutzerkennung ein.";return;}
   recipient.setAttribute("aria-invalid",String(!uuid.test(recipient.value.trim())));
