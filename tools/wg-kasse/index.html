@@ -1801,7 +1801,7 @@
             const plan = getCookingPlan(); const mateNames = getFlatmateNames();
             document.getElementById('cookingInputList').innerHTML = plan.map((p, idx) => `
                 <div class="p-2.5 bg-gray-50 border rounded-xl space-y-1.5">
-                    <div class="flex justify-between font-bold"><span>${escapeUserHtml(p.day)}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">Frei</option>${mateNames.map(m => `<option value="${m}" ${p.chef === m ? 'selected' : ''}>${escapeUserHtml(m)}</option>`).join('')}</select></div>
+                    <div class="flex justify-between font-bold"><span>${escapeUserHtml(p.day)}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">Frei</option>${mateNames.map(m => `<option value="${escapeUserHtml(m)}" ${p.chef === m ? 'selected' : ''}>${escapeUserHtml(m)}</option>`).join('')}</select></div>
                     <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="Gericht" value="${escapeUserHtml(p.dish || '')}">
                     <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="Zutaten (kommagetrennt)" value="${escapeUserHtml(p.ingredients || '')}">
                 </div>
