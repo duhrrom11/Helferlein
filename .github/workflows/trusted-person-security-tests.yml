@@ -1,0 +1,31 @@
+name: Trusted person security tests (isolated)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "supabase/functions/_shared/**"
+      - ".github/workflows/trusted-person-security-tests.yml"
+  pull_request:
+    paths:
+      - "supabase/functions/_shared/**"
+      - ".github/workflows/trusted-person-security-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Deno isolated authorization tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Run offline unit tests
+        run: |
+          deno test --no-remote --no-check --allow-none             supabase/functions/_shared/trusted-person-authorization_test.ts             supabase/functions/_shared/authorized-trusted-person_test.ts
