@@ -852,7 +852,10 @@
             currentDecryptedVault.entries = currentDecryptedVault.entries.filter(e => e.id !== id);
             await saveLocalConfig(getVaultConfig());
             renderVaultEntries();
-            await syncVaultToFirebase(true);
+            const deletionCloudSaved = await syncVaultToFirebase(true);
+            if (!deletionCloudSaved) {
+                alert("⚠️ Tresoreintrag nur lokal gelöscht. Eine ältere verschlüsselte Kopie kann weiterhin in der Cloud vorhanden sein. Die Cloud-Löschung wurde NICHT bestätigt.");
+            }
         }
 
         async function performCheckIn() {
