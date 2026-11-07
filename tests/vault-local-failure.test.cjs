@@ -56,7 +56,7 @@ for (const operation of ['saveSettings', 'checkIn']) {
       assert.equal(h.cloudCalls(), 0);
       assert.equal(h.renderCalls(), 0);
       assert.equal(h.alerts.length, 1);
-      assert.match(h.alerts[0], /konnte nicht lokal gespeichert werden/);
+      assert.match(h.alerts[0], /konnten? nicht lokal gespeichert werden/);
       assert.doesNotMatch(h.alerts[0], /✅/);
     });
   }
