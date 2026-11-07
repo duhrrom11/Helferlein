@@ -25,7 +25,8 @@ jobs:
                     '/tools/wg-kasse/index.html']
           homepage = pathlib.Path('index.html').read_text(encoding='utf-8')
           tool_routes = sorted(set('/' + p for p in re.findall(r'tools/[a-z0-9-]+/index\.html', homepage)))
-          if len(tool_routes) < 11:
+          # Die Startseite verlinkt aktuell genau zehn eigenstaendige Tools.
+          if len(tool_routes) < 10:
               print(f'FAIL: only {len(tool_routes)} tool routes found in homepage', file=sys.stderr)
               sys.exit(1)
           routes = sorted(set(routes + tool_routes))
