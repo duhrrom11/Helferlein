@@ -872,7 +872,7 @@
                     if (!['Reifentiefe', 'Tanken', 'Reparatur'].includes(e.type)) {
                         let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + carName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('KFZ-Termin für ' + carName)}`;
                         calendarButtons = `
-                            <a href="${googleCalUrl}" target="_blank" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
+                            <a href="${googleCalUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl text-xs font-semibold" title="Google Kalender">📅 Google</a>
                             <button onclick="downloadICS('${e.title} (${carName})', '${e.date}')" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Apple / ICS Kalender">📥 ICS</button>
                         `;
                     }

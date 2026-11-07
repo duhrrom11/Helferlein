@@ -489,14 +489,14 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-3">
             <h4 class="font-bold text-sm text-gray-700">🛒 Nützliches WG- & Haushalts-Zubehör auf Amazon</h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <a href="https://www.amazon.de/s?k=haushaltshelfer+wg+kochen&tag=duhrrom-21" target="_blank" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                <a href="https://www.amazon.de/s?k=haushaltshelfer+wg+kochen&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
                     <span class="text-2xl">🍳</span>
                     <div>
                         <p class="font-bold text-gray-800">Küche & Haushaltshelfer</p>
                         <p class="text-[10px] text-emerald-700">Praktische Geräte für die WG-Küche →</p>
                     </div>
                 </a>
-                <a href="https://www.amazon.de/s?k=putzmittel+haushaltsreiniger+set&tag=duhrrom-21" target="_blank" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                <a href="https://www.amazon.de/s?k=putzmittel+haushaltsreiniger+set&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
                     <span class="text-2xl">🧽</span>
                     <div>
                         <p class="font-bold text-gray-800">Putz- & Reinigungsmittel</p>
@@ -1766,7 +1766,7 @@
                 <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
                     <span class="font-medium text-gray-800">${escapeUserHtml(item.title)}</span>
                     <div class="flex gap-1.5">
-                        <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
+                        <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
                         <button onclick="transferShoppingToExpense(${item.id})" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
                         <button onclick="deleteShoppingItem(${item.id})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
                     </div>
@@ -1910,7 +1910,7 @@
                     <div class="space-y-0.5">
                         <h4 class="font-bold text-gray-900 text-sm">👤 ${escapeUserHtml(m.vorname)} ${escapeUserHtml(m.nachname || '')}</h4>
                         <div class="flex flex-wrap gap-2 text-[11px] text-gray-600">
-                            ${m.phone ? `<span>📞 <a href="https://wa.me/${m.phone.replace(/[^0-9]/g,'')}" target="_blank" class="text-emerald-700 underline font-semibold">${escapeUserHtml(m.phone)}</a></span>` : ''}
+                            ${m.phone ? `<span>📞 <a href="https://wa.me/${m.phone.replace(/[^0-9]/g,'')}" target="_blank" rel="noopener noreferrer" class="text-emerald-700 underline font-semibold">${escapeUserHtml(m.phone)}</a></span>` : ''}
                             ${m.email ? `<span>📧 <a href="mailto:${encodeURIComponent(String(m.email ?? ''))}" class="text-blue-600 underline">${escapeUserHtml(m.email)}</a></span>` : ''}
                             ${m.insta ? `<span>📸 Insta: <strong>${escapeUserHtml(m.insta)}</strong></span>` : ''}
                             ${m.fb ? `<span>👥 FB: <strong>${escapeUserHtml(m.fb)}</strong></span>` : ''}
