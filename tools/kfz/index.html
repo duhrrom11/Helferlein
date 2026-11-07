@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
 
     <!-- Header mit ausklappbarer Anleitung -->
     <header class="bg-red-600 text-white shadow-md py-6 px-4 text-center space-y-3 relative">
@@ -64,7 +65,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
+    <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-5xl space-y-6">
         
         <!-- Navigation & Global Actions -->
         <div class="flex flex-col md:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border">
