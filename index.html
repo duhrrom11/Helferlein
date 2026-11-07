@@ -714,6 +714,11 @@
                     : "Dieses Backup ist NICHT verschlüsselt und kann persönliche Daten enthalten. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren. Trotzdem exportieren?";
                 if (!confirm(warning)) return;
                 const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+                // The restore function rejects files larger than 20 MiB. Never export an unusable backup.
+                if (blob.size > 20 * 1024 * 1024) {
+                    alert("Die Sicherung ist größer als 20 MB und kann derzeit nicht wiederhergestellt werden. Export abgebrochen; Ihre lokalen Daten bleiben unverändert.");
+                    return;
+                }
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
