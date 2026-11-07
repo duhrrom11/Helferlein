@@ -62,6 +62,7 @@ export function canTriggerAlarm(
     invitation.intended_user_id !== verifiedUserId ||
     invitation.accepted_by_user_id !== verifiedUserId ||
     invitation.accepted_at === null ||
+    !Number.isFinite(Date.parse(invitation.accepted_at)) ||
     invitation.revoked_at !== null ||
     trusted.trusted_user_id !== verifiedUserId ||
     trusted.status !== "active" ||
