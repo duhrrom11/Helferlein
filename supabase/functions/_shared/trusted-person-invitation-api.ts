@@ -198,6 +198,7 @@ export function validateTrustedPersonOverview(value: unknown): value is TrustedP
     overview.trustedPersons.every((item: unknown) => {
       if (typeof item !== "object" || item === null) return false;
       const entry = item as Record<string, unknown>;
+      if (Object.keys(entry).some((key) => !["userId", "status", "addedAt"].includes(key))) return false;
       return typeof entry.userId === "string" && validateIdentifier(entry.userId) &&
         typeof entry.addedAt === "string" && Number.isFinite(Date.parse(entry.addedAt)) &&
         (entry.status === "active" || entry.status === "revoked");
