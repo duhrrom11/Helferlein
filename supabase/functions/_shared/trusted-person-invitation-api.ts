@@ -179,7 +179,7 @@ export function invitationViews(
 
 /** Validate external list data before exposing it to the UI. */
 export function validateTrustedPersonOverview(value: unknown): value is TrustedPersonOverview {
-  if (typeof value !== "object" || value === null) return false;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
   const overview = value as Record<string, unknown>;
   return Array.isArray(overview.invitations) &&
     Array.isArray(overview.trustedPersons) &&
