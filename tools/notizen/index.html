@@ -867,10 +867,18 @@
         }
 
         async function updateDeadmanInterval() {
+            const interval = Number(document.getElementById('deadmanIntervalSelect').value);
+            if (!Number.isSafeInteger(interval) || interval < 1 || interval > 365) {
+                alert("Bitte ein gültiges Check-in-Intervall zwischen 1 und 365 Tagen wählen.");
+                return;
+            }
             const cfg = getVaultConfig();
-            cfg.checkInIntervalDays = parseInt(document.getElementById('deadmanIntervalSelect').value);
+            cfg.checkInIntervalDays = interval;
             await saveLocalConfig(cfg);
-            await syncVaultToFirebase(true);
+            const intervalCloudSaved = await syncVaultToFirebase(true);
+            if (!intervalCloudSaved) {
+                alert("⚠️ Check-in-Intervall nur lokal gespeichert. Die Cloud-Frist wurde NICHT aktualisiert; die Notfallüberwachung ist derzeit nicht zuverlässig verfügbar.");
+            }
         }
 
         async function saveTrustees() {
