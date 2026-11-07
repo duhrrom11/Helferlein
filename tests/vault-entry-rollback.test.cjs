@@ -64,6 +64,7 @@ function setupSequence(outcomes) {
   const snapshots = [];
   let calls = 0;
   const context = vm.createContext({
+    vaultReady: true,
     currentDecryptedVault: vault,
     getVaultConfig: () => ({}),
     saveLocalConfig: async () => {
