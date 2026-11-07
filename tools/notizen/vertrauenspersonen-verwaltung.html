@@ -70,6 +70,7 @@ function renderRows(items, listId, makeLabel){
 function renderOverview(overview){
   // Called only after a future authenticated gateway supplies validated data.
   if(!overview || !Array.isArray(overview.trustedPersons) || !Array.isArray(overview.invitations)){renderUnavailable();return;}
+  if(!overview.trustedPersons.every(p=>p && typeof p.userId==="string" && ["active","revoked"].includes(p.status)) || !overview.invitations.every(i=>i && typeof i.intendedUserId==="string" && ["pending","accepted","expired","revoked"].includes(i.status))){renderUnavailable();return;}
   const persons=[...overview.trustedPersons].sort((a,b)=>
     Number(b.status==="active")-Number(a.status==="active") ||
     (Date.parse(b.addedAt)||0)-(Date.parse(a.addedAt)||0));
