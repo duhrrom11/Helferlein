@@ -276,6 +276,18 @@
             return crypto.subtle.importKey("raw", bytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
         }
 
+        // Benutzereingaben immer als Text behandeln, niemals als HTML/JavaScript.
+        function escapeHtml(value) {
+            const entities = {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            };
+            return String(value ?? "").replace(/[&<>"']/g, character => entities[character]);
+        }
+
         async function decryptVaultData() {
             if (!urlMasterKey) {
                 alert("Kein Schlüssel im Link vorhanden.");
@@ -303,10 +315,10 @@
                 container.innerHTML = entries.map(e => `
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl space-y-1 text-xs">
                         <div class="flex items-center space-x-2">
-                            <span class="font-bold text-slate-100 text-sm">${e.title}</span>
-                            <span class="bg-indigo-950 text-indigo-400 px-2 py-0.5 rounded-full text-[10px]">${e.category}</span>
+                            <span class="font-bold text-slate-100 text-sm">${escapeHtml(e.title)}</span>
+                            <span class="bg-indigo-950 text-indigo-400 px-2 py-0.5 rounded-full text-[10px]">${escapeHtml(e.category)}</span>
                         </div>
-                        <p class="text-slate-200 font-mono bg-slate-950 p-2.5 rounded-lg border border-slate-800">${e.content}</p>
+                        <p class="text-slate-200 font-mono bg-slate-950 p-2.5 rounded-lg border border-slate-800">${escapeHtml(e.content)}</p>
                     </div>
                 `).join('');
             } catch (e) {
