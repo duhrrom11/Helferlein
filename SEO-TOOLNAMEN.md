@@ -31,3 +31,5 @@ Die Keyword-Auswahl basiert auf Tool-Funktionen, Suchintention und einer Sichtun
 - Die elf Startseiten-Kacheln verlinken jeweils genau einmal auf die neuen Ziele.
 - Die zwölf alten HTML-Seiten (elf Tools plus Erben-Portal) haben überprüfte Ziele, und die zwölf neuen Dateien existieren.
 - Eine Live-Browser-Funktionsprüfung von JavaScript, Login, Cloud-Sync und Speicherdaten sowie HTTP-Status-Prüfung nach Veröffentlichung ist zusätzlich erforderlich. Keine Testdatensätze im produktiven Backend erzeugen.
+
+- Zehn bestehende Nachlass-/Tresor-Testdateien wurden nach der Pfadänderung auf `tools/digitaler-nachlass/index.html` umgestellt, damit Sicherheitstests weiterhin den echten Code statt der Alt-URL-Weiterleitung prüfen.
