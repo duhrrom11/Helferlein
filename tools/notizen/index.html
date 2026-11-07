@@ -854,8 +854,10 @@
             cfg.lastCheckIn = new Date().toISOString();
             await saveLocalConfig(cfg);
             renderApp();
-            await syncVaultToFirebase(true);
-            alert("✅ Check-in erneuert!");
+            const cloudCheckInSaved = await syncVaultToFirebase(true);
+            alert(cloudCheckInSaved
+                ? "✅ Check-in lokal und in der Cloud erneuert!"
+                : "⚠️ Check-in nur lokal gespeichert. Der Cloud-Check-in wurde NICHT erneuert. Die Notfallüberwachung ist derzeit nicht zuverlässig verfügbar.");
         }
 
         async function updateDeadmanInterval() {
