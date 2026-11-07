@@ -585,7 +585,19 @@
             localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
         }
 
-        async function syncVaultToFirebase(silent = false) {
+        let activeVaultSync = null;
+
+        function syncVaultToFirebase(silent = false) {
+            if (activeVaultSync) return activeVaultSync;
+            const operation = performVaultSync(silent);
+            activeVaultSync = operation;
+            void operation.finally(() => {
+                if (activeVaultSync === operation) activeVaultSync = null;
+            }).catch(() => {});
+            return operation;
+        }
+
+        async function performVaultSync(silent = false) {
             if (!silent) {
                 document.getElementById('syncStatusLoading').classList.remove('hidden');
                 document.getElementById('syncStatusSuccess').classList.add('hidden');
