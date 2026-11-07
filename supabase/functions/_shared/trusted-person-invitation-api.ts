@@ -189,6 +189,7 @@ export function validateTrustedPersonOverview(value: unknown): value is TrustedP
     overview.invitations.every((item: unknown) => {
       if (typeof item !== "object" || item === null) return false;
       const entry = item as Record<string, unknown>;
+      if (Object.keys(entry).some((key) => !["id", "intendedUserId", "expiresAt", "status"].includes(key))) return false;
       return typeof entry.id === "string" && validateIdentifier(entry.id) &&
         typeof entry.intendedUserId === "string" && validateIdentifier(entry.intendedUserId) &&
         typeof entry.expiresAt === "string" && Number.isFinite(Date.parse(entry.expiresAt)) &&
