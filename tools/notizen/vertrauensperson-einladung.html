@@ -23,7 +23,7 @@ a.nav{display:inline-block;margin-top:1rem;color:#24577c}input:focus-visible,but
 <div class="notice" role="status"><strong>Einladungen noch nicht freigeschaltet.</strong> Die sichere Serveranbindung wird vorbereitet. Eine Annahme oder Freigabe von Daten ist derzeit nicht möglich.</div>
 <form id="invitation" autocomplete="off" novalidate method="dialog">
 <label for="token">Einladungscode</label>
-<input id="token" type="password" inputmode="text" maxlength="64" minlength="64" pattern="[a-f0-9]{64}" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off" aria-describedby="token-help status" required>
+<input id="token" type="password" inputmode="text" maxlength="64" minlength="64" pattern="[a-f0-9]{64}" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off" aria-describedby="token-help token-length status" required>
 <p id="token-length" class="hint">0 von 64 Zeichen</p>
 <p id="token-help" class="hint">64 Zeichen, bestehend aus den Ziffern 0–9 und den Buchstaben a–f. Teile diesen Code nicht mit anderen.</p>
 <button id="accept" type="submit" disabled>Einladung annehmen (noch nicht verfügbar)</button>
