@@ -582,9 +582,17 @@
             return JSON.parse(localStorage.getItem('digital_estate_vault'));
         }
 
+        // Nur der zuletzt gestartete lokale Speichervorgang darf schreiben.
+        // Verschlüsselungen können in anderer Reihenfolge fertig werden.
+        let localSaveRevision = 0;
+
         async function saveLocalConfig(cfg) {
-            cfg.encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
+            const revision = ++localSaveRevision;
+            const encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
+            if (revision !== localSaveRevision) return false;
+            cfg.encryptedData = encryptedData;
             localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+            return true;
         }
 
         // Synchronisierungen nacheinander ausführen: spätere Änderungen
