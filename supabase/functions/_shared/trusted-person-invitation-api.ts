@@ -207,7 +207,10 @@ export class InvitationGatewayUnavailableError extends Error {
   }
 }
 
-/** Default adapter deliberately performs no network requests or writes. */
+/** Default adapter deliberately performs no network requests or writes.
+ * Never replace this with a client-side service-role key or an unauthenticated endpoint.
+ * A future server must derive identity from a verified session and authorize vault ownership.
+ */
 export function unavailableInvitationGateway(): InvitationGateway {
   const deny = async (): Promise<never> => {
     throw new InvitationGatewayUnavailableError();
