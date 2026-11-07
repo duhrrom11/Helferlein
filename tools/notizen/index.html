@@ -597,7 +597,14 @@
                 if (!silent) {
                     setTimeout(() => document.getElementById('syncModalOverlay').classList.add('hidden'), 1500);
                 }
-                await checkIncomingAlarms();
+                // Der erfolgreiche Firestore-Schreibvorgang ist bereits bestätigt.
+                // Ein Fehler bei der nachgelagerten Alarmabfrage darf diesen Erfolg
+                // nicht nachträglich als fehlgeschlagene Speicherung darstellen.
+                try {
+                    await checkIncomingAlarms();
+                } catch (alarmError) {
+                    console.warn("Alarmprüfung nach Cloud-Speicherung fehlgeschlagen:", alarmError);
+                }
                 return true;
             } catch(e) {
                 if (!silent) {
