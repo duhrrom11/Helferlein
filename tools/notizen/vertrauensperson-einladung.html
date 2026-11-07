@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">
+<title>Helferlein – Einladung als Vertrauensperson</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:light;background:#f5f7fa;color:#1b2938}
+*{box-sizing:border-box}body{margin:0;padding:2rem 1rem}main{max-width:38rem;margin:2rem auto;background:white;border-radius:1rem;padding:clamp(1.25rem,4vw,2.5rem);box-shadow:0 8px 32px #182c4112}
+h1{font-size:1.7rem;margin-top:0}p{line-height:1.6}.notice{background:#fff4db;border-left:4px solid #a46a00;padding:1rem;border-radius:.3rem}label{display:block;font-weight:650;margin:1.5rem 0 .4rem}
+input{width:100%;font:inherit;padding:.85rem;border:1px solid #7d8b99;border-radius:.5rem}
+button{font:inherit;border:0;border-radius:.5rem;padding:.8rem 1.2rem;background:#24577c;color:white;cursor:pointer;margin-top:1rem}
+button:disabled{background:#6b7782;cursor:not-allowed}.hint{font-size:.9rem;color:#4d5a67}#status{min-height:1.5rem}footer{margin-top:2rem;font-size:.85rem;color:#566}
+</style>
+</head>
+<body><main>
+<h1>Einladung als Vertrauensperson</h1>
+<p>Hier kannst du eine persönliche Einladung für Helferlein vorbereiten. Eine Einladung darf nur von der vorgesehenen Person angenommen werden.</p>
+<div class="notice" role="status"><strong>Einladungen noch nicht freigeschaltet.</strong> Die sichere Serveranbindung wird vorbereitet. Eine Annahme oder Freigabe von Daten ist derzeit nicht möglich.</div>
+<form id="invitation" autocomplete="off" novalidate>
+<label for="token">Einladungscode</label>
+<input id="token" name="token" type="password" inputmode="text" maxlength="64" minlength="64" pattern="[a-f0-9]{64}" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="token-help" required>
+<p id="token-help" class="hint">64 Zeichen, bestehend aus den Ziffern 0–9 und den Buchstaben a–f. Teile diesen Code nicht mit anderen.</p>
+<button id="accept" type="submit" disabled>Einladung annehmen (noch nicht verfügbar)</button>
+<p id="status" role="status" aria-live="polite"></p>
+</form>
+<footer>Helferlein · Vorschau ohne Datenübertragung. Es werden weder Einladungscodes gespeichert noch versendet.</footer>
+</main>
+<script>
+"use strict";
+const form=document.getElementById("invitation");
+const status=document.getElementById("status");
+form.addEventListener("submit",event=>{
+  event.preventDefault();
+  status.textContent="Die Annahme ist noch nicht freigeschaltet. Es wurden keine Daten übertragen.";
+});
+</script>
+</body></html>
