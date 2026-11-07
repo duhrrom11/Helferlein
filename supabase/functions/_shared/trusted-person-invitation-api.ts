@@ -101,6 +101,7 @@ export type InvitationCreationResult = Readonly<{
 export function validateInvitationCreationResult(value: unknown): value is InvitationCreationResult {
   if (typeof value !== "object" || value === null) return false;
   const result = value as Record<string, unknown>;
+  if (Object.keys(result).some((key) => !["invitationId", "oneTimeCode", "expiresAt"].includes(key))) return false;
   return typeof result.invitationId === "string" &&
     validateIdentifier(result.invitationId) &&
     typeof result.oneTimeCode === "string" &&
