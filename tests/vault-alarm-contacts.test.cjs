@@ -73,3 +73,75 @@ test('ungueltiger Index loescht keinen Kontakt', async () => {
   assert.equal(h.read().alarmPersons.length, 1);
   assert.match(h.alerts[0], /nicht gefunden/);
 });
+
+function setupAddFailure(mode) {
+  const inputs = {
+    newAlarmPersonName: { value: 'Anna' },
+    newAlarmPersonContact: { value: 'anna@example.test' }
+  };
+  const alerts = [];
+  const errors = [];
+  let syncCalls = 0;
+  let renderCalls = 0;
+  let saved = [];
+  const context = vm.createContext({
+    document: { getElementById: id => inputs[id] },
+    updateLocalConfig: async mutate => {
+      const cfg = { alarmPersons: structuredClone(saved) };
+      mutate(cfg);
+      if (mode === 'throw') throw new Error('Speicherfehler');
+      if (mode === 'false') return false;
+      saved = cfg.alarmPersons;
+      return true;
+    },
+    syncVaultToFirebase: async () => {
+      syncCalls++;
+      return mode !== 'cloud-fail';
+    },
+    renderAlarmPersons: () => { renderCalls++; },
+    alert: message => alerts.push(message),
+    console: { error: (...args) => errors.push(args) },
+    Math
+  });
+  const addSource = extract('        async function addAlarmPerson()', '        async function deleteAlarmPerson(');
+  vm.runInContext(addSource + '\nthis.add = addAlarmPerson;', context);
+  return {
+    add: context.add, inputs, alerts, errors,
+    syncCalls: () => syncCalls, renderCalls: () => renderCalls,
+    saved: () => saved
+  };
+}
+
+for (const mode of ['false', 'throw']) {
+  test('Notfallkontakt bei lokalem Fehler ' + mode + ' nicht synchronisieren', async () => {
+    const h = setupAddFailure(mode);
+    await h.add();
+    assert.equal(h.syncCalls(), 0);
+    assert.equal(h.renderCalls(), 0);
+    assert.deepEqual(h.saved(), []);
+    assert.equal(h.inputs.newAlarmPersonName.value, 'Anna');
+    assert.equal(h.inputs.newAlarmPersonContact.value, 'anna@example.test');
+    assert.match(h.alerts[0], /nicht lokal gespeichert/);
+    if (mode === 'throw') assert.equal(h.errors.length, 1);
+  });
+}
+
+test('Cloud-Fehler nach erfolgreichem lokalen Speichern wird gemeldet', async () => {
+  const h = setupAddFailure('cloud-fail');
+  await h.add();
+  assert.equal(h.syncCalls(), 1);
+  assert.equal(h.saved().length, 1);
+  assert.equal(h.renderCalls(), 1);
+  assert.match(h.alerts[0], /nur lokal hinzugefügt/);
+});
+
+test('vollstaendig erfolgreicher Kontakt wird gespeichert und angezeigt', async () => {
+  const h = setupAddFailure('ok');
+  await h.add();
+  assert.equal(h.syncCalls(), 1);
+  assert.equal(h.saved().length, 1);
+  assert.equal(h.renderCalls(), 1);
+  assert.equal(h.alerts.length, 0);
+  assert.equal(h.inputs.newAlarmPersonName.value, '');
+  assert.equal(h.inputs.newAlarmPersonContact.value, '');
+});
