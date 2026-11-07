@@ -155,7 +155,7 @@ export function invitationViews(
   now: Date = new Date(),
 ): readonly InvitationView[] {
   const nowMs = now.getTime();
-  return invitations.filter((invitation) => validateIdentifier(invitation.id) && validateIdentifier(invitation.intendedUserId)).map((invitation) => {
+  return invitations.filter((invitation) => validateIdentifier(invitation.id) && validateIdentifier(invitation.intendedUserId) && ["pending", "accepted", "expired", "revoked"].includes(invitation.status)).map((invitation) => {
     const expiryMs = Date.parse(invitation.expiresAt);
     const status = invitation.status === "pending" &&
         (!Number.isFinite(expiryMs) || expiryMs <= nowMs)
