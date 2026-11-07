@@ -48,7 +48,7 @@ function formatDate(value){
     : "Unbekannt";
 }
 function effectiveInvitationStatus(invitation){
-  if(invitation.status==="pending" && Date.parse(invitation.expiresAt)<=Date.now())
+  if(invitation.status==="pending" && (!Number.isFinite(Date.parse(invitation.expiresAt)) || Date.parse(invitation.expiresAt)<=Date.now()))
     return "expired";
   return invitation.status;
 }
