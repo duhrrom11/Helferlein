@@ -47,7 +47,7 @@ function updateStatus(){
   if(!value){status.textContent="Bitte gib deinen Einladungscode ein.";return;}
   if(!validCode.test(value)){
     status.className="invalid";
-    status.textContent="Der Code muss genau 64 Zeichen aus 0–9 und a–f enthalten.";
+    status.textContent="Ungültiges Codeformat ("+value.length+"/64 Zeichen). Erlaubt sind 0–9 und a–f.";
     return;
   }
   status.className="valid";
