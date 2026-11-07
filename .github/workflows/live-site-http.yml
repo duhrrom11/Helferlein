@@ -18,21 +18,21 @@ jobs:
           SITE: https://duhrrom11.github.io/Helferlein
         run: |
           python3 - <<'PY'
-          import os, urllib.request, urllib.error, sys, re, pathlib
+          import os, urllib.request, urllib.error, sys, re, pathlib, html
           base = os.environ['SITE'].rstrip('/')
           routes = ['/', '/index.html', '/datenschutz.html', '/impressum.html',
                     '/tools/notizen/index.html', '/tools/verleih/index.html',
                     '/tools/wg-kasse/index.html']
           homepage = pathlib.Path('index.html').read_text(encoding='utf-8')
-          tool_routes = sorted(set('/' + p for p in re.findall(r'tools/[a-z0-9-]+/index\.html', homepage)))
-          # Die Startseite verlinkt aktuell genau zehn eigenstaendige Tools.
-          if len(tool_routes) < 10:
+          tool_routes = sorted(set('/' + html.unescape(p) for p in re.findall(r'href="(tools/[^"]+\.html)"', homepage)))
+          # Auch Tools mit Umlauten und abweichenden Dateinamen pruefen.
+          if len(tool_routes) < 11:
               print(f'FAIL: only {len(tool_routes)} tool routes found in homepage', file=sys.stderr)
               sys.exit(1)
           routes = sorted(set(routes + tool_routes))
           failed = []
           for route in routes:
-              url = base + route
+              url = base + urllib.parse.quote(route, safe='/')
               try:
                   req = urllib.request.Request(url, headers={'User-Agent':'Helferlein-live-smoke/1.0'})
                   with urllib.request.urlopen(req, timeout=15) as response:
