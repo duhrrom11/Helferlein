@@ -258,7 +258,7 @@
 
     <!-- MODAL: Foto & Beleg Zoom -->
     <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50" onclick="closeImageModal()">
-        <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain">
+        <img id="zoomedImage" src="" class="max-h-[85vh] max-w-full rounded-lg bg-white p-2 object-contain" alt="Fahrzeugfoto in Großansicht">
     </div>
 
     <!-- Einstellungs-Modal mit Supabase Auth -->
@@ -751,7 +751,7 @@
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="flex items-center space-x-3">
-                                    ${c.photo ? `<img src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${c.photo}')" title="Foto vergrößern">` : defaultCarIcon}
+                                    ${c.photo ? `<img src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${c.photo}')" title="Foto vergrößern" alt="Foto des Fahrzeugs">` : defaultCarIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-red-800">${c.name}</h4>
                                         <p class="text-xs text-gray-600">${c.plate || 'k.Kennzeichen'} ${c.km ? '| ' + c.km + ' km' : ''}</p>
