@@ -1045,12 +1045,21 @@
                 name: document.getElementById(`tName_${i}`).value.trim(),
                 role: document.getElementById(`tRole_${i}`).value.trim()
             }));
-            await updateLocalConfig(cfg => {
-                trusteeValues.forEach((trustee, i) => {
-                    cfg.trustees[i].name = trustee.name;
-                    cfg.trustees[i].role = trustee.role;
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(cfg => {
+                    trusteeValues.forEach((trustee, i) => {
+                        cfg.trustees[i].name = trustee.name;
+                        cfg.trustees[i].role = trustee.role;
+                    });
                 });
-            });
+            } catch (error) {
+                console.error("Lokales Speichern der Vertrauenspersonen fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Vertrauenspersonen konnten nicht lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet. Bitte versuche es erneut.");
+                return;
+            }
             const trusteesCloudSaved = await syncVaultToFirebase(true);
             alert(trusteesCloudSaved
                 ? "✅ Vertrauenspersonen lokal gespeichert. Cloud-Synchronisierung abgeschlossen."
