@@ -59,8 +59,8 @@ Stand: 2026-11-07. Statische Codeprüfung, keine Laufzeit- oder Browserprüfung.
 
 - 50 statische Prüfungen an zehn produktiven Tools.
 - 39 Links mit target=_blank erfasst.
-- 2 offene Befunde nach den Codekorrekturen.
-- 33 Link-Attribute in acht Tools wurden um noopener/noreferrer ergänzt (aus vorherigem Quellcode-Vergleich).
+- 0 offene Befunde nach den Codekorrekturen.
+- 33 Link-Attribute in acht Tools wurden um noopener/noreferrer ergänzt; zwei weitere Tools erhielten ergänzendes noreferrer.
 
 ## Nicht geprüft
 
