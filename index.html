@@ -99,7 +99,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-3">
             <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 11 kostenlosen Online-Tools im Überblick</h2>
             <div class="w-full md:w-80">
-                <input type="search" id="searchBox" inputmode="search" autocomplete="off" aria-label="Alltagstools durchsuchen" onkeyup="filterTools()" placeholder="🔍 Tool oder Inhalt durchsuchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
+                <input type="search" id="searchBox" inputmode="search" autocomplete="off" aria-label="Alltagstools durchsuchen" onkeyup="filterTools()" placeholder="🔍 Werkzeug suchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
             </div>
         </div>
 
@@ -424,8 +424,9 @@
             <!-- DATENSICHERUNG -->
             <div class="border-t border-gray-200 pt-4">
                 <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
+                <p class="text-xs text-amber-800 mb-2">⚠️ Backups sind nicht verschlüsselt. Bitte sicher aufbewahren und nicht öffentlich teilen.</p>
                 <div class="flex gap-2">
-                    <button type="button" title="Lokale Browserdaten als JSON-Datei sichern; schützt die Datei vor fremdem Zugriff" onclick="exportGlobalBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Backup</button>
+                    <button type="button" title="Lokale Browserdaten als unverschlüsselte JSON-Datei exportieren" onclick="exportGlobalBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Backup</button>
                     <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
                         📤 Restore <input type="file" title="Bestehende lokale Daten können überschrieben werden" accept=".json,application/json" aria-label="Helferlein-Backup auswählen" onchange="importGlobalBackup(event)" class="hidden">
                     </label>
@@ -608,15 +609,9 @@
             if(!searchBox) return;
             const query = searchBox.value.toLocaleLowerCase("de").trim();
             document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
-                const name = card.getAttribute('data-name') || '', text = card.innerText.toLocaleLowerCase("de"), id = card.getAttribute('data-id');
-                let found = false;
-                if (query.length > 1 && id) {
-                    try { for (let i = 0; i < localStorage.length; i++) {
-                        let k = localStorage.key(i);
-                        if (k && k.startsWith(id) && (localStorage.getItem(k) || '').toLocaleLowerCase('de').includes(query)) { found = true; break; }
-                    } } catch (_) { /* Browser-Speicher nicht verfügbar */ }
-                }
-                card.style.display = (name.includes(query) || text.includes(query) || found) ? "flex" : "none";
+                const name = card.getAttribute('data-name') || '', text = card.innerText.toLocaleLowerCase("de");
+                // Search only tool metadata, never private browser storage.
+                card.style.display = (name.toLocaleLowerCase("de").includes(query) || text.includes(query)) ? "flex" : "none";
             });
         }
 
