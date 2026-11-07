@@ -188,7 +188,7 @@ export function validateTrustedPersonOverview(value: unknown): value is TrustedP
       return typeof entry.id === "string" && validateIdentifier(entry.id) &&
         typeof entry.intendedUserId === "string" && validateIdentifier(entry.intendedUserId) &&
         typeof entry.expiresAt === "string" && Number.isFinite(Date.parse(entry.expiresAt)) &&
-        ["pending", "accepted", "expired", "revoked"].includes(String(entry.status));
+        (entry.status === "pending" || entry.status === "accepted" || entry.status === "expired" || entry.status === "revoked");
     }) &&
     overview.trustedPersons.every((item: unknown) => {
       if (typeof item !== "object" || item === null) return false;
