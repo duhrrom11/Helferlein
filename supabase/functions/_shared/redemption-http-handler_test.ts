@@ -7,7 +7,7 @@ let calls = 0;
 const store: AtomicRedemptionStore = { async redeemAtomically() { calls++; return true; } };
 const url = "https://example.test/redeem";
 const req = (body: string, headers: Record<string,string> = {}) =>
-  new Request(url, { method: "POST", headers: { Authorization: "Bearer test.token", ...headers }, body });
+  new Request(url, { method: "POST", headers: { Authorization: "Bearer test.token", "Content-Type": "application/json", ...headers }, body });
 function assert(v: boolean, msg: string) { if (!v) throw Error(msg); }
 Deno.test("disabled by default even with valid token and auth", async () => {
   calls = 0;
@@ -35,4 +35,13 @@ Deno.test("enabled handler accepts verified token without returning it", async (
   const r = await handleRedemptionRequest(req(JSON.stringify({ token })), { auth, store, enabled: true });
   assert(r.status === 200 && calls === 1, "valid redemption failed");
   assert(!(await r.text()).includes(token), "plaintext token returned");
+});
+
+Deno.test("rejects non-JSON and extra fields without database access", async () => {
+  calls = 0;
+  const deps = { auth, store, enabled: true };
+  const token = "a".repeat(64);
+  assert((await handleRedemptionRequest(req(JSON.stringify({ token }), { "Content-Type": "text/plain" }), deps)).status === 415, "non-JSON accepted");
+  assert((await handleRedemptionRequest(req(JSON.stringify({ token, userId: uid })), deps)).status === 400, "client identity field accepted");
+  assert(calls === 0, "invalid payload reached store");
 });
