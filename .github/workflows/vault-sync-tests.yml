@@ -11,6 +11,7 @@ on:
       - 'tests/vault-entries-checkin.test.cjs'
       - 'tests/vault-local-failure.test.cjs'
       - 'tests/vault-entry-failure.test.cjs'
+      - 'tests/vault-entry-rollback.test.cjs'
       - '.github/workflows/vault-sync-tests.yml'
   pull_request:
     paths:
@@ -22,6 +23,7 @@ on:
       - 'tests/vault-entries-checkin.test.cjs'
       - 'tests/vault-local-failure.test.cjs'
       - 'tests/vault-entry-failure.test.cjs'
+      - 'tests/vault-entry-rollback.test.cjs'
       - '.github/workflows/vault-sync-tests.yml'
   workflow_dispatch:
 
@@ -41,4 +43,4 @@ jobs:
         with:
           node-version: '22'
       - name: Run isolated queue tests
-        run: node --test tests/vault-sync-queue.test.cjs tests/vault-local-save.test.cjs tests/vault-config-update.test.cjs tests/vault-alarm-contacts.test.cjs tests/vault-entries-checkin.test.cjs tests/vault-local-failure.test.cjs tests/vault-entry-failure.test.cjs
+        run: node --test tests/vault-sync-queue.test.cjs tests/vault-local-save.test.cjs tests/vault-config-update.test.cjs tests/vault-alarm-contacts.test.cjs tests/vault-entries-checkin.test.cjs tests/vault-local-failure.test.cjs tests/vault-entry-failure.test.cjs tests/vault-entry-rollback.test.cjs
