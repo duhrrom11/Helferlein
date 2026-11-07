@@ -1353,7 +1353,7 @@
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-xs">
-                            <span class="font-bold text-gray-700">${cat}</span>
+                            <span class="font-bold text-gray-700">${escapeUserHtml(cat)}</span>
                             <span class="text-gray-500">${spent.toFixed(2)} € / <strong>${limit.toFixed(2)} €</strong></span>
                         </div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
@@ -1591,7 +1591,7 @@
                     totalVolume += s.amount;
                     return `
                         <div class="flex justify-between items-center py-1 border-b border-emerald-100 last:border-0 text-xs">
-                            <span>👤 <strong>${s.from}</strong> an <strong>${s.to}</strong>:</span>
+                            <span>👤 <strong>${escapeUserHtml(s.from)}</strong> an <strong>${escapeUserHtml(s.to)}</strong>:</span>
                             <span class="font-bold text-emerald-800 bg-white px-2 py-0.5 rounded border border-emerald-200">${s.amount.toFixed(2)} €</span>
                         </div>
                     `;
@@ -1614,8 +1614,8 @@
                         <div class="flex items-center space-x-3">
                             <div class="w-9 h-9 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-sm">${isIncome ? '🔺' : '🧾'}</div>
                             <div>
-                                <span class="font-bold text-gray-900">${r.title}</span>
-                                <p class="text-[11px] text-gray-600"><strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | ${r.payer || 'Privat'} | ${r.date}</p>
+                                <span class="font-bold text-gray-900">${escapeUserHtml(r.title)}</span>
+                                <p class="text-[11px] text-gray-600"><strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | ${escapeUserHtml(r.payer || 'Privat')} | ${escapeUserHtml(r.date)}</p>
                             </div>
                         </div>
                         <div class="flex gap-1">
@@ -1702,7 +1702,7 @@
                 const percent = Math.min(100, (g.current / g.target) * 100);
                 return `
                     <div class="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 text-xs">
-                        <div class="flex justify-between font-bold text-emerald-900"><span>${g.title}</span><button onclick="deleteSavingsGoal(${g.id})" class="text-red-500">✕</button></div>
+                        <div class="flex justify-between font-bold text-emerald-900"><span>${escapeUserHtml(g.title)}</span><button onclick="deleteSavingsGoal(${g.id})" class="text-red-500">✕</button></div>
                         <div class="flex justify-between text-[11px]"><span>Gespart: <strong>${g.current.toFixed(2)} €</strong></span><span>Ziel: ${g.target.toFixed(2)} €</span></div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-2 transition-all" style="width: ${percent}%"></div></div>
                         <button onclick="depositGoal(${g.id})" class="w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">+ Einzahlen</button>
@@ -1801,9 +1801,9 @@
             const plan = getCookingPlan(); const mateNames = getFlatmateNames();
             document.getElementById('cookingInputList').innerHTML = plan.map((p, idx) => `
                 <div class="p-2.5 bg-gray-50 border rounded-xl space-y-1.5">
-                    <div class="flex justify-between font-bold"><span>${p.day}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">Frei</option>${mateNames.map(m => `<option value="${m}" ${p.chef === m ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
-                    <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="Gericht" value="${p.dish || ''}">
-                    <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="Zutaten (kommagetrennt)" value="${p.ingredients || ''}">
+                    <div class="flex justify-between font-bold"><span>${escapeUserHtml(p.day)}</span><select data-idx="${idx}" class="chefSelect border p-1 rounded bg-white"><option value="Frei">Frei</option>${mateNames.map(m => `<option value="${escapeUserHtml(m)}" ${p.chef === m ? 'selected' : ''}>${escapeUserHtml(m)}</option>`).join('')}</select></div>
+                    <input type="text" data-idx="${idx}" class="dishInput w-full p-1.5 border rounded" placeholder="Gericht" value="${escapeUserHtml(p.dish || '')}">
+                    <input type="text" data-idx="${idx}" class="ingredientsInput w-full p-1.5 border rounded" placeholder="Zutaten (kommagetrennt)" value="${escapeUserHtml(p.ingredients || '')}">
                 </div>
             `).join('');
             document.getElementById('cookingModal').classList.remove('hidden'); document.getElementById('cookingModal').classList.add('flex');
@@ -1877,7 +1877,7 @@
         function openBudgetModal() {
             const budgets = getBudgets();
             document.getElementById('budgetInputList').innerHTML = defaultCategories.map(cat => `
-                <div class="flex justify-between items-center"><label class="font-semibold">${cat}:</label><input type="number" step="10" data-cat="${cat}" value="${budgets[cat] || 0}" class="p-2 border rounded-xl w-28 text-right font-bold"></div>
+                <div class="flex justify-between items-center"><label class="font-semibold">${escapeUserHtml(cat)}:</label><input type="number" step="10" data-cat="${escapeUserHtml(cat)}" value="${escapeUserHtml(budgets[cat] || 0)}" class="p-2 border rounded-xl w-28 text-right font-bold"></div>
             `).join('');
             document.getElementById('budgetModal').classList.remove('hidden'); document.getElementById('budgetModal').classList.add('flex');
         }
@@ -1908,12 +1908,12 @@
             container.innerHTML = mates.map((m, idx) => `
                 <div class="p-3 bg-gray-50 border rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <div class="space-y-0.5">
-                        <h4 class="font-bold text-gray-900 text-sm">👤 ${m.vorname} ${m.nachname || ''}</h4>
+                        <h4 class="font-bold text-gray-900 text-sm">👤 ${escapeUserHtml(m.vorname)} ${escapeUserHtml(m.nachname || '')}</h4>
                         <div class="flex flex-wrap gap-2 text-[11px] text-gray-600">
-                            ${m.phone ? `<span>📞 <a href="https://wa.me/${m.phone.replace(/[^0-9]/g,'')}" target="_blank" class="text-emerald-700 underline font-semibold">${m.phone}</a></span>` : ''}
-                            ${m.email ? `<span>📧 <a href="mailto:${m.email}" class="text-blue-600 underline">${m.email}</a></span>` : ''}
-                            ${m.insta ? `<span>📸 Insta: <strong>${m.insta}</strong></span>` : ''}
-                            ${m.fb ? `<span>👥 FB: <strong>${m.fb}</strong></span>` : ''}
+                            ${m.phone ? `<span>📞 <a href="https://wa.me/${m.phone.replace(/[^0-9]/g,'')}" target="_blank" class="text-emerald-700 underline font-semibold">${escapeUserHtml(m.phone)}</a></span>` : ''}
+                            ${m.email ? `<span>📧 <a href="mailto:${encodeURIComponent(String(m.email ?? ''))}" class="text-blue-600 underline">${escapeUserHtml(m.email)}</a></span>` : ''}
+                            ${m.insta ? `<span>📸 Insta: <strong>${escapeUserHtml(m.insta)}</strong></span>` : ''}
+                            ${m.fb ? `<span>👥 FB: <strong>${escapeUserHtml(m.fb)}</strong></span>` : ''}
                         </div>
                     </div>
                     <div class="flex gap-1.5 self-end sm:self-center">
