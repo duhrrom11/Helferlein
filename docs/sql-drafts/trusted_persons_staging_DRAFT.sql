@@ -23,7 +23,8 @@ CREATE TABLE public.trusted_person_invitations (
   CONSTRAINT invitation_not_accepted_and_revoked CHECK (
     accepted_at IS NULL OR revoked_at IS NULL
   ),
-  CONSTRAINT invitation_expiry_after_creation CHECK (expires_at > created_at)
+  CONSTRAINT invitation_expiry_after_creation CHECK (expires_at > created_at),
+  CONSTRAINT invitation_accepted_after_creation CHECK (accepted_at IS NULL OR accepted_at >= created_at)
 );
 
 CREATE INDEX trusted_person_invitations_vault_idx
@@ -56,6 +57,11 @@ ALTER TABLE public.vault_trusted_persons FORCE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.trusted_person_invitations FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON TABLE public.vault_trusted_persons FROM PUBLIC, anon, authenticated;
 
+-- IMPORTANT: This schema alone cannot enforce that vault_trusted_persons
+-- matches the invitation's vault_id, intended_user_id, accepted status,
+-- and current ownership. A later migration must enforce those invariants
+-- transactionally (e.g. constrained server-side function and immutable links).
+-- Do not deploy this draft without that implementation and review.
 -- No RLS policies. No direct API read/write for browser roles.
 -- Application-side atomic acceptance, owner validation, token generation,
 -- token hashing, audit and rate limits are NOT implemented here.
