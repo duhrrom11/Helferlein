@@ -185,7 +185,20 @@ for (const [key, expected] of cases) {
 }
 assert.match(html, /!isHelferleinBackupKey\(key\)\) continue/, 'Export must use allowlist');
 assert.match(html, /entries\.filter\(\(\[key\]\) => !isHelferleinBackupKey\(key\)\)/, 'Import must reject unsupported keys');
-assert.match(html, /if \(rejected\.length\)/, 'Import must fail closed');
+assert.match(html, /const supported = entries\.filter\(\(\[key\]\) => isHelferleinBackupKey\(key\)\)/, 'Import must allowlist restored keys');
 assert.match(html, /containsVault/, 'Vault backup warning missing');
 assert.match(html, /if \(!confirm\(warning\)\) return/, 'Export confirmation missing');
-console.log('Backup policy OK: ' + cases.length + ' key cases and 5 integration checks');
+
+// Legacy backups may contain unrelated storage keys: never write them.
+assert.match(html, /for \(const \[key, value\] of supported\)/, 'Only supported keys may be written');
+assert.match(html, /if \(!supported\.length\)/, 'No supported keys must abort import');
+assert.match(html, /rejected\.length[\s\S]*?NICHT importiert/, 'Ignored entries must be disclosed before confirmation');
+assert.match(html, /const previous = supported\.map/, 'Capture previous values before import');
+assert.match(html, /catch \(writeError\)/, 'Handle partial write failures');
+assert.match(html, /localStorage\.removeItem\(key\)/, 'Rollback newly inserted keys');
+assert.match(html, /localStorage\.setItem\(key, oldValue\)/, 'Rollback overwritten keys');
+assert.match(html, /rollbackFailed/, 'Report incomplete rollback');
+assert.match(html, /nicht unterstützte Einträge wurden übersprungen/, 'Report skipped keys after success');
+assert.match(html, /if \(!confirm\(/, 'Import must require user confirmation');
+
+console.log('Backup policy OK: ' + cases.length + ' key cases and 15 integration checks');
