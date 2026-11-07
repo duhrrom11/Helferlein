@@ -126,7 +126,7 @@ export type InvitationGateway = Readonly<{
  */
 export function validateInvitationCode(code: string): boolean {
   if (typeof code !== "string") return false;
-  return /^[a-f0-9]{64}$/.test(code);
+  return typeof code === "string" && /^[a-f0-9]{64}$/.test(code);
 }
 
 export function validateIdentifier(id: string): boolean {
