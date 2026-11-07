@@ -70,3 +70,17 @@ Das Skript akzeptiert ausschliesslich HTTPS-Adressen der Form `<20-zeichen-proje
 **Abnahme:** Die beiden POST-Anfragen ohne gueltigen Token muessen 401/403 ergeben; der fremde Origin-Preflight 401/403; der erlaubte Origin-Preflight **204**. Falls das Gateway OPTIONS mit 401/403 abweist, gilt der Test als **fehlgeschlagen**: CORS/Gateway-Konfiguration in der isolierten Testumgebung klaeren, nicht die Browser-Sicherheit umgehen. Die Testergebnisse dokumentieren und erst dann die naechsten Integrationstests vorbereiten.
 
 **Einschraenkungen:** Dieser Smoke-Test prueft weder Eigentuemermigration noch gueltige Nutzer-Tokens, Tresorzugriff, Firestore oder Notfallfreigabe. Es erfolgt keine produktive Bereitstellung.
+
+### Erweiterte Autorisierungstests (optional, erst nach Test-Migration)
+
+Zwei **verschiedene** Supabase-Testbenutzer A und B anlegen. Einen ausschliesslich synthetischen Test-Tresor durch eine privilegierte, auditierte Testoperation **nur A** zuordnen. Keine Zuordnung anhand einer vom Client behaupteten E-Mail oder Tresor-ID. Fuer beide Benutzer gueltige, kurzlebige Access-Tokens aus der Testumgebung beschaffen und **nicht** in Dateien, GitHub-Issues oder Shell-History speichern.
+
+Das Skript unterstuetzt dann zusaetzlich diese Umgebungsvariablen:
+
+- `VAULT_API_TEST_TOKEN_A`: gueltiger Access-Token von Eigentuemer A
+- `VAULT_API_TEST_TOKEN_B`: gueltiger Access-Token des fremden Benutzers B
+- `VAULT_API_TEST_VAULT_ID`: ausschliesslich synthetische, serverseitig A zugeordnete Test-ID
+
+Alle drei muessen gemeinsam gesetzt sein; sonst werden die erweiterten Tests nicht ausgefuehrt (bei unvollstaendigen Angaben mit Fehler abgebrochen). Erwartet: B erhaelt 404, A erhaelt weiterhin 503 (keine Tresordaten), ungueltige Tresor-ID 400 und zu grosse Anfrage 413. **Nicht** als Erfolg werten, wenn A ebenfalls wegen ungueltiger Authentifizierung 401/403 erhaelt. Zugangstokens nach Testende aus der Umgebung entfernen.
+
+Diese Tests setzen eine tatsaechlich bereitgestellte isolierte Testfunktion und die kontrolliert angelegte Testzuordnung voraus; sie fuehren selbst keine Migration oder Bereitstellung durch.
