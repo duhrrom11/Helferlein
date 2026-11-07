@@ -1263,6 +1263,12 @@
             select.replaceChildren(...names.map(name => new Option(String(name), String(name))));
         }
 
+        function escapeUserHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+        }
+
         /* Render App */
         function renderApp() {
             const mateNames = getFlatmateNames();
@@ -1381,14 +1387,14 @@
             }
             const sortedNotes = [...notes].sort((a, b) => (b.pinned === a.pinned) ? 0 : b.pinned ? 1 : -1);
             container.innerHTML = sortedNotes.map(n => `
-                <div class="p-4 rounded-2xl border-2 shadow-sm flex flex-col justify-between space-y-3 relative transition-transform hover:-translate-y-0.5 note-${n.color || 'yellow'}">
+                <div class="p-4 rounded-2xl border-2 shadow-sm flex flex-col justify-between space-y-3 relative transition-transform hover:-translate-y-0.5 note-${['yellow', 'blue', 'green', 'pink', 'purple'].includes(n.color) ? n.color : 'yellow'}">
                     ${n.pinned ? `<span class="absolute -top-2 -right-2 text-xl drop-shadow">📌</span>` : ''}
                     <div class="space-y-1.5">
-                        <h4 class="font-extrabold text-sm leading-tight">${n.title}</h4>
-                        ${n.content ? `<p class="text-xs leading-relaxed whitespace-pre-line opacity-90">${n.content}</p>` : ''}
+                        <h4 class="font-extrabold text-sm leading-tight">${escapeUserHtml(n.title)}</h4>
+                        ${n.content ? `<p class="text-xs leading-relaxed whitespace-pre-line opacity-90">${escapeUserHtml(n.content)}</p>` : ''}
                     </div>
                     <div class="pt-2 border-t border-black/10 flex justify-between items-center text-[10px] font-semibold opacity-80">
-                        <span>👤 ${n.author} (${n.date || 'Heute'})</span>
+                        <span>👤 ${escapeUserHtml(n.author)} (${escapeUserHtml(n.date || 'Heute')})</span>
                         <div class="flex items-center gap-1">
                             <button onclick="togglePinNote(${n.id})" class="p-0.5">${n.pinned ? '📌' : '📍'}</button>
                             <button onclick="editNote(${n.id})" class="p-0.5">✏️</button>
@@ -1452,9 +1458,9 @@
             container.innerHTML = events.map(ev => `
                 <div class="p-3 border rounded-xl flex justify-between items-start text-xs bg-gray-50">
                     <div>
-                        <div class="flex items-center space-x-1 font-bold"><span>${icons[ev.type] || '📅'}</span><span>${ev.title}</span></div>
-                        <p class="text-[11px] opacity-80 mt-1">📅 ${ev.date} ${ev.timeStart ? '| ⏰ ' + ev.timeStart : ''}</p>
-                        <p class="text-[10px] opacity-70">Von: <strong>${ev.owner}</strong></p>
+                        <div class="flex items-center space-x-1 font-bold"><span>${icons[ev.type] || '📅'}</span><span>${escapeUserHtml(ev.title)}</span></div>
+                        <p class="text-[11px] opacity-80 mt-1">📅 ${escapeUserHtml(ev.date)} ${ev.timeStart ? '| ⏰ ' + escapeUserHtml(ev.timeStart) : ''}</p>
+                        <p class="text-[10px] opacity-70">Von: <strong>${escapeUserHtml(ev.owner)}</strong></p>
                     </div>
                     <button onclick="deleteEvent(${ev.id})" class="text-gray-400 hover:text-red-500 font-bold text-sm">&times;</button>
                 </div>
@@ -1490,7 +1496,7 @@
                 return `
                     <div class="p-3 bg-teal-50/60 border border-teal-200 rounded-xl space-y-1.5 text-xs">
                         <div class="flex justify-between font-bold text-teal-950">
-                            <span>📦 ${item.title}</span><button onclick="deleteInventoryItem(${item.id})" class="text-red-500">&times;</button>
+                            <span>📦 ${escapeUserHtml(item.title)}</span><button onclick="deleteInventoryItem(${item.id})" class="text-red-500">&times;</button>
                         </div>
                         <p class="text-gray-600 text-[11px]">Kauf: ${item.price.toFixed(2)} € (${item.date})</p>
                         <div class="pt-1 border-t border-teal-200 flex justify-between items-center text-[11px]">
@@ -1521,10 +1527,10 @@
                 const info = diets[m] || { pref: "Allesesser", allergy: "Keine" };
                 return `
                     <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                        <span class="font-bold text-gray-800">${m}</span>
+                        <span class="font-bold text-gray-800">${escapeUserHtml(m)}</span>
                         <div class="text-right text-[11px]">
-                            <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">${info.pref}</span>
-                            <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-semibold ml-1">🚫 ${info.allergy}</span>
+                            <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-semibold">${escapeUserHtml(info.pref)}</span>
+                            <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-semibold ml-1">🚫 ${escapeUserHtml(info.allergy)}</span>
                         </div>
                     </div>
                 `;
@@ -1536,10 +1542,10 @@
                 const info = diets[m] || { pref: "Allesesser", allergy: "Keine" };
                 return `
                     <div class="p-3 bg-gray-50 border rounded-xl space-y-2">
-                        <span class="font-bold text-gray-900">${m}</span>
+                        <span class="font-bold text-gray-900">${escapeUserHtml(m)}</span>
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="text" data-mate="${m}" class="dietPref w-full p-2 border rounded" placeholder="Ernährung" value="${info.pref}">
-                            <input type="text" data-mate="${m}" class="dietAllergy w-full p-2 border rounded" placeholder="Allergien" value="${info.allergy}">
+                            <input type="text" data-mate="${escapeUserHtml(m)}" class="dietPref w-full p-2 border rounded" placeholder="Ernährung" value="${escapeUserHtml(info.pref)}">
+                            <input type="text" data-mate="${escapeUserHtml(m)}" class="dietAllergy w-full p-2 border rounded" placeholder="Allergien" value="${escapeUserHtml(info.allergy)}">
                         </div>
                     </div>
                 `;
@@ -1729,7 +1735,7 @@
                 <div class="p-2.5 ${p.done ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'} border rounded-xl flex justify-between items-center text-xs">
                     <div class="flex items-center space-x-2">
                         <input type="checkbox" ${p.done ? 'checked' : ''} onchange="toggleCleanTask(${p.id})" class="w-4 h-4 text-emerald-600 rounded">
-                        <span class="${p.done ? 'line-through text-gray-400' : 'font-bold text-gray-900'}">${p.task} (${p.assignee})</span>
+                        <span class="${p.done ? 'line-through text-gray-400' : 'font-bold text-gray-900'}">${escapeUserHtml(p.task)} (${escapeUserHtml(p.assignee)})</span>
                     </div>
                     <button onclick="deleteCleanTask(${p.id})" class="text-gray-400 hover:text-red-500 font-bold">&times;</button>
                 </div>
@@ -1758,7 +1764,7 @@
             if (items.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Einkaufsliste ist leer.</p>`; return; }
             container.innerHTML = items.map(item => `
                 <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                    <span class="font-medium text-gray-800">${item.title}</span>
+                    <span class="font-medium text-gray-800">${escapeUserHtml(item.title)}</span>
                     <div class="flex gap-1.5">
                         <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
                         <button onclick="transferShoppingToExpense(${item.id})" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
@@ -1786,7 +1792,7 @@
         function renderCookingPlan() {
             document.getElementById('cookingPlanList').innerHTML = getCookingPlan().map((p, idx) => `
                 <div class="p-2 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
-                    <div><span class="font-bold">${p.day}:</span> <span class="text-emerald-800">${p.dish || 'Frei'}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${p.chef}</span>` : ''}</div>
+                    <div><span class="font-bold">${escapeUserHtml(p.day)}:</span> <span class="text-emerald-800">${escapeUserHtml(p.dish || 'Frei')}</span> ${p.chef !== 'Frei' ? `<span class="bg-purple-100 text-purple-800 font-bold px-1 rounded text-[10px]">${escapeUserHtml(p.chef)}</span>` : ''}</div>
                     ${p.ingredients ? `<button onclick="syncIngredientsToShopping(${idx})" class="px-2 py-0.5 bg-amber-50 text-amber-800 border rounded text-[10px] font-bold">🛒 Zutaten</button>` : ''}
                 </div>
             `).join('');
@@ -1819,7 +1825,7 @@
             if (contracts.length === 0) { container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Keine Verträge eingetragen.</p>`; return; }
             container.innerHTML = contracts.map(c => `
                 <div class="p-2.5 bg-indigo-50 border rounded-xl flex justify-between items-center text-xs">
-                    <div><strong>${c.name}</strong> <span class="text-gray-500">(${c.payer})</span></div>
+                    <div><strong>${escapeUserHtml(c.name)}</strong> <span class="text-gray-500">(${escapeUserHtml(c.payer)})</span></div>
                     <div class="flex items-center gap-2"><span class="font-bold text-indigo-900">${c.price.toFixed(2)} €/Mo</span><button onclick="deleteContract(${c.id})" class="text-red-500 font-bold">&times;</button></div>
                 </div>
             `).join('');
