@@ -39,7 +39,12 @@ export async function handleRedemptionRequest(
   if (!authHeader || !/^Bearer [A-Za-z0-9._~-]+$/.test(authHeader)) {
     return response(401, "unauthorized", headers);
   }
-  // Require JSON and reject ambiguous requests before handling a bearer secret.\n  const contentType = request.headers.get("Content-Type");\n  if (!contentType || !/^application\\/json(?:\\s*;\\s*charset=utf-8)?$/i.test(contentType)) {\n    return response(415, "unsupported_media_type", headers);\n  }\n  let token: unknown;
+  // Require JSON and reject ambiguous requests before handling a bearer secret.
+  const contentType = request.headers.get("Content-Type");
+  if (!contentType || !/^application\/json(?:\s*;\s*charset=utf-8)?$/i.test(contentType)) {
+    return response(415, "unsupported_media_type", headers);
+  }
+  let token: unknown;
   try {
     if (Number(request.headers.get("Content-Length")) > MAX_BYTES) {
       return response(413, "request_too_large", headers);
@@ -66,9 +71,11 @@ export async function handleRedemptionRequest(
     let offset = 0;
     for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
     const parsed: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
-    token = parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>).token
-      : undefined;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) ||
+        Object.keys(parsed).length !== 1 || !Object.hasOwn(parsed, "token")) {
+      return response(400, "invalid_request", headers);
+    }
+    token = (parsed as Record<string, unknown>).token;
   } catch {
     return response(400, "invalid_request", headers);
   }
