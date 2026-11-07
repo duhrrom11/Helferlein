@@ -1130,64 +1130,79 @@
             }).join('');
         }
 
-        function generatePrintableKitPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+        async function generatePrintableKitPDF() {
+            if (!window.jspdf?.jsPDF || typeof QRCode !== 'function') {
+                alert("PDF- oder QR-Code-Bibliothek ist nicht verfügbar. Bitte die Seite neu laden.");
+                return;
+            }
             const cfg = getVaultConfig();
+            if (!cfg || !cfg.vaultId || !cfg.masterKeyHex) {
+                alert("Das Notfall-Kit kann ohne gültige Tresordaten nicht erstellt werden.");
+                return;
+            }
+            if (!confirm("Das Notfall-Kit enthält persönliche Zugangsschlüssel. Jede Person mit Zugriff auf die PDF-Datei kann damit möglicherweise Tresordaten lesen. Nur auf einem vertrauenswürdigen Gerät erstellen und sicher aufbewahren. Fortfahren?")) return;
 
-            doc.setFontSize(16);
-            doc.text("DIGITALES NACHLASS-NOTFALL-KIT", 14, 20);
-            
-            doc.setFontSize(10);
-            doc.text(`Tresor-ID: ${cfg.vaultId}`, 14, 28);
-            doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 34);
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.setFontSize(16);
+                doc.text("DIGITALES NACHLASS-NOTFALL-KIT", 14, 20);
+                doc.setFontSize(10);
+                doc.text("Tresor-ID: " + cfg.vaultId, 14, 28);
+                doc.text("Erstellt am: " + new Date().toLocaleDateString('de-DE'), 14, 34);
 
-            let yPos = 45;
-            const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
+                let yPos = 45;
+                const baseUrl = new URL('.', window.location.href).href.replace(/\\/$/, '');
+                const persons = Array.isArray(cfg.alarmPersons) ? cfg.alarmPersons : [];
+                if (!persons.length) doc.text("Keine Notfall-Personen definiert.", 14, yPos);
 
-            if (cfg.alarmPersons && cfg.alarmPersons.length > 0) {
-                cfg.alarmPersons.forEach((p, idx) => {
-                    if (yPos > 240) {
+                for (const person of persons) {
+                    if (yPos > 235) {
                         doc.addPage();
                         yPos = 20;
                     }
-
-                    const personLink = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(p.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
-                    
+                    const personLink = baseUrl + "/erben.html?vaultId=" +
+                        encodeURIComponent(cfg.vaultId) + "&person=" +
+                        encodeURIComponent(person.id) + "#key=" +
+                        encodeURIComponent(cfg.masterKeyHex);
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'bold');
-                    doc.text(`Notfall-Zugang für: ${p.name} (${p.contact || 'Keine E-Mail'})`, 14, yPos);
-                    
+                    doc.text("Notfall-Zugang für: " + (person.name || "Vertrauensperson") +
+                        " (" + (person.contact || "Keine E-Mail") + ")", 14, yPos);
                     doc.setFontSize(8);
                     doc.setFont(undefined, 'normal');
-                    doc.text(`Persönlicher Notfall-Link:`, 14, yPos + 6);
-                    doc.text(personLink, 14, yPos + 11);
+                    doc.text("Persönlicher Notfall-Link:", 14, yPos + 6);
+                    const lines = doc.splitTextToSize(personLink, 180);
+                    doc.text(lines, 14, yPos + 11);
+                    const qrTop = yPos + 12 + lines.length * 3.5;
 
                     const tempDiv = document.createElement('div');
-                    new QRCode(tempDiv, {
-                        text: personLink,
-                        width: 120,
-                        height: 120
-                    });
-
-                    setTimeout(() => {
-                        const canvas = tempDiv.querySelector('canvas');
-                        if (canvas) {
-                            const imgData = canvas.toDataURL('image/png');
-                            doc.addImage(imgData, 'PNG', 14, yPos + 15, 35, 35);
+                    tempDiv.style.position = 'fixed';
+                    tempDiv.style.left = '-10000px';
+                    document.body.appendChild(tempDiv);
+                    try {
+                        new QRCode(tempDiv, { text: personLink, width: 120, height: 120 });
+                        const qrCanvas = tempDiv.querySelector('canvas');
+                        const qrImage = tempDiv.querySelector('img');
+                        if (qrCanvas && qrCanvas.width && qrCanvas.height) {
+                            doc.addImage(qrCanvas.toDataURL('image/png'), 'PNG', 14, qrTop, 35, 35);
+                        } else if (qrImage?.complete && qrImage.naturalWidth) {
+                            doc.addImage(qrImage.src, 'PNG', 14, qrTop, 35, 35);
+                        } else {
+                            throw new Error("QR-Code konnte nicht vollständig erzeugt werden.");
                         }
-                    }, 50);
-
-                    yPos += 55;
-                });
-            } else {
-                doc.text("Keine Notfall-Personen definiert.", 14, yPos);
+                    } finally {
+                        tempDiv.remove();
+                    }
+                    yPos = qrTop + 43;
+                }
+                doc.save("digitales-notfall-kit-" + cfg.vaultId + ".pdf");
+            } catch (error) {
+                console.error("Notfall-Kit konnte nicht erstellt werden:", error);
+                alert("Notfall-Kit konnte nicht vollständig erstellt werden. Bitte erneut versuchen.");
             }
-
-            setTimeout(() => {
-                doc.save(`digitales-notfall-kit-${cfg.vaultId}.pdf`);
-            }, 300);
         }
+
     </script>
 </body>
 </html>
