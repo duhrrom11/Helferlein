@@ -16,6 +16,7 @@ CREATE TABLE public.trusted_person_invitations (
   accepted_at timestamptz,
   revoked_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT invitation_vault_user_unique UNIQUE (invitation_id, vault_id, intended_user_id),
   CONSTRAINT invitation_acceptance_consistent CHECK (
     (accepted_at IS NULL AND accepted_by_user_id IS NULL)
     OR (accepted_at IS NOT NULL AND accepted_by_user_id = intended_user_id)
@@ -35,11 +36,13 @@ CREATE INDEX trusted_person_invitations_intended_idx
 CREATE TABLE public.vault_trusted_persons (
   vault_id text NOT NULL CHECK (length(vault_id) BETWEEN 1 AND 200),
   trusted_user_id uuid NOT NULL,
-  invitation_id uuid NOT NULL REFERENCES public.trusted_person_invitations(invitation_id),
+  invitation_id uuid NOT NULL,
   status text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'revoked')),
   created_at timestamptz NOT NULL DEFAULT now(),
   revoked_at timestamptz,
   PRIMARY KEY (vault_id, trusted_user_id),
+  CONSTRAINT trusted_person_matches_invitation FOREIGN KEY (invitation_id, vault_id, trusted_user_id)
+    REFERENCES public.trusted_person_invitations (invitation_id, vault_id, intended_user_id),
   CONSTRAINT trusted_person_revocation_consistent CHECK (
     (status = 'active' AND revoked_at IS NULL)
     OR (status = 'revoked' AND revoked_at IS NOT NULL)
@@ -57,10 +60,10 @@ ALTER TABLE public.vault_trusted_persons FORCE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.trusted_person_invitations FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON TABLE public.vault_trusted_persons FROM PUBLIC, anon, authenticated;
 
--- IMPORTANT: This schema alone cannot enforce that vault_trusted_persons
--- matches the invitation's vault_id, intended_user_id, accepted status,
--- and current ownership. A later migration must enforce those invariants
--- transactionally (e.g. constrained server-side function and immutable links).
+-- The composite FK now enforces matching invitation/vault/intended-user IDs.
+-- IMPORTANT: This schema still cannot enforce accepted status, current
+-- ownership, or transaction-safe redemption. Those invariants require a
+-- reviewed, restricted server-side transaction and consistent locking.
 -- Do not deploy this draft without that implementation and review.
 -- No RLS policies. No direct API read/write for browser roles.
 -- Application-side atomic acceptance, owner validation, token generation,
