@@ -687,7 +687,14 @@
                 return;
             }
 
-            container.innerHTML = inventory.map(i => `
+            container.onclick = event => {
+                const button = event.target.closest('[data-inventory-delete]');
+                if (!button || !container.contains(button)) return;
+                const index = Number(button.dataset.inventoryDelete);
+                if (!Number.isInteger(index) || index < 0 || index >= inventory.length) return;
+                deleteInventoryItem(inventory[index].id);
+            };
+            container.innerHTML = inventory.map((i, index) => `
                 <div class="p-3 border rounded-xl bg-gray-50 flex justify-between items-start text-xs">
                     <div>
                         <span class="font-bold text-indigo-800 block">${escapeHtml(i.title)}</span>
@@ -695,7 +702,7 @@
                         ${i.serial ? `<p class="text-gray-600 mt-1">SN/ISBN: <span class="font-mono">${escapeHtml(i.serial)}</span></p>` : ''}
                         ${safeGpsUrl(i.gpsLink) ? `<a href="${safeGpsUrl(i.gpsLink)}" rel="noopener noreferrer" target="_blank" class="text-blue-600 font-semibold underline block mt-1">📍 GPS-Tracker öffnen</a>` : ''}
                     </div>
-                    <button onclick="deleteInventoryItem(${i.id})" class="text-red-500 font-bold px-1.5 hover:bg-red-100 rounded">✕</button>
+                    <button data-inventory-delete="${index}" class="text-red-500 font-bold px-1.5 hover:bg-red-100 rounded">✕</button>
                 </div>
             `).join('');
         }
@@ -728,8 +735,23 @@
                 const index = Number(trigger.dataset.loanIndex);
                 if (!Number.isInteger(index) || index < 0 || index >= filteredItems.length) return;
                 const item = filteredItems[index];
-                if (trigger.dataset.loanAction === 'ics') downloadICS(item.title, item.returnDate, item.person);
-                if (trigger.dataset.loanAction === 'qr') showQrCode(item.title, item.person);
+                switch (trigger.dataset.loanAction) {
+                    case 'ics': downloadICS(item.title, item.returnDate, item.person); break;
+                    case 'qr': showQrCode(item.title, item.person); break;
+                    case 'extend7': extendReturnDate(item.id, 7); break;
+                    case 'extend14': extendReturnDate(item.id, 14); break;
+                    case 'edit': openEditModal(item.id); break;
+                    case 'delete': deleteItem(item.id); break;
+                }
+            };
+            container.onchange = event => {
+                const trigger = event.target.closest('[data-loan-action="status"]');
+                if (!trigger || !container.contains(trigger)) return;
+                const index = Number(trigger.dataset.loanIndex);
+                if (!Number.isInteger(index) || index < 0 || index >= filteredItems.length) return;
+                if (['active', 'returned', 'lost'].includes(trigger.value)) {
+                    setStatus(filteredItems[index].id, trigger.value);
+                }
             };
 
             if (filteredItems.length === 0) {
@@ -778,8 +800,8 @@
 
                     if (i.status === 'active') {
                         extendButtons = `
-                            <button onclick="extendReturnDate(${i.id}, 7)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold" title="+7 Tage">+7T</button>
-                            <button onclick="extendReturnDate(${i.id}, 14)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold" title="+14 Tage">+14T</button>
+                            <button data-loan-action="extend7" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold" title="+7 Tage">+7T</button>
+                            <button data-loan-action="extend14" data-loan-index="${itemIndex}" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-[10px] font-semibold" title="+14 Tage">+14T</button>
                         `;
 
                         if (i.returnDate) {
@@ -793,7 +815,7 @@
                     }
 
                     let statusDropdown = `
-                        <select onchange="setStatus(${i.id}, this.value)" class="p-1.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold border">
+                        <select data-loan-action="status" data-loan-index="${itemIndex}" class="p-1.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold border">
                             <option value="active" ${i.status === 'active' ? 'selected' : ''}>📌 Status: Aktiv</option>
                             <option value="returned" ${i.status === 'returned' ? 'selected' : ''}>✅ Zurückgegeben</option>
                             <option value="lost" ${i.status === 'lost' ? 'selected' : ''}>⚠️ Verloren / Defekt</option>
@@ -822,8 +844,8 @@
                                 ${whatsappDropdown}
                                 ${calButtons}
                                 ${statusDropdown}
-                                <button onclick="openEditModal(${i.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
-                                <button onclick="deleteItem(${i.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                                <button data-loan-action="edit" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
+                                <button data-loan-action="delete" data-loan-index="${itemIndex}" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
                     `;
