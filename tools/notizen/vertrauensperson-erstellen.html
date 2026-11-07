@@ -55,5 +55,6 @@ document.getElementById("reset").addEventListener("click",()=>{
   recipient.value="";duration.value="7";update();recipient.focus();
 });
 document.getElementById("create").addEventListener("submit",event=>event.preventDefault());
+window.addEventListener("pageshow",event=>{if(event.persisted){recipient.value="";duration.value="7";update();}});
 update();
 </script></body></html>
