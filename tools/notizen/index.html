@@ -449,6 +449,11 @@
                     await checkIncomingAlarms();
                 } catch (err) {
                     console.error("Kritischer Fehler beim Laden der Tresordaten:", err);
+                    const notice = document.createElement('div');
+                    notice.setAttribute('role', 'alert');
+                    notice.className = 'fixed inset-x-4 bottom-4 z-[100] mx-auto max-w-2xl rounded-xl border-2 border-red-500 bg-red-950 p-5 text-white shadow-2xl';
+                    notice.textContent = "Tresor gesperrt: " + err.message + " Bitte vorhandene Backups sichern und keine neuen Einträge anlegen.";
+                    document.body.appendChild(notice);
                 }
             })();
         });
@@ -545,14 +550,22 @@
         }
 
         async function initVault() {
-            let cfg;
-            try {
-                cfg = JSON.parse(localStorage.getItem('digital_estate_vault'));
-            } catch(e) {
-                cfg = null;
+            const storedVault = localStorage.getItem('digital_estate_vault');
+            let cfg = null;
+            if (storedVault !== null) {
+                try {
+                    cfg = JSON.parse(storedVault);
+                } catch (error) {
+                    throw new Error("Vorhandene Tresordaten sind nicht lesbar. Der Datensatz wurde nicht überschrieben.");
+                }
+                if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg) ||
+                    !/^[a-f0-9]{64}$/i.test(cfg.masterKeyHex || '') ||
+                    !cfg.encryptedData || typeof cfg.encryptedData !== 'object') {
+                    throw new Error("Vorhandene Tresordaten sind unvollständig oder beschädigt. Der Datensatz wurde nicht überschrieben.");
+                }
             }
-            
-            if (!cfg || !cfg.masterKeyHex) {
+
+            if (storedVault === null) {
                 const randomBytes = crypto.getRandomValues(new Uint8Array(32));
                 currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
                 const vaultId = "v_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
@@ -578,7 +591,10 @@
                 currentMasterKeyHex = cfg.masterKeyHex;
                 if (!cfg.alarmPersons) cfg.alarmPersons = [];
                 const dec = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
-                currentDecryptedVault = (dec && dec.entries) ? dec : { entries: [] };
+                if (!dec || !Array.isArray(dec.entries)) {
+                    throw new Error("Der Tresor konnte nicht entschlüsselt werden. Vorhandene Daten bleiben unverändert.");
+                }
+                currentDecryptedVault = dec;
             }
         }
 
