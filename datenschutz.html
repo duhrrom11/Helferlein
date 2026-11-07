@@ -2,7 +2,7 @@
 <html lang="de" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, initial-scale=1.0">
     
     <!-- SEO Meta-Daten -->
     <title>Datenschutzerklärung – Kostenlose Online-Tools & clevere Rechner | Helferlein</title>
@@ -32,7 +32,7 @@
         <section class="space-y-2">
             <h2 class="text-base font-bold text-gray-900 uppercase tracking-wider">1. Datenschutz auf einen Blick</h2>
             <p>
-                Der Schutz deiner persönlichen Daten ist uns ein wichtiges Anliegen. Das Web-Angebot <strong>"Kostenlose Online-Tools & clevere Rechner | Helferlein"</strong> wurde nach dem Prinzip der <strong>Datensparsamkeit ("Privacy by Design")</strong> entwickelt. Das bedeutet: Deine Daten gehören dir und bleiben standardmäßig dort, wo sie hingehören – lokal auf deinem Gerät.
+                Der Schutz deiner persönlichen Daten ist uns ein wichtiges Anliegen. Das Web-Angebot <strong>"Kostenlose Online-Tools & clevere Rechner | Helferlein"</strong> wurde nach dem Prinzip der <strong>Datensparsamkeit ("Privacy by Design")</strong> entwickelt. Viele Funktionen speichern Daten direkt im Browser. Einzelne Funktionen verwenden zusätzlich externe Dienste; deren Nutzung und Datenflüsse unterscheiden sich je nach Tool.
             </p>
         </section>
 
@@ -49,28 +49,30 @@
         <section class="space-y-2">
             <h2 class="text-base font-bold text-gray-900 uppercase tracking-wider">3. Datenspeicherung: Local Storage (Standard)</h2>
             <p>
-                Sämtliche Eingaben, die du in den Tools tätigst (wie z. B. Garantiescheine, Inventarlisten, Notizen, KFZ-Daten oder Haushaltsbuch-Einträge), werden ausschließlich im <strong>Local Storage</strong> deines eigenen Browsers gespeichert.
+                Viele Tools speichern Eingaben (beispielsweise Inventarlisten oder Haushaltsbuch-Einträge) im <strong>Local Storage</strong> des Browsers. Einige Funktionen können darüber hinaus externe Dienste verwenden.
             </p>
             <ul class="list-disc pl-5 space-y-1">
-                <li>Es findet <strong>keine</strong> automatische Übertragung deiner persönlichen Tool-Daten an unsere Server statt.</li>
-                <li>Du behältst die volle Kontrolle und kannst deine Daten jederzeit über die Backup-Funktion als JSON-Datei exportieren oder löschen (durch Leeren des Browser-Caches/Local Storages).</li>
+                <li>Eine Übertragung an externe Dienste ist bei einzelnen Funktionen möglich; ob und welche Daten übertragen werden, hängt vom jeweiligen Tool ab.</li>
+                <li>Du behältst die volle Kontrolle und kannst deine Daten jederzeit über die Backup-Funktion als JSON-Datei exportieren oder löschen (durch Löschen der Website-Daten im Browser; bereits übertragene Cloud-Daten werden dadurch nicht automatisch entfernt).</li>
             </ul>
         </section>
 
         <section class="space-y-2">
-            <h2 class="text-base font-bold text-gray-900 uppercase tracking-wider">4. Optionaler Cloud-Sync</h2>
+            <h2 class="text-base font-bold text-gray-900 uppercase tracking-wider">4. Konten und Online-Dienste</h2>
             <p>
-                Wenn du die optionale Funktion der Geräte-Synchronisation über eine selbst generierte <strong>Cloud-ID</strong> nutzt, werden deine verschlüsselten bzw. lokal gehaltenen Daten auf den Servern von <strong>Google Firebase (Cloud Firestore)</strong> gespeichert, um sie auf deinen verschiedenen Endgeräten synchronisieren zu können.
+                Für die Anmeldung auf der Startseite wird <strong>Supabase Auth</strong> eingebunden. Einzelne Funktionen, insbesondere der digitale Tresor, verwenden außerdem <strong>Google Firebase / Cloud Firestore</strong>. Die Datenverarbeitung hängt von der jeweiligen Funktion ab. Eine automatische Synchronisierung aller Helferlein-Tools ist derzeit nicht eingerichtet.
             </p>
             <ul class="list-disc pl-5 space-y-1">
-                <li>Die Nutzung dieses Features erfolgt auf freiwilliger Basis (Opt-in).</li>
-                <li>Die Datenübertragung erfolgt verschlüsselt (HTTPS).</li>
+                <li>Die Anmeldung auf der Startseite ist optional. Einzelne Funktionen können für ihre Online-Dienste eine gesonderte Anmeldung oder Einrichtung benötigen.</li>
+                <li>Die Kommunikation mit den genannten Online-Diensten erfolgt über HTTPS; dies bedeutet nicht automatisch eine Ende-zu-Ende-Verschlüsselung gespeicherter Inhalte.</li>
+                <li>Für Supabase Auth wird ein Supabase-Projekt genutzt. Informationen zum Dienst findest du unter <a href="https://supabase.com/privacy" target="_blank" rel="noopener" class="text-sky-600 hover:underline">Supabase Privacy</a>.</li>
                 <li>Anbieter ist die Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland. Weitere Infos findest du in der <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" class="text-sky-600 hover:underline">Google-Datenschutzerklärung</a>.</li>
             </ul>
         </section>
 
         <section class="space-y-2">
-            <h2 class="text-base font-bold text-gray-900 uppercase tracking-wider">5. Externe Dienste, Ko-fi & Affiliate-Links (Amazon)</h2>
+            <h2 class="text-base font-bold text-gray-900 uppercase tracking-wider">5. Externe Dienste, Bibliotheken, Ko-fi & Affiliate-Links (Amazon)</h2>
+            <p>Zur Darstellung und für Funktionen werden teilweise JavaScript-Bibliotheken von externen CDNs geladen (beispielsweise Tailwind CSS, jsDelivr und Google Firebase). Dabei können technische Verbindungsdaten wie die IP-Adresse an die jeweiligen Anbieter übertragen werden. Einzelne Tools können weitere Dienste wie EmailJS nutzen.</p>
             <p>
                 Auf unserer Website verlinken wir auf den externen Zahlungsdienstleister <strong>Ko-fi</strong> (Ko-fi.com), sofern du uns einen Kaffee spendieren möchtest. Wenn du diesen Link anklickst, verlässt du unsere Website und es gelten die Datenschutzbestimmungen von Ko-fi. Wir erheben oder speichern zu keinem Zeitpunkt Zahlungs- oder Kreditkartendaten.
             </p>
@@ -82,7 +84,7 @@
         <section class="space-y-2">
             <h2 class="text-base font-bold text-gray-900 uppercase tracking-wider">6. Deine Rechte</h2>
             <p>
-                Da wir keine personenbezogenen Daten auf zentralen Datenbanken speichern (es sei denn, du nutzt aktiv den freiwilligen Firebase-Sync mit einer pseudonymen Cloud-ID), haben wir in der Regel keinen Zugriff auf deine lokal gespeicherten Inhalte. Du kannst deine Daten jederzeit selbst verwalten, korrigieren oder löschen, indem du die jeweiligen Einträge in den Tools löschst oder deinen Browser-Cache leerst.
+                Soweit Daten ausschließlich lokal gespeichert sind, haben wir in der Regel keinen Zugriff auf deine lokal gespeicherten Inhalte. Du kannst deine Daten jederzeit selbst verwalten, korrigieren oder löschen, indem du die jeweiligen Einträge in den Tools löschst oder deinen Browser-Cache leerst.
             </p>
         </section>
 
@@ -91,6 +93,7 @@
             <p>
                 Verantwortlich für den Inhalt und die Bereitstellung von "Kostenlose Online-Tools & clevere Rechner | Helferlein":<br>
                 <strong>Romain Duhr</strong><br>
+                Für Datenschutzanfragen nutze bitte die unten angegebene E-Mail-Adresse.<br>
                 E-Mail: <span class="text-gray-500">duhrrom@gmail.com</span>
             </p>
         </section>
@@ -99,7 +102,7 @@
 
     <!-- Footer -->
     <footer class="text-center py-8 text-xs text-gray-500 border-t border-gray-200 bg-white">
-        <p>&copy; 2026 Kostenlose Online-Tools & clevere Rechner | Helferlein – 100% lokal, sicher & blitzschnell.</p>
+        <p>&copy; 2026 Kostenlose Online-Tools & clevere Rechner | Helferlein – Praktische Tools für den Alltag.</p>
     </footer>
 
 </body>
