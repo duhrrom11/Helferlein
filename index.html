@@ -648,6 +648,12 @@
                 || /^firebase:authEvent:/i.test(key);
         }
 
+        // Nur von Helferlein verwendete Daten sichern, niemals fremde Browser-Schlüssel oder Sitzungen.
+        const HELFERLEIN_BACKUP_KEYS = new Set(["hub_favorites","kassenbon_data","budgetbuch_budgets","budgetbuch_goals","mini_homebox_pro","wg_active_bin_id","wg_flatmates","wg_notes","wg_events","wg_inventory","wg_diets","wg_cleaning","wg_shopping","wg_cooking","wg_contracts","wg_infoboard","digital_estate_vault","kfz_tracker_pro_v3","haustier_pass_pro_v5","park_end_time","park_history_pro_v3","verleih_tracker_pro_v3","dismiss_frost","pflanzen_pass_v10","energie_tracker_pro_v8","helperly_recipes_pro"]);
+        function isHelferleinBackupKey(key) {
+            return HELFERLEIN_BACKUP_KEYS.has(key) && !isAuthSessionStorageKey(key);
+        }
+
         async function exportGlobalBackup() {
             try {
                 const backup = { version: "2.0", app: "Helferlein", created: new Date().toISOString(), tools: Object.create(null), localStorage: Object.create(null) };
@@ -655,7 +661,7 @@
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
                     const value = localStorage.getItem(key);
-                    if (key === null || value === null || isAuthSessionStorageKey(key)) continue;
+                    if (key === null || value === null || !isHelferleinBackupKey(key)) continue;
                     backup.localStorage[key] = value;
                     const prefix = toolPrefixes.find(p => key.startsWith(p)) || "sonstige";
                     if (!backup.tools[prefix]) backup.tools[prefix] = [];
@@ -696,8 +702,8 @@
                         alert("Backup enthält ungültige Einträge");
                         return;
                     }
-                    if (entries.some(([key]) => isAuthSessionStorageKey(key))) {
-                        alert("Das Backup enthält Anmeldesitzungen. Bitte erstelle eine neue Sicherung ohne Sitzungstokens.");
+                    if (entries.some(([key]) => !isHelferleinBackupKey(key))) {
+                        alert("Das Backup enthält unbekannte Schlüssel oder Anmeldedaten. Nur Helferlein-Daten dürfen importiert werden.");
                         return;
                     }
                     const existing = entries.filter(([key]) => localStorage.getItem(key) !== null).length;
