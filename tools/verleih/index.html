@@ -430,14 +430,27 @@
             const inventory = data.inventory || [];
             const contacts = data.contacts || [];
 
-            invSelect.innerHTML = '<option value="">-- Inventar-Gegenstand wählen --</option>' + 
-                inventory.map(i => `<option value="${i.title}" data-category="${i.category}" data-serial="${i.serial}" data-gps="${i.gpsLink}">${i.title} (${i.category}${i.serial ? ' | SN: ' + i.serial : ''})</option>`).join('');
-            
-            personSelect.innerHTML = '<option value="">-- Kontakt wählen --</option><option value="custom">+ Neuen Namen eingeben</option>' + 
-                contacts.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-            
-            filterPerson.innerHTML = '<option value="">Alle Personen</option>' + 
-                [...new Set(data.items.map(i => i.person))].map(p => `<option value="${p}">${p}</option>`).join('');
+            // DOM-Optionen statt HTML-Interpolation: Inventar- und Kontaktdaten sind Benutzereingaben.
+            const addOption = (select, value, label) => {
+                const option = new Option(String(label ?? ''), String(value ?? ''));
+                select.add(option);
+                return option;
+            };
+            invSelect.replaceChildren();
+            addOption(invSelect, '', '-- Inventar-Gegenstand wählen --');
+            inventory.forEach(i => {
+                const option = addOption(invSelect, i.title, `${i.title} (${i.category}${i.serial ? ' | SN: ' + i.serial : ''})`);
+                option.dataset.category = String(i.category ?? '');
+                option.dataset.serial = String(i.serial ?? '');
+                option.dataset.gps = String(i.gpsLink ?? '');
+            });
+            personSelect.replaceChildren();
+            addOption(personSelect, '', '-- Kontakt wählen --');
+            addOption(personSelect, 'custom', '+ Neuen Namen eingeben');
+            contacts.forEach(c => addOption(personSelect, c.name, c.name));
+            filterPerson.replaceChildren();
+            addOption(filterPerson, '', 'Alle Personen');
+            [...new Set(data.items.map(i => i.person))].forEach(p => addOption(filterPerson, p, p));
         }
 
         function fillInventoryData(select) {
