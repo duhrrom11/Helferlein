@@ -46,6 +46,40 @@ export type TrustedPersonOverview = Readonly<{
   trustedPersons: readonly TrustedPersonSummary[];
 }>;
 
+export type InvitationDraft = Readonly<{
+  vaultId: string;
+  intendedUserId: string;
+  durationDays: 1 | 3 | 7 | 14;
+}>;
+
+export type InvitationDraftValidation =
+  | Readonly<{ ok: true; draft: InvitationDraft }>
+  | Readonly<{ ok: false; reason: "invalid_vault" | "invalid_recipient" | "self_invitation" | "invalid_duration" }>;
+
+/**
+ * Validate a draft before handing it to a future authenticated server.
+ * A valid draft is NOT an authorization decision: the server must verify
+ * ownership, the recipient, and all constraints independently.
+ */
+export function validateInvitationDraft(
+  vaultId: string,
+  intendedUserId: string,
+  ownerUserId: string,
+  durationDays: number,
+): InvitationDraftValidation {
+  if (!validateIdentifier(vaultId)) return { ok: false, reason: "invalid_vault" };
+  if (!validateIdentifier(intendedUserId) || !validateIdentifier(ownerUserId)) {
+    return { ok: false, reason: "invalid_recipient" };
+  }
+  if (intendedUserId.toLowerCase() === ownerUserId.toLowerCase()) {
+    return { ok: false, reason: "self_invitation" };
+  }
+  if (durationDays !== 1 && durationDays !== 3 && durationDays !== 7 && durationDays !== 14) {
+    return { ok: false, reason: "invalid_duration" };
+  }
+  return { ok: true, draft: { vaultId, intendedUserId, durationDays } };
+}
+
 export type InvitationCreationResult = Readonly<{
   invitationId: string;
   // Raw code may be returned once by a future secure gateway; never persist or log it.
