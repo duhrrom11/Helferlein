@@ -164,3 +164,32 @@ test('Rejected auth status request hides stale signed-in identity', async ({ pag
   await expect(page.locator('#userInfo')).toHaveText('Nicht angemeldet');
   await expect(page.locator('#cloudStatus')).toHaveText('Anmeldestatus konnte nicht geladen werden');
 });
+
+test('Older cloud identity response cannot overwrite newer signed-out status', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(async () => {
+    let resolveOld;
+    window.supabaseClient.auth.getUser = () => new Promise(resolve => { resolveOld = resolve; });
+    const oldRequest = updateUserDisplay();
+    window.supabaseClient.auth.getUser = async () => ({ data: { user: null }, error: null });
+    await updateUserDisplay();
+    resolveOld({ data: { user: { email: 'stale@example.invalid' } }, error: null });
+    await oldRequest;
+  });
+  await expect(page.locator('#userInfo')).toHaveText('Nicht angemeldet');
+  await expect(page.locator('#cloudStatus')).toHaveText('Nicht angemeldet');
+});
+test('Older failed auth request cannot override a newer successful status', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(async () => {
+    let rejectOld;
+    window.supabaseClient.auth.getUser = () => new Promise((_, reject) => { rejectOld = reject; });
+    const oldRequest = updateUserDisplay();
+    window.supabaseClient.auth.getUser = async () => ({ data: { user: { email: 'current@example.invalid' } }, error: null });
+    await updateUserDisplay();
+    rejectOld(new Error('old network failure'));
+    await oldRequest;
+  });
+  await expect(page.locator('#userInfo')).toContainText('current@example.invalid');
+  await expect(page.locator('#cloudStatus')).toContainText('Angemeldet');
+});
