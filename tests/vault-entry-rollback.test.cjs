@@ -17,6 +17,7 @@ function setup(failMode) {
   let stored = { encryptedData: 'alt' };
   let nextMode = failMode;
   const context = vm.createContext({
+    vaultReady: true,
     currentDecryptedVault: vault,
     getVaultConfig: () => structuredClone(stored),
     saveLocalConfig: async cfg => {
@@ -63,6 +64,7 @@ function setupSequence(outcomes) {
   const snapshots = [];
   let calls = 0;
   const context = vm.createContext({
+    vaultReady: true,
     currentDecryptedVault: vault,
     getVaultConfig: () => ({}),
     saveLocalConfig: async () => {

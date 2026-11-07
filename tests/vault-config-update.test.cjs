@@ -15,6 +15,7 @@ function setup(initial = {}) {
   let stored = structuredClone(initial);
   const updates = [];
   const context = vm.createContext({
+    vaultReady: true,
     Promise,
     getVaultConfig: () => structuredClone(stored),
     saveLocalConfig: async cfg => {
@@ -52,4 +53,15 @@ test('Mutationen laufen in Aufrufreihenfolge', async () => {
     update(cfg => { cfg.count *= 3; })
   ]);
   assert.equal(read().count, 3);
+});
+
+
+test('gesperrter Tresor verweigert Schreibzugriff', async () => {
+  const { update, read } = setup({ ownerName: 'Alt' });
+  const original = read().ownerName;
+  // Isolierten Testkontext mit gesperrtem Zustand prüfen.
+  const locked = vm.createContext({ vaultReady: false, Promise });
+  vm.runInContext(source + '\nthis.update = updateLocalConfig;', locked);
+  await assert.rejects(locked.update(() => { throw new Error('Darf nicht ausgeführt werden'); }), /nicht entsperrt/);
+  assert.equal(read().ownerName, original);
 });

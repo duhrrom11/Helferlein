@@ -1,0 +1,24 @@
+name: Vault link regex
+on:
+  pull_request:
+    paths:
+      - tools/notizen/index.html
+      - tests/vault-link-regex.test.cjs
+      - .github/workflows/vault-link-regex.yml
+  push:
+    branches: [main]
+    paths:
+      - tools/notizen/index.html
+      - tests/vault-link-regex.test.cjs
+      - .github/workflows/vault-link-regex.yml
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node tests/vault-link-regex.test.cjs

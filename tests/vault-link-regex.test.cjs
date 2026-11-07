@@ -1,0 +1,17 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const html = fs.readFileSync('tools/notizen/index.html', 'utf8');
+const emailFn = html.slice(html.indexOf('function sendEmailToPerson('), html.indexOf('async function saveVaultEntry('));
+const pdfFn = html.slice(html.indexOf('function generatePrintableKitPDF('), html.indexOf('</script>', html.indexOf('function generatePrintableKitPDF(')));
+const correctEmail = '/^[^' + '\\s@]+@[^' + '\\s@]+\\.[^' + '\\s@]+$/';
+const badEmail = correctEmail.replaceAll('\\', '\\\\');
+assert(emailFn.includes(correctEmail), 'correct email pattern');
+assert(!emailFn.includes(badEmail), 'no double-escaped email pattern');
+const correctSlash = "replace(/" + String.fromCharCode(92) + "/$/, '')";
+assert(pdfFn.includes(correctSlash), 'correct trailing slash removal');
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+for (const e of ['a@example.com','first.last+tag@example.co.uk']) assert(emailPattern.test(e), e);
+for (const e of ['a b@example.com','a@examplecom','a@ex ample.com']) assert(!emailPattern.test(e), e);
+assert.equal('https://example.org/tools/notizen/'.replace(/\/$/, ''), 'https://example.org/tools/notizen');
+console.log('Vault link regex checks passed');
