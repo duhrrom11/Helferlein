@@ -40,6 +40,7 @@ BEGIN
   IF v_inv.intended_user_id IS DISTINCT FROM p_verified_user_id
      OR v_inv.accepted_at IS NOT NULL
      OR v_inv.revoked_at IS NOT NULL
+     OR v_inv.expires_at IS NULL
      OR v_inv.expires_at <= v_time THEN
     RETURN false;
   END IF;
