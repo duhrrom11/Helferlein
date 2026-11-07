@@ -22,6 +22,7 @@ a{color:#24577c}a:focus-visible,button:focus-visible,input:focus-visible,select:
 <label for="duration">Gültigkeitsdauer</label>
 <select id="duration"><option value="1">1 Tag</option><option value="3">3 Tage</option><option value="7" selected>7 Tage</option><option value="14">14 Tage</option></select>
 <p id="expiry" class="hint" aria-live="polite"></p>
+<p id="summary" class="hint" aria-live="polite"></p>
 <button type="submit" disabled>Einladung erstellen (noch nicht verfügbar)</button>
 <button type="button" id="reset" class="secondary">Eingaben löschen</button>
 <p id="feedback" role="status" aria-live="polite"></p>
@@ -33,11 +34,13 @@ const recipient=document.getElementById("recipient");
 const duration=document.getElementById("duration");
 const expiry=document.getElementById("expiry");
 const feedback=document.getElementById("feedback");
+const summary=document.getElementById("summary");
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 function update(){
   const days=Number(duration.value);
   const date=new Date(Date.now()+days*86400000);
   expiry.textContent="Voraussichtliches Ablaufdatum: "+new Intl.DateTimeFormat("de-DE",{dateStyle:"full",timeStyle:"short"}).format(date);
+  summary.textContent="Vorgesehene Gültigkeit: "+days+(days===1?" Tag":" Tage")+". Es wurde noch keine Einladung erstellt.";
   if(!recipient.value){feedback.textContent="Bitte gib eine Benutzerkennung ein.";return;}
   feedback.textContent=uuid.test(recipient.value.trim())
     ?"Die Kennung hat ein gültiges Format. Ihre Zugehörigkeit ist noch nicht überprüft."
