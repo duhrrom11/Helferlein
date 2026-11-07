@@ -174,6 +174,29 @@ export function invitationViews(
   });
 }
 
+/** Validate external list data before exposing it to the UI. */
+export function validateTrustedPersonOverview(value: unknown): value is TrustedPersonOverview {
+  if (typeof value !== "object" || value === null) return false;
+  const overview = value as Record<string, unknown>;
+  return Array.isArray(overview.invitations) &&
+    Array.isArray(overview.trustedPersons) &&
+    overview.invitations.every((item: unknown) => {
+      if (typeof item !== "object" || item === null) return false;
+      const entry = item as Record<string, unknown>;
+      return typeof entry.id === "string" && validateIdentifier(entry.id) &&
+        typeof entry.intendedUserId === "string" && validateIdentifier(entry.intendedUserId) &&
+        typeof entry.expiresAt === "string" && Number.isFinite(Date.parse(entry.expiresAt)) &&
+        ["pending", "accepted", "expired", "revoked"].includes(String(entry.status));
+    }) &&
+    overview.trustedPersons.every((item: unknown) => {
+      if (typeof item !== "object" || item === null) return false;
+      const entry = item as Record<string, unknown>;
+      return typeof entry.userId === "string" && validateIdentifier(entry.userId) &&
+        typeof entry.addedAt === "string" && Number.isFinite(Date.parse(entry.addedAt)) &&
+        (entry.status === "active" || entry.status === "revoked");
+    });
+}
+
 export class InvitationGatewayUnavailableError extends Error {
   constructor() {
     super("Die sichere Einladungsverwaltung ist noch nicht freigeschaltet.");
