@@ -380,7 +380,7 @@
 
             if (user) {
                 if (headerInfo) headerInfo.textContent = "👤 " + user.email;
-                if (cloudStatus) cloudStatus.innerHTML = `✅ Angemeldet<br><strong>${user.email}</strong>`;
+                if (cloudStatus) cloudStatus.textContent = "✅ Angemeldet – " + (user.email || "Benutzer");
             } else {
                 if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
                 if (cloudStatus) cloudStatus.textContent = "Nicht angemeldet";
