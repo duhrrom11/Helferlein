@@ -366,7 +366,7 @@
             <div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3 lg:col-span-1">
                 <div class="flex justify-between items-center">
                     <h3 class="font-bold text-sm text-emerald-900">🧮 Optimaler WG-Schuldenausgleich</h3>
-                    <button onclick="settleAllDebts()" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✓ Ausgleichen</button>
+                    <button onclick="settleAllDebts()" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">✓ Ausgleichshinweis</button>
                 </div>
                 <div id="settlementList" class="space-y-1.5 text-xs text-gray-700">
                     <p class="text-gray-400">Berechne Ausgleich...</p>
@@ -1692,7 +1692,7 @@
             document.getElementById('receiptDate').valueAsDate = new Date();
         }
         function deleteReceipt(id) { saveData(getData().filter(item => item.id !== id)); renderApp(); }
-        function settleAllDebts() { if (confirm("WG-Schulden ausgleichen?")) { saveData([]); renderApp(); } }
+        function settleAllDebts() { alert("Der automatische Schuldenausgleich ist vorübergehend deaktiviert, damit keine Buchungen gelöscht werden. Bitte die vorgeschlagenen Überweisungen manuell durchführen und die Buchungen zur Dokumentation aufbewahren."); }
 
         /* Sparziele */
         function renderSavingsGoals() {
@@ -1869,7 +1869,7 @@
             const qrContainer = document.getElementById('wlanQrcode'); qrContainer.innerHTML = "";
             const wifiString = `WIFI:S:WG-WLAN;T:WPA;P:${getInfoData().wifi || ''};;`;
             if (typeof QRCode !== 'undefined') new QRCode(qrContainer, { text: wifiString, width: 140, height: 140 });
-            else qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(wifiString)}">`;
+            else { qrContainer.textContent = "QR-Code derzeit nicht verfügbar. Aus Datenschutzgründen wird das WLAN-Passwort nicht an einen externen QR-Dienst gesendet."; }
         }
         function closeWLANQRModal() { document.getElementById('wlanQrModal').classList.remove('flex'); document.getElementById('wlanQrModal').classList.add('hidden'); }
 
