@@ -39,6 +39,8 @@ const token=document.getElementById("token");
 const clear=document.getElementById("clear");
 const visibility=document.getElementById("visibility");
 const validCode=/^[a-f0-9]{64}$/;
+// Never accept bearer codes through URLs, browser history, or link previews.
+// Codes must be entered directly by the intended recipient.
 function updateStatus(){
   const value=token.value;
   status.className="";
@@ -65,6 +67,10 @@ clear.addEventListener("click",()=>{
   visibility.textContent="Code anzeigen";
   updateStatus();
   token.focus();
+});
+window.addEventListener("pagehide",()=>{
+  token.value="";
+  token.type="password";
 });
 form.addEventListener("submit",event=>{
   event.preventDefault();
