@@ -962,9 +962,18 @@
 
         async function performCheckIn() {
             const checkInTime = new Date().toISOString();
-            await updateLocalConfig(cfg => {
-                cfg.lastCheckIn = checkInTime;
-            });
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(cfg => {
+                    cfg.lastCheckIn = checkInTime;
+                });
+            } catch (error) {
+                console.error("Lokaler Check-in konnte nicht gespeichert werden:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Check-in konnte nicht lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet; die Notfallüberwachung ist nicht zuverlässig verfügbar.");
+                return;
+            }
             renderApp();
             const cloudCheckInSaved = await syncVaultToFirebase(true);
             alert(cloudCheckInSaved
