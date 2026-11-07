@@ -739,7 +739,7 @@
                 container.innerHTML = `<p class="text-xs text-slate-500">Noch keine Personen angelegt.</p>`;
                 return;
             }
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+            const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
             container.innerHTML = cfg.alarmPersons.map((p, idx) => {
                 const personLink = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(p.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
                 return `
@@ -885,7 +885,7 @@
                 return;
             }
 
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+            const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
 
             container.innerHTML = cfg.alarmPersons.map((p, idx) => {
                 const personLink = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(p.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
@@ -931,7 +931,7 @@
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 34);
 
             let yPos = 45;
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+            const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
 
             if (cfg.alarmPersons && cfg.alarmPersons.length > 0) {
                 cfg.alarmPersons.forEach((p, idx) => {
