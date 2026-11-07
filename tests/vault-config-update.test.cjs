@@ -61,7 +61,7 @@ test('gesperrter Tresor verweigert Schreibzugriff', async () => {
   const original = read().ownerName;
   // Isolierten Testkontext mit gesperrtem Zustand prüfen.
   const locked = vm.createContext({ vaultReady: false, Promise });
-  vm.runInContext(source + '\\nthis.update = updateLocalConfig;', locked);
+  vm.runInContext(source + '\nthis.update = updateLocalConfig;', locked);
   await assert.rejects(locked.update(() => { throw new Error('Darf nicht ausgeführt werden'); }), /nicht entsperrt/);
   assert.equal(read().ownerName, original);
 });
