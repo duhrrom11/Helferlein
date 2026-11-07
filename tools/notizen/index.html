@@ -601,7 +601,7 @@
         function updateLocalConfig(mutate) {
             const operation = localConfigUpdateQueue.then(async () => {
                 const cfg = getVaultConfig();
-                const previousEntries = currentDecryptedVault?.entries?.slice();
+                const previousEntries = typeof currentDecryptedVault !== 'undefined' ? currentDecryptedVault?.entries?.slice() : undefined;
                 try {
                     mutate(cfg);
                     const saved = await saveLocalConfig(cfg);
