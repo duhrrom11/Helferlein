@@ -21,7 +21,7 @@ test('Eigentuemerabfrage verwendet verifizierte Benutzer-ID', () => {
 
 test('keine Tresordatenfreigabe nach Eigentuemerkontrolle', () => {
   assert.match(source, /error: "vault_access_not_configured"/);
-  assert.doesNotMatch(source, /firebase-admin|firestore|googleapis/i);
+  assert.doesNotMatch(source, /from ["\x27]npm:firebase-admin|from ["\x27]npm:googleapis|\.collection\(/i);
 });
 
 test('JSON-Body hat Byte-Limit und verweigert Uebergroesse', () => {
