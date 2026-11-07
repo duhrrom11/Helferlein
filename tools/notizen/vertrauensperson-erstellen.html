@@ -15,7 +15,7 @@ a{color:#24577c}a:focus-visible,button:focus-visible,input:focus-visible,select:
 <h1>Vertrauensperson einladen</h1>
 <p>Bereite eine Einladung für eine bestimmte Person vor. Die tatsächliche Einladung kann erst nach sicherer Anmeldung erstellt werden.</p>
 <div class="notice" role="status"><strong>Einladungen noch nicht freigeschaltet.</strong> Diese Vorschau übermittelt keine Daten und erzeugt keinen Einladungscode.</div>
-<form id="create" autocomplete="off" novalidate>
+<form id="create" autocomplete="off" novalidate method="dialog">
 <label for="recipient">Benutzerkennung der Vertrauensperson</label>
 <input id="recipient" type="text" inputmode="text" maxlength="36" autocomplete="off" spellcheck="false" aria-describedby="recipient-help" required>
 <p class="hint" id="recipient-count" aria-live="off">0 von 36 Zeichen</p>
@@ -60,6 +60,7 @@ document.getElementById("reset").addEventListener("click",()=>{
   recipient.value="";duration.value="7";update();recipient.focus();
 });
 document.getElementById("create").addEventListener("submit",event=>{event.preventDefault();feedback.textContent="Vorschau: Es wurde keine Einladung erstellt oder übertragen.";});
+window.addEventListener("pagehide",()=>{recipient.value="";});
 window.addEventListener("pageshow",event=>{if(event.persisted){recipient.value="";duration.value="7";update();}});
 update();
 </script></body></html>
