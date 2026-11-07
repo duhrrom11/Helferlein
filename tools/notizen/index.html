@@ -586,8 +586,20 @@
         }
 
         async function syncVaultToFirebase(silent = false) {
-            if (!db) { alert("Firebase nicht verbunden."); return false; }
-            if (!silent) document.getElementById('syncModalOverlay').classList.remove('hidden');
+            if (!silent) {
+                document.getElementById('syncStatusLoading').classList.remove('hidden');
+                document.getElementById('syncStatusSuccess').classList.add('hidden');
+                document.getElementById('syncStatusError').classList.add('hidden');
+                document.getElementById('syncModalOverlay').classList.remove('hidden');
+            }
+            if (!db) {
+                if (!silent) {
+                    document.getElementById('syncErrorMessage').innerText = "Firebase nicht verbunden.";
+                    document.getElementById('syncStatusLoading').classList.add('hidden');
+                    document.getElementById('syncStatusError').classList.remove('hidden');
+                }
+                return false;
+            }
             
             try {
                 const cfg = getVaultConfig();
@@ -606,7 +618,8 @@
                 
                 localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
                 if (!silent) {
-                    setTimeout(() => document.getElementById('syncModalOverlay').classList.add('hidden'), 1500);
+                    document.getElementById('syncStatusLoading').classList.add('hidden');
+                    document.getElementById('syncStatusSuccess').classList.remove('hidden');
                 }
                 // Der erfolgreiche Firestore-Schreibvorgang ist bereits bestätigt.
                 // Ein Fehler bei der nachgelagerten Alarmabfrage darf diesen Erfolg
