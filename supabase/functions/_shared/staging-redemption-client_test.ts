@@ -10,7 +10,9 @@ Deno.test("only exact isolated staging origin passes URL validation", () => {
   for (const url of [null, "", "https://avapuibsidubuzxjtyld.supabase.co",
     "https://ojfoijljykjhveejvkfx.supabase.co.evil.test",
     "http://ojfoijljykjhveejvkfx.supabase.co",
-    staging + "/rest/v1", staging + "?x=1", staging + "#fragment",
+    staging + "/rest/v1", staging + "/", staging + ":443",
+    staging.toUpperCase(),
+    staging + "?x=1", staging + "#fragment",
     "https://user:pass@ojfoijljykjhveejvkfx.supabase.co"]) {
     assert(!isIsolatedStagingUrl(url), "unsafe URL accepted: " + url);
   }
