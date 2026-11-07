@@ -54,8 +54,8 @@ async function check(name, request, expectedStatuses) {
   await check('gueltiger Origin Preflight', {
     method: 'OPTIONS',
     headers: { Origin: 'https://duhrrom11.github.io', 'access-control-request-method': 'POST' }
-  }, [204, 401, 403]); // 401/403 hier zeigt Gateway-Konfigurationsbedarf an.
-  console.log('Basistests abgeschlossen; Gateway-Status bei OPTIONS separat bewerten.');
+  }, [204]); // Browser-Preflight muss die Function erreichen.
+  console.log('Basistests abgeschlossen.');
 })().catch(error => {
   console.error('Smoke-Test fehlgeschlagen:', error.message);
   process.exitCode = 1;
