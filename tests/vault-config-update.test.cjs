@@ -15,6 +15,7 @@ function setup(initial = {}) {
   let stored = structuredClone(initial);
   const updates = [];
   const context = vm.createContext({
+    vaultReady: true,
     Promise,
     getVaultConfig: () => structuredClone(stored),
     saveLocalConfig: async cfg => {
