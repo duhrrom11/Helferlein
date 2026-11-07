@@ -78,6 +78,7 @@ clear.addEventListener("click",()=>{
 window.addEventListener("pageshow",event=>{
   if(event.persisted){token.value="";token.type="password";visibility.setAttribute("aria-pressed","false");visibility.textContent="Code anzeigen";updateStatus();}
 });
+window.addEventListener("blur",()=>{token.type="password";visibility.setAttribute("aria-pressed","false");visibility.textContent="Code anzeigen";});
 window.addEventListener("pagehide",()=>{
   token.value="";
   token.type="password";
