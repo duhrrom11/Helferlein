@@ -57,3 +57,55 @@ test('nach Ruecknahme bleibt die Warteschlange nutzbar', async () => {
   assert.equal(await h.update(() => { h.vault.entries.push({ id: 4, title: 'Erfolg' }); }), true);
   assert.deepEqual(h.vault.entries.map(e => e.id), [1, 2, 4]);
 });
+
+function setupSequence(outcomes) {
+  const vault = { entries: [{ id: 1, title: 'Original' }] };
+  const snapshots = [];
+  let calls = 0;
+  const context = vm.createContext({
+    currentDecryptedVault: vault,
+    getVaultConfig: () => ({}),
+    saveLocalConfig: async () => {
+      const outcome = outcomes[calls++];
+      await new Promise(resolve => setImmediate(resolve));
+      if (outcome === 'throw') throw new Error('Verschluesselung fehlgeschlagen');
+      if (outcome === false) return false;
+      snapshots.push(structuredClone(vault.entries));
+      return true;
+    }
+  });
+  vm.runInContext(source + '\nthis.update = updateLocalConfig;', context);
+  return { update: context.update, vault, snapshots, calls: () => calls };
+}
+
+test('erfolgreiche Aenderung bleibt nach fehlgeschlagener Folgeaktion erhalten', async () => {
+  const h = setupSequence([true, 'throw']);
+  const first = h.update(() => { h.vault.entries.push({ id: 2, title: 'Gespeichert' }); });
+  const second = h.update(() => { h.vault.entries.push({ id: 3, title: 'Fehler' }); });
+  assert.equal(await first, true);
+  await assert.rejects(second, /Verschluesselung fehlgeschlagen/);
+  assert.deepEqual(h.vault.entries.map(e => e.id), [1, 2]);
+  assert.deepEqual(h.snapshots.map(s => s.map(e => e.id)), [[1, 2]]);
+});
+
+test('fehlgeschlagene Aenderung beeinflusst folgende erfolgreiche Aktion nicht', async () => {
+  const h = setupSequence([false, true]);
+  const first = h.update(() => { h.vault.entries.push({ id: 2, title: 'Fehler' }); });
+  const second = h.update(() => { h.vault.entries.push({ id: 3, title: 'Gespeichert' }); });
+  assert.equal(await first, false);
+  assert.equal(await second, true);
+  assert.deepEqual(h.vault.entries.map(e => e.id), [1, 3]);
+  assert.deepEqual(h.snapshots.map(s => s.map(e => e.id)), [[1, 3]]);
+});
+
+test('mehrere gleichzeitige Aktionen werden geordnet verarbeitet und isoliert zurueckgenommen', async () => {
+  const h = setupSequence([true, false, true, 'throw', true]);
+  const operations = [2, 3, 4, 5, 6].map(id =>
+    h.update(() => { h.vault.entries.push({ id, title: String(id) }); })
+      .then(value => value, () => 'throw')
+  );
+  assert.deepEqual(await Promise.all(operations), [true, false, true, 'throw', true]);
+  assert.deepEqual(h.vault.entries.map(e => e.id), [1, 2, 4, 6]);
+  assert.deepEqual(h.snapshots.map(s => s.map(e => e.id)), [[1, 2], [1, 2, 4], [1, 2, 4, 6]]);
+  assert.equal(h.calls(), 5);
+});
