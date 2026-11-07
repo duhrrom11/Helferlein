@@ -405,7 +405,7 @@
             const btnLogout = document.getElementById('btn-logout');
 
             if(user) {
-                statusText.innerText = "Status: Verbunden & Angemeldet";
+                statusText.innerText = "Status: Bei Supabase angemeldet (Cloud-Synchronisierung separat prüfen)";
                 userEmailSpan.innerText = user.email;
                 headerUserInfo.innerText = "👤 " + user.email;
                 headerUserInfo.classList.remove('hidden');
@@ -773,8 +773,10 @@
             cfg.ownerEmail = emailInput;
             
             await saveLocalConfig(cfg);
-            await syncVaultToFirebase(true);
-            alert("✅ Deine Einstellungen wurden erfolgreich gespeichert und mit der Cloud synchronisiert!");
+            const cloudSaved = await syncVaultToFirebase(true);
+            alert(cloudSaved
+                ? "✅ Deine Einstellungen wurden lokal gespeichert und mit der Cloud synchronisiert!"
+                : "⚠️ Deine Einstellungen wurden nur lokal gespeichert. Die Cloud-Synchronisierung ist derzeit nicht verfügbar. Bitte sichere deine lokalen Daten.");
         }
 
         async function addAlarmPerson() {
