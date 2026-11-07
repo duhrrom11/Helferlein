@@ -90,9 +90,17 @@ END;
 $$;
 
 -- REVOKE must be part of the SAME deployment transaction as CREATE FUNCTION.
+-- IMPORTANT: CREATE OR REPLACE preserves pre-existing EXECUTE grants.
+-- This draft must NEVER be deployed without an explicit grant/role audit.
 REVOKE ALL ON FUNCTION public.redeem_trusted_person_invitation_internal(uuid, bytea)
   FROM PUBLIC, anon, authenticated;
 -- Deliberately no GRANT. Explicitly authorize only a reviewed internal role.
+-- For existing installations, inspect pg_proc.proacl and all role memberships:
+-- revoking PUBLIC/anon/authenticated does NOT revoke a prior explicit grant
+-- to service_role, another role, or a role inherited by a privileged caller.
+-- A SECURITY DEFINER function accepting p_verified_user_id permits identity
+-- spoofing by ANY role with EXECUTE. Require verified server-only invocation,
+-- and prohibit direct browser/REST access before considering deployment.
 --
 -- OPEN SECURITY BLOCKERS:
 -- 1. This is not yet authenticated end-to-end. A privileged caller could
