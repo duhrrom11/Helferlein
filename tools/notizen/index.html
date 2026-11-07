@@ -706,6 +706,12 @@
             renderAlarmPersons();
         }
 
+        // Tresordaten beim Einfügen in HTML und Attribute sicher kodieren.
+        function escapeHtml(value) {
+            const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+            return String(value ?? "").replace(/[&<>"']/g, character => entities[character]);
+        }
+
         function renderVaultEntries() {
             const container = document.getElementById('vaultEntriesList');
             if (!container) return;
@@ -717,10 +723,10 @@
             container.innerHTML = entries.map(e => `
                 <div class="p-4 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center text-xs">
                     <div>
-                        <span class="font-bold text-slate-100 text-sm">${e.title}</span> <span class="text-indigo-400">(${e.category})</span>
-                        <p class="text-slate-300 font-mono mt-1">${e.content}</p>
+                        <span class="font-bold text-slate-100 text-sm">${escapeHtml(e.title)}</span> <span class="text-indigo-400">(${escapeHtml(e.category)})</span>
+                        <p class="text-slate-300 font-mono mt-1">${escapeHtml(e.content)}</p>
                     </div>
-                    <button data-id="${e.id}" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg delete-entry-btn">Löschen</button>
+                    <button data-id="${escapeHtml(e.id)}" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg delete-entry-btn">Löschen</button>
                 </div>
             `).join('');
         }
