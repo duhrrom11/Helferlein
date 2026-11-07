@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const html = fs.readFileSync(path.join(__dirname, '..', 'tools', 'notizen', 'index.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '..', 'tools', 'digitaler-nachlass', 'index.html'), 'utf8');
 const checks = [
   ['read stored vault', /const storedVault = localStorage\.getItem\('digital_estate_vault'\)/],
   ['create only when absent', /if \(storedVault === null\)/],
