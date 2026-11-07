@@ -629,7 +629,8 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
                 
-                localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+                // Keine alte Konfiguration zurück in localStorage schreiben:
+                // Während des Cloud-Aufrufs können neuere lokale Änderungen entstanden sein.
                 if (!silent) {
                     document.getElementById('syncStatusLoading').classList.add('hidden');
                     document.getElementById('syncStatusSuccess').classList.remove('hidden');
