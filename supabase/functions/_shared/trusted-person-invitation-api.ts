@@ -185,7 +185,7 @@ export function validateTrustedPersonOverview(value: unknown): value is TrustedP
   const overview = value as Record<string, unknown>;
   if (Object.keys(overview).some((key) => !["invitations", "trustedPersons"].includes(key))) return false;
   return Array.isArray(overview.invitations) && overview.invitations.length <= 500 &&
-    Array.isArray(overview.trustedPersons) &&
+    Array.isArray(overview.trustedPersons) && overview.trustedPersons.length <= 500 &&
     overview.invitations.every((item: unknown) => {
       if (typeof item !== "object" || item === null) return false;
       const entry = item as Record<string, unknown>;
