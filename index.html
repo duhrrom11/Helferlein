@@ -632,6 +632,23 @@
             setStat('stats-backform', `${getCount(['bk_rec', 'bk_pans', 'bk_shop'])} Rezepte/Formen`);
         }
 
+        // Authentifizierungs- und Sitzungsdaten gehören niemals in unverschlüsselte Backups.
+        function isAuthSessionStorageKey(key) {
+            const normalized = String(key ?? '').toLowerCase();
+            return normalized.startsWith('sb-') ||
+                normalized.includes('supabase') ||
+                normalized.startsWith('firebase:') ||
+                normalized.includes('auth-token') ||
+                normalized.includes('access_token') ||
+                normalized.includes('refresh_token') ||
+                normalized.includes('code-verifier') ||
+                normalized.includes('pkce') ||
+                normalized.includes('session') ||
+                normalized.includes('password') ||
+                normalized.includes('secret') ||
+                normalized.includes('private_key');
+        }
+
         async function exportGlobalBackup() {
             try {
                 const backup = { version: "2.0", app: "Helferlein", created: new Date().toISOString(), tools: Object.create(null), localStorage: Object.create(null) };
@@ -639,13 +656,14 @@
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
                     const value = localStorage.getItem(key);
-                    if (key === null || value === null) continue;
+                    if (key === null || value === null || isAuthSessionStorageKey(key)) continue;
                     backup.localStorage[key] = value;
                     const prefix = toolPrefixes.find(p => key.startsWith(p)) || "sonstige";
                     if (!backup.tools[prefix]) backup.tools[prefix] = [];
                     backup.tools[prefix].push(key);
                 }
                 if (Object.keys(backup.localStorage).length === 0) { alert("Keine Daten zum Sichern vorhanden."); return; }
+                if (!confirm("Dieses Backup ist NICHT verschlüsselt und kann persönliche Daten enthalten. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren. Trotzdem exportieren?")) return;
                 const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -675,7 +693,7 @@
                     if (backup.version !== "2.0") { alert("Diese Backup-Version wird nicht unterstützt."); return; }
                     if (typeof backup.created !== "string" || !Number.isFinite(Date.parse(backup.created))) { alert("Das Backup enthält kein gültiges Sicherungsdatum."); return; }
                     const entries = Object.entries(backup.localStorage);
-                    if (!entries.every(([key, value]) => typeof key === "string" && key.length > 0 && key !== "__proto__" && key !== "constructor" && key !== "prototype" && typeof value === "string")) {
+                    if (!entries.every(([key, value]) => typeof key === "string" && key.length > 0 && key !== "__proto__" && key !== "constructor" && key !== "prototype" && !isAuthSessionStorageKey(key) && typeof value === "string")) {
                         alert("Backup enthält ungültige Einträge");
                         return;
                     }
