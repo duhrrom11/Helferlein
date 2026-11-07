@@ -735,20 +735,44 @@
                         return;
                     }
                     const rejected = entries.filter(([key]) => !isHelferleinBackupKey(key));
-                    if (rejected.length) {
-                        alert("Dieses Backup enthält " + rejected.length + " nicht unterstützte oder sicherheitskritische Schlüssel. Es wurden keine Daten importiert. Bitte ein aktuelles Helferlein-Backup verwenden.");
+                    const supported = entries.filter(([key]) => isHelferleinBackupKey(key));
+                    if (!supported.length) {
+                        alert("Das Backup enthält keine unterstützten Helferlein-Daten. Es wurden keine Daten verändert.");
                         return;
                     }
-                    const existing = entries.filter(([key]) => localStorage.getItem(key) !== null).length;
-                    if (!entries.length) { alert("Das Backup enthält keine Einträge."); return; }
-                    if (!confirm(`Backup mit ${entries.length} Einträgen importieren? ${existing} vorhandene Einträge werden überschrieben. Bitte vorher eine Sicherung exportieren.`)) return;
+                    const existing = supported.filter(([key]) => localStorage.getItem(key) !== null).length;
+                    const ignoredMessage = rejected.length
+                        ? " " + rejected.length + " unbekannte oder sicherheitskritische Einträge werden aus Sicherheitsgründen NICHT importiert."
+                        : "";
+                    if (!confirm("Backup mit " + supported.length + " unterstützten Einträgen importieren? " + existing +
+                        " vorhandene Einträge werden überschrieben." + ignoredMessage +
+                        " Bitte vorher eine Sicherung exportieren.")) return;
+
+                    // Vollständiger Rollback, falls z.B. die Browser-Speicherquote erreicht wird.
+                    const previous = supported.map(([key]) => [key, localStorage.getItem(key)]);
                     let count = 0;
-                    for (const [key, value] of entries) {
-                        localStorage.setItem(key, value);
-                        count++;
+                    try {
+                        for (const [key, value] of supported) {
+                            localStorage.setItem(key, value);
+                            count++;
+                        }
+                    } catch (writeError) {
+                        let rollbackFailed = false;
+                        for (const [key, oldValue] of previous) {
+                            try {
+                                if (oldValue === null) localStorage.removeItem(key);
+                                else localStorage.setItem(key, oldValue);
+                            } catch (rollbackError) {
+                                rollbackFailed = true;
+                            }
+                        }
+                        alert(rollbackFailed
+                            ? "Import fehlgeschlagen. Die Wiederherstellung des vorherigen Datenstands war nicht vollständig möglich. Bitte vorhandene Sicherungen aufbewahren."
+                            : "Import fehlgeschlagen. Der vorherige Datenstand wurde wiederhergestellt.");
+                        return;
                     }
                     loadStats(); initFavorites();
-                    alert(`${count} Einträge erfolgreich wiederhergestellt`);
+                    alert(`${count} Einträge erfolgreich wiederhergestellt.${rejected.length ? " " + rejected.length + " nicht unterstützte Einträge wurden übersprungen." : ""}`);
                 } catch (err) { alert("Fehler beim Import des Backups"); }
             };
             reader.onerror = () => alert("Backupdatei konnte nicht gelesen werden.");
