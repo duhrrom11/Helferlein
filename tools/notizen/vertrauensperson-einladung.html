@@ -25,6 +25,7 @@ button:disabled{background:#6b7782;cursor:not-allowed}.secondary{background:#e8e
 <p id="token-help" class="hint">64 Zeichen, bestehend aus den Ziffern 0–9 und den Buchstaben a–f. Teile diesen Code nicht mit anderen.</p>
 <button id="accept" type="submit" disabled>Einladung annehmen (noch nicht verfügbar)</button>
 <button id="clear" class="secondary" type="button">Code löschen</button>
+<button id="visibility" class="secondary" type="button" aria-pressed="false" aria-controls="token">Code anzeigen</button>
 <p id="status" role="status" aria-live="polite"></p>
 </form>
 <footer>Helferlein · Vorschau ohne Datenübertragung. Es werden weder Einladungscodes gespeichert noch versendet.</footer>
@@ -35,6 +36,7 @@ const form=document.getElementById("invitation");
 const status=document.getElementById("status");
 const token=document.getElementById("token");
 const clear=document.getElementById("clear");
+const visibility=document.getElementById("visibility");
 const validCode=/^[a-f0-9]{64}$/;
 function updateStatus(){
   const value=token.value;
@@ -49,8 +51,17 @@ function updateStatus(){
   status.textContent="Das Format des Codes ist korrekt. Die Echtheit kann erst nach Freischaltung geprüft werden.";
 }
 token.addEventListener("input",updateStatus);
+visibility.addEventListener("click",()=>{
+  const shown=token.type==="password";
+  token.type=shown?"text":"password";
+  visibility.setAttribute("aria-pressed",String(shown));
+  visibility.textContent=shown?"Code verbergen":"Code anzeigen";
+});
 clear.addEventListener("click",()=>{
   token.value="";
+  token.type="password";
+  visibility.setAttribute("aria-pressed","false");
+  visibility.textContent="Code anzeigen";
   updateStatus();
   token.focus();
 });
