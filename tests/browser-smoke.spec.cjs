@@ -32,3 +32,41 @@ test('Homepage login rejects empty credentials without network writes', async ({
   await page.evaluate(() => window.loginUser());
   await expect(page.locator('#loginEmail')).toBeVisible();
 });
+
+test('Backup exports only allowed local browser data', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => {
+    localStorage.clear();
+    localStorage.setItem('hub_favorites', '["kassenbon"]');
+    localStorage.setItem('sb-auth-token', 'SHOULD_NOT_EXPORT');
+    localStorage.setItem('unknown_private', 'SHOULD_NOT_EXPORT');
+  });
+  page.on('dialog', dialog => dialog.accept());
+  const downloadPromise = page.waitForEvent('download');
+  await page.evaluate(() => window.exportGlobalBackup());
+  const download = await downloadPromise;
+  const fs = require('node:fs');
+  const data = JSON.parse(fs.readFileSync(await download.path(), 'utf8'));
+  expect(data.app).toBe('Helferlein');
+  expect(data.version).toBe('2.0');
+  expect(data.localStorage.hub_favorites).toBe('["kassenbon"]');
+  expect(data.localStorage['sb-auth-token']).toBeUndefined();
+  expect(data.localStorage.unknown_private).toBeUndefined();
+});
+test('Backup restore rejects unsupported keys and preserves local values', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => {
+    localStorage.clear();
+    localStorage.setItem('hub_favorites', '["kisten"]');
+  });
+  page.on('dialog', dialog => dialog.accept());
+  const payload = {
+    version: '2.0', app: 'Helferlein', created: new Date().toISOString(),
+    localStorage: { hub_favorites: '["kassenbon"]', 'sb-auth-token': 'SHOULD_NOT_IMPORT' }
+  };
+  await page.locator('input[type="file"][accept*=".json"]').setInputFiles({
+    name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(payload))
+  });
+  await expect.poll(async () => page.evaluate(() => localStorage.getItem('hub_favorites'))).toBe('["kassenbon"]');
+  expect(await page.evaluate(() => localStorage.getItem('sb-auth-token'))).toBeNull();
+});
