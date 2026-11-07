@@ -103,6 +103,8 @@
             </div>
         </div>
 
+        <p id="searchEmptyState" class="hidden text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-4" role="status" aria-live="polite">Keine passenden Werkzeuge gefunden. Bitte einen anderen Suchbegriff eingeben.</p>
+
         <!-- Tools Grid (Alle 11 Tools) -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -562,7 +564,9 @@
         }
 
         document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") closeSettings();
+            if (event.key === "Escape" && !document.getElementById('settingsModal')?.classList.contains('hidden')) {
+                closeSettings();
+            }
         });
 
         function closeSettings() {
@@ -630,11 +634,15 @@
             const searchBox = document.getElementById('searchBox');
             if(!searchBox) return;
             const query = searchBox.value.toLocaleLowerCase("de").trim();
+            let matches = 0;
             document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
                 const name = card.getAttribute('data-name') || '', text = card.innerText.toLocaleLowerCase("de");
                 // Search only tool metadata, never private browser storage.
-                card.style.display = (name.toLocaleLowerCase("de").includes(query) || text.includes(query)) ? "flex" : "none";
+                const visible = name.toLocaleLowerCase("de").includes(query) || text.includes(query);
+                card.style.display = visible ? "flex" : "none";
+                if (visible) matches++;
             });
+            document.getElementById('searchEmptyState')?.classList.toggle('hidden', matches !== 0);
         }
 
         function loadStats() {
