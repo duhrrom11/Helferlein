@@ -70,3 +70,37 @@ test('Backup restore rejects unsupported keys and preserves local values', async
   await expect.poll(async () => page.evaluate(() => localStorage.getItem('hub_favorites'))).toBe('["kassenbon"]');
   expect(await page.evaluate(() => localStorage.getItem('sb-auth-token'))).toBeNull();
 });
+
+test('Cloud auth UI renders signed-in user with mocked client, without backend calls', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(async () => {
+    window.supabaseClient.auth.getUser = async () => ({
+      data: { user: { email: '<script>example@invalid.test</script>' } }, error: null
+    });
+    await updateUserDisplay();
+  });
+  await expect(page.locator('#userInfo')).toContainText('<script>example@invalid.test</script>');
+  expect(await page.locator('#userInfo script').count()).toBe(0);
+  await expect(page.locator('#cloudStatus')).toContainText('Angemeldet');
+});
+test('Cloud auth UI handles unavailable backend with mocked client', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(async () => {
+    window.supabaseClient.auth.getUser = async () => ({ data: { user: null }, error: { message: 'offline' } });
+    await updateUserDisplay();
+  });
+  await expect(page.locator('#cloudStatus')).toContainText('Anmeldestatus konnte nicht geladen werden');
+  await expect(page.locator('#userInfo')).toContainText('Nicht angemeldet');
+});
+test('Empty registration is rejected before cloud request', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(() => {
+    window.supabaseClient.auth.signUp = () => { throw new Error('Network call forbidden in test'); };
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+  });
+  const dialogs = [];
+  page.on('dialog', async dialog => { dialogs.push(dialog.message()); await dialog.accept(); });
+  await page.evaluate(() => registerUser());
+  expect(dialogs).toContain('Bitte E-Mail und Passwort eingeben.');
+});
