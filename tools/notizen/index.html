@@ -585,15 +585,14 @@
             localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
         }
 
-        let activeVaultSync = null;
+        // Synchronisierungen nacheinander ausführen: spätere Änderungen
+        // dürfen nicht mit einem bereits laufenden Schreibvorgang verschmelzen.
+        let vaultSyncQueue = Promise.resolve();
 
         function syncVaultToFirebase(silent = false) {
-            if (activeVaultSync) return activeVaultSync;
-            const operation = performVaultSync(silent);
-            activeVaultSync = operation;
-            void operation.finally(() => {
-                if (activeVaultSync === operation) activeVaultSync = null;
-            }).catch(() => {});
+            const operation = vaultSyncQueue.then(() => performVaultSync(silent));
+            // Auch nach einem unerwarteten Fehler muss die Warteschlange weiterlaufen.
+            vaultSyncQueue = operation.then(() => undefined, () => undefined);
             return operation;
         }
 
