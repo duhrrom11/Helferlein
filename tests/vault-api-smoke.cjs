@@ -13,7 +13,7 @@ if (!url || !anonKey) {
 }
 let parsed;
 try { parsed = new URL(url); } catch { console.error('Ungueltige Test-URL'); process.exit(2); }
-if (parsed.protocol !== 'https:' || !parsed.pathname.endsWith('/functions/v1/vault-api')) {
+if (parsed.protocol !== 'https:' || !/^[a-z0-9]{20}\.supabase\.co$/.test(parsed.hostname) ||\n    parsed.pathname !== '/functions/v1/vault-api' || parsed.search || parsed.hash ||\n    parsed.username || parsed.password || parsed.port) {
   console.error('Nur HTTPS-URL einer vault-api Edge Function erlaubt.');
   process.exit(2);
 }
@@ -26,7 +26,7 @@ async function check(name, request, expectedStatuses) {
   const response = await fetch(url, {
     ...request,
     headers: { apikey: anonKey, ...(request.headers || {}) },
-    signal: AbortSignal.timeout(10000)
+    redirect: 'manual', // Keine Weitergabe des apikey-Headers an Redirect-Ziele.\n    signal: AbortSignal.timeout(10000)
   });
   assert.ok(expectedStatuses.includes(response.status),
     name + ': HTTP ' + response.status + ' statt ' + expectedStatuses.join('/'));
