@@ -448,7 +448,7 @@
         console.log("✅ Supabase verbunden");
 
         async function registerUser() {
-            const email = document.getElementById("loginEmail").value.trim();
+            const email = document.getElementById("loginEmail").value.trim().toLowerCase();
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
@@ -456,19 +456,19 @@
                 return;
             }
 
-            const { error } = await window.supabaseClient.auth.signUp({ email, password });
+            const { data, error } = await window.supabaseClient.auth.signUp({ email, password });
             if (error) {
                 alert(error.message);
                 return;
             }
 
-            alert("Registrierung erfolgreich.");
+            alert(data.session ? "Registrierung erfolgreich." : "Registrierung eingereicht. Bitte prüfe deine E-Mails zur Bestätigung.");
             updateUserDisplay();
             closeSettings();
         }
 
         async function loginUser() {
-            const email = document.getElementById("loginEmail").value.trim();
+            const email = document.getElementById("loginEmail").value.trim().toLowerCase();
             const password = document.getElementById("loginPassword").value;
 
             if (!email || !password) {
@@ -487,19 +487,20 @@
         }
 
         async function logoutUser() {
-            await window.supabaseClient.auth.signOut();
+            const { error } = await window.supabaseClient.auth.signOut();
+            if (error) { alert("Abmeldung fehlgeschlagen: " + error.message); return; }
             updateUserDisplay();
         }
 
         async function updateUserDisplay() {
             const { data } = await window.supabaseClient.auth.getUser();
-            const user = data.user;
+            const user = data?.user ?? null;
 
             const headerInfo = document.getElementById("userInfo");
             const cloudStatus = document.getElementById("cloudStatus");
 
             if (user) {
-                if (headerInfo) headerInfo.textContent = "👤 " + user.email;
+                if (headerInfo) headerInfo.textContent = "👤 " + (user.email || "Benutzer");
                 if (cloudStatus) cloudStatus.textContent = `✅ Angemeldet – ${user.email || "Benutzer"}`;
             } else {
                 if (headerInfo) headerInfo.textContent = "Nicht angemeldet";
@@ -523,16 +524,23 @@
             }
         }
 
+        function readFavorites() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('hub_favorites') || '[]');
+                return Array.isArray(saved) ? saved.filter(id => typeof id === 'string') : [];
+            } catch (_) { return []; }
+        }
+
         function toggleFavorite(toolId, event) {
             if(event) { event.preventDefault(); event.stopPropagation(); }
-            let favs = JSON.parse(localStorage.getItem('hub_favorites') || '[]');
+            let favs = readFavorites();
             favs = favs.includes(toolId) ? favs.filter(id => id !== toolId) : [...favs, toolId];
             localStorage.setItem('hub_favorites', JSON.stringify(favs));
             initFavorites();
         }
 
         function initFavorites() {
-            const favs = JSON.parse(localStorage.getItem('hub_favorites') || '[]');
+            const favs = readFavorites();
             const section = document.getElementById('favoritesSection');
             const grid = document.getElementById('favoritesGrid');
             if (!grid || !section) return;
@@ -564,10 +572,10 @@
             document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
                 const name = card.getAttribute('data-name') || '', text = card.innerText.toLowerCase(), id = card.getAttribute('data-id');
                 let found = false;
-                if (query.length > 1) {
+                if (query.length > 1 && id) {
                     for (let i = 0; i < localStorage.length; i++) {
                         let k = localStorage.key(i);
-                        if (k.includes(id) && (localStorage.getItem(k) || '').toLowerCase().includes(query)) { found = true; break; }
+                        if (k && k.startsWith(id) && (localStorage.getItem(k) || '').toLowerCase().includes(query)) { found = true; break; }
                     }
                 }
                 card.style.display = (name.includes(query) || text.includes(query) || found) ? "flex" : "none";
@@ -602,6 +610,7 @@
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
                     const value = localStorage.getItem(key);
+                    if (key === null || value === null) continue;
                     backup.localStorage[key] = value;
                     const prefix = toolPrefixes.find(p => key.startsWith(p)) || "sonstige";
                     if (!backup.tools[prefix]) backup.tools[prefix] = [];
@@ -632,11 +641,12 @@
                         return;
                     }
                     const entries = Object.entries(backup.localStorage);
-                    if (!entries.every(([key, value]) => typeof key === "string" && typeof value === "string")) {
+                    if (!entries.every(([key, value]) => typeof key === "string" && key.length > 0 && typeof value === "string")) {
                         alert("Backup enthält ungültige Einträge");
                         return;
                     }
                     const existing = entries.filter(([key]) => localStorage.getItem(key) !== null).length;
+                    if (!entries.length) { alert("Das Backup enthält keine Einträge."); return; }
                     if (!confirm(`Backup mit ${entries.length} Einträgen importieren? ${existing} vorhandene Einträge werden überschrieben. Bitte vorher eine Sicherung exportieren.`)) return;
                     let count = 0;
                     for (const [key, value] of entries) {
