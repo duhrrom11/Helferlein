@@ -16,6 +16,31 @@ export type TrustedPersonSummary = Readonly<{
   addedAt: string;
 }>;
 
+export type TrustedPersonView = Readonly<{
+  userId: string;
+  status: TrustedPersonSummary["status"];
+  addedAt: string;
+  canRemove: boolean;
+}>;
+
+/** Active people first, then newest. No access is granted by this view model. */
+export function trustedPersonViews(
+  persons: readonly TrustedPersonSummary[],
+): readonly TrustedPersonView[] {
+  return persons.map((person) => ({
+    userId: person.userId,
+    status: person.status,
+    addedAt: person.addedAt,
+    canRemove: person.status === "active",
+  })).sort((a, b) => {
+    if (a.canRemove !== b.canRemove) return a.canRemove ? -1 : 1;
+    const aTime = Date.parse(a.addedAt);
+    const bTime = Date.parse(b.addedAt);
+    return (Number.isFinite(bTime) ? bTime : 0) -
+      (Number.isFinite(aTime) ? aTime : 0);
+  });
+}
+
 export type TrustedPersonOverview = Readonly<{
   invitations: readonly InvitationSummary[];
   trustedPersons: readonly TrustedPersonSummary[];
