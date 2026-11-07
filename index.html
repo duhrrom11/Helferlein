@@ -99,7 +99,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-3">
             <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 11 kostenlosen Online-Tools im Überblick</h2>
             <div class="w-full md:w-80">
-                <input type="search" id="searchBox" inputmode="search" autocomplete="off" aria-label="Alltagstools durchsuchen" onkeyup="filterTools()" placeholder="🔍 Werkzeug suchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
+                <input type="search" id="searchBox" inputmode="search" autocomplete="off" aria-label="Alltagstools durchsuchen" oninput="filterTools()" placeholder="🔍 Werkzeug suchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
             </div>
         </div>
 
@@ -593,6 +593,8 @@
                     const btn = clone.querySelector('.fav-btn');
                     if(btn) {
                         btn.style.color = '#f59e0b';
+                        btn.setAttribute('aria-pressed', 'true');
+                        btn.setAttribute('aria-label', 'Aus Favoriten entfernen');
                         btn.onclick = (e) => toggleFavorite(id, e);
                     }
                     grid.appendChild(clone);
@@ -600,7 +602,12 @@
             });
             document.querySelectorAll('#toolsGrid .tool-card').forEach(c => {
                 const btn = c.querySelector('.fav-btn');
-                if(btn) btn.style.color = favs.includes(c.getAttribute('data-id')) ? '#f59e0b' : '#d1d5db';
+                if (btn) {
+                    const active = favs.includes(c.getAttribute('data-id'));
+                    btn.style.color = active ? '#f59e0b' : '#d1d5db';
+                    btn.setAttribute('aria-pressed', String(active));
+                    btn.setAttribute('aria-label', active ? 'Aus Favoriten entfernen' : 'Zu Favoriten hinzufügen');
+                }
             });
         }
 
