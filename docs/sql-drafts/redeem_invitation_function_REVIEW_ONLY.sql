@@ -37,7 +37,9 @@ BEGIN
   IF NOT FOUND THEN RETURN false; END IF;
 
   v_time := clock_timestamp();
-  IF v_inv.intended_user_id IS DISTINCT FROM p_verified_user_id
+  IF v_inv.vault_id IS NULL
+     OR v_inv.invited_by_user_id IS NULL
+     OR v_inv.intended_user_id IS DISTINCT FROM p_verified_user_id
      OR v_inv.accepted_at IS NOT NULL
      OR v_inv.revoked_at IS NOT NULL
      OR v_inv.expires_at IS NULL
@@ -50,7 +52,8 @@ BEGIN
     FROM public.vault_ownership
     WHERE vault_id = v_inv.vault_id
     FOR UPDATE;
-  IF NOT FOUND OR v_owner IS DISTINCT FROM v_inv.invited_by_user_id THEN
+  IF NOT FOUND OR v_owner IS NULL
+     OR v_owner IS DISTINCT FROM v_inv.invited_by_user_id THEN
     RETURN false;
   END IF;
 
