@@ -1258,6 +1258,11 @@
             });
         }
 
+        function replaceMateOptions(id, names) {
+            const select = document.getElementById(id);
+            select.replaceChildren(...names.map(name => new Option(String(name), String(name))));
+        }
+
         /* Render App */
         function renderApp() {
             const mateNames = getFlatmateNames();
@@ -1267,18 +1272,27 @@
             const now = new Date();
             const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-            document.getElementById('receiptPaymentPayer').innerHTML = mateNames.map(m => `<option value="${m}">${m}</option>`).join('');
-            document.getElementById('splitCheckboxes').innerHTML = mateNames.map(m => `
-                <label class="flex items-center space-x-2 cursor-pointer">
-                    <input type="checkbox" name="splitMate" value="${m}" checked class="rounded text-emerald-600">
-                    <span>${m}</span>
-                </label>
-            `).join('');
+            replaceMateOptions('receiptPaymentPayer', mateNames);
+            const splitContainer = document.getElementById('splitCheckboxes');
+            splitContainer.replaceChildren(...mateNames.map(name => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 cursor-pointer';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'splitMate';
+                checkbox.value = name;
+                checkbox.checked = true;
+                checkbox.className = 'rounded text-emerald-600';
+                const span = document.createElement('span');
+                span.textContent = name;
+                label.append(checkbox, span);
+                return label;
+            }));
 
-            document.getElementById('cleanTaskAssignee').innerHTML = mateNames.map(m => `<option value="${m}">${m}</option>`).join('');
-            document.getElementById('contractPayer').innerHTML = mateNames.map(m => `<option value="${m}">${m}</option>`).join('');
-            document.getElementById('eventOwner').innerHTML = mateNames.map(m => `<option value="${m}">${m}</option>`).join('');
-            document.getElementById('noteAuthorInput').innerHTML = mateNames.map(m => `<option value="${m}">${m}</option>`).join('');
+            replaceMateOptions('cleanTaskAssignee', mateNames);
+            replaceMateOptions('contractPayer', mateNames);
+            replaceMateOptions('eventOwner', mateNames);
+            replaceMateOptions('noteAuthorInput', mateNames);
 
             let totalIncome = 0;
             let totalExpense = 0;
