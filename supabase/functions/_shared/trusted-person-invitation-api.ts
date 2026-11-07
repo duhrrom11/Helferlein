@@ -77,7 +77,7 @@ export function validateInvitationDraft(
   if (durationDays !== 1 && durationDays !== 3 && durationDays !== 7 && durationDays !== 14) {
     return { ok: false, reason: "invalid_duration" };
   }
-  return { ok: true, draft: { vaultId, intendedUserId, durationDays } };
+  return { ok: true, draft: { vaultId: vaultId.toLowerCase(), intendedUserId: intendedUserId.toLowerCase(), durationDays } };
 }
 
 export function invitationDraftErrorMessage(
