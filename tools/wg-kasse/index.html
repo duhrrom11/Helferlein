@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WG-Organisator & Haushaltsbuch Ultimate Pro</title>
+    <title>WG-Organisator & Haushaltsbuch Ultimate Pro | Helperly</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,6 +15,8 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <!-- QRCode.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         @media print {
@@ -31,54 +33,99 @@
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
 
-    <!-- Header -->
-    <header class="bg-emerald-800 text-white shadow-lg py-6 px-4">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="text-center md:text-left">
-                <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">🏠 WG-Organisator Ultimate Pro</h1>
-                <p class="text-xs md:text-sm opacity-90 mt-1">Haushaltsbuch, Pinnwand mit Sticky Notes, Putz-/Kochplan, Kalender, Inventar & Infoboard</p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <button onclick="openMitbewohnerModal()" class="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 border border-emerald-500 rounded-xl text-xs font-bold shadow-sm">
-                    👥 Mitglieder / Kontakte
-                </button>
-                <button onclick="toggleGuide()" class="px-3.5 py-2 bg-emerald-900 hover:bg-emerald-950 border border-emerald-600 rounded-xl text-xs font-bold shadow-sm">
-                    📖 Handbuch
-                </button>
-            </div>
+    <!-- Header im exakten Mini-HomeBox-Stil -->
+    <header class="bg-emerald-800 text-white shadow-md py-6 px-4 text-center space-y-3">
+        <h1 class="text-3xl font-bold">🏠 WG-Organisator Ultimate Pro</h1>
+        <p class="text-sm opacity-90">Haushaltsbuch, Pinnwand mit Sticky Notes, Putz-/Kochplan, Kalender, Inventar & Infoboard</p>
+
+        <!-- Header Action Buttons -->
+        <div class="flex flex-wrap justify-center gap-2 pt-1">
+            <button onclick="toggleSettingsModal()" class="px-4 py-2 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-xs font-bold shadow-sm transition">
+                ⚙️ Einstellungen & Cloud-Konto
+            </button>
+            <span id="header-user-badge" class="hidden items-center px-3 py-2 bg-emerald-950/60 text-emerald-100 rounded-xl text-xs font-semibold border border-emerald-600/30">
+                👤 <span id="header-user-email">Nicht angemeldet</span>
+            </span>
+            <button onclick="toggleHelpModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm transition">
+                📖 Hilfe & Anleitung anzeigen
+            </button>
+            <button onclick="openMitbewohnerModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm transition">
+                👥 Mitglieder / Kontakte
+            </button>
         </div>
     </header>
 
-    <!-- Handbuch (Aufklappbar) -->
-    <section id="guideSection" class="hidden bg-emerald-950 text-emerald-50 border-b border-emerald-800 p-6 transition-all duration-300">
-        <div class="max-w-7xl mx-auto space-y-4">
-            <div class="flex justify-between items-center border-b border-emerald-700 pb-3">
-                <h2 class="text-lg font-bold">📘 WG-Ultimate Handbuch</h2>
-                <button onclick="toggleGuide()" class="text-emerald-300 hover:text-white text-xl font-bold">&times;</button>
+    <!-- MODAL: Einstellungen & Supabase Auth -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleSettingsModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-emerald-900">⚙️ Einstellungen & Cloud-Konto</h3>
+                <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs leading-relaxed">
-                <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">1. Digitale Pinnwand & Notizen</h3>
-                    <p>Farbige Sticky Notes erstellen, wichtige Zettel oben anpinnen📌, Autor wählen und Notizen per Klick verwalten.</p>
-                </div>
-                <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">2. Finanzen & Kasse</h3>
-                    <p>Einnahmen/Ausgaben erfassen, Belege per OCR-Kamera scannen und Schulden automatisch ausgleichen.</p>
-                </div>
-                <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">3. Termine & Wasch-Slots</h3>
-                    <p>WG-Kalender für Waschmaschine, Trockner, Übernachtungsgäste oder Partys nutzen.</p>
-                </div>
-                <div class="bg-emerald-900/70 p-3.5 rounded-xl border border-emerald-700 space-y-1.5">
-                    <h3 class="font-bold text-emerald-200">4. Küche & Inventar</h3>
-                    <p>Rotierender Putzplan, Kochplan mit Zutaten-Sync, Amazon-Einkaufsliste (<code>duhrrom-21</code>) & Inventar-Restwert-Rechner.</p>
-                </div>
+            
+            <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
+                <div id="cloud-status-text" class="font-bold text-gray-700">Status: Nicht angemeldet</div>
+                <div id="cloud-user-display" class="text-emerald-700 font-semibold"></div>
             </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-gray-500 mb-1">E-Mail-Adresse</label>
+                    <input type="email" id="auth-email" placeholder="name@beispiel.de" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-gray-500 mb-1">Passwort</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="supabaseLogin()" class="py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl transition shadow-sm">Anmelden</button>
+                    <button onclick="supabaseRegister()" class="py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition shadow-sm">Registrieren</button>
+                </div>
+                <button onclick="supabaseLogout()" id="btn-logout" class="hidden w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-xl transition">Abmelden</button>
+            </div>
+            <button onclick="toggleSettingsModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
         </div>
-    </section>
+    </div>
+
+    <!-- MODAL: Hilfe & Ausklappbare Anleitungen -->
+    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleHelpModal()">
+        <div class="bg-white p-6 rounded-2xl max-w-lg w-full space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto text-gray-800" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-lg text-emerald-900">📖 Hilfe & WG-Handbuch</h3>
+                <button onclick="toggleHelpModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <details class="bg-gray-50 border rounded-xl p-3">
+                    <summary class="font-bold cursor-pointer text-emerald-800">1. Digitale Pinnwand & Notizen</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Farbige Sticky Notes erstellen, wichtige Zettel oben anpinnen 📌, Autor wählen und Notizen per Klick verwalten.
+                    </p>
+                </details>
+                <details class="bg-gray-50 border rounded-xl p-3">
+                    <summary class="font-bold cursor-pointer text-emerald-800">2. Finanzen & Kasse</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Einnahmen/Ausgaben erfassen, Belege per OCR-Kamera scannen und Schulden automatisch ausgleichen.
+                    </p>
+                </details>
+                <details class="bg-gray-50 border rounded-xl p-3">
+                    <summary class="font-bold cursor-pointer text-emerald-800">3. Termine & Wasch-Slots</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        WG-Kalender für Waschmaschine, Trockner, Übernachtungsgäste oder Partys nutzen.
+                    </p>
+                </details>
+                <details class="bg-gray-50 border rounded-xl p-3">
+                    <summary class="font-bold cursor-pointer text-emerald-800">4. Küche & Inventar</summary>
+                    <p class="mt-2 text-gray-600 leading-relaxed">
+                        Rotierender Putzplan, Kochplan mit Zutaten-Sync, Amazon-Einkaufsliste (Partner-ID <code class="bg-gray-200 px-1 rounded">duhrrom-21</code>) & Inventar-Restwert-Rechner.
+                    </p>
+                </details>
+            </div>
+            <button onclick="toggleHelpModal()" class="w-full py-2 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold">Schließen</button>
+        </div>
+    </div>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
+    <main class="flex-grow container mx-auto p-4 max-w-7xl space-y-6 mt-2">
         
         <!-- Action Bar -->
         <div class="flex flex-col sm:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
@@ -369,7 +416,7 @@
             <div id="inventoryList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- WG-KALENDER & SLOTS (HIER PLATZIERT VOR DEM PUTZPLAN) -->
+        <!-- WG-KALENDER & SLOTS -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
             <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
                 <div>
@@ -435,6 +482,27 @@
                 <button onclick="openContractModal()" class="px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold">+ Vertrag</button>
             </div>
             <div id="contractList" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- AMAZON AFFILIATE EMPFEHLUNGEN -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-3">
+            <h4 class="font-bold text-sm text-gray-700">🛒 Nützliches WG- & Haushalts-Zubehör auf Amazon</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <a href="https://www.amazon.de/s?k=haushaltshelfer+wg+kochen&tag=duhrrom-21" target="_blank" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                    <span class="text-2xl">🍳</span>
+                    <div>
+                        <p class="font-bold text-gray-800">Küche & Haushaltshelfer</p>
+                        <p class="text-[10px] text-emerald-700">Praktische Geräte für die WG-Küche →</p>
+                    </div>
+                </a>
+                <a href="https://www.amazon.de/s?k=putzmittel+haushaltsreiniger+set&tag=duhrrom-21" target="_blank" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
+                    <span class="text-2xl">🧽</span>
+                    <div>
+                        <p class="font-bold text-gray-800">Putz- & Reinigungsmittel</p>
+                        <p class="text-[10px] text-emerald-700">Für den perfekten Putzplan-Einsatz →</p>
+                    </div>
+                </a>
+            </div>
         </div>
 
         <!-- KO-FI SUPPORT -->
@@ -799,6 +867,67 @@
 
     <!-- Skript Logik -->
     <script>
+        // Supabase Konfiguration & Instanz
+        const SUPABASE_URL = "https://avapuibsidubuzxjtyld.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function toggleSettingsModal() {
+            document.getElementById('settingsModal').classList.toggle('hidden');
+        }
+
+        function toggleHelpModal() {
+            document.getElementById('helpModal').classList.toggle('hidden');
+        }
+
+        async function supabaseRegister() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signUp({ email, password });
+            if(error) alert(error.message);
+            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+        }
+
+        async function supabaseLogin() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if(error) alert(error.message);
+            else { alert('Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
+        }
+
+        async function supabaseLogout() {
+            await supabaseClient.auth.signOut();
+            checkUserSession();
+            alert('Abgemeldet.');
+        }
+
+        async function checkUserSession() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            const statusText = document.getElementById('cloud-status-text');
+            const userDisplay = document.getElementById('cloud-user-display');
+            const headerBadge = document.getElementById('header-user-badge');
+            const headerEmail = document.getElementById('header-user-email');
+            const btnLogout = document.getElementById('btn-logout');
+
+            if(user) {
+                statusText.innerText = "Status: Verbunden & Angemeldet";
+                userDisplay.innerText = user.email;
+                headerEmail.innerText = user.email;
+                headerBadge.classList.remove('hidden');
+                headerBadge.classList.add('inline-flex');
+                btnLogout.classList.remove('hidden');
+            } else {
+                statusText.innerText = "Status: Nicht angemeldet";
+                userDisplay.innerText = "";
+                headerBadge.classList.add('hidden');
+                headerBadge.classList.remove('inline-flex');
+                btnLogout.classList.add('hidden');
+            }
+        }
+
         const NPOINT_API_BASE = "https://api.npoint.io/";
         const urlParams = new URLSearchParams(window.location.search);
         let wgBinId = urlParams.get('id');
@@ -1024,9 +1153,8 @@
             await ladeWGausCloud();
             renderApp();
             await speichereWGinCloud();
+            checkUserSession();
         });
-
-        function toggleGuide() { document.getElementById('guideSection').classList.toggle('hidden'); }
 
         /* Storage Helper */
         function getFlatmates() { 
