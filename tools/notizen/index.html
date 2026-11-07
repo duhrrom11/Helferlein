@@ -845,7 +845,10 @@
             document.getElementById('entryTitle').value = "";
             document.getElementById('entryContent').value = "";
             renderVaultEntries();
-            await syncVaultToFirebase(false);
+            const entryCloudSaved = await syncVaultToFirebase(true);
+            alert(entryCloudSaved
+                ? "✅ Tresoreintrag lokal gespeichert und mit der Cloud synchronisiert."
+                : "⚠️ Tresoreintrag nur lokal gespeichert. Die Cloud-Sicherung ist derzeit nicht verfügbar. Bitte sichere deine lokalen Daten.");
         }
 
         async function deleteVaultEntry(id) {
