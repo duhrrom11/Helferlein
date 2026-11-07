@@ -49,7 +49,7 @@ function update(){
   if(!Number.isFinite(date.getTime())){expiry.textContent="Ablaufdatum nicht berechenbar.";summary.textContent="";return;}
   expiry.textContent="Voraussichtliches Ablaufdatum (Ortszeit): "+new Intl.DateTimeFormat("de-DE",{dateStyle:"full",timeStyle:"short"}).format(date);
   summary.textContent="Vorgesehene Gültigkeit: "+days+(days===1?" Tag":" Tage")+". Es wurde noch keine Einladung erstellt.";
-  if(!recipient.value){recipient.setAttribute("aria-invalid","false");feedback.textContent="Bitte gib eine Benutzerkennung ein.";return;}
+  if(!recipient.value){recipient.removeAttribute("aria-invalid");feedback.textContent="Bitte gib eine Benutzerkennung ein.";return;}
   recipient.setAttribute("aria-invalid",String(!uuid.test(recipient.value.trim())));
   feedback.textContent=uuid.test(recipient.value.trim())
     ?"Die Kennung hat ein gültiges Format. Ihre Zugehörigkeit ist noch nicht überprüft."
