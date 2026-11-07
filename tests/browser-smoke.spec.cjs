@@ -104,3 +104,49 @@ test('Empty registration is rejected before cloud request', async ({ page }) => 
   await page.evaluate(() => registerUser());
   expect(dialogs).toContain('Bitte E-Mail und Passwort eingeben.');
 });
+
+test('Successful mocked login normalizes email and clears password', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  const result = await page.evaluate(async () => {
+    let received = null;
+    window.supabaseClient.auth.signInWithPassword = async payload => { received = payload; return { error: null }; };
+    window.supabaseClient.auth.getUser = async () => ({ data: { user: { email: 'person@example.invalid' } }, error: null });
+    openSettings();
+    document.getElementById('loginEmail').value = '  PERSON@EXAMPLE.INVALID  ';
+    document.getElementById('loginPassword').value = 'local-only-secret';
+    await loginUser();
+    return { received, password: document.getElementById('loginPassword').value };
+  });
+  expect(result.received).toEqual({ email: 'person@example.invalid', password: 'local-only-secret' });
+  expect(result.password).toBe('');
+  await expect(page.locator('#settingsModal')).toBeHidden();
+  await expect(page.locator('#userInfo')).toContainText('person@example.invalid');
+});
+test('Mocked rejected login clears password and keeps settings open', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  const dialogs = [];
+  page.on('dialog', async dialog => { dialogs.push(dialog.message()); await dialog.accept(); });
+  await page.evaluate(async () => {
+    window.supabaseClient.auth.signInWithPassword = async () => ({ error: { message: 'Anmeldung abgelehnt' } });
+    openSettings();
+    document.getElementById('loginEmail').value = 'person@example.invalid';
+    document.getElementById('loginPassword').value = 'local-only-secret';
+    await loginUser();
+  });
+  expect(dialogs).toContain('Anmeldung abgelehnt');
+  await expect(page.locator('#loginPassword')).toHaveValue('');
+  await expect(page.locator('#settingsModal')).toBeVisible();
+});
+test('Mocked logout clears password and shows signed-out status', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  const result = await page.evaluate(async () => {
+    let calls = 0;
+    window.supabaseClient.auth.signOut = async () => { calls++; return { error: null }; };
+    window.supabaseClient.auth.getUser = async () => ({ data: { user: null }, error: null });
+    document.getElementById('loginPassword').value = 'local-only-secret';
+    await logoutUser();
+    return { calls, password: document.getElementById('loginPassword').value };
+  });
+  expect(result).toEqual({ calls: 1, password: '' });
+  await expect(page.locator('#userInfo')).toContainText('Nicht angemeldet');
+});
