@@ -150,3 +150,17 @@ test('Mocked logout clears password and shows signed-out status', async ({ page 
   expect(result).toEqual({ calls: 1, password: '' });
   await expect(page.locator('#userInfo')).toContainText('Nicht angemeldet');
 });
+
+test('Rejected auth status request hides stale signed-in identity', async ({ page }) => {
+  await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
+  await page.evaluate(async () => {
+    window.supabaseClient.auth.getUser = async () => ({
+      data: { user: { email: 'person@example.invalid' } }, error: null
+    });
+    await updateUserDisplay();
+    window.supabaseClient.auth.getUser = async () => { throw new Error('offline'); };
+    await updateUserDisplay();
+  });
+  await expect(page.locator('#userInfo')).toHaveText('Nicht angemeldet');
+  await expect(page.locator('#cloudStatus')).toHaveText('Anmeldestatus konnte nicht geladen werden');
+});
