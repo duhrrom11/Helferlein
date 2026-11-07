@@ -65,6 +65,7 @@ visibility.addEventListener("click",()=>{
   token.type=shown?"text":"password";
   visibility.setAttribute("aria-pressed",String(shown));
   visibility.textContent=shown?"Code verbergen":"Code anzeigen";
+  if(!shown) token.setSelectionRange(0,0);
 });
 clear.addEventListener("click",()=>{
   token.value="";
