@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">
+<title>Helferlein – Vertrauensperson einladen</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#1b2938;background:#f5f7fa}
+*{box-sizing:border-box}body{margin:0;padding:1rem}main{max-width:38rem;margin:2rem auto;background:white;padding:clamp(1.2rem,4vw,2.5rem);border-radius:1rem;box-shadow:0 8px 32px #182c4112}
+h1{font-size:1.7rem;margin-top:0}p{line-height:1.6}.notice{background:#fff4db;border-left:4px solid #a46a00;padding:1rem;border-radius:.3rem}
+label{display:block;font-weight:650;margin:1.2rem 0 .4rem}input,select{width:100%;font:inherit;padding:.75rem;border:1px solid #758495;border-radius:.5rem}
+button{font:inherit;border:0;border-radius:.5rem;padding:.75rem 1rem;margin-top:1.2rem}button:disabled{background:#707e8b;color:white;cursor:not-allowed}
+.secondary{background:#e8edf2;color:#183b55;cursor:pointer}.hint{font-size:.9rem;color:#4d5a67}#feedback{min-height:1.5rem}
+a{color:#24577c}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #24577c;outline-offset:3px}
+</style></head><body><main>
+<nav aria-label="Vertrauenspersonen"><a href="./vertrauenspersonen-verwaltung.html">Zurück zur Verwaltung</a></nav>
+<h1>Vertrauensperson einladen</h1>
+<p>Bereite eine Einladung für eine bestimmte Person vor. Die tatsächliche Einladung kann erst nach sicherer Anmeldung erstellt werden.</p>
+<div class="notice" role="status"><strong>Einladungen noch nicht freigeschaltet.</strong> Diese Vorschau übermittelt keine Daten und erzeugt keinen Einladungscode.</div>
+<form id="create" autocomplete="off" novalidate>
+<label for="recipient">Benutzerkennung der Vertrauensperson</label>
+<input id="recipient" type="text" inputmode="text" maxlength="36" autocomplete="off" spellcheck="false" aria-describedby="recipient-help" required>
+<p class="hint" id="recipient-help">Die eindeutige Benutzerkennung (UUID) der eingeladenen Person, nicht ihre E-Mail-Adresse.</p>
+<label for="duration">Gültigkeitsdauer</label>
+<select id="duration"><option value="1">1 Tag</option><option value="3">3 Tage</option><option value="7" selected>7 Tage</option><option value="14">14 Tage</option></select>
+<p id="expiry" class="hint" aria-live="polite"></p>
+<button type="submit" disabled>Einladung erstellen (noch nicht verfügbar)</button>
+<button type="button" id="reset" class="secondary">Eingaben löschen</button>
+<p id="feedback" role="status" aria-live="polite"></p>
+</form>
+<p class="hint">Einladungen werden später an eine bestimmte Benutzerkennung gebunden. Der Einladungscode darf nicht öffentlich geteilt werden.</p>
+</main><script>
+"use strict";
+const recipient=document.getElementById("recipient");
+const duration=document.getElementById("duration");
+const expiry=document.getElementById("expiry");
+const feedback=document.getElementById("feedback");
+const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function update(){
+  const days=Number(duration.value);
+  const date=new Date(Date.now()+days*86400000);
+  expiry.textContent="Voraussichtliches Ablaufdatum: "+new Intl.DateTimeFormat("de-DE",{dateStyle:"full",timeStyle:"short"}).format(date);
+  if(!recipient.value){feedback.textContent="Bitte gib eine Benutzerkennung ein.";return;}
+  feedback.textContent=uuid.test(recipient.value.trim())
+    ?"Die Kennung hat ein gültiges Format. Ihre Zugehörigkeit ist noch nicht überprüft."
+    :"Bitte gib eine gültige UUID als Benutzerkennung ein.";
+}
+recipient.addEventListener("input",update);
+duration.addEventListener("change",update);
+document.getElementById("reset").addEventListener("click",()=>{
+  recipient.value="";duration.value="7";update();recipient.focus();
+});
+document.getElementById("create").addEventListener("submit",event=>event.preventDefault());
+update();
+</script></body></html>
