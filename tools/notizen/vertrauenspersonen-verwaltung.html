@@ -55,6 +55,12 @@ function effectiveInvitationStatus(invitation){
 function renderRows(items, listId, makeLabel){
   const list=document.getElementById(listId);
   list.replaceChildren();
+  if(items.length===0){
+    const empty=document.createElement("li");
+    empty.textContent="Keine Einträge geladen.";
+    list.append(empty);
+    return;
+  }
   for(const item of items){
     const row=document.createElement("li");
     row.textContent=makeLabel(item);
