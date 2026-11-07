@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Helferlein – isolierter Vault-API-Test</title>
+<style>body{font:16px system-ui;max-width:620px;margin:32px auto;padding:0 16px;line-height:1.5;background:#101827;color:#f2f5fc}label{display:block;margin:16px 0 5px}input,button{font:inherit;padding:10px;border-radius:6px}input{box-sizing:border-box;width:100%;background:#202c40;color:white;border:1px solid #71809a}button{margin:16px 8px 0 0;cursor:pointer}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#202c40;padding:16px;border-radius:6px}.warning{color:#ffcf84}</style></head>
+<body><h1>Vault-API – Testprojekt</h1>
+<p class="warning">Nur synthetische Testkonten verwenden. Keine produktiven Passwörter, Tresor-IDs oder Schlüssel eingeben. Diese öffentliche Testseite speichert keine Zugangsdaten.</p>
+<form id="test"><label for="key">Publishable Key des Supabase-Testprojekts</label><input id="key" autocomplete="off" required placeholder="sb_publishable_…">
+<label for="email">E-Mail des Testbenutzers A oder B</label><input id="email" type="email" autocomplete="username" required>
+<label for="password">Testpasswort</label><input id="password" type="password" autocomplete="off" required>
+<label for="vault">Synthetische Tresor-ID</label><input id="vault" value="v_test12345678" required>
+<button id="send" type="submit">Anmelden und Zugriff prüfen</button><button id="clear" type="button">Felder leeren</button></form>
+<h2>Ergebnis</h2><pre id="result" aria-live="polite">Noch kein Test ausgeführt.</pre>
+<p>Erwartung: Eigentümer A → 503; fremder Benutzer B → 404; ungültige Tresor-ID bei gültiger Anmeldung → 400. Andere Ergebnisse müssen untersucht werden.</p>
+<script>
+'use strict';
+const project = 'ojfoijllyjkhveejvkfx';
+const base = 'https://' + project + '.supabase.co';
+const $ = id => document.getElementById(id);
+const result = message => { $('result').textContent = message; };
+$('clear').addEventListener('click', () => { $('test').reset(); $('key').value=''; $('password').value=''; result('Felder geleert.'); });
+$('test').addEventListener('submit', async event => {
+  event.preventDefault();
+  const key = $('key').value.trim();
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  const vaultId = $('vault').value.trim();
+  $('password').value = '';
+  if (!key.startsWith('sb_publishable_')) { result('Nur einen Publishable Key des TEST-Projekts verwenden.'); return; }
+  $('send').disabled = true;
+  let token;
+  try {
+    result('Anmeldung läuft …');
+    const auth = await fetch(base + '/auth/v1/token?grant_type=password', {
+      method:'POST', mode:'cors', cache:'no-store', redirect:'error',
+      headers:{'apikey':key,'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})
+    });
+    const data = await auth.json();
+    if (!auth.ok || typeof data.access_token !== 'string') {
+      result('Anmeldung fehlgeschlagen (HTTP ' + auth.status + '). Bitte Testkonto und Projekt prüfen.');
+      return;
+    }
+    token = data.access_token;
+    result('Angemeldet; prüfe API …');
+    const response = await fetch(base + '/functions/v1/vault-api', {
+      method:'POST', mode:'cors', cache:'no-store', redirect:'error',
+      headers:{'apikey':key,'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({vaultId})
+    });
+    const body = await response.json().catch(() => ({}));
+    const allowedErrors = new Set(['not_found','vault_access_not_configured','invalid_vault_id','unauthorized','service_unavailable','forbidden_origin','invalid_request','request_too_large']);
+    const error = typeof body.error === 'string' && allowedErrors.has(body.error) ? body.error : '(keine bekannte Fehlermeldung)';
+    result('HTTP ' + response.status + '\nAPI-Antwort: ' + error + '\nKeine Tresordaten angezeigt.');
+  } catch {
+    result('Netzwerk-/CORS-Fehler. Testprojekt und Funktionskonfiguration prüfen.');
+  } finally {
+    token = undefined;
+    $('send').disabled = false;
+  }
+});
+</script></body></html>
