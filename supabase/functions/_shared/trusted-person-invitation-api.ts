@@ -89,7 +89,7 @@ export type InvitationCreationResult = Readonly<{
 
 export type InvitationGateway = Readonly<{
   list(vaultId: string): Promise<TrustedPersonOverview>;
-  create(vaultId: string, intendedUserId: string): Promise<InvitationCreationResult>;
+  create(draft: InvitationDraft): Promise<InvitationCreationResult>;
   accept(code: string): Promise<boolean>;
   revoke(invitationId: string): Promise<boolean>;
 }>;
@@ -133,7 +133,7 @@ export function invitationViews(
   return invitations.map((invitation) => {
     const expiryMs = Date.parse(invitation.expiresAt);
     const status = invitation.status === "pending" &&
-        Number.isFinite(expiryMs) && expiryMs <= nowMs
+        (!Number.isFinite(expiryMs) || expiryMs <= nowMs)
       ? "expired"
       : invitation.status;
     return {
