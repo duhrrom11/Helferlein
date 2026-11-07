@@ -35,6 +35,27 @@ export type InvitationGateway = Readonly<{
   revoke(invitationId: string): Promise<boolean>;
 }>;
 
+/**
+ * Reject malformed input before a future gateway sends it to the server.
+ * Validation never establishes ownership or authorization.
+ */
+export function validateInvitationCode(code: string): boolean {
+  return /^[a-f0-9]{64}$/.test(code);
+}
+
+export function validateIdentifier(id: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+}
+
+export function invitationStatusLabel(status: InvitationSummary["status"]): string {
+  switch (status) {
+    case "pending": return "Offen";
+    case "accepted": return "Angenommen";
+    case "expired": return "Abgelaufen";
+    case "revoked": return "Widerrufen";
+  }
+}
+
 export class InvitationGatewayUnavailableError extends Error {
   constructor() {
     super("Die sichere Einladungsverwaltung ist noch nicht freigeschaltet.");
