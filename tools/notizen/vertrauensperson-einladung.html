@@ -57,7 +57,7 @@ function updateStatus(){
     return;
   }
   status.className="valid";
-  status.textContent="Das Format des Codes ist korrekt. Die Echtheit kann erst nach Freischaltung geprüft werden.";
+  status.textContent="Das Format des Codes ist korrekt. Er ist nicht verifiziert und gewährt keinen Zugriff.";
 }
 token.addEventListener("input",updateStatus);
 visibility.addEventListener("click",()=>{
