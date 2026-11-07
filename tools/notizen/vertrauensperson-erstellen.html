@@ -59,7 +59,7 @@ recipient.addEventListener("input",update);
 recipient.addEventListener("blur",()=>{recipient.value=recipient.value.trim().toLowerCase();update();});
 duration.addEventListener("change",update);
 document.getElementById("reset").addEventListener("click",()=>{
-  recipient.value="";duration.value="7";update();recipient.focus();
+  recipient.value="";duration.value="7";update();feedback.textContent="Eingaben zurückgesetzt. Es wurden keine Daten übertragen.";recipient.focus();
 });
 document.getElementById("create").addEventListener("submit",event=>{event.preventDefault();feedback.textContent="Vorschau: Es wurde keine Einladung erstellt oder übertragen.";});
 window.addEventListener("pagehide",()=>{recipient.value="";});
