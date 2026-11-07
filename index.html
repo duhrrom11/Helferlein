@@ -511,7 +511,9 @@
             updateUserDisplay();
         }
 
+        let authStatusRequestId = 0;
         async function updateUserDisplay() {
+            const requestId = ++authStatusRequestId;
             let data, error;
             try {
                 ({ data, error } = await window.supabaseClient.auth.getUser());
@@ -519,6 +521,8 @@
                 // Network failures must not leave a stale signed-in identity on screen.
                 error = { message: "Anmeldestatus momentan nicht erreichbar" };
             }
+            // Ignore responses from older requests (e.g. a slow sign-in finishing after sign-out).
+            if (requestId !== authStatusRequestId) return;
             const user = error ? null : (data?.user ?? null);
 
             const headerInfo = document.getElementById("userInfo");
