@@ -464,6 +464,15 @@
                 return;
             }
 
+            if (!document.getElementById("loginEmail").checkValidity()) {
+                alert("Bitte eine gültige E-Mail-Adresse eingeben.");
+                return;
+            }
+            if (password.length < 6) {
+                alert("Das Passwort muss mindestens 6 Zeichen lang sein.");
+                return;
+            }
+
             let data, error;
             try { ({ data, error } = await window.supabaseClient.auth.signUp({ email, password })); }
             catch (_) { document.getElementById("loginPassword").value = ""; alert("Registrierung momentan nicht erreichbar."); return; }
@@ -485,6 +494,11 @@
 
             if (!email || !password) {
                 alert("Bitte E-Mail und Passwort eingeben.");
+                return;
+            }
+
+            if (!document.getElementById("loginEmail").checkValidity()) {
+                alert("Bitte eine gültige E-Mail-Adresse eingeben.");
                 return;
             }
 
