@@ -163,21 +163,23 @@
                 const isInactiveExpired = diffDays >= intervalDays;
 
                 // 2. Prüfen auf Notfall-Alarm & 24h-Frist
+                // Ein aktiver Notfall-Alarm hat immer Vorrang vor der normalen Inaktivitätsfrist.
                 let activeAlarmTriggerTime = null;
                 if (data.emergencyTriggers) {
-                    for (let p in data.emergencyTriggers) {
+                    for (const p in data.emergencyTriggers) {
                         const tr = data.emergencyTriggers[p];
                         if (tr && (tr.status === "active" || tr.status === "test_active")) {
-                            activeAlarmTriggerTime = new Date(tr.triggeredAt);
+                            const triggerTime = new Date(tr.triggeredAt);
+                            if (!Number.isNaN(triggerTime.getTime()) &&
+                                (!activeAlarmTriggerTime || triggerTime > activeAlarmTriggerTime)) {
+                                activeAlarmTriggerTime = triggerTime;
+                            }
                         }
                     }
                 }
 
-                if (isInactiveExpired) {
-                    // Normale Inaktivität abgelaufen -> Sofort frei
-                    document.getElementById('unlockedStateBox').classList.remove('hidden');
-                } else if (activeAlarmTriggerTime) {
-                    // Alarm aktiv -> 24 Stunden Frist prüfen!
+                if (activeAlarmTriggerTime) {
+                    // Aktiver Alarm -> 24 Stunden Sperrfrist hat Vorrang.
                     const now = new Date();
                     const hoursPassed = (now - activeAlarmTriggerTime) / (1000 * 60 * 60);
 
@@ -185,14 +187,17 @@
                         // 24 Stunden sind um -> Freigeben!
                         document.getElementById('unlockedStateBox').classList.remove('hidden');
                     } else {
-                        // Noch in der 24h-Sperrfrist -> Zeige Countdown
+                        // Noch in der 24h-Sperrfrist -> Zeige Countdown.
                         document.getElementById('alarmActiveStateBox').classList.remove('hidden');
                         startCountdown(activeAlarmTriggerTime);
                     }
+                } else if (isInactiveExpired) {
+                    // Kein aktiver Alarm und normale Inaktivitätsfrist abgelaufen -> frei.
+                    document.getElementById('unlockedStateBox').classList.remove('hidden');
                 } else {
-                    // Alles sicher und aktiv
+                    // Alles sicher und aktiv.
                     document.getElementById('lockedStateBox').classList.remove('hidden');
-                    document.getElementById('lockedExplanationText').innerText = 
+                    document.getElementById('lockedExplanationText').innerText =
                         `Der Inhaber (${ownerNameGlobal}) ist aktiv. Nächster fälliger Check-in in ca. ${intervalDays - diffDays} Tagen.`;
                 }
 
