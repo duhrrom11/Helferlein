@@ -24,10 +24,12 @@ small{color:#55616e}
 <section aria-labelledby="persons"><h2 id="persons">Aktive Vertrauenspersonen</h2>
 <p>Nach der Freischaltung erscheinen hier nur die Vertrauenspersonen deines eigenen Tresors.</p>
 <dl><dt>Status</dt><dd id="connection-status">Keine Daten geladen</dd><dt>Letzte Aktualisierung</dt><dd>–</dd></dl>
+<ul id="person-list" aria-label="Vertrauenspersonen"></ul>
 <p id="loading-detail" role="status" aria-live="polite">Es besteht keine Verbindung zum Server.</p>
 <button type="button" disabled>Vertrauensperson entfernen</button></section>
 <section aria-labelledby="pending"><h2 id="pending">Offene Einladungen</h2>
 <p>Einladungen werden künftig mit Empfänger, Ablaufdatum und Status angezeigt. Einladungscodes werden nicht erneut angezeigt.</p>
+<ul id="invitation-list" aria-label="Einladungen"></ul>
 <button type="button" disabled>Neue Einladung erstellen</button>
 <button type="button" disabled>Einladung widerrufen</button></section>
 <section aria-labelledby="privacy"><h2 id="privacy">Datenschutz</h2>
@@ -39,9 +41,29 @@ small{color:#55616e}
 const connectionStatus=document.getElementById("connection-status");
 const loadingDetail=document.getElementById("loading-detail");
 const state={kind:"unavailable",persons:[],invitations:[]};
+function renderRows(items, listId, makeLabel){
+  const list=document.getElementById(listId);
+  list.replaceChildren();
+  for(const item of items){
+    const row=document.createElement("li");
+    row.textContent=makeLabel(item);
+    list.append(row);
+  }
+}
+function renderOverview(overview){
+  // Called only after a future authenticated gateway supplies validated data.
+  renderRows(overview.trustedPersons,"person-list",person=>
+    "Vertrauensperson: "+person.userId+" · "+(person.status==="active"?"Aktiv":"Widerrufen"));
+  renderRows(overview.invitations,"invitation-list",invitation=>
+    "Einladung: "+invitation.intendedUserId+" · "+({
+      pending:"Offen",accepted:"Angenommen",expired:"Abgelaufen",revoked:"Widerrufen"
+    }[invitation.status]||"Unbekannt"));
+}
 function renderUnavailable(){
   connectionStatus.textContent="Nicht verbunden";
   loadingDetail.textContent="Die sichere Anmeldung und Datenabfrage sind noch nicht aktiviert.";
+  renderRows([],"person-list",()=> "");
+  renderRows([],"invitation-list",()=> "");
 }
 renderUnavailable();
 </script>
