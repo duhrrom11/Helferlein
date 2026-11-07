@@ -29,10 +29,19 @@ export function createStagingRedemptionHandler(
   const auth = createClient(STAGING_URL, config.anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const store = createBoundStagingRedemptionStore(STAGING_URL, (verifiedUrl) =>
-    createClient(verifiedUrl, config.serviceRoleKey!, {
+  const store = createBoundStagingRedemptionStore(STAGING_URL, (verifiedUrl) => {
+    const privileged = createClient(verifiedUrl, config.serviceRoleKey!, {
       auth: { persistSession: false, autoRefreshToken: false },
-    }), true);
+    });
+    // Supabase rpc() returns a PromiseLike builder, not a native Promise.
+    // Wrap it so the internal adapter receives the required async contract.
+    return {
+      async rpc(name, args) {
+        const { data, error } = await privileged.rpc(name, args);
+        return { data, error };
+      },
+    };
+  }, true);
 
   return (request: Request) => handleRedemptionRequest(request, { auth, store, enabled: true });
 }
