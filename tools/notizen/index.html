@@ -845,10 +845,19 @@
                 return;
             }
             
-            await updateLocalConfig(cfg => {
-                cfg.ownerName = nameInput;
-                cfg.ownerEmail = emailInput;
-            });
+            let locallySaved = false;
+            try {
+                locallySaved = await updateLocalConfig(cfg => {
+                    cfg.ownerName = nameInput;
+                    cfg.ownerEmail = emailInput;
+                });
+            } catch (error) {
+                console.error("Lokales Speichern der Einstellungen fehlgeschlagen:", error);
+            }
+            if (!locallySaved) {
+                alert("❌ Einstellungen konnten nicht lokal gespeichert werden. Es wurde keine Cloud-Synchronisierung gestartet.");
+                return;
+            }
             const cloudSaved = await syncVaultToFirebase(true);
             alert(cloudSaved
                 ? "✅ Deine Einstellungen wurden lokal gespeichert und mit der Cloud synchronisiert!"
