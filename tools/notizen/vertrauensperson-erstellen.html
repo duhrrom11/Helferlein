@@ -18,7 +18,7 @@ a{color:#24577c}a:focus-visible,button:focus-visible,input:focus-visible,select:
 <div class="notice" role="status"><strong>Einladungen noch nicht freigeschaltet.</strong> Diese Vorschau übermittelt keine Daten und erzeugt keinen Einladungscode.</div>
 <form id="create" autocomplete="off" novalidate method="dialog">
 <label for="recipient">Benutzerkennung der Vertrauensperson</label>
-<input id="recipient" type="text" inputmode="text" maxlength="36" autocomplete="off" spellcheck="false" aria-describedby="recipient-help recipient-count feedback" required>
+<input id="recipient" type="text" pattern="[0-9a-fA-F-]{36}" inputmode="text" maxlength="36" autocomplete="off" spellcheck="false" aria-describedby="recipient-help recipient-count feedback" required>
 <p class="hint" id="recipient-count" aria-live="off">0 von 36 Zeichen</p>
 <p class="hint" id="recipient-help">Die eindeutige Benutzerkennung (UUID) der eingeladenen Person, nicht ihre E-Mail-Adresse.</p>
 <label for="duration">Gültigkeitsdauer</label>
