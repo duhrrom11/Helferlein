@@ -1854,7 +1854,7 @@
             const qrContainer = document.getElementById('wlanQrcode'); qrContainer.innerHTML = "";
             const wifiString = `WIFI:S:WG-WLAN;T:WPA;P:${getInfoData().wifi || ''};;`;
             if (typeof QRCode !== 'undefined') new QRCode(qrContainer, { text: wifiString, width: 140, height: 140 });
-            else qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(wifiString)}">`;
+            else qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(wifiString)}" alt="WLAN-Zugang als QR-Code">`;
         }
         function closeWLANQRModal() { document.getElementById('wlanQrModal').classList.remove('flex'); document.getElementById('wlanQrModal').classList.add('hidden'); }
 
