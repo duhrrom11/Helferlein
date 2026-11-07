@@ -32,4 +32,5 @@ jobs:
             supabase/functions/_shared/trusted-person-invitation-request_test.ts \
             supabase/functions/_shared/invitation-token_test.ts \
             supabase/functions/_shared/redeem-invitation_test.ts \
-            supabase/functions/_shared/redemption-transaction-preflight_test.ts
+            supabase/functions/_shared/redemption-transaction-preflight_test.ts \
+            supabase/functions/_shared/atomic-invitation-redemption_test.ts
