@@ -102,14 +102,15 @@ export function validateInvitationCreationResult(value: unknown): value is Invit
   if (typeof value !== "object" || value === null) return false;
   const result = value as Record<string, unknown>;
   if (Object.keys(result).some((key) => !["invitationId", "oneTimeCode", "expiresAt"].includes(key))) return false;
+  const now = Date.now();
   return typeof result.invitationId === "string" &&
     validateIdentifier(result.invitationId) &&
     typeof result.oneTimeCode === "string" &&
     validateInvitationCode(result.oneTimeCode) &&
     typeof result.expiresAt === "string" &&
     Number.isFinite(Date.parse(result.expiresAt)) &&
-    Date.parse(result.expiresAt) > Date.now() &&
-    Date.parse(result.expiresAt) <= Date.now() + 14 * 86400000 + 60000;
+    Date.parse(result.expiresAt) > now &&
+    Date.parse(result.expiresAt) <= now + 14 * 86400000 + 60000;
 }
 
 export type InvitationGateway = Readonly<{
