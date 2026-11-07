@@ -8,7 +8,7 @@ const correctEmail = '/^[^' + '\\s@]+@[^' + '\\s@]+\\.[^' + '\\s@]+$/';
 const badEmail = correctEmail.replaceAll('\\', '\\\\');
 assert(emailFn.includes(correctEmail), 'correct email pattern');
 assert(!emailFn.includes(badEmail), 'no double-escaped email pattern');
-const correctSlash = "replace(/" + "\\\\/" + "$/, '')";
+const correctSlash = "replace(/" + String.fromCharCode(92) + "/$/, '')";
 assert(pdfFn.includes(correctSlash), 'correct trailing slash removal');
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 for (const e of ['a@example.com','first.last+tag@example.co.uk']) assert(emailPattern.test(e), e);
