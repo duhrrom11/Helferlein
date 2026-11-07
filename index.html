@@ -583,8 +583,8 @@
             const grid = document.getElementById('favoritesGrid');
             if (!grid || !section) return;
             grid.innerHTML = '';
-            if (favs.length === 0) { section.classList.add('hidden'); return; }
-            section.classList.remove('hidden');
+            // Stored favorites may reference tools that have since been removed.
+            // Show the section only when at least one matching tool card exists.
             favs.forEach(id => {
                 if (!/^[a-z0-9-]+$/.test(id)) return;
                 const card = document.querySelector(`#toolsGrid .tool-card[data-id="${id}"]`);
@@ -600,6 +600,7 @@
                     grid.appendChild(clone);
                 }
             });
+            section.classList.toggle('hidden', grid.children.length === 0);
             document.querySelectorAll('#toolsGrid .tool-card').forEach(c => {
                 const btn = c.querySelector('.fav-btn');
                 if (btn) {
