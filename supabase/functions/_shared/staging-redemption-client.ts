@@ -1,44 +1,23 @@
 /**
- * Staging-only client construction boundary. Not deployed or wired to an endpoint.
- * Never accept the URL from a request, and never pass an existing client here.
- * The supplied constructor MUST construct its RPC client using exactly this URL.
+ * Staging URL validation remains available, but privileged RPC client
+ * construction is forbidden until a separately reviewed internal gateway
+ * authenticates the database-side user identity. NOT DEPLOYED.
  */
-import { createStagingRedemptionStore, type InternalRpcClient } from "./staging-redemption-store.ts";
+import type { InternalRpcClient } from "./staging-redemption-store.ts";
 import type { AtomicRedemptionStore } from "./atomic-invitation-redemption.ts";
-
 const STAGING_URL = "https://ojfoijljykjhveejvkfx.supabase.co";
-
 export function isIsolatedStagingUrl(value: string | null | undefined): boolean {
-  if (typeof value !== "string") return false;
+  if (typeof value !== "string" || value !== STAGING_URL) return false;
   try {
-    // Compare raw configuration too: URL parsing normalizes ports, case and paths.
-    // No alternate spelling of the privileged destination is permitted.
-    if (value !== STAGING_URL) return false;
     const url = new URL(value);
-    return url.href === STAGING_URL + "/" &&
-      url.username === "" && url.password === "" &&
-      url.search === "" && url.hash === "";
-  } catch {
-    return false;
-  }
+    return url.href === STAGING_URL + "/" && !url.username && !url.password && !url.search && !url.hash;
+  } catch { return false; }
 }
-
-/**
- * Fail closed before constructing any privileged client. The constructor
- * must not use another URL or a pre-existing production client.
- * Explicit enablement is still required; no runtime entrypoint calls this.
- */
+/** Always deny. Never construct a privileged client, even when enabled. */
 export function createBoundStagingRedemptionStore(
-  configuredUrl: string | null | undefined,
-  constructClient: (verifiedUrl: string) => InternalRpcClient,
-  enabled = false,
+  _configuredUrl: string | null | undefined,
+  _constructClient: (verifiedUrl: string) => InternalRpcClient,
+  _enabled = false,
 ): AtomicRedemptionStore {
-  const denied: AtomicRedemptionStore = { async redeemAtomically() { return false; } };
-  if (!enabled || !isIsolatedStagingUrl(configuredUrl)) return denied;
-  try {
-    const client = constructClient(STAGING_URL);
-    return createStagingRedemptionStore(client, true, "ojfoijljykjhveejvkfx");
-  } catch {
-    return denied;
-  }
+  return { async redeemAtomically() { return false; } };
 }
