@@ -27,7 +27,7 @@ export type TrustedPersonView = Readonly<{
 export function trustedPersonViews(
   persons: readonly TrustedPersonSummary[],
 ): readonly TrustedPersonView[] {
-  return persons.slice(0, 500).filter((person) => person != null && validateIdentifier(person.userId) && (person.status === "active" || person.status === "revoked") && Number.isFinite(Date.parse(person.addedAt))).map((person) => ({
+  return persons.slice(0, 500).filter((person) => person != null && validateIdentifier(person.userId) && (person.status === "active" || person.status === "revoked") && typeof person.addedAt === "string" && Number.isFinite(Date.parse(person.addedAt))).map((person) => ({
     userId: person.userId,
     status: person.status,
     addedAt: person.addedAt,
