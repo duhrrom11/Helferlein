@@ -626,12 +626,21 @@
             reader.onload = async function(e) {
                 try {
                     const backup = JSON.parse(e.target.result);
-                    if (!backup.localStorage) { alert("Ungültiges Helferlein Backup"); return; }
+                    if (!backup || backup.app !== "Helferlein" || !backup.localStorage ||
+                        typeof backup.localStorage !== "object" || Array.isArray(backup.localStorage)) {
+                        alert("Ungültiges Helferlein Backup");
+                        return;
+                    }
+                    const entries = Object.entries(backup.localStorage);
+                    if (!entries.every(([key, value]) => typeof key === "string" && typeof value === "string")) {
+                        alert("Backup enthält ungültige Einträge");
+                        return;
+                    }
+                    const existing = entries.filter(([key]) => localStorage.getItem(key) !== null).length;
+                    if (!confirm(`Backup mit ${entries.length} Einträgen importieren? ${existing} vorhandene Einträge werden überschrieben. Bitte vorher eine Sicherung exportieren.`)) return;
                     let count = 0;
-                    const restoreData = backup.localStorage || backup;
-                    for (const key in restoreData) {
-                        if (["version", "app", "created", "tools"].includes(key)) continue;
-                        localStorage.setItem(key, restoreData[key]);
+                    for (const [key, value] of entries) {
+                        localStorage.setItem(key, value);
                         count++;
                     }
                     loadStats(); initFavorites();
