@@ -1260,18 +1260,33 @@ END:VCALENDAR`;
         }
 
         /* --- Export & Import --- */
+        function steuerCsvFeld(value) {
+            const text = String(value ?? '');
+            const safe = /^\s*[=+\-@]/.test(text) ? "'" + text : text;
+            return '"' + safe.replace(/"/g, '""') + '"';
+        }
+
         function exportSteuerCSV() {
-            const data = getData().filter(r => r.isTax);
+            const data = getData().filter(r => r && r.isTax);
             if (data.length === 0) return alert("Keine steuerrelevanten Buchungen gefunden!");
-            let csv = "Datum;Typ;Titel;Haendler;Kategorie;Preis_EUR;Zahlungsart;Seriennummer;Notiz\n";
-            data.forEach(r => {
-                csv += `"${r.date}";"${r.entryType}";"${r.title}";"${r.store}";"${r.category}";"${r.price.toFixed(2)}";"${r.paymentMethod}";"${r.sn}";"${r.note}"\n`;
-            });
+            const rows = [["Datum", "Typ", "Titel", "Haendler", "Kategorie", "Preis_EUR", "Zahlungsart", "Seriennummer", "Notiz"].join(';')];
+            for (const r of data) {
+                const price = Number(r.price);
+                const fields = [
+                    r.date, r.entryType, r.title, r.store, r.category,
+                    Number.isFinite(price) ? price.toFixed(2) : '',
+                    r.paymentMethod, r.sn, r.note
+                ];
+                rows.push(fields.map(steuerCsvFeld).join(';'));
+            }
+            const csv = '\uFEFF' + rows.join('\r\n') + '\r\n';
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `steuer-buchungen-${new Date().toISOString().split('T')[0]}.csv`;
+            const url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = 'steuer-buchungen-' + new Date().toISOString().split('T')[0] + '.csv';
             a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function exportBackup() {
