@@ -789,7 +789,11 @@
                 }
                 const decode = value => Uint8Array.from(atob(value), ch => ch.charCodeAt(0));
                 const salt = decode(keyInfo.salt), iv = decode(keyInfo.iv);
-                if (salt.length !== 16 || iv.length !== 12) throw new Error('Ungültige Schlüsselhülle');
+                const wrappedKey = decode(keyInfo.ciphertext);
+                // AES-GCM wraps exactly 32 raw key bytes plus a 16-byte tag.
+                if (salt.length !== 16 || iv.length !== 12 || wrappedKey.length !== 48) {
+                    throw new Error('Ungültige Schlüsselhülle');
+                }
                 const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(password),
                     'PBKDF2', false, ['deriveKey']);
                 const wrappingKey = await crypto.subtle.deriveKey({
@@ -797,7 +801,7 @@
                 }, baseKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
                 const rawKey = new Uint8Array(await crypto.subtle.decrypt({
                     name: 'AES-GCM', iv
-                }, wrappingKey, decode(keyInfo.ciphertext)));
+                }, wrappingKey, wrappedKey));
                 if (rawKey.length !== 32) {
                     rawKey.fill(0);
                     throw new Error('Ungültiger Tresorschlüssel');
