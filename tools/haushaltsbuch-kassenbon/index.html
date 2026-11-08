@@ -924,6 +924,18 @@
         }
 
         /* --- Render App, Stats, Charts & Budgets --- */
+        function addWarrantyMonths(buyDate, months) {
+            if (!(buyDate instanceof Date) || !Number.isFinite(buyDate.getTime()) ||
+                !Number.isSafeInteger(months) || months <= 0) return null;
+            const expiry = new Date(buyDate);
+            const originalDay = expiry.getDate();
+            expiry.setDate(1);
+            expiry.setMonth(expiry.getMonth() + months);
+            const lastDay = new Date(expiry.getFullYear(), expiry.getMonth() + 1, 0).getDate();
+            expiry.setDate(Math.min(originalDay, lastDay));
+            return Number.isFinite(expiry.getTime()) ? expiry : null;
+        }
+
         function renderApp() {
             const data = getData();
             const budgets = getBudgets();
@@ -964,9 +976,8 @@
                 if (Number.isFinite(warrantyMonths) && warrantyMonths > 0) {
                     const buyDate = new Date(r.date);
                     if (Number.isFinite(buyDate.getTime())) {
-                        const expDate = new Date(buyDate);
-                        expDate.setMonth(expDate.getMonth() + warrantyMonths);
-                        if (expDate >= now) activeWarrantyValue += price;
+                        const expDate = addWarrantyMonths(buyDate, warrantyMonths);
+                        if (expDate && expDate >= now) activeWarrantyValue += price;
                     }
                 }
 
@@ -1096,9 +1107,8 @@
                 const months = Number(r.warrantyMonths);
                 const buyDate = new Date(r.date);
                 if (!Number.isFinite(months) || months <= 0 || !Number.isFinite(buyDate.getTime())) return false;
-                const expDate = new Date(buyDate);
-                expDate.setMonth(expDate.getMonth() + months);
-                return expDate >= now;
+                const expDate = addWarrantyMonths(buyDate, months);
+                return expDate !== null && expDate >= now;
             });
             if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
 
@@ -1120,9 +1130,8 @@
                 const validBuyDate = Number.isFinite(buyDate.getTime());
                 const hasWarranty = validBuyDate && Number.isFinite(warrantyMonths) && warrantyMonths > 0;
                 if (hasWarranty) {
-                    const expDate = new Date(buyDate);
-                    expDate.setMonth(expDate.getMonth() + warrantyMonths);
-                    diffDaysWarranty = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+                    const expDate = addWarrantyMonths(buyDate, warrantyMonths);
+                    diffDaysWarranty = expDate ? Math.ceil((expDate - now) / (1000 * 60 * 60 * 24)) : -1;
                     isWarrantyActive = diffDaysWarranty >= 0;
                 }
 
@@ -1295,9 +1304,8 @@
             const warrantyMonths = Number(r.warrantyMonths);
             let warrantyLabel = 'Keine gültige Garantieangabe';
             if (Number.isFinite(buyDate.getTime()) && Number.isFinite(warrantyMonths) && warrantyMonths > 0) {
-                const expDate = new Date(buyDate);
-                expDate.setMonth(expDate.getMonth() + warrantyMonths);
-                warrantyLabel = 'Garantie bis: ' + expDate.toLocaleDateString('de-DE');
+                const expDate = addWarrantyMonths(buyDate, warrantyMonths);
+                if (expDate) warrantyLabel = 'Garantie bis: ' + expDate.toLocaleDateString('de-DE');
             }
             document.getElementById('stickerWarranty').innerText = warrantyLabel;
 
@@ -1328,17 +1336,17 @@
             const r = data.find(item => item && item.id === id);
             if (!r) return;
             const buyDate = new Date(r.date);
-            const expDate = new Date(buyDate);
             const months = Number(r.warrantyMonths);
             if (!Number.isFinite(buyDate.getTime()) || !Number.isFinite(months) || months <= 0) {
                 alert('Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.');
                 return;
             }
-            expDate.setMonth(expDate.getMonth() + months);
+            const correctedExpiry = addWarrantyMonths(buyDate, months);
+            if (!correctedExpiry) return;
             const fmtDate = d => d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') +
                 String(d.getDate()).padStart(2, '0');
-            const dateStr = fmtDate(expDate);
-            const endDate = new Date(expDate);
+            const dateStr = fmtDate(correctedExpiry);
+            const endDate = new Date(correctedExpiry);
             endDate.setDate(endDate.getDate() + 1);
             const endDateStr = fmtDate(endDate);
 
@@ -1365,8 +1373,8 @@
                 alert('Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.');
                 return;
             }
-            const expDate = new Date(buyDate);
-            expDate.setMonth(expDate.getMonth() + months);
+            const expDate = addWarrantyMonths(buyDate, months);
+            if (!expDate) return;
             const reminderDate = new Date(expDate);
             reminderDate.setDate(reminderDate.getDate() - 30);
             const endDate = new Date(reminderDate);

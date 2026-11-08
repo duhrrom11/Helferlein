@@ -22,3 +22,4 @@ jobs:
       - run: node tests/household-render-regression.cjs
       - run: node tests/household-ics-regression.cjs
       - run: node tests/household-storage-regression.cjs
+      - run: node tests/household-warranty-regression.cjs
