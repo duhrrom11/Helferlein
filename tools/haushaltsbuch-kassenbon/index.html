@@ -877,8 +877,10 @@
             }
 
             data.sort((a, b) => {
-                const first = a && Number.isFinite(new Date(a.date).getTime()) ? new Date(a.date).getTime() : 0;
-                const second = b && Number.isFinite(new Date(b.date).getTime()) ? new Date(b.date).getTime() : 0;
+                const firstDate = a ? parseReceiptDate(a.date) : new Date(NaN);
+                const secondDate = b ? parseReceiptDate(b.date) : new Date(NaN);
+                const first = Number.isFinite(firstDate.getTime()) ? firstDate.getTime() : 0;
+                const second = Number.isFinite(secondDate.getTime()) ? secondDate.getTime() : 0;
                 return second - first;
             });
             if (!saveData(data)) return;
