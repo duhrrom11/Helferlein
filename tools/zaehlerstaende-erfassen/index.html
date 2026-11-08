@@ -530,6 +530,10 @@
         function saveData(data, allowCorruptOverwrite = false) {
             try {
                 if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.readings)) throw new Error('Ungültige Zählerdaten');
+                if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                    alert('Lokale Speicherung ist während eines Kontowechsels oder einer Cloud-Datenübernahme gesperrt. Bitte zuerst das ursprüngliche Konto anmelden.');
+                    return false;
+                }
                 if (data.readings.some(item => !item || typeof item !== 'object' || Array.isArray(item))) throw new Error('Ungültige Zählereinträge');
                 // Keep the original bytes available if stored readings cannot be parsed.
                 const existing = localStorage.getItem('energie_tracker_pro_v8');
