@@ -145,10 +145,14 @@ function init(){
  edit.id='b3-edit-open';prefs.append(edit);
  if(config.helpId){
   prefs.append(btn('❔ Hilfe & Anleitung',()=>{
-   if(typeof window.closeSettings==='function')window.closeSettings();
-   document.getElementById(config.helpId)?.scrollIntoView({block:'start',behavior:'smooth'});
    const help=document.getElementById(config.helpId);
    if(help?.classList.contains('hidden')&&typeof window[config.helpToggle]==='function')window[config.helpToggle]();
+   if(help?.closest('#settingsModal')){
+     help?.scrollIntoView({block:'nearest',behavior:'smooth'});
+   }else{
+     if(typeof window.closeSettings==='function')window.closeSettings();
+     help?.scrollIntoView({block:'start',behavior:'smooth'});
+   }
   },true));
  }
  if(surface)surface.append(prefs);
