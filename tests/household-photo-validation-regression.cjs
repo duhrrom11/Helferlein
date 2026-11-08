@@ -61,4 +61,22 @@ assert.equal(ctx.pendingPhotoReads, 1, 'first image must finish decoding before 
 pendingImage.onerror();
 assert.equal(ctx.pendingPhotoReads, 0);
 assert.equal(ctx.photoReadFailed, true, 'image decode failure blocks save');
+ctx.FileReader = class {
+    constructor() { throw new Error('Reader unavailable'); }
+};
+ctx.loadPhotosToCanvas({target: {files: [{type: 'image/png', size: 100}], value: 'selected'}});
+assert.equal(ctx.pendingPhotoReads, 0, 'reader startup failure must finish pending upload');
+assert.equal(ctx.photoReadFailed, true, 'reader startup failure blocks saving');
+assert.match(alerts[alerts.length - 1], /Bildleser/);
+
+ctx.FileReader = class {
+    readAsDataURL() { this.onload({target: {result: 'data:image/png;base64,AAAA'}}); }
+};
+ctx.Image = class {
+    set src(value) { throw new Error('Image source unavailable'); }
+};
+ctx.loadPhotosToCanvas({target: {files: [{type: 'image/png', size: 100}], value: 'selected'}});
+assert.equal(ctx.pendingPhotoReads, 0, 'image source failure must finish pending upload');
+assert.equal(ctx.photoReadFailed, true, 'image source failure blocks saving');
+assert.match(alerts[alerts.length - 1], /nicht geöffnet/);
 console.log('Receipt photo format regression checks passed');
