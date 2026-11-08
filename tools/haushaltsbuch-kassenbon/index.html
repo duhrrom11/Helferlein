@@ -1809,11 +1809,18 @@
             let totalIncome = 0;
             let totalExpense = 0;
             let validEntries = 0;
+            let earliestDate = null;
+            let latestDate = null;
             data.forEach(r => {
                 if (!r || typeof r !== 'object') return;
                 const price = Number(r.price);
                 if (!Number.isFinite(price) || price < 0) return;
                 validEntries++;
+                if (typeof r.date === 'string' && /^\\d{4}-\\d{2}-\\d{2}$/.test(r.date) &&
+                    Number.isFinite(parseReceiptDate(r.date).getTime())) {
+                    if (earliestDate === null || r.date < earliestDate) earliestDate = r.date;
+                    if (latestDate === null || r.date > latestDate) latestDate = r.date;
+                }
                 if (r.entryType === 'einnahme' || r.category === 'Einnahme') totalIncome += price;
                 else totalExpense += price;
             });
@@ -1825,8 +1832,11 @@
             doc.text('Einnahmen: ' + money(totalIncome), 14, 52);
             doc.text('Ausgaben: ' + money(totalExpense), 14, 58);
             doc.text('Saldo: ' + money(totalIncome - totalExpense), 14, 64);
+            const formatDate = value => value.slice(8, 10) + '.' + value.slice(5, 7) + '.' + value.slice(0, 4);
+            const period = earliestDate && latestDate ? formatDate(earliestDate) + ' bis ' + formatDate(latestDate) : 'Keine gültigen Buchungsdaten';
+            doc.text('Zeitraum: ' + period, 14, 70);
 
-            let y = 76;
+            let y = 82;
             data.forEach((r) => {
                 if (!r || typeof r !== 'object') return;
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
