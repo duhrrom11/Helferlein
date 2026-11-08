@@ -108,3 +108,6 @@ body.b3-home.b3-dark .b3-faq .grid a{color:#8de5e0}
 @media(max-width:790px){body.b3-home .b3-hub-hero{grid-template-columns:1fr}body.b3-home .b3-hero-preview{display:none}body.b3-home .b3-hub-nav a{display:none}body.b3-home .b3-hub-main{margin-top:-1rem}}
 @media(max-width:440px){body.b3-home .b3-hub-nav #settingsBtn{padding:.6rem;font-size:.78rem}body.b3-home .b3-hub-logo{font-size:1rem}body.b3-home .b3-hub-hero{padding-top:1rem}body.b3-home .b3-hub-hero h1{font-size:2.2rem}body.b3-home .b3-hero-actions a{width:100%}body.b3-home .b3-discovery{padding:1rem}body.b3-home .b3-filter{padding:.52rem .67rem;font-size:.73rem}body.b3-home #toolsGrid{gap:.8rem}body.b3-home #settingsModal .grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){body.b3-home *,body.b3-home *::before{transition:none!important;scroll-behavior:auto!important}}
+
+body.b3-home .b3-hub-account{font-size:.75rem;color:#e5f8f5;font-weight:700;padding:.5rem .65rem;border:1px solid #ffffff42;border-radius:10px;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+@media(max-width:680px){body.b3-home .b3-hub-account{display:none}}
