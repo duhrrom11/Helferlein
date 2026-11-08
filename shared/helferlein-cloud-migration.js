@@ -9,39 +9,48 @@
     const store = global.HelferleinCloudStore.createStore(client, tool);
     let enabledUser = null;
     let queue = Promise.resolve();
+    let refreshInProgress = false;
+    let lastSyncError = null;
     const enabledKey = uid => 'helferlein_cloud_enabled_' + tool + '_' + uid;
     const ownerKey = 'helferlein_cloud_owner_' + tool;
+    const cacheKey = uid => 'helferlein_cloud_' + tool + '_' + uid + '_cache';
     // The legacy application still reads one shared localStorage key.
     // Fail closed when a different account is active; never upload its contents.
     function assertOwner(uid) {
       const owner = localStorage.getItem(ownerKey);
       if (!uid || owner !== uid) throw new Error('Benutzerwechsel erkannt: lokaler Speicher ist nicht diesem Konto zugeordnet. Cloud-Sync gesperrt.');
     }
+    function validPayload(value) { return !!value && typeof value === 'object' && !Array.isArray(value) && Array.isArray(value[collection]); }
     async function currentUser() {
       const { data, error } = await client.auth.getUser();
       if (error) throw error;
-      return data && data.user ? data.user : null;
+      return data && data.user && typeof data.user.id === 'string' ? data.user : null;
     }
+    function isOwner(uid) { return !!uid && localStorage.getItem(ownerKey) === uid; }
     async function isEnabled() {
       const user = await currentUser();
       return !!user && user.id === enabledUser &&
-        localStorage.getItem(ownerKey) === user.id &&
+        isOwner(user.id) &&
         localStorage.getItem(enabledKey(user.id)) === 'true';
     }
+    function safeLocalBytes() { return localStorage.getItem(localKey); }
     async function enable() {
       const user = await currentUser();
       if (!user || !user.id) throw new Error('Bitte zuerst anmelden');
       const existingOwner = localStorage.getItem(ownerKey);
       if (existingOwner && existingOwner !== user.id) throw new Error('Lokale Daten gehören zu einem anderen Konto; Übernahme gesperrt');
+      if ((await currentUser())?.id !== user.id) throw new Error('Konto vor Aktivierung gewechselt');
       localStorage.setItem(ownerKey, user.id);
       localStorage.setItem(enabledKey(user.id), 'true');
       enabledUser = user.id;
     }
+    function reportError(error) { lastSyncError = error && error.message ? error.message : String(error); status.textContent = 'Cloud: ' + lastSyncError; }
     function changed(data) {
       if (!data || typeof data !== 'object' || Array.isArray(data)) return Promise.reject(new Error('Invalid changed payload'));
       // Called after the existing synchronous local save succeeded.
       // Failed uploads must remain pending, and are never silently discarded.
       const expectedOwner = localStorage.getItem(ownerKey);
+      if (expectedOwner && !validPayload(data)) return Promise.reject(new Error('Ungültige Werkzeugdaten'));
       const snapshot = JSON.parse(JSON.stringify(data));
       queue = queue.catch(() => {}).then(async () => {
         if (!await isEnabled() || localStorage.getItem(ownerKey) !== expectedOwner) return;
@@ -50,12 +59,42 @@
           assertOwner(user && user.id);
           if (user.id !== expectedOwner) throw new Error('Konto während lokaler Speicherung gewechselt');
           const uploaded = await store.save(snapshot);
+          if (uploaded) lastSyncError = null;
           if (await isEnabled() && localStorage.getItem(ownerKey) === expectedOwner) status.textContent = uploaded ? 'Lokal und in Supabase gespeichert' : 'Lokal gespeichert · Cloud-Synchronisierung ausstehend';
         } catch (error) {
-          status.textContent = 'Cloud-Synchronisierung ausstehend: ' + (error.message || String(error));
+          reportError(error);
         }
       });
       return queue;
+    }
+    async function refreshFromCloud() {
+      if (refreshInProgress || !navigator.onLine || !await isEnabled()) return false;
+      refreshInProgress = true;
+      try {
+        await queue.catch(() => {});
+        const user = await currentUser();
+        if (!user || !isOwner(user.id) || await store.hasPending()) return false;
+        const before = safeLocalBytes();
+        const cachedBytes = localStorage.getItem(cacheKey(user.id));
+        const result = await store.load();
+        if (result.source !== 'cloud' || !validPayload(result.data)) return false;
+        if ((await currentUser())?.id !== user.id || !isOwner(user.id)) return false;
+        if (await store.hasPending()) return false;
+        if (safeLocalBytes() !== before) return false;
+        if (before !== null && cachedBytes !== null) {
+          let previous;
+          try { previous = JSON.parse(cachedBytes); } catch (_) { return false; }
+          if (JSON.stringify(previous) !== before) return false;
+        }
+        if (before !== null && cachedBytes === null) return false;
+        const incoming = JSON.stringify(result.data);
+        if (before === incoming) return false;
+        localStorage.setItem(localKey, incoming);
+        status.textContent = 'Aktuelle Supabase-Daten übernommen';
+        if (typeof refresh === 'function') refresh();
+        return true;
+      } catch (error) { reportError(error); return false; }
+      finally { refreshInProgress = false; }
     }
     async function resume() {
       // Finish queued local writes before attempting a reconnect flush.
@@ -65,18 +104,20 @@
         const user = await currentUser();
         assertOwner(user && user.id);
         const done = await store.flush();
+        if (!await store.hasPending()) await refreshFromCloud();
         if (done && await isEnabled() && localStorage.getItem(ownerKey) === user.id) status.textContent = 'Ausstehende Änderungen synchronisiert';
       } catch (error) {
         status.textContent = 'Synchronisierung ausstehend: ' + (error.message || String(error));
       }
     }
-    global.addEventListener('online', () => { void resume().catch(error => { status.textContent = 'Synchronisierung ausstehend: ' + error.message; }); });
+    global.addEventListener('online', () => { void resume().catch(reportError); });
     let blocked = null;
     async function guardAccount() {
       const user = await currentUser();
       const owner = localStorage.getItem(ownerKey);
       if ((await currentUser())?.id !== (user && user.id)) throw new Error('Account changed during guard');
       const mismatch = !!(owner && (!user || owner !== user.id));
+      if (mismatch) enabledUser = null;
       if (!mismatch && !owner && blocked) { blocked.remove(); blocked = null; }
       if (mismatch && !blocked) {
         blocked = document.createElement('div');
@@ -101,6 +142,7 @@
         blocked.remove(); blocked = null;
       }
     }
+    global.addEventListener('focus', () => { void refreshFromCloud(); });
     let authGeneration = 0;
     client.auth.onAuthStateChange(() => {
       const generation = ++authGeneration;
@@ -111,7 +153,7 @@
           if (generation !== authGeneration) return;
           enabledUser = user && localStorage.getItem(ownerKey) === user.id &&
             localStorage.getItem(enabledKey(user.id)) === 'true' ? user.id : null;
-          if (enabledUser) void resume().catch(error => { status.textContent = 'Cloud-Wiederaufnahme fehlgeschlagen: ' + error.message; });
+          if (enabledUser) void resume().catch(reportError);
         }).catch(() => { if (generation === authGeneration) enabledUser = null; });
       }, 0);
     });
