@@ -583,7 +583,16 @@
       store.dispose();
       host.remove();
     }
-    return { store, host, changed, resume, refreshFromCloud, dispose, getStatus: () => ({ disposed, enabledUser, activeOperation, lastSyncError, lastConflictMessage, lastCloudSource, accountSwitchInProgress, statusGeneration, lastRefreshAt, lastReconnectAt, lastLocalChangeAt, lastAccountChangeAt, lastAuthCheckAt, lastPendingCheckAt, lastStatusErrorAt, lastUploadAt, lastImportAt, lastGuardAt, lastGuardMismatch, lastEnableAt, lastRefreshSkippedAt, lastOperationStartedAt, lastOperationEndedAt, lastOwnerAtStatus, lastAuthStateAt, refreshAttempts, refreshApplied, reconnectAttempts, reconnectSuccesses, store: store.status() }) };
+    // Synchronous gate for legacy saveData(): do not mutate a shared local key
+    // while an authenticated account mismatch or migration is unresolved.
+    function canWriteLocal() {
+      if (disposed || accountSwitchInProgress || !!blocked) return false;
+      if (activeOperation === 'import' || activeOperation === 'upload' || activeOperation === 'refresh') return false;
+      const owner = currentOwner();
+      if (!owner) return true; // Legacy data, not yet claimed by a cloud account.
+      return !!enabledUser && owner === enabledUser;
+    }
+    return { store, host, changed, canWriteLocal, resume, refreshFromCloud, dispose, getStatus: () => ({ disposed, enabledUser, activeOperation, lastSyncError, lastConflictMessage, lastCloudSource, accountSwitchInProgress, statusGeneration, lastRefreshAt, lastReconnectAt, lastLocalChangeAt, lastAccountChangeAt, lastAuthCheckAt, lastPendingCheckAt, lastStatusErrorAt, lastUploadAt, lastImportAt, lastGuardAt, lastGuardMismatch, lastEnableAt, lastRefreshSkippedAt, lastOperationStartedAt, lastOperationEndedAt, lastOwnerAtStatus, lastAuthStateAt, refreshAttempts, refreshApplied, reconnectAttempts, reconnectSuccesses, store: store.status() }) };
   }
   global.HelferleinCloudMigration = Object.freeze({ mount });
 })(window);
