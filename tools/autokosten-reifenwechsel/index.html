@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <style>html.helferlein-account-check body{visibility:hidden!important}</style>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
     <script>
       try { if (localStorage.getItem('helferlein_cloud_owner_autokosten-reifenwechsel')) document.documentElement.classList.add('helferlein-account-check'); }
       catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
