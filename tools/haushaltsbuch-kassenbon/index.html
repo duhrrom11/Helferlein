@@ -946,7 +946,7 @@
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-xs">
-                            <span class="font-bold text-gray-700">${cat}</span>
+                            <span class="font-bold text-gray-700">${HelferleinSafe.html(cat)}</span>
                             <span class="text-gray-500">${spent.toFixed(2)} € / <strong>${limit.toFixed(2)} €</strong></span>
                         </div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
@@ -1061,7 +1061,7 @@
                                     ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">⏱️ Rückgabe: ${diffDaysReturn} T</span>` : ''}
                                 </div>
                                 <p class="text-xs text-gray-600">
-                                    Betrag: <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | Datum: ${r.date} | Zahlungsart: ${HelferleinSafe.html(r.paymentMethod || 'k.A.')}
+                                    Betrag: <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | Datum: ${HelferleinSafe.html(r.date)} | Zahlungsart: ${HelferleinSafe.html(r.paymentMethod || 'k.A.')}
                                 </p>
                                 <p class="text-[11px] text-gray-500">
                                     ${HelferleinSafe.html(r.store ? 'Partner: ' + r.store + ' | ' : '')} ${HelferleinSafe.html(r.sn ? 'S/N: ' + r.sn + ' | ' : '')} ${HelferleinSafe.html(r.location ? 'Karton: ' + r.location + ' | ' : '')} ${HelferleinSafe.html(r.note ? 'Notiz: ' + r.note : '')}
@@ -1086,8 +1086,8 @@
             const container = document.getElementById('budgetInputList');
             container.innerHTML = defaultCategories.map(cat => `
                 <div class="flex justify-between items-center gap-2">
-                    <label class="font-semibold text-gray-700">${cat}:</label>
-                    <input type="number" step="10" data-cat="${cat}" value="${budgets[cat] || 0}" class="p-2 border rounded-xl w-32 text-right font-bold">
+                    <label class="font-semibold text-gray-700">${HelferleinSafe.html(cat)}:</label>
+                    <input type="number" step="10" data-cat="${HelferleinSafe.html(cat)}" value="${budgets[cat] || 0}" class="p-2 border rounded-xl w-32 text-right font-bold">
                 </div>
             `).join('');
             document.getElementById('budgetModal').classList.remove('hidden');
