@@ -1369,7 +1369,12 @@
             try { 
                 const data = JSON.parse(localStorage.getItem('wg_flatmates'));
                 if (Array.isArray(data)) {
-                    return data.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
+                    return data.filter(m => typeof m === 'string' || (m && typeof m === 'object' && !Array.isArray(m)))
+                        .map(m => typeof m === 'string'
+                            ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" }
+                            : { vorname: String(m.vorname ?? ''), nachname: String(m.nachname ?? ''),
+                                email: String(m.email ?? ''), phone: String(m.phone ?? ''),
+                                insta: String(m.insta ?? ''), fb: String(m.fb ?? '') });
                 }
                 return []; 
             } catch(e) { 
