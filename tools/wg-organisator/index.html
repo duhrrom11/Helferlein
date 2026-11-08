@@ -997,8 +997,12 @@
         let secureWgRevision = null;
         let secureWgSaving = Promise.resolve();
         let secureWgDirty = false;
+        let secureWgChangeVersion = 0;
+        let secureWgSavedVersion = 0;
+        let secureWgSaveBlocked = false;
         async function saveSecureWg(payload) {
             await getAuthenticatedWgUser();
+            if (secureWgSaveBlocked) throw new Error('Speichern nach einem Konflikt angehalten. Bitte Daten sichern und die WG kontrolliert neu laden.');
             if (!secureWgRevision) throw new Error('WG muss vor dem Speichern neu geladen werden.');
             const id = wgBinId.slice(SECURE_WG_PREFIX.length);
             const nextRevision = new Date().toISOString();
@@ -1007,7 +1011,10 @@
                 .eq('id', id).eq('updated_at', secureWgRevision)
                 .select('updated_at').maybeSingle();
             if (error) throw new Error(error.message);
-            if (!data) throw new Error('Speicherkonflikt: Die WG wurde zwischenzeitlich geändert. Bitte Änderungen sichern und neu laden.');
+            if (!data) {
+                secureWgSaveBlocked = true;
+                throw new Error('Speicherkonflikt: Die WG wurde zwischenzeitlich geändert. Bitte Änderungen sichern und neu laden.');
+            }
             secureWgRevision = data.updated_at;
             return true;
         }
@@ -1158,7 +1165,12 @@
                     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('Ungültige WG-Daten');
                     // Use the same field validation and local-cache hydration as legacy data.
                     const loaded = await ladeWGObjekt(payload);
-                    if (loaded) { secureWgRevision = data.updated_at; secureWgDirty = false; }
+                    if (loaded) {
+                        secureWgRevision = data.updated_at;
+                        secureWgDirty = false;
+                        secureWgSavedVersion = secureWgChangeVersion;
+                        secureWgSaveBlocked = false;
+                    }
                     return loaded;
                 }
                 let response = await fetch(NPOINT_API_BASE + wgBinId);
@@ -1232,19 +1244,25 @@
                 infoboard: getInfoData()
             };
             if (isSecureWgId(wgBinId)) {
+                const version = ++secureWgChangeVersion;
                 secureWgDirty = true;
                 secureWgSaving = secureWgSaving.catch(() => false).then(async () => {
                     try {
-                        const saved = await saveSecureWg({
+                        // Snapshot only when this queued write starts, so later edits are
+                        // never accidentally marked as saved by an earlier response.
+                        const snapshot = {
                             flatmates: getFlatmates(), notes: getNotes(), data: getData(),
                             budgets: getBudgets(), goals: getSavingsGoals(), events: getEvents(),
                             inventory: getInventory(), diets: getDiets(), cleaning: getCleaningPlan(),
                             shopping: getShoppingList(), cooking: getCookingPlan(),
                             contracts: getContracts(), infoboard: getInfoData()
-                        });
-                        secureWgDirty = false;
+                        };
+                        const saved = await saveSecureWg(snapshot);
+                        secureWgSavedVersion = Math.max(secureWgSavedVersion, version);
+                        secureWgDirty = secureWgSavedVersion < secureWgChangeVersion;
                         return saved;
                     } catch (error) {
+                        secureWgDirty = true;
                         console.error('Geschützte WG-Speicherung fehlgeschlagen:', error);
                         alert('WG-Änderungen konnten nicht gespeichert werden: ' + error.message);
                         return false;
