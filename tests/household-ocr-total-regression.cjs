@@ -1,0 +1,18 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const html = fs.readFileSync('tools/haushaltsbuch-kassenbon/index.html', 'utf8');
+const start = html.indexOf('function extractReceiptTotal(');
+const end = html.indexOf('/* --- Tesseract OCR --- */', start);
+assert.ok(start >= 0 && end > start);
+const ctx = vm.createContext({});
+vm.runInContext(html.slice(start, end), ctx);
+const extract = text => vm.runInContext('extractReceiptTotal(' + JSON.stringify(text) + ')', ctx);
+assert.equal(extract('Milch 1,29\nBrot 2,49\nSUMME 3,78'), '3.78');
+assert.equal(extract('Artikel 4,99\nGesamtbetrag 1.234,56 EUR'), '1234.56');
+assert.equal(extract('TOTAL 1,234.56'), '1234.56');
+assert.equal(extract('Preis 1,29\nRabatt 0,20'), null);
+assert.equal(extract('Summe -12,00'), null);
+assert.equal(extract('Summe 0,00'), null);
+assert.equal(extract('Summe 5,50\nGesamt 6,20'), '6.20');
+console.log('OCR total amount regression checks passed');
