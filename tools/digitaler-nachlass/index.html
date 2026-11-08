@@ -1088,8 +1088,22 @@
                     return alert('Cloud- und lokale Verschlüsselungsdaten stimmen überein, lassen sich aber nicht entschlüsseln. Keine Änderungen vorgenommen.');
                 }
                 const cloudConfig = await decryptVaultPayload(remote.encrypted_config, currentMasterKeyHex);
-                if (!cloudConfig || !Array.isArray(cloudConfig.trustees) || !Array.isArray(cloudConfig.alarmPersons)) {
-                    return alert('Tresorinhalt stimmt überein, aber die Cloud-Konfiguration konnte nicht entschlüsselt werden.');
+                if (!cloudConfig || typeof cloudConfig !== 'object' || Array.isArray(cloudConfig) ||
+                    typeof cloudConfig.ownerName !== 'string' ||
+                    typeof cloudConfig.ownerEmail !== 'string' ||
+                    !Number.isInteger(cloudConfig.checkInIntervalDays) ||
+                    cloudConfig.checkInIntervalDays < 1 || cloudConfig.checkInIntervalDays > 3650 ||
+                    typeof cloudConfig.lastCheckIn !== 'string' ||
+                    !Number.isFinite(Date.parse(cloudConfig.lastCheckIn)) ||
+                    !Array.isArray(cloudConfig.trustees) || cloudConfig.trustees.length > 100 ||
+                    !Array.isArray(cloudConfig.alarmPersons) || cloudConfig.alarmPersons.length > 100 ||
+                    !cloudConfig.trustees.every(person =>
+                        person && typeof person === 'object' && !Array.isArray(person) &&
+                        typeof person.name === 'string' && person.name.length <= 500) ||
+                    !cloudConfig.alarmPersons.every(person =>
+                        person && typeof person === 'object' && !Array.isArray(person) &&
+                        typeof person.name === 'string' && person.name.length <= 500)) {
+                    return alert('Tresorinhalt stimmt überein, aber die Cloud-Konfiguration enthält für die Wiederherstellung ungültige Einstellungen.');
                 }
                 const keys = ['ownerName', 'ownerEmail', 'checkInIntervalDays',
                     'lastCheckIn', 'trustees', 'alarmPersons'];
