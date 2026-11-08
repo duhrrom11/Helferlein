@@ -431,6 +431,17 @@ test('Wiederherstellungsschluessel-Upload stoppt bei aktivem Schluessel- oder Re
   assert.equal(source.split('currentMasterKeyHex !== startingMasterKeyHex').length - 1, 2);
 });
 
+test('Wiederherstellungsschluessel meldet Aenderungen waehrend des Cloud-Schreibens', () => {
+  const start = html.indexOf('async function prepareSupabaseRecoveryKey()');
+  const end = html.indexOf('async function previewSupabaseVaultRecovery()', start);
+  const source = html.slice(start, end);
+  const saved = source.indexOf('if (saveError || !saved || saved.length !== 1)');
+  const after = source.indexOf('currentMasterKeyHex !== startingMasterKeyHex', saved);
+  const success = source.indexOf("alert('Verschlüsselter Wiederherstellungsschlüssel gespeichert.");
+  assert.ok(saved > 0 && after > saved && success > after);
+  assert.match(source.slice(saved, success), /localSaveRevision !== startingRevision/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
