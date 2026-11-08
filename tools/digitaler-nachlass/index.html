@@ -723,7 +723,11 @@
             try {
                 const cfg = getVaultConfig();
                 const syncRevision = localSaveRevision;
-                cfg.encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
+                // Read the exact ciphertext already persisted locally. Re-encrypting
+                // mutable in-memory data here could race with a local save.
+                if (!cfg || !cfg.encryptedData || !cfg.vaultId) {
+                    throw new Error("Kein vollständig gespeicherter lokaler Tresor vorhanden.");
+                }
 
                 // A newer local edit must not be represented as already cloud-saved.
                 if (syncRevision !== localSaveRevision) return false;
