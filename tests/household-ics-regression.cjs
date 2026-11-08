@@ -15,4 +15,6 @@ assert.equal(escape('A\r\nB'), 'A\\nB');
 assert.equal(escape(null), '');
 assert.match(html.slice(b, html.indexOf('/* --- Export & Import --- */', b)), /DTEND;VALUE=DATE:/);
 assert.match(html.slice(b, html.indexOf('/* --- Export & Import --- */', b)), /URL\.revokeObjectURL/);
+assert.match(html.slice(b, html.indexOf('/* --- Export & Import --- */', b)), /TRIGGER;RELATED=START:PT9H/);
+assert.doesNotMatch(html.slice(b, html.indexOf('/* --- Export & Import --- */', b)), /TRIGGER:-PT9H/);
 console.log('Household calendar export regression checks passed');
