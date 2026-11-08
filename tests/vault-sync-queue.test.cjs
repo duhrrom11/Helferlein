@@ -63,6 +63,8 @@ test('manueller Snapshot-Konflikt beendet Ladeanzeige mit Fehlermeldung', () => 
   assert.match(html, /Der lokale Tresor wurde während der Vorbereitung geändert/);
   assert.match(html, /Nach der Cloud-Speicherung wurden neuere lokale Änderungen erkannt/);
   assert.match(html, /const stillCurrent = syncRevision === localSaveRevision/);
+  assert.match(html, /lastPersistedRevision !== localSaveRevision/);
+  assert.match(html, /lastPersistedRevision === localSaveRevision/);
   assert.match(html, /if \(stillCurrent\) \{/);
 });
 
