@@ -797,6 +797,10 @@
         function saveData(data) {
             try {
                 if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.plants)) throw new Error('Ungültige Pflanzendaten');
+                if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                    alert('Lokale Speicherung ist während eines Kontowechsels oder einer Cloud-Datenübernahme gesperrt. Bitte zuerst das ursprüngliche Konto anmelden.');
+                    return false;
+                }
                 // Never overwrite an unreadable existing backup with empty defaults.
                 const existing = localStorage.getItem('pflanzen_pass_v10');
                 if (existing !== null) {
