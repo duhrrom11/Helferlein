@@ -25,3 +25,4 @@ jobs:
       - run: node tests/household-warranty-regression.cjs
       - run: node tests/household-date-regression.cjs
       - run: node tests/household-photo-removal-regression.cjs
+      - run: node tests/household-ocr-regression.cjs
