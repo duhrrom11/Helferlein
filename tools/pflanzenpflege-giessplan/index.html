@@ -609,7 +609,7 @@
                 if(found) data.beetSlots[slotIndex] = found.id;
                 else alert("Nicht gefunden.");
             }
-            saveData(data); renderBeetGrid();
+            if (saveData(data)) renderBeetGrid();
         }
 
         // Lager & Nachbestellen mit Amazon Partner-ID
