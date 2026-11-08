@@ -41,6 +41,7 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../assets/helferlein-safe-output.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -753,10 +754,10 @@
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="flex items-center space-x-3">
-                                    ${c.photo ? `<img src="${c.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${c.photo}')" title="Foto vergrößern">` : defaultCarIcon}
+                                    ${c.photo ? `<img src="${HelferleinSafe.photo(c.photo)}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${HelferleinSafe.photo(c.photo)}')" title="Foto vergrößern">` : defaultCarIcon}
                                     <div>
-                                        <h4 class="font-bold text-sm text-red-800">${c.name}</h4>
-                                        <p class="text-xs text-gray-600">${c.plate || 'k.Kennzeichen'} ${c.km ? '| ' + c.km + ' km' : ''}</p>
+                                        <h4 class="font-bold text-sm text-red-800">${HelferleinSafe.html(c.name)}</h4>
+                                        <p class="text-xs text-gray-600">${HelferleinSafe.html(c.plate || 'k.Kennzeichen')} ${c.km ? '| ' + c.km + ' km' : ''}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5">
@@ -812,7 +813,7 @@
                     return `
                         <div class="p-3 border rounded-xl ${statusColor}">
                             <p class="text-[11px] font-bold text-gray-500">${carName} (${e.type})</p>
-                            <p class="text-xs font-bold mt-0.5">${e.title}</p>
+                            <p class="text-xs font-bold mt-0.5">${HelferleinSafe.html(e.title)}</p>
                             <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString('de-DE')})</p>
                         </div>
                     `;
@@ -889,7 +890,7 @@
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">${e.type}</span>
-                                    <span class="text-xs font-bold text-gray-700">${carName}</span>
+                                    <span class="text-xs font-bold text-gray-700">${HelferleinSafe.html(carName)}</span>
                                     ${e.cost > 0 ? `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${e.cost.toFixed(2).replace('.', ',')} €</span>` : ''}
                                     ${treadBadge}
                                     ${tankBadge}
