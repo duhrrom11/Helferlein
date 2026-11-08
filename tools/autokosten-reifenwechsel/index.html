@@ -754,22 +754,22 @@
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="flex items-center space-x-3">
-                                    ${c.photo ? `<img src="${HelferleinSafe.photo(c.photo)}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${HelferleinSafe.photo(c.photo)}')" title="Foto vergrößern">` : defaultCarIcon}
+                                    ${c.photo ? `<img src="${HelferleinSafe.photo(c.photo)}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage(${HelferleinSafe.jsArg(HelferleinSafe.photo(c.photo))})" title="Foto vergrößern">` : defaultCarIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-red-800">${HelferleinSafe.html(c.name)}</h4>
                                         <p class="text-xs text-gray-600">${HelferleinSafe.html(c.plate || 'k.Kennzeichen')} ${c.km ? '| ' + c.km + ' km' : ''}</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-1.5">
-                                    <button onclick="updateCarKm(${c.id})" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-semibold" title="KM aktualisieren">⚡ KM</button>
-                                    <button onclick="deleteCar(${c.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
+                                    <button onclick="updateCarKm(${HelferleinSafe.numericId(c.id)})" class="px-2.5 py-1 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-xs font-semibold" title="KM aktualisieren">⚡ KM</button>
+                                    <button onclick="deleteCar(${HelferleinSafe.numericId(c.id)})" class="text-xs text-red-500 hover:underline">Löschen</button>
                                 </div>
                             </div>
                             
                             <div class="text-[11px] flex flex-wrap gap-2 text-gray-600 pt-1">
                                 ${c.insurance ? `<span>🛡️ ${HelferleinSafe.html(c.insurance)}</span>` : ''}
                                 ${c.emergency ? `<a href="tel:${HelferleinSafe.tel(c.emergency)}" class="text-red-700 font-bold hover:underline">📞 Notruf: ${HelferleinSafe.html(c.emergency)}</a>` : ''}
-                                ${c.papers ? `<button onclick="zoomImage('${c.papers}')" class="text-blue-600 font-semibold underline">📄 Fahrzeugschein anzeigen</button>` : ''}
+                                ${c.papers ? `<button onclick="zoomImage(${HelferleinSafe.jsArg(HelferleinSafe.photo(c.papers))})" class="text-blue-600 font-semibold underline">📄 Fahrzeugschein anzeigen</button>` : ''}
                             </div>
                             ${kmPrognoseText}
                             ${costPerKm ? `<div class="text-[11px] bg-white p-2 border rounded-xl flex justify-between text-gray-600"><span>Gesamtkosten: <b>${carTotalCost.toFixed(2).replace('.', ',')} €</b></span><span class="text-red-700 font-semibold">TCO: ${costPerKm.replace('.', ',')} € / km</span></div>` : ''}
@@ -789,7 +789,7 @@
                                     <p class="font-bold text-red-800">${HelferleinSafe.html(t.type)} <span class="text-gray-500 font-normal">(${HelferleinSafe.html(carName)})</span></p>
                                     <p class="text-[11px] text-gray-600">Ort: ${HelferleinSafe.html(t.location || '-')} | DOT: ${HelferleinSafe.html(t.dot || '-')} | ${t.tread ? t.tread + ' mm' : ''}</p>
                                 </div>
-                                <button onclick="deleteTireSet(${t.id})" class="text-red-500 font-bold px-2 hover:bg-red-50 rounded">✕</button>
+                                <button onclick="deleteTireSet(${HelferleinSafe.numericId(t.id)})" class="text-red-500 font-bold px-2 hover:bg-red-50 rounded">✕</button>
                             </div>
                         `;
                     }).join('');
@@ -874,7 +874,7 @@
                         if (e.km) tankBadge += `<span class="text-[10px] bg-gray-100 text-gray-800 font-semibold px-2 py-0.5 rounded-full">📍 ${e.km} km</span>`;
                     }
 
-                    let receiptBtn = e.receipt ? `<button onclick="zoomImage('${e.receipt}')" class="px-2 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-100" title="Beleg anzeigen">🧾 Beleg</button>` : '';
+                    let receiptBtn = e.receipt ? `<button onclick="zoomImage(${HelferleinSafe.jsArg(HelferleinSafe.photo(e.receipt))})" class="px-2 py-1 bg-red-50 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-100" title="Beleg anzeigen">🧾 Beleg</button>` : '';
 
                     let calendarButtons = "";
                     if (!['Reifentiefe', 'Tanken', 'Reparatur'].includes(e.type)) {
@@ -901,8 +901,8 @@
                             <div class="flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 ${receiptBtn}
                                 ${calendarButtons}
-                                <button onclick="openEditModal(${e.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
-                                <button onclick="deleteEvent(${e.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                                <button onclick="openEditModal(${HelferleinSafe.numericId(e.id)})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
+                                <button onclick="deleteEvent(${HelferleinSafe.numericId(e.id)})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
                     `;
