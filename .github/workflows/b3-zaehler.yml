@@ -1,0 +1,36 @@
+name: B3 Zählerstände pilot
+on:
+  pull_request:
+    paths:
+      - 'assets/helferlein-b3*'
+      - 'tools/zaehlerstaende-erfassen/index.html'
+      - 'tests/b3-zaehler*'
+      - '.github/workflows/b3-zaehler.yml'
+  push:
+    branches: ['design-b3-rollout-zaehlerstaende']
+    paths:
+      - 'assets/helferlein-b3*'
+      - 'tools/zaehlerstaende-erfassen/index.html'
+      - 'tests/b3-zaehler*'
+      - '.github/workflows/b3-zaehler.yml'
+permissions:
+  contents: read
+jobs:
+  zaehler-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate preservation of meter data contracts
+        run: node --test tests/b3-zaehler.test.cjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock @playwright/test@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start static preview server
+        run: python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/b3-zaehler.log 2>&1 &
+      - name: Responsive browser and preferences verification
+        run: npx playwright test tests/b3-zaehler.spec.cjs --reporter=line --workers=1
