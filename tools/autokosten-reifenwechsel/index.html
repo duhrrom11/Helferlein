@@ -521,7 +521,7 @@
             const processFiles = () => {
                 let data = getData();
                 data.cars.push({ id: Date.now(), name, plate, km, insurance, emergency, photo: photoData, papers: papersData });
-                saveData(data);
+                if (!saveData(data)) return;
                 document.getElementById('carName').value = "";
                 document.getElementById('carPlate').value = "";
                 document.getElementById('carKm').value = "";
@@ -562,7 +562,7 @@
             let newKm = prompt("Aktuellen Kilometerstand aktualisieren:", car.km || "");
             if (newKm !== null) {
                 car.km = newKm.trim();
-                saveData(data);
+                if (!saveData(data)) return;
                 renderApp();
             }
         }
@@ -601,7 +601,7 @@
             data.cars = data.cars.filter(c => c.id !== id);
             data.events = data.events.filter(e => e.carId !== id);
             data.tires = data.tires.filter(t => t.carId !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             loadCarDropdowns();
             renderApp();
         }
@@ -618,7 +618,7 @@
             if (!data.tires) data.tires = [];
 
             data.tires.push({ id: Date.now(), carId: parseInt(carId), type, location, dot, tread });
-            saveData(data);
+            if (!saveData(data)) return;
             document.getElementById('tireLocation').value = "";
             document.getElementById('tireDot').value = "";
             document.getElementById('tireTread').value = "";
@@ -628,7 +628,7 @@
         function deleteTireSet(id) {
             let data = getData();
             data.tires = data.tires.filter(t => t.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderApp();
         }
 
@@ -674,7 +674,7 @@
         function storeEventData(carId, type, date, title, cost, tread, km, litres, consumption, receipt) {
             let data = getData();
             data.events.push({ id: Date.now(), carId, type, date, title, cost, tread, km, litres, consumption, receipt });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('eventDate').value = "";
             document.getElementById('eventTitle').value = "";
@@ -722,7 +722,7 @@
                 ev.date = date;
                 ev.cost = cost;
                 ev.tread = tread;
-                saveData(data);
+                if (!saveData(data)) return;
             }
             closeEditModal();
             renderApp();
@@ -732,7 +732,7 @@
             if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.events = data.events.filter(e => e.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderApp();
         }
 
