@@ -34,3 +34,11 @@ Die bestehenden `getData()`/`saveData()`-Funktionen sind synchron und werden in 
 
 ## Aktuelle Grenze
 Der Adapter allein ist noch keine vollständige Integration. Insbesondere die Offline-Basis, parallele Schreibvorgänge und die sichere UI-Anbindung müssen vor Aktivierung weiter ausgearbeitet werden.
+
+## Entwicklungsstand: Opt-in-Oberfläche
+
+In beiden geprüften Werkzeugen sind die Skripte `shared/helferlein-cloud-store.js` und `shared/helferlein-cloud-migration.js` eingebunden. Eine Benutzeraktion kann den Cloud-Status anzeigen oder eine ausdrücklich bestätigte Erstübernahme auslösen. Cloud-Daten werden nur in einen vollständig leeren bisherigen lokalen Schlüssel geladen. Bestehende Daten werden nicht automatisch gelöscht oder überschrieben.
+
+**Wichtig:** Dies ist noch **keine automatische Supabase-Datenhaltung**. Die vorhandenen synchronen `getData()`/`saveData()`-Funktionen verwenden weiterhin die bisherigen lokalen Schlüssel. Änderungen nach der Erstübernahme werden derzeit nicht automatisch in Supabase gespeichert. Bis eine sichere, laufende Synchronisierung implementiert und freigegeben ist, darf diese Funktion nicht als vollständige Cloud-Sicherung beworben werden.
+
+Die opt-in-Übernahme ist für den Entwurfs-PR vorgesehen, nicht für die produktive Freischaltung. Vor einem Merge müssen unter anderem doppelte Cloud-Zeilen, konkurrierende Erstübernahmen, Benutzerwechsel und Datenformate abgesichert werden. Keine produktiven Testdaten anlegen.
