@@ -761,7 +761,8 @@
         function loadLocationDropdown() {
             let data = getData();
             const filterLoc = document.getElementById('filterLocation');
-            const locations = [...new Set(data.plants.map(p => p.location).filter(Boolean))];
+            const locations = [...new Set(data.plants.filter(p => p && typeof p === 'object' && typeof p.location === 'string')
+                .map(p => p.location.trim()).filter(Boolean))];
             const selectedLocation = filterLoc.value;
             filterLoc.replaceChildren(new Option('Alle Standorte / Räume', ''));
             locations.forEach(loc => filterLoc.add(new Option(loc, loc)));
@@ -924,8 +925,9 @@
         function updatePlant() {
             const id = parseInt(document.getElementById('editId').value);
             let data = getData();
-            let p = data.plants.find(item => item.id === id);
-            if (p) {
+            let p = data.plants.find(item => item && typeof item === 'object' && item.id === id);
+            if (!p) return alert('Pflanze nicht gefunden. Die Änderungen wurden nicht gespeichert.');
+            {
                 const editedName = document.getElementById('editName').value.trim();
                 if (!editedName) return alert('Bitte einen Pflanzennamen eingeben.');
                 const interval = readWateringInterval('editInterval');
@@ -948,7 +950,7 @@
         }
 
         function showQrCodeForPlant(id) {
-            const plant = getData().plants.find(item => item.id === id);
+            const plant = getData().plants.find(item => item && typeof item === 'object' && item.id === id);
             if (!plant) return;
             showQrCode(plant.name, plant.species, plant.location, plant.interval);
         }
