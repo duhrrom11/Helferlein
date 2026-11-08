@@ -294,8 +294,8 @@
                 <div id="canvasEditor" class="hidden space-y-2 pt-2 border-t border-emerald-200">
                     <p class="text-[11px] text-emerald-800 font-medium">⚡ Thermopapier-Filter (Helligkeit/Kontrast anpassen):</p>
                     <div class="flex gap-4 items-center flex-wrap">
-                        <label class="text-xs">Helligkeit: <input type="range" id="filterBrightness" min="-100" max="100" value="0" onchange="applyCanvasFilter()" class="align-middle"></label>
-                        <label class="text-xs">Kontrast: <input type="range" id="filterContrast" min="-100" max="100" value="0" onchange="applyCanvasFilter()" class="align-middle"></label>
+                        <label class="text-xs">Helligkeit: <input type="range" id="filterBrightness" min="-100" max="100" value="0" onchange="tryApplyCanvasFilter()" class="align-middle"></label>
+                        <label class="text-xs">Kontrast: <input type="range" id="filterContrast" min="-100" max="100" value="0" onchange="tryApplyCanvasFilter()" class="align-middle"></label>
                     </div>
                     <div class="max-h-48 overflow-hidden rounded-lg border bg-black flex justify-center">
                         <canvas id="photoCanvas" class="max-h-48 object-contain"></canvas>
@@ -835,6 +835,16 @@
                     throw new Error('Belegfoto konnte nicht gültig gespeichert werden');
                 }
                 currentUploadedPhotos[0] = processedPhoto;
+            }
+        }
+
+        function tryApplyCanvasFilter() {
+            try {
+                applyCanvasFilter();
+            } catch (error) {
+                photoReadFailed = true;
+                console.error('Belegfoto-Filter fehlgeschlagen:', error);
+                alert('Die Bildanpassung ist fehlgeschlagen. Bitte das Belegfoto erneut auswählen.');
             }
         }
 
