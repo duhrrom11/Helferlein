@@ -41,7 +41,7 @@ test('Backform original tabs and multi-timer can be opened without creating reci
    await expect(page.locator('#tab-'+id)).toBeVisible();
  }
  await page.locator('#b3-backform-more>summary').click();
- await page.locator('#b3-backform-more').getByRole('button',{name:'Kochmodus & Multi-Timer',exact:true}).click();
+ await page.locator('#b3-backform-more .b3-more-item').first().click();
  await expect(page.locator('#cook-modal')).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem('helperly_recipes_pro'))).toBeNull();
 });
