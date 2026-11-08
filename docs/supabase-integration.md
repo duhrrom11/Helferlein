@@ -119,3 +119,50 @@ Unique-Violations als Konflikt behandeln und den ausstehenden lokalen Stand beha
 - Konflikte können nachvollziehbar und ohne Datenverlust behandelt werden.
 - Die technische Abnahme ist ausdrücklich beauftragt und erfolgreich abgeschlossen.
 - Merge und Veröffentlichung erfolgen erst nach gesonderter Freigabe.
+
+
+## Erweiterte Werkzeuganbindung (November 2026, Entwicklungsbranch)
+
+Folgende Werkzeuge besitzen nun die gemeinsame **Opt-in**-Cloud-Brücke für ihre
+jeweilige primäre JSON-Datensammlung. Die lokalen Legacy-Schlüssel werden noch
+verwendet; die vorgeschaltete Sichtschutz-Sperre ist keine vollständige
+benutzerbezogene Datenzugriffsschicht.
+
+| Werkzeug | Primärer lokaler Schlüssel | Sammlung |
+| --- | --- | --- |
+| Pflanzenpflege | `pflanzen_pass_v10` | `plants` |
+| Zählerstände | `energie_tracker_pro_v8` | `readings` |
+| Umzugskisten | `mini_homebox_pro` | `boxes` |
+| Autokosten | `kfz_tracker_pro_v3` | `cars` |
+| Haustier-Gesundheitspass | `haustier_pass_pro_v5` | `pets` |
+| Verliehene Gegenstände | `verleih_tracker_pro_v3` | `items` |
+| Parkplatzverlauf | `park_history_pro_v3` | `sessions` |
+
+**Noch nicht vollständig angebunden:** Haushaltsbuch (mehrere lokale Datenquellen),
+WG-Organisator (mehrere gemeinsame und WG-spezifische Datenquellen),
+Backform-Rezepte (bisher ein JSON-Array statt eines Cloud-Objekts) und
+Digitaler Nachlass (verschlüsselter Tresor; Schlüssel- und Datenschutzkonzept
+muss vor einer Cloud-Übernahme gesondert festgelegt werden).
+
+**Nicht automatisch synchronisiert:** Der laufende Parktimer `park_end_time`
+und weitere separat gespeicherte UI-Einstellungen oder Zusatzdatensammlungen.
+Die Migration darf keine falsche Aussage über eine vollständige Sicherung treffen.
+
+### Kontoschutz als Zwischenmaßnahme
+
+Die sieben angebundenen Werkzeugseiten aktivieren vor der Ausführung der
+Anwendungsskripte eine Sichtschutz-Sperre, sofern ein bisheriger Besitzer für
+das Werkzeug gespeichert ist. Der gemeinsame Auth-Guard gibt die Oberfläche
+erst nach einer Kontoprüfung frei bzw. zeigt einen blockierenden Kontodialog.
+Bei Auth-Ereignissen wird der Sichtschutz erneut gesetzt. Die **vollständige**
+Trennung erfordert dennoch benutzerbezogene Legacy-Speicherschlüssel und einen
+kontrollierten Wechsel der aktiven Datensammlung; diese Architekturarbeit
+ist noch offen.
+
+### Parallele Erst-Inserts
+
+Der Client erkennt PostgreSQL-Fehlercode `23505` und behält den lokalen
+Pending-Puffer. Ohne Unique-Constraint auf `(user_id, tool)` bleibt aber
+weiterhin ein Rennen möglich, bei dem beide Inserts erfolgreich sind.
+Eine produktive Schemaänderung wird erst nach expliziter Genehmigung und
+Prüfung bestehender Duplikate durchgeführt.
