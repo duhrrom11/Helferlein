@@ -818,7 +818,7 @@
                     alarmPersons: []
                 };
                 localStorage.setItem('digital_estate_vault', JSON.stringify(restored));
-                alert('Cloud-Tresor wiederhergestellt. Die Seite wird neu geladen. Bitte sofort eine verschlüsselte lokale Sicherung erstellen.');
+                alert('Cloud-Tresor wiederhergestellt. Die Seite wird neu geladen. Kontakte, Alarmregeln und Check-in-Einstellungen müssen neu eingerichtet werden. Bitte sofort eine verschlüsselte lokale Sicherung erstellen.');
                 location.reload();
             } catch (error) {
                 console.error('Cloud-Wiederherstellung fehlgeschlagen:', error);
