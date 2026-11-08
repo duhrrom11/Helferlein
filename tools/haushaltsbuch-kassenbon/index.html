@@ -767,9 +767,13 @@
 
             let data = getData();
 
-            if (editingReceiptId) {
-                const index = data.findIndex(r => r.id === editingReceiptId);
-                if (index !== -1) {
+            if (editingReceiptId !== null) {
+                const index = data.findIndex(r => r && r.id === editingReceiptId);
+                if (index === -1) {
+                    alert("Diese Buchung ist nicht mehr vorhanden. Die Änderungen wurden nicht gespeichert.");
+                    return;
+                }
+                {
                     data[index] = {
                         ...data[index],
                         title, store, date, price, category, paymentMethod, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType,
@@ -784,7 +788,11 @@
                 });
             }
 
-            data.sort((a, b) => new Date(b.date) - new Date(a.date));
+            data.sort((a, b) => {
+                const first = a && Number.isFinite(new Date(a.date).getTime()) ? new Date(a.date).getTime() : 0;
+                const second = b && Number.isFinite(new Date(b.date).getTime()) ? new Date(b.date).getTime() : 0;
+                return second - first;
+            });
             saveData(data);
 
             resetForm();
