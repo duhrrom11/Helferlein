@@ -83,7 +83,7 @@ test('Supabase-Sicherungsstand wird nur lesend verglichen', () => {
   const end = html.indexOf('// Explicit, account-bound encrypted cloud copy.', start);
   assert.ok(start >= 0 && end > start);
   const source = html.slice(start, end);
-  assert.match(source, /\.select\('vault_id,updated_at,encrypted_data'\)/);
+  assert.match(source, /\.select\('vault_id,updated_at,encrypted_data,encrypted_config,recovery_key'\)/);
   assert.match(source, /localEncrypted\[key\] === remoteEncrypted\[key\]/);
   assert.doesNotMatch(source, /localStorage\.setItem|\.insert\(|\.update\(|\.upsert\(|\.delete\(/);
 });
