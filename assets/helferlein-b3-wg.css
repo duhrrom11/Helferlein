@@ -44,3 +44,15 @@ body.b3-wg.b3-dark #settingsModal button[onclick="supabaseLogout()"]{background:
 body.b3-wg.b3-dark #helpModal>div{background:#1b2d42;color:#edf5ff}
 body.b3-wg.b3-dark #helpModal :is(.bg-gray-50,.bg-white){background:#2b4053!important;color:#eff6fc!important}
 body.b3-wg.b3-dark #helpModal :is(.text-emerald-800,.text-emerald-900,.text-gray-600){color:#bfe7ff!important}
+
+/* Non-destructive first visit: keep the new shell, present the original setup action. */
+body.b3-wg .b3-wg-onboarding{grid-column:1/-1;order:-10;border:2px solid #73a6e7;background:#ecf5ff;color:#163662;border-radius:20px;padding:1rem;box-shadow:0 6px 25px #142b4920}
+body.b3-wg .b3-wg-onboarding>div{min-height:0}
+body.b3-wg .b3-wg-onboarding>div>div{max-width:32rem;width:100%;background:#fff}
+body.b3-wg.b3-wg-unconfigured main.b3-dashboard>[data-b3-panel]{opacity:.65;pointer-events:none}
+body.b3-wg.b3-wg-unconfigured main.b3-dashboard>[data-b3-panel="recommendations"]{display:none}
+body.b3-wg.b3-dark .b3-wg-onboarding{background:#203956;color:#eef6ff;border-color:#4975aa}
+body.b3-wg.b3-dark .b3-wg-onboarding>div>div{background:#1b2d42;color:#f0f6fc;border-color:#58708d}
+body.b3-wg.b3-dark .b3-wg-onboarding :is(.text-gray-900,.text-gray-500){color:#e8f2fc!important}
+body.b3-wg.b3-dark .b3-wg-onboarding button.bg-emerald-700{background:#246b46!important;color:#fff!important}
+body.b3-wg #header-user-badge:not(.hidden){display:flex}
