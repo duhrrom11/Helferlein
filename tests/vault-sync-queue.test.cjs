@@ -78,6 +78,16 @@ test('Supabase-Cloud-Sicherung ist explizit und kontogebunden', () => {
   assert.doesNotMatch(html, /encrypted_data: cfg\.masterKeyHex/);
 });
 
+test('Supabase-Sicherungsstand wird nur lesend verglichen', () => {
+  const start = html.indexOf('async function checkSupabaseVaultBackup()');
+  const end = html.indexOf('// Explicit, account-bound encrypted cloud copy.', start);
+  assert.ok(start >= 0 && end > start);
+  const source = html.slice(start, end);
+  assert.match(source, /\.select\('vault_id,updated_at,encrypted_data'\)/);
+  assert.match(source, /localEncrypted\[key\] === remoteEncrypted\[key\]/);
+  assert.doesNotMatch(source, /localStorage\.setItem|\.insert\(|\.update\(|\.upsert\(|\.delete\(/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
