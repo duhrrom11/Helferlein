@@ -686,8 +686,22 @@
         }
 
         function getData() {
-            try { return JSON.parse(localStorage.getItem('pflanzen_pass_v10')) || { plants: [], monthWaterLiters: 0, totalHarvestGrams: 0, inventory: [{name: 'Tomatendünger Flüssig', qty: '1 L'}, {name: 'Bio Blumenerde', qty: '40 L'}], seeds: [], beetSlots: Array(16).fill(null), cisternMax: 500, cisternCurrent: 500 }; }
-            catch(e) { return { plants: [], monthWaterLiters: 0, totalHarvestGrams: 0, inventory: [], seeds: [], beetSlots: Array(16).fill(null), cisternMax: 500, cisternCurrent: 500 }; }
+            const defaults = { plants: [], monthWaterLiters: 0, totalHarvestGrams: 0, inventory: [{name: 'Tomatendünger Flüssig', qty: '1 L'}, {name: 'Bio Blumenerde', qty: '40 L'}], seeds: [], beetSlots: Array(16).fill(null), cisternMax: 500, cisternCurrent: 500 };
+            try {
+                const stored = JSON.parse(localStorage.getItem('pflanzen_pass_v10'));
+                if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return defaults;
+                return {
+                    ...defaults,
+                    ...stored,
+                    plants: Array.isArray(stored.plants) ? stored.plants : [],
+                    inventory: Array.isArray(stored.inventory) ? stored.inventory : defaults.inventory,
+                    seeds: Array.isArray(stored.seeds) ? stored.seeds : [],
+                    beetSlots: Array.isArray(stored.beetSlots) ? stored.beetSlots : defaults.beetSlots
+                };
+            } catch (error) {
+                console.error('Pflanzendaten konnten nicht geladen werden:', error);
+                return defaults;
+            }
         }
 
         function saveData(data) {
