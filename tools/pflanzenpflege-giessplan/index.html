@@ -589,7 +589,7 @@
                     : age > 3 ? `<span class="text-[10px] bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full font-bold">⚠️ Keimfähigkeit evtl. gering (${age}J)</span>` : `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">✅ Gut (${age}J)</span>`;
                 let amazonSearchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(String(s.name ?? '') + ' saemereien')}&tag=duhrrom-21`;
                 return `<div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs"><div><b>${escapeHtml(s.name)}</b> (Ernte: ${escapeHtml(s.year)})<br>${warning}</div><div class="flex items-center gap-1.5"><a href="${amazonSearchUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Neu kaufen</a><button onclick="removeSeedItem(${idx})" class="text-red-500 font-bold px-1.5">✕</button></div></div>`;
-            }).join('');
+            }).filter(Boolean).join('');
             document.getElementById('seedList').innerHTML = seedItems || `<p class="text-xs text-gray-400 text-center py-2">Kein Saatgut im Lager.</p>`;
         }
         function addSeedItem() {
@@ -661,7 +661,7 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+            }).filter(Boolean).join('');
             document.getElementById('inventoryList').innerHTML = inventoryItems || `<p class="text-xs text-gray-400 text-center py-2">Lager ist leer.</p>`;
         }
         function addInventoryItem() {
