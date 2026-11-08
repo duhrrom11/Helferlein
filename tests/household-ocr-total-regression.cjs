@@ -26,6 +26,6 @@ assert.equal(extract('SUMME\nKarte 12,80'), null);
 assert.equal(extract('SUMME\n12,80 EUR'), '12.80');
 assert.equal(extract('Gesamtsumme 15,90'), '15.90');
 assert.equal(extract('Zahlbetrag: 2.345,67'), '2345.67');
-assert.equal(extract('Rechnungsbetrag\\n12,30'), '12.30');
+assert.equal(extract('Rechnungsbetrag\n12,30'), '12.30');
 assert.equal(extract('Zwischensumme 9,90'), null);
 console.log('OCR total amount regression checks passed');
