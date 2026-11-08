@@ -65,6 +65,7 @@
           {label:'👥 Mitglieder / Kontakte',handler:'openMitbewohnerModal'},
           {label:'🔄 Manuell synchronisieren',handler:'manuelleSynchronisation'},
           {label:'🧳 Lokale Altbestände prüfen',handler:'importLegacyWgData'},
+          {label:'↩ Letzten Cloud-Import zurücknehmen',handler:'restoreLatestWgCloudSnapshot'},
           {label:'📄 Finanzbericht (PDF)',handler:'exportAbrechnungPDF'},
           {label:'🔗 WG-Link teilen',handler:'kopiereWGLink'},
           {label:'📶 WLAN QR-Code',handler:'openWLANQRModal'}
@@ -905,6 +906,41 @@
             getItem(name) { return localStorage.getItem(this.key(name)); },
             setItem(name, value) { return localStorage.setItem(this.key(name), value); }
         });
+        // Restore the most recent local snapshot created before an explicit
+        // legacy cloud import. Never touch the standalone household budget keys.
+        function restoreLatestWgCloudSnapshot() {
+            if (!wgBinId) return alert('Bitte zuerst eine WG öffnen.');
+            const prefix = 'helferlein_wg_backup_' + encodeURIComponent(wgBinId) + '_';
+            const backups = Object.keys(localStorage).filter(k => k.startsWith(prefix)).sort().reverse();
+            if (!backups.length) return alert('Für diese WG ist keine frühere Cloud-Import-Sicherung vorhanden.');
+            const source = backups[0];
+            let snapshot;
+            try { snapshot = JSON.parse(localStorage.getItem(source)); }
+            catch { return alert('Die Sicherung ist beschädigt; es wurde nichts verändert.'); }
+            const previous = snapshot?.previous;
+            if (snapshot?.wgId !== wgBinId || !previous || typeof previous !== 'object' || Array.isArray(previous)
+                || !Object.keys(previous).length || Object.keys(previous).some(k => !WG_LEGACY_KEYS.includes(k)
+                    || (previous[k] !== null && typeof previous[k] !== 'string'))) {
+                return alert('Die Sicherung ist unvollständig oder gehört nicht zu dieser WG.');
+            }
+            if (!window.confirm('Letzten WG-Cloud-Import zurücknehmen? Die aktuellen WG-Daten werden zuvor separat gesichert. Das persönliche Haushaltsbuch bleibt unverändert.')) return;
+            const before = {};
+            for (const key of Object.keys(previous)) before[key] = wgStorage.getItem(key);
+            const recoveryKey = 'helferlein_wg_recovery_' + encodeURIComponent(wgBinId)
+                + '_' + new Date().toISOString().replace(/[:.]/g,'-');
+            try {
+                // Refuse restoration if a recovery snapshot cannot be written.
+                localStorage.setItem(recoveryKey,JSON.stringify({wgId:wgBinId,createdAt:new Date().toISOString(),before}));
+                for (const [key,value] of Object.entries(previous)) {
+                    if (value === null) localStorage.removeItem(wgStorage.key(key));
+                    else wgStorage.setItem(key,value);
+                }
+                renderApp();
+                alert('Lokaler WG-Stand wiederhergestellt. Der zuvor aktuelle Stand wurde unter ' + recoveryKey + ' gesichert.');
+            } catch(error) {
+                alert('Wiederherstellung fehlgeschlagen. Eine Sicherung des vorherigen Stands wurde soweit möglich erstellt. Bitte Daten prüfen.');
+            }
+        }
         function importLegacyWgData() {
             if (!wgBinId) return alert('Bitte zuerst eine WG öffnen.');
             const candidates = WG_LEGACY_KEYS.filter(k => localStorage.getItem(k) !== null && wgStorage.getItem(k) === null);
