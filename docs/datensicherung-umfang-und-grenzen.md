@@ -23,7 +23,9 @@ Neu berücksichtigt sind insbesondere `wg_kassenbon_data`, `wg_budgetbuch_budget
 - Das unverschlüsselte Exportformat bleibt für lokale Daten ohne Nachlass-Tresor verfügbar. Enthält die Sicherung `digital_estate_vault`, wird der unverschlüsselte Export aus Sicherheitsgründen blockiert; dann ist die verschlüsselte Variante erforderlich.
 - Die verschlüsselte Variante nutzt AES-256-GCM mit einem per PBKDF2-SHA256 (600.000 Iterationen, zufälliges Salt) abgeleiteten Schlüssel. Ein verlorenes Passwort kann nicht wiederhergestellt werden.
 - Backup-Dateien sind auf 20 MiB begrenzt. Die Wiederherstellung lokaler Schlüssel ist nicht vollständig transaktional.
-- Die Nachlass-Firebase-Synchronisierung kann fehlschlagen; ein Supabase-Login beweist keinen erfolgreichen Tresor-Upload.
+- Die Nachlass-Firebase-Synchronisierung kann fehlschlagen; ein Supabase-Login beweist keinen erfolgreichen Tresor-Upload. Der Cloud-Status bezieht sich nur auf den jeweils bestätigten lokalen Stand und ist keine dauerhafte Wiederherstellungsgarantie.
+- Eine neue lokale Tresoränderung kann noch verschlüsselt werden, während eine Cloud-Synchronisierung beginnt. In diesem Fall muss der neueste lokale Stand erst vollständig gespeichert sein, bevor die Cloud-Sicherung als aktuell gelten kann.
+- Für besonders wichtige Daten eine zweite, getrennt verwahrte verschlüsselte Sicherungsdatei anlegen und die Wiederherstellung auf einem separaten Browserprofil kontrollieren, ohne produktive Daten zu überschreiben.
 - Der vorhandene Entwurf einer Supabase-Tresor-API ist **keine** produktive, freigeschaltete Tresor-Migration. Bestehende Tresore dürfen nicht ohne gesicherten Eigentumsnachweis umgehängt werden.
 
 Diese Dokumentation ist eine Umfangsbeschreibung und keine Garantie, dass alle Werkzeuge bereits vollständig erfasst sind.
