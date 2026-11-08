@@ -28,6 +28,13 @@
     let lastStatusCheckAt = null;
     let lastImportAt = null;
     let lastUploadAt = null;
+    let lastPendingCheckAt = null;
+    let lastStatusErrorAt = null;
+    let lastAuthCheckAt = null;
+    let refreshAttempts = 0;
+    let refreshApplied = 0;
+    let reconnectAttempts = 0;
+    let reconnectSuccesses = 0;
     const enabledKey = uid => 'helferlein_cloud_enabled_' + tool + '_' + uid;
     const ownerKey = 'helferlein_cloud_owner_' + tool;
     const cacheKey = uid => 'helferlein_cloud_' + tool + '_' + uid + '_cache';
@@ -38,6 +45,7 @@
     function requireOnlineAndActive() { assertActive(); ensureOnline(); }
     function beginOperation(name) { assertActive(); if (accountSwitchInProgress) throw new Error('Kontowechsel läuft'); if (activeOperation) throw new Error('Ein anderer Cloud-Vorgang läuft: ' + activeOperation); activeOperation = name; }
     function endOperation(name) { if (activeOperation === name) activeOperation = null; }
+    function isBusy() { return disposed || !!activeOperation || importInProgress || migrationInProgress || accountSwitchInProgress; }
     function assertOwner(uid) {
       assertActive();
       const owner = localStorage.getItem(ownerKey);
@@ -48,19 +56,21 @@
     async function currentUser() {
       assertActive();
       const { data, error } = await client.auth.getUser();
-      if (error) throw error;
+      if (error) { lastStatusErrorAt = now(); throw error; }
       assertActive();
+      lastAuthCheckAt = now();
       return data && data.user && typeof data.user.id === 'string' ? data.user : null;
     }
     function isOwner(uid) { return !!uid && localStorage.getItem(ownerKey) === uid; }
     function ensureOwner(uid) { assertActive(); if (!isOwner(uid)) throw new Error('Lokale Kontozuordnung hat sich geändert'); }
     function ensureOnline() { if (typeof navigator === 'undefined' || !navigator.onLine) throw new Error('Internetverbindung erforderlich'); }
-    function ensureNoPending(pending) { if (pending) { lastConflictMessage = 'Ausstehende Offline-Daten'; throw new Error('Ausstehende lokale Änderungen müssen zuerst geklärt werden'); } }
+    function ensureNoPending(pending) { lastPendingCheckAt = now(); if (pending) { lastConflictMessage = 'Ausstehende Offline-Daten'; throw new Error('Ausstehende lokale Änderungen müssen zuerst geklärt werden'); } }
     function ensureCollection(data) { return assertValidPayload(data); }
     function safeParseLocal() { const bytes = safeLocalBytes(); if (bytes === null) return null; try { return JSON.parse(bytes); } catch (_) { throw new Error('Lokale Daten beschädigt; Original bleibt erhalten'); } }
     async function isEnabled() {
       if (disposed) return false;
       const user = await currentUser();
+      if (disposed) return false;
       return !!user && user.id === enabledUser &&
         isOwner(user.id) &&
         localStorage.getItem(enabledKey(user.id)) === 'true';
@@ -85,29 +95,31 @@
       accountGeneration++;
       lastAccountChangeAt = now();
     }
-    function reportError(error) { if (disposed) return; lastSyncError = error && error.message ? error.message : String(error); lastConflictMessage = lastSyncError; setStatus('Cloud: ' + lastSyncError); }
+    function reportError(error) { if (disposed) return; lastStatusErrorAt = now(); lastSyncError = error && error.message ? error.message : String(error); lastConflictMessage = lastSyncError; setStatus('Cloud: ' + lastSyncError); }
     function setStatus(message) { if (!disposed) { statusGeneration++; status.textContent = message; } }
-    function statusError(prefix, error) { lastConflictMessage = error && error.message ? error.message : String(error); setStatus(prefix + ': ' + lastConflictMessage); }
+    function statusError(prefix, error) { lastStatusErrorAt = now(); lastConflictMessage = error && error.message ? error.message : String(error); setStatus(prefix + ': ' + lastConflictMessage); }
     function currentOwner() { return localStorage.getItem(ownerKey); }
     function assertSameAccount(uid, generation) { if (!sameAccount(uid, generation)) throw new Error('Konto während Cloud-Vorgang gewechselt'); }
     function sameAccount(uid, generation) { return !disposed && !!uid && enabledUser === uid && accountGeneration === generation && isOwner(uid); }
     function changed(data) {
       if (disposed) return Promise.resolve(false);
       lastLocalChangeAt = now();
+      if (accountSwitchInProgress) return Promise.resolve(false);
       if (!data || typeof data !== 'object' || Array.isArray(data)) { reportError(new Error('Ungültige lokale Änderungen')); return Promise.resolve(false); }
       // Called after the existing synchronous local save succeeded.
       // Failed uploads must remain pending, and are never silently discarded.
       const expectedOwner = currentOwner();
       const expectedGeneration = accountGeneration;
-      if (activeOperation === 'import' || activeOperation === 'upload' || accountSwitchInProgress) return Promise.resolve(false);
+      if (activeOperation === 'import' || activeOperation === 'upload') return Promise.resolve(false);
       if (expectedOwner && !validPayload(data)) { reportError(new Error('Ungültige Werkzeugdaten')); return Promise.resolve(false); }
-      if (expectedOwner && accountSwitchInProgress) return Promise.resolve(false);
       if (expectedOwner && enabledUser && expectedOwner !== enabledUser) { reportError(new Error('Kontowechsel während lokaler Änderung')); return Promise.resolve(false); }
+      if (expectedOwner && currentOwner() !== expectedOwner) return Promise.resolve(false);
       let snapshot;
       try { snapshot = JSON.parse(JSON.stringify(data)); } catch (error) { return Promise.reject(new Error('Änderungen konnten nicht serialisiert werden')); }
       queue = queue.catch(() => {}).then(async () => {
+        if (accountSwitchInProgress) return false;
         if (disposed || expectedGeneration !== accountGeneration) return false;
-        if (!await isEnabled() || localStorage.getItem(ownerKey) !== expectedOwner) return;
+        if (!await isEnabled() || currentOwner() !== expectedOwner) return false;
         if (!validPayload(snapshot)) throw new Error('Ungültige Datensammlung vor Cloud-Speicherung');
         try {
           const user = await currentUser();
@@ -116,8 +128,8 @@
           if (expectedGeneration !== accountGeneration) return false;
           const uploaded = await store.save(snapshot);
           if (disposed || expectedGeneration !== accountGeneration) return false;
-          if (uploaded) { lastSyncError = null; lastConflictMessage = null; lastReconnectAt = new Date().toISOString(); }
-          if (await isEnabled() && localStorage.getItem(ownerKey) === expectedOwner) status.textContent = uploaded ? 'Lokal und in Supabase gespeichert' : 'Lokal gespeichert · Cloud-Synchronisierung ausstehend';
+          if (uploaded) { lastSyncError = null; lastConflictMessage = null; lastReconnectAt = now(); lastUploadAt = now(); }
+          if (await isEnabled() && currentOwner() === expectedOwner) setStatus(uploaded ? 'Lokal und in Supabase gespeichert' : 'Lokal gespeichert · Cloud-Synchronisierung ausstehend');
         } catch (error) {
           reportError(error);
         }
@@ -126,8 +138,10 @@
     }
     async function refreshFromCloud() {
       if (disposed || importInProgress || migrationInProgress || reconnectInProgress || accountSwitchInProgress) return false;
+      refreshAttempts++;
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return false;
       if (refreshInProgress || activeOperation || !navigator.onLine || !await isEnabled()) return false;
+      if (currentOwner() !== enabledUser) return false;
       if (lastConflictMessage && (await store.hasPending())) return false;
       if (safeLocalBytes() === null) return false;
       if (await store.hasPending()) return false;
@@ -183,6 +197,7 @@
         ensureLocalUnchanged(before);
         ensureOwnerUnchanged(ownerAtStart);
         localStorage.setItem(localKey, incoming);
+        refreshApplied++;
         lastRefreshAt = now();
         lastSyncError = null;
         lastConflictMessage = null;
@@ -194,6 +209,7 @@
     }
     async function resume() {
       if (disposed || migrationInProgress || importInProgress || activeOperation || reconnectInProgress || accountSwitchInProgress) return;
+      reconnectAttempts++;
       if (!navigator.onLine || !currentOwner()) return;
       reconnectInProgress = true;
       const reconnectGeneration = accountGeneration;
@@ -211,7 +227,7 @@
         const done = await store.flush();
         if (!sameAccount(user.id, reconnectGeneration)) return;
         if (reconnectOwner !== currentOwner()) return;
-        if (!await store.hasPending()) { lastReconnectAt = now(); }
+        if (!await store.hasPending()) { lastReconnectAt = now(); reconnectSuccesses++; }
         if (done && await isEnabled() && isOwner(user.id)) setStatus('Ausstehende Änderungen synchronisiert');
       } catch (error) {
         statusError('Synchronisierung ausstehend', error);
@@ -227,6 +243,7 @@
       const user = await currentUser();
       const owner = localStorage.getItem(ownerKey);
       if ((await currentUser())?.id !== (user && user.id)) throw new Error('Account changed during guard');
+      if (disposed) return;
       const mismatch = !!(owner && (!user || owner !== user.id));
       if (accountSwitchInProgress) return;
       if (disposed) return;
@@ -240,7 +257,7 @@
         blocked.setAttribute('aria-live', 'polite');
         blocked.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#0f172a;color:white;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:24px;font:18px system-ui;text-align:center';
         const message = document.createElement('p');
-        message.textContent = 'Dieses Gerät enthält lokale Daten eines anderen Kontos. Die Dateneingabe bleibt gesperrt, bis das ursprüngliche Konto wieder angemeldet ist. Daten werden nicht gelöscht.';
+        message.textContent = 'Dieses Gerät enthält lokale Daten eines anderen Kontos. Die Dateneingabe bleibt gesperrt, bis das ursprünglich zugeordnete Konto wieder angemeldet ist. Daten werden nicht gelöscht.';
         const form = document.createElement('form');
         form.style.cssText = 'display:grid;gap:10px;width:min(100%,360px);margin:12px auto';
         const email = document.createElement('input');
@@ -251,6 +268,7 @@
         email.required = true;
         email.spellcheck = false;
         email.placeholder = 'E-Mail des ursprünglichen Kontos';
+        email.name = 'helferlein-account-email';
         email.setAttribute('aria-label', 'E-Mail des ursprünglichen Kontos');
         const password = document.createElement('input');
         password.type = 'password';
@@ -259,13 +277,15 @@
         password.required = true;
         password.spellcheck = false;
         password.placeholder = 'Passwort';
+        password.name = 'helferlein-account-password';
         password.setAttribute('aria-label', 'Passwort');
         const loginButton = document.createElement('button');
         loginButton.type = 'submit';
         loginButton.setAttribute('aria-label', 'Mit dem ursprünglich zugeordneten Konto anmelden');
         loginButton.textContent = 'Zum ursprünglichen Konto anmelden';
-        loginButton.style.cssText = 'padding:10px;border-radius:8px;background:#fff;color:#0f172a';
+        loginButton.style.cssText = 'padding:10px;border-radius:8px;background:#fff;color:#0f172a;cursor:pointer';
         form.append(email, password, loginButton);
+        form.noValidate = false;
         const back = document.createElement('button');
         back.type = 'button';
         back.textContent = 'E-Mail-Eingabe auswählen';
@@ -284,21 +304,25 @@
           event.preventDefault();
           if (disposed || accountSwitchInProgress) return;
           if (!email.value.trim() || !password.value) return;
+          if (currentOwner() === null) return;
           accountSwitchInProgress = true;
           loginButton.disabled = true;
           loginButton.setAttribute('aria-busy', 'true');
           email.disabled = true;
           password.disabled = true;
           try {
-            if (!client.auth.signInWithPassword) throw new Error('Anmeldung nicht verfügbar');
+            if (typeof client.auth.signInWithPassword !== 'function') throw new Error('Anmeldung nicht verfügbar');
             const result = await client.auth.signInWithPassword({ email: email.value.trim(), password: password.value });
             if (result.error) throw result.error;
             password.value = '';
             const signedIn = await currentUser();
+            assertActive();
             if (!signedIn || signedIn.id !== currentOwner()) throw new Error('Bitte das ursprünglich zugeordnete Konto verwenden');
+            if (disposed) return;
             enabledUser = signedIn.id;
             accountGeneration++;
             lastAccountChangeAt = now();
+            lastSyncError = null;
             setStatus('Ursprüngliches Konto wieder angemeldet');
           } catch (error) { statusError('Kontowechsel fehlgeschlagen', error); }
           finally { accountSwitchInProgress = false; loginButton.disabled = false; loginButton.removeAttribute('aria-busy'); email.disabled = false; password.disabled = false; void guardAccount().catch(reportError); }
@@ -518,6 +542,7 @@
     function dispose() {
       if (disposed) return;
       disposed = true;
+      lastCloudSource = null;
       enabledUser = null;
       accountGeneration++;
       authGeneration++;
@@ -530,10 +555,11 @@
       document.removeEventListener('visibilitychange', onVisibility);
       if (authSubscription && authSubscription.data && authSubscription.data.subscription) authSubscription.data.subscription.unsubscribe();
       if (blocked) { blocked.remove(); blocked = null; }
+      queue = Promise.resolve(false);
       store.dispose();
       host.remove();
     }
-    return { store, host, changed, resume, refreshFromCloud, dispose, getStatus: () => ({ disposed, enabledUser, activeOperation, lastSyncError, lastConflictMessage, lastCloudSource, accountSwitchInProgress, statusGeneration, lastRefreshAt, lastReconnectAt, lastLocalChangeAt, lastAccountChangeAt, store: store.status() }) };
+    return { store, host, changed, resume, refreshFromCloud, dispose, getStatus: () => ({ disposed, enabledUser, activeOperation, lastSyncError, lastConflictMessage, lastCloudSource, accountSwitchInProgress, statusGeneration, lastRefreshAt, lastReconnectAt, lastLocalChangeAt, lastAccountChangeAt, lastAuthCheckAt, lastPendingCheckAt, lastStatusErrorAt, lastUploadAt, lastImportAt, refreshAttempts, refreshApplied, reconnectAttempts, reconnectSuccesses, store: store.status() }) };
   }
   global.HelferleinCloudMigration = Object.freeze({ mount });
 })(window);
