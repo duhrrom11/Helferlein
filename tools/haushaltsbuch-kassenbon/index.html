@@ -1237,7 +1237,7 @@
 
         function openQRModal(id) {
             const data = getData();
-            const r = data.find(item => item.id === id);
+            const r = data.find(item => item && item.id === id);
             if (!r) return;
             const modal = document.getElementById('qrModal');
             modal.classList.remove('hidden');
@@ -1247,9 +1247,14 @@
             document.getElementById('stickerStoreDate').innerText = `Kauf: ${r.date} (${r.store || 'Garantie-Beleg'})`;
             document.getElementById('stickerSN').innerText = `S/N: ${r.sn || 'keine'}`;
             const buyDate = new Date(r.date);
-            const expDate = new Date(buyDate);
-            expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
-            document.getElementById('stickerWarranty').innerText = `Garantie bis: ${expDate.toLocaleDateString('de-DE')}`;
+            const warrantyMonths = Number(r.warrantyMonths);
+            let warrantyLabel = 'Keine gültige Garantieangabe';
+            if (Number.isFinite(buyDate.getTime()) && Number.isFinite(warrantyMonths) && warrantyMonths > 0) {
+                const expDate = new Date(buyDate);
+                expDate.setMonth(expDate.getMonth() + warrantyMonths);
+                warrantyLabel = 'Garantie bis: ' + expDate.toLocaleDateString('de-DE');
+            }
+            document.getElementById('stickerWarranty').innerText = warrantyLabel;
 
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
