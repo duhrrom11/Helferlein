@@ -597,7 +597,7 @@
                 return alert('Bitte ein gültiges Saatgutjahr eingeben.');
             }
             let data = getData();
-            if(!data.seeds) data.seeds = [];
+            if (!Array.isArray(data.seeds)) data.seeds = [];
             data.seeds.push({ name, year });
             if (!saveData(data)) return;
             document.getElementById('seedName').value = ""; document.getElementById('seedYear').value = "";
