@@ -879,32 +879,35 @@
             defaultCategories.forEach(cat => categoryExpenses[cat] = 0);
 
             data.forEach(r => {
-                const isCurrentMonth = r.date && r.date.startsWith(currentMonthStr);
+                if (!r || typeof r !== 'object') return;
+                const parsedPrice = Number(r.price);
+                const price = Number.isFinite(parsedPrice) ? parsedPrice : 0;
+                const isCurrentMonth = typeof r.date === 'string' && r.date.startsWith(currentMonthStr);
                 const isIncome = r.entryType === 'einnahme' || r.category === 'Einnahme';
 
                 if (isIncome) {
-                    if (isCurrentMonth) totalIncome += r.price;
+                    if (isCurrentMonth) totalIncome += price;
                 } else {
                     if (isCurrentMonth) {
-                        totalExpense += r.price;
-                        if (r.isFixkosten) fixExpense += r.price;
-                        categoryExpenses[r.category] = (categoryExpenses[r.category] || 0) + r.price;
+                        totalExpense += price;
+                        if (r.isFixkosten) fixExpense += price;
+                        categoryExpenses[r.category] = (categoryExpenses[r.category] || 0) + price;
                     }
                 }
 
-                if (r.isTax) taxValueTotal += r.price;
+                if (r.isTax) taxValueTotal += price;
 
                 if (r.warrantyMonths > 0) {
                     const buyDate = new Date(r.date);
                     const expDate = new Date(buyDate);
                     expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
-                    if (expDate >= now) activeWarrantyValue += r.price;
+                    if (expDate >= now) activeWarrantyValue += price;
                 }
 
                 const buyDate = new Date(r.date);
                 const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
                 const lifespan = r.lifespan || 5;
-                const zeitwert = Math.max(0, r.price * (1 - (ageYears / lifespan)));
+                const zeitwert = Math.max(0, price * (1 - (ageYears / lifespan)));
                 if (!isIncome) totalZeitwert += zeitwert;
             });
 
