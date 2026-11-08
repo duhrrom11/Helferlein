@@ -6,6 +6,7 @@
   function createStore(client, tool) {
     if (!client || !/^[a-z0-9_-]{1,80}$/i.test(tool)) throw new Error('Invalid cloud store configuration');
     const prefix = 'helferlein_cloud_' + tool + '_';
+    let flushing = null;
     const read = key => {
       const raw = localStorage.getItem(key);
       if (raw === null) return null;
@@ -34,7 +35,7 @@
       if (!uid) return { data: null, source: 'signed-out' };
       const k = keys(uid);
       const pending = read(k.pending);
-      if (pending !== null) return { data: pending, source: 'pending' };
+      if (localStorage.getItem(k.pending) !== null) return { data: pending, source: 'pending' };
       if (!navigator.onLine) return { data: read(k.cache), source: 'offline' };
       try {
         const row = await fetchCloud(uid);
@@ -46,6 +47,11 @@
       }
     }
     async function flush() {
+      if (flushing) return flushing;
+      flushing = performFlush();
+      try { return await flushing; } finally { flushing = null; }
+    }
+    async function performFlush() {
       const uid = await userId();
       if (!uid) throw new Error('Sign in required');
       const k = keys(uid);
@@ -74,9 +80,15 @@
         if (!data || data.length !== 1) throw new Error('Cloud insert not confirmed; pending data preserved');
         write(k.revision, data[0].updated_at);
       }
+      // A newer local edit may have arrived while the request was in flight.
+      // Keep it queued with the new server revision rather than deleting it.
       write(k.cache, pending);
-      localStorage.removeItem(k.pending);
-      localStorage.removeItem(k.base);
+      if (localStorage.getItem(k.pending) === JSON.stringify(pending)) {
+        localStorage.removeItem(k.pending);
+        localStorage.removeItem(k.base);
+      } else {
+        write(k.base, { revision: read(k.revision) });
+      }
       return true;
     }
     async function save(data) {
