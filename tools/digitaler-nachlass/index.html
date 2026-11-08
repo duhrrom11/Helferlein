@@ -784,8 +784,12 @@
                 const rawKey = new Uint8Array(await crypto.subtle.decrypt({
                     name: 'AES-GCM', iv
                 }, wrappingKey, decode(keyInfo.ciphertext)));
-                if (rawKey.length !== 32) throw new Error('Ungültiger Tresorschlüssel');
+                if (rawKey.length !== 32) {
+                    rawKey.fill(0);
+                    throw new Error('Ungültiger Tresorschlüssel');
+                }
                 const hexKey = Array.from(rawKey, byte => byte.toString(16).padStart(2, '0')).join('');
+                rawKey.fill(0);
                 const decrypted = await decryptVaultPayload(remote.encrypted_data, hexKey);
                 if (!decrypted || !Array.isArray(decrypted.entries)) throw new Error('Tresor nicht entschlüsselbar');
                 // A newly initialized local vault can still contain important
