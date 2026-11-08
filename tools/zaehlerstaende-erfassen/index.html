@@ -662,8 +662,11 @@
 
         function storeReadingRecord(type, name, location, date, value, note, isExchange, photo) {
             let data = getData();
+            const existingIds = new Set(data.readings.filter(item => item && typeof item === 'object').map(item => item.id));
+            let newId = Date.now() * 1000 + Math.floor(Math.random() * 1000);
+            while (existingIds.has(newId)) newId++;
             data.readings.push({
-                id: Date.now() * 1000 + Math.floor(Math.random() * 1000),
+                id: newId,
                 type,
                 name,
                 location,
@@ -674,7 +677,12 @@
                 photo
             });
 
-            data.readings.sort((a, b) => new Date(b.date) - new Date(a.date));
+            data.readings.sort((a, b) => {
+                const aTime = a && typeof a === 'object' ? new Date(a.date).getTime() : NaN;
+                const bTime = b && typeof b === 'object' ? new Date(b.date).getTime() : NaN;
+                return (Number.isFinite(bTime) ? bTime : -Infinity) -
+                    (Number.isFinite(aTime) ? aTime : -Infinity);
+            });
             if (!saveData(data)) return;
 
             document.getElementById('meterValue').value = "";
@@ -689,7 +697,7 @@
         function deleteReading(id) {
             if (!confirm("⚠️ Diesen Zählerstand wirklich löschen?")) return;
             let data = getData();
-            data.readings = data.readings.filter(item => item.id !== id);
+            data.readings = data.readings.filter(item => !item || typeof item !== 'object' || item.id !== id);
             if (saveData(data)) renderApp();
         }
 
