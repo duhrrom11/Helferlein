@@ -1809,6 +1809,7 @@
             let totalIncome = 0;
             let totalExpense = 0;
             let validEntries = 0;
+            const expensesByCategory = new Map();
             let earliestDate = null;
             let latestDate = null;
             data.forEach(r => {
@@ -1822,7 +1823,11 @@
                     if (latestDate === null || r.date > latestDate) latestDate = r.date;
                 }
                 if (r.entryType === 'einnahme' || r.category === 'Einnahme') totalIncome += price;
-                else totalExpense += price;
+                else {
+                    totalExpense += price;
+                    const category = typeof r.category === 'string' && r.category.trim() ? r.category.trim() : 'Sonstiges';
+                    expensesByCategory.set(category, (expensesByCategory.get(category) || 0) + price);
+                }
             });
             const money = amount => amount.toFixed(2).replace('.', ',') + ' EUR';
             doc.setFontSize(11);
@@ -1851,6 +1856,28 @@
                     return aDate < bDate ? -1 : aDate > bDate ? 1 : 0;
                 });
             let y = 82;
+            if (expensesByCategory.size) {
+                doc.setFontSize(11);
+                doc.text('Ausgaben nach Kategorie', 14, y);
+                y += 8;
+                doc.setFontSize(10);
+                const categories = [...expensesByCategory.entries()].sort((a, b) =>
+                    b[1] - a[1] || a[0].localeCompare(b[0], 'de'));
+                for (const [category, amount] of categories) {
+                    const categoryLine = category + ': ' + money(amount);
+                    for (const textLine of doc.splitTextToSize(categoryLine, 180)) {
+                        if (y > 275) { doc.addPage(); y = 20; }
+                        doc.text(textLine, 14, y);
+                        y += 6;
+                    }
+                }
+                y += 8;
+            }
+            if (y > 265) { doc.addPage(); y = 20; }
+            doc.setFontSize(11);
+            doc.text('Einzelbuchungen', 14, y);
+            doc.setFontSize(10);
+            y += 8;
             sortedData.forEach((r) => {
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
                 const price = Number(r.price);
