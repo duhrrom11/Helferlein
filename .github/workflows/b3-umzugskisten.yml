@@ -1,0 +1,36 @@
+name: B3 Umzugskisten pilot
+on:
+  pull_request:
+    paths:
+      - 'assets/helferlein-b3*'
+      - 'tools/umzugskisten-inventar/index.html'
+      - 'tests/b3-umzugskisten*'
+      - '.github/workflows/b3-umzugskisten.yml'
+  push:
+    branches: ['design-b3-rollout-umzugskisten']
+    paths:
+      - 'assets/helferlein-b3*'
+      - 'tools/umzugskisten-inventar/index.html'
+      - 'tests/b3-umzugskisten*'
+      - '.github/workflows/b3-umzugskisten.yml'
+permissions:
+  contents: read
+jobs:
+  umzugskisten-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: UI and data contract regressions
+        run: node --test tests/b3-umzugskisten.test.cjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock @playwright/test@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start static site
+        run: python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/helferlein-b3-umzugskisten.log 2>&1 &
+      - name: Responsive Chromium UI
+        run: npx playwright test tests/b3-umzugskisten.spec.cjs --reporter=line --workers=1
