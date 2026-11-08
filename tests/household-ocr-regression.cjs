@@ -41,6 +41,14 @@ vm.runInContext(html.slice(dateStart, dateEnd) + html.slice(ocrStart, ocrEnd), c
     recognizedText = 'Lieferdatum 10.03.2025\\nRechnungsdatum: 12.03.2025';
     await vm.runInContext('runOCR()', ctx);
     assert.equal(fields.get('receiptDate').value, '2025-03-12');
+    fields.get('receiptDate').value = '';
+    recognizedText = 'Kaufdatum 5.7.2026';
+    await vm.runInContext('runOCR()', ctx);
+    assert.equal(fields.get('receiptDate').value, '2026-07-05');
+    fields.get('receiptDate').value = '';
+    recognizedText = 'Belegdatum 2026-08-09';
+    await vm.runInContext('runOCR()', ctx);
+    assert.equal(fields.get('receiptDate').value, '2026-08-09');
     fields.get('receiptDate').value = '2026-11-08';
     fields.get('receiptDate').dataset.autoDefault = 'true';
     recognizedText = 'Datum 01.10.2026';
@@ -50,6 +58,6 @@ vm.runInContext(html.slice(dateStart, dateEnd) + html.slice(ocrStart, ocrEnd), c
     recognizedText = 'Datum 02.10.2026';
     await vm.runInContext('runOCR()', ctx);
     assert.equal(fields.get('receiptDate').value, '2026-10-01', 'user or OCR date is preserved');
-    assert.equal(workerTerminated, 6, 'OCR workers released after every scan');
+    assert.equal(workerTerminated, 8, 'OCR workers released after every scan');
     console.log('OCR date validation regression checks passed');
 })().catch(error => {console.error(error); process.exitCode = 1;});
