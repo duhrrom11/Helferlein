@@ -622,7 +622,6 @@
         // Verschlüsselungen können in anderer Reihenfolge fertig werden.
         let localSaveRevision = 0;
         let lastPersistedRevision = 0;
-        let lastCloudSyncedSnapshot = null;
 
         async function saveLocalConfig(cfg) {
             const revision = ++localSaveRevision;
@@ -631,7 +630,6 @@
             cfg.encryptedData = encryptedData;
             localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
             lastPersistedRevision = revision;
-            lastCloudSyncedSnapshot = null;
             const syncStatus = document.getElementById('vault-sync-result');
             if (syncStatus && !syncStatus.classList.contains('hidden')) {
                 syncStatus.classList.remove('border-emerald-700', 'bg-emerald-950/70', 'text-emerald-100');
@@ -699,12 +697,8 @@
             // Ein fehlgeschlagener Auftrag blockiert spätere Synchronisierungen nicht.
             vaultSyncQueue = operation.then(() => undefined);
             return operation.then(success => {
-                const confirmedCurrent = success &&
-                    lastCloudSyncedSnapshot !== null &&
-                    localStorage.getItem('digital_estate_vault') === lastCloudSyncedSnapshot &&
-                    lastPersistedRevision === localSaveRevision;
-                showVaultSyncResult(confirmedCurrent);
-                return confirmedCurrent;
+                showVaultSyncResult(success);
+                return success;
             });
         }
 
@@ -800,7 +794,6 @@
                         document.getElementById('syncStatusError').classList.remove('hidden');
                     }
                 }
-                if (stillCurrent) lastCloudSyncedSnapshot = localSnapshot;
                 return stillCurrent;
             } catch(e) {
                 if (!silent) {
