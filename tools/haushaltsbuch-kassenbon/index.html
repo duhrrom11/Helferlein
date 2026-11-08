@@ -1836,9 +1836,22 @@
             const period = earliestDate && latestDate ? formatDate(earliestDate) + ' bis ' + formatDate(latestDate) : 'Keine gültigen Buchungsdaten';
             doc.text('Zeitraum: ' + period, 14, 70);
 
+            // Chronologisch ausgeben, ohne die gespeicherte Reihenfolge zu verändern.
+            const bookingDate = r => {
+                if (!r || typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return null;
+                const parsed = parseReceiptDate(r.date);
+                return Number.isFinite(parsed.getTime()) ? r.date : null;
+            };
+            const sortedData = data.filter(r => r && typeof r === 'object' && !Array.isArray(r))
+                .sort((a, b) => {
+                    const aDate = bookingDate(a);
+                    const bDate = bookingDate(b);
+                    if (aDate === null) return bDate === null ? 0 : 1;
+                    if (bDate === null) return -1;
+                    return aDate < bDate ? -1 : aDate > bDate ? 1 : 0;
+                });
             let y = 82;
-            data.forEach((r) => {
-                if (!r || typeof r !== 'object') return;
+            sortedData.forEach((r) => {
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
                 const price = Number(r.price);
                 const amount = Number.isFinite(price) ? sign + price.toFixed(2) : 'k.A.';
