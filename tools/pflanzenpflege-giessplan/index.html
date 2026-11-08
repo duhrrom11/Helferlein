@@ -649,7 +649,7 @@
         function renderInventoryList() {
             let data = getData();
             if(!data.inventory) data.inventory = [];
-            document.getElementById('inventoryList').innerHTML = data.inventory.map((item, idx) => {
+            const inventoryItems = data.inventory.map((item, idx) => {
                 if (!item || typeof item !== 'object' || Array.isArray(item)) return '';
                 let amazonUrl = `https://www.amazon.de/s?k=${encodeURIComponent(String(item.name ?? ''))}&tag=duhrrom-21`;
                 return `
@@ -661,7 +661,8 @@
                         </div>
                     </div>
                 `;
-            }).join('') || `<p class="text-xs text-gray-400 text-center py-2">Lager ist leer.</p>`;
+            }).join('');
+            document.getElementById('inventoryList').innerHTML = inventoryItems || `<p class="text-xs text-gray-400 text-center py-2">Lager ist leer.</p>`;
         }
         function addInventoryItem() {
             let name = document.getElementById('invItemName').value.trim();
