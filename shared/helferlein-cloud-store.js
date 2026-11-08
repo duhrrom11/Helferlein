@@ -50,7 +50,7 @@
       if (!uid) throw new Error('Sign in required');
       const k = keys(uid);
       const pending = read(k.pending);
-      if (pending === null || !navigator.onLine) return false;
+      if (localStorage.getItem(k.pending) === null || !navigator.onLine) return false;
       const base = read(k.base);
       if (base === null || typeof base !== 'object' || !('revision' in base)) {
         throw new Error('Missing sync baseline; manual reconciliation required');
@@ -83,11 +83,13 @@
       const uid = await userId();
       if (!uid) throw new Error('Sign in required');
       const k = keys(uid);
-      if (read(k.pending) === null) {
+      if (localStorage.getItem(k.pending) === null) {
         // Only a known revision (including an explicitly fetched empty cloud) is safe.
         if (localStorage.getItem(k.revision) === null) {
           if (!navigator.onLine) throw new Error('Cloud baseline unavailable while offline');
-          await load();
+          const row = await fetchCloud(uid);
+          write(k.cache, row ? row.data : null);
+          write(k.revision, row ? row.updated_at : null);
         }
         write(k.base, { revision: read(k.revision) });
       }
@@ -97,7 +99,7 @@
     }
     async function hasPending() {
       const uid = await userId();
-      return uid ? read(keys(uid).pending) !== null : false;
+      return uid ? localStorage.getItem(keys(uid).pending) !== null : false;
     }
     return { load, save, flush, hasPending };
   }
