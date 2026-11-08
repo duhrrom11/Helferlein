@@ -62,3 +62,65 @@ for(const p of [
   expect(x.escape).toContain('&lt;img');expect(x.image).toBe('');
  });
 }
+
+test('New Nachlass vault uses passphrase and never persists master key beside ciphertext',async({page})=>{
+ await page.goto(root+'/tools/digitaler-nachlass/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#vault-password-gate')).toBeVisible();
+ expect(await page.evaluate(()=>localStorage.getItem('digital_estate_vault'))).toBeNull();
+ await page.getByRole('textbox',{name:'Tresor-Passwort',exact:true}).fill('Langes-Sicheres-Tresorpasswort-2026');
+ await page.getByRole('textbox',{name:'Tresor-Passwort bestätigen'}).fill('Langes-Sicheres-Tresorpasswort-2026');
+ await page.getByRole('button',{name:'Tresor geschützt erstellen'}).click();
+ await expect(page.locator('#vault-password-gate')).toHaveCount(0);
+ let cfg=await page.evaluate(()=>JSON.parse(localStorage.getItem('digital_estate_vault')));
+ expect(cfg.masterKeyHex).toBeUndefined();
+ expect(cfg.passwordKdf.alg).toBe('PBKDF2-SHA256');
+ expect(cfg.passwordKdf.iterations).toBeGreaterThanOrEqual(200000);
+ expect(cfg.encryptedData.ciphertext).toBeTruthy();
+ await page.reload({waitUntil:'domcontentloaded'});
+ await expect(page.locator('#vault-password-gate')).toBeVisible();
+ await page.getByRole('textbox',{name:'Tresor-Passwort',exact:true}).fill('FalschesPasswort');
+ await page.getByRole('button',{name:'Tresor entsperren'}).click();
+ await expect(page.locator('#vault-password-gate')).toBeVisible();
+ await page.getByRole('textbox',{name:'Tresor-Passwort',exact:true}).fill('Langes-Sicheres-Tresorpasswort-2026');
+ await page.getByRole('button',{name:'Tresor entsperren'}).click();
+ await expect(page.locator('#vault-password-gate')).toHaveCount(0);
+ cfg=await page.evaluate(()=>JSON.parse(localStorage.getItem('digital_estate_vault')));
+ expect(cfg.masterKeyHex).toBeUndefined();
+});
+test('Legacy Nachlass vault remains readable and migration only after consent',async({page})=>{
+ await page.goto(root+'/tools/digitaler-nachlass/index.html',{waitUntil:'domcontentloaded'});
+ await page.evaluate(async()=>{
+  const key=new Uint8Array(32);crypto.getRandomValues(key);
+  const hex=Array.from(key,x=>x.toString(16).padStart(2,'0')).join('');
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const cryptoKey=await crypto.subtle.importKey('raw',key,{name:'AES-GCM'},false,['encrypt']);
+  const ciphertext=await crypto.subtle.encrypt({name:'AES-GCM',iv},cryptoKey,new TextEncoder().encode(JSON.stringify({entries:[]})));
+  const b64=v=>btoa(String.fromCharCode(...new Uint8Array(v)));
+  localStorage.setItem('digital_estate_vault',JSON.stringify({
+   vaultId:'v_local_fixture',ownerName:'',ownerEmail:'',masterKeyHex:hex,
+   checkInIntervalDays:30,lastCheckIn:new Date().toISOString(),trustees:[],alarmPersons:[],
+   encryptedData:{iv:b64(iv),ciphertext:b64(ciphertext)}
+  }));
+ });
+ await page.reload({waitUntil:'domcontentloaded'});
+ await page.locator('.tab-btn[data-tab="settings"]').first().evaluate(e=>e.click());
+ await expect(page.locator('#b3-vault-legacy-warning')).toBeVisible();
+ const dialogs=[];
+ page.on('dialog',async dialog=>{
+  dialogs.push(dialog.type());
+  if(dialog.type()==='prompt')await dialog.accept('Sicheres-Migrations-Passwort-2026');
+  else await dialog.accept();
+ });
+ await page.locator('#b3-vault-legacy-warning button').click();
+ await expect(page.locator('#b3-vault-legacy-warning')).toBeHidden();
+ const cfg=await page.evaluate(()=>JSON.parse(localStorage.getItem('digital_estate_vault')));
+ expect(cfg.masterKeyHex).toBeUndefined();
+ expect(cfg.passwordKdf.alg).toBe('PBKDF2-SHA256');
+ expect(dialogs).toContain('confirm');
+ expect(dialogs.filter(x=>x==='prompt')).toHaveLength(2);
+ await page.reload({waitUntil:'domcontentloaded'});
+ await expect(page.locator('#vault-password-gate')).toBeVisible();
+ await page.getByRole('textbox',{name:'Tresor-Passwort',exact:true}).fill('Sicheres-Migrations-Passwort-2026');
+ await page.getByRole('button',{name:'Tresor entsperren'}).click();
+ await expect(page.locator('#vault-password-gate')).toHaveCount(0);
+});
