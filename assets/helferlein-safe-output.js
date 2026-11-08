@@ -21,5 +21,16 @@
      return url.href.replace(/&/g,'&amp;');
    }catch{return ''}
  }
- global.HelferleinSafe=Object.freeze({html,photo});
+ // Escape a value for use as a standalone argument inside an HTML onclick.
+ // JSON.stringify protects JavaScript quoting; html() protects the attribute.
+ function jsArg(value){
+   const json=JSON.stringify(String(value==null?'':value))
+     .replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
+   return html(json);
+ }
+ function tel(value){
+   const number=String(value==null?'':value).replace(/[^0-9+]/g,'');
+   return number.startsWith('+')?'+'+number.slice(1).replace(/\+/g,''):number.replace(/\+/g,'');
+ }
+ global.HelferleinSafe=Object.freeze({html,photo,jsArg,tel});
 })(window);
