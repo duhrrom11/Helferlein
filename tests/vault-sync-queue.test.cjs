@@ -88,6 +88,16 @@ test('Supabase-Sicherungsstand wird nur lesend verglichen', () => {
   assert.doesNotMatch(source, /localStorage\.setItem|\.insert\(|\.update\(|\.upsert\(|\.delete\(/);
 });
 
+test('Cloud-Wiederherstellungsprobe entschluesselt nur lesend', () => {
+  const start = html.indexOf('async function previewSupabaseVaultRecovery()');
+  const end = html.indexOf('// Read-only status check; never imports', start);
+  assert.ok(start >= 0 && end > start);
+  const source = html.slice(start, end);
+  assert.match(source, /decryptVaultPayload\(remote\.encrypted_data, currentMasterKeyHex\)/);
+  assert.match(source, /local\.vaultId !== remote\.vault_id/);
+  assert.doesNotMatch(source, /localStorage\.setItem|\.insert\(|\.update\(|\.upsert\(|\.delete\(/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
