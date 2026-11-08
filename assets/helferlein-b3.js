@@ -182,13 +182,27 @@
     },true);
     edit.id='b3-edit-open';
     prefs.append(edit);
-    const home=create('a',{href:'../../index.html',class:'b3-home-link'},'↗ Zur Helferlein-Hauptseite');
-    prefs.append(home);
     const help=button('❔ Hilfe & Anleitung',()=>{
       modal?.classList.add('hidden');
       if(typeof window.toggleHelpModal==='function')window.toggleHelpModal();
     },true);
     prefs.append(help);
+    // Independent footer: Ko-fi first, then the discovery link as the last item.
+    const footer=create('div',{class:'b3-settings-footer'});
+    const support=create('a',{
+      href:'https://ko-fi.com/duhrrom',
+      target:'_blank',
+      rel:'noopener noreferrer',
+      class:'b3-kofi-link',
+      'aria-label':'Auf Ko-fi einen Kaffee spendieren'
+    },'☕ Kaffee spendieren');
+    footer.append(support);
+    const home=create('a',{
+      href:'../../index.html',
+      class:'b3-home-link'
+    },'↗ Entdecke mehr Helferlein');
+    footer.append(home);
+    prefs.append(footer);
     // Place preferences after account status; retain auth UI and all original IDs.
     if(modalSurface)modalSurface.append(prefs);
     const editor=create('section',{id:'b3-editor',class:'b3-editor','aria-label':'Dashboard bearbeiten'});editor.hidden=true;
