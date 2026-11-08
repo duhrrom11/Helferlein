@@ -102,6 +102,7 @@
         if (before === incoming) return false;
         if ((await currentUser())?.id !== user.id) return false;
         if (safeLocalBytes() !== before) return false;
+        if (await store.hasPending()) return false;
         localStorage.setItem(localKey, incoming);
         lastSyncError = null;
         status.textContent = 'Aktuelle Supabase-Daten übernommen';
