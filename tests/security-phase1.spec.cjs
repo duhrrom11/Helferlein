@@ -161,3 +161,36 @@ test('Escaped QR onclick argument remains inert and preserves exact input',async
  expect(result.hit).toBe(false);
  expect(result.images).toBe(0);
 });
+
+test('Legacy WG cloud import makes a restorable snapshot before replacing local records',async({page})=>{
+ await page.addInitScript(()=>{
+  localStorage.setItem('kassenbon_data',JSON.stringify([{id:1,title:'Privates Haushaltsbuch'}]));
+  localStorage.setItem('helferlein_wg_v2_oldSharedId_kassenbon_data',JSON.stringify([{id:2,title:'Lokaler WG-Beleg'}]));
+ });
+ let requests=0;
+ await page.route('https://api.npoint.io/oldSharedId',route=>{
+   requests++;
+   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+     data:[{id:3,title:'Remote WG-Beleg'}],flatmates:[],notes:[]
+   })});
+ });
+ await page.goto(root+'/tools/wg-organisator/index.html?id=oldSharedId',{waitUntil:'domcontentloaded'});
+ expect(requests).toBe(0);
+ let confirms=0;
+ page.on('dialog',async dialog=>{
+   if(dialog.type()==='confirm'){confirms++;await dialog.accept();}
+   else await dialog.accept();
+ });
+ await page.getByRole('button',{name:'Bisherige WG-Cloud bewusst freigeben'}).click();
+ await expect.poll(()=>requests).toBe(1);
+ await expect.poll(async()=>page.evaluate(()=>JSON.parse(localStorage.getItem('helferlein_wg_v2_oldSharedId_kassenbon_data'))[0].title)).toBe('Remote WG-Beleg');
+ const result=await page.evaluate(()=>{
+  const key=Object.keys(localStorage).find(k=>k.startsWith('helferlein_wg_backup_oldSharedId_'));
+  return {previous:JSON.parse(localStorage.getItem(key)).previous.kassenbon_data,
+    household:JSON.parse(localStorage.getItem('kassenbon_data'))[0].title,backup:key};
+ });
+ expect(result.household).toBe('Privates Haushaltsbuch');
+ expect(JSON.parse(result.previous)[0].title).toBe('Lokaler WG-Beleg');
+ expect(result.backup).toBeTruthy();
+ expect(confirms).toBeGreaterThanOrEqual(2);
+});
