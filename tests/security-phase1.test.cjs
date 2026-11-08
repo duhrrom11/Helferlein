@@ -91,3 +91,25 @@ test('Recipe names, notes and free text cannot become rendered HTML',()=>{
  assert.ok(recipe.includes('HelferleinSafe.html(r.note ||'));
  assert.ok(recipe.includes('helferlein-safe-output.js'));
 });
+
+test('All legacy inline ID handlers use a validated numeric literal',()=>{
+ const names=['autokosten-reifenwechsel','haushaltsbuch-kassenbon','haustier-gesundheitspass',
+ 'parkplatz-merker-parkschein-timer','pflanzenpflege-giessplan','umzugskisten-inventar',
+ 'wg-organisator','zaehlerstaende-erfassen'];
+ for(const tool of names){
+  const page=read('tools/'+tool+'/index.html');
+  assert.ok(page.includes('src="../../assets/helferlein-safe-output.js"'),tool+' lacks safe helper');
+  const attrs=[...page.matchAll(/\bon(?:click|change)="[^"]*"/g)].map(m=>m[0]);
+  for(const attribute of attrs){
+   assert.doesNotMatch(attribute,/\$\{[a-zA-Z_$][\w$]*\.id\}/,tool+': '+attribute);
+   assert.doesNotMatch(attribute,/zoomImage\('\$\{/,tool+': '+attribute);
+  }
+ }
+ const code=read('assets/helferlein-safe-output.js');
+ const w={location:{href:'https://example.org/'}};
+ vm.runInNewContext(code,{window:w,URL});
+ assert.equal(w.HelferleinSafe.numericId(123),123);
+ assert.equal(w.HelferleinSafe.numericId('42'),42);
+ assert.equal(w.HelferleinSafe.numericId('1);alert(1);//'),-1);
+ assert.equal(w.HelferleinSafe.numericId('<img onerror=alert(1)>'),-1);
+});
