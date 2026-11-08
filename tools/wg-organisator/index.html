@@ -1106,6 +1106,13 @@
                     if (cloudObj && typeof cloudObj === 'object' && !Array.isArray(cloudObj) &&
                         Object.keys(cloudObj).length > 0 &&
                         ['flatmates', 'notes', 'data', 'budgets', 'goals', 'events', 'inventory', 'diets', 'cleaning', 'shopping', 'cooking', 'contracts', 'infoboard'].some(key => Object.prototype.hasOwnProperty.call(cloudObj, key))) {
+                        const arrayFields = ['flatmates', 'notes', 'data', 'goals', 'events', 'inventory', 'cleaning', 'shopping', 'cooking', 'contracts'];
+                        const objectFields = ['budgets', 'diets', 'infoboard'];
+                        if (arrayFields.some(key => cloudObj[key] !== undefined && !Array.isArray(cloudObj[key])) ||
+                            objectFields.some(key => cloudObj[key] !== undefined &&
+                                (!cloudObj[key] || typeof cloudObj[key] !== 'object' || Array.isArray(cloudObj[key])))) {
+                            throw new Error('Ungültiges WG-Cloud-Datenformat');
+                        }
                         if (cloudObj.flatmates !== undefined) {
                             let fm = cloudObj.flatmates.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
                             localStorage.setItem('wg_flatmates', JSON.stringify(fm));
