@@ -1,0 +1,15 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const html = fs.readFileSync('tools/haushaltsbuch-kassenbon/index.html', 'utf8');
+const start = html.indexOf('function nextReceiptId(');
+const end = html.indexOf('/* --- Buchung Speichern --- */', start);
+assert.ok(start >= 0 && end > start);
+const ctx = vm.createContext({Date});
+vm.runInContext(html.slice(start, end), ctx);
+const run = expression => vm.runInContext(expression, ctx);
+assert.equal(run('nextReceiptId([], 1000)'), 1000);
+assert.equal(run('nextReceiptId([{id:1000}], 1000)'), 1001);
+assert.equal(run('nextReceiptId([{id:1000},{id:1001},{id:1003}], 1000)'), 1002);
+assert.equal(run('nextReceiptId([null,{id:1000}], 1000)'), 1001);
+console.log('Receipt ID collision regression checks passed');
