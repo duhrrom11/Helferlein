@@ -673,6 +673,10 @@
                 let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                 text += `- ${r.type} (${r.name}): ${r.value} ${unit} (vom ${r.date})\n`;
             }
+            if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+                prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
+                return;
+            }
             navigator.clipboard.writeText(text).then(() => {
                 alert("📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.");
             }).catch(() => {
