@@ -21,4 +21,5 @@ jobs:
           node-version: '22'
       - run: node --check amazon-wishlist/app.mjs
       - run: node --check amazon-wishlist/amazon-links.mjs
-      - run: node --test amazon-wishlist/amazon-links.test.mjs
+      - run: node --check amazon-wishlist/wishlist-utils.mjs
+      - run: node --test amazon-wishlist/*.test.mjs
