@@ -22,7 +22,8 @@ function setup(performVaultSync) {
           innerText: '',
           classList: {
             add(name) { events.push([id, 'add', name]); },
-            remove(name) { events.push([id, 'remove', name]); }
+            remove(name) { events.push([id, 'remove', name]); },
+            toggle(name, enabled) { events.push([id, enabled ? 'add' : 'remove', name]); }
           }
         });
       }
@@ -37,6 +38,15 @@ function setup(performVaultSync) {
   vm.runInContext(queueCode + '\nthis.sync = syncVaultToFirebase;', context);
   return { sync: context.sync, events, elements, logs };
 }
+
+test('Cloud-Status zeigt Fehlschlag und nachfolgenden Erfolg', async () => {
+  let calls = 0;
+  const { sync, elements } = setup(async () => ++calls === 2);
+  assert.equal(await sync(true), false);
+  assert.match(elements.get('vault-sync-result').textContent, /fehlgeschlagen/);
+  assert.equal(await sync(true), true);
+  assert.match(elements.get('vault-sync-result').textContent, /bestätigt/);
+});
 
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
