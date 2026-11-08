@@ -912,12 +912,18 @@
 
             let y = 48;
             data.readings.forEach((r, idx) => {
-                if (y > 250) { doc.addPage(); y = 20; }
-                let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
-                doc.text(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 14, y);
-                doc.text(`Ablesedatum: ${r.date} | Zählerstand: ${r.value} ${unit}`, 14, y + 6);
-                if(r.note) doc.text(`Bemerkung: ${r.note}`, 14, y + 12);
-                y += 20;
+                const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                const lines = [
+                    ...doc.splitTextToSize(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 180),
+                    ...doc.splitTextToSize(`Ablesedatum: ${r.date} | Zählerstand: ${r.value} ${unit}`, 180),
+                    ...(r.note ? doc.splitTextToSize(`Bemerkung: ${r.note}`, 180) : [])
+                ];
+                lines.forEach(line => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(line, 14, y);
+                    y += 6;
+                });
+                y += 8;
             });
 
             if (y + 24 > 280) { doc.addPage(); y = 20; }
