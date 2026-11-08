@@ -3,7 +3,7 @@ const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co'
 const $=id=>document.getElementById(id);let user=null,profile=null,offset=0;
 const report=(m)=>{$('status').textContent=m};
 const run=fn=>async()=>{try{await fn()}catch(e){report(e.message)}};
-async function auth(){const {data,error}=await db.auth.getUser();if(error&&error.name!=='AuthSessionMissingError')throw error;user=data.user;$('editor').hidden=!user;$('login').hidden=!!user;$('logout').hidden=!user;if(user){const r=await db.from('wishlist_profiles').select('handle,display_name').eq('user_id',user.id).maybeSingle();if(r.error)throw r.error;profile=r.data;$('handle').value=profile?.handle||'';$('displayName').value=profile?.display_name||'';}}
+async function auth(){const {data,error}=await db.auth.getUser();if(error&&error.name!=='AuthSessionMissingError')throw error;user=data.user;$('editor').hidden=!user;$('login').hidden=!!user;$('logout').hidden=!user;if(!user)profile=null;if(user){const r=await db.from('wishlist_profiles').select('handle,display_name').eq('user_id',user.id).maybeSingle();if(r.error)throw r.error;profile=r.data;$('handle').value=profile?.handle||'';$('displayName').value=profile?.display_name||'';}}
 $('signin').onclick=run(async()=>{const r=await db.auth.signInWithPassword({email:$('email').value,password:$('password').value});if(r.error)throw r.error;await auth();report('Angemeldet')});
 $('signup').onclick=run(async()=>{const r=await db.auth.signUp({email:$('email').value,password:$('password').value});if(r.error)throw r.error;report('Registrierung gestartet; bitte E-Mail prüfen.');await auth()});
 $('logout').onclick=run(async()=>{const r=await db.auth.signOut();if(r.error)throw r.error;await auth()});
