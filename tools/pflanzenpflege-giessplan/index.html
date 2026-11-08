@@ -719,7 +719,10 @@
             let data = getData();
             const filterLoc = document.getElementById('filterLocation');
             const locations = [...new Set(data.plants.map(p => p.location).filter(Boolean))];
-            filterLoc.innerHTML = '<option value="">Alle Standorte / Räume</option>' + locations.map(loc => `<option value="${loc}">${loc}</option>`).join('');
+            const selectedLocation = filterLoc.value;
+            filterLoc.replaceChildren(new Option('Alle Standorte / Räume', ''));
+            locations.forEach(loc => filterLoc.add(new Option(loc, loc)));
+            filterLoc.value = locations.includes(selectedLocation) ? selectedLocation : '';
         }
 
         function savePlant() {
