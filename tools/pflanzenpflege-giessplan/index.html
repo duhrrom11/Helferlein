@@ -959,7 +959,9 @@
                 container.innerHTML = filteredPlants.map(p => {
                     const lastWater = new Date(p.lastWatered + 'T00:00:00');
                     const nextWater = new Date(lastWater);
-                    nextWater.setDate(lastWater.getDate() + Math.max(1, Number(p.interval) || 7));
+                    const rawInterval = Number(p.interval);
+                    const intervalDays = Number.isFinite(rawInterval) && rawInterval > 0 ? Math.max(1, Math.floor(rawInterval)) : 7;
+                    nextWater.setDate(lastWater.getDate() + intervalDays);
                     const diffWater = Number.isFinite(nextWater.getTime())
                         ? Math.round((Date.UTC(nextWater.getFullYear(), nextWater.getMonth(), nextWater.getDate()) -
                             Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000) : 0;
@@ -974,7 +976,10 @@
                         propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${escapeHtml(p.propagation)} ${p.propDate ? '('+escapeHtml(p.propDate)+')' : ''}</span>`;
                     }
 
-                    let harvestSum = p.harvestLog ? p.harvestLog.reduce((acc, h) => acc + h.grams, 0) : 0;
+                    const harvestSum = Array.isArray(p.harvestLog) ? p.harvestLog.reduce((sum, entry) => {
+                        const grams = Number(entry?.grams);
+                        return sum + (Number.isFinite(grams) && grams > 0 ? grams : 0);
+                    }, 0) : 0;
                     let harvestBadge = harvestSum > 0 ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🍅 ${harvestSum >= 1000 ? (harvestSum/1000).toFixed(1)+'kg' : harvestSum+'g'}</span>` : '';
 
                     let diaryHtml = p.diary && p.diary.length > 0 ? `<div class="mt-2 bg-amber-50 border p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 Tagebuch:</span>` + 
