@@ -770,13 +770,20 @@
             return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
         }
 
+        function readWateringInterval(elementId) {
+            const raw = document.getElementById(elementId).value.trim();
+            if (!/^\d+$/.test(raw)) return null;
+            const value = Number(raw);
+            return Number.isSafeInteger(value) && value >= 1 && value <= 3650 ? value : null;
+        }
+
         function savePlant() {
             const name = document.getElementById('plantName').value.trim();
             const species = document.getElementById('plantSpecies').value.trim();
             const location = document.getElementById('plantLocation').value.trim();
             const light = document.getElementById('plantLight').value;
             const potSize = document.getElementById('plantPotSize').value;
-            const interval = Math.max(1, parseInt(document.getElementById('plantInterval').value, 10) || 7);
+            const interval = readWateringInterval('plantInterval');
             const lastWatered = document.getElementById('plantLastWatered').value;
             const propagation = document.getElementById('plantPropagation').value;
             const propDate = document.getElementById('plantPropDate').value;
@@ -784,6 +791,7 @@
             const photoInput = document.getElementById('plantPhotoInput');
 
             if (!name || !isValidCalendarDate(lastWatered)) return alert("Bitte Name und gültiges Gießdatum angeben!");
+            if (interval === null) return alert('Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.');
             if (propDate && !isValidCalendarDate(propDate)) return alert('Bitte ein gültiges Vermehrungsdatum eingeben.');
 
             if (photoInput.files && photoInput.files[0]) {
@@ -919,7 +927,9 @@
                 p.name = editedName;
                 p.species = document.getElementById('editSpecies').value.trim();
                 p.location = document.getElementById('editLocation').value.trim();
-                p.interval = Math.max(1, parseInt(document.getElementById('editInterval').value, 10) || 7);
+                const interval = readWateringInterval('editInterval');
+                if (interval === null) return alert('Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.');
+                p.interval = interval;
                 const editedLastWatered = document.getElementById('editLastWatered').value;
                 if (!isValidCalendarDate(editedLastWatered)) return alert('Bitte ein gültiges Gießdatum eingeben.');
                 if (p.lastWatered !== editedLastWatered) {
