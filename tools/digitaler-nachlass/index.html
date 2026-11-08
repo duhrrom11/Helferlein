@@ -1046,7 +1046,7 @@
             if (!cfg || !cfg.vaultId || !cfg.encryptedData || lastPersistedRevision !== localSaveRevision) {
                 return alert('Bitte warten, bis alle lokalen Änderungen gespeichert sind.');
             }
-            if (!confirm('Den aktuell lokal verschlüsselten Tresor im angemeldeten Supabase-Konto sichern? Es wird nur der verschlüsselte Inhalt ohne Schlüssel hochgeladen. Für eine Wiederherstellung ist weiterhin eine verschlüsselte lokale Sicherungsdatei nötig.')) return;
+            if (!confirm('Den aktuell lokal verschlüsselten Tresor einschließlich verschlüsselter Kontakte und Check-in-Einstellungen im angemeldeten Supabase-Konto sichern? Ein unverschlüsselter Tresorschlüssel wird nicht hochgeladen. Für den Gerätewechsel muss zusätzlich ein Wiederherstellungspasswort vorbereitet werden; eine verschlüsselte lokale Sicherungsdatei bleibt empfohlen.')) return;
             const button = document.getElementById('supabaseBackupBtn');
             if (button) button.disabled = true;
             try {
