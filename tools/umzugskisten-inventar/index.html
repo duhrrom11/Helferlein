@@ -736,7 +736,7 @@
                                 return `
                                     <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3 ${isExpired ? 'border-red-400 bg-red-50/30' : ''}">
                                         <div class="flex items-center space-x-3">
-                                            ${b.photo ? `<img src="${HelferleinSafe.photo(b.photo)}" onclick="zoomImage(${HelferleinSafe.jsArg(HelferleinSafe.photo(b.photo))})" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
+                                            ${b.photo ? `<img src="${HelferleinSafe.photo(b.photo)}" onclick="zoomImage(${HelferleinSafe.photoArg(b.photo)})" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
                                             <div>
                                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                                     <h5 class="font-bold text-sm">📦 ${HelferleinSafe.html(b.name)}</h5>
