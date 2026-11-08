@@ -655,7 +655,7 @@
                 if(!p.harvestLog) p.harvestLog = [];
                 p.harvestLog.push({ date: new Date().toLocaleDateString('de-DE'), grams });
                 data.totalHarvestGrams = (data.totalHarvestGrams || 0) + grams;
-                saveData(data);
+                if (!saveData(data)) return;
                 closeHarvestModal(); renderApp();
             }
         }
@@ -689,7 +689,16 @@
             catch(e) { return { plants: [], monthWaterLiters: 0, totalHarvestGrams: 0, inventory: [], seeds: [], beetSlots: Array(16).fill(null), cisternMax: 500, cisternCurrent: 500 }; }
         }
 
-        function saveData(data) { localStorage.setItem('pflanzen_pass_v10', JSON.stringify(data)); }
+        function saveData(data) {
+            try {
+                localStorage.setItem('pflanzen_pass_v10', JSON.stringify(data));
+                return true;
+            } catch (error) {
+                console.error('Pflanzendaten konnten nicht gespeichert werden:', error);
+                alert('Speichern fehlgeschlagen. Bitte Browser-Speicherplatz prüfen; Eingaben nicht verwerfen.');
+                return false;
+            }
+        }
 
         function loadLocationDropdown() {
             let data = getData();
@@ -750,7 +759,7 @@
                 galleryPhotos: photo ? [photo] : [],
                 waterHistory: [lastWatered], diary: [], harvestLog: []
             });
-            saveData(data);
+            if (!saveData(data)) return;
             document.getElementById('plantName').value = "";
             document.getElementById('plantSpecies').value = "";
             document.getElementById('plantLocation').value = "";
@@ -777,7 +786,7 @@
                 let ml = getMlForPot(p.potSize);
                 data.monthWaterLiters = (data.monthWaterLiters || 0) + (ml / 1000);
                 data.cisternCurrent = Math.max(0, (data.cisternCurrent ?? data.cisternMax ?? 500) - (ml / 1000));
-                saveData(data);
+                if (!saveData(data)) return;
                 renderApp();
                 updateCisternDisplay();
             }
@@ -800,7 +809,8 @@
             let data = getData();
             data.plants = data.plants.filter(item => item.id !== id);
             data.beetSlots = data.beetSlots.map(slotId => slotId === id ? null : slotId);
-            saveData(data); loadLocationDropdown(); renderApp();
+            if (!saveData(data)) return;
+            loadLocationDropdown(); renderApp();
         }
 
         function openEditModal(id) {
@@ -831,7 +841,7 @@
                 p.interval = Math.max(1, parseInt(document.getElementById('editInterval').value, 10) || 7);
                 p.lastWatered = document.getElementById('editLastWatered').value;
                 p.note = document.getElementById('editNote').value.trim();
-                saveData(data);
+                if (!saveData(data)) return;
             }
             closeEditModal(); loadLocationDropdown(); renderApp();
         }
