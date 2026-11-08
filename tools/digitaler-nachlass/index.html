@@ -1092,10 +1092,6 @@
                 if (!matches) {
                     return alert('Supabase-Sicherung vom ' + date + ' weicht vom lokalen Tresorinhalt ab. Bitte lokale Änderungen prüfen und bei Bedarf erneut sichern.');
                 }
-                if (!remote.encrypted_config) {
-                    return alert('Tresorinhalt stimmt mit der Cloud-Sicherung vom ' + date +
-                        ' überein. Diese ältere Sicherung enthält jedoch keine verschlüsselte Konfiguration. Bitte erneut sichern.');
-                }
                 if (!vaultReady || !/^[a-f0-9]{64}$/i.test(currentMasterKeyHex || '') ||
                     local.masterKeyHex !== currentMasterKeyHex) {
                     return alert('Der lokale Tresorschlüssel ist nicht verfügbar oder stimmt nicht mit dem gespeicherten Tresor überein. Keine Änderungen vorgenommen.');
@@ -1103,6 +1099,10 @@
                 const verifiedCloudEntries = await decryptVaultPayload(remote.encrypted_data, currentMasterKeyHex);
                 if (!verifiedCloudEntries || !Array.isArray(verifiedCloudEntries.entries)) {
                     return alert('Cloud- und lokale Verschlüsselungsdaten stimmen überein, lassen sich aber nicht entschlüsseln. Keine Änderungen vorgenommen.');
+                }
+                if (!remote.encrypted_config) {
+                    return alert('Tresorinhalt ist mit der Cloud-Sicherung vom ' + date +
+                        ' entschlüsselbar und stimmt überein. Diese ältere Sicherung enthält jedoch keine verschlüsselte Konfiguration. Bitte erneut sichern.');
                 }
                 const cloudConfig = await decryptVaultPayload(remote.encrypted_config, currentMasterKeyHex);
                 if (!cloudConfig || typeof cloudConfig !== 'object' || Array.isArray(cloudConfig) ||
