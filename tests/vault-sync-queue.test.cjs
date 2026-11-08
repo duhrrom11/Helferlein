@@ -316,6 +316,16 @@ test('Wiederherstellungspasswort nur bei entschluesselbarem lokalem Tresor', () 
   assert.match(source, /Tresor während der Entschlüsselungsprüfung geändert/);
 });
 
+test('Passwort-Recovery lehnt ungueltige Masterkey-Formate vor der Umhuellung ab', () => {
+  const start = html.indexOf('async function prepareSupabaseRecoveryKey()');
+  const end = html.indexOf('async function restoreVaultFromSupabase()', start);
+  const source = html.slice(start, end);
+  const check = source.indexOf("/^[a-f0-9]{64}$/i.test(currentMasterKeyHex || '')");
+  const wrap = source.indexOf('currentMasterKeyHex.match(/.{2}/g)');
+  assert.ok(check > 0 && wrap > check);
+  assert.match(source, /!cfg\.encryptedData\.ciphertext/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
