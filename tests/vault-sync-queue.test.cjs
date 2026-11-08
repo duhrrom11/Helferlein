@@ -43,7 +43,7 @@ test('Cloud-Status zeigt Fehlschlag und nachfolgenden Erfolg', async () => {
   let calls = 0;
   const { sync, elements } = setup(async () => ++calls === 2);
   assert.equal(await sync(true), false);
-  assert.match(elements.get('vault-sync-result').textContent, /fehlgeschlagen/);
+  assert.match(elements.get('vault-sync-result').textContent, /nicht bestätigt/);
   assert.equal(await sync(true), true);
   assert.match(elements.get('vault-sync-result').textContent, /bestätigt/);
 });
