@@ -10,6 +10,10 @@ Produktiv geprueft: Supabase hat aktuell die Tabellen `user_data`, `wg_spaces` u
 
 **Umsetzungsreihenfolge:** (1) sicheren neuen, benutzergebundenen Cloud-Tresor mit Auth und serverseitiger Autorisierung implementieren; (2) lokale Verschluesselung und Wiederherstellung ohne Datenverlust sicherstellen; (3) vorhandene Tresore erst nach gesonderter Eigentuemerpruefung migrieren; (4) produktive Bereitstellung mit Sicherheitspruefungen, Monitoring und Rollback; (5) die Browseroberflaeche erst dann auf den neuen Speicherweg umstellen. Keine pauschale Freigabe alter Firebase-Regeln.
 
+## Schutz vor falschen Kontakten nach Wiederherstellung
+
+Bei einer Cloud-Wiederherstellung wird **nicht** mehr die Konfiguration des zufaellig lokal erzeugten leeren Tresors in den wiederhergestellten Tresor uebernommen. Die nicht in Supabase gesicherten Metadaten (Eigentuemername und -E-Mail, Vertrauenspersonen, Alarmkontakte, Check-in-Einstellungen) werden auf neutrale Standardwerte gesetzt. Die Benutzeroberflaeche weist auf die notwendige Neueinrichtung hin. Das verhindert die versehentliche Zuordnung falscher Alarmkontakte zu einem wiederhergestellten Tresor. Fuer eine vollstaendige geraeteuebergreifende Wiederherstellung fehlt weiterhin eine eigens verschluesselte Metadaten-Sicherung.
+
 ## Optionale passwortgeschuetzte Cloud-Wiederherstellung (2026-11-08)
 
 Die produktive Tabelle `vault_cloud_snapshots` besitzt nun ein optionales `recovery_key`-Feld. Die Aktion `Cloud-Wiederherstellung mit Passwort vorbereiten` verschluesselt den zufaelligen 256-Bit-Tresorschluessel im Browser mit AES-256-GCM und einem separaten Wiederherstellungspasswort (PBKDF2-SHA256, 600.000 Iterationen, zufaelliges Salt). Hochgeladen wird nur die verschluesselte Schluesselhuelle. Das Passwort und der unverschluesselte Schluessel werden nicht uebertragen. Das Passwort muss stark und separat aufbewahrt werden.
