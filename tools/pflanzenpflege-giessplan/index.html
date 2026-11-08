@@ -532,26 +532,28 @@
         }
         function closeCisternModal() { document.getElementById('cisternModal').classList.add('hidden'); }
         function updateCisternCapacity() {
-            let max = parseInt(document.getElementById('cisternMaxLiters').value) || 500;
+            const max = Number(document.getElementById('cisternMaxLiters').value);
+            if (!Number.isFinite(max) || max <= 0) return alert('Bitte ein gültiges Fassungsvermögen größer als 0 eingeben.');
             let data = getData();
             data.cisternMax = max;
-            if(data.cisternCurrent === undefined) data.cisternCurrent = max;
-            saveData(data);
+            if (data.cisternCurrent === undefined) data.cisternCurrent = max;
+            data.cisternCurrent = Math.min(max, Math.max(0, data.cisternCurrent));
+            if (!saveData(data)) return;
             updateCisternDisplay();
         }
         function refillCistern() {
             let data = getData();
             data.cisternMax = data.cisternMax || 500;
             data.cisternCurrent = data.cisternMax;
-            saveData(data);
+            if (!saveData(data)) return;
             updateCisternDisplay();
             alert("Regentonne / Zisterne vollständig aufgefüllt!");
         }
         function updateCisternDisplay() {
             let data = getData();
-            let max = data.cisternMax || 500;
-            if(data.cisternCurrent === undefined) data.cisternCurrent = max;
-            let cur = data.cisternCurrent;
+            const max = Number.isFinite(Number(data.cisternMax)) && Number(data.cisternMax) > 0 ? Number(data.cisternMax) : 500;
+            const current = data.cisternCurrent === undefined ? max : Number(data.cisternCurrent);
+            const cur = Number.isFinite(current) ? Math.min(max, Math.max(0, current)) : max;
             let percent = Math.round((cur / max) * 100);
             document.getElementById('statCistern').innerText = cur >= 1000 ? (cur/1000).toFixed(1) + ' m³' : cur + ' L';
             document.getElementById('cisternDisplayLiters').innerText = cur + ' L / ' + max + ' L';
