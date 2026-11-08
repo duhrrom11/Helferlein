@@ -788,6 +788,13 @@
                 const hexKey = Array.from(rawKey, byte => byte.toString(16).padStart(2, '0')).join('');
                 const decrypted = await decryptVaultPayload(remote.encrypted_data, hexKey);
                 if (!decrypted || !Array.isArray(decrypted.entries)) throw new Error('Tresor nicht entschlüsselbar');
+                // A newly initialized local vault can still contain important
+                // contact/check-in configuration despite having zero entries.
+                // Require an explicit second confirmation after decryption.
+                if (!confirm('Cloud-Tresor erfolgreich entschlüsselt (' + decrypted.entries.length +
+                    ' Einträge). ACHTUNG: Die lokalen Tresor-Einstellungen (Kontakte, Alarmregeln und Check-in) werden beim Wiederherstellen nicht aus der Cloud übernommen. Den bisherigen leeren lokalen Tresor wirklich ersetzen?')) {
+                    return;
+                }
                 if (localStorage.getItem('digital_estate_vault') !== localSnapshot ||
                     lastPersistedRevision !== localSaveRevision ||
                     currentDecryptedVault.entries.length !== 0) {
