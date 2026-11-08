@@ -18,4 +18,10 @@ for (const value of ['2025-02-29', '2025-02-31', '2025-13-01', '2025-00-10', '20
 const expiry = vm.runInContext("addWarrantyMonths(parseReceiptDate('2025-01-31'), 1)", ctx);
 assert.equal(expiry.getMonth(), 1);
 assert.equal(expiry.getDate(), 28);
+const sortStart = html.indexOf('data.sort((a, b) =>');
+const sortEnd = html.indexOf('if (!saveData(data)) return;', sortStart);
+assert.ok(sortStart >= 0 && sortEnd > sortStart, 'receipt sorting found');
+const sortSource = html.slice(sortStart, sortEnd);
+assert.match(sortSource, /parseReceiptDate\(a\.date\)/);
+assert.match(sortSource, /parseReceiptDate\(b\.date\)/);
 console.log('Receipt local-date regression checks passed');
