@@ -840,9 +840,15 @@
                 p.lastWatered = todayStr;
                 p.waterHistory.unshift(todayStr);
                 if(p.waterHistory.length > 5) p.waterHistory.pop();
-                let ml = getMlForPot(p.potSize);
-                data.monthWaterLiters = (data.monthWaterLiters || 0) + (ml / 1000);
-                data.cisternCurrent = Math.max(0, (data.cisternCurrent ?? data.cisternMax ?? 500) - (ml / 1000));
+                const ml = getMlForPot(p.potSize);
+                const usedLiters = ml / 1000;
+                const monthlyTotal = Number(data.monthWaterLiters);
+                data.monthWaterLiters = (Number.isFinite(monthlyTotal) && monthlyTotal >= 0 ? monthlyTotal : 0) + usedLiters;
+                const cisternCapacity = Number(data.cisternMax);
+                const maxLiters = Number.isFinite(cisternCapacity) && cisternCapacity > 0 ? cisternCapacity : 500;
+                const currentLiters = data.cisternCurrent === undefined ? maxLiters : Number(data.cisternCurrent);
+                const availableLiters = Number.isFinite(currentLiters) ? Math.min(maxLiters, Math.max(0, currentLiters)) : maxLiters;
+                data.cisternCurrent = Math.max(0, availableLiters - usedLiters);
                 if (!saveData(data)) return;
                 renderApp();
                 updateCisternDisplay();
