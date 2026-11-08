@@ -549,7 +549,7 @@
             }
 
             let data = getData();
-            let sameTypeReadings = data.readings.filter(r => r.type === type).sort((a,b) => new Date(b.date) - new Date(a.date));
+            let sameTypeReadings = data.readings.filter(r => r.type === type && r.name === name && r.date < date && !r.isExchange).sort((a,b) => new Date(b.date) - new Date(a.date));
             if (sameTypeReadings.length > 0 && !isExchange) {
                 let last = sameTypeReadings[0];
                 let daysBetween = (new Date(date) - new Date(last.date)) / (1000 * 60 * 60 * 24);
