@@ -792,8 +792,9 @@
             
             let monthly = {};
             data.readings.forEach(r => {
-                if (typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date) ||
-                    !Number.isFinite(new Date(r.date).getTime())) return;
+                if (typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return;
+                const parsedDate = new Date(r.date);
+                if (!Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== r.date) return;
                 const monthKey = r.date.substring(0, 7);
                 if (!monthly[monthKey]) monthly[monthKey] = 0;
                 monthly[monthKey] += 1;
