@@ -830,7 +830,11 @@
             ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
 
             if (currentUploadedPhotos.length > 0) {
-                currentUploadedPhotos[0] = canvas.toDataURL('image/jpeg', 0.6);
+                const processedPhoto = canvas.toDataURL('image/jpeg', 0.6);
+                if (!safeReceiptPhoto(processedPhoto)) {
+                    throw new Error('Belegfoto konnte nicht gültig gespeichert werden');
+                }
+                currentUploadedPhotos[0] = processedPhoto;
             }
         }
 
