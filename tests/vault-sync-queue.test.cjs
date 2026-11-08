@@ -359,6 +359,17 @@ test('Lesende Cloud-Wiederherstellungsprobe validiert auch wiederherstellbare Ko
   assert.doesNotMatch(source, /localStorage\.setItem/);
 });
 
+test('Cloud-Backup-Status prueft auch die Entschluesselbarkeit der Eintraege', () => {
+  const start = html.indexOf('async function checkSupabaseVaultBackup()');
+  const end = html.indexOf('async function ', start + 20);
+  const source = html.slice(start, end < 0 ? undefined : end);
+  const verify = source.indexOf('decryptVaultPayload(remote.encrypted_data, currentMasterKeyHex)');
+  const config = source.indexOf('decryptVaultPayload(remote.encrypted_config, currentMasterKeyHex)');
+  assert.ok(verify > 0 && config > verify);
+  assert.match(source, /!Array\.isArray\(verifiedCloudEntries\.entries\)/);
+  assert.doesNotMatch(source, /localStorage\.setItem/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
