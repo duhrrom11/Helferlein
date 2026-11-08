@@ -1003,6 +1003,13 @@
                     };
                 }
             } else {
+                const normalizeTitle = value => String(value || '').trim().toLocaleLowerCase('de-DE');
+                const duplicate = data.some(r => r && typeof r === 'object' &&
+                    r.date === date && normalizeTitle(r.title) === normalizeTitle(title) &&
+                    Number(r.price) === price &&
+                    (r.entryType === 'einnahme' || r.category === 'Einnahme' ? 'einnahme' : 'ausgabe') ===
+                    (entryType === 'einnahme' ? 'einnahme' : 'ausgabe'));
+                if (duplicate && !confirm('Eine Buchung mit gleichem Datum, Titel, Betrag und Typ existiert bereits.\\n\\nTrotzdem erneut speichern?')) return;
                 const newId = nextReceiptId(data);
                 data.push({
                     id: newId,
