@@ -8,6 +8,7 @@
     if (target && typeof target.prepend !== 'function') throw new Error('Invalid migration target');
     const store = global.HelferleinCloudStore.createStore(client, tool);
     let enabledUser = null;
+    let verifiedOwner = null;
     let queue = Promise.resolve();
     let refreshInProgress = false;
     let lastSyncError = null;
@@ -260,6 +261,7 @@
     let blocked = null;
     async function guardAccount() {
       if (disposed) return;
+      verifiedOwner = null;
       const user = await currentUser();
       const owner = currentOwner();
       lastGuardAt = now();
@@ -270,6 +272,7 @@
       lastOwnerAtStatus = owner;
       if (accountSwitchInProgress) return;
       if (disposed) return;
+      if (!mismatch && owner && user && owner === user.id) verifiedOwner = owner;
       if (mismatch && enabledUser !== null) { enabledUser = null; accountGeneration++; lastAccountChangeAt = now(); lastCloudSource = null; lastSyncError = 'Kontowechsel erkannt'; }
       if (!mismatch && blocked) { blocked.remove(); blocked = null; lastConflictMessage = null; }
       if (mismatch && !blocked) {
@@ -367,6 +370,7 @@
     let authGeneration = 0;
     const authSubscription = client.auth.onAuthStateChange(() => {
       if (disposed) return;
+      verifiedOwner = null;
       if (currentOwner()) document.documentElement.classList.add('helferlein-account-check');
       const generation = ++authGeneration;
       accountGeneration++;
@@ -572,6 +576,7 @@
       disposed = true;
       lastCloudSource = null;
       enabledUser = null;
+      verifiedOwner = null;
       accountGeneration++;
       authGeneration++;
       lastAccountChangeAt = now();
@@ -597,7 +602,7 @@
       if (activeOperation === 'import' || activeOperation === 'upload' || activeOperation === 'refresh') return false;
       const owner = currentOwner();
       if (!owner) return true; // Legacy data, not yet claimed by a cloud account.
-      return !!enabledUser && owner === enabledUser;
+      return !!enabledUser && owner === enabledUser && verifiedOwner === owner;
     }
     return { store, host, changed, canWriteLocal, resume, refreshFromCloud, dispose, getStatus: () => ({ disposed, enabledUser, activeOperation, lastSyncError, lastConflictMessage, lastCloudSource, accountSwitchInProgress, statusGeneration, lastRefreshAt, lastReconnectAt, lastLocalChangeAt, lastAccountChangeAt, lastAuthCheckAt, lastPendingCheckAt, lastStatusErrorAt, lastUploadAt, lastImportAt, lastGuardAt, lastGuardMismatch, lastEnableAt, lastRefreshSkippedAt, lastOperationStartedAt, lastOperationEndedAt, lastOwnerAtStatus, lastAuthStateAt, refreshAttempts, refreshApplied, reconnectAttempts, reconnectSuccesses, store: store.status() }) };
   }
