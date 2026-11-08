@@ -1,5 +1,5 @@
 import {parseAmazonUrl,affiliateUrl} from './amazon-links.mjs';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl} from './wishlist-utils.mjs';
 const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
 const $=id=>document.getElementById(id);let user=null,profile=null,offset=0;let feedBusy=false;let feedRefreshPending=false;let editingWishId=null;let selectedProfileId=null;
 const report=(m)=>{$('status').textContent=m};
@@ -28,7 +28,7 @@ async function searchPeople(){
  if(!result.data.length){root.textContent='Keine Profile gefunden.';return;}
  for(const p of result.data){
   const item=document.createElement('div');item.className='item';
-  const name=document.createElement('strong');name.textContent=p.display_name+' (@'+p.handle+')';item.append(name);const view=document.createElement('button');view.type='button';view.textContent='Wünsche ansehen';view.onclick=run(async()=>{selectedProfileId=p.user_id;const pageUrl=new URL(window.location.href);pageUrl.searchParams.delete('url');pageUrl.searchParams.set('profile',p.handle);window.history.replaceState(null,'',pageUrl);$('feedFilter').querySelector('[value="profile"]').hidden=false;$('feedFilter').value='profile';$('profileFeedInfo').hidden=false;$('profileFeedInfo').textContent='Wünsche von '+p.display_name+' (@'+p.handle+')';offset=0;await feed();$('feed').scrollIntoView({behavior:'smooth',block:'start'})});item.append(view);const share=document.createElement('button');share.type='button';share.textContent='Profil-Link kopieren';share.onclick=run(async()=>{const url=new URL(window.location.href);url.search='';url.hash='';url.searchParams.set('profile',p.handle);if(!navigator.clipboard?.writeText)throw Error('Kopieren nicht verfügbar');await navigator.clipboard.writeText(url.toString());report('Profil-Link kopiert')});item.append(share);
+  const name=document.createElement('strong');name.textContent=p.display_name+' (@'+p.handle+')';item.append(name);const view=document.createElement('button');view.type='button';view.textContent='Wünsche ansehen';view.onclick=run(async()=>{selectedProfileId=p.user_id;window.history.replaceState(null,'',profilePageUrl(window.location.href,p.handle));$('feedFilter').querySelector('[value="profile"]').hidden=false;$('feedFilter').value='profile';$('profileFeedInfo').hidden=false;$('profileFeedInfo').textContent='Wünsche von '+p.display_name+' (@'+p.handle+')';offset=0;await feed();$('feed').scrollIntoView({behavior:'smooth',block:'start'})});item.append(view);const share=document.createElement('button');share.type='button';share.textContent='Profil-Link kopieren';share.onclick=run(async()=>{const url=new URL(window.location.href);url.search='';url.hash='';url.searchParams.set('profile',p.handle);if(!navigator.clipboard?.writeText)throw Error('Kopieren nicht verfügbar');await navigator.clipboard.writeText(url.toString());report('Profil-Link kopiert')});item.append(share);
   if(p.bio){const bio=document.createElement('p');bio.textContent=p.bio;item.append(bio)}
   if(user&&profile&&p.user_id!==user.id){
    const btn=document.createElement('button');btn.type='button';const isFollowing=followed.has(p.user_id);btn.textContent=isFollowing?'Nicht mehr folgen':'Folgen';
@@ -45,7 +45,7 @@ async function searchPeople(){
  }
 }
 $('searchPeople').onclick=run(searchPeople);
-$('feedFilter').onchange=run(async()=>{if($('feedFilter').value!=='profile'){$('profileFeedInfo').hidden=true;const pageUrl=new URL(window.location.href);pageUrl.searchParams.delete('profile');window.history.replaceState(null,'',pageUrl)}offset=0;await feed()});
+$('feedFilter').onchange=run(async()=>{if($('feedFilter').value!=='profile'){$('profileFeedInfo').hidden=true;window.history.replaceState(null,'',profilePageUrl(window.location.href))}offset=0;await feed()});
 $('feedSort').onchange=run(async()=>{offset=0;await feed()});
 
 const sharedUrl=new URLSearchParams(window.location.search).get('url');if(sharedUrl&&sharedUrl.length<=4096&&parseAmazonUrl(sharedUrl)?.marketplace==='amazon.de')$('url').value=sharedUrl;
