@@ -693,6 +693,12 @@
             });
         }
 
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+        }
+
         function renderApp() {
             let data = getData();
             const filter = document.getElementById('filterType').value;
@@ -732,7 +738,7 @@
                         diff = (r.value - prev.value).toFixed(2);
                         let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                         let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
-                        diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${prev.date})</span>`;
+                        diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${escapeHtml(prev.date)})</span>`;
                     }
                 } else if (r.isExchange) {
                     diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel Start</span>`;
@@ -747,16 +753,16 @@
                 return `
                     <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div class="flex items-center space-x-3">
-                            ${r.photo ? `<img src="${r.photo}" onclick="openPhotoModal('${r.photo}')" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity" title="Foto vergrößern">` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
+                            ${typeof r.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(r.photo) ? `<img src="${escapeHtml(r.photo)}" onclick="openPhotoModal(this.src)" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity" title="Foto vergrößern">` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                    <span class="text-xs font-bold text-gray-800">${r.name}</span>
-                                    <span class="text-xs text-sky-700 font-semibold">(${r.type} - ${r.location || 'Haupt'})</span>
+                                    <span class="text-xs font-bold text-gray-800">${escapeHtml(r.name)}</span>
+                                    <span class="text-xs text-sky-700 font-semibold">(${escapeHtml(r.type)} - ${escapeHtml(r.location || 'Haupt')})</span>
                                     ${diffText}
                                 </div>
                                 <p class="text-xs text-gray-600 mt-1">
                                     Stand: <strong class="text-gray-900">${r.value} ${unitLabel}</strong> | Datum: ${r.date}
-                                    ${r.note ? ' | Notiz: ' + r.note : ''}
+                                    ${r.note ? ' | Notiz: ' + escapeHtml(r.note) : ''}
                                 </p>
                             </div>
                         </div>
