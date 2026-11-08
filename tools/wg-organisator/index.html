@@ -65,6 +65,7 @@
           {label:'👥 Mitglieder / Kontakte',handler:'openMitbewohnerModal'},
           {label:'🔄 Manuell synchronisieren',handler:'manuelleSynchronisation'},
           {label:'📄 Finanzbericht (PDF)',handler:'exportAbrechnungPDF'},
+          {label:'🔐 Alte WG privat kopieren',handler:'migrateLegacyWgToSecure'},
           {label:'🔐 WG-Zugriff verwalten',handler:'showWgMemberAccess'},
           {label:'🔗 WG-Link teilen',handler:'kopiereWGLink'},
           {label:'📶 WLAN QR-Code',handler:'openWLANQRModal'}
@@ -990,6 +991,45 @@
         function isSecureWgId(id) {
             return typeof id === 'string' && /^secure_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
         }
+        // Explicit, non-destructive copy: never modify or delete the legacy npoint bin.
+        async function migrateLegacyWgToSecure() {
+            if (!wgBinId || isSecureWgId(wgBinId) ||
+                !/^[a-zA-Z0-9_-]{4,128}$/.test(wgBinId))
+                return alert('Migration ist nur für eine ältere WG verfügbar.');
+            const sourceId = wgBinId;
+            try {
+                const user = await getAuthenticatedWgUser();
+                if (!confirm('Die ältere WG in einen neuen, kontogeschützten Speicher kopieren?\\n' +
+                    'Die bisherige WG bleibt unverändert und ist weiterhin über ihren alten Link erreichbar.\\n' +
+                    'Andere Mitglieder müssen später für die neue WG freigegeben werden.')) return;
+                const response = await fetch(NPOINT_API_BASE + encodeURIComponent(sourceId), { cache: 'no-store' });
+                if (!response.ok) throw new Error('Alte WG konnte nicht direkt aus npoint geladen werden.');
+                const payload = await response.json();
+                if (!payload || typeof payload !== 'object' || Array.isArray(payload))
+                    throw new Error('Ungültige alte WG-Daten.');
+                const arrayFields = ['flatmates', 'notes', 'data', 'goals', 'events', 'inventory', 'cleaning', 'shopping', 'cooking', 'contracts'];
+                const objectFields = ['budgets', 'diets', 'infoboard'];
+                if (!arrayFields.some(key => Array.isArray(payload[key])) ||
+                    arrayFields.some(key => payload[key] !== undefined && !Array.isArray(payload[key])) ||
+                    objectFields.some(key => payload[key] !== undefined &&
+                        (!payload[key] || typeof payload[key] !== 'object' || Array.isArray(payload[key]))))
+                    throw new Error('Alte WG hat ein ungültiges Datenformat.');
+                if (!confirm('Die Cloud-Daten der alten WG wurden gelesen. Jetzt eine private Kopie für dein Konto erstellen?')) return;
+                const { data, error } = await supabaseClient.from('wg_spaces')
+                    .insert({ owner_id: user.id, payload })
+                    .select('id').single();
+                if (error || !data?.id) throw new Error(error?.message || 'Kopie konnte nicht erstellt werden.');
+                const newId = SECURE_WG_PREFIX + data.id;
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('id', newId);
+                alert('Private WG-Kopie erstellt.\\nDer alte WG-Link bleibt bestehen.\\nBitte teile ab jetzt nur den neuen Link mit freigegebenen Mitgliedern.');
+                window.location.assign(newUrl.toString());
+            } catch (error) {
+                console.error('WG-Migration fehlgeschlagen:', error);
+                alert('Migration fehlgeschlagen: ' + error.message);
+            }
+        }
+
         async function showWgMemberAccess() {
             try {
                 const user = await getAuthenticatedWgUser();
