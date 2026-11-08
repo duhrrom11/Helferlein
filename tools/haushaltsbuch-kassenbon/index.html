@@ -1747,16 +1747,22 @@
                         budgetbuch_budgets: 'Budgets',
                         budgetbuch_goals: 'Sparziele'
                     };
+                    const countBackupEntries = item => Array.isArray(item) ? item.length :
+                        item && typeof item === 'object' ? Object.keys(item).length : 0;
+                    const emptiedSections = [];
                     const preview = changes.map(([key, value]) => {
                         const incoming = JSON.parse(value);
                         let existing;
                         try { existing = JSON.parse(localStorage.getItem(key)); } catch (_) { existing = null; }
-                        const count = item => Array.isArray(item) ? item.length :
-                            item && typeof item === 'object' ? Object.keys(item).length : 0;
-                        return sectionLabels[key] + ': ' + count(existing) + ' vorhanden → ' + count(incoming) + ' im Backup';
+                        const existingCount = countBackupEntries(existing);
+                        const incomingCount = countBackupEntries(incoming);
+                        if (existingCount > 0 && incomingCount === 0) emptiedSections.push(sectionLabels[key]);
+                        return sectionLabels[key] + ': ' + existingCount + ' vorhanden → ' + incomingCount + ' im Backup';
                     });
                     if (!confirm('Backup-Import prüfen:\n\n' + preview.join('\n') +
                         '\n\nNur diese Bereiche werden vollständig ersetzt. Andere Bereiche bleiben unverändert.\nBitte vorher ein Backup herunterladen.\n\nImport fortsetzen?')) return;
+                    if (emptiedSections.length && !confirm('ACHTUNG: Das Backup enthält keine Einträge für: ' +
+                        emptiedSections.join(', ') + '.\n\nAlle derzeit vorhandenen Einträge in diesen Bereichen werden gelöscht.\n\nTrotzdem importieren?')) return;
                     const previous = changes.map(([key]) => [key, localStorage.getItem(key)]);
                     try {
                         for (const [key, value] of changes) localStorage.setItem(key, value);
