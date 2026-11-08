@@ -1309,6 +1309,14 @@
             return false;
         }
 
+        // Retry unsaved secure-WG changes when the connection returns.
+        // Never retry a revision conflict automatically: it requires a manual reload.
+        window.addEventListener('online', () => {
+            if (isSecureWgId(wgBinId) && secureWgDirty && !secureWgSaveBlocked) {
+                void speichereWGinCloud();
+            }
+        });
+
         async function speichereWGinCloud() {
             if (!wgBinId || !/^[a-zA-Z0-9_-]{4,128}$/.test(wgBinId)) return false;
             const backupObj = {
