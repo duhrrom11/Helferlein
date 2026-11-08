@@ -73,9 +73,11 @@
       const pending = read(k.pending);
       if (localStorage.getItem(k.pending) === null || !navigator.onLine) return false;
       const base = read(k.base);
-      if (base === null || typeof base !== 'object' || !('revision' in base)) {
+      if (base === null || typeof base !== 'object') {
         throw new Error('Missing sync baseline; manual reconciliation required');
       }
+      if (base.unresolved) throw new Error('Cloud baseline unknown; local edits retained for manual reconciliation');
+      if (!('revision' in base)) throw new Error('Missing sync revision; local edits preserved');
       const row = await fetchCloud(uid);
       if (await userId() !== uid) throw new Error('Account changed during sync; pending data preserved');
       if ((row ? row.updated_at : null) !== base.revision) {
@@ -88,6 +90,7 @@
         throw new Error('Cloud changed since last sync; pending data preserved');
       }
       if (row) {
+        if (await userId() !== uid) throw new Error('Account changed before cloud update');
         const { data, error } = await client.from('user_data')
           .update({ data: pending, updated_at: new Date().toISOString() })
           .eq('id', row.id).eq('user_id', uid).eq('updated_at', row.updated_at)
@@ -96,6 +99,7 @@
         if (!data || data.length !== 1) throw new Error('Concurrent cloud change; pending data preserved');
         write(k.revision, data[0].updated_at);
       } else {
+        if (await userId() !== uid) throw new Error('Account changed before cloud insert');
         const { data, error } = await client.from('user_data')
           .insert({ user_id: uid, tool, data: pending }).select('id,updated_at');
         if (error) throw error;
@@ -120,13 +124,26 @@
       if (!uid) throw new Error('Sign in required');
       const k = keys(uid);
       if (localStorage.getItem(k.pending) === null) {
-        // Only a known revision (including an explicitly fetched empty cloud) is safe.
+        // Record the local edit even when the first baseline cannot be fetched.
+        // It must NOT be uploaded until the baseline is known and reconciled.
         if (localStorage.getItem(k.revision) === null) {
-          if (!navigator.onLine) throw new Error('Cloud baseline unavailable while offline');
-          const row = await fetchCloud(uid);
-          if (await userId() !== uid) throw new Error('Account changed while preparing save');
-          write(k.cache, row ? row.data : null);
-          write(k.revision, row ? row.updated_at : null);
+          if (navigator.onLine) {
+            try {
+              const row = await fetchCloud(uid);
+              if (await userId() !== uid) throw new Error('Account changed while preparing save');
+              write(k.cache, row ? row.data : null);
+              write(k.revision, row ? row.updated_at : null);
+            } catch (error) {
+              if (await userId() !== uid) throw error;
+              write(k.base, { unresolved: true });
+              write(k.pending, data);
+              return false;
+            }
+          } else {
+            write(k.base, { unresolved: true });
+            write(k.pending, data);
+            return false;
+          }
         }
         write(k.base, { revision: read(k.revision) });
       }
