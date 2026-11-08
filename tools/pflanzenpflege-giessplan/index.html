@@ -686,7 +686,9 @@
         function openHarvestModal(plantId) { document.getElementById('harvestPlantId').value = plantId; document.getElementById('harvestWeightGrams').value = ""; document.getElementById('harvestModal').classList.remove('hidden'); }
         function closeHarvestModal() { document.getElementById('harvestModal').classList.add('hidden'); }
         function saveHarvest() {
-            let plantId = parseInt(document.getElementById('harvestPlantId').value);
+            const rawId = document.getElementById('harvestPlantId').value;
+            const plantId = Number(rawId);
+            if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(plantId)) return alert('Ungültige Pflanzen-ID.');
             const rawGrams = document.getElementById('harvestWeightGrams').value.trim();
             const grams = Number(rawGrams);
             if (!rawGrams || !Number.isSafeInteger(grams) || grams <= 0) {
@@ -905,7 +907,9 @@
         function openDiaryModal(id) { document.getElementById('diaryPlantId').value = id; document.getElementById('diaryText').value = ""; document.getElementById('diaryModal').classList.remove('hidden'); }
         function closeDiaryModal() { document.getElementById('diaryModal').classList.add('hidden'); }
         function saveDiaryEntry() {
-            const id = parseInt(document.getElementById('diaryPlantId').value);
+            const rawId = document.getElementById('diaryPlantId').value;
+            const id = Number(rawId);
+            if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(id)) return alert('Ungültige Pflanzen-ID.');
             const text = document.getElementById('diaryText').value.trim();
             if(!text) return;
             let data = getData();
