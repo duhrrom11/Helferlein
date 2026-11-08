@@ -386,10 +386,15 @@
           collection: 'plants',
           refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
         });
+        // A page restored from the back/forward cache must not keep a disposed
+        // bridge: reload it to re-establish auth guards and synchronization.
+        window.addEventListener('pageshow', event => {
+          if (event.persisted) window.location.reload();
+        });
         window.addEventListener('pagehide', () => {
           if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
           window.helferleinCloudBridge = null;
-        }, { once: true });
+        });
       });
     </script>
     <!-- Script Logik -->
