@@ -18,7 +18,8 @@ function setup(encryptVaultPayload) {
     encryptVaultPayload,
     currentDecryptedVault: { entries: [] },
     currentMasterKeyHex: 'test-key',
-    localStorage: { setItem(key, value) { writes.push({ key, value: JSON.parse(value) }); } }
+    localStorage: { setItem(key, value) { writes.push({ key, value: JSON.parse(value) }); } },
+    document: { getElementById() { return null; } }
   });
   vm.runInContext(source + '\nthis.save = saveLocalConfig;', context);
   return { save: context.save, writes };
