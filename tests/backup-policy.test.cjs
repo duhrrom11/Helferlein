@@ -214,4 +214,6 @@ assert.match(html, /plaintext\.byteLength > 20 \* 1024 \* 1024/, 'Decrypted back
 assert.match(html, /entries\.length > 500/, 'Reject excessive restore entries');
 assert.match(html, /new Date\(backup\.created\)\.toLocaleString/, 'Show backup date before overwrite');
 assert.match(html, /Die Sicherung könnte unvollständig sein/, 'Warn before incomplete backup export');
+assert.match(html, /const changed = supported\.filter/, 'Show changed local data before restore');
+assert.match(html, /if \(vaultChanged && !confirm\(/, 'Require extra confirmation for vault replacement');
 console.log('Backup policy OK: ' + cases.length + ' key cases and 15 integration checks');
