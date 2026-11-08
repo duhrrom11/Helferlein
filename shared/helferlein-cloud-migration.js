@@ -355,6 +355,9 @@
       } else if (!mismatch && blocked) {
         blocked.remove(); blocked = null;
       }
+      // The shield is installed in <head> before tool rendering; release only
+      // after account ownership has been checked and the mismatch dialog mounted.
+      document.documentElement.classList.remove('helferlein-account-check');
     }
     const onFocus = () => { if (!disposed) void refreshFromCloud().catch(reportError); };
     global.addEventListener('focus', onFocus);
@@ -363,6 +366,7 @@
     let authGeneration = 0;
     const authSubscription = client.auth.onAuthStateChange(() => {
       if (disposed) return;
+      if (currentOwner()) document.documentElement.classList.add('helferlein-account-check');
       const generation = ++authGeneration;
       accountGeneration++;
       // Never run account-sensitive queries synchronously inside the auth callback.
@@ -579,6 +583,8 @@
       document.removeEventListener('visibilitychange', onVisibility);
       if (authSubscription && authSubscription.data && authSubscription.data.subscription) authSubscription.data.subscription.unsubscribe();
       if (blocked) { blocked.remove(); blocked = null; }
+      // Keep the shield in place until a new bridge verifies the active user.
+      if (currentOwner()) document.documentElement.classList.add('helferlein-account-check');
       queue = Promise.resolve(false);
       store.dispose();
       host.remove();
