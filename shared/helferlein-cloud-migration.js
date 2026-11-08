@@ -46,14 +46,16 @@
     }
     function reportError(error) { lastSyncError = error && error.message ? error.message : String(error); status.textContent = 'Cloud: ' + lastSyncError; }
     function changed(data) {
-      if (!data || typeof data !== 'object' || Array.isArray(data)) return Promise.reject(new Error('Invalid changed payload'));
+      if (!data || typeof data !== 'object' || Array.isArray(data)) { reportError(new Error('Ungültige lokale Änderungen')); return Promise.resolve(false); }
       // Called after the existing synchronous local save succeeded.
       // Failed uploads must remain pending, and are never silently discarded.
       const expectedOwner = localStorage.getItem(ownerKey);
-      if (expectedOwner && !validPayload(data)) return Promise.reject(new Error('Ungültige Werkzeugdaten'));
-      const snapshot = JSON.parse(JSON.stringify(data));
+      if (expectedOwner && !validPayload(data)) { reportError(new Error('Ungültige Werkzeugdaten')); return Promise.resolve(false); }
+      let snapshot;
+      try { snapshot = JSON.parse(JSON.stringify(data)); } catch (error) { return Promise.reject(new Error('Änderungen konnten nicht serialisiert werden')); }
       queue = queue.catch(() => {}).then(async () => {
         if (!await isEnabled() || localStorage.getItem(ownerKey) !== expectedOwner) return;
+        if (!validPayload(snapshot)) throw new Error('Ungültige Datensammlung vor Cloud-Speicherung');
         try {
           const user = await currentUser();
           assertOwner(user && user.id);
@@ -69,29 +71,41 @@
     }
     async function refreshFromCloud() {
       if (refreshInProgress || !navigator.onLine || !await isEnabled()) return false;
+      if (document.visibilityState === 'hidden') return false;
       refreshInProgress = true;
       try {
         await queue.catch(() => {});
         const user = await currentUser();
         if (!user || !isOwner(user.id) || await store.hasPending()) return false;
         const before = safeLocalBytes();
+        if (before === null) return false;
         const cachedBytes = localStorage.getItem(cacheKey(user.id));
+        if (cachedBytes === null) return false;
         const result = await store.load();
         if (result.source !== 'cloud' || !validPayload(result.data)) return false;
+        if (localStorage.getItem(enabledKey(user.id)) !== 'true') return false;
         if ((await currentUser())?.id !== user.id || !isOwner(user.id)) return false;
         if (await store.hasPending()) return false;
         if (safeLocalBytes() !== before) return false;
         if (before !== null && cachedBytes !== null) {
           let previous;
           try { previous = JSON.parse(cachedBytes); } catch (_) { return false; }
-          if (JSON.stringify(previous) !== before) return false;
+          let local;
+          try { local = JSON.parse(before); } catch (_) { return false; }
+          if (!validPayload(local) || !validPayload(previous)) return false;
+          if (JSON.stringify(previous) !== JSON.stringify(local)) return false;
         }
         if (before !== null && cachedBytes === null) return false;
+        if (localStorage.getItem(ownerKey) !== user.id) return false;
         const incoming = JSON.stringify(result.data);
+        if (!incoming || incoming === 'null') return false;
         if (before === incoming) return false;
+        if ((await currentUser())?.id !== user.id) return false;
+        if (safeLocalBytes() !== before) return false;
         localStorage.setItem(localKey, incoming);
+        lastSyncError = null;
         status.textContent = 'Aktuelle Supabase-Daten übernommen';
-        if (typeof refresh === 'function') refresh();
+        if (typeof refresh === 'function') { try { refresh(); } catch (error) { reportError(error); } }
         return true;
       } catch (error) { reportError(error); return false; }
       finally { refreshInProgress = false; }
@@ -100,6 +114,7 @@
       // Finish queued local writes before attempting a reconnect flush.
       await queue.catch(() => {});
       if (!await isEnabled() || !navigator.onLine || !localStorage.getItem(ownerKey)) return;
+      if (refreshInProgress) return;
       try {
         const user = await currentUser();
         assertOwner(user && user.id);
@@ -142,7 +157,8 @@
         blocked.remove(); blocked = null;
       }
     }
-    global.addEventListener('focus', () => { void refreshFromCloud(); });
+    global.addEventListener('focus', () => { void refreshFromCloud().catch(reportError); });
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') void refreshFromCloud().catch(reportError); });
     let authGeneration = 0;
     client.auth.onAuthStateChange(() => {
       const generation = ++authGeneration;
@@ -249,6 +265,7 @@
       if (await store.hasPending()) throw new Error('Ausstehende lokale Änderungen vorhanden');
       const result = await store.load();
       if (result.source !== 'cloud') throw new Error('Keine eindeutig abrufbaren Cloud-Daten');
+      if (!navigator.onLine) throw new Error('Verbindung beim Cloud-Laden verloren');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Abfrage gewechselt');
       if (!result.data || typeof result.data !== 'object' || Array.isArray(result.data) || !Array.isArray(result.data[collection])) throw new Error('Cloud-Datenformat ungültig');
       if (!confirm(result.data[collection].length + ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?')) return;
@@ -310,7 +327,7 @@
     });
     void guardAccount().catch(error => { status.textContent = 'Kontoprüfung fehlgeschlagen: ' + error.message; });
     void currentUser().then(user => {
-      if (user && localStorage.getItem(ownerKey) === user.id &&
+      if (user && isOwner(user.id) &&
           localStorage.getItem(enabledKey(user.id)) === 'true') {
         enabledUser = user.id;
         void resume().catch(error => { status.textContent = 'Cloud-Wiederaufnahme fehlgeschlagen: ' + error.message; });
