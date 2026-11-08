@@ -767,7 +767,8 @@
             let data = getData();
             let p = data.plants.find(item => item.id === id);
             if (p) {
-                let todayStr = new Date().toISOString().split('T')[0];
+                const now = new Date();
+                let todayStr = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
                 if (!p.waterHistory) p.waterHistory = [];
                 if (p.waterHistory[0] === todayStr) return;
                 p.lastWatered = todayStr;
