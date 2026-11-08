@@ -436,7 +436,7 @@
             let data = getData();
             if(!data.contacts) data.contacts = [];
             data.contacts.push({ id: Date.now(), name, phone });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('contactName').value = "";
             document.getElementById('contactPhone').value = "";
@@ -455,7 +455,7 @@
             let data = getData();
             if(!data.inventory) data.inventory = [];
             data.inventory.push({ id: Date.now(), title, category, serial, gpsLink });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('invTitle').value = "";
             document.getElementById('invSerial').value = "";
@@ -469,7 +469,7 @@
             if (!confirm("Diesen Stamm-Gegenstand wirklich löschen?")) return;
             let data = getData();
             data.inventory = data.inventory.filter(i => i.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             loadDropdowns();
             renderInventory();
         }
@@ -591,7 +591,7 @@
         function storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo) {
             let data = getData();
             data.items.push({ id: Date.now(), title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo, status: 'active' });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('itemInventorySelect').value = "";
             document.getElementById('itemPersonSelect').value = "";
@@ -612,7 +612,7 @@
             let item = data.items.find(i => i.id === id);
             if (item) {
                 item.status = newStatus;
-                saveData(data);
+                if (!saveData(data)) return;
                 renderApp();
             }
         }
@@ -624,7 +624,7 @@
                 let baseDate = item.returnDate ? new Date(item.returnDate) : new Date();
                 baseDate.setDate(baseDate.getDate() + days);
                 item.returnDate = baseDate.toISOString().split('T')[0];
-                saveData(data);
+                if (!saveData(data)) return;
                 renderApp();
                 alert(`Rückgabedatum um ${days} Tage verlängert!`);
             }
@@ -634,7 +634,7 @@
             if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.items = data.items.filter(i => i.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             loadDropdowns();
             renderApp();
         }
@@ -678,7 +678,7 @@
                 item.returnDate = returnDate;
                 item.deposit = deposit;
                 item.note = note;
-                saveData(data);
+                if (!saveData(data)) return;
             }
             closeEditModal();
             loadDropdowns();
