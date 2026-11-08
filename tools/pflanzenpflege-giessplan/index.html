@@ -1089,10 +1089,14 @@
             doc.setFont("helvetica", "bold"); doc.setFontSize(18);
             doc.text("Pflanzen- & Garten-Pass Report", 14, 20);
             let y = 35;
-            data.plants.forEach(p => {
-                if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`- ${p.name} (${p.species || 'k.A.'}), Ort: ${p.location || 'k.A.'}, Gießen: ${p.interval}T`, 14, y);
-                y += 6;
+            data.plants.filter(p => p && typeof p === 'object' && !Array.isArray(p)).forEach(p => {
+                const line = `- ${String(p.name ?? 'Unbenannt')} (${String(p.species || 'k.A.')}), Ort: ${String(p.location || 'k.A.')}, Gießen: ${String(p.interval ?? '?')}T`;
+                doc.splitTextToSize(line, 180).forEach(textLine => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(textLine, 14, y);
+                    y += 6;
+                });
+                y += 2;
             });
             doc.save("pflanzen-report.pdf");
         }
