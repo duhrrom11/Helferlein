@@ -20,3 +20,4 @@ jobs:
       - run: node tests/household-csv-regression.cjs
       - run: node tests/household-backup-regression.cjs
       - run: node tests/household-render-regression.cjs
+      - run: node tests/household-ics-regression.cjs
