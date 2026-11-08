@@ -738,18 +738,20 @@
             const filter = document.getElementById('filterType').value;
             const container = document.getElementById('readingsList');
 
-            let filtered = data.readings;
+            const validReadings = data.readings.filter(r => r && typeof r === 'object' && !Array.isArray(r) && typeof r.type === 'string');
+            let filtered = validReadings;
             if (filter !== 'All') {
-                filtered = data.readings.filter(r => r.type === filter);
+                filtered = validReadings.filter(r => r.type === filter);
             }
 
-            document.getElementById('statTotalReadings').innerText = data.readings.length;
-            document.getElementById('statStrom').innerText = data.readings.filter(r => r.type.includes('Strom')).length;
-            document.getElementById('statWasser').innerText = data.readings.filter(r => r.type.toLowerCase().includes('wasser')).length;
-            document.getElementById('statGas').innerText = data.readings.filter(r => r.type === 'Gas').length;
+            document.getElementById('statTotalReadings').innerText = validReadings.length;
+            document.getElementById('statStrom').innerText = validReadings.filter(r => r.type.includes('Strom')).length;
+            document.getElementById('statWasser').innerText = validReadings.filter(r => r.type.toLowerCase().includes('wasser')).length;
+            document.getElementById('statGas').innerText = validReadings.filter(r => r.type === 'Gas').length;
 
-            renderPrognosis(data);
-            renderChart(data);
+            const displayData = { ...data, readings: validReadings };
+            renderPrognosis(displayData);
+            renderChart(displayData);
 
             if (filtered.length === 0) {
                 container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge gefunden.</p>`;
@@ -757,7 +759,7 @@
             }
 
             container.innerHTML = filtered.map((r) => {
-                let sameMeterReadings = data.readings
+                let sameMeterReadings = validReadings
                     .filter(item => item.type === r.type && item.name === r.name && new Date(item.date) < new Date(r.date))
                     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
