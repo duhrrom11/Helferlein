@@ -23,4 +23,14 @@ assert.equal(ctx.currentUploadedPhotos[0], 'existing-photo');
 assert.equal(gallery.innerHTML, 'original');
 assert.equal(alerts.length, 1);
 assert.match(html.slice(html.indexOf('function saveReceipt()')), /if \(photoReadFailed\)/);
+class ThrowingReader {
+    readAsDataURL() { throw new Error('File cannot be read'); }
+}
+ctx.FileReader = ThrowingReader;
+ctx.console = {error() {}};
+const validInput = {files: [{type: 'image/png'}], value: 'selected'};
+ctx.loadPhotosToCanvas({target: validInput});
+assert.equal(ctx.pendingPhotoReads, 0, 'failed reads must not leave upload pending');
+assert.equal(ctx.photoReadFailed, true, 'failed reads block saving');
+assert.match(alerts[alerts.length - 1], /nicht geöffnet/);
 console.log('Receipt photo format regression checks passed');

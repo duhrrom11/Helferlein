@@ -743,7 +743,15 @@
                     photoReadFailed = true;
                     alert('Ein Belegbild konnte nicht gelesen werden. Bitte die Bildauswahl erneut versuchen.');
                 };
-                reader.readAsDataURL(file);
+                try {
+                    reader.readAsDataURL(file);
+                } catch (error) {
+                    if (generation !== photoReadGeneration) return;
+                    pendingPhotoReads--;
+                    photoReadFailed = true;
+                    console.error('Belegbild konnte nicht geöffnet werden:', error);
+                    alert('Ein Belegbild konnte nicht geöffnet werden. Bitte die Bildauswahl erneut versuchen.');
+                }
             });
         }
 
