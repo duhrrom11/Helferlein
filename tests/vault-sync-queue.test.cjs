@@ -112,6 +112,25 @@ test('Cloud-Wiederherstellung verlangt Passwort und schuetzt vorhandene Eintraeg
   assert.match(html, /input\.value = ''/);
 });
 
+test('Recovery-Key nur fuer exakt passenden Cloud-Ciphertext', () => {
+  const start = html.indexOf('async function prepareSupabaseRecoveryKey()');
+  const end = html.indexOf('// Verify decryptability with the current local key', start);
+  assert.ok(start >= 0 && end > start);
+  const source = html.slice(start, end);
+  assert.match(source, /encrypted\.iv !== cfg\.encryptedData\.iv/);
+  assert.match(source, /encrypted\.ciphertext !== cfg\.encryptedData\.ciphertext/);
+  assert.match(source, /\.select\('vault_id,encrypted_data'\)/);
+});
+
+test('Wiederherstellung warnt nach erfolgreicher Entschluesselung vor fehlenden Metadaten', () => {
+  const start = html.indexOf('async function restoreVaultFromSupabase()');
+  const end = html.indexOf('// Opt-in: wrap only the random vault key', start);
+  const source = html.slice(start, end);
+  assert.match(source, /Die lokalen Tresor-Einstellungen/);
+  assert.match(source, /Kontakte, Alarmregeln und Check-in/);
+  assert.ok(source.indexOf('Tresor erfolgreich entschlüsselt') < source.indexOf('localStorage.setItem'));
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
