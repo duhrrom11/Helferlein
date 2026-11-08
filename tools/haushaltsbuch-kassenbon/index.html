@@ -938,7 +938,8 @@
 
             const budgetContainer = document.getElementById('budgetProgressList');
             budgetContainer.innerHTML = defaultCategories.map(cat => {
-                const limit = budgets[cat] || 0;
+                const rawLimit = Number(budgets[cat]);
+                const limit = Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 0;
                 const spent = categoryExpenses[cat] || 0;
                 const percent = limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
                 let barColor = "bg-emerald-500";
@@ -1111,7 +1112,7 @@
             container.innerHTML = defaultCategories.map(cat => `
                 <div class="flex justify-between items-center gap-2">
                     <label class="font-semibold text-gray-700">${cat}:</label>
-                    <input type="number" step="10" data-cat="${cat}" value="${budgets[cat] || 0}" class="p-2 border rounded-xl w-32 text-right font-bold">
+                    <input type="number" step="10" data-cat="${cat}" value="${Number.isFinite(Number(budgets[cat])) && Number(budgets[cat]) >= 0 ? Number(budgets[cat]) : 0}" class="p-2 border rounded-xl w-32 text-right font-bold">
                 </div>
             `).join('');
             document.getElementById('budgetModal').classList.remove('hidden');
