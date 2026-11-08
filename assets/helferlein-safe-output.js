@@ -40,5 +40,10 @@
    const number=Number(value);
    return Number.isSafeInteger(number) && number>=0?number:-1;
  }
- global.HelferleinSafe=Object.freeze({html,photo,jsArg,tel,numericId});
+ // For a validated photo URL embedded in an inline JS argument. URL attributes
+ // use photo() directly; decoding its HTML entity here prevents double-encoding.
+ function photoArg(value){
+   return jsArg(photo(value).replace(/&amp;/g,'&'));
+ }
+ global.HelferleinSafe=Object.freeze({html,photo,jsArg,photoArg,tel,numericId});
 })(window);
