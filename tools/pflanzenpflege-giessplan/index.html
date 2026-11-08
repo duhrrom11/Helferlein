@@ -762,12 +762,20 @@
                     if (w > h) { if (w > MAX_W) { h *= MAX_W / w; w = MAX_W; } }
                     else { if (h > MAX_H) { w *= MAX_H / h; h = MAX_H; } }
                     canvas.width = w; canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    callback(canvas.toDataURL('image/jpeg', 0.7));
+                    try {
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) throw new Error('Canvas nicht verfügbar');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        callback(canvas.toDataURL('image/jpeg', 0.7));
+                    } catch (error) {
+                        console.error('Bildverarbeitung fehlgeschlagen:', error);
+                        alert('Das Foto konnte nicht verarbeitet werden. Bitte ein anderes Bild auswählen.');
+                    }
                 };
+                img.onerror = () => alert('Das Foto konnte nicht geöffnet werden. Bitte ein gültiges Bild auswählen.');
                 img.src = e.target.result;
             };
+            reader.onerror = () => alert('Das Foto konnte nicht gelesen werden.');
             reader.readAsDataURL(file);
         }
 
@@ -862,7 +870,13 @@
                 p.species = document.getElementById('editSpecies').value.trim();
                 p.location = document.getElementById('editLocation').value.trim();
                 p.interval = Math.max(1, parseInt(document.getElementById('editInterval').value, 10) || 7);
-                p.lastWatered = document.getElementById('editLastWatered').value;
+                const editedLastWatered = document.getElementById('editLastWatered').value;
+                if (!editedLastWatered) return alert('Bitte ein gültiges Gießdatum eingeben.');
+                if (p.lastWatered !== editedLastWatered) {
+                    if (!Array.isArray(p.waterHistory)) p.waterHistory = [];
+                    p.waterHistory = [editedLastWatered, ...p.waterHistory.filter(date => date !== editedLastWatered)].slice(0, 5);
+                }
+                p.lastWatered = editedLastWatered;
                 p.note = document.getElementById('editNote').value.trim();
                 if (!saveData(data)) return;
             }
