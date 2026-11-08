@@ -1022,20 +1022,6 @@
                 infoboard: { wifi: "", landlord: "", caretaker: "", trash: "" }
             };
 
-            localStorage.setItem('wg_flatmates', JSON.stringify(leereWG.flatmates));
-            localStorage.setItem('wg_notes', JSON.stringify(leereWG.notes));
-            localStorage.setItem('wg_kassenbon_data', JSON.stringify(leereWG.data));
-            localStorage.setItem('wg_budgetbuch_budgets', JSON.stringify(leereWG.budgets));
-            localStorage.setItem('wg_budgetbuch_goals', JSON.stringify(leereWG.goals));
-            localStorage.setItem('wg_events', JSON.stringify(leereWG.events));
-            localStorage.setItem('wg_inventory', JSON.stringify(leereWG.inventory));
-            localStorage.setItem('wg_diets', JSON.stringify(leereWG.diets));
-            localStorage.setItem('wg_cleaning', JSON.stringify(leereWG.cleaning));
-            localStorage.setItem('wg_shopping', JSON.stringify(leereWG.shopping));
-            localStorage.setItem('wg_cooking', JSON.stringify(leereWG.cooking));
-            localStorage.setItem('wg_contracts', JSON.stringify(leereWG.contracts));
-            localStorage.setItem('wg_infoboard', JSON.stringify(leereWG.infoboard));
-
             try {
                 const response = await fetch(NPOINT_API_BASE, {
                     method: 'POST',
