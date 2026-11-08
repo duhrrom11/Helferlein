@@ -438,6 +438,10 @@
 
         function saveData(data) {
             if (!data || typeof data !== 'object' || !Array.isArray(data.pets)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_haustier-gesundheitspass') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
             if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
                 alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
                 return false;
