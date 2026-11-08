@@ -40,3 +40,16 @@ test('WG cloud finance maps exclusively to WG-local keys', () => {
     assert.ok(wg.includes("cloudObj."+field+" !== undefined) localStorage.setItem('"+key+"'"));
   }
 });
+
+test('WG cloud writes return explicit success/failure status', () => {
+  assert.match(wg, /async function speichereWGinCloud\(\)/);
+  assert.match(wg, /if \(!wgBinId\) return false;/);
+  assert.match(wg, /WG-Cloud-Speicherung fehlgeschlagen/);
+  assert.match(wg, /return true;\s*} catch \(error\) \{\s*console\.error\("Fehler beim Speichern in Cloud:", error\);\s*return false;/);
+});
+
+test('household backups carry a format identifier and reject WG payloads', () => {
+  assert.match(household, /format: 'helferlein-haushaltsbuch'/);
+  assert.match(household, /Dies ist kein Haushaltsbuch-Backup/);
+  assert.match(household, /Unbekanntes Backup-Format/);
+});
