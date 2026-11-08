@@ -924,14 +924,14 @@
             if (p) {
                 const editedName = document.getElementById('editName').value.trim();
                 if (!editedName) return alert('Bitte einen Pflanzennamen eingeben.');
+                const interval = readWateringInterval('editInterval');
+                if (interval === null) return alert('Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.');
+                const editedLastWatered = document.getElementById('editLastWatered').value;
+                if (!isValidCalendarDate(editedLastWatered)) return alert('Bitte ein gültiges Gießdatum eingeben.');
                 p.name = editedName;
                 p.species = document.getElementById('editSpecies').value.trim();
                 p.location = document.getElementById('editLocation').value.trim();
-                const interval = readWateringInterval('editInterval');
-                if (interval === null) return alert('Bitte ein Gießintervall zwischen 1 und 3650 Tagen eingeben.');
                 p.interval = interval;
-                const editedLastWatered = document.getElementById('editLastWatered').value;
-                if (!isValidCalendarDate(editedLastWatered)) return alert('Bitte ein gültiges Gießdatum eingeben.');
                 if (p.lastWatered !== editedLastWatered) {
                     if (!Array.isArray(p.waterHistory)) p.waterHistory = [];
                     p.waterHistory = [editedLastWatered, ...p.waterHistory.filter(date => date !== editedLastWatered)].slice(0, 5);
