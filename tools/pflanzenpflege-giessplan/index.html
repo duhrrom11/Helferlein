@@ -780,9 +780,9 @@
                 return {
                     ...defaults,
                     ...stored,
-                    plants: stored.plants.filter(item => item && typeof item === 'object' && !Array.isArray(item)),
-                    inventory: Array.isArray(stored.inventory) ? stored.inventory.filter(item => item && typeof item === 'object') : defaults.inventory,
-                    seeds: Array.isArray(stored.seeds) ? stored.seeds.filter(item => item && typeof item === 'object') : [],
+                    plants: stored.plants.slice(),
+                    inventory: Array.isArray(stored.inventory) ? stored.inventory.slice() : defaults.inventory,
+                    seeds: Array.isArray(stored.seeds) ? stored.seeds.slice() : [],
                     // Preserve extra legacy slots rather than silently deleting saved assignments.
                     beetSlots: Array.isArray(stored.beetSlots)
                         ? [...stored.beetSlots, ...Array(Math.max(0, 16 - stored.beetSlots.length)).fill(null)]
