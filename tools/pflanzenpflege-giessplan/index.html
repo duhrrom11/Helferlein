@@ -883,6 +883,12 @@
             closeEditModal(); loadLocationDropdown(); renderApp();
         }
 
+        function showQrCodeForPlant(id) {
+            const plant = getData().plants.find(item => item.id === id);
+            if (!plant) return;
+            showQrCode(plant.name, plant.species, plant.location, plant.interval);
+        }
+
         function showQrCode(name, species, location, interval) {
             document.getElementById('qrTitle').innerText = name;
             document.getElementById('qrcode').innerHTML = "";
@@ -890,6 +896,12 @@
             document.getElementById('qrModal').classList.remove('hidden');
         }
         function closeQrModal() { document.getElementById('qrModal').classList.add('hidden'); }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+        }
 
         function renderApp() {
             let data = getData();
@@ -924,14 +936,14 @@
 
                     let propBadge = "";
                     if(p.propagation && p.propagation !== 'Standard') {
-                        propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${p.propagation} ${p.propDate ? '('+p.propDate+')' : ''}</span>`;
+                        propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${escapeHtml(p.propagation)} ${p.propDate ? '('+escapeHtml(p.propDate)+')' : ''}</span>`;
                     }
 
                     let harvestSum = p.harvestLog ? p.harvestLog.reduce((acc, h) => acc + h.grams, 0) : 0;
                     let harvestBadge = harvestSum > 0 ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🍅 ${harvestSum >= 1000 ? (harvestSum/1000).toFixed(1)+'kg' : harvestSum+'g'}</span>` : '';
 
                     let diaryHtml = p.diary && p.diary.length > 0 ? `<div class="mt-2 bg-amber-50 border p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 Tagebuch:</span>` + 
-                        p.diary.map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${d.date}:</span> ${d.text}</div>`).join('') + `</div>` : '';
+                        p.diary.map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${escapeHtml(d.date)}:</span> ${escapeHtml(d.text)}</div>`).join('') + `</div>` : '';
 
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
@@ -939,17 +951,17 @@
                                 ${p.photo ? `<img src="${p.photo}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="openGalleryModal(${p.id})">` : `<div onclick="openGalleryModal(${p.id})" class="w-12 h-12 bg-lime-100 text-lime-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer">📸</div>`}
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                        <span class="text-xs font-bold text-gray-800">${p.name}</span>
-                                        ${p.species ? `<span class="text-xs text-lime-700 font-semibold">(${p.species})</span>` : ''}
+                                        <span class="text-xs font-bold text-gray-800">${escapeHtml(p.name)}</span>
+                                        ${p.species ? `<span class="text-xs text-lime-700 font-semibold">(${escapeHtml(p.species)})</span>` : ''}
                                         ${badge}
                                         ${propBadge}
                                         ${harvestBadge}
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">
-                                        ${p.location ? '📍 ' + p.location + ' | ' : ''}
+                                        ${p.location ? '📍 ' + escapeHtml(p.location) + ' | ' : ''}
                                         Gießen: alle ${p.interval}T (~${getMlForPot(p.potSize)}ml)
                                     </p>
-                                    ${p.note ? `<p class="text-[11px] text-gray-400 mt-0.5">${p.note}</p>` : ''}
+                                    ${p.note ? `<p class="text-[11px] text-gray-400 mt-0.5">${escapeHtml(p.note)}</p>` : ''}
                                     ${diaryHtml}
                                 </div>
                             </div>
@@ -958,7 +970,7 @@
                                 <button onclick="openHarvestModal(${p.id})" class="px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-xs font-semibold" title="Ernte">🍅</button>
                                 <button onclick="openGalleryModal(${p.id})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-semibold" title="Galerie">📸</button>
                                 <button onclick="openDiaryModal(${p.id})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold" title="Tagebuch">📖</button>
-                                <button onclick="showQrCode('${p.name}', '${p.species}', '${p.location}', ${p.interval})" class="px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="QR-Code">📱</button>
+                                <button onclick="showQrCodeForPlant(${p.id})" class="px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="QR-Code">📱</button>
                                 <button onclick="openEditModal(${p.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
                                 <button onclick="deletePlant(${p.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
