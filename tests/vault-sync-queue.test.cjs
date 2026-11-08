@@ -131,6 +131,17 @@ test('Wiederherstellung warnt nach erfolgreicher Entschluesselung vor fehlenden 
   assert.ok(source.indexOf('Tresor erfolgreich entschlüsselt') < source.indexOf('localStorage.setItem'));
 });
 
+test('Cloud-Restore mischt keine fremden Kontakt- oder Alarmdaten bei', () => {
+  const start = html.indexOf('async function restoreVaultFromSupabase()');
+  const end = html.indexOf('// Opt-in: wrap only the random vault key', start);
+  const source = html.slice(start, end);
+  assert.match(source, /const restored = \{/);
+  assert.match(source, /trustees: \[\]/);
+  assert.match(source, /alarmPersons: \[\]/);
+  assert.doesNotMatch(source, /const restored = \{ \.\.\.local/);
+  assert.match(source, /rawKey\.fill\(0\)/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
