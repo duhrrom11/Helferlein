@@ -586,7 +586,7 @@
                     ? '<span class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">⚠️ Erntejahr prüfen</span>'
                     : age < 0 ? '<span class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">📅 Zukünftiges Erntejahr</span>'
                     : age > 3 ? `<span class="text-[10px] bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full font-bold">⚠️ Keimfähigkeit evtl. gering (${age}J)</span>` : `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">✅ Gut (${age}J)</span>`;
-                let amazonSearchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(s.name + ' saemereien')}&tag=duhrrom-21`;
+                let amazonSearchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(String(s.name ?? '') + ' saemereien')}&tag=duhrrom-21`;
                 return `<div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs"><div><b>${escapeHtml(s.name)}</b> (Ernte: ${escapeHtml(s.year)})<br>${warning}</div><div class="flex items-center gap-1.5"><a href="${amazonSearchUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Neu kaufen</a><button onclick="removeSeedItem(${idx})" class="text-red-500 font-bold px-1.5">✕</button></div></div>`;
             }).join('') || `<p class="text-xs text-gray-400 text-center py-2">Kein Saatgut im Lager.</p>`;
         }
@@ -605,7 +605,12 @@
             document.getElementById('seedName').value = ""; document.getElementById('seedYear').value = "";
             renderSeedList();
         }
-        function removeSeedItem(idx) { let data = getData(); data.seeds.splice(idx, 1); if (saveData(data)) renderSeedList(); }
+        function removeSeedItem(idx) {
+            let data = getData();
+            if (!Number.isSafeInteger(idx) || idx < 0 || idx >= data.seeds.length) return;
+            data.seeds.splice(idx, 1);
+            if (saveData(data)) renderSeedList();
+        }
 
         // Beet
         function openBeetModal() { renderBeetGrid(); document.getElementById('beetModal').classList.remove('hidden'); }
@@ -664,7 +669,12 @@
             document.getElementById('invItemName').value = ""; document.getElementById('invItemQty').value = "";
             renderInventoryList();
         }
-        function removeInventoryItem(idx) { let data = getData(); data.inventory.splice(idx, 1); if (saveData(data)) renderInventoryList(); }
+        function removeInventoryItem(idx) {
+            let data = getData();
+            if (!Number.isSafeInteger(idx) || idx < 0 || idx >= data.inventory.length) return;
+            data.inventory.splice(idx, 1);
+            if (saveData(data)) renderInventoryList();
+        }
 
         // Ernte
         function openHarvestModal(plantId) { document.getElementById('harvestPlantId').value = plantId; document.getElementById('harvestWeightGrams').value = ""; document.getElementById('harvestModal').classList.remove('hidden'); }
