@@ -764,6 +764,12 @@
             filterLoc.value = locations.includes(selectedLocation) ? selectedLocation : '';
         }
 
+        function isValidCalendarDate(value) {
+            if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+            const date = new Date(value);
+            return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+        }
+
         function savePlant() {
             const name = document.getElementById('plantName').value.trim();
             const species = document.getElementById('plantSpecies').value.trim();
@@ -777,7 +783,8 @@
             const note = document.getElementById('plantNote').value.trim();
             const photoInput = document.getElementById('plantPhotoInput');
 
-            if (!name || !lastWatered) return alert("Bitte Name und Gießdatum angeben!");
+            if (!name || !isValidCalendarDate(lastWatered)) return alert("Bitte Name und gültiges Gießdatum angeben!");
+            if (propDate && !isValidCalendarDate(propDate)) return alert('Bitte ein gültiges Vermehrungsdatum eingeben.');
 
             if (photoInput.files && photoInput.files[0]) {
                 compressImage(photoInput.files[0], (compressedPhoto) => {
@@ -914,7 +921,7 @@
                 p.location = document.getElementById('editLocation').value.trim();
                 p.interval = Math.max(1, parseInt(document.getElementById('editInterval').value, 10) || 7);
                 const editedLastWatered = document.getElementById('editLastWatered').value;
-                if (!editedLastWatered) return alert('Bitte ein gültiges Gießdatum eingeben.');
+                if (!isValidCalendarDate(editedLastWatered)) return alert('Bitte ein gültiges Gießdatum eingeben.');
                 if (p.lastWatered !== editedLastWatered) {
                     if (!Array.isArray(p.waterHistory)) p.waterHistory = [];
                     p.waterHistory = [editedLastWatered, ...p.waterHistory.filter(date => date !== editedLastWatered)].slice(0, 5);
