@@ -579,10 +579,11 @@
             let currentYear = new Date().getFullYear();
             document.getElementById('seedList').innerHTML = data.seeds.map((s, idx) => {
                 const parsedYear = Number(s.year);
-                const validYear = Number.isInteger(parsedYear) && parsedYear >= 1900 && parsedYear <= currentYear;
+                const validYear = Number.isInteger(parsedYear) && parsedYear >= 1900 && parsedYear <= currentYear + 1;
                 const age = validYear ? currentYear - parsedYear : null;
                 let warning = age === null
                     ? '<span class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">⚠️ Erntejahr prüfen</span>'
+                    : age < 0 ? '<span class="text-[10px] bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full font-bold">📅 Zukünftiges Erntejahr</span>'
                     : age > 3 ? `<span class="text-[10px] bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full font-bold">⚠️ Keimfähigkeit evtl. gering (${age}J)</span>` : `<span class="text-[10px] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full font-bold">✅ Gut (${age}J)</span>`;
                 let amazonSearchUrl = `https://www.amazon.de/s?k=${encodeURIComponent(s.name + ' saemereien')}&tag=duhrrom-21`;
                 return `<div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs"><div><b>${escapeHtml(s.name)}</b> (Ernte: ${escapeHtml(s.year)})<br>${warning}</div><div class="flex items-center gap-1.5"><a href="${amazonSearchUrl}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg">🛒 Neu kaufen</a><button onclick="removeSeedItem(${idx})" class="text-red-500 font-bold px-1.5">✕</button></div></div>`;
@@ -1010,8 +1011,8 @@
                     }, 0) : 0;
                     let harvestBadge = harvestSum > 0 ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🍅 ${harvestSum >= 1000 ? (harvestSum/1000).toFixed(1)+'kg' : harvestSum+'g'}</span>` : '';
 
-                    let diaryHtml = p.diary && p.diary.length > 0 ? `<div class="mt-2 bg-amber-50 border p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 Tagebuch:</span>` + 
-                        p.diary.map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${escapeHtml(d.date)}:</span> ${escapeHtml(d.text)}</div>`).join('') + `</div>` : '';
+                    let diaryHtml = Array.isArray(p.diary) && p.diary.length > 0 ? `<div class="mt-2 bg-amber-50 border p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 Tagebuch:</span>` + 
+                        p.diary.filter(d => d && typeof d === 'object').map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${escapeHtml(d.date)}:</span> ${escapeHtml(d.text)}</div>`).join('') + `</div>` : '';
 
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
