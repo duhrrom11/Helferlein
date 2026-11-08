@@ -715,8 +715,11 @@
             
             try {
                 const cfg = getVaultConfig();
+                const syncRevision = localSaveRevision;
                 cfg.encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
 
+                // A newer local edit must not be represented as already cloud-saved.
+                if (syncRevision !== localSaveRevision) return false;
                 await db.collection("vaults").doc(cfg.vaultId).set({
                     vaultId: cfg.vaultId,
                     ownerName: cfg.ownerName || "",
@@ -728,6 +731,18 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
                 
+                // The write may have succeeded for an older snapshot while the user
+                // continued editing locally. Do not claim the latest state is synced.
+                if (syncRevision !== localSaveRevision) {
+                    if (!silent) {
+                        document.getElementById('syncErrorMessage').innerText =
+                            "Während der Cloud-Speicherung wurden neuere lokale Änderungen vorgenommen. Bitte erneut synchronisieren.";
+                        document.getElementById('syncStatusLoading').classList.add('hidden');
+                        document.getElementById('syncStatusSuccess').classList.add('hidden');
+                        document.getElementById('syncStatusError').classList.remove('hidden');
+                    }
+                    return false;
+                }
                 // Keine alte Konfiguration zurück in localStorage schreiben:
                 // Während des Cloud-Aufrufs können neuere lokale Änderungen entstanden sein.
                 if (!silent) {
