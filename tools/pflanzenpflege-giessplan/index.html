@@ -838,8 +838,11 @@
 
         function storePlant(name, species, location, light, potSize, interval, lastWatered, propagation, propDate, note, photo) {
             let data = getData();
+            const existingIds = new Set(data.plants.filter(item => item && typeof item === 'object').map(item => item.id));
+            let newId = Date.now() * 1000 + Math.floor(Math.random() * 1000);
+            while (existingIds.has(newId)) newId++;
             data.plants.push({ 
-                id: Date.now() * 1000 + Math.floor(Math.random() * 1000), 
+                id: newId, 
                 name, species, location, light, potSize, interval, lastWatered, propagation, propDate, note, photo,
                 galleryPhotos: photo ? [photo] : [],
                 waterHistory: [lastWatered], diary: [], harvestLog: []
@@ -901,7 +904,7 @@
         function deletePlant(id) {
             if (!confirm("⚠️ Pflanze wirklich löschen?")) return;
             let data = getData();
-            data.plants = data.plants.filter(item => item.id !== id);
+            data.plants = data.plants.filter(item => !item || typeof item !== 'object' || item.id !== id);
             data.beetSlots = data.beetSlots.map(slotId => slotId === id ? null : slotId);
             if (!saveData(data)) return;
             loadLocationDropdown(); renderApp();
@@ -909,7 +912,7 @@
 
         function openEditModal(id) {
             let data = getData();
-            let p = data.plants.find(item => item.id === id);
+            let p = data.plants.find(item => item && typeof item === 'object' && item.id === id);
             if (!p) return;
             document.getElementById('editId').value = p.id;
             document.getElementById('editName').value = p.name;
