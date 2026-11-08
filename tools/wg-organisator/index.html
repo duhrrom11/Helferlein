@@ -892,8 +892,13 @@
         let wgBinId = urlParams.get('id');
         const savedWgId = localStorage.getItem('wg_active_bin_id');
 
-        if (!wgBinId && savedWgId) {
-            window.location.replace(window.location.pathname + "?id=" + savedWgId);
+        const validWgId = id => typeof id === 'string' && /^[a-zA-Z0-9_-]{4,128}$/.test(id);
+        if (wgBinId && !validWgId(wgBinId)) {
+            wgBinId = null;
+            alert('Ungültige WG-ID im Link.');
+        }
+        if (!wgBinId && validWgId(savedWgId)) {
+            window.location.replace(window.location.pathname + "?id=" + encodeURIComponent(savedWgId));
         } else if (wgBinId) {
             localStorage.setItem('wg_active_bin_id', wgBinId);
         }
