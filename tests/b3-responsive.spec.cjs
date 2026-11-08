@@ -120,7 +120,7 @@ test('B3 dark mode keeps representative text, buttons and fields high contrast',
       ['login button','#settingsModal button.bg-lime-600','#settingsModal button.bg-lime-600']
     ].map(([name,foreground,background])=>{
       const f=document.querySelector(foreground),b=document.querySelector(background);
-      return {name,ratio:contrast(getComputedStyle(f).color,getComputedStyle(b).backgroundColor)};
+      return {name,foreground:getComputedStyle(f).color,background:getComputedStyle(b).backgroundColor,ratio:contrast(getComputedStyle(f).color,getComputedStyle(b).backgroundColor)};
     });
   });
   console.log('B3_CONTRAST',JSON.stringify(values));
