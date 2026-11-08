@@ -1,0 +1,50 @@
+name: Helferlein OpenAI Draft PR Agent
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: helferlein-openai-draft-pr
+  cancel-in-progress: false
+
+jobs:
+  propose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Validate agent
+        run: node --check scripts/openai-draft-pr-agent.cjs
+      - name: Generate safe proposal
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-5-mini
+        run: node scripts/openai-draft-pr-agent.cjs
+      - name: Verify strict output allowlist
+        run: |
+          test -f "docs/agent-proposals/vorschlag-${GITHUB_RUN_ID}.md"
+          test "$(find docs/agent-proposals -maxdepth 1 -type f -name "vorschlag-${GITHUB_RUN_ID}.md" | wc -l)" -eq 1
+          test -z "$(git status --porcelain --untracked-files=all | grep -v "^?? docs/agent-proposals/vorschlag-${GITHUB_RUN_ID}.md$")"
+      - name: Open draft pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          branch="agent/proposal-${GITHUB_RUN_ID}"
+          file="docs/agent-proposals/vorschlag-${GITHUB_RUN_ID}.md"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -- "$file"
+          git diff --cached --name-only | grep -Fx "$file"
+          test "$(git diff --cached --name-only | wc -l)" -eq 1
+          git commit -m "docs: OpenAI agent proposal ${GITHUB_RUN_ID}"
+          git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" push origin "HEAD:refs/heads/$branch"
+          gh pr create --draft --base main --head "$branch" --title "Agent-Entwurf: Entwicklungsvorschlag ${GITHUB_RUN_ID}" --body "Automatisch generierter **unverbindlicher** Vorschlag. Keine Codeausführung, keine Supabase-Änderung. Bitte vor jeglicher Umsetzung manuell prüfen. Workflow: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
