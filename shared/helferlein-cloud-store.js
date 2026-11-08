@@ -8,6 +8,7 @@
     const prefix = 'helferlein_cloud_' + tool + '_';
     let flushing = null;
     let saving = null;
+    let operationOwner = null;
     const snapshot = data => JSON.parse(JSON.stringify(data));
     const read = key => {
       const raw = localStorage.getItem(key);
@@ -18,9 +19,10 @@
     async function userId() {
       const { data, error } = await client.auth.getUser();
       if (error) throw error;
-      return data.user ? data.user.id : null;
+      return data && data.user && typeof data.user.id === 'string' ? data.user.id : null;
     }
     function keys(uid) {
+      if (!/^[a-z0-9-]{1,100}$/i.test(uid)) throw new Error('Invalid user identity');
       return { cache: prefix + uid + '_cache', pending: prefix + uid + '_pending',
         revision: prefix + uid + '_revision', base: prefix + uid + '_base' };
     }
@@ -32,7 +34,7 @@
       if (!Array.isArray(data)) throw new Error('Invalid cloud response');
       if (data.length > 1) throw new Error('Multiple cloud records found; manual resolution required');
       const row = data[0] || null;
-      if (row && (!row.id || typeof row.updated_at !== 'string')) throw new Error('Invalid cloud record identity');
+      if (row && (!row.id || typeof row.updated_at !== 'string' || !row.updated_at)) throw new Error('Invalid cloud record identity');
       if (row && (!row.data || typeof row.data !== 'object' || Array.isArray(row.data))) throw new Error('Invalid cloud payload');
       return row;
     }
@@ -66,9 +68,15 @@
       }
     }
     async function flush() {
-      if (flushing) return flushing;
-      flushing = performFlush();
-      try { return await flushing; } finally { flushing = null; }
+      const uid = await userId();
+      if (!uid) throw new Error('Sign in required');
+      if (flushing) {
+        if (operationOwner !== uid) throw new Error('Different account has an active sync');
+        return flushing;
+      }
+      operationOwner = uid;
+      flushing = performFlush(uid);
+      try { return await flushing; } finally { flushing = null; operationOwner = null; }
     }
     function canonical(value) {
       if (Array.isArray(value)) return value.map(canonical);
@@ -87,12 +95,13 @@
         write(k.base, { revision });
       }
     }
-    async function performFlush() {
+    async function performFlush(expectedUid) {
       const uid = await userId();
-      if (!uid) throw new Error('Sign in required');
+      if (!uid || uid !== expectedUid) throw new Error('Account changed before flush');
       const k = keys(uid);
       const pending = read(k.pending);
       if (localStorage.getItem(k.pending) === null || !navigator.onLine) return false;
+      const pendingBytes = localStorage.getItem(k.pending);
       if (!pending || typeof pending !== 'object' || Array.isArray(pending)) throw new Error('Invalid pending data; upload blocked');
       const base = read(k.base);
       if (base === null || typeof base !== 'object' || Array.isArray(base)) {
@@ -103,20 +112,23 @@
       if (base.revision !== null && typeof base.revision !== 'string') throw new Error('Invalid sync revision');
       const row = await fetchCloud(uid);
       if (await userId() !== uid) throw new Error('Account changed during sync; pending data preserved');
+      if (localStorage.getItem(k.pending) !== pendingBytes) return false;
       if ((row ? row.updated_at : null) !== base.revision) {
         // An earlier request may have reached Supabase before the browser lost
         // its response. An exact match is safe to acknowledge without writing.
         if (row && sameData(row.data, pending)) {
           if (await userId() !== uid) throw new Error('Account changed before acknowledging remote write');
+          if (localStorage.getItem(k.pending) !== pendingBytes) return false;
           finishAcknowledged(k, pending, row.updated_at);
           return true;
         }
         throw new Error('Cloud changed since last sync; pending data preserved');
       }
       if (row && !row.updated_at) throw new Error('Cloud revision unavailable');
-      if (row && !navigator.onLine) return false;
+      if (!navigator.onLine) return false;
       if (row) {
         if (await userId() !== uid) throw new Error('Account changed before cloud update');
+        if (localStorage.getItem(k.pending) !== pendingBytes) return false;
         const { data, error } = await client.from('user_data')
           .update({ data: pending, updated_at: new Date().toISOString() })
           .eq('id', row.id).eq('user_id', uid).eq('tool', tool).eq('updated_at', row.updated_at)
@@ -126,6 +138,7 @@
         write(k.revision, data[0].updated_at);
       } else {
         if (await userId() !== uid) throw new Error('Account changed before cloud insert');
+        if (localStorage.getItem(k.pending) !== pendingBytes) return false;
         const { data, error } = await client.from('user_data')
           .insert({ user_id: uid, tool, data: pending }).select('id,updated_at');
         if (error) throw error;
@@ -133,6 +146,7 @@
         write(k.revision, data[0].updated_at);
       }
       if (await userId() !== uid) throw new Error('Account changed after sync; pending data preserved');
+      if (localStorage.getItem(k.pending) === null) throw new Error('Pending data unexpectedly removed');
       // A newer local edit may have arrived while the request was in flight.
       // Keep it queued with the new server revision rather than deleting it.
       finishAcknowledged(k, pending, read(k.revision));
@@ -145,6 +159,7 @@
       const expectedUid = await userId();
       if (!expectedUid) throw new Error('Sign in required');
       const immutable = snapshot(data);
+      if (!immutable || typeof immutable !== 'object' || Array.isArray(immutable)) throw new Error('Invalid serialized payload');
       const next = previous.catch(() => {}).then(() => performSave(immutable, expectedUid));
       saving = next;
       try { return await next; } finally { if (saving === next) saving = null; }
@@ -177,6 +192,7 @@
         }
         write(k.base, { revision: read(k.revision) });
       }
+      if (await userId() !== uid) throw new Error('Account changed before local pending write');
       write(k.pending, data);
       if (!navigator.onLine) return false;
       // Wait for an in-flight upload, then send the latest queued snapshot.
@@ -196,6 +212,7 @@
       if (localStorage.getItem(k.pending) === null) return { status: 'nothing-pending' };
       const base = read(k.base);
       if (!base || !base.unresolved) return { status: 'baseline-known' };
+      if (flushing) throw new Error('Sync already in progress');
       const pending = read(k.pending);
       if (!pending || typeof pending !== 'object' || Array.isArray(pending)) throw new Error('Invalid pending data');
       const row = await fetchCloud(uid);
@@ -207,15 +224,20 @@
         return { status: 'already-synced' };
       }
       if (row) return { status: 'conflict' };
+      if (localStorage.getItem(k.base) !== JSON.stringify(base)) throw new Error('Baseline changed during reconciliation');
       // Empty cloud is confirmed now. A later concurrent insert is still
       // guarded by the existing fetch/compare path in performFlush().
       if (localStorage.getItem(k.pending) !== JSON.stringify(pending)) throw new Error('Local changes arrived during reconciliation');
+      if (await userId() !== uid) throw new Error('Account changed before reconciliation commit');
       write(k.base, { revision: null });
       return { status: 'ready' };
     }
     async function hasPending() {
       const uid = await userId();
-      return uid ? localStorage.getItem(keys(uid).pending) !== null : false;
+      if (!uid) return false;
+      const exists = localStorage.getItem(keys(uid).pending) !== null;
+      if (await userId() !== uid) throw new Error('Account changed during pending check');
+      return exists;
     }
     return { load, save, flush, hasPending, reconcilePending };
   }
