@@ -942,7 +942,11 @@
         function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
 
         function updatePlant() {
-            const id = parseInt(document.getElementById('editId').value);
+            const rawId = document.getElementById('editId').value;
+            const id = Number(rawId);
+            if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(id)) {
+                return alert('Ungültige Pflanzen-ID. Die Änderungen wurden nicht gespeichert.');
+            }
             let data = getData();
             let p = data.plants.find(item => item && typeof item === 'object' && item.id === id);
             if (!p) return alert('Pflanze nicht gefunden. Die Änderungen wurden nicht gespeichert.');
