@@ -55,6 +55,7 @@ gallery.children = [];
 gallery.insertBefore = () => {};
 gallery.classList.remove = () => {};
 ctx.document.getElementById = () => gallery;
+ctx.document.createElement = () => ({dataset: {}});
 ctx.loadPhotosToCanvas({target: {files: [{type: 'image/png', size: 100}], value: 'selected'}});
 assert.equal(ctx.pendingPhotoReads, 1, 'first image must finish decoding before save');
 pendingImage.onerror();
