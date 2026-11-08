@@ -42,3 +42,9 @@ In beiden geprüften Werkzeugen sind die Skripte `shared/helferlein-cloud-store.
 **Wichtig:** Dies ist noch **keine automatische Supabase-Datenhaltung**. Die vorhandenen synchronen `getData()`/`saveData()`-Funktionen verwenden weiterhin die bisherigen lokalen Schlüssel. Änderungen nach der Erstübernahme werden derzeit nicht automatisch in Supabase gespeichert. Bis eine sichere, laufende Synchronisierung implementiert und freigegeben ist, darf diese Funktion nicht als vollständige Cloud-Sicherung beworben werden.
 
 Die opt-in-Übernahme ist für den Entwurfs-PR vorgesehen, nicht für die produktive Freischaltung. Vor einem Merge müssen unter anderem doppelte Cloud-Zeilen, konkurrierende Erstübernahmen, Benutzerwechsel und Datenformate abgesichert werden. Keine produktiven Testdaten anlegen.
+
+## Nachfolgende Änderungen (Entwicklungsstand)
+
+Nach einer **ausdrücklich bestätigten** Erstübernahme wird für den angemeldeten Benutzer die Cloud-Synchronisierung aktiviert. Erfolgreiche synchrone lokale `saveData()`-Aufrufe in Pflanzenpflege und Zählerstände melden den neuen Stand zusätzlich an die Cloud-Warteschlange. Beim Wiederverbinden kann der ausstehende Stand übertragen werden. Die lokale Speicherung bleibt die unmittelbare Schreibquelle der bisherigen Oberfläche; ein fehlgeschlagener Cloud-Aufruf darf sie nicht rückgängig machen.
+
+**Nicht freigeben, bevor gelöst:** Die bisherigen lokalen Datenschlüssel sind nicht benutzerbezogen. Ein Benutzerwechsel am selben Browser kann sonst fremde lokale Daten anzeigen. Deshalb ist der Entwurfsbranch ausdrücklich **nicht mergefähig**, bis der Benutzerwechsel und das Cache-Switching sauber implementiert sind. Auch parallele Cloud-Neuanlagen benötigen eine eindeutige Datenbank-Constraint; kein produktiver Schemaeingriff ohne gesonderte Prüfung. Konflikte müssen sichtbar und ohne Datenverlust auflösbar sein.
