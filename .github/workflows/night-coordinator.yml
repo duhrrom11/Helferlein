@@ -24,6 +24,10 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+      - name: Validate coordinator syntax and safety guardrails
+        run: |
+          node --check scripts/night-coordinator.cjs
+          node scripts/night-coordinator-guardrails.cjs
       - name: Read-only night check and checkpoint
         env:
           GITHUB_TOKEN: ${{ github.token }}
