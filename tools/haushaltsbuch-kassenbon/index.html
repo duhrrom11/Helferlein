@@ -1290,14 +1290,18 @@
                 return;
             }
             expDate.setMonth(expDate.getMonth() + months);
-            const fmtDate = (d) => d.toISOString().replace(/-|:|\.\d+/g, '').slice(0, 8);
+            const fmtDate = d => d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') +
+                String(d.getDate()).padStart(2, '0');
             const dateStr = fmtDate(expDate);
+            const endDate = new Date(expDate);
+            endDate.setDate(endDate.getDate() + 1);
+            const endDateStr = fmtDate(endDate);
 
             const title = encodeURIComponent(`Garantie-Ablauf: ${r.title}`);
             const price = Number(r.price);
             const displayPrice = Number.isFinite(price) ? price.toFixed(2) + ' €' : 'k.A.';
             const details = encodeURIComponent(`Garantie für ${r.title} (${r.store}) läuft heute ab.\nKaufdatum: ${r.date}\nPreis: ${displayPrice}\nS/N: ${r.sn || 'k.A.'}`);
-            window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${dateStr}&details=${details}`, '_blank');
+            window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${endDateStr}&details=${details}`, '_blank');
         }
 
         function escapeCalendarText(value) {
