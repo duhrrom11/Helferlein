@@ -974,7 +974,7 @@
                     <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-sm text-emerald-900">${HelferleinSafe.html(g.title)}</span>
-                            <button onclick="deleteSavingsGoal(${g.id})" class="text-red-500 text-xs font-bold hover:opacity-80">✕</button>
+                            <button onclick="deleteSavingsGoal(${HelferleinSafe.numericId(g.id)})" class="text-red-500 text-xs font-bold hover:opacity-80">✕</button>
                         </div>
                         <div class="flex justify-between text-xs text-gray-600">
                             <span>Gespart: <strong>${g.current.toFixed(2)} €</strong></span>
@@ -984,7 +984,7 @@
                             <div class="bg-emerald-600 h-2.5 transition-all" style="width: ${percent}%"></div>
                         </div>
                         <div class="flex gap-2 pt-1">
-                            <button onclick="depositGoal(${g.id})" class="flex-1 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">+ Einzahlen</button>
+                            <button onclick="depositGoal(${HelferleinSafe.numericId(g.id)})" class="flex-1 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">+ Einzahlen</button>
                         </div>
                     </div>
                 `;
@@ -1045,7 +1045,7 @@
                     <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div class="flex items-start space-x-3">
                             ${photos.length > 0 
-                                ? `<div class="relative cursor-pointer" onclick="openGalleryModal(${r.id})">
+                                ? `<div class="relative cursor-pointer" onclick="openGalleryModal(${HelferleinSafe.numericId(r.id)})">
                                      <img src="${HelferleinSafe.photo(photos[0])}" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
                                      ${photos.length > 1 ? `<span class="absolute bottom-0 right-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br-xl">+${photos.length - 1}</span>` : ''}
                                    </div>` 
@@ -1069,11 +1069,11 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
-                            <button onclick="editReceipt(${r.id})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold">✏️ Bearbeiten</button>
-                            ${r.warrantyMonths > 0 ? `<button onclick="openQRModal(${r.id})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold">🏷️ QR</button>` : ''}
-                            ${r.warrantyMonths > 0 ? `<button onclick="openGoogleCalendar(${r.id})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold">📅 Google</button>` : ''}
-                            ${r.warrantyMonths > 0 ? `<button onclick="downloadICS(${r.id})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold">📄 .ics</button>` : ''}
-                            <button onclick="deleteReceipt(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                            <button onclick="editReceipt(${HelferleinSafe.numericId(r.id)})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold">✏️ Bearbeiten</button>
+                            ${r.warrantyMonths > 0 ? `<button onclick="openQRModal(${HelferleinSafe.numericId(r.id)})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold">🏷️ QR</button>` : ''}
+                            ${r.warrantyMonths > 0 ? `<button onclick="openGoogleCalendar(${HelferleinSafe.numericId(r.id)})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold">📅 Google</button>` : ''}
+                            ${r.warrantyMonths > 0 ? `<button onclick="downloadICS(${HelferleinSafe.numericId(r.id)})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold">📄 .ics</button>` : ''}
+                            <button onclick="deleteReceipt(${HelferleinSafe.numericId(r.id)})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                         </div>
                     </div>
                 `;
@@ -1163,7 +1163,7 @@
             document.getElementById('galleryTitle').innerText = `🖼️ Galerie: ${r.title}`;
             container.innerHTML = photos.map((src, idx) => `
                 <div class="space-y-1 text-center">
-                    <img src="${src}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
+                    <img src="${HelferleinSafe.photo(src)}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100" alt="Kassenbon-Seite">
                     <span class="text-xs text-gray-500">Seite ${idx + 1} von ${photos.length}</span>
                 </div>
             `).join('');
