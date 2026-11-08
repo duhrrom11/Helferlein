@@ -787,7 +787,7 @@
 
             types.forEach(t => {
                 let list = data.readings
-                    .filter(r => r.type === t || r.type === 'Strom-NT' || (t === 'Kaltwasser' && r.type === 'Warmwasser'))
+                    .filter(r => r.type === t)
                     .sort((a,b) => new Date(a.date) - new Date(b.date));
 
                 if (list.length >= 2) {
@@ -825,16 +825,13 @@
                         let isNachzahlung = diffCost > 0;
                         let statusColor = isNachzahlung ? 'text-red-600' : 'text-emerald-600';
 
-                        let lastYearEst = yearlyEst * 0.95;
-                        let percentChange = (((yearlyEst - lastYearEst) / lastYearEst) * 100).toFixed(1);
-                        let compText = percentChange <= 0 ? `<span class="text-emerald-700 font-semibold">📉 ${Math.abs(percentChange)}% weniger als Vorjahr</span>` : `<span class="text-red-600 font-semibold">📈 +${percentChange}% mehr als Vorjahr</span>`;
+                        // No previous-year estimate is shown without actual prior-year readings.
 
                         html += `
                             <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
                                 <h4 class="font-bold text-sm">${t} Prognose & Live-Kosten</h4>
                                 <p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${dailyCost} € / Tag</strong></p>
                                 <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
-                                <p class="text-xs">${compText}</p>
                                 <p class="text-xs">Kosten: <strong>${yearlyCost} €</strong> (Bezahlt: ${yearlyAbschlag} €)</p>
                                 <p class="text-xs font-bold ${statusColor}">
                                     ${isNachzahlung ? '⚠️ Nachzahlung: ca. ' + diffCost + ' €' : '🎉 Guthaben: ca. ' + Math.abs(diffCost) + ' €'}
