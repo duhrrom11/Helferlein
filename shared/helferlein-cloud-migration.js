@@ -2,6 +2,7 @@
 (function (global) {
   'use strict';
   function mount({ client, tool, localKey, collection, refresh, target }) {
+    if (!client || !tool || !localKey || !collection) throw new Error('Missing migration configuration');
     const store = global.HelferleinCloudStore.createStore(client, tool);
     let enabledUser = null;
     let queue = Promise.resolve();
@@ -11,7 +12,7 @@
     // Fail closed when a different account is active; never upload its contents.
     function assertOwner(uid) {
       const owner = localStorage.getItem(ownerKey);
-      if (owner !== uid) throw new Error('Benutzerwechsel erkannt: lokaler Speicher ist nicht diesem Konto zugeordnet. Cloud-Sync gesperrt.');
+      if (!uid || owner !== uid) throw new Error('Benutzerwechsel erkannt: lokaler Speicher ist nicht diesem Konto zugeordnet. Cloud-Sync gesperrt.');
     }
     async function currentUser() {
       const { data, error } = await client.auth.getUser();
@@ -60,7 +61,7 @@
         status.textContent = 'Synchronisierung ausstehend: ' + error.message;
       }
     }
-    global.addEventListener('online', () => { void resume(); });
+    global.addEventListener('online', () => { void resume().catch(error => { status.textContent = 'Synchronisierung ausstehend: ' + error.message; }); });
     let blocked = null;
     async function guardAccount() {
       const user = await currentUser();
@@ -80,7 +81,7 @@
     client.auth.onAuthStateChange(() => {
       // Never run account-sensitive queries synchronously inside the auth callback.
       setTimeout(() => {
-        void guardAccount().catch(() => {});
+        void guardAccount().catch(error => { status.textContent = 'Kontoprüfung fehlgeschlagen: ' + error.message; });
         void currentUser().then(user => {
           enabledUser = user && localStorage.getItem(ownerKey) === user.id &&
             localStorage.getItem(enabledKey(user.id)) === 'true' ? user.id : null;
@@ -116,7 +117,7 @@
       const raw = localStorage.getItem(localKey);
       if (raw === null) return null;
       const value = JSON.parse(raw);
-      if (!value || typeof value !== 'object' || !Array.isArray(value[collection])) {
+      if (!value || typeof value !== 'object' || Array.isArray(value) || !Array.isArray(value[collection])) {
         throw new Error('Lokale Daten sind nicht lesbar; keine Übernahme möglich');
       }
       return value;
@@ -128,6 +129,9 @@
     }
     button('Cloud-Status anzeigen', async () => {
       await authenticated();
+      const user = await currentUser();
+      const owner = localStorage.getItem(ownerKey);
+      if (owner && owner !== user.id) throw new Error('Lokale Daten gehören zu einem anderen Konto');
       const result = await store.load();
       const local = localData();
       status.textContent = 'Cloud: ' + result.source + ' · Lokal: ' +
@@ -149,6 +153,7 @@
       if (!confirm('Lokale ' + local[collection].length + ' Einträge einmalig in die leere Supabase-Cloud übertragen? Lokale Daten bleiben erhalten.')) return;
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
       if (localStorage.getItem(localKey) !== originalBytes) throw new Error('Lokale Daten haben sich während der Bestätigung geändert; bitte erneut prüfen');
+      if (localStorage.getItem(ownerKey) !== owner) throw new Error('Kontozuordnung wurde während der Bestätigung geändert');
       const result = await store.save(local);
       if (result) await enable();
       status.textContent = result ? 'Daten übertragen · weitere Änderungen werden synchronisiert.' : 'Übertragung ausstehend.';
@@ -163,11 +168,12 @@
       if (await store.hasPending()) throw new Error('Ausstehende lokale Änderungen vorhanden');
       const result = await store.load();
       if (result.source !== 'cloud') throw new Error('Keine eindeutig abrufbaren Cloud-Daten');
-      if (!result.data || !Array.isArray(result.data[collection])) throw new Error('Cloud-Datenformat ungültig');
+      if (!result.data || typeof result.data !== 'object' || Array.isArray(result.data) || !Array.isArray(result.data[collection])) throw new Error('Cloud-Datenformat ungültig');
       if (!confirm(result.data[collection].length + ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?')) return;
       // Recheck before writing: never replace local data added while awaiting confirmation.
       if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten wurden inzwischen angelegt');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
+      if (localStorage.getItem(ownerKey) !== owner) throw new Error('Kontozuordnung hat sich geändert');
       localStorage.setItem(localKey, JSON.stringify(result.data));
       await enable();
       status.textContent = 'Cloud-Daten lokal geladen. Seite wird aktualisiert.';
@@ -177,6 +183,8 @@
       if (!await isEnabled()) throw new Error('Cloud-Synchronisierung ist nicht aktiviert');
       const user = await currentUser();
       assertOwner(user.id);
+      await queue.catch(() => {});
+      if ((await currentUser())?.id !== user.id) throw new Error('Konto während des Abgleichs gewechselt');
       const result = await store.reconcilePending();
       if (result.status === 'conflict') {
         status.textContent = 'Konflikt: Cloud und lokale Änderungen unterscheiden sich. Keine Daten überschrieben.';
@@ -187,6 +195,8 @@
           status.textContent = 'Übertragung nicht bestätigt; lokale Änderungen bleiben erhalten.';
           return;
         }
+        if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
+        assertOwner(user.id);
         const done = await store.flush();
         status.textContent = done ? 'Offline-Änderungen übertragen' : 'Änderungen bleiben ausstehend';
       } else {
@@ -197,17 +207,20 @@
     });
     button('Ausstehende Änderungen synchronisieren', async () => {
       if (!await isEnabled()) throw new Error('Cloud-Synchronisierung zuerst durch bestätigte Übernahme aktivieren');
+      await queue.catch(() => {});
+      const user = await currentUser();
+      assertOwner(user && user.id);
       const done = await store.flush();
       status.textContent = done ? 'Synchronisierung abgeschlossen' : 'Keine Übertragung möglich oder erforderlich';
     });
-    void guardAccount().catch(() => {});
+    void guardAccount().catch(error => { status.textContent = 'Kontoprüfung fehlgeschlagen: ' + error.message; });
     void currentUser().then(user => {
       if (user && localStorage.getItem(ownerKey) === user.id &&
           localStorage.getItem(enabledKey(user.id)) === 'true') {
         enabledUser = user.id;
         void resume();
       }
-    }).catch(() => {});
+    }).catch(error => { status.textContent = 'Cloud-Start fehlgeschlagen: ' + error.message; });
     host.append(title, status, actions);
     (target || document.body).prepend(host);
     return { store, host, changed, resume };
