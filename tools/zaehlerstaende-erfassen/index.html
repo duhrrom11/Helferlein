@@ -504,7 +504,7 @@
             }
         }
 
-        function saveData(data) {
+        function saveData(data, allowCorruptOverwrite = false) {
             try {
                 // Keep the original bytes available if stored readings cannot be parsed.
                 const existing = localStorage.getItem('energie_tracker_pro_v8');
@@ -512,8 +512,11 @@
                     let parsed;
                     try { parsed = JSON.parse(existing); } catch (_) { parsed = null; }
                     if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.readings)) {
-                        alert('Vorhandene Zählerdaten sind beschädigt. Speichern zum Schutz der Originaldaten blockiert.');
-                        return false;
+                        if (!allowCorruptOverwrite) {
+                            alert('Vorhandene Zählerdaten sind beschädigt. Speichern zum Schutz der Originaldaten blockiert.');
+                            return false;
+                        }
+                        if (!confirm('Die vorhandenen Zählerdaten sind beschädigt. Durch Wiederherstellen des geprüften Backups werden sie endgültig überschrieben. Fortfahren?')) return false;
                     }
                 }
                 localStorage.setItem('energie_tracker_pro_v8', JSON.stringify(data));
@@ -988,7 +991,7 @@
                         throw new Error('Ungültiges Zählerstände-Backup');
                     }
                     if (!confirm('Backup importieren? Vorhandene Zählerstände und Tarife werden ersetzt.')) return;
-                    if (!saveData({ ...parsed, tarifs: parsed.tarifs || {} })) return;
+                    if (!saveData({ ...parsed, tarifs: parsed.tarifs || {} }, true)) return;
                     loadTarifs();
                     renderApp();
                     alert("Backup erfolgreich importiert!");
