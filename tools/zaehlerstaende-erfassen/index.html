@@ -981,11 +981,13 @@
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
+                event.target.value = '';
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (!parsed || !Array.isArray(parsed.readings) ||
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.readings) ||
                         !parsed.readings.every(item => {
-                            if (!item || typeof item.type !== 'string' || typeof item.name !== 'string' ||
+                            if (!item || typeof item.type !== 'string' || !item.type.trim() ||
+                                typeof item.name !== 'string' || !item.name.trim() ||
                                 typeof item.date !== 'string' || !Number.isFinite(item.value) || item.value < 0 ||
                                 !/^\d{4}-\d{2}-\d{2}$/.test(item.date)) return false;
                             const date = new Date(item.date);
@@ -1004,7 +1006,10 @@
                     alert("Fehler beim Importieren der Datei.");
                 }
             };
-            reader.onerror = () => alert('Backup-Datei konnte nicht gelesen werden.');
+            reader.onerror = () => {
+                event.target.value = '';
+                alert('Backup-Datei konnte nicht gelesen werden.');
+            };
             reader.readAsText(file);
         }
 
