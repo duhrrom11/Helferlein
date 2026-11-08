@@ -348,6 +348,17 @@ test('Cloud-Restore weist falsche Laenge der passwortgeschuetzten Schluesselhuel
   assert.match(source, /wrappingKey, wrappedKey/);
 });
 
+test('Lesende Cloud-Wiederherstellungsprobe validiert auch wiederherstellbare Kontakte', () => {
+  const start = html.indexOf('async function previewSupabaseVaultRecovery()');
+  const end = html.indexOf('// Read-only status check;', start);
+  const source = html.slice(start, end);
+  assert.match(source, /config\.checkInIntervalDays > 3650/);
+  assert.match(source, /Date\.parse\(config\.lastCheckIn\)/);
+  assert.match(source, /config\.trustees\.every/);
+  assert.match(source, /config\.alarmPersons\.every/);
+  assert.doesNotMatch(source, /localStorage\.setItem/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
