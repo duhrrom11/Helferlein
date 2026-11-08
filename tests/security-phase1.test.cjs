@@ -113,3 +113,16 @@ test('All legacy inline ID handlers use a validated numeric literal',()=>{
  assert.equal(w.HelferleinSafe.numericId('1);alert(1);//'),-1);
  assert.equal(w.HelferleinSafe.numericId('<img onerror=alert(1)>'),-1);
 });
+
+test('Image action arguments retain query parameters without JavaScript injection',()=>{
+ const w={location:{href:'https://example.org/'}};
+ vm.runInNewContext(read('assets/helferlein-safe-output.js'),{window:w,URL});
+ assert.equal(w.HelferleinSafe.photoArg('https://example.org/photo.png?x=1&y=2'),
+   '&quot;https://example.org/photo.png?x=1&amp;y=2&quot;');
+ assert.equal(w.HelferleinSafe.photoArg('javascript:invalid'), '&quot;&quot;');
+ for(const tool of ['autokosten-reifenwechsel','haustier-gesundheitspass',
+   'parkplatz-merker-parkschein-timer','umzugskisten-inventar','zaehlerstaende-erfassen']){
+   const source=read('tools/'+tool+'/index.html');
+   assert.ok(source.includes('HelferleinSafe.photoArg('),tool);
+ }
+});
