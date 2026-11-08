@@ -921,6 +921,14 @@
                     encrypted.ciphertext !== cfg.encryptedData.ciphertext) {
                     return alert('Cloud- und lokaler Tresorstand stimmen nicht überein. Bitte zuerst die aktuelle verschlüsselte Sicherung hochladen.');
                 }
+                const verifiedVault = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
+                if (!verifiedVault || !Array.isArray(verifiedVault.entries)) {
+                    return alert('Der lokale Tresorinhalt lässt sich mit dem aktuellen Schlüssel nicht entschlüsseln. Kein Wiederherstellungsschlüssel gespeichert.');
+                }
+                if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    lastPersistedRevision !== localSaveRevision) {
+                    return alert('Tresor während der Entschlüsselungsprüfung geändert. Bitte erneut versuchen.');
+                }
                 const salt = crypto.getRandomValues(new Uint8Array(16));
                 const iv = crypto.getRandomValues(new Uint8Array(12));
                 const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(password),
