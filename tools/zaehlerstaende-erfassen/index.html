@@ -889,7 +889,7 @@
                 y += 20;
             });
 
-            if (y > 240) doc.addPage();
+            if (y + 24 > 280) { doc.addPage(); y = 20; }
             y += 10;
             doc.text("___________________________", 14, y);
             doc.text("Unterschrift Übergeber / Mieter", 14, y + 6);
@@ -933,6 +933,7 @@
                     alert("Fehler beim Importieren der Datei.");
                 }
             };
+            reader.onerror = () => alert('Backup-Datei konnte nicht gelesen werden.');
             reader.readAsText(file);
         }
 
