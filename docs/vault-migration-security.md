@@ -10,6 +10,10 @@ Produktiv geprueft: Supabase hat aktuell die Tabellen `user_data`, `wg_spaces` u
 
 **Umsetzungsreihenfolge:** (1) sicheren neuen, benutzergebundenen Cloud-Tresor mit Auth und serverseitiger Autorisierung implementieren; (2) lokale Verschluesselung und Wiederherstellung ohne Datenverlust sicherstellen; (3) vorhandene Tresore erst nach gesonderter Eigentuemerpruefung migrieren; (4) produktive Bereitstellung mit Sicherheitspruefungen, Monitoring und Rollback; (5) die Browseroberflaeche erst dann auf den neuen Speicherweg umstellen. Keine pauschale Freigabe alter Firebase-Regeln.
 
+## Schutz vorhandener Passwort-Wiederherstellungsschluessel
+
+Ist in einer bestehenden Supabase-Sicherung bereits ein passwortgeschuetzter Wiederherstellungsschluessel hinterlegt, prueft ein erneutes manuelles Backup zuerst, ob der bisherige verschluesselte Cloud-Tresor mit dem aktuellen lokalen Masterkey entschluesselt werden kann. Wenn dies nicht gelingt, wird der Upload verweigert. Damit kann ein Backup mit gleicher Tresor-ID, aber anderem Schluessel nicht unbemerkt die bestehende Passwort-Wiederherstellung unbrauchbar machen. Der Abgleich ist keine automatische Schluesselrotation.
+
 ## Temporaere Schluesselbytes beim Passwortschutz
 
 Bei der Passwortverschluesselung des zufaelligen Tresorschluessels wird die temporaere `Uint8Array`-Kopie des unverschluesselten Schluessels jetzt in einem `finally`-Block mit Nullen ueberschrieben. Dies reduziert die Lebensdauer einer zusaetzlichen Schluesselkopie im Arbeitsspeicher. Der bereits lokal gespeicherte Schluessel und Browser-interne Kryptografie-Puffer bleiben von dieser Massnahme unberuehrt.
