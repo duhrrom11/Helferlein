@@ -764,7 +764,9 @@
                     plants: Array.isArray(stored.plants) ? stored.plants : [],
                     inventory: Array.isArray(stored.inventory) ? stored.inventory : defaults.inventory,
                     seeds: Array.isArray(stored.seeds) ? stored.seeds : [],
-                    beetSlots: Array.isArray(stored.beetSlots) ? stored.beetSlots : defaults.beetSlots
+                    beetSlots: Array.isArray(stored.beetSlots)
+                        ? [...stored.beetSlots.slice(0, 16), ...Array(Math.max(0, 16 - stored.beetSlots.length)).fill(null)]
+                        : defaults.beetSlots
                 };
             } catch (error) {
                 console.error('Pflanzendaten konnten nicht geladen werden:', error);
