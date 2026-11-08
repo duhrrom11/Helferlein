@@ -250,6 +250,7 @@
       assertBase(k, baseBytes);
       if (!isConnected()) return false;
       if (raw(k.base) !== baseBytes) { rememberConflict('baseline-race'); return false; }
+      let writtenRevision = null;
       if (row) {
         if (await userId() !== uid) throw new Error('Account changed before cloud update');
         if (localStorage.getItem(k.pending) !== pendingBytes) { rememberConflict('pending-edited-before-write'); return false; }
@@ -261,7 +262,7 @@
         if (raw(k.pending) !== pendingBytes) rememberConflict('edit-during-update');
         if (!Array.isArray(data) || data.length !== 1 || data[0].id !== row.id || typeof data[0].updated_at !== 'string' || !data[0].updated_at) throw new Error('Concurrent cloud change; pending data preserved');
         if (await userId() !== uid) throw new Error('Account changed after cloud update');
-        write(k.revision, data[0].updated_at);
+        writtenRevision = data[0].updated_at;
       } else {
         if (await userId() !== uid) throw new Error('Account changed before cloud insert');
         if (localStorage.getItem(k.pending) !== pendingBytes) return false;
@@ -271,7 +272,7 @@
         if (raw(k.pending) !== pendingBytes) rememberConflict('edit-during-insert');
         if (!Array.isArray(data) || data.length !== 1 || !data[0].id || typeof data[0].updated_at !== 'string' || !data[0].updated_at) throw new Error('Cloud insert not confirmed; pending data preserved');
         if (await userId() !== uid) throw new Error('Account changed after cloud insert');
-        write(k.revision, data[0].updated_at);
+        writtenRevision = data[0].updated_at;
       }
       if (await userId() !== uid) { rememberConflict('post-write-account-change'); throw new Error('Account changed after sync; pending data preserved'); }
       assertOpen();
@@ -280,7 +281,7 @@
       assertBase(k, baseBytes);
       // A newer local edit may have arrived while the request was in flight.
       // Keep it queued with the new server revision rather than deleting it.
-      finishAcknowledged(k, pending, read(k.revision));
+      finishAcknowledged(k, pending, writtenRevision);
       lastSuccessfulSync = now();
       notePending(k);
       lastConflict = null;
