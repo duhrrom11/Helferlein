@@ -1002,8 +1002,18 @@
                 if (!confirm('Die ältere WG in einen neuen, kontogeschützten Speicher kopieren?\\n' +
                     'Die bisherige WG bleibt unverändert und ist weiterhin über ihren alten Link erreichbar.\\n' +
                     'Andere Mitglieder müssen später für die neue WG freigegeben werden.')) return;
-                const response = await fetch(NPOINT_API_BASE + encodeURIComponent(sourceId), { cache: 'no-store' });
-                if (!response.ok) throw new Error('Alte WG konnte nicht direkt aus npoint geladen werden.');
+                // Use the same legacy providers as normal WG loading.
+                // Only copy verified remote data; never substitute local browser cache.
+                let response;
+                try {
+                    response = await fetch(NPOINT_API_BASE + encodeURIComponent(sourceId), { cache: 'no-store' });
+                } catch (error) {
+                    console.warn('npoint beim WG-Kopieren nicht erreichbar:', error);
+                }
+                if (!response?.ok) {
+                    response = await fetch('https://jsonkeeper.com/b/' + encodeURIComponent(sourceId), { cache: 'no-store' });
+                }
+                if (!response.ok) throw new Error('Alte WG konnte von keinem Cloud-Anbieter geladen werden.');
                 const payload = await response.json();
                 if (!payload || typeof payload !== 'object' || Array.isArray(payload))
                     throw new Error('Ungültige alte WG-Daten.');
