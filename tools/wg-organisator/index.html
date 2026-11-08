@@ -1074,7 +1074,7 @@
         }
 
         async function ladeWGausCloud() {
-            if (!wgBinId) return false;
+            if (!wgBinId || !/^[a-zA-Z0-9_-]{4,128}$/.test(wgBinId)) return false;
             try {
                 let response = await fetch(NPOINT_API_BASE + wgBinId);
                 if (!response.ok) {
@@ -1120,7 +1120,7 @@
         }
 
         async function speichereWGinCloud() {
-            if (!wgBinId) return false;
+            if (!wgBinId || !/^[a-zA-Z0-9_-]{4,128}$/.test(wgBinId)) return false;
             const backupObj = {
                 flatmates: getFlatmates(),
                 notes: getNotes(),
@@ -1178,9 +1178,9 @@
             alert("🔗 Link zum WG-Planer kopiert! Schicke ihn an deine Mitbewohner.");
         }
 
-        setInterval(() => {
-            if (wgBinId) ladeWGausCloud();
-        }, 30000);
+        // Automatic refresh is intentionally disabled: remote polling could overwrite
+        // newer unsaved local edits. Use the explicit manual sync action instead.
+        // Shared WG editing needs authenticated, conflict-aware cloud storage.
 
         const AMAZON_AFFILIATE_TAG = "duhrrom-21";
         const daysOfWeek = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
