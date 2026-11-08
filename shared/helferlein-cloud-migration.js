@@ -83,7 +83,7 @@
       if (disposed) return false;
       if (accountSwitchInProgress) return false;
       return !!user && user.id === enabledUser &&
-        isOwner(user.id) &&
+        verifiedOwner === user.id && isOwner(user.id) &&
         localStorage.getItem(enabledKey(user.id)) === 'true';
     }
     function safeLocalBytes() { assertActive(); return localStorage.getItem(localKey); }
@@ -108,6 +108,7 @@
       localStorage.setItem(enabledKey(user.id), 'true');
       if (localStorage.getItem(enabledKey(user.id)) !== 'true') { lastConflictMessage = 'Cloud-Aktivierung konnte nicht gespeichert werden'; throw new Error('Cloud-Aktivierung konnte nicht gespeichert werden'); }
       enabledUser = user.id;
+      verifiedOwner = user.id;
       accountGeneration++;
       lastAccountChangeAt = now();
       lastEnableAt = now();
@@ -598,7 +599,7 @@
     // Synchronous gate for legacy saveData(): do not mutate a shared local key
     // while an authenticated account mismatch or migration is unresolved.
     function canWriteLocal() {
-      if (disposed || accountSwitchInProgress || !!blocked) return false;
+      if (disposed || accountSwitchInProgress || !!blocked || document.documentElement.classList.contains('helferlein-account-check')) return false;
       if (activeOperation === 'import' || activeOperation === 'upload' || activeOperation === 'refresh') return false;
       const owner = currentOwner();
       if (!owner) return true; // Legacy data, not yet claimed by a cloud account.
