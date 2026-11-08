@@ -191,6 +191,16 @@ test('Cloud-Restore blockiert angepasste lokale Kontakte und Einstellungen auch 
   assert.match(source, /!pristineMetadata/);
 });
 
+test('Cloud-Restore kontrolliert unveraenderte Metadaten auch direkt vor dem Schreiben', () => {
+  const start = html.indexOf('async function restoreVaultFromSupabase()');
+  const end = html.indexOf('// Opt-in: wrap only the random vault key', start);
+  const source = html.slice(start, end);
+  const guard = source.lastIndexOf('!pristineMetadata');
+  const write = source.indexOf("localStorage.setItem('digital_estate_vault'");
+  assert.ok(guard > source.indexOf('Tresor erfolgreich entschlüsselt'));
+  assert.ok(write > guard);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
