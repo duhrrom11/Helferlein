@@ -1066,7 +1066,7 @@
                         <div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-3xl mx-auto">🏠</div>
                         <h2 class="text-xl font-black text-gray-900">Gemeinsamer WG-Planer</h2>
                         <p class="text-xs text-gray-500 leading-relaxed">
-                            Erstelle mit nur einem Klick deinen sicheren WG-Planer für dich und deine Mitbewohner.
+                            Erstelle einen gemeinsamen WG-Planer. Der WG-Link ist vertraulich und sollte nur mit Mitbewohnern geteilt werden.
                         </p>
                         <button onclick="erstelleNeueWGKonfiguration()" class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl text-sm shadow-md transition-all">
                             ✨ WG-Plan mit 1 Klick erstellen
@@ -1115,8 +1115,10 @@
                         if (cloudObj.contracts !== undefined) localStorage.setItem('wg_contracts', JSON.stringify(cloudObj.contracts));
                         if (cloudObj.infoboard !== undefined) localStorage.setItem('wg_infoboard', JSON.stringify(cloudObj.infoboard));
                     }
-                    return cloudObj && typeof cloudObj === 'object' && !Array.isArray(cloudObj) &&
+                    const valid = cloudObj && typeof cloudObj === 'object' && !Array.isArray(cloudObj) &&
                         ['flatmates', 'notes', 'data', 'budgets', 'goals', 'events', 'inventory', 'diets', 'cleaning', 'shopping', 'cooking', 'contracts', 'infoboard'].some(key => Object.prototype.hasOwnProperty.call(cloudObj, key));
+                    if (valid) localStorage.setItem('wg_last_loaded_bin_id', wgBinId);
+                    return valid;
                 }
             } catch (error) {
                 console.error("Fehler beim Cloud-Laden:", error);
@@ -1212,7 +1214,21 @@
             document.getElementById('eventDate').valueAsDate = new Date();
             initCharts();
             
-            await ladeWGausCloud();
+            const loaded = await ladeWGausCloud();
+            if (!loaded) {
+                // A different WG must never silently inherit this browser's cached data.
+                const lastLoadedId = localStorage.getItem('wg_last_loaded_bin_id');
+                if (lastLoadedId !== wgBinId) {
+                    document.getElementById('main-content').replaceChildren();
+                    const warning = document.createElement('section');
+                    warning.className = 'p-6 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900';
+                    warning.textContent = 'Die WG-Cloud ist derzeit nicht erreichbar. Zur Vermeidung einer Datenvermischung werden keine gespeicherten Daten einer anderen WG angezeigt. Bitte später erneut laden.';
+                    document.getElementById('main-content').append(warning);
+                    checkUserSession();
+                    return;
+                }
+                alert('WG-Cloud nicht erreichbar. Lokale Daten dieser WG werden angezeigt; Änderungen können derzeit nicht zuverlässig synchronisiert werden.');
+            }
             renderApp();
             // Opening a WG must never write stale local data back over cloud records.
             checkUserSession();
