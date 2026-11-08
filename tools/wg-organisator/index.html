@@ -1062,29 +1062,7 @@
                 return;
             }
 
-            /* Legacy public cloud creation is disabled for new workspaces.
-            try {
-                const response = await fetch(NPOINT_API_BASE, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(leereWG)
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (typeof result.id === 'string' && /^[a-zA-Z0-9_-]{4,128}$/.test(result.id)) {
-                        localStorage.setItem('wg_active_bin_id', result.id);
-                        window.location.href = window.location.pathname + "?id=" + encodeURIComponent(result.id);
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.warn("API Error", e);
-            }
 
-            if (statusText) statusText.innerText = "Cloud-Speicher konnte nicht erstellt werden. Bitte erneut versuchen.";
-            alert("❌ WG konnte nicht erstellt werden. Es wurde keine WG-ID gespeichert.");
-            */
         }
 
         function zeigeErstellungsScreen() {
