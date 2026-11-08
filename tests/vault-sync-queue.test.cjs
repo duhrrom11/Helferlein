@@ -326,6 +326,17 @@ test('Passwort-Recovery lehnt ungueltige Masterkey-Formate vor der Umhuellung ab
   assert.match(source, /!cfg\.encryptedData\.ciphertext/);
 });
 
+test('Cloud-Restore prueft unmittelbar vor dem Schreiben Schluessel und Startrevision', () => {
+  const start = html.indexOf('async function restoreVaultFromSupabase()');
+  const end = html.indexOf('async function ', start + 20);
+  const source = html.slice(start, end < 0 ? undefined : end);
+  const finalGuard = source.lastIndexOf('localSaveRevision !== startingRevision');
+  const write = source.indexOf("localStorage.setItem('digital_estate_vault'");
+  assert.ok(finalGuard > 0 && write > finalGuard);
+  assert.match(source.slice(finalGuard, write), /currentMasterKeyHex !== startingMasterKeyHex/);
+  assert.match(source.slice(finalGuard, write), /!currentDecryptedVault/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
