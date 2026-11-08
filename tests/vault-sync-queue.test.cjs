@@ -178,6 +178,19 @@ test('Lesende Cloud-Wiederherstellungsprobe kontrolliert auch Kontakte', () => {
   assert.doesNotMatch(source, /localStorage\.setItem|\.insert\(|\.update\(/);
 });
 
+test('Cloud-Restore blockiert angepasste lokale Kontakte und Einstellungen auch ohne Eintraege', () => {
+  const start = html.indexOf('async function restoreVaultFromSupabase()');
+  const end = html.indexOf('// Opt-in: wrap only the random vault key', start);
+  const source = html.slice(start, end);
+  assert.match(source, /const pristineMetadata =/);
+  assert.match(source, /local\.ownerName === 'Dein Name'/);
+  assert.match(source, /local\.ownerEmail === ''/);
+  assert.match(source, /local\.checkInIntervalDays === 30/);
+  assert.match(source, /local\.alarmPersons\.length === 0/);
+  assert.match(source, /JSON\.stringify\(local\.trustees\)/);
+  assert.match(source, /!pristineMetadata/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
