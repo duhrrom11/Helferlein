@@ -1086,6 +1086,13 @@
         let secureWgChangeVersion = 0;
         let secureWgSavedVersion = 0;
         let secureWgSaveBlocked = false;
+        // The browser cannot finish pending network writes during tab closure.
+        // Warn instead of silently discarding unsaved shared-WG changes.
+        window.addEventListener('beforeunload', event => {
+            if (!isSecureWgId(wgBinId) || !secureWgDirty) return;
+            event.preventDefault();
+            event.returnValue = '';
+        });
         async function saveSecureWg(payload) {
             await getAuthenticatedWgUser();
             if (secureWgSaveBlocked) throw new Error('Speichern nach einem Konflikt angehalten. Bitte Daten sichern und die WG kontrolliert neu laden.');
