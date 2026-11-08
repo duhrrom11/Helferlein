@@ -1103,7 +1103,9 @@
                 
                 if (response.ok) {
                     const cloudObj = await response.json();
-                    if (cloudObj && Object.keys(cloudObj).length > 0) {
+                    if (cloudObj && typeof cloudObj === 'object' && !Array.isArray(cloudObj) &&
+                        Object.keys(cloudObj).length > 0 &&
+                        ['flatmates', 'notes', 'data', 'budgets', 'goals', 'events', 'inventory', 'diets', 'cleaning', 'shopping', 'cooking', 'contracts', 'infoboard'].some(key => Object.prototype.hasOwnProperty.call(cloudObj, key))) {
                         if (cloudObj.flatmates !== undefined) {
                             let fm = cloudObj.flatmates.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
                             localStorage.setItem('wg_flatmates', JSON.stringify(fm));
@@ -1121,7 +1123,8 @@
                         if (cloudObj.contracts !== undefined) localStorage.setItem('wg_contracts', JSON.stringify(cloudObj.contracts));
                         if (cloudObj.infoboard !== undefined) localStorage.setItem('wg_infoboard', JSON.stringify(cloudObj.infoboard));
                     }
-                    return true;
+                    return cloudObj && typeof cloudObj === 'object' && !Array.isArray(cloudObj) &&
+                        ['flatmates', 'notes', 'data', 'budgets', 'goals', 'events', 'inventory', 'diets', 'cleaning', 'shopping', 'cooking', 'contracts', 'infoboard'].some(key => Object.prototype.hasOwnProperty.call(cloudObj, key));
                 }
             } catch (error) {
                 console.error("Fehler beim Cloud-Laden:", error);
@@ -1169,11 +1172,12 @@
             }
 
             try {
-                await fetch(NPOINT_API_BASE + wgBinId, {
+                const response = await fetch(NPOINT_API_BASE + wgBinId, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(backupObj)
                 });
+                if (!response.ok) throw new Error('WG-Cloud-Speicherung fehlgeschlagen: HTTP ' + response.status);
             } catch (error) {
                 console.error("Fehler beim Speichern in Cloud:", error);
             }
