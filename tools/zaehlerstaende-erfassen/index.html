@@ -808,7 +808,6 @@
                     .sort((a,b) => new Date(a.date) - new Date(b.date));
 
                 if (list.length >= 2) {
-                    hasData = true;
                     let totalValidVal = 0;
                     let validIntervals = 0;
                     let firstDate = new Date(list[0].date);
@@ -823,6 +822,7 @@
 
                     let diffDays = (lastDate - firstDate) / (1000 * 60 * 60 * 24);
                     if (diffDays > 0 && validIntervals > 0 && totalValidVal >= 0) {
+                        hasData = true;
                         let daily = totalValidVal / diffDays;
                         let yearlyEst = (daily * 365).toFixed(1);
                         let tarifKey = t === 'Kaltwasser' ? 'Wasser' : t;
