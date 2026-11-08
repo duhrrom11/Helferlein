@@ -1001,7 +1001,8 @@
             today.setHours(0, 0, 0, 0);
 
             let filteredPlants = validPlants;
-            if (locFilter !== "") filteredPlants = filteredPlants.filter(p => p.location === locFilter);
+            if (locFilter !== "") filteredPlants = filteredPlants.filter(p =>
+                typeof p.location === 'string' && p.location.trim() === locFilter);
 
             if (filteredPlants.length === 0) {
                 container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Pflanzen erfasst.</p>`;
