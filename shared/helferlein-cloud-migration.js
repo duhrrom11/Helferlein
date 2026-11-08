@@ -103,6 +103,7 @@
       if (existingOwner && existingOwner !== user.id) { lastConflictMessage = 'Lokale Daten gehören zu einem anderen Konto'; lastStatusErrorAt = now(); throw new Error('Lokale Daten gehören zu einem anderen Konto; Übernahme gesperrt'); }
       if ((await currentUser())?.id !== user.id) { lastConflictMessage = 'Konto vor Aktivierung gewechselt'; throw new Error('Konto vor Aktivierung gewechselt'); }
       assertActive();
+      if (currentOwner() !== existingOwner) throw new Error('Kontozuordnung während Aktivierung verändert');
       localStorage.setItem(ownerKey, user.id);
       if (currentOwner() !== user.id) { lastConflictMessage = 'Kontozuordnung konnte nicht gespeichert werden'; throw new Error('Kontozuordnung konnte nicht gespeichert werden'); }
       localStorage.setItem(enabledKey(user.id), 'true');
@@ -131,14 +132,14 @@
       const expectedOwner = currentOwner();
       const expectedGeneration = accountGeneration;
       if (activeOperation === 'import' || activeOperation === 'upload') { lastConflictMessage = 'Datenübernahme läuft'; return Promise.resolve(false); }
-      if (expectedOwner && enabledUser && expectedOwner !== enabledUser) { reportError(new Error('Kontowechsel während lokaler Änderung')); return Promise.resolve(false); }
+      if (expectedOwner && (!enabledUser || expectedOwner !== enabledUser || verifiedOwner !== expectedOwner)) { reportError(new Error('Kontoprüfung für lokale Änderung nicht abgeschlossen')); return Promise.resolve(false); }
       let snapshot;
       try { snapshot = JSON.parse(JSON.stringify(data)); } catch (error) { reportError(error); return Promise.reject(new Error('Änderungen konnten nicht serialisiert werden')); }
       queue = queue.catch(() => {}).then(async () => {
         assertActive();
         if (accountSwitchInProgress) { lastConflictMessage = 'Kontowechsel während Cloud-Speicherung'; return false; }
         if (disposed || expectedGeneration !== accountGeneration) { lastConflictMessage = 'Konto während Cloud-Speicherung geändert'; return false; }
-        if (!await isEnabled() || currentOwner() !== expectedOwner) { lastConflictMessage = 'Cloud-Speicherung für Konto nicht aktiv'; return false; }
+        if (!await isEnabled() || currentOwner() !== expectedOwner || verifiedOwner !== expectedOwner) { lastConflictMessage = 'Cloud-Speicherung für Konto nicht aktiv'; return false; }
         if (!validPayload(snapshot)) throw new Error('Ungültige Datensammlung vor Cloud-Speicherung');
         try {
           const user = await currentUser();
@@ -274,6 +275,7 @@
       if (accountSwitchInProgress) return;
       if (disposed) return;
       if (!mismatch && owner && user && owner === user.id) verifiedOwner = owner;
+      if (!owner) verifiedOwner = null;
       if (mismatch && enabledUser !== null) { enabledUser = null; accountGeneration++; lastAccountChangeAt = now(); lastCloudSource = null; lastSyncError = 'Kontowechsel erkannt'; }
       if (!mismatch && blocked) { blocked.remove(); blocked = null; lastConflictMessage = null; }
       if (mismatch && !blocked) {
