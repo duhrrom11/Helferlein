@@ -545,13 +545,15 @@
             let data = getData();
             data.cisternMax = max;
             if (data.cisternCurrent === undefined) data.cisternCurrent = max;
-            data.cisternCurrent = Math.min(max, Math.max(0, data.cisternCurrent));
+            const current = Number(data.cisternCurrent);
+            data.cisternCurrent = Number.isFinite(current) ? Math.min(max, Math.max(0, current)) : max;
             if (!saveData(data)) return;
             updateCisternDisplay();
         }
         function refillCistern() {
             let data = getData();
-            data.cisternMax = data.cisternMax || 500;
+            const capacity = Number(data.cisternMax);
+            data.cisternMax = Number.isFinite(capacity) && capacity > 0 ? capacity : 500;
             data.cisternCurrent = data.cisternMax;
             if (!saveData(data)) return;
             updateCisternDisplay();
@@ -673,9 +675,14 @@
             let data = getData();
             let p = data.plants.find(item => item.id === plantId);
             if(p) {
-                if(!p.harvestLog) p.harvestLog = [];
+                if (!Array.isArray(p.harvestLog)) p.harvestLog = [];
+                const storedTotal = Number(data.totalHarvestGrams);
+                const previousTotal = Number.isFinite(storedTotal) && storedTotal >= 0 ? storedTotal : 0;
+                if (!Number.isSafeInteger(previousTotal + grams)) {
+                    return alert('Die gesamte Erntemenge überschreitet den unterstützten Zahlenbereich.');
+                }
                 p.harvestLog.push({ date: new Date().toLocaleDateString('de-DE'), grams });
-                data.totalHarvestGrams = (data.totalHarvestGrams || 0) + grams;
+                data.totalHarvestGrams = previousTotal + grams;
                 if (!saveData(data)) return;
                 closeHarvestModal(); renderApp();
             }
