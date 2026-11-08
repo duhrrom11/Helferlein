@@ -10,6 +10,10 @@ Produktiv geprueft: Supabase hat aktuell die Tabellen `user_data`, `wg_spaces` u
 
 **Umsetzungsreihenfolge:** (1) sicheren neuen, benutzergebundenen Cloud-Tresor mit Auth und serverseitiger Autorisierung implementieren; (2) lokale Verschluesselung und Wiederherstellung ohne Datenverlust sicherstellen; (3) vorhandene Tresore erst nach gesonderter Eigentuemerpruefung migrieren; (4) produktive Bereitstellung mit Sicherheitspruefungen, Monitoring und Rollback; (5) die Browseroberflaeche erst dann auf den neuen Speicherweg umstellen. Keine pauschale Freigabe alter Firebase-Regeln.
 
+## Cloud-Backup-Status prueft wiederherstellbare Metadaten
+
+Die lesende Statuspruefung validiert nun auch die entschluesselte Cloud-Konfiguration anhand der Wiederherstellungsanforderungen: Pflichtfelder, Zeitstempel, Intervallgrenzen sowie Kontaktlisten und deren Namen. Ein positives Statusresultat setzt damit voraus, dass die Konfiguration nicht nur entschluesselbar, sondern nach diesen Regeln auch wiederherstellbar ist. Es werden keine Daten geschrieben.
+
 ## Cloud-Backup-Status prueft Entschluesselbarkeit der Eintraege
 
 Die lesende Cloud-Backup-Statuspruefung vergleicht nicht mehr nur IV und Ciphertext, sondern entschluesselt die verschluesselten Cloud-Eintraege zusaetzlich mit dem aktiven lokalen Masterkey und erwartet eine gueltige Eintragsliste. Nur danach kann sie die verschluesselte Konfiguration vergleichen und einen positiven Status melden. Keine lokalen oder Cloud-Schreibvorgaenge.
