@@ -1388,10 +1388,18 @@ END:VCALENDAR`;
 
             let y = 38;
             data.forEach((r) => {
-                if (y > 270) { doc.addPage(); y = 20; }
+                if (!r || typeof r !== 'object') return;
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
-                doc.text(`${r.date} | ${r.title} (${r.category}): ${sign}${r.price.toFixed(2)} € [${r.paymentMethod || 'k.A.'}]`, 14, y);
-                y += 8;
+                const price = Number(r.price);
+                const amount = Number.isFinite(price) ? sign + price.toFixed(2) : 'k.A.';
+                const line = `${r.date || 'k.A.'} | ${r.title || 'Ohne Titel'} (${r.category || 'Sonstiges'}): ${amount} € [${r.paymentMethod || 'k.A.'}]`;
+                const lines = doc.splitTextToSize(line, 180);
+                for (const textLine of lines) {
+                    if (y > 275) { doc.addPage(); y = 20; }
+                    doc.text(textLine, 14, y);
+                    y += 6;
+                }
+                y += 2;
             });
 
             doc.save(`finanz-bericht-${new Date().toISOString().split('T')[0]}.pdf`);
