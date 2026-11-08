@@ -36,11 +36,11 @@ vm.runInContext(html.slice(dateStart, dateEnd) + html.slice(ocrStart, ocrEnd), c
     assert.equal(fields.get('receiptDate').value, '2024-02-29');
     assert.match(fields.get('ocrStatus').innerText, /Feld\(er\) ausgefüllt/);
     fields.get('receiptDate').value = '';
-    recognizedText = 'Ungültig 31.02.2025\\nKaufdatum: 15.03.2025';
+    recognizedText = 'Ungültig 31.02.2025\nKaufdatum: 15.03.2025';
     await vm.runInContext('runOCR()', ctx);
     assert.equal(fields.get('receiptDate').value, '2025-03-15');
     fields.get('receiptDate').value = '';
-    recognizedText = 'Lieferdatum 10.03.2025\\nRechnungsdatum: 12.03.2025';
+    recognizedText = 'Lieferdatum 10.03.2025\nRechnungsdatum: 12.03.2025';
     await vm.runInContext('runOCR()', ctx);
     assert.equal(fields.get('receiptDate').value, '2025-03-12');
     fields.get('receiptDate').value = '';
