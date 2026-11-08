@@ -19,4 +19,6 @@ assert.throws(() => validate({ foo: 1 }), /Unbekanntes Backup-Format/);
 assert.match(html, /const preview = changes\.map\(/, 'Import shows per-section preview');
 assert.match(html, /count\(existing\).*count\(incoming\)/, 'Import compares existing and incoming counts');
 assert.match(html, /Nur diese Bereiche werden vollständig ersetzt/, 'Import warns about section replacement');
+assert.match(html, /existingCount > 0 && incomingCount === 0/, 'Detect populated sections replaced with empty backup data');
+assert.match(html, /emptiedSections\.length && !confirm/, 'Require additional confirmation before clearing data');
 console.log('Household backup validation regression checks passed');
