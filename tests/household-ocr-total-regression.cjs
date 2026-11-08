@@ -11,6 +11,8 @@ const extract = text => vm.runInContext('extractReceiptTotal(' + JSON.stringify(
 assert.equal(extract('Milch 1,29\nBrot 2,49\nSUMME 3,78'), '3.78');
 assert.equal(extract('Artikel 4,99\nGesamtbetrag 1.234,56 EUR'), '1234.56');
 assert.equal(extract('TOTAL 1,234.56'), '1234.56');
+assert.equal(extract('Gesamtbetrag EUR 12,30'), '12.30');
+assert.equal(extract('ZU ZAHLEN € 29,95'), '29.95');
 assert.equal(extract('Preis 1,29\nRabatt 0,20'), null);
 assert.equal(extract('Summe -12,00'), null);
 assert.equal(extract('Summe 0,00'), null);
