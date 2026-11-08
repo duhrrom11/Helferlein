@@ -1233,14 +1233,21 @@
             };
             if (!Object.keys(fields).some(key => Object.prototype.hasOwnProperty.call(cloudObj, key)))
                 throw new Error('WG-Daten fehlen');
-            if (localStorage.getItem('wg_last_loaded_bin_id') !== wgBinId)
-                Object.values(fields).forEach(key => localStorage.removeItem(key));
-            for (const [key, storageKey] of Object.entries(fields)) {
-                if (cloudObj[key] === undefined) continue;
-                const value = key === 'flatmates' ? cloudObj[key].map(m =>
-                    typeof m === 'string' ? { vorname: m, nachname: '', email: '', phone: '', insta: '', fb: '' } : m
-                ) : cloudObj[key];
-                localStorage.setItem(storageKey, JSON.stringify(value));
+            // A successful cloud reload is authoritative: absent fields must not
+            // retain stale local values from an earlier version of this WG.
+            // Validate/serialize first so malformed records cannot partially clear the cache.
+            const entries = Object.entries(fields).map(([key, storageKey]) => {
+                const raw = cloudObj[key];
+                const value = key === 'flatmates' && Array.isArray(raw)
+                    ? raw.map(m => typeof m === 'string'
+                        ? { vorname: m, nachname: '', email: '', phone: '', insta: '', fb: '' }
+                        : m)
+                    : raw;
+                return [storageKey, value === undefined ? null : JSON.stringify(value)];
+            });
+            for (const [storageKey, serialized] of entries) {
+                if (serialized === null) localStorage.removeItem(storageKey);
+                else localStorage.setItem(storageKey, serialized);
             }
             localStorage.setItem('wg_last_loaded_bin_id', wgBinId);
             return true;
