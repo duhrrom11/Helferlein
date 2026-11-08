@@ -552,7 +552,8 @@
             const name = document.getElementById('meterName').value.trim() || type + " Zähler";
             const location = document.getElementById('meterLocation').value;
             const date = document.getElementById('meterDate').value;
-            const value = parseFloat(document.getElementById('meterValue').value);
+            const rawValue = document.getElementById('meterValue').value.trim();
+            const value = rawValue === '' ? NaN : Number(rawValue);
             const note = document.getElementById('meterNote').value.trim();
             const isExchange = document.getElementById('meterExchangeCheck').checked;
             const photoInput = document.getElementById('meterPhotoInput');
@@ -809,17 +810,19 @@
                 if (list.length >= 2) {
                     hasData = true;
                     let totalValidVal = 0;
+                    let validIntervals = 0;
                     let firstDate = new Date(list[0].date);
                     let lastDate = new Date(list[list.length - 1].date);
 
                     for (let i = 1; i < list.length; i++) {
                         if (!list[i].isExchange && list[i].value >= list[i-1].value) {
                             totalValidVal += list[i].value - list[i-1].value;
+                            validIntervals++;
                         }
                     }
 
                     let diffDays = (lastDate - firstDate) / (1000 * 60 * 60 * 24);
-                    if (diffDays > 0 && totalValidVal >= 0) {
+                    if (diffDays > 0 && validIntervals > 0 && totalValidVal >= 0) {
                         let daily = totalValidVal / diffDays;
                         let yearlyEst = (daily * 365).toFixed(1);
                         let tarifKey = t === 'Kaltwasser' ? 'Wasser' : t;
