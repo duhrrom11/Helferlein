@@ -976,12 +976,16 @@
                         return current !== null && current !== value;
                     }).length;
                     const containsVault = supported.some(([key]) => key === "digital_estate_vault");
+                    const vaultChanged = supported.some(([key, value]) =>
+                        key === "digital_estate_vault" && localStorage.getItem(key) !== null &&
+                        localStorage.getItem(key) !== value);
                     const vaultWarning = containsVault
                         ? (encryptedImport ? " Das Backup enthält Nachlass-Tresordaten. Nach der Wiederherstellung liegen diese wieder im lokalen Browser-Speicher." : " WARNUNG: Das unverschlüsselte Backup enthält Nachlass-Tresordaten und möglicherweise Schlüsselmaterial.")
                         : "";
                     const ignoredMessage = rejected.length
                         ? " " + rejected.length + " unbekannte oder sicherheitskritische Einträge werden aus Sicherheitsgründen NICHT importiert."
                         : "";
+                    if (vaultChanged && !confirm("ACHTUNG: Der bestehende digitale Nachlass-Tresor auf diesem Gerät unterscheidet sich von der Sicherung. Wenn du fortfährst, wird der bisherige lokale Tresor überschrieben. Vorher unbedingt den aktuellen Tresor separat verschlüsselt sichern. Trotzdem fortfahren?")) return;
                     if (!confirm("Backup mit " + supported.length + " unterstützten Einträgen vom " +
                         new Date(backup.created).toLocaleString("de-DE") + " importieren? " + existing +
                         " vorhandene Einträge werden überschrieben, davon " + changed +
