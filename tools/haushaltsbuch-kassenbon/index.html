@@ -796,7 +796,8 @@
                     data[index] = {
                         ...data[index],
                         title, store, date, price, category, paymentMethod, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType,
-                        photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : (data[index].photos || [])
+                        photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] :
+                            (Array.isArray(data[index].photos) ? data[index].photos.filter(src => safeReceiptPhoto(src)) : [])
                     };
                 }
             } else {
