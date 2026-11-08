@@ -976,6 +976,24 @@
         }
 
         const NPOINT_API_BASE = "https://api.npoint.io/";
+        const SECURE_WG_PREFIX = 'secure_';
+        function isSecureWgId(id) {
+            return typeof id === 'string' && /^secure_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+        }
+        async function getAuthenticatedWgUser() {
+            const { data, error } = await supabaseClient.auth.getUser();
+            if (error || !data?.user) throw new Error('Bitte zuerst in den Einstellungen anmelden.');
+            return data.user;
+        }
+        async function saveSecureWg(payload) {
+            await getAuthenticatedWgUser();
+            const id = wgBinId.slice(SECURE_WG_PREFIX.length);
+            const { data, error } = await supabaseClient.from('wg_spaces')
+                .update({ payload, updated_at: new Date().toISOString() })
+                .eq('id', id).select('id').single();
+            if (error || !data) throw new Error(error?.message || 'Kein Schreibzugriff auf diese WG.');
+            return true;
+        }
 
         const kofiSprueche = [
             "Spendier dem Entwickler einen Kaffee ☕",
@@ -1028,6 +1046,24 @@
             };
 
             try {
+                const user = await getAuthenticatedWgUser();
+                const { data, error } = await supabaseClient.from('wg_spaces')
+                    .insert({ owner_id: user.id, payload: leereWG })
+                    .select('id').single();
+                if (error || !data?.id) throw new Error(error?.message || 'WG konnte nicht erstellt werden.');
+                const newId = SECURE_WG_PREFIX + data.id;
+                localStorage.setItem('wg_active_bin_id', newId);
+                window.location.href = window.location.pathname + '?id=' + encodeURIComponent(newId);
+                return;
+            } catch (error) {
+                console.error('Geschützte WG-Erstellung fehlgeschlagen:', error);
+                if (statusText) statusText.innerText = error.message;
+                alert(error.message);
+                return;
+            }
+
+            /* Legacy public cloud creation is disabled for new workspaces.
+            try {
                 const response = await fetch(NPOINT_API_BASE, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1048,6 +1084,7 @@
 
             if (statusText) statusText.innerText = "Cloud-Speicher konnte nicht erstellt werden. Bitte erneut versuchen.";
             alert("❌ WG konnte nicht erstellt werden. Es wurde keine WG-ID gespeichert.");
+            */
         }
 
         function zeigeErstellungsScreen() {
@@ -1078,9 +1115,48 @@
             dashboard.prepend(setup);
         }
 
+        async function ladeWGObjekt(cloudObj) {
+            const arrayFields = ['flatmates', 'notes', 'data', 'goals', 'events', 'inventory', 'cleaning', 'shopping', 'cooking', 'contracts'];
+            const objectFields = ['budgets', 'diets', 'infoboard'];
+            if (arrayFields.some(key => cloudObj[key] !== undefined && !Array.isArray(cloudObj[key])) ||
+                objectFields.some(key => cloudObj[key] !== undefined &&
+                    (!cloudObj[key] || typeof cloudObj[key] !== 'object' || Array.isArray(cloudObj[key]))))
+                throw new Error('Ungültiges WG-Datenformat');
+            const fields = {
+                flatmates: 'wg_flatmates', notes: 'wg_notes', data: 'wg_kassenbon_data',
+                budgets: 'wg_budgetbuch_budgets', goals: 'wg_budgetbuch_goals',
+                events: 'wg_events', inventory: 'wg_inventory', diets: 'wg_diets',
+                cleaning: 'wg_cleaning', shopping: 'wg_shopping', cooking: 'wg_cooking',
+                contracts: 'wg_contracts', infoboard: 'wg_infoboard'
+            };
+            if (!Object.keys(fields).some(key => Object.prototype.hasOwnProperty.call(cloudObj, key)))
+                throw new Error('WG-Daten fehlen');
+            if (localStorage.getItem('wg_last_loaded_bin_id') !== wgBinId)
+                Object.values(fields).forEach(key => localStorage.removeItem(key));
+            for (const [key, storageKey] of Object.entries(fields)) {
+                if (cloudObj[key] === undefined) continue;
+                const value = key === 'flatmates' ? cloudObj[key].map(m =>
+                    typeof m === 'string' ? { vorname: m, nachname: '', email: '', phone: '', insta: '', fb: '' } : m
+                ) : cloudObj[key];
+                localStorage.setItem(storageKey, JSON.stringify(value));
+            }
+            localStorage.setItem('wg_last_loaded_bin_id', wgBinId);
+            return true;
+        }
+
         async function ladeWGausCloud() {
             if (!wgBinId || !/^[a-zA-Z0-9_-]{4,128}$/.test(wgBinId)) return false;
             try {
+                if (isSecureWgId(wgBinId)) {
+                    await getAuthenticatedWgUser();
+                    const { data, error } = await supabaseClient.from('wg_spaces')
+                        .select('payload').eq('id', wgBinId.slice(SECURE_WG_PREFIX.length)).single();
+                    if (error || !data) throw new Error(error?.message || 'Kein Lesezugriff auf diese WG.');
+                    const payload = data.payload;
+                    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('Ungültige WG-Daten');
+                    // Use the same field validation and local-cache hydration as legacy data.
+                    return await ladeWGObjekt(payload);
+                }
                 let response = await fetch(NPOINT_API_BASE + wgBinId);
                 if (!response.ok) {
                     response = await fetch("https://jsonkeeper.com/b/" + wgBinId);
@@ -1151,6 +1227,10 @@
                 contracts: getContracts(),
                 infoboard: getInfoData()
             };
+            if (isSecureWgId(wgBinId)) {
+                try { return await saveSecureWg(backupObj); }
+                catch (error) { console.error('Geschützte WG-Speicherung fehlgeschlagen:', error); return false; }
+            }
 
             if (wgBinId.startsWith('wg_')) {
                 try {
