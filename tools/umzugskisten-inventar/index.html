@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <style>html.helferlein-account-check body{visibility:hidden!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_umzugskisten-inventar')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Umzugskisten-App & Inventarliste | Helferlein</title>
@@ -46,6 +51,24 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        const client = window.supabaseClient;
+        if (!client || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client, tool: 'umzugskisten-inventar', localKey: 'mini_homebox_pro', collection: 'boxes',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -446,7 +469,21 @@
         }
 
         function saveData(data) {
-            localStorage.setItem('mini_homebox_pro', JSON.stringify(data));
+            if (!data || typeof data !== 'object' || !Array.isArray(data.boxes)) return false;
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
+                return false;
+            }
+            const existing = localStorage.getItem('mini_homebox_pro');
+            if (existing !== null) {
+                try { if (!Array.isArray(JSON.parse(existing).boxes)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('mini_homebox_pro', JSON.stringify(data));
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
         }
 
         function checkDeepLink() {
