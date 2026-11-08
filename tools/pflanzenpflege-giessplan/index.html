@@ -968,7 +968,8 @@
                 p.interval = interval;
                 if (p.lastWatered !== editedLastWatered) {
                     if (!Array.isArray(p.waterHistory)) p.waterHistory = [];
-                    p.waterHistory = [editedLastWatered, ...p.waterHistory.filter(date => date !== editedLastWatered)].slice(0, 5);
+                    p.waterHistory = [editedLastWatered, ...p.waterHistory.filter(date =>
+                        typeof date === 'string' && isValidCalendarDate(date) && date !== editedLastWatered)].slice(0, 5);
                 }
                 p.lastWatered = editedLastWatered;
                 p.note = document.getElementById('editNote').value.trim();
