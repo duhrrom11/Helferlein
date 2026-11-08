@@ -564,6 +564,8 @@
         }
 
         let currentUploadedPhotos = [];
+        let pendingPhotoReads = 0;
+        let photoReadGeneration = 0;
         let rawImage = null;
         let editingReceiptId = null;
 
@@ -663,7 +665,10 @@
         function loadPhotosToCanvas(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
+            const generation = ++photoReadGeneration;
+            pendingPhotoReads = files.length;
             currentUploadedPhotos = [];
+            rawImage = null;
             const previewContainer = document.getElementById('uploadGalleryPreview');
             previewContainer.innerHTML = "";
             previewContainer.classList.remove('hidden');
@@ -671,6 +676,9 @@
             Array.from(files).forEach((file, idx) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    if (generation !== photoReadGeneration) return;
+                    pendingPhotoReads--;
+                    if (!safeReceiptPhoto(e.target.result)) return;
                     currentUploadedPhotos.push(e.target.result);
                     const imgThumb = document.createElement('img');
                     imgThumb.src = e.target.result;
@@ -680,12 +688,16 @@
                     if (idx === 0) {
                         const img = new Image();
                         img.onload = function() {
+                            if (generation !== photoReadGeneration) return;
                             rawImage = img;
                             document.getElementById('canvasEditor').classList.remove('hidden');
                             applyCanvasFilter();
                         };
                         img.src = e.target.result;
                     }
+                };
+                reader.onerror = function() {
+                    if (generation === photoReadGeneration) pendingPhotoReads--;
                 };
                 reader.readAsDataURL(file);
             });
@@ -739,6 +751,10 @@
 
         /* --- Buchung Speichern --- */
         function saveReceipt() {
+            if (pendingPhotoReads > 0) {
+                alert('Die Belegbilder werden noch geladen. Bitte kurz warten und erneut speichern.');
+                return;
+            }
             const title = document.getElementById('receiptTitle').value.trim();
             const store = document.getElementById('receiptStore').value.trim();
             const date = document.getElementById('receiptDate').value;
@@ -804,6 +820,8 @@
             const r = data.find(item => item && item.id === id);
             if (!r) return;
 
+            photoReadGeneration++;
+            pendingPhotoReads = 0;
             editingReceiptId = id;
             document.getElementById('receiptTitle').value = r.title || '';
             document.getElementById('receiptStore').value = r.store || '';
@@ -848,6 +866,8 @@
         function cancelEdit() { resetForm(); }
 
         function resetForm() {
+            photoReadGeneration++;
+            pendingPhotoReads = 0;
             editingReceiptId = null;
             document.getElementById('receiptTitle').value = "";
             document.getElementById('receiptStore').value = "";
