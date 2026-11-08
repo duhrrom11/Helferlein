@@ -381,6 +381,17 @@ test('Cloud-Backup-Status lehnt ungueltige wiederherstellbare Metadaten ab', () 
   assert.doesNotMatch(source, /localStorage\.setItem/);
 });
 
+test('Lesende Wiederherstellungsprobe erkennt aktiven Schluesselwechsel waehrend der Pruefung', () => {
+  const start = html.indexOf('async function previewSupabaseVaultRecovery()');
+  const end = html.indexOf('// Read-only status check;', start);
+  const source = html.slice(start, end);
+  assert.match(source, /const startingMasterKeyHex = currentMasterKeyHex/);
+  const finalGuard = source.lastIndexOf('currentMasterKeyHex !== startingMasterKeyHex');
+  const success = source.indexOf("alert('Cloud-Sicherung vom '");
+  assert.ok(finalGuard > 0 && success > finalGuard);
+  assert.doesNotMatch(source, /localStorage\.setItem/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
