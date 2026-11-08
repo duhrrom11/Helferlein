@@ -57,6 +57,18 @@ function harness(online = true) {
   await assert.rejects(firstOffline.store.flush(), /baseline unknown/);
   assert.equal(await firstOffline.store.hasPending(), true);
   assert.equal(firstOffline.rows.length, 0);
+  assert.equal((await firstOffline.store.reconcilePending()).status, 'ready');
+  assert.equal(await firstOffline.store.flush(), true);
+  assert.equal(firstOffline.rows.length, 1);
+  assert.equal(await firstOffline.store.hasPending(), false);
+
+  const conflicting = harness(false);
+  await conflicting.store.save({ plants: [55] });
+  conflicting.rows.push({ id: 1, user_id: 'alice', tool: 'plants', data: { plants: [99] }, updated_at: 'remote' });
+  conflicting.navigator.onLine = true;
+  assert.equal((await conflicting.store.reconcilePending()).status, 'conflict');
+  assert.equal(await conflicting.store.hasPending(), true);
+  assert.deepEqual(conflicting.rows[0].data, { plants: [99] });
 
   const h = harness();
   assert.equal((await h.store.load()).source, 'cloud-empty');
