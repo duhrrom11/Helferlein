@@ -916,7 +916,16 @@
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    saveData(parsed);
+                    if (!parsed || !Array.isArray(parsed.readings) ||
+                        !parsed.readings.every(item => item && typeof item.type === 'string' &&
+                            typeof item.name === 'string' && typeof item.date === 'string' &&
+                            Number.isFinite(item.value)) ||
+                        (parsed.tarifs !== undefined && (!parsed.tarifs ||
+                            typeof parsed.tarifs !== 'object' || Array.isArray(parsed.tarifs)))) {
+                        throw new Error('Ungültiges Zählerstände-Backup');
+                    }
+                    if (!confirm('Backup importieren? Vorhandene Zählerstände und Tarife werden ersetzt.')) return;
+                    if (!saveData({ ...parsed, tarifs: parsed.tarifs || {} })) return;
                     loadTarifs();
                     renderApp();
                     alert("Backup erfolgreich importiert!");
