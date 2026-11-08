@@ -9,7 +9,7 @@ for (const width of [390, 768, 900, 1024, 1200, 1440]) {
     const measurements=await page.evaluate(()=>{
       const main=document.querySelector('main.b3-dashboard');
       const container=main.getBoundingClientRect();
-      const keys=['actions','stats','calendar','create','plants'];
+      const keys=['stats','calendar','create','plants'];
       const rects=keys.map(id=>{
         const el=document.querySelector('[data-b3-panel="'+id+'"]');
         const b=el.getBoundingClientRect();
@@ -37,6 +37,7 @@ test('B3 editing never writes tool records and cancellation restores the layout'
   await page.setViewportSize({width:900,height:900});
   await page.goto(base,{waitUntil:'domcontentloaded'});
   const editor=page.locator('#b3-editor');
+  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
   await page.locator('#b3-edit-open').click();
   await expect(editor).toBeVisible();
   await editor.getByRole('button',{name:'Standardlayout'}).click();
@@ -47,6 +48,7 @@ test('B3 editing never writes tool records and cancellation restores the layout'
 test('B3 dark mode keeps calendar content readable',async ({page})=>{
   await page.setViewportSize({width:900,height:900});
   await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
   await page.locator('[data-b3-theme]').selectOption('dark');
   await expect(page.locator('body')).toHaveClass(/b3-dark/);
   const c=await page.locator('[data-b3-panel="calendar"]').evaluate(el=>{
@@ -57,3 +59,24 @@ test('B3 dark mode keeps calendar content readable',async ({page})=>{
   expect(c.background).not.toBe('rgba(0, 0, 0, 0)');
   expect(c.text).not.toBe('rgb(255, 255, 255)');
 });
+
+for(const width of [390,900]){
+ test('B3 compact header and consolidated navigation at '+width+'px',async ({page})=>{
+  await page.setViewportSize({width,height:850});
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.b3-settings-trigger')).toBeVisible();
+  await expect(page.locator('.b3-tool-title h1')).toBeVisible();
+  await expect(page.locator('.b3-tool-title p')).toBeVisible();
+  await expect(page.locator('.b3-more>summary')).toBeVisible();
+  await expect(page.locator('.b3-mobile-nav')).toHaveCount(0);
+  await expect(page.locator('main [data-b3-panel="actions"]')).toHaveCount(0);
+  await page.locator('.b3-more>summary').click();
+  await expect(page.getByRole('button',{name:'Garten-ROI'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Zisterne'})).toBeVisible();
+  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
+  await expect(page.locator('#settingsModal')).toBeVisible();
+  await expect(page.locator('[data-b3-theme]')).toBeVisible();
+  await expect(page.locator('#b3-edit-open')).toBeVisible();
+  await expect(page.getByRole('link',{name:'Zur Helferlein-Hauptseite'})).toBeVisible();
+ });
+}
