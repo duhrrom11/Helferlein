@@ -977,7 +977,16 @@
         }
 
         async function checkUserSession() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            // A failed Auth request must not leave a stale "connected" indicator.
+            let user = null;
+            let sessionError = null;
+            try {
+                const result = await supabaseClient.auth.getUser();
+                user = result.data?.user ?? null;
+                sessionError = result.error;
+            } catch (error) {
+                sessionError = error;
+            }
             const statusText = document.getElementById('cloud-status-text');
             const userDisplay = document.getElementById('cloud-user-display');
             const headerBadge = document.getElementById('header-user-badge');
@@ -998,7 +1007,7 @@
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Status: Nicht angemeldet";
+                statusText.innerText = sessionError ? "Status: Verbindung oder Sitzung nicht überprüfbar" : "Status: Nicht angemeldet";
                 statusText.className = "font-bold text-gray-700";
                 if(syncDot) {
                     syncDot.classList.remove('bg-emerald-400', 'animate-pulse');
