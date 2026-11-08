@@ -121,10 +121,12 @@
       ['➕','Pflanze erfassen','#b3-create'],
       ['🪴','Meine Pflanzen','#b3-plants']
     ];
+    const navLinks=create('div',{class:'b3-nav-links'});
     links.forEach(([icon,label,href])=>{
       const a=create('a',{href},icon+' '+label);
-      nav.append(a);
+      navLinks.append(a);
     });
+    nav.append(navLinks);
     const more=create('details',{class:'b3-more'});
     const moreTitle=create('summary',{},'☷ Weitere Tools');
     more.append(moreTitle);
