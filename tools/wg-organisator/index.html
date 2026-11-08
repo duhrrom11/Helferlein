@@ -1009,7 +1009,7 @@
                     throw new Error('Ungültige alte WG-Daten.');
                 const arrayFields = ['flatmates', 'notes', 'data', 'goals', 'events', 'inventory', 'cleaning', 'shopping', 'cooking', 'contracts'];
                 const objectFields = ['budgets', 'diets', 'infoboard'];
-                if (!arrayFields.some(key => Array.isArray(payload[key])) ||
+                if (![...arrayFields, ...objectFields].some(key => Object.prototype.hasOwnProperty.call(payload, key)) ||
                     arrayFields.some(key => payload[key] !== undefined && !Array.isArray(payload[key])) ||
                     objectFields.some(key => payload[key] !== undefined &&
                         (!payload[key] || typeof payload[key] !== 'object' || Array.isArray(payload[key]))))
