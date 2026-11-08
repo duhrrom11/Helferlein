@@ -869,8 +869,10 @@
                     };
                 }
             } else {
+                let newId = Date.now();
+                while (data.some(item => item && item.id === newId)) newId++;
                 data.push({
-                    id: Date.now(),
+                    id: newId,
                     title, store, date, price, category, paymentMethod, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType,
                     photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] : []
                 });
