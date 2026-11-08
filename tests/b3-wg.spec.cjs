@@ -64,3 +64,13 @@ test('WG dark mode updates styles without changing app data',async({page})=>{
  expect(status.color).not.toBe(status.background);
  expect(await page.evaluate(()=>localStorage.getItem('helferlein_ui_theme_v1'))).toBe('dark');
 });
+
+test('First visit shows original WG creation action but preserves navigation',async({page})=>{
+ await page.setViewportSize({width:390,height:900});
+ await page.goto(url,{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#b3-wg-onboarding')).toBeVisible();
+ await expect(page.getByRole('button',{name:/WG-Plan mit 1 Klick erstellen/})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Einstellungen öffnen'})).toBeVisible();
+ await expect(page.locator('.b3-more summary')).toBeVisible();
+ expect(await page.evaluate(()=>localStorage.getItem('wg_active_bin_id'))).toBeNull();
+});
