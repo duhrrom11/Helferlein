@@ -16,3 +16,4 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/release-smoke.cjs
+      - run: node tests/wg-cache-regression.cjs
