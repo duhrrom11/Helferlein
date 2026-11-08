@@ -629,7 +629,8 @@
         function assignToBeet(slotIndex) {
             let data = getData();
             if (!Number.isSafeInteger(slotIndex) || slotIndex < 0 || slotIndex >= data.beetSlots.length) return;
-            let plantNames = data.plants.filter(p => p && typeof p === 'object').map(p => `${p.id}: ${p.name}`).join('\n');
+            let plantNames = data.plants.filter(p => p && typeof p === 'object' &&
+                Number.isSafeInteger(p.id) && p.id >= 0).map(p => `${p.id}: ${String(p.name ?? 'Unbenannt')}`).join('\n');
             let input = prompt(`Pflanze für Beet-Feld ${slotIndex+1}:\n\n${plantNames}\n\n('leer' zum Leeren)`);
             if (input === null) return;
             input = input.trim();
