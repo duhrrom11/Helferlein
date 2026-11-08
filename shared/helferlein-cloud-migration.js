@@ -253,8 +253,10 @@
       return value;
     }
     async function authenticated() {
+      assertActive();
       const { data, error } = await client.auth.getUser();
       if (error) throw error;
+      assertActive();
       if (!data || !data.user || !data.user.id) throw new Error('Bitte zuerst anmelden');
     }
     button('Cloud-Status anzeigen', async () => {
@@ -274,14 +276,13 @@
     });
     button('Lokale Daten in Supabase übernehmen', async () => {
       beginOperation('upload');
-      if (migrationInProgress || importInProgress) throw new Error('Datenübernahme läuft bereits');
       migrationInProgress = true;
       try {
       await authenticated();
-      if (!navigator.onLine) throw new Error('Für die erste Übernahme ist Internet erforderlich');
+      ensureOnline();
       const local = localData();
       if (!local) throw new Error('Keine gültigen lokalen Daten vorhanden');
-      const originalBytes = localStorage.getItem(localKey);
+      const originalBytes = safeLocalBytes();
       const owner = localStorage.getItem(ownerKey);
       const user = await currentUser();
       if (!user || !user.id) throw new Error('Anmeldung während Datenübernahme verloren');
@@ -292,11 +293,11 @@
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Prüfung gewechselt');
       if (!confirm('Lokale ' + local[collection].length + ' Einträge einmalig in die leere Supabase-Cloud übertragen? Lokale Daten bleiben erhalten.')) return;
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
-      if (localStorage.getItem(localKey) !== originalBytes) throw new Error('Lokale Daten haben sich während der Bestätigung geändert; bitte erneut prüfen');
-      if (localStorage.getItem(ownerKey) !== owner) throw new Error('Kontozuordnung wurde während der Bestätigung geändert');
+      ensureLocalUnchanged(originalBytes);
+      ensureOwnerUnchanged(owner);
       const result = await store.save(local);
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Übertragung gewechselt');
-      if (result && localStorage.getItem(localKey) !== originalBytes) throw new Error('Lokale Daten nach Upload verändert; automatische Aktivierung gesperrt');
+      if (result) ensureLocalUnchanged(originalBytes);
       if (result && !navigator.onLine) throw new Error('Verbindung nach Übertragung verloren; bitte Cloud-Status prüfen');
       if (result) await enable();
       status.textContent = result ? 'Daten übertragen · weitere Änderungen werden synchronisiert.' : 'Übertragung ausstehend.';
@@ -304,11 +305,10 @@
     });
     button('Cloud-Daten lokal übernehmen', async () => {
       beginOperation('import');
-      if (importInProgress || migrationInProgress) throw new Error('Datenübernahme läuft bereits');
       importInProgress = true;
       try {
       await authenticated();
-      if (!navigator.onLine) throw new Error('Cloud-Laden erfordert Internet');
+      ensureOnline();
       if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten vorhanden; automatisches Überschreiben ist gesperrt');
       const owner = localStorage.getItem(ownerKey);
       const user = await currentUser();
@@ -319,15 +319,15 @@
       if (result.source !== 'cloud') throw new Error('Keine eindeutig abrufbaren Cloud-Daten');
       if (!navigator.onLine) throw new Error('Verbindung beim Cloud-Laden verloren');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Abfrage gewechselt');
-      if (!result.data || typeof result.data !== 'object' || Array.isArray(result.data) || !Array.isArray(result.data[collection])) throw new Error('Cloud-Datenformat ungültig');
+      ensureCollection(result.data);
       if (!confirm(result.data[collection].length + ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?')) return;
       // Recheck before writing: never replace local data added while awaiting confirmation.
       if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten wurden inzwischen angelegt');
       if (!await isEnabled() && enabledUser !== null) throw new Error('Cloud-Zuordnung während Übernahme geändert');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
-      if (localStorage.getItem(ownerKey) !== owner) throw new Error('Kontozuordnung hat sich geändert');
+      ensureOwnerUnchanged(owner);
       if (await store.hasPending()) throw new Error('Neue lokale Änderungen erkannt; Cloud-Übernahme abgebrochen');
-      if (!navigator.onLine) throw new Error('Verbindung während Cloud-Übernahme verloren');
+      ensureOnline();
       localStorage.setItem(localKey, JSON.stringify(result.data));
       await enable();
       if ((await currentUser())?.id !== user.id) throw new Error('Konto nach Übernahme gewechselt');
@@ -338,13 +338,12 @@
     button('Offline-Änderungen abgleichen', async () => {
       beginOperation('reconcile');
       try {
-      if (migrationInProgress || importInProgress) throw new Error('Datenübernahme läuft');
       if (!await isEnabled()) throw new Error('Cloud-Synchronisierung ist nicht aktiviert');
       const user = await currentUser();
       assertOwner(user && user.id);
       await queue.catch(() => {});
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während des Abgleichs gewechselt');
-      if (!navigator.onLine) throw new Error('Für den Offline-Abgleich ist wieder Internet erforderlich');
+      ensureOnline();
       const result = await store.reconcilePending();
       assertOwner(user.id);
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während des Abgleichs gewechselt');
@@ -373,15 +372,15 @@
     button('Ausstehende Änderungen synchronisieren', async () => {
       beginOperation('flush');
       try {
-      if (migrationInProgress || importInProgress) throw new Error('Datenübernahme läuft');
       if (!await isEnabled()) throw new Error('Cloud-Synchronisierung zuerst durch bestätigte Übernahme aktivieren');
       await queue.catch(() => {});
       const user = await currentUser();
       assertOwner(user && user.id);
       if (!await isEnabled()) throw new Error('Cloud-Synchronisierung während des Vorgangs deaktiviert');
-      if (!navigator.onLine) throw new Error('Für manuelle Synchronisierung ist Internet erforderlich');
+      assertActive();
+      ensureOnline();
       const done = await store.flush();
-      if (localStorage.getItem(ownerKey) !== user.id) throw new Error('Kontozuordnung während Synchronisierung gewechselt');
+      ensureOwner(user.id);
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Synchronisierung gewechselt');
       status.textContent = done ? 'Synchronisierung abgeschlossen' : 'Keine Übertragung möglich oder erforderlich';
       } finally { endOperation('flush'); }
