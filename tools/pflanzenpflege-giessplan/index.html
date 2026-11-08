@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
     <!-- Fail closed before legacy scripts can paint account-owned local data. -->
-    <style>html.helferlein-account-check body{visibility:hidden!important}</style>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
     <script>
       try {
         if (localStorage.getItem('helferlein_cloud_owner_pflanzenpflege-giessplan')) {
