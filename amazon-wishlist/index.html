@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amazon-Wünsche · Helferlein (Vorschau)</title>
+<style>body{font:16px system-ui,sans-serif;margin:0;background:#f7f8fb;color:#182338}main{max-width:680px;margin:auto;padding:24px}header{display:flex;align-items:center;justify-content:space-between}h1{font-size:1.8rem}section{background:white;border:1px solid #e1e5ec;border-radius:16px;padding:20px;margin:18px 0}input,button{font:inherit;padding:12px;border-radius:10px}input{box-sizing:border-box;width:100%;border:1px solid #aeb8c8}button{border:0;background:#1868d2;color:white;cursor:pointer;margin-top:12px}button:disabled{opacity:.5}small{color:#526075}#result{overflow-wrap:anywhere}a{color:#1455b4}</style></head>
+<body><main><header><strong>♡ Helferlein Wünsche</strong><small>Entwicklungs-Vorschau</small></header>
+<h1>Deine Amazon-Wünsche</h1><p>Amazon-Produkte entdecken und auf deine öffentliche Wunschliste setzen.</p>
+<section><h2>Amazon-Link prüfen</h2><label for="url">Amazon.de-Produktlink</label><input id="url" type="url" placeholder="https://www.amazon.de/dp/..." autocomplete="off"><button id="check">Link prüfen</button><p id="result" role="status" aria-live="polite"></p></section>
+<section><h2>Community – geplant</h2><p>Öffentlicher Feed · Trending · Wunsch-Ranking · Nutzerprofile · Folgen</p><small>Diese Vorschau ist noch nicht mit Supabase verbunden. Es werden keine Wünsche gespeichert.</small></section>
+</main><script type="module">
+import {parseAmazonUrl,affiliateUrl} from './amazon-links.mjs';
+const input=document.querySelector('#url'),result=document.querySelector('#result');
+document.querySelector('#check').addEventListener('click',()=>{
+ const p=parseAmazonUrl(input.value);
+ if(!p){result.textContent='Bitte einen gültigen Amazon-Produktlink mit ASIN eingeben.';return;}
+ if(p.marketplace!=='amazon.de'){result.textContent='Derzeit ist nur Amazon.de für Affiliate-Links konfiguriert.';return;}
+ const a=document.createElement('a');a.href=affiliateUrl(p,{'amazon.de':'duhrrom-21'});a.textContent='Amazon-Produkt öffnen (Partnerlink)';a.rel='noopener noreferrer sponsored';a.target='_blank';
+ result.replaceChildren(document.createTextNode('ASIN: '+p.asin+' · '),a);
+});
+</script></body></html>
