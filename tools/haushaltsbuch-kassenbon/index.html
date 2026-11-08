@@ -688,6 +688,12 @@
         function loadPhotosToCanvas(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
+            const selectedFiles = Array.from(files);
+            if (selectedFiles.some(file => !['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.type))) {
+                event.target.value = '';
+                alert('Bitte nur JPG-, PNG-, GIF- oder WebP-Bilder auswählen. Bereits vorhandene Belegbilder bleiben erhalten.');
+                return;
+            }
             const generation = ++photoReadGeneration;
             ocrGeneration++;
             pendingPhotoReads = files.length;
@@ -697,7 +703,7 @@
             previewContainer.innerHTML = "";
             previewContainer.classList.remove('hidden');
 
-            Array.from(files).forEach((file, idx) => {
+            selectedFiles.forEach((file, idx) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     if (generation !== photoReadGeneration) return;
@@ -723,7 +729,9 @@
                     }
                 };
                 reader.onerror = function() {
-                    if (generation === photoReadGeneration) pendingPhotoReads--;
+                    if (generation !== photoReadGeneration) return;
+                    pendingPhotoReads--;
+                    alert('Ein Belegbild konnte nicht gelesen werden. Bitte die Bildauswahl erneut versuchen.');
                 };
                 reader.readAsDataURL(file);
             });
