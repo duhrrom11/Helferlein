@@ -1007,8 +1007,22 @@
                 let configStatus = 'Ältere Sicherung ohne Cloud-Einstellungen.';
                 if (remote.encrypted_config) {
                     const config = await decryptVaultPayload(remote.encrypted_config, currentMasterKeyHex);
-                    if (!config || !Array.isArray(config.trustees) || !Array.isArray(config.alarmPersons)) {
-                        return alert('Tresoreinträge entschlüsselbar, aber die verschlüsselten Kontakte und Einstellungen konnten nicht geprüft werden. Keine Daten verändert.');
+                    if (!config || typeof config !== 'object' || Array.isArray(config) ||
+                        typeof config.ownerName !== 'string' ||
+                        typeof config.ownerEmail !== 'string' ||
+                        !Number.isInteger(config.checkInIntervalDays) ||
+                        config.checkInIntervalDays < 1 || config.checkInIntervalDays > 3650 ||
+                        typeof config.lastCheckIn !== 'string' ||
+                        !Number.isFinite(Date.parse(config.lastCheckIn)) ||
+                        !Array.isArray(config.trustees) || config.trustees.length > 100 ||
+                        !Array.isArray(config.alarmPersons) || config.alarmPersons.length > 100 ||
+                        !config.trustees.every(person =>
+                            person && typeof person === 'object' && !Array.isArray(person) &&
+                            typeof person.name === 'string' && person.name.length <= 500) ||
+                        !config.alarmPersons.every(person =>
+                            person && typeof person === 'object' && !Array.isArray(person) &&
+                            typeof person.name === 'string' && person.name.length <= 500)) {
+                        return alert('Tresoreinträge entschlüsselbar, aber Cloud-Kontakte oder Einstellungen sind für die Wiederherstellung ungültig. Keine Daten verändert.');
                     }
                     configStatus = 'Verschlüsselte Einstellungen erfolgreich entschlüsselt: ' +
                         config.trustees.length + ' Vertrauenspersonen und ' +
