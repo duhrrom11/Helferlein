@@ -763,8 +763,7 @@
                 local.ownerName === 'Dein Name' && local.ownerEmail === '' &&
                 local.checkInIntervalDays === 30 &&
                 Array.isArray(local.alarmPersons) && local.alarmPersons.length === 0 &&
-                (JSON.stringify(local.trustees) === JSON.stringify(defaultTrustees) ||
-                    JSON.stringify(local.trustees) === '[]');
+                JSON.stringify(local.trustees) === JSON.stringify(defaultTrustees);
             if (!local || !currentDecryptedVault || !Array.isArray(currentDecryptedVault.entries) ||
                 currentDecryptedVault.entries.length !== 0 || !pristineMetadata ||
                 lastPersistedRevision !== localSaveRevision) {
