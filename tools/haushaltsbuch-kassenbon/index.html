@@ -878,7 +878,7 @@
             let activeWarrantyValue = 0;
             let taxValueTotal = 0;
 
-            const categoryExpenses = {};
+            const categoryExpenses = Object.create(null);
             defaultCategories.forEach(cat => categoryExpenses[cat] = 0);
 
             data.forEach(r => {
@@ -894,17 +894,21 @@
                     if (isCurrentMonth) {
                         totalExpense += price;
                         if (r.isFixkosten) fixExpense += price;
-                        categoryExpenses[r.category] = (categoryExpenses[r.category] || 0) + price;
+                        const category = typeof r.category === 'string' && r.category.trim() ? r.category : 'Sonstiges';
+                        categoryExpenses[category] = (categoryExpenses[category] || 0) + price;
                     }
                 }
 
                 if (r.isTax) taxValueTotal += price;
 
-                if (r.warrantyMonths > 0) {
+                const warrantyMonths = Number(r.warrantyMonths);
+                if (Number.isFinite(warrantyMonths) && warrantyMonths > 0) {
                     const buyDate = new Date(r.date);
-                    const expDate = new Date(buyDate);
-                    expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
-                    if (expDate >= now) activeWarrantyValue += price;
+                    if (Number.isFinite(buyDate.getTime())) {
+                        const expDate = new Date(buyDate);
+                        expDate.setMonth(expDate.getMonth() + warrantyMonths);
+                        if (expDate >= now) activeWarrantyValue += price;
+                    }
                 }
 
                 const buyDate = new Date(r.date);
