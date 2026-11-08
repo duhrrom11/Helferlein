@@ -1483,7 +1483,7 @@
         function getData() { try { return JSON.parse(localStorage.getItem('wg_kassenbon_data')) || []; } catch(e) { return []; } }
         function saveData(data, sync = true) { localStorage.setItem('wg_kassenbon_data', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getBudgets() { try { return JSON.parse(localStorage.getItem('wg_budgetbuch_budgets')) || { "Lebensmittel": 400, "Wohnen": 800, "Energie": 150, "Auto": 250, "Freizeit": 200, "Elektronik": 100, "Gesundheit": 80, "Verträge": 120, "Sonstiges": 100 }; } catch(e) { return {}; } }
+        function getBudgets() { try { const budgets = JSON.parse(localStorage.getItem('wg_budgetbuch_budgets')); return budgets && typeof budgets === 'object' && !Array.isArray(budgets) ? budgets : {}; } catch(e) { return {}; } }
         function saveBudgets(data, sync = true) { localStorage.setItem('wg_budgetbuch_budgets', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getSavingsGoals() { try { return JSON.parse(localStorage.getItem('wg_budgetbuch_goals')) || []; } catch(e) { return []; } }
