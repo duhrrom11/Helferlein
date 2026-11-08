@@ -1900,7 +1900,15 @@
         function openWLANQRModal() {
             const modal = document.getElementById('wlanQrModal'); modal.classList.remove('hidden'); modal.classList.add('flex');
             const qrContainer = document.getElementById('wlanQrcode'); qrContainer.innerHTML = "";
-            const wifiString = `WIFI:S:WG-WLAN;T:WPA;P:${getInfoData().wifi || ''};;`;
+            // The infoboard stores a Wi-Fi label, not a verified password.
+            // Do not generate a misleading QR code with a fabricated SSID.
+            const wifiString = getInfoData().wifi || '';
+            if (!wifiString) {
+                qrContainer.textContent = "Bitte zuerst WLAN-Informationen hinterlegen.";
+                return;
+            }
+            qrContainer.textContent = "WLAN-Information: " + wifiString + ". Für einen Verbindungs-QR-Code werden SSID, Verschlüsselung und Passwort benötigt.";
+            return;
             if (typeof QRCode !== 'undefined') new QRCode(qrContainer, { text: wifiString, width: 140, height: 140 });
             else { qrContainer.textContent = "QR-Code derzeit nicht verfügbar. Aus Datenschutzgründen wird das WLAN-Passwort nicht an einen externen QR-Dienst gesendet."; }
         }
