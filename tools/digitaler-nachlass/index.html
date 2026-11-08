@@ -922,7 +922,7 @@
                     .from('vault_cloud_snapshots').update({ recovery_key: recovery })
                     .eq('owner_user_id', user.id).eq('vault_id', cfg.vaultId).select('vault_id');
                 if (saveError || !saved || saved.length !== 1) throw saveError || new Error('Nicht bestätigt');
-                alert('Verschlüsselter Wiederherstellungsschlüssel gespeichert. Passwort unbedingt getrennt aufbewahren. Die Wiederherstellung wird als nächster Schritt ergänzt.');
+                alert('Verschlüsselter Wiederherstellungsschlüssel gespeichert. Passwort unbedingt getrennt aufbewahren. Die Cloud-Wiederherstellung steht über „Tresor aus Supabase wiederherstellen“ auf einem neuen Gerät bereit. Bitte zusätzlich eine verschlüsselte lokale Sicherung aufbewahren.');
             } catch (error) {
                 console.error('Cloud-Schlüsselvorbereitung fehlgeschlagen:', error);
                 alert('Wiederherstellungsschlüssel konnte nicht bestätigt gespeichert werden.');
