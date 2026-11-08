@@ -1,0 +1,24 @@
+name: Amazon wishlist checks
+on:
+  pull_request:
+    paths:
+      - 'amazon-wishlist/**'
+      - '.github/workflows/amazon-wishlist.yml'
+  push:
+    branches: ['feature/amazon-wishlist-foundation']
+    paths:
+      - 'amazon-wishlist/**'
+      - '.github/workflows/amazon-wishlist.yml'
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check amazon-wishlist/app.mjs
+      - run: node --check amazon-wishlist/amazon-links.mjs
+      - run: node --test amazon-wishlist/amazon-links.test.mjs
