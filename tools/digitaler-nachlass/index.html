@@ -699,8 +699,12 @@
             // Ein fehlgeschlagener Auftrag blockiert spätere Synchronisierungen nicht.
             vaultSyncQueue = operation.then(() => undefined);
             return operation.then(success => {
-                showVaultSyncResult(success);
-                return success;
+                const confirmedCurrent = success &&
+                    lastCloudSyncedSnapshot !== null &&
+                    localStorage.getItem('digital_estate_vault') === lastCloudSyncedSnapshot &&
+                    lastPersistedRevision === localSaveRevision;
+                showVaultSyncResult(confirmedCurrent);
+                return confirmedCurrent;
             });
         }
 
