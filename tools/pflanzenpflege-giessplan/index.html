@@ -677,7 +677,7 @@
                 return alert('Bitte eine gültige Erntemenge in ganzen Gramm eingeben.');
             }
             let data = getData();
-            let p = data.plants.find(item => item.id === plantId);
+            let p = data.plants.find(item => item && typeof item === 'object' && item.id === plantId);
             if(p) {
                 if (!Array.isArray(p.harvestLog)) p.harvestLog = [];
                 const storedTotal = Number(data.totalHarvestGrams);
@@ -696,7 +696,7 @@
         function closeGalleryModal() { document.getElementById('galleryModal').classList.add('hidden'); }
         function renderGalleryGrid(plantId) {
             let data = getData();
-            let p = data.plants.find(item => item.id === plantId);
+            let p = data.plants.find(item => item && typeof item === 'object' && item.id === plantId);
             if(!p) return;
             let photos = Array.isArray(p.galleryPhotos) ? p.galleryPhotos : (p.photo ? [p.photo] : []);
             photos = photos.filter(img => typeof img === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(img));
@@ -708,7 +708,7 @@
             if(!fileInput.files || !fileInput.files[0]) return;
             compressImage(fileInput.files[0], (compressed) => {
                 let data = getData();
-                let p = data.plants.find(item => item.id === plantId);
+                let p = data.plants.find(item => item && typeof item === 'object' && item.id === plantId);
                 if(p) {
                     if (!Array.isArray(p.galleryPhotos)) p.galleryPhotos = p.photo ? [p.photo] : [];
                     p.galleryPhotos.push(compressed);
@@ -862,7 +862,7 @@
 
         function waterPlant(id) {
             let data = getData();
-            let p = data.plants.find(item => item.id === id);
+            let p = data.plants.find(item => item && typeof item === 'object' && item.id === id);
             if (p) {
                 const now = new Date();
                 let todayStr = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0')].join('-');
@@ -893,7 +893,7 @@
             const text = document.getElementById('diaryText').value.trim();
             if(!text) return;
             let data = getData();
-            let p = data.plants.find(item => item.id === id);
+            let p = data.plants.find(item => item && typeof item === 'object' && item.id === id);
             if (!p) return;
             if (!Array.isArray(p.diary)) p.diary = [];
             p.diary.unshift({ date: new Date().toLocaleDateString('de-DE'), text: text });
