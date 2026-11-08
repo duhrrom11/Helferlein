@@ -1034,10 +1034,11 @@
             if (typeFilter === 'einnahme') filtered = filtered.filter(r => r.entryType === 'einnahme');
             if (typeFilter === 'fixkosten') filtered = filtered.filter(r => r.isFixkosten);
             if (typeFilter === 'garantie') filtered = filtered.filter(r => {
-                if (!r.warrantyMonths) return false;
+                const months = Number(r.warrantyMonths);
                 const buyDate = new Date(r.date);
+                if (!Number.isFinite(months) || months <= 0 || !Number.isFinite(buyDate.getTime())) return false;
                 const expDate = new Date(buyDate);
-                expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
+                expDate.setMonth(expDate.getMonth() + months);
                 return expDate >= now;
             });
             if (catFilter !== 'All') filtered = filtered.filter(r => r.category === catFilter);
@@ -1055,20 +1056,23 @@
 
                 let isWarrantyActive = false;
                 let diffDaysWarranty = 0;
-                if (r.warrantyMonths > 0) {
-                    const buyDate = new Date(r.date);
+                const warrantyMonths = Number(r.warrantyMonths);
+                const buyDate = new Date(r.date);
+                const validBuyDate = Number.isFinite(buyDate.getTime());
+                const hasWarranty = validBuyDate && Number.isFinite(warrantyMonths) && warrantyMonths > 0;
+                if (hasWarranty) {
                     const expDate = new Date(buyDate);
-                    expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
+                    expDate.setMonth(expDate.getMonth() + warrantyMonths);
                     diffDaysWarranty = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
                     isWarrantyActive = diffDaysWarranty >= 0;
                 }
 
                 let isReturnActive = false;
                 let diffDaysReturn = 0;
-                if (r.returnDays > 0) {
-                    const buyDate = new Date(r.date);
+                const returnDays = Number(r.returnDays);
+                if (validBuyDate && Number.isFinite(returnDays) && returnDays > 0) {
                     const retDate = new Date(buyDate);
-                    retDate.setDate(retDate.getDate() + (r.returnDays || 0));
+                    retDate.setDate(retDate.getDate() + returnDays);
                     diffDaysReturn = Math.ceil((retDate - now) / (1000 * 60 * 60 * 24));
                     isReturnActive = diffDaysReturn >= 0;
                 }
@@ -1089,7 +1093,7 @@
                                     <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${escapeHaushaltsHtml(r.category)}</span>
                                     ${r.isFixkosten ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">🔄 Fixkosten</span>` : ''}
                                     ${r.isTax ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">💼 Steuer</span>` : ''}
-                                    ${r.warrantyMonths > 0 ? (isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Garantie aktiv (${diffDaysWarranty} T)</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Garantie abgelaufen</span>`) : ''}
+                                    ${hasWarranty ? (isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Garantie aktiv (${diffDaysWarranty} T)</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Garantie abgelaufen</span>`) : ''}
                                     ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">⏱️ Rückgabe: ${diffDaysReturn} T</span>` : ''}
                                 </div>
                                 <p class="text-xs text-gray-600">
@@ -1102,9 +1106,9 @@
                         </div>
                         <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
                             <button onclick="editReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-bold">✏️ Bearbeiten</button>
-                            ${r.warrantyMonths > 0 ? `<button onclick="openQRModal(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold">🏷️ QR</button>` : ''}
-                            ${r.warrantyMonths > 0 ? `<button onclick="openGoogleCalendar(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold">📅 Google</button>` : ''}
-                            ${r.warrantyMonths > 0 ? `<button onclick="downloadICS(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold">📄 .ics</button>` : ''}
+                            ${hasWarranty ? `<button onclick="openQRModal(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl text-xs font-bold">🏷️ QR</button>` : ''}
+                            ${hasWarranty ? `<button onclick="openGoogleCalendar(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-bold">📅 Google</button>` : ''}
+                            ${hasWarranty ? `<button onclick="downloadICS(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-xs font-bold">📄 .ics</button>` : ''}
                             <button onclick="deleteReceipt(${safeHaushaltsId(r.id)})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                         </div>
                     </div>
