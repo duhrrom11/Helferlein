@@ -721,7 +721,8 @@
             }
             
             try {
-                const cfg = getVaultConfig();
+                const localSnapshot = localStorage.getItem('digital_estate_vault');
+                const cfg = localSnapshot ? JSON.parse(localSnapshot) : null;
                 const syncRevision = localSaveRevision;
                 // Read the exact ciphertext already persisted locally. Re-encrypting
                 // mutable in-memory data here could race with a local save.
@@ -731,7 +732,7 @@
 
                 // A newer local edit must not be represented as already cloud-saved.
                 if (syncRevision !== localSaveRevision) return false;
-                if (localStorage.getItem('digital_estate_vault') !== JSON.stringify(cfg)) return false;
+                if (localStorage.getItem('digital_estate_vault') !== localSnapshot) return false;
                 await db.collection("vaults").doc(cfg.vaultId).set({
                     vaultId: cfg.vaultId,
                     ownerName: cfg.ownerName || "",
@@ -745,7 +746,8 @@
                 
                 // The write may have succeeded for an older snapshot while the user
                 // continued editing locally. Do not claim the latest state is synced.
-                if (syncRevision !== localSaveRevision) {
+                if (syncRevision !== localSaveRevision ||
+                    localStorage.getItem('digital_estate_vault') !== localSnapshot) {
                     if (!silent) {
                         document.getElementById('syncErrorMessage').innerText =
                             "Während der Cloud-Speicherung wurden neuere lokale Änderungen vorgenommen. Bitte erneut synchronisieren.";
