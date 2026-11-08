@@ -1116,6 +1116,15 @@
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Der lokale Tresor wurde inzwischen geändert. Bitte erneut sichern.');
                 }
+                // Verify the encrypted entry payload before replacing a recoverable cloud copy.
+                const verifiedEntries = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
+                if (!verifiedEntries || !Array.isArray(verifiedEntries.entries)) {
+                    return alert('Der lokale verschlüsselte Tresorinhalt konnte nicht geprüft werden. Die Cloud-Sicherung bleibt unverändert.');
+                }
+                if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    lastPersistedRevision !== localSaveRevision) {
+                    return alert('Der lokale Tresor wurde während der Prüfung geändert. Bitte erneut sichern.');
+                }
                 // Do not upload a configuration that a later recovery would reject.
                 if (typeof cfg.ownerName !== 'string' ||
                     typeof cfg.ownerEmail !== 'string' ||
