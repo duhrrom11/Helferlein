@@ -993,11 +993,24 @@
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Der lokale Tresor wurde inzwischen geändert. Bitte erneut sichern.');
                 }
-                const record = { owner_user_id: user.id, vault_id: cfg.vaultId, encrypted_data: cfg.encryptedData };
+                // Protect all non-key local configuration with the same vault key.
+                const configPayload = {
+                    ownerName: cfg.ownerName, ownerEmail: cfg.ownerEmail,
+                    checkInIntervalDays: cfg.checkInIntervalDays, lastCheckIn: cfg.lastCheckIn,
+                    trustees: cfg.trustees, alarmPersons: cfg.alarmPersons
+                };
+                const encryptedConfig = await encryptVaultPayload(configPayload, currentMasterKeyHex);
+                if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    lastPersistedRevision !== localSaveRevision) {
+                    return alert('Lokaler Tresor wurde inzwischen geändert. Bitte erneut sichern.');
+                }
+                const record = { owner_user_id: user.id, vault_id: cfg.vaultId,
+                    encrypted_data: cfg.encryptedData, encrypted_config: encryptedConfig };
                 let result;
                 if (existing) {
                     result = await supabaseClient.from('vault_cloud_snapshots')
-                        .update({ encrypted_data: record.encrypted_data, updated_at: new Date().toISOString() })
+                        .update({ encrypted_data: record.encrypted_data,
+                            encrypted_config: record.encrypted_config, updated_at: new Date().toISOString() })
                         .eq('owner_user_id', user.id).eq('vault_id', cfg.vaultId).select('vault_id');
                 } else {
                     result = await supabaseClient.from('vault_cloud_snapshots').insert(record).select('vault_id');
