@@ -16,4 +16,7 @@ assert.throws(() => validate({ data: ['bad'] }), /Ungültige Einträge/);
 assert.throws(() => validate({ goals: [null] }), /Ungültige Einträge/);
 assert.throws(() => validate({ budgets: [] }), /Ungültiger Backup-Bereich/);
 assert.throws(() => validate({ foo: 1 }), /Unbekanntes Backup-Format/);
+assert.match(html, /const preview = changes\.map\(/, 'Import shows per-section preview');
+assert.match(html, /count\(existing\).*count\(incoming\)/, 'Import compares existing and incoming counts');
+assert.match(html, /Nur diese Bereiche werden vollständig ersetzt/, 'Import warns about section replacement');
 console.log('Household backup validation regression checks passed');
