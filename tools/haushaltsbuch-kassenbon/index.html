@@ -721,13 +721,14 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     if (generation !== photoReadGeneration) return;
-                    pendingPhotoReads--;
                     if (!safeReceiptPhoto(e.target.result)) {
+                        pendingPhotoReads--;
                         photoReadFailed = true;
                         alert('Ein Belegbild hat ein ungültiges Format. Bitte die Bildauswahl erneut versuchen.');
                         return;
                     }
                     currentUploadedPhotos[idx] = e.target.result;
+                    if (idx !== 0) pendingPhotoReads--;
                     const imgThumb = document.createElement('img');
                     imgThumb.src = e.target.result;
                     imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
@@ -739,9 +740,23 @@
                         const img = new Image();
                         img.onload = function() {
                             if (generation !== photoReadGeneration) return;
-                            rawImage = img;
-                            document.getElementById('canvasEditor').classList.remove('hidden');
-                            applyCanvasFilter();
+                            try {
+                                rawImage = img;
+                                document.getElementById('canvasEditor').classList.remove('hidden');
+                                applyCanvasFilter();
+                            } catch (error) {
+                                photoReadFailed = true;
+                                console.error('Belegbild konnte nicht verarbeitet werden:', error);
+                                alert('Das erste Belegbild konnte nicht verarbeitet werden. Bitte erneut auswählen.');
+                            } finally {
+                                pendingPhotoReads--;
+                            }
+                        };
+                        img.onerror = function() {
+                            if (generation !== photoReadGeneration) return;
+                            pendingPhotoReads--;
+                            photoReadFailed = true;
+                            alert('Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.');
                         };
                         img.src = e.target.result;
                     }
