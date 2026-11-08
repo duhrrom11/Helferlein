@@ -546,12 +546,25 @@
         }
 
         function saveTarifs() {
-            let data = getData();
-            data.tarifs = {
-                Strom: { priceHT: parseFloat(document.getElementById('tariffStromPriceHT').value) || 0, priceNT: parseFloat(document.getElementById('tariffStromPriceNT').value) || 0, abschlag: parseFloat(document.getElementById('tariffStromAbschlag').value) || 0 },
-                Wasser: { price: parseFloat(document.getElementById('tariffWasserPrice').value) || 0, abschlag: parseFloat(document.getElementById('tariffWasserAbschlag').value) || 0 },
-                Gas: { price: parseFloat(document.getElementById('tariffGasPrice').value) || 0, abschlag: parseFloat(document.getElementById('tariffGasAbschlag').value) || 0, calib: parseFloat(document.getElementById('tariffGasCalib').value) || 11.2 }
+            const readAmount = (id, fallback = 0) => {
+                const raw = document.getElementById(id).value.trim();
+                const value = raw === '' ? fallback : Number(raw);
+                if (!Number.isFinite(value) || value < 0) throw new Error('Ungültiger Tarifwert');
+                return value;
             };
+            let tarifs;
+            try {
+                tarifs = {
+                    Strom: { priceHT: readAmount('tariffStromPriceHT'), priceNT: readAmount('tariffStromPriceNT'), abschlag: readAmount('tariffStromAbschlag') },
+                    Wasser: { price: readAmount('tariffWasserPrice'), abschlag: readAmount('tariffWasserAbschlag') },
+                    Gas: { price: readAmount('tariffGasPrice'), abschlag: readAmount('tariffGasAbschlag'), calib: readAmount('tariffGasCalib', 11.2) }
+                };
+                if (tarifs.Gas.calib <= 0) throw new Error('Ungültiger Gasfaktor');
+            } catch (error) {
+                return alert('Bitte gültige, nichtnegative Tarife und einen positiven Gasfaktor eingeben.');
+            }
+            let data = getData();
+            data.tarifs = tarifs;
             if (!saveData(data)) return;
             alert("Tarife & Abschläge erfolgreich gespeichert!");
             renderApp();
