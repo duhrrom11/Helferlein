@@ -504,7 +504,7 @@
             if (!name) return alert("Bitte Standort eingeben!");
             let data = getData();
             data.locations.push({ id: Date.now(), name, icon });
-            saveData(data);
+            if (!saveData(data)) return;
             document.getElementById('locName').value = "";
             loadLocationsDropdown();
             renderInventory();
@@ -517,7 +517,7 @@
             let newName = prompt("Standort umbenennen:", loc.name);
             if (newName !== null && newName.trim() !== "") {
                 loc.name = newName.trim();
-                saveData(data);
+                if (!saveData(data)) return;
                 loadLocationsDropdown();
                 renderInventory();
             }
@@ -528,7 +528,7 @@
             let data = getData();
             data.locations = data.locations.filter(l => l.id !== locId);
             data.boxes = data.boxes.filter(b => b.locId !== locId);
-            saveData(data);
+            if (!saveData(data)) return;
             loadLocationsDropdown();
             renderInventory();
         }
@@ -579,7 +579,7 @@
                 subItems: subItems || [],
                 photo 
             });
-            saveData(data);
+            if (!saveData(data)) return;
             document.getElementById('boxName').value = "";
             document.getElementById('boxDesc').value = "";
             document.getElementById('boxValue').value = "";
@@ -671,7 +671,7 @@
                 box.expiry = expiry;
                 box.lentTo = lentTo;
                 box.subItems = activeSubItemsTemp;
-                saveData(data);
+                if (!saveData(data)) return;
             }
             closeEditBoxModal();
             renderInventory();
@@ -681,7 +681,7 @@
             if (!confirm("⚠️ Möchtest du diese Kiste wirklich löschen?")) return;
             let data = getData();
             data.boxes = data.boxes.filter(b => b.id !== boxId);
-            saveData(data);
+            if (!saveData(data)) return;
             renderInventory();
         }
 
