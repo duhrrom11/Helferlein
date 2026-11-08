@@ -593,7 +593,8 @@
 
             let data = getData();
             let sameTypeReadings = data.readings.filter(r => {
-                if (r.type !== type || r.name !== name || typeof r.date !== 'string' || r.date >= date ||
+                if (!r || typeof r !== 'object' || Array.isArray(r) ||
+                    r.type !== type || r.name !== name || typeof r.date !== 'string' || r.date >= date ||
                     !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
                 const previousDate = new Date(r.date);
                 return Number.isFinite(previousDate.getTime()) && previousDate.toISOString().slice(0, 10) === r.date &&
@@ -712,9 +713,16 @@
 
         function copyShareText() {
             let data = getData();
-            const validReadings = data.readings.filter(r => r && typeof r === 'object' &&
-                typeof r.type === 'string' && typeof r.name === 'string' &&
-                typeof r.date === 'string' && r.value !== undefined && r.value !== null);
+            const validReadings = data.readings.filter(r => {
+                if (!r || typeof r !== 'object' || Array.isArray(r) ||
+                    typeof r.type !== 'string' || !r.type.trim() ||
+                    typeof r.name !== 'string' || !r.name.trim() ||
+                    typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
+                const date = new Date(r.date);
+                return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === r.date &&
+                    r.value !== '' && r.value !== null && r.value !== undefined &&
+                    Number.isFinite(Number(r.value)) && Number(r.value) >= 0;
+            });
             if (validReadings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
             let text = "⚡ Zählerstände-Übersicht:\n";
             let latest = {};
