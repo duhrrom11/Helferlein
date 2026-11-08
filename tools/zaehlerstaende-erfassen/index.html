@@ -219,7 +219,7 @@
 
         <!-- Visualisierter Monatsvergleich (Chart) -->
         <div id="chartCard" class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 hidden" data-b3-panel="chart">
-            <h3 class="font-bold text-lg">📊 Visueller Monatsvergleich (Verbrauch)</h3>
+            <h3 class="font-bold text-lg">📊 Ablesungen pro Monat</h3>
             <div id="chartContainer" class="space-y-2 pt-2">
                 <!-- Dynamisch gefüllt -->
             </div>
@@ -776,7 +776,7 @@
             data.readings.forEach(r => {
                 let monthKey = r.date.substring(0, 7);
                 if(!monthly[monthKey]) monthly[monthKey] = 0;
-                monthly[monthKey] += r.value;
+                monthly[monthKey] += 1;
             });
 
             let keys = Object.keys(monthly).sort();
@@ -795,7 +795,7 @@
                     <div class="space-y-1">
                         <div class="flex justify-between text-[11px] font-semibold text-gray-600">
                             <span>Monat: ${k}</span>
-                            <span>Gesamt-Zählerstand Index: ${val.toFixed(1)}</span>
+                            <span>Ablesungen: ${val}</span>
                         </div>
                         <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                             <div class="bg-sky-600 h-3 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
