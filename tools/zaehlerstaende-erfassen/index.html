@@ -558,7 +558,8 @@
             const isExchange = document.getElementById('meterExchangeCheck').checked;
             const photoInput = document.getElementById('meterPhotoInput');
 
-            if (!date || !Number.isFinite(value) || value < 0) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(new Date(date).getTime()) ||
+                !Number.isFinite(value) || value < 0) {
                 return alert("Bitte gültiges Ablesedatum und Zählerstand eingeben!");
             }
 
