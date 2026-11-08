@@ -764,7 +764,7 @@
             if (button) button.disabled = true;
             try {
                 const { data: remote, error } = await supabaseClient
-                    .from('vault_cloud_snapshots').select('vault_id,encrypted_data,recovery_key')
+                    .from('vault_cloud_snapshots').select('vault_id,encrypted_data,encrypted_config,recovery_key')
                     .eq('owner_user_id', user.id).maybeSingle();
                 if (error) throw error;
                 if (!remote || !remote.recovery_key) return alert('Keine Cloud-Sicherung mit Wiederherstellungsschlüssel vorhanden.');
@@ -792,11 +792,24 @@
                 rawKey.fill(0);
                 const decrypted = await decryptVaultPayload(remote.encrypted_data, hexKey);
                 if (!decrypted || !Array.isArray(decrypted.entries)) throw new Error('Tresor nicht entschlüsselbar');
+                let recoveredConfig = null;
+                if (remote.encrypted_config) {
+                    recoveredConfig = await decryptVaultPayload(remote.encrypted_config, hexKey);
+                    if (!recoveredConfig || typeof recoveredConfig !== 'object' ||
+                        Array.isArray(recoveredConfig) ||
+                        !Array.isArray(recoveredConfig.trustees) ||
+                        !Array.isArray(recoveredConfig.alarmPersons)) {
+                        throw new Error('Verschlüsselte Konfiguration konnte nicht geprüft werden');
+                    }
+                }
                 // A newly initialized local vault can still contain important
                 // contact/check-in configuration despite having zero entries.
                 // Require an explicit second confirmation after decryption.
                 if (!confirm('Cloud-Tresor erfolgreich entschlüsselt (' + decrypted.entries.length +
-                    ' Einträge). ACHTUNG: Die lokalen Tresor-Einstellungen (Kontakte, Alarmregeln und Check-in) werden beim Wiederherstellen nicht aus der Cloud übernommen. Den bisherigen leeren lokalen Tresor wirklich ersetzen?')) {
+                    ' Einträge). ' + (recoveredConfig
+                        ? 'Verschlüsselte Kontakte und Check-in-Einstellungen sind vorhanden und werden mit wiederhergestellt. '
+                        : 'Für diese ältere Sicherung fehlen Cloud-Einstellungen; Kontakte, Alarmregeln und Check-in müssen neu eingerichtet werden. ') +
+                    'Den bisherigen leeren lokalen Tresor wirklich ersetzen?')) {
                     return;
                 }
                 if (localStorage.getItem('digital_estate_vault') !== localSnapshot ||
@@ -817,8 +830,21 @@
                     trustees: [],
                     alarmPersons: []
                 };
+                if (recoveredConfig) {
+                    restored.ownerName = typeof recoveredConfig.ownerName === 'string' ? recoveredConfig.ownerName : restored.ownerName;
+                    restored.ownerEmail = typeof recoveredConfig.ownerEmail === 'string' ? recoveredConfig.ownerEmail : restored.ownerEmail;
+                    restored.checkInIntervalDays = Number.isInteger(recoveredConfig.checkInIntervalDays) &&
+                        recoveredConfig.checkInIntervalDays > 0 ? recoveredConfig.checkInIntervalDays : restored.checkInIntervalDays;
+                    restored.lastCheckIn = typeof recoveredConfig.lastCheckIn === 'string' ?
+                        recoveredConfig.lastCheckIn : restored.lastCheckIn;
+                    restored.trustees = recoveredConfig.trustees;
+                    restored.alarmPersons = recoveredConfig.alarmPersons;
+                }
                 localStorage.setItem('digital_estate_vault', JSON.stringify(restored));
-                alert('Cloud-Tresor wiederhergestellt. Die Seite wird neu geladen. Kontakte, Alarmregeln und Check-in-Einstellungen müssen neu eingerichtet werden. Bitte sofort eine verschlüsselte lokale Sicherung erstellen.');
+                alert('Cloud-Tresor wiederhergestellt. Die Seite wird neu geladen. ' +
+                    (recoveredConfig ? 'Bitte Kontakte und Check-in-Einstellungen kontrollieren. ' :
+                        'Kontakte, Alarmregeln und Check-in-Einstellungen müssen neu eingerichtet werden. ') +
+                    'Bitte sofort eine verschlüsselte lokale Sicherung erstellen.');
                 location.reload();
             } catch (error) {
                 console.error('Cloud-Wiederherstellung fehlgeschlagen:', error);
