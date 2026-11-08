@@ -20,7 +20,7 @@ Neu berücksichtigt sind insbesondere `wg_kassenbon_data`, `wg_budgetbuch_budget
 5. Die alte Sicherung erst löschen, wenn die benötigten Daten auf dem neuen Gerät vorhanden sind.
 
 ## Sicherheit und Betrieb
-- Das bestehende unverschlüsselte Exportformat bleibt aus Kompatibilitätsgründen verfügbar; für vertrauliche Daten ist die verschlüsselte Variante vorzuziehen.
+- Das unverschlüsselte Exportformat bleibt für lokale Daten ohne Nachlass-Tresor verfügbar. Enthält die Sicherung `digital_estate_vault`, wird der unverschlüsselte Export aus Sicherheitsgründen blockiert; dann ist die verschlüsselte Variante erforderlich.
 - Die verschlüsselte Variante nutzt AES-256-GCM mit einem per PBKDF2-SHA256 (600.000 Iterationen, zufälliges Salt) abgeleiteten Schlüssel. Ein verlorenes Passwort kann nicht wiederhergestellt werden.
 - Backup-Dateien sind auf 20 MiB begrenzt. Die Wiederherstellung lokaler Schlüssel ist nicht vollständig transaktional.
 - Die Nachlass-Firebase-Synchronisierung kann fehlschlagen; ein Supabase-Login beweist keinen erfolgreichen Tresor-Upload.
