@@ -29,3 +29,4 @@ jobs:
       - run: node tests/household-photo-validation-regression.cjs
       - run: node tests/household-receipt-id-regression.cjs
       - run: node tests/household-ocr-total-regression.cjs
+      - run: node tests/household-pdf-summary-regression.cjs
