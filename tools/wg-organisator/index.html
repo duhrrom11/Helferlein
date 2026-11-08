@@ -1178,9 +1178,15 @@
             }
         }
 
-        function kopiereWGLink() {
-            navigator.clipboard.writeText(window.location.href);
-            alert("🔗 Link zum WG-Planer kopiert! Schicke ihn an deine Mitbewohner.");
+        async function kopiereWGLink() {
+            if (!validWgId(wgBinId)) return alert('Keine gültige WG-ID vorhanden.');
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                alert("🔗 WG-Link kopiert! Teile ihn nur mit berechtigten Personen.");
+            } catch (error) {
+                console.error('WG-Link konnte nicht kopiert werden:', error);
+                prompt('WG-Link manuell kopieren:', window.location.href);
+            }
         }
 
         // Automatic refresh is intentionally disabled: remote polling could overwrite
@@ -1867,10 +1873,10 @@
         function closeContractModal() { document.getElementById('contractModal').classList.remove('flex'); document.getElementById('contractModal').classList.add('hidden'); }
         function saveContract() {
             const name = document.getElementById('contractName').value.trim();
-            const price = parseFloat(document.getElementById('contractPrice').value) || 0;
+            const price = Number(document.getElementById('contractPrice').value);
             const payer = document.getElementById('contractPayer').value;
             const noticeDate = document.getElementById('contractNoticeDate').value;
-            if (!name || price <= 0) return alert("Bitte Name und Kosten angeben!");
+            if (!name || !Number.isFinite(price) || price <= 0) return alert("Bitte Name und gültige Kosten angeben!");
             const contracts = getContracts(); contracts.push({ id: Date.now(), name, price, payer, noticeDate });
             saveContracts(contracts); closeContractModal(); renderApp();
         }
