@@ -321,7 +321,7 @@ test('Passwort-Recovery lehnt ungueltige Masterkey-Formate vor der Umhuellung ab
   const end = html.indexOf('async function restoreVaultFromSupabase()', start);
   const source = html.slice(start, end);
   const check = source.indexOf("/^[a-f0-9]{64}$/i.test(currentMasterKeyHex || '')");
-  const wrap = source.indexOf('currentMasterKeyHex.match(/.{2}/g)');
+  const wrap = source.indexOf('startingMasterKeyHex.match(/.{2}/g)');
   assert.ok(check > 0 && wrap > check);
   assert.match(source, /!cfg\.encryptedData\.ciphertext/);
 });
