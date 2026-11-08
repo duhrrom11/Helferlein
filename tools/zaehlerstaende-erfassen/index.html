@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="de" class="h-full">
 <head>
+    <!-- Fail closed before legacy scripts can paint account-owned local data. -->
+    <style>html.helferlein-account-check body{visibility:hidden!important}</style>
+    <script>
+      try {
+        if (localStorage.getItem('helferlein_cloud_owner_zaehlerstaende-erfassen')) {
+          document.documentElement.classList.add('helferlein-account-check');
+        }
+      } catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zählerstände erfassen: Strom, Gas & Wasser | Helferlein</title>
