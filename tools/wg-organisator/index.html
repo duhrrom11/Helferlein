@@ -922,9 +922,16 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
-            const { error } = await supabaseClient.auth.signUp({ email, password });
-            if(error) alert(error.message);
-            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            if (error) return alert('Registrierung fehlgeschlagen: ' + error.message);
+            // Supabase may require email confirmation, or intentionally conceal
+            // whether an address already exists. Never promise an active account.
+            if (data?.session) {
+                alert('Angemeldet. Dein Cloud-Konto ist einsatzbereit.');
+            } else {
+                alert('Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.');
+            }
+            await checkUserSession();
         }
 
         async function supabaseLogin() {
