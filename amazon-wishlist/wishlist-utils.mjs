@@ -15,3 +15,9 @@ export function validateHandle(handle) {
  if(!/^[a-z0-9_]{3,30}$/.test(h))throw Error('Benutzername: 3–30 Zeichen, nur a–z, 0–9 und _');
  return h;
 }
+
+export function validatePriority(input) {
+ const value=Number(input);
+ if(![1,2,3].includes(value))throw Error('Ungültige Priorität');
+ return value;
+}
