@@ -1,0 +1,53 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const base=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(base,p),'utf8');
+const wg=read('tools/wg-organisator/index.html');
+test('WG cash data never touches standalone household storage keys',()=>{
+ for(const key of ['kassenbon_data','budgetbuch_budgets','budgetbuch_goals']){
+  assert.doesNotMatch(wg,new RegExp("localStorage\\.(?:getItem|setItem)\\('"+key+"'"));
+  assert.ok(wg.includes("wgStorage.getItem('"+key+"')"));
+  assert.ok(wg.includes("wgStorage.setItem('"+key+"',"));
+ }
+ assert.ok(wg.includes('helferlein_wg_v2_'));
+ assert.ok(wg.includes('function importLegacyWgData()'));
+ assert.ok(wg.includes('Das Original wurde nicht verändert'));
+});
+test('No example private data or accidental cloud writes during WG setup',()=>{
+ const setup=wg.slice(wg.indexOf('async function erstelleNeueWGKonfiguration()'),wg.indexOf('function zeigeErstellungsScreen()'));
+ assert.doesNotMatch(setup,/Alex|Sam|Supernet|Hr\. Weber|fetch\(/);
+ assert.match(setup,/crypto\.getRandomValues/);
+ assert.match(setup,/wgBinId = 'local_'/);
+ const boot=wg.slice(wg.indexOf("document.addEventListener('DOMContentLoaded', async"),wg.indexOf('\/\* Storage Helper \*\/'));
+ assert.doesNotMatch(boot,/await speichereWGinCloud\(|await ladeWGausCloud\(/);
+ assert.match(boot,/showLegacyWGCloudWarning\(\)/);
+});
+test('WG legacy cloud cannot run without explicit per-tab agreement',()=>{
+ assert.match(wg,/let legacyWgCloudEnabled = false/);
+ assert.match(wg,/window\.confirm\('ACHTUNG:/);
+ assert.match(wg,/if \(!wgBinId \|\| !legacyWgCloudEnabled/);
+ assert.match(wg,/if \(wgBinId && legacyWgCloudEnabled\) ladeWGausCloud/);
+});
+test('Safe HTML helper escapes markup and rejects script protocols and SVG images',()=>{
+ const js=read('assets/helferlein-safe-output.js');
+ const w={location:{href:'https://example.org/'}};
+ const context={window:w,URL};
+ vm.runInNewContext(js,context);
+ assert.equal(w.HelferleinSafe.html('<img onerror="alert(1)">&'), '&lt;img onerror=&quot;alert(1)&quot;&gt;&amp;');
+ assert.equal(w.HelferleinSafe.photo('javascript:alert(1)'),'');
+ assert.equal(w.HelferleinSafe.photo('data:image/svg+xml;base64,YQ=='),'');
+ assert.equal(w.HelferleinSafe.photo('data:image/png;base64,aGVsbG8='),'data:image/png;base64,aGVsbG8=');
+});
+test('High-risk tool cards use shared escaping for user entries',()=>{
+ for(const [tool,checks] of Object.entries({
+ 'autokosten-reifenwechsel':['HelferleinSafe.html(c.name)','HelferleinSafe.html(e.title)'],
+ 'haushaltsbuch-kassenbon':['HelferleinSafe.html(r.title)','HelferleinSafe.html(r.note'],
+ 'haustier-gesundheitspass':['HelferleinSafe.html(p.name)','HelferleinSafe.html(p.allergies)'],
+ 'umzugskisten-inventar':['HelferleinSafe.html(item.name)','HelferleinSafe.html(loc.name)'],
+ 'parkplatz-merker-parkschein-timer':['HelferleinSafe.html(s.desc)'],
+ 'zaehlerstaende-erfassen':['HelferleinSafe.html(r.name)']
+ })){
+  const html=read('tools/'+tool+'/index.html');
+  assert.match(html,/helferlein-safe-output\.js/);
+  for(const v of checks)assert.ok(html.includes(v),tool+': '+v);
+ }
+});
