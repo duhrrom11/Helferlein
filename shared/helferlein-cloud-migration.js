@@ -163,12 +163,12 @@
     async function resume() {
       if (disposed || migrationInProgress || importInProgress || activeOperation || reconnectInProgress) return;
       reconnectInProgress = true;
+      const reconnectGeneration = accountGeneration;
       try {
       // Finish queued local writes before attempting a reconnect flush.
       await queue.catch(() => {});
       if (!await isEnabled() || !navigator.onLine || !localStorage.getItem(ownerKey)) return;
       if (refreshInProgress) return;
-      const reconnectGeneration = accountGeneration;
       try {
         const user = await currentUser();
         assertOwner(user && user.id);
