@@ -1142,7 +1142,33 @@
                 
                 if (response.ok) {
                     const cloudObj = await response.json();
-                    if (cloudObj && Object.keys(cloudObj).length > 0) {
+                    if (!cloudObj || Array.isArray(cloudObj) || typeof cloudObj !== 'object')
+                        throw new Error('Ungültige WG-Cloud-Daten; lokal wurde nichts überschrieben.');
+                    if (Object.keys(cloudObj).length > 0) {
+                        const replacementFields = [
+                            ['flatmates','wg_flatmates'], ['notes','wg_notes'],
+                            ['data','kassenbon_data'], ['budgets','budgetbuch_budgets'],
+                            ['goals','budgetbuch_goals'], ['events','wg_events'],
+                            ['inventory','wg_inventory'], ['diets','wg_diets'],
+                            ['cleaning','wg_cleaning'], ['shopping','wg_shopping'],
+                            ['cooking','wg_cooking'], ['contracts','wg_contracts'],
+                            ['infoboard','wg_infoboard']
+                        ];
+                        // Abort before mutating anything if the snapshot cannot be
+                        // stored, e.g. when the browser storage quota is exhausted.
+                        const previous = {};
+                        for (const [field,key] of replacementFields)
+                            if (Object.prototype.hasOwnProperty.call(cloudObj,field)) {
+                                previous[key] = wgStorage.getItem(key);
+                            }
+                        const snapshotId = 'helferlein_wg_backup_' + encodeURIComponent(wgBinId)
+                            + '_' + new Date().toISOString().replace(/[:.]/g,'-');
+                        try { localStorage.setItem(snapshotId,JSON.stringify({
+                            createdAt:new Date().toISOString(),wgId:wgBinId,previous
+                        })); }
+                        catch(e){ throw new Error('Vor dem Cloud-Import konnte keine lokale Sicherung angelegt werden. Keine Daten wurden verändert.'); }
+                        if (!window.confirm('WG-Cloud-Daten importieren? Die bisherigen lokalen WG-Daten wurden vorab unter ' + snapshotId + ' gesichert. Der Import kann lokale Änderungen ersetzen.'))
+                            return false;
                         if (cloudObj.flatmates !== undefined) {
                             let fm = cloudObj.flatmates.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
                             wgStorage.setItem('wg_flatmates', JSON.stringify(fm));
@@ -1223,9 +1249,9 @@
             alert("🔗 Link zum WG-Planer kopiert! Schicke ihn an deine Mitbewohner.");
         }
 
-        setInterval(() => {
-            if (wgBinId && legacyWgCloudEnabled) ladeWGausCloud().then(ok => { if (ok) renderApp(); });
-        }, 30000);
+        // Intentionally no automatic polling: remote legacy data may have been
+        // changed by an unrelated holder of the shared URL. The owner must
+        // decide when to import remote changes and gets a local snapshot first.
 
         const AMAZON_AFFILIATE_TAG = "duhrrom-21";
         const daysOfWeek = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
