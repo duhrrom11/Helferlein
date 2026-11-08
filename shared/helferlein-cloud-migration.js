@@ -18,6 +18,8 @@
     let accountGeneration = 0;
     let statusGeneration = 0;
     let reconnectInProgress = false;
+    let lastRefreshAt = null;
+    let lastReconnectAt = null;
     const enabledKey = uid => 'helferlein_cloud_enabled_' + tool + '_' + uid;
     const ownerKey = 'helferlein_cloud_owner_' + tool;
     const cacheKey = uid => 'helferlein_cloud_' + tool + '_' + uid + '_cache';
@@ -42,6 +44,7 @@
     function isOwner(uid) { return !!uid && localStorage.getItem(ownerKey) === uid; }
     function ensureOwner(uid) { if (!isOwner(uid)) throw new Error('Lokale Kontozuordnung hat sich geändert'); }
     function ensureOnline() { if (!navigator.onLine) throw new Error('Internetverbindung erforderlich'); }
+    function ensureNoPending(pending) { if (pending) throw new Error('Ausstehende lokale Änderungen müssen zuerst geklärt werden'); }
     function ensureCollection(data) { if (!validPayload(data)) throw new Error('Ungültige Datenstruktur'); return data; }
     async function isEnabled() {
       if (disposed) return false;
@@ -51,6 +54,7 @@
         localStorage.getItem(enabledKey(user.id)) === 'true';
     }
     function safeLocalBytes() { return localStorage.getItem(localKey); }
+    function localCount(data) { return validPayload(data) ? data[collection].length : null; }
     function ensureLocalUnchanged(bytes) { if (safeLocalBytes() !== bytes) throw new Error('Lokale Daten wurden zwischenzeitlich verändert'); }
     function ensureOwnerUnchanged(owner) { if (localStorage.getItem(ownerKey) !== owner) throw new Error('Kontozuordnung wurde zwischenzeitlich verändert'); }
     async function enable() {
@@ -66,10 +70,11 @@
       enabledUser = user.id;
       accountGeneration++;
     }
-    function reportError(error) { if (disposed) return; lastSyncError = error && error.message ? error.message : String(error); status.textContent = 'Cloud: ' + lastSyncError; }
+    function reportError(error) { if (disposed) return; lastSyncError = error && error.message ? error.message : String(error); setStatus('Cloud: ' + lastSyncError); }
     function setStatus(message) { if (!disposed) { statusGeneration++; status.textContent = message; } }
     function statusError(prefix, error) { setStatus(prefix + ': ' + (error && error.message ? error.message : String(error))); }
     function currentOwner() { return localStorage.getItem(ownerKey); }
+    function sameAccount(uid, generation) { return !disposed && enabledUser === uid && accountGeneration === generation && isOwner(uid); }
     function changed(data) {
       if (disposed) return Promise.resolve(false);
       if (!data || typeof data !== 'object' || Array.isArray(data)) { reportError(new Error('Ungültige lokale Änderungen')); return Promise.resolve(false); }
@@ -77,6 +82,7 @@
       // Failed uploads must remain pending, and are never silently discarded.
       const expectedOwner = localStorage.getItem(ownerKey);
       const expectedGeneration = accountGeneration;
+      if (activeOperation === 'import' || activeOperation === 'upload') return Promise.resolve(false);
       if (expectedOwner && !validPayload(data)) { reportError(new Error('Ungültige Werkzeugdaten')); return Promise.resolve(false); }
       let snapshot;
       try { snapshot = JSON.parse(JSON.stringify(data)); } catch (error) { return Promise.reject(new Error('Änderungen konnten nicht serialisiert werden')); }
@@ -91,7 +97,7 @@
           if (expectedGeneration !== accountGeneration) return false;
           const uploaded = await store.save(snapshot);
           if (disposed || expectedGeneration !== accountGeneration) return false;
-          if (uploaded) lastSyncError = null;
+          if (uploaded) { lastSyncError = null; lastReconnectAt = new Date().toISOString(); }
           if (await isEnabled() && localStorage.getItem(ownerKey) === expectedOwner) status.textContent = uploaded ? 'Lokal und in Supabase gespeichert' : 'Lokal gespeichert · Cloud-Synchronisierung ausstehend';
         } catch (error) {
           reportError(error);
@@ -102,6 +108,7 @@
     async function refreshFromCloud() {
       if (disposed || importInProgress || migrationInProgress || reconnectInProgress) return false;
       if (refreshInProgress || activeOperation || !navigator.onLine || !await isEnabled()) return false;
+      if (safeLocalBytes() === null) return false;
       if (await store.hasPending()) return false;
       if (document.visibilityState === 'hidden') return false;
       refreshInProgress = true;
@@ -112,7 +119,7 @@
       try {
         await queue.catch(() => {});
         const user = await currentUser();
-        if (refreshOwner !== enabledUser || refreshGeneration !== accountGeneration) return false;
+        if (!sameAccount(refreshOwner, refreshGeneration)) return false;
         if (!user || !isOwner(user.id) || await store.hasPending()) return false;
         if (ownerAtStart !== user.id) return false;
         const before = safeLocalBytes();
@@ -122,6 +129,7 @@
         const result = await store.load();
         if (result.source !== 'cloud' || !validPayload(result.data)) return false;
         if (localStorage.getItem(enabledKey(user.id)) !== 'true') return false;
+        if (disposed) return false;
         if ((await currentUser())?.id !== user.id || !isOwner(user.id)) return false;
         if (await store.hasPending()) return false;
         if (safeLocalBytes() !== before) return false;
@@ -135,16 +143,18 @@
         }
         if (before !== null && cachedBytes === null) return false;
         if (currentOwner() !== ownerAtStart) return false;
+        if (!sameAccount(refreshOwner, refreshGeneration)) return false;
         const incoming = JSON.stringify(result.data);
         if (!incoming || incoming === 'null') return false;
-        if (before === incoming) return false;
+        if (before === incoming) { lastRefreshAt = new Date().toISOString(); return false; }
         if ((await currentUser())?.id !== user.id) return false;
         if (safeLocalBytes() !== before) return false;
         if (refreshOwner !== enabledUser || refreshGeneration !== accountGeneration) return false;
         if (await store.hasPending()) return false;
         localStorage.setItem(localKey, incoming);
+        lastRefreshAt = new Date().toISOString();
         lastSyncError = null;
-        status.textContent = 'Aktuelle Supabase-Daten übernommen';
+        setStatus('Aktuelle Supabase-Daten übernommen');
         if (typeof refresh === 'function') { try { refresh(); } catch (error) { reportError(error); } }
         return true;
       } catch (error) { reportError(error); return false; }
@@ -158,16 +168,19 @@
       await queue.catch(() => {});
       if (!await isEnabled() || !navigator.onLine || !localStorage.getItem(ownerKey)) return;
       if (refreshInProgress) return;
+      const reconnectGeneration = accountGeneration;
       try {
         const user = await currentUser();
         assertOwner(user && user.id);
         const done = await store.flush();
-        if (!await store.hasPending()) await refreshFromCloud();
-        if (done && await isEnabled() && localStorage.getItem(ownerKey) === user.id) status.textContent = 'Ausstehende Änderungen synchronisiert';
+        if (!sameAccount(user.id, reconnectGeneration)) return;
+        if (!await store.hasPending()) { lastReconnectAt = new Date().toISOString(); }
+        if (done && await isEnabled() && isOwner(user.id)) setStatus('Ausstehende Änderungen synchronisiert');
       } catch (error) {
         statusError('Synchronisierung ausstehend', error);
       }
       } finally { reconnectInProgress = false; }
+      if (!disposed && sameAccount(enabledUser, reconnectGeneration)) void refreshFromCloud().catch(reportError);
     }
     const onOnline = () => { if (!disposed) void resume().catch(reportError); };
     global.addEventListener('online', onOnline);
@@ -227,7 +240,8 @@
           enabledUser = user && localStorage.getItem(ownerKey) === user.id &&
             localStorage.getItem(enabledKey(user.id)) === 'true' ? user.id : null;
           if (enabledUser) void resume().catch(reportError);
-        }).catch(() => { if (generation === authGeneration) enabledUser = null; });
+          else setStatus('Cloud-Synchronisierung für dieses Konto nicht aktiviert');
+        }).catch(error => { if (generation === authGeneration) { enabledUser = null; statusError('Anmeldung konnte nicht geprüft werden', error); } });
       }, 0);
     });
     const host = document.createElement('section');
@@ -284,9 +298,9 @@
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Statusabfrage gewechselt');
       const local = localData();
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Statusanzeige gewechselt');
-      status.textContent = 'Cloud: ' + result.source + ' · Lokal: ' +
+      setStatus('Cloud: ' + result.source + ' · Lokal: ' +
         (local ? local[collection].length + ' Einträge' : 'keine Daten') +
-        (await store.hasPending() ? ' · Synchronisierung ausstehend' : '');
+        (await store.hasPending() ? ' · Synchronisierung ausstehend' : ''));
     });
     button('Lokale Daten in Supabase übernehmen', async () => {
       beginOperation('upload');
@@ -301,7 +315,7 @@
       const user = await currentUser();
       if (!user || !user.id) throw new Error('Anmeldung während Datenübernahme verloren');
       if (owner && owner !== user.id) throw new Error('Lokale Daten sind einem anderen Benutzer zugeordnet');
-      if (await store.hasPending()) throw new Error('Zuerst ausstehende Synchronisierung klären');
+      ensureNoPending(await store.hasPending());
       const cloud = await store.load();
       if (cloud.source !== 'cloud-empty') throw new Error('Cloud enthält Daten oder ist nicht eindeutig erreichbar; Übernahme blockiert');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Prüfung gewechselt');
@@ -328,7 +342,7 @@
       const user = await currentUser();
       if (!user || !user.id) throw new Error('Anmeldung während Cloud-Laden verloren');
       if (owner && owner !== user.id) throw new Error('Lokaler Speicher gehört einem anderen Konto');
-      if (await store.hasPending()) throw new Error('Ausstehende lokale Änderungen vorhanden');
+      ensureNoPending(await store.hasPending());
       const result = await store.load();
       if (result.source !== 'cloud') throw new Error('Keine eindeutig abrufbaren Cloud-Daten');
       if (!navigator.onLine) throw new Error('Verbindung beim Cloud-Laden verloren');
@@ -426,7 +440,7 @@
       store.dispose();
       host.remove();
     }
-    return { store, host, changed, resume, refreshFromCloud, dispose, getStatus: () => ({ disposed, enabledUser, activeOperation, lastSyncError, statusGeneration }) };
+    return { store, host, changed, resume, refreshFromCloud, dispose, getStatus: () => ({ disposed, enabledUser, activeOperation, lastSyncError, statusGeneration, lastRefreshAt, lastReconnectAt, store: store.status() }) };
   }
   global.HelferleinCloudMigration = Object.freeze({ mount });
 })(window);
