@@ -77,6 +77,52 @@ for(const width of [390,900]){
   await expect(page.locator('#settingsModal')).toBeVisible();
   await expect(page.locator('[data-b3-theme]')).toBeVisible();
   await expect(page.locator('#b3-edit-open')).toBeVisible();
-  await expect(page.getByRole('link',{name:'Zur Helferlein-Hauptseite'})).toBeVisible();
+  await expect(page.getByRole('link',{name:/Entdecke mehr Helferlein/})).toBeVisible();
+  await expect(page.getByRole('link',{name:/Kaffee spendieren/})).toBeVisible();
  });
 }
+
+test('B3 settings footer places Ko-fi immediately before discovery as the final links',async ({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
+  const footer=page.locator('#settingsModal .b3-settings-footer');
+  await expect(footer).toBeVisible();
+  const links=await footer.locator('a').evaluateAll(nodes=>nodes.map(n=>({text:n.textContent.trim(),href:n.getAttribute('href')})));
+  expect(links).toEqual([
+    {text:'☕ Kaffee spendieren',href:'https://ko-fi.com/duhrrom'},
+    {text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}
+  ]);
+  expect(await page.locator('#settingsModal .b3-preferences').evaluate(el=>el.lastElementChild?.className)).toBe('b3-settings-footer');
+});
+test('B3 dark mode keeps representative text, buttons and fields high contrast',async ({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.goto(base,{waitUntil:'domcontentloaded'});
+  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
+  await page.locator('[data-b3-theme]').selectOption('dark');
+  await expect(page.locator('body')).toHaveClass(/b3-dark/);
+  const values=await page.evaluate(()=>{
+    function lum(rgb){
+      const m=rgb.match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/);
+      if(!m)throw new Error('Unexpected CSS color: '+rgb);
+      const cs=m.slice(1,4).map(Number).map(n=>{
+        const v=n/255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);
+      });
+      return cs[0]*.2126+cs[1]*.7152+cs[2]*.0722;
+    }
+    function contrast(fg,bg){const a=lum(fg),b=lum(bg);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)}
+    return [
+      ['cloud status','#cloud-status-text','#cloud-status-text'],
+      ['description','.b3-tool-title p','.b3-header'],
+      ['calendar title','[data-b3-panel="calendar"] h3','[data-b3-panel="calendar"]'],
+      ['Ko-fi','#settingsModal .b3-kofi-link','#settingsModal .b3-kofi-link'],
+      ['discovery','#settingsModal .b3-home-link','#settingsModal .b3-preferences'],
+      ['auth input','#auth-email','#auth-email'],
+      ['login button','#settingsModal button.bg-lime-600','#settingsModal button.bg-lime-600']
+    ].map(([name,foreground,background])=>{
+      const f=document.querySelector(foreground),b=document.querySelector(background);
+      return {name,ratio:contrast(getComputedStyle(f).color,getComputedStyle(b).backgroundColor)};
+    });
+  });
+  for(const v of values)expect(v.ratio,v.name+' contrast ratio').toBeGreaterThanOrEqual(4.5);
+});
