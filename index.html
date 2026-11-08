@@ -847,7 +847,8 @@
                     }
                 }
                 if (skippedAppKeys.length) {
-                    alert("Hinweis: " + skippedAppKeys.length + " möglicherweise zu Helferlein gehörende lokale Datenspeicher werden von dieser Sicherung nicht erfasst. Bitte die jeweiligen Werkzeuge zusätzlich prüfen. Es werden keine unbekannten oder sicherheitskritischen Schlüssel automatisch übernommen.");
+                    const proceed = confirm("Hinweis: " + skippedAppKeys.length + " möglicherweise zu Helferlein gehörende lokale Datenspeicher werden von dieser Sicherung nicht erfasst. Die Sicherung könnte unvollständig sein. Bitte die jeweiligen Werkzeuge zusätzlich prüfen. Es werden keine unbekannten oder sicherheitskritischen Schlüssel automatisch übernommen. Trotzdem fortfahren?");
+                    if (!proceed) return;
                 }
                 if (Object.keys(backup.localStorage).length === 0) { alert("Keine Daten zum Sichern vorhanden."); return; }
                 const containsVault = Object.prototype.hasOwnProperty.call(backup.localStorage, "digital_estate_vault");
@@ -973,7 +974,8 @@
                     const ignoredMessage = rejected.length
                         ? " " + rejected.length + " unbekannte oder sicherheitskritische Einträge werden aus Sicherheitsgründen NICHT importiert."
                         : "";
-                    if (!confirm("Backup mit " + supported.length + " unterstützten Einträgen importieren? " + existing +
+                    if (!confirm("Backup mit " + supported.length + " unterstützten Einträgen vom " +
+                        new Date(backup.created).toLocaleString("de-DE") + " importieren? " + existing +
                         " vorhandene Einträge werden überschrieben; andere lokale Daten bleiben bestehen." + ignoredMessage + vaultWarning +
                         " Bitte vorher eine Sicherung exportieren.")) return;
 
