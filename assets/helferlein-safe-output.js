@@ -32,5 +32,13 @@
    const number=String(value==null?'':value).replace(/[^0-9+]/g,'');
    return number.startsWith('+')?'+'+number.slice(1).replace(/\+/g,''):number.replace(/\+/g,'');
  }
- global.HelferleinSafe=Object.freeze({html,photo,jsArg,tel});
+ // Validated numeric identifiers for legacy inline action handlers. Do not
+ // concatenate raw stored IDs into JavaScript or HTML event attributes.
+ function numericId(value){
+   if(typeof value!=='number' && typeof value!=='string')return -1;
+   if(typeof value==='string' && !/^(?:0|[1-9][0-9]*)$/.test(value))return -1;
+   const number=Number(value);
+   return Number.isSafeInteger(number) && number>=0?number:-1;
+ }
+ global.HelferleinSafe=Object.freeze({html,photo,jsArg,tel,numericId});
 })(window);
