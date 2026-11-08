@@ -1064,8 +1064,17 @@
         }
 
         function zeigeErstellungsScreen() {
-            document.body.innerHTML = `
-                <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+            // The standalone B3 shell must remain available during first setup:
+            // replacing document.body would also remove navigation and settings.
+            const dashboard = document.getElementById('main-content');
+            if (!dashboard) return;
+            document.body.classList.add('b3-wg-unconfigured');
+            const setup = document.createElement('section');
+            setup.id = 'b3-wg-onboarding';
+            setup.setAttribute('aria-label','Neuen WG-Planer einrichten');
+            setup.className = 'b3-wg-onboarding';
+            setup.innerHTML = `
+                <div class="flex items-center justify-center p-4">
                     <div class="max-w-md w-full bg-white rounded-3xl p-8 border border-gray-200 shadow-xl text-center space-y-6">
                         <div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-3xl mx-auto">🏠</div>
                         <h2 class="text-xl font-black text-gray-900">Gemeinsamer WG-Planer</h2>
@@ -1079,6 +1088,7 @@
                     </div>
                 </div>
             `;
+            dashboard.prepend(setup);
         }
 
         async function ladeWGausCloud() {
