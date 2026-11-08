@@ -1900,17 +1900,16 @@
         function openWLANQRModal() {
             const modal = document.getElementById('wlanQrModal'); modal.classList.remove('hidden'); modal.classList.add('flex');
             const qrContainer = document.getElementById('wlanQrcode'); qrContainer.innerHTML = "";
-            // The infoboard stores a Wi-Fi label, not a verified password.
-            // Do not generate a misleading QR code with a fabricated SSID.
-            const wifiString = getInfoData().wifi || '';
-            if (!wifiString) {
-                qrContainer.textContent = "Bitte zuerst WLAN-Informationen hinterlegen.";
-                return;
-            }
-            qrContainer.textContent = "WLAN-Information: " + wifiString + ". Für einen Verbindungs-QR-Code werden SSID, Verschlüsselung und Passwort benötigt.";
-            return;
+            // Ask for the actual credentials; never mistake the infoboard's free-text
+            // Wi-Fi description for a password or transmit credentials to a QR service.
+            const ssid = prompt('WLAN-Name (SSID):', '')?.trim();
+            if (!ssid) { qrContainer.textContent = 'Kein WLAN-Name angegeben.'; return; }
+            const password = prompt('WLAN-Passwort (wird nicht gespeichert):');
+            if (password === null) { qrContainer.textContent = 'QR-Erstellung abgebrochen.'; return; }
+            const escapeWifi = value => String(value).replace(/([\\;,:"])/g, '\\$1');
+            const wifiString = 'WIFI:T:WPA;S:' + escapeWifi(ssid) + ';P:' + escapeWifi(password) + ';;';
             if (typeof QRCode !== 'undefined') new QRCode(qrContainer, { text: wifiString, width: 140, height: 140 });
-            else { qrContainer.textContent = "QR-Code derzeit nicht verfügbar. Aus Datenschutzgründen wird das WLAN-Passwort nicht an einen externen QR-Dienst gesendet."; }
+            else qrContainer.textContent = 'QR-Code-Bibliothek nicht verfügbar.';
         }
         function closeWLANQRModal() { document.getElementById('wlanQrModal').classList.remove('flex'); document.getElementById('wlanQrModal').classList.add('hidden'); }
 
