@@ -581,7 +581,10 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('receiptDate').valueAsDate = new Date();
+            const receiptDateInput = document.getElementById('receiptDate');
+            receiptDateInput.valueAsDate = new Date();
+            receiptDateInput.dataset.autoDefault = 'true';
+            receiptDateInput.addEventListener('input', () => { receiptDateInput.dataset.autoDefault = 'false'; });
             initCharts();
             renderApp();
             try { updateUserDisplay(); } catch(e){}
@@ -818,10 +821,12 @@
                     document.getElementById('receiptPrice').value = recognizedPrice;
                 }
                 const dateMatch = text.match(/(\d{2})[\.\/](\d{2})[\.\/](\d{4})/);
-                if (dateMatch && !document.getElementById('receiptDate').value) {
+                const dateInput = document.getElementById('receiptDate');
+                if (dateMatch && (!dateInput.value || dateInput.dataset.autoDefault === 'true')) {
                     const recognizedDate = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
                     if (Number.isFinite(parseReceiptDate(recognizedDate).getTime())) {
-                        document.getElementById('receiptDate').value = recognizedDate;
+                        dateInput.value = recognizedDate;
+                        dateInput.dataset.autoDefault = 'false';
                     }
                 }
             } catch(e) {
@@ -930,6 +935,7 @@
             document.getElementById('receiptTitle').value = r.title || '';
             document.getElementById('receiptStore').value = r.store || '';
             document.getElementById('receiptDate').value = r.date || '';
+            document.getElementById('receiptDate').dataset.autoDefault = 'false';
             document.getElementById('receiptPrice').value = r.price || '';
             document.getElementById('receiptCategory').value = r.category || 'Sonstiges';
             document.getElementById('receiptPaymentMethod').value = r.paymentMethod || 'EC-Karte';
@@ -1000,6 +1006,7 @@
             document.getElementById('saveBtn').innerText = "Buchung / Kassenbon speichern";
             document.getElementById('cancelEditBtn').classList.add('hidden');
             document.getElementById('receiptDate').valueAsDate = new Date();
+            document.getElementById('receiptDate').dataset.autoDefault = 'true';
             currentUploadedPhotos = [];
             rawImage = null;
         }
