@@ -1012,7 +1012,11 @@
                     const diffWater = Number.isFinite(nextWater.getTime())
                         ? Math.round((Date.UTC(nextWater.getFullYear(), nextWater.getMonth(), nextWater.getDate()) -
                             Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000) : null;
-                    if (diffWater !== null && diffWater <= 0) totalWaterTodayMl += getMlForPot(p.potSize);
+                    if (diffWater !== null) {
+                        if (diffWater < 0) overdueCount++;
+                        if (diffWater >= 0 && diffWater <= 2) dueSoonCount++;
+                        if (diffWater <= 0) totalWaterTodayMl += getMlForPot(p.potSize);
+                    }
 
                     let badge = diffWater === null
                         ? '<span class="text-[10px] bg-gray-100 text-gray-700 font-semibold px-2 py-0.5 rounded-full">⚠️ Gießdatum prüfen</span>'
@@ -1072,8 +1076,10 @@
             document.getElementById('statDueSoon').innerText = dueSoonCount;
             document.getElementById('statOverdue').innerText = overdueCount;
             document.getElementById('statWaterNeeded').innerText = totalWaterTodayMl >= 1000 ? (totalWaterTodayMl / 1000).toFixed(1) + ' L' : totalWaterTodayMl + ' ml';
-            let totalKg = (data.totalHarvestGrams || 0) / 1000;
-            document.getElementById('statTotalHarvest').innerText = totalKg >= 1 ? totalKg.toFixed(1) + ' kg' : (data.totalHarvestGrams || 0) + ' g';
+            const storedHarvest = Number(data.totalHarvestGrams);
+            const harvestGrams = Number.isFinite(storedHarvest) && storedHarvest >= 0 ? storedHarvest : 0;
+            let totalKg = harvestGrams / 1000;
+            document.getElementById('statTotalHarvest').innerText = totalKg >= 1 ? totalKg.toFixed(1) + ' kg' : harvestGrams + ' g';
         }
 
         function exportPDF() {
