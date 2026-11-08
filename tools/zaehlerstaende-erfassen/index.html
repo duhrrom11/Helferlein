@@ -763,10 +763,15 @@
                         diff = r.value;
                         diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${r.value})</span>`;
                     } else {
-                        diff = (r.value - prev.value).toFixed(2);
+                        const currentValue = Number(r.value);
+                        const previousValue = Number(prev.value);
+                        diff = Number.isFinite(currentValue) && Number.isFinite(previousValue)
+                            ? (currentValue - previousValue).toFixed(2) : null;
                         let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
-                        let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
-                        diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${escapeHtml(prev.date)})</span>`;
+                        if (diff !== null) {
+                            let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
+                            diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${escapeHtml(prev.date)})</span>`;
+                        }
                     }
                 } else if (r.isExchange) {
                     diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel Start</span>`;
@@ -774,7 +779,7 @@
 
                 let icon = '📊';
                 if (r.type.includes('Strom')) icon = '⚡';
-                if (r.type.includes('wasser')) icon = '💧';
+                if (r.type.toLowerCase().includes('wasser')) icon = '💧';
                 if (r.type === 'Gas') icon = '♨️';
 
                 let unitLabel = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
