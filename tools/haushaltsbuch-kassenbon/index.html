@@ -1279,6 +1279,8 @@ END:VCALENDAR`;
 
         function exportBackup() {
             const backupObj = {
+                format: 'helferlein-haushaltsbuch',
+                version: 1,
                 data: getData(),
                 budgets: getBudgets(),
                 goals: getSavingsGoals()
@@ -1297,12 +1299,27 @@ END:VCALENDAR`;
             reader.onload = function(e) {
                 try {
                     const parsed = JSON.parse(e.target.result);
+                    // Accept historical Haushaltsbuch backups, but never WG exports.
+                    const isObject = parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed);
+                    const wgFields = ['flatmates', 'notes', 'events', 'cleaning', 'shopping', 'cooking', 'contracts', 'infoboard', 'inventory', 'diets'];
+                    if (isObject && (parsed.format && parsed.format !== 'helferlein-haushaltsbuch' ||
+                        wgFields.some(key => Object.prototype.hasOwnProperty.call(parsed, key)))) {
+                        throw new Error('Dies ist kein Haushaltsbuch-Backup.');
+                    }
                     if (Array.isArray(parsed)) {
                         saveData(parsed);
+                    } else if (isObject && (
+                        Array.isArray(parsed.data) || Array.isArray(parsed.goals) ||
+                        (parsed.budgets && typeof parsed.budgets === 'object' && !Array.isArray(parsed.budgets))
+                    )) {
+                        if (parsed.data !== undefined && !Array.isArray(parsed.data)) throw new Error('Ungültige Buchungen');
+                        if (parsed.goals !== undefined && !Array.isArray(parsed.goals)) throw new Error('Ungültige Sparziele');
+                        if (parsed.budgets !== undefined && (!parsed.budgets || typeof parsed.budgets !== 'object' || Array.isArray(parsed.budgets))) throw new Error('Ungültige Budgets');
+                        if (parsed.data !== undefined) saveData(parsed.data);
+                        if (parsed.budgets !== undefined) saveBudgets(parsed.budgets);
+                        if (parsed.goals !== undefined) saveSavingsGoals(parsed.goals);
                     } else {
-                        if (parsed.data) saveData(parsed.data);
-                        if (parsed.budgets) saveBudgets(parsed.budgets);
-                        if (parsed.goals) saveSavingsGoals(parsed.goals);
+                        throw new Error('Unbekanntes Backup-Format');
                     }
                     renderApp();
                     alert("Backup erfolgreich importiert!");
