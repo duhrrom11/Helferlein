@@ -53,6 +53,19 @@
       flushing = performFlush();
       try { return await flushing; } finally { flushing = null; }
     }
+    function sameData(a, b) {
+      return JSON.stringify(a) === JSON.stringify(b);
+    }
+    function finishAcknowledged(k, pending, revision) {
+      write(k.revision, revision);
+      write(k.cache, pending);
+      if (localStorage.getItem(k.pending) === JSON.stringify(pending)) {
+        localStorage.removeItem(k.pending);
+        localStorage.removeItem(k.base);
+      } else {
+        write(k.base, { revision });
+      }
+    }
     async function performFlush() {
       const uid = await userId();
       if (!uid) throw new Error('Sign in required');
@@ -66,6 +79,12 @@
       const row = await fetchCloud(uid);
       if (await userId() !== uid) throw new Error('Account changed during sync; pending data preserved');
       if ((row ? row.updated_at : null) !== base.revision) {
+        // An earlier request may have reached Supabase before the browser lost
+        // its response. An exact match is safe to acknowledge without writing.
+        if (row && sameData(row.data, pending)) {
+          finishAcknowledged(k, pending, row.updated_at);
+          return true;
+        }
         throw new Error('Cloud changed since last sync; pending data preserved');
       }
       if (row) {
@@ -86,13 +105,7 @@
       if (await userId() !== uid) throw new Error('Account changed after sync; pending data preserved');
       // A newer local edit may have arrived while the request was in flight.
       // Keep it queued with the new server revision rather than deleting it.
-      write(k.cache, pending);
-      if (localStorage.getItem(k.pending) === JSON.stringify(pending)) {
-        localStorage.removeItem(k.pending);
-        localStorage.removeItem(k.base);
-      } else {
-        write(k.base, { revision: read(k.revision) });
-      }
+      finishAcknowledged(k, pending, read(k.revision));
       return true;
     }
     async function save(data) {
