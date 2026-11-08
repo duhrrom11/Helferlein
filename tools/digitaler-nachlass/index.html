@@ -845,6 +845,17 @@
                     alarmPersons: []
                 };
                 if (recoveredConfig) {
+                    if (typeof recoveredConfig.ownerName !== 'string' ||
+                        typeof recoveredConfig.ownerEmail !== 'string' ||
+                        !Number.isInteger(recoveredConfig.checkInIntervalDays) ||
+                        recoveredConfig.checkInIntervalDays < 1 ||
+                        recoveredConfig.checkInIntervalDays > 3650 ||
+                        typeof recoveredConfig.lastCheckIn !== 'string' ||
+                        !Number.isFinite(Date.parse(recoveredConfig.lastCheckIn)) ||
+                        recoveredConfig.trustees.length > 100 ||
+                        recoveredConfig.alarmPersons.length > 100) {
+                        throw new Error('Verschlüsselte Konfiguration enthält ungültige Einstellungen');
+                    }
                     restored.ownerName = typeof recoveredConfig.ownerName === 'string' ? recoveredConfig.ownerName : restored.ownerName;
                     restored.ownerEmail = typeof recoveredConfig.ownerEmail === 'string' ? recoveredConfig.ownerEmail : restored.ownerEmail;
                     restored.checkInIntervalDays = Number.isInteger(recoveredConfig.checkInIntervalDays) &&
