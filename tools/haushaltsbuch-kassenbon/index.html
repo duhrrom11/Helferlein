@@ -791,6 +791,9 @@
                     candidates.push(lines[i + 1]);
                 }
                 for (const candidate of candidates) {
+                    // In der Folgezeile nur einen alleinstehenden Betrag übernehmen,
+                    // damit Artikelpreise nicht fälschlich als Gesamtsumme gelten.
+                    if (candidate !== lines[i] && !/^(?:\s*(?:€|EUR)?\s*\d[\d.,]*\s*(?:€|EUR)?\s*)$/i.test(candidate)) continue;
                     const match = candidate.match(amountPattern);
                     if (!match) continue;
                     const raw = match[1];
