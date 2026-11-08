@@ -520,7 +520,8 @@
                 return;
             }
             let data = getData();
-            const totalGrams = Number(data.totalHarvestGrams) || 0;
+            const storedGrams = Number(data.totalHarvestGrams);
+            const totalGrams = Number.isFinite(storedGrams) && storedGrams > 0 ? storedGrams : 0;
             let totalKg = totalGrams / 1000;
             let harvestValue = totalKg * pricePerKg;
             let profit = harvestValue - expenses;
