@@ -922,7 +922,12 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+            let data, error;
+            try {
+                ({ data, error } = await supabaseClient.auth.signUp({ email, password }));
+            } finally {
+                document.getElementById('auth-password').value = '';
+            }
             if (error) return alert('Registrierung fehlgeschlagen: ' + error.message);
             // Supabase may require email confirmation, or intentionally conceal
             // whether an address already exists. Never promise an active account.
@@ -938,7 +943,12 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            let error;
+            try {
+                ({ error } = await supabaseClient.auth.signInWithPassword({ email, password }));
+            } finally {
+                document.getElementById('auth-password').value = '';
+            }
             if(error) alert(error.message);
             else { alert('Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
         }
