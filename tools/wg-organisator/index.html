@@ -1228,9 +1228,9 @@
                 if (Array.isArray(data)) {
                     return data.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
                 }
-                return [{ vorname: "Alex", nachname: "", email: "", phone: "", insta: "", fb: "" }]; 
+                return []; 
             } catch(e) { 
-                return [{ vorname: "Alex", nachname: "", email: "", phone: "", insta: "", fb: "" }]; 
+                return []; 
             } 
         }
         function saveFlatmates(data, sync = true) { localStorage.setItem('wg_flatmates', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
@@ -1272,7 +1272,7 @@
         function getContracts() { try { return JSON.parse(localStorage.getItem('wg_contracts')) || []; } catch(e) { return []; } }
         function saveContracts(data, sync = true) { localStorage.setItem('wg_contracts', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getInfoData() { try { return JSON.parse(localStorage.getItem('wg_infoboard')) || { wifi: "WG-Supernet-2026", landlord: "Hr. Weber (+49 170 1234567)", caretaker: "Hr. Müller (+49 171 9876543)", trash: "Bio (Di) | Restmüll (Fr)" }; } catch(e) { return {}; } }
+        function getInfoData() { try { return JSON.parse(localStorage.getItem('wg_infoboard')) || { wifi: "", landlord: "", caretaker: "", trash: "" }; } catch(e) { return {}; } }
         function saveInfoData(data, sync = true) { localStorage.setItem('wg_infoboard', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function updateFormUI() {
