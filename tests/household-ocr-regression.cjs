@@ -30,9 +30,11 @@ vm.runInContext(html.slice(dateStart, dateEnd) + html.slice(ocrStart, ocrEnd), c
     recognizedText = 'Datum 31.02.2025';
     await vm.runInContext('runOCR()', ctx);
     assert.equal(fields.get('receiptDate').value, '');
+    assert.match(fields.get('ocrStatus').innerText, /Kein eindeutiger Gesamtbetrag/);
     recognizedText = 'Datum 29.02.2024';
     await vm.runInContext('runOCR()', ctx);
     assert.equal(fields.get('receiptDate').value, '2024-02-29');
+    assert.match(fields.get('ocrStatus').innerText, /Feld\(er\) ausgefüllt/);
     fields.get('receiptDate').value = '';
     recognizedText = 'Ungültig 31.02.2025\\nKaufdatum: 15.03.2025';
     await vm.runInContext('runOCR()', ctx);
@@ -58,6 +60,7 @@ vm.runInContext(html.slice(dateStart, dateEnd) + html.slice(ocrStart, ocrEnd), c
     recognizedText = 'Datum 02.10.2026';
     await vm.runInContext('runOCR()', ctx);
     assert.equal(fields.get('receiptDate').value, '2026-10-01', 'user or OCR date is preserved');
+    assert.match(fields.get('ocrStatus').innerText, /nicht überschrieben/);
     assert.equal(workerTerminated, 8, 'OCR workers released after every scan');
     console.log('OCR date validation regression checks passed');
 })().catch(error => {console.error(error); process.exitCode = 1;});

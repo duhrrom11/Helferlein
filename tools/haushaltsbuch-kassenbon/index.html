@@ -844,19 +844,26 @@
                 if (generation !== ocrGeneration) return;
 
                 const text = ret.data.text;
-                statusEl.innerText = "✅ OCR Scan erfolgreich!";
-
                 const recognizedPrice = extractReceiptTotal(text);
-                if (recognizedPrice !== null && !document.getElementById('receiptPrice').value) {
-                    document.getElementById('receiptPrice').value = recognizedPrice;
-                }
+                const recognizedDate = extractReceiptDate(text);
+                const priceInput = document.getElementById('receiptPrice');
                 const dateInput = document.getElementById('receiptDate');
-                if (!dateInput.value || dateInput.dataset.autoDefault === 'true') {
-                    const recognizedDate = extractReceiptDate(text);
-                    if (recognizedDate !== null) {
-                        dateInput.value = recognizedDate;
-                        dateInput.dataset.autoDefault = 'false';
-                    }
+                let fieldsUpdated = 0;
+                if (recognizedPrice !== null && !priceInput.value) {
+                    priceInput.value = recognizedPrice;
+                    fieldsUpdated++;
+                }
+                if (recognizedDate !== null && (!dateInput.value || dateInput.dataset.autoDefault === 'true')) {
+                    dateInput.value = recognizedDate;
+                    dateInput.dataset.autoDefault = 'false';
+                    fieldsUpdated++;
+                }
+                if (fieldsUpdated > 0) {
+                    statusEl.innerText = '✅ Texterkennung: ' + fieldsUpdated + ' Feld(er) ausgefüllt. Bitte Angaben prüfen.';
+                } else if (recognizedPrice !== null || recognizedDate !== null) {
+                    statusEl.innerText = 'ℹ️ Angaben erkannt. Bereits ausgefüllte Felder wurden nicht überschrieben.';
+                } else {
+                    statusEl.innerText = '⚠️ Kein eindeutiger Gesamtbetrag oder gültiges Datum erkannt. Bitte manuell eintragen.';
                 }
             } catch(e) {
                 if (generation === ocrGeneration) statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
