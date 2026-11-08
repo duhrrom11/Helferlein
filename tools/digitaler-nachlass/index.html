@@ -1080,11 +1080,20 @@
             if (button) button.disabled = true;
             try {
                 const { data: existing, error: readError } = await supabaseClient
-                    .from('vault_cloud_snapshots').select('vault_id')
+                    .from('vault_cloud_snapshots').select('vault_id,encrypted_data,recovery_key')
                     .eq('owner_user_id', user.id).maybeSingle();
                 if (readError) throw readError;
                 if (existing && existing.vault_id !== cfg.vaultId) {
                     return alert('In diesem Konto ist bereits ein anderer Tresor gesichert. Es wurde nichts überschrieben. Bitte zuerst die Zuordnung klären.');
+                }
+                // A matching vault ID alone does not prove the key is unchanged.
+                // Never replace ciphertext under a different key while keeping
+                // an existing password-wrapped recovery key for the old key.
+                if (existing && existing.recovery_key) {
+                    const previous = await decryptVaultPayload(existing.encrypted_data, currentMasterKeyHex);
+                    if (!previous || !Array.isArray(previous.entries)) {
+                        return alert('Die bestehende Cloud-Sicherung mit Wiederherstellungspasswort lässt sich mit dem aktuellen Tresorschlüssel nicht entschlüsseln. Keine Überschreibung: zuerst die Schlüsselzuordnung klären.');
+                    }
                 }
                 if (localStorage.getItem('digital_estate_vault') !== snapshot ||
                     lastPersistedRevision !== localSaveRevision) {
