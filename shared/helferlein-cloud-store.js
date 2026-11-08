@@ -7,6 +7,7 @@
     if (!client || !/^[a-z0-9_-]{1,80}$/i.test(tool)) throw new Error('Invalid cloud store configuration');
     const prefix = 'helferlein_cloud_' + tool + '_';
     let flushing = null;
+    let saving = null;
     const read = key => {
       const raw = localStorage.getItem(key);
       if (raw === null) return null;
@@ -92,6 +93,13 @@
       return true;
     }
     async function save(data) {
+      // Serialize local writes as well as uploads, preserving each baseline.
+      const previous = saving || Promise.resolve();
+      const next = previous.catch(() => {}).then(() => performSave(data));
+      saving = next;
+      try { return await next; } finally { if (saving === next) saving = null; }
+    }
+    async function performSave(data) {
       const uid = await userId();
       if (!uid) throw new Error('Sign in required');
       const k = keys(uid);
@@ -107,6 +115,9 @@
       }
       write(k.pending, data);
       if (!navigator.onLine) return false;
+      // If a previous upload is running, leave this revision queued for the
+      // next flush instead of treating that earlier upload as this save.
+      if (flushing) return false;
       return flush();
     }
     async function hasPending() {
