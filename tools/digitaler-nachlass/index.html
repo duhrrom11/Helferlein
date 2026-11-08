@@ -984,6 +984,7 @@
             const user = authData?.user;
             if (authError || !user) return alert('Bitte zuerst bei Supabase anmelden.');
             const localSnapshot = localStorage.getItem('digital_estate_vault');
+            const startingMasterKeyHex = currentMasterKeyHex;
             const startingRevision = localSaveRevision;
             const button = document.getElementById('supabaseRestorePreviewBtn');
             if (button) button.disabled = true;
@@ -1029,9 +1030,10 @@
                         config.alarmPersons.length + ' Alarmkontakte.';
                 }
                 if (localStorage.getItem('digital_estate_vault') !== localSnapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
                     localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision) {
-                    return alert('Der lokale Tresor wurde während der Wiederherstellungsprüfung geändert. Bitte erneut prüfen.');
+                    return alert('Der lokale Tresor oder aktive Schlüssel wurde während der Wiederherstellungsprüfung geändert. Bitte erneut prüfen.');
                 }
                 const date = remote.updated_at ? new Date(remote.updated_at).toLocaleString('de-DE') : 'unbekannt';
                 alert('Cloud-Sicherung vom ' + date + ' erfolgreich mit dem lokalen Schlüssel entschlüsselt. Enthaltene Einträge: ' +
