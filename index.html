@@ -873,7 +873,13 @@
                         keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt"]);
                     const ciphertext = new Uint8Array(await crypto.subtle.encrypt(
                         { name: "AES-GCM", iv }, key, new TextEncoder().encode(output)));
-                    const toBase64 = bytes => btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join(""));
+                    const toBase64 = bytes => {
+                        let binary = "";
+                        for (let i = 0; i < bytes.length; i += 8192) {
+                            binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+                        }
+                        return btoa(binary);
+                    };
                     output = JSON.stringify({
                         app: "Helferlein", format: "encrypted-backup-v1", kdf: "PBKDF2-SHA256",
                         iterations: 600000, cipher: "AES-256-GCM",
