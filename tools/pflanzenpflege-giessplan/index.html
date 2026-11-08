@@ -607,7 +607,7 @@
             else {
                 let found = data.plants.find(p => p.id == input || p.name.toLowerCase().includes(input.toLowerCase()));
                 if(found) data.beetSlots[slotIndex] = found.id;
-                else alert("Nicht gefunden.");
+                else return alert("Nicht gefunden.");
             }
             if (saveData(data)) renderBeetGrid();
         }
