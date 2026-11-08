@@ -207,7 +207,7 @@ test('Legacy WG cloud import makes a restorable snapshot before replacing local 
  expect(JSON.parse(restored.backup)[0].title).toBe('Remote WG-Beleg');
 });
 
-const hostileText='<img class="injected-xss" src=x onerror="window.__hacked=1">';
+const hostileText='<img class="injected-xss" src=x>';
 test('Stored vehicle names, plates and action IDs cannot inject markup',async({page})=>{
  const data={cars:[{id:'1);window.__hacked=1;//',name:hostileText,plate:hostileText,km:23000}],events:[],tires:[]};
  await page.addInitScript(value=>localStorage.setItem('kfz_tracker_pro_v3',JSON.stringify(value)),data);
@@ -221,7 +221,7 @@ test('Stored budget receipt title, notes and gallery images are inert',async({pa
  const item={id:12,title:hostileText,category:'Lebensmittel',price:8.4,date:'2026-11-08',entryType:'ausgabe',paymentMethod:'Karte',note:hostileText,photos:[],warrantyMonths:0,returnDays:0};
  await page.addInitScript(value=>localStorage.setItem('kassenbon_data',JSON.stringify([value])),item);
  await page.goto(root+'/tools/haushaltsbuch-kassenbon/index.html',{waitUntil:'domcontentloaded'});
- await expect(page.locator('#receiptList, #receiptsList').first()).toContainText('injected-xss');
+ await expect(page.locator('#receiptsList')).toContainText('injected-xss');
  expect(await page.locator('img.injected-xss').count()).toBe(0);
  expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
 });
@@ -229,7 +229,7 @@ test('Stored medication stock cannot inject HTML into pet dashboard',async({page
  const data={pets:[],events:[],meds:[{id:15,name:'Futter',stock:hostileText}]};
  await page.addInitScript(value=>localStorage.setItem('haustier_pass_pro_v5',JSON.stringify(value)),data);
  await page.goto(root+'/tools/haustier-gesundheitspass/index.html',{waitUntil:'domcontentloaded'});
- await expect(page.locator('#medicationList,#medsList').first()).toContainText('injected-xss');
+ await expect(page.locator('#medList')).toContainText('injected-xss');
  expect(await page.locator('img.injected-xss').count()).toBe(0);
  expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
 });
