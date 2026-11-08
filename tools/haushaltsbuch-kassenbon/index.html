@@ -1306,41 +1306,59 @@ END:VCALENDAR`;
             setTimeout(() => URL.revokeObjectURL(backupUrl), 1000);
         }
 
+        function validateHaushaltsbuchBackup(parsed) {
+            const isObject = parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed);
+            const wgFields = ['flatmates', 'notes', 'events', 'cleaning', 'shopping', 'cooking', 'contracts', 'infoboard', 'inventory', 'diets'];
+            if (isObject && ((parsed.format && parsed.format !== 'helferlein-haushaltsbuch') ||
+                wgFields.some(key => Object.prototype.hasOwnProperty.call(parsed, key))))
+                throw new Error('Dies ist kein Haushaltsbuch-Backup.');
+            const data = Array.isArray(parsed) ? { data: parsed } : parsed;
+            if (!isObject && !Array.isArray(parsed)) throw new Error('Unbekanntes Backup-Format');
+            const sections = {
+                data: ['kassenbon_data', Array.isArray],
+                budgets: ['budgetbuch_budgets', value => value !== null && typeof value === 'object' && !Array.isArray(value)],
+                goals: ['budgetbuch_goals', Array.isArray]
+            };
+            const changes = [];
+            for (const [key, [storageKey, check]] of Object.entries(sections)) {
+                if (!Object.prototype.hasOwnProperty.call(data, key)) continue;
+                if (!check(data[key])) throw new Error('Ungültiger Backup-Bereich: ' + key);
+                if ((key === 'data' || key === 'goals') &&
+                    data[key].some(item => !item || typeof item !== 'object' || Array.isArray(item)))
+                    throw new Error('Ungültige Einträge im Backup-Bereich: ' + key);
+                changes.push([storageKey, JSON.stringify(data[key])]);
+            }
+            if (!changes.length) throw new Error('Unbekanntes Backup-Format');
+            return changes;
+        }
+
         function importBackup(event) {
-            const file = event.target.files[0];
+            const input = event.target;
+            const file = input.files[0];
             if (!file) return;
             if (file.size > 20 * 1024 * 1024) {
                 alert("Backup zu groß (maximal 20 MB).");
-                event.target.value = '';
+                input.value = '';
                 return;
             }
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    const parsed = JSON.parse(e.target.result);
-                    // Accept historical Haushaltsbuch backups, but never WG exports.
-                    const isObject = parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed);
-                    const wgFields = ['flatmates', 'notes', 'events', 'cleaning', 'shopping', 'cooking', 'contracts', 'infoboard', 'inventory', 'diets'];
-                    if (isObject && (parsed.format && parsed.format !== 'helferlein-haushaltsbuch' ||
-                        wgFields.some(key => Object.prototype.hasOwnProperty.call(parsed, key)))) {
-                        throw new Error('Dies ist kein Haushaltsbuch-Backup.');
-                    }
-                    if (Array.isArray(parsed)) {
-                        if (!confirm("Vorhandene Haushaltsbuch-Buchungen durch die importierten Daten ersetzen? Bitte vorher ein Backup herunterladen.")) return;
-                        saveData(parsed);
-                    } else if (isObject && (
-                        Array.isArray(parsed.data) || Array.isArray(parsed.goals) ||
-                        (parsed.budgets && typeof parsed.budgets === 'object' && !Array.isArray(parsed.budgets))
-                    )) {
-                        if (parsed.data !== undefined && !Array.isArray(parsed.data)) throw new Error('Ungültige Buchungen');
-                        if (parsed.goals !== undefined && !Array.isArray(parsed.goals)) throw new Error('Ungültige Sparziele');
-                        if (parsed.budgets !== undefined && (!parsed.budgets || typeof parsed.budgets !== 'object' || Array.isArray(parsed.budgets))) throw new Error('Ungültige Budgets');
-                        if (!confirm("Vorhandene Haushaltsbuch-Daten durch die importierten Bereiche ersetzen? Bitte vorher ein Backup herunterladen.")) return;
-                        if (parsed.data !== undefined) saveData(parsed.data);
-                        if (parsed.budgets !== undefined) saveBudgets(parsed.budgets);
-                        if (parsed.goals !== undefined) saveSavingsGoals(parsed.goals);
-                    } else {
-                        throw new Error('Unbekanntes Backup-Format');
+                    const changes = validateHaushaltsbuchBackup(JSON.parse(e.target.result));
+                    if (!confirm('Vorhandene Haushaltsbuch-Daten durch die importierten Bereiche ersetzen? Bitte vorher ein Backup herunterladen.')) return;
+                    const previous = changes.map(([key]) => [key, localStorage.getItem(key)]);
+                    try {
+                        for (const [key, value] of changes) localStorage.setItem(key, value);
+                    } catch (writeError) {
+                        for (const [key, value] of previous) {
+                            try {
+                                if (value === null) localStorage.removeItem(key);
+                                else localStorage.setItem(key, value);
+                            } catch (rollbackError) {
+                                console.error('Wiederherstellung eines Backup-Bereichs fehlgeschlagen:', key, rollbackError);
+                            }
+                        }
+                        throw new Error('Speicherplatz reicht nicht aus. Bitte vorhandene Daten prüfen und erneut versuchen.');
                     }
                     renderApp();
                     alert("Backup erfolgreich importiert!");
@@ -1348,12 +1366,12 @@ END:VCALENDAR`;
                     console.error("Haushaltsbuch-Import fehlgeschlagen:", err);
                     alert("Import fehlgeschlagen: " + (err.message || "Ungültige Datei"));
                 } finally {
-                    event.target.value = '';
+                    input.value = '';
                 }
             };
             reader.onerror = () => {
                 alert("Die Backup-Datei konnte nicht gelesen werden.");
-                event.target.value = '';
+                input.value = '';
             };
             reader.readAsText(file);
         }
