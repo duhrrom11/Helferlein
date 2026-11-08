@@ -1083,6 +1083,10 @@
                     local.masterKeyHex !== currentMasterKeyHex) {
                     return alert('Der lokale Tresorschlüssel ist nicht verfügbar oder stimmt nicht mit dem gespeicherten Tresor überein. Keine Änderungen vorgenommen.');
                 }
+                const verifiedCloudEntries = await decryptVaultPayload(remote.encrypted_data, currentMasterKeyHex);
+                if (!verifiedCloudEntries || !Array.isArray(verifiedCloudEntries.entries)) {
+                    return alert('Cloud- und lokale Verschlüsselungsdaten stimmen überein, lassen sich aber nicht entschlüsseln. Keine Änderungen vorgenommen.');
+                }
                 const cloudConfig = await decryptVaultPayload(remote.encrypted_config, currentMasterKeyHex);
                 if (!cloudConfig || !Array.isArray(cloudConfig.trustees) || !Array.isArray(cloudConfig.alarmPersons)) {
                     return alert('Tresorinhalt stimmt überein, aber die Cloud-Konfiguration konnte nicht entschlüsselt werden.');
