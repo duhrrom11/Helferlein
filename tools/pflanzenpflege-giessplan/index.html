@@ -811,7 +811,11 @@
         function saveData(data) {
             try {
                 if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.plants)) throw new Error('Ungültige Pflanzendaten');
-                if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                if (localStorage.getItem('helferlein_cloud_owner_pflanzenpflege-giessplan') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
                     alert('Lokale Speicherung ist während eines Kontowechsels oder einer Cloud-Datenübernahme gesperrt. Bitte zuerst das ursprüngliche Konto anmelden.');
                     return false;
                 }
