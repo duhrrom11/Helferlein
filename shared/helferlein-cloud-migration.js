@@ -127,6 +127,7 @@
       if (!navigator.onLine) throw new Error('Für die erste Übernahme ist Internet erforderlich');
       const local = localData();
       if (!local) throw new Error('Keine gültigen lokalen Daten vorhanden');
+      const originalBytes = localStorage.getItem(localKey);
       const owner = localStorage.getItem(ownerKey);
       const user = await currentUser();
       if (owner && owner !== user.id) throw new Error('Lokale Daten sind einem anderen Benutzer zugeordnet');
@@ -134,6 +135,8 @@
       const cloud = await store.load();
       if (cloud.source !== 'cloud-empty') throw new Error('Cloud enthält Daten oder ist nicht eindeutig erreichbar; Übernahme blockiert');
       if (!confirm('Lokale ' + local[collection].length + ' Einträge einmalig in die leere Supabase-Cloud übertragen? Lokale Daten bleiben erhalten.')) return;
+      if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
+      if (localStorage.getItem(localKey) !== originalBytes) throw new Error('Lokale Daten haben sich während der Bestätigung geändert; bitte erneut prüfen');
       const result = await store.save(local);
       if (result) await enable();
       status.textContent = result ? 'Daten übertragen · weitere Änderungen werden synchronisiert.' : 'Übertragung ausstehend.';
@@ -152,6 +155,7 @@
       if (!confirm(result.data[collection].length + ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?')) return;
       // Recheck before writing: never replace local data added while awaiting confirmation.
       if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten wurden inzwischen angelegt');
+      if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
       localStorage.setItem(localKey, JSON.stringify(result.data));
       await enable();
       status.textContent = 'Cloud-Daten lokal geladen. Seite wird aktualisiert.';
