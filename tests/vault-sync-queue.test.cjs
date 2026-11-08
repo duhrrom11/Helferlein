@@ -48,6 +48,17 @@ test('Cloud-Status zeigt Fehlschlag und nachfolgenden Erfolg', async () => {
   assert.match(elements.get('vault-sync-result').textContent, /bestätigt/);
 });
 
+test('sichtbarer Cloud-Status wird nach lokalem Speichern zurueckgenommen', () => {
+  assert.match(html, /Neuere Änderungen sind lokal gespeichert, aber noch nicht als Cloud-Sicherung bestätigt/);
+  assert.match(html, /syncStatus\.classList\.remove\('border-emerald-700'/);
+});
+
+test('Cloud-Sync verwendet den exakt gespeicherten Tresorstand', () => {
+  assert.match(html, /const localSnapshot = localStorage\.getItem\('digital_estate_vault'\)/);
+  assert.match(html, /cfg\.encryptedData/);
+  assert.match(html, /localStorage\.getItem\('digital_estate_vault'\) !== localSnapshot/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
