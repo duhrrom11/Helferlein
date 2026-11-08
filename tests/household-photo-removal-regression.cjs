@@ -15,6 +15,8 @@ const element = id => {
     return elements.get(id);
 };
 const context = vm.createContext({
+    ocrGeneration: 7,
+    photoReadFailed: true,
     photoReadGeneration: 4,
     pendingPhotoReads: 2,
     currentUploadedPhotos: ['old'],
@@ -22,7 +24,9 @@ const context = vm.createContext({
     document: {getElementById: element}
 });
 vm.runInContext(html.slice(start, end) + 'clearReceiptPhotos();', context);
+assert.equal(context.ocrGeneration, 8);
 assert.equal(context.photoReadGeneration, 5);
+assert.equal(context.photoReadFailed, false);
 assert.equal(context.pendingPhotoReads, 0);
 assert.equal(context.currentUploadedPhotos.length, 0);
 assert.equal(context.rawImage, null);
