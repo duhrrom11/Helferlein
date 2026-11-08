@@ -999,8 +999,10 @@
         let secureWgDirty = false;
         let secureWgChangeVersion = 0;
         let secureWgSavedVersion = 0;
+        let secureWgSaveBlocked = false;
         async function saveSecureWg(payload) {
             await getAuthenticatedWgUser();
+            if (secureWgSaveBlocked) throw new Error('Speichern nach einem Konflikt angehalten. Bitte Daten sichern und die WG kontrolliert neu laden.');
             if (!secureWgRevision) throw new Error('WG muss vor dem Speichern neu geladen werden.');
             const id = wgBinId.slice(SECURE_WG_PREFIX.length);
             const nextRevision = new Date().toISOString();
@@ -1009,7 +1011,10 @@
                 .eq('id', id).eq('updated_at', secureWgRevision)
                 .select('updated_at').maybeSingle();
             if (error) throw new Error(error.message);
-            if (!data) throw new Error('Speicherkonflikt: Die WG wurde zwischenzeitlich geändert. Bitte Änderungen sichern und neu laden.');
+            if (!data) {
+                secureWgSaveBlocked = true;
+                throw new Error('Speicherkonflikt: Die WG wurde zwischenzeitlich geändert. Bitte Änderungen sichern und neu laden.');
+            }
             secureWgRevision = data.updated_at;
             return true;
         }
@@ -1164,6 +1169,7 @@
                         secureWgRevision = data.updated_at;
                         secureWgDirty = false;
                         secureWgSavedVersion = secureWgChangeVersion;
+                        secureWgSaveBlocked = false;
                     }
                     return loaded;
                 }
