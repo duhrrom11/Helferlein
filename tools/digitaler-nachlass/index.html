@@ -962,7 +962,7 @@
             try {
                 const { data: remote, error } = await supabaseClient
                     .from('vault_cloud_snapshots')
-                    .select('vault_id,updated_at,encrypted_data')
+                    .select('vault_id,updated_at,encrypted_data,encrypted_config,recovery_key')
                     .eq('owner_user_id', user.id).maybeSingle();
                 if (error) throw error;
                 if (!remote) return alert('In diesem Supabase-Konto ist noch keine verschlüsselte Tresor-Sicherung vorhanden.');
@@ -979,9 +979,26 @@
                 const matches = ['iv', 'ciphertext'].every(key =>
                     typeof localEncrypted[key] === 'string' &&
                     localEncrypted[key] === remoteEncrypted[key]);
-                alert(matches
-                    ? 'Supabase-Sicherung vom ' + date + ' entspricht dem lokal gespeicherten verschlüsselten Tresorstand. Dies ist keine Wiederherstellungsprüfung.'
-                    : 'Supabase-Sicherung vom ' + date + ' weicht vom lokalen Tresorstand ab. Bitte lokale Änderungen prüfen und bei Bedarf erneut sichern.');
+                if (!matches) {
+                    return alert('Supabase-Sicherung vom ' + date + ' weicht vom lokalen Tresorinhalt ab. Bitte lokale Änderungen prüfen und bei Bedarf erneut sichern.');
+                }
+                if (!remote.encrypted_config) {
+                    return alert('Tresorinhalt stimmt mit der Cloud-Sicherung vom ' + date +
+                        ' überein. Diese ältere Sicherung enthält jedoch keine verschlüsselte Konfiguration. Bitte erneut sichern.');
+                }
+                const cloudConfig = await decryptVaultPayload(remote.encrypted_config, currentMasterKeyHex);
+                if (!cloudConfig || !Array.isArray(cloudConfig.trustees) || !Array.isArray(cloudConfig.alarmPersons)) {
+                    return alert('Tresorinhalt stimmt überein, aber die Cloud-Konfiguration konnte nicht entschlüsselt werden.');
+                }
+                const keys = ['ownerName', 'ownerEmail', 'checkInIntervalDays',
+                    'lastCheckIn', 'trustees', 'alarmPersons'];
+                const configMatches = keys.every(key =>
+                    JSON.stringify(cloudConfig[key] ?? null) === JSON.stringify(local[key] ?? null));
+                alert(configMatches
+                    ? 'Tresorinhalt und verschlüsselte Konfiguration entsprechen der Cloud-Sicherung vom ' + date +
+                        '. ' + (remote.recovery_key ? 'Ein Wiederherstellungsschlüssel ist hinterlegt.' :
+                        'Ein Wiederherstellungsschlüssel fehlt noch.') + ' Dies ist keine vollständige Wiederherstellungsprobe.'
+                    : 'Tresorinhalt stimmt überein, aber Kontakte oder Check-in-Einstellungen weichen von der Cloud-Sicherung ab. Bitte erneut sichern.');
             } catch (error) {
                 console.error('Supabase-Sicherungsprüfung fehlgeschlagen:', error);
                 alert('Supabase-Sicherungsstand konnte nicht geprüft werden. Lokale Daten bleiben unverändert.');
