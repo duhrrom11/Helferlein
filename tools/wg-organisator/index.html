@@ -1771,6 +1771,7 @@
         function toggleCleanTask(id) { const plan = getCleaningPlan(); const item = plan.find(p => p.id === id); if (item) { item.done = !item.done; saveCleaningPlan(plan); renderCleaningPlan(); } }
         function rotateCleaningPlan() {
             const plan = getCleaningPlan(); const mateNames = getFlatmateNames();
+            if (mateNames.length === 0) return alert('Bitte zuerst ein WG-Mitglied anlegen.');
             plan.forEach(p => { const curr = mateNames.indexOf(p.assignee); p.assignee = mateNames[(curr + 1) % mateNames.length]; p.done = false; });
             saveCleaningPlan(plan); renderCleaningPlan();
         }
@@ -1781,7 +1782,7 @@
             const assignee = document.getElementById('cleanTaskAssignee').value;
             if (!task) return alert("Bitte Aufgabe angeben!");
             const plan = getCleaningPlan(); plan.push({ id: Date.now(), task, assignee, done: false });
-            saveCleanTask(plan); closeAddCleanTaskModal(); renderApp();
+            saveCleaningPlan(plan); closeAddCleanTaskModal(); renderApp();
         }
         function deleteCleanTask(id) { saveCleaningPlan(getCleaningPlan().filter(p => p.id !== id)); renderApp(); }
 
