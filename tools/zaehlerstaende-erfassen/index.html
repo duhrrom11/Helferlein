@@ -824,7 +824,7 @@
             
             let monthly = {};
             data.readings.forEach(r => {
-                if (typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return;
+                if (!r || typeof r !== 'object' || typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return;
                 const parsedDate = new Date(r.date);
                 if (!Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== r.date) return;
                 const monthKey = r.date.substring(0, 7);
@@ -868,7 +868,7 @@
 
             types.forEach(t => {
                 const matching = data.readings.filter(r => {
-                    if (r.type !== t || typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
+                    if (!r || typeof r !== 'object' || r.type !== t || typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
                     const date = new Date(r.date);
                     return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === r.date &&
                         Number.isFinite(Number(r.value)) && r.value !== '' && Number(r.value) >= 0;
@@ -948,7 +948,7 @@
             doc.text("Dieses Dokument dient als formeller Nachweis der aktuellen Zählerstände.", 14, 34);
 
             let y = 48;
-            data.readings.forEach((r, idx) => {
+            data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r, idx) => {
                 const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                 const lines = [
                     ...doc.splitTextToSize(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 180),
@@ -1031,7 +1031,7 @@
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
 
             let y = 38;
-            data.readings.forEach((r) => {
+            data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r) => {
                 const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                 const line = `${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
                 const lines = doc.splitTextToSize(line, 180);
