@@ -219,7 +219,7 @@
 
         <!-- Visualisierter Monatsvergleich (Chart) -->
         <div id="chartCard" class="bg-white p-6 rounded-2xl shadow-sm border space-y-3 hidden" data-b3-panel="chart">
-            <h3 class="font-bold text-lg">📊 Visueller Monatsvergleich (Verbrauch)</h3>
+            <h3 class="font-bold text-lg">📊 Ablesungen pro Monat</h3>
             <div id="chartContainer" class="space-y-2 pt-2">
                 <!-- Dynamisch gefüllt -->
             </div>
@@ -492,44 +492,83 @@
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('energie_tracker_pro_v8')) || { readings: [], tarifs: {} };
+                const stored = JSON.parse(localStorage.getItem('energie_tracker_pro_v8'));
+                if (!stored || !Array.isArray(stored.readings)) return { readings: [], tarifs: {} };
+                return {
+                    ...stored,
+                    tarifs: stored.tarifs && typeof stored.tarifs === 'object' && !Array.isArray(stored.tarifs)
+                        ? stored.tarifs : {}
+                };
             } catch(e) {
                 return { readings: [], tarifs: {} };
             }
         }
 
-        function saveData(data) {
-            localStorage.setItem('energie_tracker_pro_v8', JSON.stringify(data));
+        function saveData(data, allowCorruptOverwrite = false) {
+            try {
+                // Keep the original bytes available if stored readings cannot be parsed.
+                const existing = localStorage.getItem('energie_tracker_pro_v8');
+                if (existing !== null) {
+                    let parsed;
+                    try { parsed = JSON.parse(existing); } catch (_) { parsed = null; }
+                    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.readings)) {
+                        if (!allowCorruptOverwrite) {
+                            alert('Vorhandene Zählerdaten sind beschädigt. Speichern zum Schutz der Originaldaten blockiert.');
+                            return false;
+                        }
+                        if (!confirm('Die vorhandenen Zählerdaten sind beschädigt. Durch Wiederherstellen des geprüften Backups werden sie endgültig überschrieben. Fortfahren?')) return false;
+                    }
+                }
+                localStorage.setItem('energie_tracker_pro_v8', JSON.stringify(data));
+                return true;
+            } catch (error) {
+                console.error('Zählerstände konnten nicht gespeichert werden:', error);
+                alert('Speichern fehlgeschlagen. Bitte Browser-Speicherplatz prüfen; die Eingaben nicht verwerfen.');
+                return false;
+            }
         }
 
         function loadTarifs() {
             let data = getData();
             if (data.tarifs) {
                 if (data.tarifs.Strom) {
-                    document.getElementById('tariffStromPriceHT').value = data.tarifs.Strom.priceHT || '';
-                    document.getElementById('tariffStromPriceNT').value = data.tarifs.Strom.priceNT || '';
-                    document.getElementById('tariffStromAbschlag').value = data.tarifs.Strom.abschlag || '';
+                    document.getElementById('tariffStromPriceHT').value = data.tarifs.Strom.priceHT ?? '';
+                    document.getElementById('tariffStromPriceNT').value = data.tarifs.Strom.priceNT ?? '';
+                    document.getElementById('tariffStromAbschlag').value = data.tarifs.Strom.abschlag ?? '';
                 }
                 if (data.tarifs.Wasser) {
-                    document.getElementById('tariffWasserPrice').value = data.tarifs.Wasser.price || '';
-                    document.getElementById('tariffWasserAbschlag').value = data.tarifs.Wasser.abschlag || '';
+                    document.getElementById('tariffWasserPrice').value = data.tarifs.Wasser.price ?? '';
+                    document.getElementById('tariffWasserAbschlag').value = data.tarifs.Wasser.abschlag ?? '';
                 }
                 if (data.tarifs.Gas) {
-                    document.getElementById('tariffGasPrice').value = data.tarifs.Gas.price || '';
-                    document.getElementById('tariffGasAbschlag').value = data.tarifs.Gas.abschlag || '';
-                    document.getElementById('tariffGasCalib').value = data.tarifs.Gas.calib || '11.2';
+                    document.getElementById('tariffGasPrice').value = data.tarifs.Gas.price ?? '';
+                    document.getElementById('tariffGasAbschlag').value = data.tarifs.Gas.abschlag ?? '';
+                    document.getElementById('tariffGasCalib').value = data.tarifs.Gas.calib ?? '11.2';
                 }
             }
         }
 
         function saveTarifs() {
-            let data = getData();
-            data.tarifs = {
-                Strom: { priceHT: parseFloat(document.getElementById('tariffStromPriceHT').value) || 0, priceNT: parseFloat(document.getElementById('tariffStromPriceNT').value) || 0, abschlag: parseFloat(document.getElementById('tariffStromAbschlag').value) || 0 },
-                Wasser: { price: parseFloat(document.getElementById('tariffWasserPrice').value) || 0, abschlag: parseFloat(document.getElementById('tariffWasserAbschlag').value) || 0 },
-                Gas: { price: parseFloat(document.getElementById('tariffGasPrice').value) || 0, abschlag: parseFloat(document.getElementById('tariffGasAbschlag').value) || 0, calib: parseFloat(document.getElementById('tariffGasCalib').value) || 11.2 }
+            const readAmount = (id, fallback = 0) => {
+                const raw = document.getElementById(id).value.trim();
+                const value = raw === '' ? fallback : Number(raw);
+                if (!Number.isFinite(value) || value < 0) throw new Error('Ungültiger Tarifwert');
+                return value;
             };
-            saveData(data);
+            let tarifs;
+            try {
+                tarifs = {
+                    Strom: { priceHT: readAmount('tariffStromPriceHT'), priceNT: readAmount('tariffStromPriceNT'), abschlag: readAmount('tariffStromAbschlag') },
+                    Wasser: { price: readAmount('tariffWasserPrice'), abschlag: readAmount('tariffWasserAbschlag') },
+                    Gas: { price: readAmount('tariffGasPrice'), abschlag: readAmount('tariffGasAbschlag'), calib: readAmount('tariffGasCalib', 11.2) }
+                };
+                if (tarifs.Gas.calib <= 0) throw new Error('Ungültiger Gasfaktor');
+            } catch (error) {
+                return alert('Bitte gültige, nichtnegative Tarife und einen positiven Gasfaktor eingeben.');
+            }
+            let data = getData();
+            data.tarifs = tarifs;
+            if (!saveData(data)) return;
             alert("Tarife & Abschläge erfolgreich gespeichert!");
             renderApp();
         }
@@ -539,17 +578,28 @@
             const name = document.getElementById('meterName').value.trim() || type + " Zähler";
             const location = document.getElementById('meterLocation').value;
             const date = document.getElementById('meterDate').value;
-            const value = parseFloat(document.getElementById('meterValue').value);
+            const rawValue = document.getElementById('meterValue').value.trim();
+            const value = rawValue === '' ? NaN : Number(rawValue);
             const note = document.getElementById('meterNote').value.trim();
             const isExchange = document.getElementById('meterExchangeCheck').checked;
             const photoInput = document.getElementById('meterPhotoInput');
 
-            if (!date || isNaN(value)) {
+            const parsedDate = new Date(date);
+            const validDate = /^\d{4}-\d{2}-\d{2}$/.test(date) &&
+                Number.isFinite(parsedDate.getTime()) && parsedDate.toISOString().slice(0, 10) === date;
+            if (!validDate || !Number.isFinite(value) || value < 0) {
                 return alert("Bitte gültiges Ablesedatum und Zählerstand eingeben!");
             }
 
             let data = getData();
-            let sameTypeReadings = data.readings.filter(r => r.type === type && r.name === name && r.date < date).sort((a,b) => new Date(b.date) - new Date(a.date));
+            let sameTypeReadings = data.readings.filter(r => {
+                if (!r || typeof r !== 'object' || Array.isArray(r) ||
+                    r.type !== type || r.name !== name || typeof r.date !== 'string' || r.date >= date ||
+                    !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
+                const previousDate = new Date(r.date);
+                return Number.isFinite(previousDate.getTime()) && previousDate.toISOString().slice(0, 10) === r.date &&
+                    r.value !== '' && Number.isFinite(Number(r.value)) && Number(r.value) >= 0;
+            }).sort((a,b) => new Date(b.date) - new Date(a.date));
             if (sameTypeReadings.length > 0 && !isExchange) {
                 let last = sameTypeReadings[0];
                 let daysBetween = (new Date(date) - new Date(last.date)) / (1000 * 60 * 60 * 24);
@@ -594,19 +644,30 @@
                     }
                     canvas.width = width;
                     canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    callback(canvas.toDataURL('image/jpeg', 0.8));
+                    try {
+                        const ctx = canvas.getContext('2d');
+                        if (!ctx) throw new Error('Canvas nicht verfügbar');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        callback(canvas.toDataURL('image/jpeg', 0.8));
+                    } catch (error) {
+                        console.error('Zählerfoto konnte nicht verarbeitet werden:', error);
+                        alert('Das Zählerfoto konnte nicht verarbeitet werden. Bitte ein anderes Bild auswählen.');
+                    }
                 };
+                img.onerror = () => alert('Das Zählerfoto konnte nicht geöffnet werden.');
                 img.src = e.target.result;
             };
+            reader.onerror = () => alert('Das Zählerfoto konnte nicht gelesen werden.');
             reader.readAsDataURL(file);
         }
 
         function storeReadingRecord(type, name, location, date, value, note, isExchange, photo) {
             let data = getData();
+            const existingIds = new Set(data.readings.filter(item => item && typeof item === 'object').map(item => item.id));
+            let newId = Date.now() * 1000 + Math.floor(Math.random() * 1000);
+            while (existingIds.has(newId)) newId++;
             data.readings.push({
-                id: Date.now(),
+                id: newId,
                 type,
                 name,
                 location,
@@ -617,8 +678,13 @@
                 photo
             });
 
-            data.readings.sort((a, b) => new Date(b.date) - new Date(a.date));
-            saveData(data);
+            data.readings.sort((a, b) => {
+                const aTime = a && typeof a === 'object' ? new Date(a.date).getTime() : NaN;
+                const bTime = b && typeof b === 'object' ? new Date(b.date).getTime() : NaN;
+                return (Number.isFinite(bTime) ? bTime : -Infinity) -
+                    (Number.isFinite(aTime) ? aTime : -Infinity);
+            });
+            if (!saveData(data)) return;
 
             document.getElementById('meterValue').value = "";
             document.getElementById('meterNote').value = "";
@@ -632,9 +698,8 @@
         function deleteReading(id) {
             if (!confirm("⚠️ Diesen Zählerstand wirklich löschen?")) return;
             let data = getData();
-            data.readings = data.readings.filter(item => item.id !== id);
-            saveData(data);
-            renderApp();
+            data.readings = data.readings.filter(item => !item || typeof item !== 'object' || item.id !== id);
+            if (saveData(data)) renderApp();
         }
 
         function openPhotoModal(url) {
@@ -648,21 +713,43 @@
 
         function copyShareText() {
             let data = getData();
-            if (data.readings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
+            const validReadings = data.readings.filter(r => {
+                if (!r || typeof r !== 'object' || Array.isArray(r) ||
+                    typeof r.type !== 'string' || !r.type.trim() ||
+                    typeof r.name !== 'string' || !r.name.trim() ||
+                    typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
+                const date = new Date(r.date);
+                return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === r.date &&
+                    r.value !== '' && r.value !== null && r.value !== undefined &&
+                    Number.isFinite(Number(r.value)) && Number(r.value) >= 0;
+            });
+            if (validReadings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
             let text = "⚡ Zählerstände-Übersicht:\n";
             let latest = {};
-            // Pick the newest reading per meter type, regardless of insertion order.
-            data.readings.forEach(r => {
-                if (!latest[r.type] || r.date > latest[r.type].date) latest[r.type] = r;
+            // Pick the newest reading per distinct meter, regardless of insertion order.
+            validReadings.forEach(r => {
+                const key = JSON.stringify([r.type, r.name]);
+                if (!latest[key] || r.date > latest[key].date) latest[key] = r;
             });
-            for(let t in latest) {
-                let r = latest[t];
-                let unit = t.includes('Strom') || t === 'Gas' ? 'kWh' : 'm³';
+            for (const r of Object.values(latest)) {
+                let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                 text += `- ${r.type} (${r.name}): ${r.value} ${unit} (vom ${r.date})\n`;
+            }
+            if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+                prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
+                return;
             }
             navigator.clipboard.writeText(text).then(() => {
                 alert("📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.");
+            }).catch(() => {
+                prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
             });
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
         }
 
         function renderApp() {
@@ -670,18 +757,20 @@
             const filter = document.getElementById('filterType').value;
             const container = document.getElementById('readingsList');
 
-            let filtered = data.readings;
+            const validReadings = data.readings.filter(r => r && typeof r === 'object' && !Array.isArray(r) && typeof r.type === 'string');
+            let filtered = validReadings;
             if (filter !== 'All') {
-                filtered = data.readings.filter(r => r.type === filter);
+                filtered = validReadings.filter(r => r.type === filter);
             }
 
-            document.getElementById('statTotalReadings').innerText = data.readings.length;
-            document.getElementById('statStrom').innerText = data.readings.filter(r => r.type.includes('Strom')).length;
-            document.getElementById('statWasser').innerText = data.readings.filter(r => r.type.includes('wasser')).length;
-            document.getElementById('statGas').innerText = data.readings.filter(r => r.type === 'Gas').length;
+            document.getElementById('statTotalReadings').innerText = validReadings.length;
+            document.getElementById('statStrom').innerText = validReadings.filter(r => r.type.includes('Strom')).length;
+            document.getElementById('statWasser').innerText = validReadings.filter(r => r.type.toLowerCase().includes('wasser')).length;
+            document.getElementById('statGas').innerText = validReadings.filter(r => r.type === 'Gas').length;
 
-            renderPrognosis(data);
-            renderChart(data);
+            const displayData = { ...data, readings: validReadings };
+            renderPrognosis(displayData);
+            renderChart(displayData);
 
             if (filtered.length === 0) {
                 container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Einträge gefunden.</p>`;
@@ -689,7 +778,7 @@
             }
 
             container.innerHTML = filtered.map((r) => {
-                let sameMeterReadings = data.readings
+                let sameMeterReadings = validReadings
                     .filter(item => item.type === r.type && item.name === r.name && new Date(item.date) < new Date(r.date))
                     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -699,12 +788,17 @@
                     let diff = 0;
                     if (r.isExchange) {
                         diff = r.value;
-                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${r.value})</span>`;
+                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${escapeHtml(r.value)})</span>`;
                     } else {
-                        diff = (r.value - prev.value).toFixed(2);
+                        const currentValue = Number(r.value);
+                        const previousValue = Number(prev.value);
+                        diff = Number.isFinite(currentValue) && Number.isFinite(previousValue)
+                            ? (currentValue - previousValue).toFixed(2) : null;
                         let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
-                        let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
-                        diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${prev.date})</span>`;
+                        if (diff !== null) {
+                            let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
+                            diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${escapeHtml(prev.date)})</span>`;
+                        }
                     }
                 } else if (r.isExchange) {
                     diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel Start</span>`;
@@ -712,28 +806,28 @@
 
                 let icon = '📊';
                 if (r.type.includes('Strom')) icon = '⚡';
-                if (r.type.includes('wasser')) icon = '💧';
+                if (r.type.toLowerCase().includes('wasser')) icon = '💧';
                 if (r.type === 'Gas') icon = '♨️';
 
                 let unitLabel = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                 return `
                     <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div class="flex items-center space-x-3">
-                            ${r.photo ? `<img src="${r.photo}" onclick="openPhotoModal('${r.photo}')" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity" title="Foto vergrößern">` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
+                            ${typeof r.photo === 'string' && /^data:image\/(?:jpeg|png|webp);base64,/.test(r.photo) ? `<img src="${escapeHtml(r.photo)}" onclick="openPhotoModal(this.src)" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity" title="Foto vergrößern">` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                    <span class="text-xs font-bold text-gray-800">${r.name}</span>
-                                    <span class="text-xs text-sky-700 font-semibold">(${r.type} - ${r.location || 'Haupt'})</span>
+                                    <span class="text-xs font-bold text-gray-800">${escapeHtml(r.name)}</span>
+                                    <span class="text-xs text-sky-700 font-semibold">(${escapeHtml(r.type)} - ${escapeHtml(r.location || 'Haupt')})</span>
                                     ${diffText}
                                 </div>
                                 <p class="text-xs text-gray-600 mt-1">
-                                    Stand: <strong class="text-gray-900">${r.value} ${unitLabel}</strong> | Datum: ${r.date}
-                                    ${r.note ? ' | Notiz: ' + r.note : ''}
+                                    Stand: <strong class="text-gray-900">${escapeHtml(r.value)} ${unitLabel}</strong> | Datum: ${escapeHtml(r.date)}
+                                    ${r.note ? ' | Notiz: ' + escapeHtml(r.note) : ''}
                                 </p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 self-end md:self-center">
-                            <button onclick="deleteReading(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕ Löschen</button>
+                            ${typeof r.id === 'number' && Number.isSafeInteger(r.id) ? `<button onclick="deleteReading(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕ Löschen</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -746,9 +840,15 @@
             
             let monthly = {};
             data.readings.forEach(r => {
-                let monthKey = r.date.substring(0, 7);
-                if(!monthly[monthKey]) monthly[monthKey] = 0;
-                monthly[monthKey] += r.value;
+                if (!r || typeof r !== 'object' || Array.isArray(r) ||
+                    typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date) ||
+                    r.value === '' || r.value === null || r.value === undefined ||
+                    !Number.isFinite(Number(r.value)) || Number(r.value) < 0) return;
+                const parsedDate = new Date(r.date);
+                if (!Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== r.date) return;
+                const monthKey = r.date.substring(0, 7);
+                if (!monthly[monthKey]) monthly[monthKey] = 0;
+                monthly[monthKey] += 1;
             });
 
             let keys = Object.keys(monthly).sort();
@@ -767,7 +867,7 @@
                     <div class="space-y-1">
                         <div class="flex justify-between text-[11px] font-semibold text-gray-600">
                             <span>Monat: ${k}</span>
-                            <span>Gesamt-Zählerstand Index: ${val.toFixed(1)}</span>
+                            <span>Ablesungen: ${val}</span>
                         </div>
                         <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                             <div class="bg-sky-600 h-3 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
@@ -786,59 +886,61 @@
             let hasData = false;
 
             types.forEach(t => {
-                let list = data.readings
-                    .filter(r => r.type === t)
+                const matching = data.readings.filter(r => {
+                    if (!r || typeof r !== 'object' || r.type !== t || typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
+                    const date = new Date(r.date);
+                    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === r.date &&
+                        Number.isFinite(Number(r.value)) && r.value !== '' && Number(r.value) >= 0;
+                }).sort((a,b) => new Date(b.date) - new Date(a.date));
+                const latestMeterName = matching[0]?.name;
+                let list = matching.filter(r => r.name === latestMeterName)
                     .sort((a,b) => new Date(a.date) - new Date(b.date));
 
                 if (list.length >= 2) {
-                    hasData = true;
                     let totalValidVal = 0;
-                    let firstDate = new Date(list[0].date);
-                    let lastDate = new Date(list[list.length - 1].date);
+                    let validDays = 0;
 
                     for (let i = 1; i < list.length; i++) {
-                        if (list[i].isExchange) {
-                            totalValidVal += list[i].value;
-                        } else {
-                            totalValidVal += (list[i].value - list[i-1].value);
+                        const days = (new Date(list[i].date) - new Date(list[i-1].date)) / (1000 * 60 * 60 * 24);
+                        const currentValue = Number(list[i].value);
+                        const previousValue = Number(list[i-1].value);
+                        if (days > 0 && !list[i].isExchange && currentValue >= previousValue) {
+                            totalValidVal += currentValue - previousValue;
+                            validDays += days;
                         }
                     }
 
-                    let diffDays = (lastDate - firstDate) / (1000 * 60 * 60 * 24);
-                    if (diffDays > 0 && totalValidVal >= 0) {
-                        let daily = totalValidVal / diffDays;
+                    if (validDays > 0 && totalValidVal >= 0) {
+                        hasData = true;
+                        let daily = totalValidVal / validDays;
                         let yearlyEst = (daily * 365).toFixed(1);
                         let tarifKey = t === 'Kaltwasser' ? 'Wasser' : t;
                         
-                        let price = 0;
-                        if (t === 'Strom' && data.tarifs && data.tarifs.Strom) price = data.tarifs.Strom.priceHT || 0.35;
-                        else if (data.tarifs && data.tarifs[tarifKey]) price = data.tarifs[tarifKey].price || 0;
-
-                        let abschlag = data.tarifs && data.tarifs[tarifKey] ? data.tarifs[tarifKey].abschlag : 0;
-                        let yearlyCost = (yearlyEst * price).toFixed(2);
-                        let yearlyAbschlag = (abschlag * 12).toFixed(2);
-                        let diffCost = (yearlyCost - yearlyAbschlag).toFixed(2);
-                        let dailyCost = (yearlyCost / 365).toFixed(2);
-
-                        let recommendedAbschlag = Math.ceil((yearlyCost / 12) / 10) * 10;
-                        let unit = t.includes('Strom') || t === 'Gas' ? 'kWh' : 'm³';
-                        let isNachzahlung = diffCost > 0;
-                        let statusColor = isNachzahlung ? 'text-red-600' : 'text-emerald-600';
-
-                        // No previous-year estimate is shown without actual prior-year readings.
+                        const tarif = data.tarifs?.[tarifKey];
+                        const rawPrice = t === 'Strom' ? tarif?.priceHT : tarif?.price;
+                        const hasPrice = rawPrice !== undefined && rawPrice !== null && rawPrice !== '' &&
+                            Number.isFinite(Number(rawPrice)) && Number(rawPrice) >= 0;
+                        const rawAbschlag = tarif?.abschlag;
+                        const hasAbschlag = rawAbschlag !== undefined && rawAbschlag !== null && rawAbschlag !== '' &&
+                            Number.isFinite(Number(rawAbschlag)) && Number(rawAbschlag) >= 0;
+                        const yearlyCost = hasPrice ? Number(yearlyEst) * Number(rawPrice) : null;
+                        const yearlyAbschlag = hasAbschlag ? Number(rawAbschlag) * 12 : null;
+                        const unit = t === 'Strom' || t === 'Gas' ? 'kWh' : 'm³';
 
                         html += `
                             <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
                                 <h4 class="font-bold text-sm">${t} Prognose & Live-Kosten</h4>
-                                <p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${dailyCost} € / Tag</strong></p>
                                 <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
-                                <p class="text-xs">Kosten: <strong>${yearlyCost} €</strong> (Bezahlt: ${yearlyAbschlag} €)</p>
-                                <p class="text-xs font-bold ${statusColor}">
-                                    ${isNachzahlung ? '⚠️ Nachzahlung: ca. ' + diffCost + ' €' : '🎉 Guthaben: ca. ' + Math.abs(diffCost) + ' €'}
-                                </p>
-                                <p class="text-xs bg-white p-2 rounded-lg border font-semibold text-sky-900">
-                                    💡 Neuer Abschlag: <span class="text-sky-700 text-sm">${recommendedAbschlag} € / Monat</span>
-                                </p>
+                                ${yearlyCost === null
+                                    ? '<p class="text-xs text-amber-700">Kostenprognose nicht verfügbar: gültigen Tarifpreis hinterlegen.</p>'
+                                    : `<p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${(yearlyCost / 365).toFixed(2)} € / Tag</strong></p>
+                                       <p class="text-xs">Kosten: <strong>${yearlyCost.toFixed(2)} €</strong>${yearlyAbschlag === null ? ' (Abschlag nicht hinterlegt)' : ` (Bezahlt: ${yearlyAbschlag.toFixed(2)} €)`}</p>
+                                       ${yearlyAbschlag === null ? '' : `<p class="text-xs font-bold ${yearlyCost > yearlyAbschlag ? 'text-red-600' : 'text-emerald-600'}">
+                                           ${yearlyCost > yearlyAbschlag ? '⚠️ Nachzahlung: ca. ' + (yearlyCost - yearlyAbschlag).toFixed(2) + ' €' : '🎉 Guthaben: ca. ' + (yearlyAbschlag - yearlyCost).toFixed(2) + ' €'}
+                                       </p>`}
+                                       <p class="text-xs bg-white p-2 rounded-lg border font-semibold text-sky-900">
+                                           💡 Neuer Abschlag: <span class="text-sky-700 text-sm">${(Math.ceil((yearlyCost / 12) / 10) * 10).toFixed(0)} € / Monat</span>
+                                       </p>`}
                             </div>
                         `;
                     }
@@ -865,16 +967,22 @@
             doc.text("Dieses Dokument dient als formeller Nachweis der aktuellen Zählerstände.", 14, 34);
 
             let y = 48;
-            data.readings.forEach((r, idx) => {
-                if (y > 250) { doc.addPage(); y = 20; }
-                let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
-                doc.text(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 14, y);
-                doc.text(`Ablesedatum: ${r.date} | Zählerstand: ${r.value} ${unit}`, 14, y + 6);
-                if(r.note) doc.text(`Bemerkung: ${r.note}`, 14, y + 12);
-                y += 20;
+            data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r, idx) => {
+                const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                const lines = [
+                    ...doc.splitTextToSize(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 180),
+                    ...doc.splitTextToSize(`Ablesedatum: ${r.date} | Zählerstand: ${r.value} ${unit}`, 180),
+                    ...(r.note ? doc.splitTextToSize(`Bemerkung: ${r.note}`, 180) : [])
+                ];
+                lines.forEach(line => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(line, 14, y);
+                    y += 6;
+                });
+                y += 8;
             });
 
-            if (y > 240) doc.addPage();
+            if (y + 24 > 280) { doc.addPage(); y = 20; }
             y += 10;
             doc.text("___________________________", 14, y);
             doc.text("Unterschrift Übergeber / Mieter", 14, y + 6);
@@ -889,9 +997,13 @@
             const data = getData();
             const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
+            const url = URL.createObjectURL(blob);
+            a.href = url;
             a.download = `energie-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
             a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function importBackup(event) {
@@ -899,15 +1011,34 @@
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
+                event.target.value = '';
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    saveData(parsed);
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.readings) ||
+                        !parsed.readings.every(item => {
+                            if (!item || typeof item.type !== 'string' || !item.type.trim() ||
+                                typeof item.name !== 'string' || !item.name.trim() ||
+                                typeof item.date !== 'string' || !Number.isFinite(item.value) || item.value < 0 ||
+                                !/^\d{4}-\d{2}-\d{2}$/.test(item.date)) return false;
+                            const date = new Date(item.date);
+                            return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === item.date;
+                        }) ||
+                        (parsed.tarifs !== undefined && (!parsed.tarifs ||
+                            typeof parsed.tarifs !== 'object' || Array.isArray(parsed.tarifs)))) {
+                        throw new Error('Ungültiges Zählerstände-Backup');
+                    }
+                    if (!confirm('Backup importieren? Vorhandene Zählerstände und Tarife werden ersetzt.')) return;
+                    if (!saveData({ ...parsed, tarifs: parsed.tarifs || {} }, true)) return;
                     loadTarifs();
                     renderApp();
                     alert("Backup erfolgreich importiert!");
                 } catch(err) {
                     alert("Fehler beim Importieren der Datei.");
                 }
+            };
+            reader.onerror = () => {
+                event.target.value = '';
+                alert('Backup-Datei konnte nicht gelesen werden.');
             };
             reader.readAsText(file);
         }
@@ -923,11 +1054,16 @@
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
 
             let y = 38;
-            data.readings.forEach((r) => {
-                if (y > 270) { doc.addPage(); y = 20; }
-                let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
-                doc.text(`${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`, 14, y);
-                y += 8;
+            data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r) => {
+                const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                const line = `${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
+                const lines = doc.splitTextToSize(line, 180);
+                lines.forEach(textLine => {
+                    if (y > 275) { doc.addPage(); y = 20; }
+                    doc.text(textLine, 14, y);
+                    y += 6;
+                });
+                y += 2;
             });
 
             doc.save(`zaehlerstaende-${new Date().toISOString().split('T')[0]}.pdf`);
