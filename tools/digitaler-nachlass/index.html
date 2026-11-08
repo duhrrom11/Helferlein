@@ -120,6 +120,7 @@
 <button id="manualSyncBtn" type="button" class="b3-more-item">☁️ Cloud-Synchronisation (bisheriger Weg)</button>
                 <button id="supabaseBackupBtn" type="button" class="b3-more-item">🔐 Verschlüsselten Tresor bei Supabase sichern</button>
                 <button id="supabaseBackupStatusBtn" type="button" class="b3-more-item">🔎 Supabase-Sicherungsstand prüfen</button>
+                <button id="supabaseRestorePreviewBtn" type="button" class="b3-more-item">🛡️ Cloud-Wiederherstellung sicher prüfen</button>
 <button id="b3-nachlass-kit-action" type="button" class="b3-more-item">📄 Notfall-Kit öffnen</button>
 </div></details></nav>
 <!-- TAB 1: TRESOR -->
@@ -489,6 +490,7 @@
             bindClick('manualSyncBtn', () => syncVaultToFirebase(false));
             bindClick('supabaseBackupBtn', () => backupVaultToSupabase());
             bindClick('supabaseBackupStatusBtn', () => checkSupabaseVaultBackup());
+            bindClick('supabaseRestorePreviewBtn', () => previewSupabaseVaultRecovery());
             bindClick('closeModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             bindClick('closeSuccessModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             bindClick('clearAlarmBtn', clearEmergencyAlarm);
@@ -683,6 +685,40 @@
             status.textContent = success
                 ? 'Cloud-Synchronisierung bestätigt (' + new Date().toLocaleString('de-DE') + '). Bitte trotzdem regelmäßig eine verschlüsselte lokale Sicherung erstellen.'
                 : 'Cloud-Synchronisierung nicht bestätigt (' + new Date().toLocaleString('de-DE') + '). Die Cloud kann fehlen oder einen älteren Stand enthalten. Bitte erneut synchronisieren und eine verschlüsselte lokale Sicherung erstellen.';
+        }
+
+        // Verify decryptability with the current local key, without importing data.
+        async function previewSupabaseVaultRecovery() {
+            if (!vaultReady || !currentMasterKeyHex) {
+                return alert('Bitte zuerst den lokalen Tresor öffnen.');
+            }
+            const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+            const user = authData?.user;
+            if (authError || !user) return alert('Bitte zuerst bei Supabase anmelden.');
+            const button = document.getElementById('supabaseRestorePreviewBtn');
+            if (button) button.disabled = true;
+            try {
+                const { data: remote, error } = await supabaseClient
+                    .from('vault_cloud_snapshots').select('vault_id,encrypted_data,updated_at')
+                    .eq('owner_user_id', user.id).maybeSingle();
+                if (error) throw error;
+                if (!remote) return alert('Keine Cloud-Sicherung für dieses Konto vorhanden.');
+                const local = getVaultConfig();
+                if (!local || local.vaultId !== remote.vault_id) {
+                    return alert('Cloud-Tresor und lokaler Tresor haben unterschiedliche IDs. Keine Wiederherstellung versucht.');
+                }
+                const decrypted = await decryptVaultPayload(remote.encrypted_data, currentMasterKeyHex);
+                if (!decrypted || !Array.isArray(decrypted.entries)) {
+                    return alert('Cloud-Sicherung lässt sich mit dem lokalen Schlüssel nicht entschlüsseln. Keine Daten wurden verändert.');
+                }
+                const date = remote.updated_at ? new Date(remote.updated_at).toLocaleString('de-DE') : 'unbekannt';
+                alert('Cloud-Sicherung vom ' + date + ' erfolgreich mit dem lokalen Schlüssel entschlüsselt. Enthaltene Einträge: ' + decrypted.entries.length + '. Dies war nur eine Prüfung: Lokale Daten wurden nicht überschrieben.');
+            } catch (error) {
+                console.error('Cloud-Wiederherstellungsprüfung fehlgeschlagen:', error);
+                alert('Cloud-Wiederherstellungsprüfung fehlgeschlagen. Lokale Daten wurden nicht verändert.');
+            } finally {
+                if (button) button.disabled = false;
+            }
         }
 
         // Read-only status check; never imports or replaces local vault data.
