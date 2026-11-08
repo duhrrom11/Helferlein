@@ -1163,7 +1163,8 @@
             if (!goal) return;
             const amount = parseFloat(prompt(`Betrag auf Sparziel "${goal.title}" einzahlen (€):`, "50"));
             if (amount > 0) {
-                goal.current += amount;
+                const previous = Number(goal.current);
+                goal.current = (Number.isFinite(previous) ? previous : 0) + amount;
                 saveSavingsGoals(goals);
                 renderApp();
             }
@@ -1177,11 +1178,11 @@
 
         function openGalleryModal(id) {
             const data = getData();
-            const r = data.find(item => item.id === id);
+            const r = data.find(item => item && item.id === id);
             if (!r) return;
-            const photos = r.photos || [];
+            const photos = Array.isArray(r.photos) ? r.photos.map(safeReceiptPhoto).filter(Boolean) : [];
             const container = document.getElementById('galleryContainer');
-            document.getElementById('galleryTitle').innerText = `🖼️ Galerie: ${r.title}`;
+            document.getElementById('galleryTitle').innerText = `🖼️ Galerie: ${r.title || 'Beleg'}`;
             container.innerHTML = photos.map((src, idx) => `
                 <div class="space-y-1 text-center">
                     <img src="${src}" class="w-full object-contain rounded-xl border max-h-80 bg-gray-100">
