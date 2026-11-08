@@ -193,4 +193,16 @@ test('Legacy WG cloud import makes a restorable snapshot before replacing local 
  expect(JSON.parse(result.previous)[0].title).toBe('Lokaler WG-Beleg');
  expect(result.backup).toBeTruthy();
  expect(confirms).toBeGreaterThanOrEqual(2);
+ await page.evaluate(()=>restoreLatestWgCloudSnapshot());
+ const restored=await page.evaluate(()=>{
+  const recovery=Object.keys(localStorage).find(k=>k.startsWith('helferlein_wg_recovery_oldSharedId_'));
+  return {
+    wg:JSON.parse(localStorage.getItem('helferlein_wg_v2_oldSharedId_kassenbon_data'))[0].title,
+    household:JSON.parse(localStorage.getItem('kassenbon_data'))[0].title,
+    backup:JSON.parse(localStorage.getItem(recovery)).before.kassenbon_data
+  };
+ });
+ expect(restored.wg).toBe('Lokaler WG-Beleg');
+ expect(restored.household).toBe('Privates Haushaltsbuch');
+ expect(JSON.parse(restored.backup)[0].title).toBe('Remote WG-Beleg');
 });
