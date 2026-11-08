@@ -621,6 +621,7 @@
         // Nur der zuletzt gestartete lokale Speichervorgang darf schreiben.
         // Verschlüsselungen können in anderer Reihenfolge fertig werden.
         let localSaveRevision = 0;
+        let lastPersistedRevision = 0;
 
         async function saveLocalConfig(cfg) {
             const revision = ++localSaveRevision;
@@ -628,6 +629,7 @@
             if (revision !== localSaveRevision) return false;
             cfg.encryptedData = encryptedData;
             localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
+            lastPersistedRevision = revision;
             const syncStatus = document.getElementById('vault-sync-result');
             if (syncStatus && !syncStatus.classList.contains('hidden')) {
                 syncStatus.classList.remove('border-emerald-700', 'bg-emerald-950/70', 'text-emerald-100');
@@ -732,6 +734,7 @@
 
                 // A newer local edit must not be represented as already cloud-saved.
                 if (syncRevision !== localSaveRevision ||
+                    lastPersistedRevision !== localSaveRevision ||
                     localStorage.getItem('digital_estate_vault') !== localSnapshot) {
                     if (!silent) {
                         document.getElementById('syncErrorMessage').innerText =
@@ -778,6 +781,7 @@
                 // Alarm checks are asynchronous: local changes during this
                 // follow-up must not turn an old cloud snapshot into a success.
                 const stillCurrent = syncRevision === localSaveRevision &&
+                    lastPersistedRevision === localSaveRevision &&
                     localStorage.getItem('digital_estate_vault') === localSnapshot;
                 if (!silent) {
                     document.getElementById('syncStatusLoading').classList.add('hidden');
