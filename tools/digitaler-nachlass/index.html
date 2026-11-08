@@ -749,6 +749,8 @@
             const { data: authData, error: authError } = await supabaseClient.auth.getUser();
             const user = authData?.user;
             if (authError || !user) return alert('Bitte zuerst bei Supabase anmelden.');
+            const startingRevision = localSaveRevision;
+            const startingMasterKeyHex = currentMasterKeyHex;
             const localSnapshot = localStorage.getItem('digital_estate_vault');
             let local;
             try { local = localSnapshot ? JSON.parse(localSnapshot) : null; } catch {}
@@ -844,7 +846,10 @@
                     return;
                 }
                 if (localStorage.getItem('digital_estate_vault') !== localSnapshot ||
+                    localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    !currentDecryptedVault || !Array.isArray(currentDecryptedVault.entries) ||
                     currentDecryptedVault.entries.length !== 0 ||
                     !pristineMetadata) {
                     return alert('Lokale Daten wurden inzwischen geändert. Wiederherstellung abgebrochen.');
