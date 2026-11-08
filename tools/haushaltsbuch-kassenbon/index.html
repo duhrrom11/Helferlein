@@ -1249,16 +1249,23 @@
 
         function openGoogleCalendar(id) {
             const data = getData();
-            const r = data.find(item => item.id === id);
+            const r = data.find(item => item && item.id === id);
             if (!r) return;
             const buyDate = new Date(r.date);
             const expDate = new Date(buyDate);
-            expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
+            const months = Number(r.warrantyMonths);
+            if (!Number.isFinite(buyDate.getTime()) || !Number.isFinite(months) || months <= 0) {
+                alert('Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.');
+                return;
+            }
+            expDate.setMonth(expDate.getMonth() + months);
             const fmtDate = (d) => d.toISOString().replace(/-|:|\.\d+/g, '').slice(0, 8);
             const dateStr = fmtDate(expDate);
 
             const title = encodeURIComponent(`Garantie-Ablauf: ${r.title}`);
-            const details = encodeURIComponent(`Garantie für ${r.title} (${r.store}) läuft heute ab.\nKaufdatum: ${r.date}\nPreis: ${r.price.toFixed(2)} €\nS/N: ${r.sn || 'k.A.'}`);
+            const price = Number(r.price);
+            const displayPrice = Number.isFinite(price) ? price.toFixed(2) + ' €' : 'k.A.';
+            const details = encodeURIComponent(`Garantie für ${r.title} (${r.store}) läuft heute ab.\nKaufdatum: ${r.date}\nPreis: ${displayPrice}\nS/N: ${r.sn || 'k.A.'}`);
             window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${dateStr}&details=${details}`, '_blank');
         }
 
