@@ -86,6 +86,7 @@ function renderEditor(){
 function init(){
  const body=document.body;
  body.classList.add('b3','b3-nachlass');
+ document.getElementById('main-content')?.classList.add('b3-dashboard');
  const select=document.getElementById('b3-nachlass-theme');
  const editor=document.getElementById('b3-nachlass-editor');
  const edit=document.getElementById('b3-nachlass-edit');
