@@ -293,6 +293,17 @@ test('Cloud-Restore respektiert absichtlich geleerte Vertrauenspersonenliste', (
   assert.doesNotMatch(source, /JSON\.stringify\(local\.trustees\) === '\[\]'/);
 });
 
+test('Cloud-Backup entschluesselt Eintraege vor dem Ueberschreiben', () => {
+  const start = html.indexOf('async function backupVaultToSupabase()');
+  const end = html.indexOf('async function prepareSupabaseRecoveryKey()', start);
+  const source = html.slice(start, end);
+  const verify = source.indexOf('decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex)');
+  const validate = source.indexOf('!Array.isArray(verifiedEntries.entries)');
+  const upload = source.indexOf('.update({ encrypted_data:');
+  assert.ok(verify > 0 && validate > verify && upload > validate);
+  assert.match(source, /Der lokale Tresor wurde während der Prüfung geändert/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
