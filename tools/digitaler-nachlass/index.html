@@ -1037,12 +1037,20 @@
                     return alert('Tresorinhalt stimmt mit der Cloud-Sicherung vom ' + date +
                         ' überein. Diese ältere Sicherung enthält jedoch keine verschlüsselte Konfiguration. Bitte erneut sichern.');
                 }
+                if (!vaultReady || !/^[a-f0-9]{64}$/i.test(currentMasterKeyHex || '') ||
+                    local.masterKeyHex !== currentMasterKeyHex) {
+                    return alert('Der lokale Tresorschlüssel ist nicht verfügbar oder stimmt nicht mit dem gespeicherten Tresor überein. Keine Änderungen vorgenommen.');
+                }
                 const cloudConfig = await decryptVaultPayload(remote.encrypted_config, currentMasterKeyHex);
                 if (!cloudConfig || !Array.isArray(cloudConfig.trustees) || !Array.isArray(cloudConfig.alarmPersons)) {
                     return alert('Tresorinhalt stimmt überein, aber die Cloud-Konfiguration konnte nicht entschlüsselt werden.');
                 }
                 const keys = ['ownerName', 'ownerEmail', 'checkInIntervalDays',
                     'lastCheckIn', 'trustees', 'alarmPersons'];
+                if (localStorage.getItem('digital_estate_vault') !== localSnapshot ||
+                    lastPersistedRevision !== localSaveRevision) {
+                    return alert('Der lokale Tresor wurde während der Cloud-Prüfung geändert. Bitte die Prüfung wiederholen.');
+                }
                 const configMatches = keys.every(key =>
                     JSON.stringify(cloudConfig[key] ?? null) === JSON.stringify(local[key] ?? null));
                 alert(configMatches
