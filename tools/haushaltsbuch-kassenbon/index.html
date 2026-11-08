@@ -816,6 +816,12 @@
             }
         }
 
+        function nextReceiptId(data, now = Date.now()) {
+            let id = now;
+            while (data.some(item => item && item.id === id)) id++;
+            return id;
+        }
+
         /* --- Buchung Speichern --- */
         function saveReceipt() {
             if (photoReadFailed) {
@@ -869,8 +875,7 @@
                     };
                 }
             } else {
-                let newId = Date.now();
-                while (data.some(item => item && item.id === newId)) newId++;
+                const newId = nextReceiptId(data);
                 data.push({
                     id: newId,
                     title, store, date, price, category, paymentMethod, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType,
