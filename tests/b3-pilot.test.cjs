@@ -53,8 +53,25 @@ test('Header has exactly one settings control and no redundant home button',()=>
  assert.doesNotMatch(html,/← Zurück zur Startseite/);
  assert.doesNotMatch(html,/data-b3-panel="actions"/);
  assert.match(js,/Darstellung & Dashboard/);
- assert.match(js,/Zur Helferlein-Hauptseite/);
+ assert.match(js,/Entdecke mehr Helferlein/);
+ assert.match(js,/https:\/\/ko-fi\.com\/duhrrom/);
  assert.match(js,/Weitere Tools/);
  assert.match(js,/openRoiModal\(\)/);
  assert.match(js,/openCisternModal\(\)/);
+});
+
+test('Ko-fi and discovery links are the final settings controls in that order',()=>{
+ const support=js.indexOf("'☕ Kaffee spendieren'");
+ const discover=js.indexOf("'↗ Entdecke mehr Helferlein'");
+ const footer=js.indexOf("const footer=create('div',{class:'b3-settings-footer'})");
+ assert.ok(footer>=0 && support>footer && discover>support);
+ assert.ok(js.includes("rel:'noopener noreferrer'"));
+ assert.match(css,/\.b3-kofi-link/);
+ assert.match(css,/\.b3-settings-footer/);
+});
+test('Dark mode defines all common surfaces, semantic colours and controls',()=>{
+ for(const token of ['.bg-white','.bg-gray-50','.bg-lime-50','.bg-amber-50','.bg-sky-50','.bg-purple-50','.bg-red-50','.text-gray-500','.text-lime-700','.text-red-600','input,select,textarea','calendar']){
+   assert.ok(css.includes(token),'missing dark override: '+token);
+ }
+ assert.ok(css.includes('body.b3-dark .b3-settings-footer .b3-kofi-link'));
 });
