@@ -261,6 +261,17 @@ test('Cloud-Sicherungsstatus verwendet passenden Schluessel und stabilen lokalen
     source.indexOf('decryptVaultPayload(remote.encrypted_config, currentMasterKeyHex)'));
 });
 
+test('Lesende Wiederherstellungsprobe erkennt Schluessel- und lokale Zwischenstandswechsel', () => {
+  const start = html.indexOf('async function previewSupabaseVaultRecovery()');
+  const end = html.indexOf('// Read-only status check; never imports', start);
+  const source = html.slice(start, end);
+  assert.match(source, /local\.masterKeyHex !== currentMasterKeyHex/);
+  assert.match(source, /localStorage\.getItem\('digital_estate_vault'\) !== localSnapshot/);
+  assert.match(source, /localSaveRevision !== startingRevision/);
+  assert.match(source, /lastPersistedRevision !== localSaveRevision/);
+  assert.doesNotMatch(source, /localStorage\.setItem/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
