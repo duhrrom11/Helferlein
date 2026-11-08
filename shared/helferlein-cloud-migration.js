@@ -173,6 +173,28 @@
       status.textContent = 'Cloud-Daten lokal geladen. Seite wird aktualisiert.';
       if (typeof refresh === 'function') refresh();
     });
+    button('Offline-Änderungen abgleichen', async () => {
+      if (!await isEnabled()) throw new Error('Cloud-Synchronisierung ist nicht aktiviert');
+      const user = await currentUser();
+      assertOwner(user.id);
+      const result = await store.reconcilePending();
+      if (result.status === 'conflict') {
+        status.textContent = 'Konflikt: Cloud und lokale Änderungen unterscheiden sich. Keine Daten überschrieben.';
+        return;
+      }
+      if (result.status === 'ready') {
+        if (!confirm('Die Cloud ist leer. Ausstehende lokale Änderungen jetzt nach Supabase übertragen?')) {
+          status.textContent = 'Übertragung nicht bestätigt; lokale Änderungen bleiben erhalten.';
+          return;
+        }
+        const done = await store.flush();
+        status.textContent = done ? 'Offline-Änderungen übertragen' : 'Änderungen bleiben ausstehend';
+      } else {
+        status.textContent = result.status === 'already-synced'
+          ? 'Änderungen bereits in Supabase vorhanden; bestätigt'
+          : 'Kein ungeklärter Offline-Ausgangsstand';
+      }
+    });
     button('Ausstehende Änderungen synchronisieren', async () => {
       if (!await isEnabled()) throw new Error('Cloud-Synchronisierung zuerst durch bestätigte Übernahme aktivieren');
       const done = await store.flush();
