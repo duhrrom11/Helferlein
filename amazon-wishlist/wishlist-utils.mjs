@@ -21,3 +21,11 @@ export function validatePriority(input) {
  if(![1,2,3].includes(value))throw Error('Ungültige Priorität');
  return value;
 }
+
+/** Preserve unrelated query parameters when switching a public profile view. */
+export function profilePageUrl(currentUrl,handle=null) {
+ const url=new URL(currentUrl);
+ url.searchParams.delete('profile');
+ if(handle!==null){url.searchParams.delete('url');url.searchParams.set('profile',validateHandle(handle));}
+ return url.toString();
+}
