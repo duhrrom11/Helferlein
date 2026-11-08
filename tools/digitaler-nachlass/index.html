@@ -53,6 +53,8 @@
         Bitte regelmäßig eine passwortgeschützte lokale Sicherung über die Helferlein-Startseite erstellen.
     </div>
 
+    <div id="vault-sync-result" role="status" aria-live="polite" class="hidden mx-auto mt-2 max-w-5xl rounded-xl border border-amber-700 bg-amber-950/70 px-4 py-3 text-sm text-amber-100"></div>
+
     <!-- SYNC MODAL -->
     <div id="syncModalOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
@@ -655,6 +657,21 @@
         // dürfen nicht mit einem bereits laufenden Schreibvorgang verschmelzen.
         let vaultSyncQueue = Promise.resolve();
 
+        function showVaultSyncResult(success) {
+            const status = document.getElementById('vault-sync-result');
+            if (!status) return;
+            status.classList.remove('hidden');
+            status.classList.toggle('border-emerald-700', success);
+            status.classList.toggle('bg-emerald-950/70', success);
+            status.classList.toggle('text-emerald-100', success);
+            status.classList.toggle('border-amber-700', !success);
+            status.classList.toggle('bg-amber-950/70', !success);
+            status.classList.toggle('text-amber-100', !success);
+            status.textContent = success
+                ? 'Cloud-Synchronisierung bestätigt. Bitte trotzdem regelmäßig eine verschlüsselte lokale Sicherung erstellen.'
+                : 'Cloud-Synchronisierung fehlgeschlagen. Änderungen können ausschließlich lokal vorliegen. Bitte eine verschlüsselte Sicherung erstellen.';
+        }
+
         function syncVaultToFirebase(silent = false) {
             const operation = vaultSyncQueue.then(() => performVaultSync(silent)).catch(error => {
                 console.error("Unerwarteter Fehler bei der Cloud-Synchronisierung:", error);
@@ -670,7 +687,10 @@
             });
             // Ein fehlgeschlagener Auftrag blockiert spätere Synchronisierungen nicht.
             vaultSyncQueue = operation.then(() => undefined);
-            return operation;
+            return operation.then(success => {
+                showVaultSyncResult(success);
+                return success;
+            });
         }
 
         async function performVaultSync(silent = false) {
