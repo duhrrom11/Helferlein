@@ -706,7 +706,7 @@
                 let data = getData();
                 let p = data.plants.find(item => item.id === plantId);
                 if(p) {
-                    if(!p.galleryPhotos) p.galleryPhotos = p.photo ? [p.photo] : [];
+                    if (!Array.isArray(p.galleryPhotos)) p.galleryPhotos = p.photo ? [p.photo] : [];
                     p.galleryPhotos.push(compressed);
                     if (!saveData(data)) return;
                     renderGalleryGrid(plantId); fileInput.value = "";
@@ -872,7 +872,7 @@
             let data = getData();
             let p = data.plants.find(item => item.id === id);
             if (!p) return;
-            if (!p.diary) p.diary = [];
+            if (!Array.isArray(p.diary)) p.diary = [];
             p.diary.unshift({ date: new Date().toLocaleDateString('de-DE'), text: text });
             if (!saveData(data)) return;
             closeDiaryModal(); renderApp();
