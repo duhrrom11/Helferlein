@@ -362,7 +362,7 @@
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
-        window.HelferleinCloudMigration.mount({
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
           client: window.supabaseClient,
           tool: 'zaehlerstaende-erfassen',
           localKey: 'energie_tracker_pro_v8',
@@ -534,6 +534,9 @@
                     }
                 }
                 localStorage.setItem('energie_tracker_pro_v8', JSON.stringify(data));
+                if (window.helferleinCloudBridge) {
+                    void window.helferleinCloudBridge.changed(data);
+                }
                 return true;
             } catch (error) {
                 console.error('Zählerstände konnten nicht gespeichert werden:', error);
