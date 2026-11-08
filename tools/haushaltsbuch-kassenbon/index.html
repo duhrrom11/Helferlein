@@ -58,6 +58,7 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../assets/helferlein-safe-output.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -972,7 +973,7 @@
                 return `
                     <div class="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2">
                         <div class="flex justify-between items-center">
-                            <span class="font-bold text-sm text-emerald-900">${g.title}</span>
+                            <span class="font-bold text-sm text-emerald-900">${HelferleinSafe.html(g.title)}</span>
                             <button onclick="deleteSavingsGoal(${g.id})" class="text-red-500 text-xs font-bold hover:opacity-80">✕</button>
                         </div>
                         <div class="flex justify-between text-xs text-gray-600">
@@ -1045,25 +1046,25 @@
                         <div class="flex items-start space-x-3">
                             ${photos.length > 0 
                                 ? `<div class="relative cursor-pointer" onclick="openGalleryModal(${r.id})">
-                                     <img src="${photos[0]}" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
+                                     <img src="${HelferleinSafe.photo(photos[0])}" class="w-16 h-16 object-cover rounded-xl border shadow-sm">
                                      ${photos.length > 1 ? `<span class="absolute bottom-0 right-0 bg-black/70 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-br-xl">+${photos.length - 1}</span>` : ''}
                                    </div>` 
                                 : `<div class="w-16 h-16 ${isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'} rounded-xl flex items-center justify-center font-bold text-xl">${isIncome ? '🔺' : '🧾'}</div>`
                             }
                             <div class="space-y-1">
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                    <span class="text-sm font-bold text-gray-900">${r.title}</span>
-                                    <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${r.category}</span>
+                                    <span class="text-sm font-bold text-gray-900">${HelferleinSafe.html(r.title)}</span>
+                                    <span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-semibold">${HelferleinSafe.html(r.category)}</span>
                                     ${r.isFixkosten ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full">🔄 Fixkosten</span>` : ''}
                                     ${r.isTax ? `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">💼 Steuer</span>` : ''}
                                     ${r.warrantyMonths > 0 ? (isWarrantyActive ? `<span class="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full">Garantie aktiv (${diffDaysWarranty} T)</span>` : `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">Garantie abgelaufen</span>`) : ''}
                                     ${isReturnActive ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">⏱️ Rückgabe: ${diffDaysReturn} T</span>` : ''}
                                 </div>
                                 <p class="text-xs text-gray-600">
-                                    Betrag: <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | Datum: ${r.date} | Zahlungsart: ${r.paymentMethod || 'k.A.'}
+                                    Betrag: <strong class="${isIncome ? 'text-emerald-600' : 'text-red-600'}">${isIncome ? '+' : '-'}${r.price.toFixed(2)} €</strong> | Datum: ${r.date} | Zahlungsart: ${HelferleinSafe.html(r.paymentMethod || 'k.A.')}
                                 </p>
                                 <p class="text-[11px] text-gray-500">
-                                    ${r.store ? 'Partner: ' + r.store + ' | ' : ''} ${r.sn ? 'S/N: ' + r.sn + ' | ' : ''} ${r.location ? 'Karton: ' + r.location + ' | ' : ''} ${r.note ? 'Notiz: ' + r.note : ''}
+                                    ${HelferleinSafe.html(r.store ? 'Partner: ' + r.store + ' | ' : '')} ${HelferleinSafe.html(r.sn ? 'S/N: ' + r.sn + ' | ' : '')} ${HelferleinSafe.html(r.location ? 'Karton: ' + r.location + ' | ' : '')} ${HelferleinSafe.html(r.note ? 'Notiz: ' + r.note : '')}
                                 </p>
                             </div>
                         </div>
@@ -1325,7 +1326,7 @@ END:VCALENDAR`;
             data.forEach((r) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
-                doc.text(`${r.date} | ${r.title} (${r.category}): ${sign}${r.price.toFixed(2)} € [${r.paymentMethod || 'k.A.'}]`, 14, y);
+                doc.text(`${r.date} | ${r.title} (${r.category}): ${sign}${r.price.toFixed(2)} € [${HelferleinSafe.html(r.paymentMethod || 'k.A.')}]`, 14, y);
                 y += 8;
             });
 
