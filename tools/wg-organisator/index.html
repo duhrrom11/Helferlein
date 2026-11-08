@@ -935,7 +935,16 @@
         }
 
         async function supabaseLogout() {
-            await supabaseClient.auth.signOut();
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) return alert('Abmeldung fehlgeschlagen: ' + error.message);
+            if (isSecureWgId(wgBinId)) {
+                ['wg_flatmates', 'wg_notes', 'wg_kassenbon_data', 'wg_budgetbuch_budgets',
+                 'wg_budgetbuch_goals', 'wg_events', 'wg_inventory', 'wg_diets',
+                 'wg_cleaning', 'wg_shopping', 'wg_cooking', 'wg_contracts',
+                 'wg_infoboard', 'wg_last_loaded_bin_id'].forEach(key => localStorage.removeItem(key));
+                window.location.reload();
+                return;
+            }
             checkUserSession();
             alert('Abgemeldet.');
         }
