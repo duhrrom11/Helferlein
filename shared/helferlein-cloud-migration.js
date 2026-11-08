@@ -137,8 +137,8 @@
       const refreshOwner = enabledUser;
       const refreshGeneration = accountGeneration;
       const ownerAtStart = currentOwner();
-      if (!ownerAtStart) return false;
       try {
+        if (!ownerAtStart) return false;
         await queue.catch(() => {});
         const user = await currentUser();
         if (!sameAccount(refreshOwner, refreshGeneration)) return false;
@@ -149,12 +149,14 @@
         const before = safeLocalBytes();
         if (before === null) return false;
         if (!validPayload(validateLocal())) return false;
+        if (!isOwner(refreshOwner)) return false;
         if (accountSwitchInProgress) return false;
         const cachedBytes = localStorage.getItem(cacheKey(user.id));
         if (cachedBytes === null) return false;
         const result = await store.load();
         lastCloudSource = result.source;
         if (result.source !== 'cloud' || !validPayload(result.data)) return false;
+        if (result.data[collection].some(item => item === undefined)) return false;
         if (accountSwitchInProgress) return false;
         if (localStorage.getItem(enabledKey(user.id)) !== 'true') return false;
         if (disposed) return false;
@@ -174,13 +176,12 @@
         if (!sameAccount(refreshOwner, refreshGeneration)) return false;
         const incoming = JSON.stringify(result.data);
         if (!incoming || incoming === 'null') return false;
-        if (!incoming || incoming === 'null') return false;
         if (before === incoming) { lastRefreshAt = now(); lastSyncError = null; return false; }
         if ((await currentUser())?.id !== user.id) return false;
-        if (safeLocalBytes() !== before) return false;
         if (refreshOwner !== enabledUser || refreshGeneration !== accountGeneration) return false;
         if (await store.hasPending()) return false;
-        if (safeLocalBytes() !== before) return false;
+        ensureLocalUnchanged(before);
+        ensureOwnerUnchanged(ownerAtStart);
         localStorage.setItem(localKey, incoming);
         lastRefreshAt = now();
         lastSyncError = null;
@@ -193,11 +194,12 @@
     }
     async function resume() {
       if (disposed || migrationInProgress || importInProgress || activeOperation || reconnectInProgress || accountSwitchInProgress) return;
-      if (!navigator.onLine) return;
+      if (!navigator.onLine || !currentOwner()) return;
       reconnectInProgress = true;
       const reconnectGeneration = accountGeneration;
       const reconnectOwner = currentOwner();
       try {
+        assertActive();
       // Finish queued local writes before attempting a reconnect flush.
       await queue.catch(() => {});
       if (!await isEnabled() || !navigator.onLine || !reconnectOwner) return;
@@ -228,7 +230,7 @@
       const mismatch = !!(owner && (!user || owner !== user.id));
       if (accountSwitchInProgress) return;
       if (disposed) return;
-      if (mismatch && enabledUser !== null) { enabledUser = null; accountGeneration++; lastAccountChangeAt = now(); }
+      if (mismatch && enabledUser !== null) { enabledUser = null; accountGeneration++; lastAccountChangeAt = now(); lastCloudSource = null; }
       if (!mismatch && blocked) { blocked.remove(); blocked = null; lastConflictMessage = null; }
       if (mismatch && !blocked) {
         blocked = document.createElement('div');
@@ -236,8 +238,6 @@
         blocked.setAttribute('aria-modal', 'true');
         blocked.setAttribute('aria-label', 'Kontoschutz');
         blocked.setAttribute('aria-live', 'polite');
-        blocked.setAttribute('role', 'dialog');
-        blocked.setAttribute('aria-modal', 'true');
         blocked.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#0f172a;color:white;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:24px;font:18px system-ui;text-align:center';
         const message = document.createElement('p');
         message.textContent = 'Dieses Gerät enthält lokale Daten eines anderen Kontos. Die Dateneingabe bleibt gesperrt, bis das ursprüngliche Konto wieder angemeldet ist. Daten werden nicht gelöscht.';
@@ -245,9 +245,11 @@
         form.style.cssText = 'display:grid;gap:10px;width:min(100%,360px);margin:12px auto';
         const email = document.createElement('input');
         email.type = 'email';
+        email.inputMode = 'email';
         email.autocomplete = 'username';
         email.maxLength = 254;
         email.required = true;
+        email.spellcheck = false;
         email.placeholder = 'E-Mail des ursprünglichen Kontos';
         email.setAttribute('aria-label', 'E-Mail des ursprünglichen Kontos');
         const password = document.createElement('input');
@@ -255,31 +257,36 @@
         password.autocomplete = 'current-password';
         password.minLength = 1;
         password.required = true;
+        password.spellcheck = false;
         password.placeholder = 'Passwort';
         password.setAttribute('aria-label', 'Passwort');
         const loginButton = document.createElement('button');
         loginButton.type = 'submit';
+        loginButton.setAttribute('aria-label', 'Mit dem ursprünglich zugeordneten Konto anmelden');
         loginButton.textContent = 'Zum ursprünglichen Konto anmelden';
         loginButton.style.cssText = 'padding:10px;border-radius:8px;background:#fff;color:#0f172a';
         form.append(email, password, loginButton);
         const back = document.createElement('button');
         back.type = 'button';
-        back.textContent = 'Zur Anmeldung';
+        back.textContent = 'E-Mail-Eingabe auswählen';
         back.style.cssText = 'padding:10px 16px;background:white;color:#0f172a;border-radius:8px;cursor:pointer';
         back.addEventListener('click', () => {
           if (disposed) return;
-          const login = document.querySelector('[id*="login" i], [id*="auth" i], [class*="login" i]');
-          if (login && typeof login.scrollIntoView === 'function') login.scrollIntoView();
-          if (login && typeof login.focus === 'function') login.focus();
-          status.textContent = 'Bitte zum ursprünglichen Konto zurückwechseln.';
+          email.focus();
+          setStatus('Bitte zum ursprünglichen Konto zurückwechseln.');
         });
         blocked.append(message, form, back);
+        blocked.style.overflowY = 'auto';
         blocked.setAttribute('tabindex', '-1');
+        blocked.setAttribute('aria-describedby', 'helferlein-account-protection-message-' + tool);
+        message.id = 'helferlein-account-protection-message-' + tool;
         form.addEventListener('submit', async event => {
           event.preventDefault();
           if (disposed || accountSwitchInProgress) return;
+          if (!email.value.trim() || !password.value) return;
           accountSwitchInProgress = true;
           loginButton.disabled = true;
+          loginButton.setAttribute('aria-busy', 'true');
           email.disabled = true;
           password.disabled = true;
           try {
@@ -294,7 +301,7 @@
             lastAccountChangeAt = now();
             setStatus('Ursprüngliches Konto wieder angemeldet');
           } catch (error) { statusError('Kontowechsel fehlgeschlagen', error); }
-          finally { accountSwitchInProgress = false; loginButton.disabled = false; email.disabled = false; password.disabled = false; void guardAccount().catch(reportError); }
+          finally { accountSwitchInProgress = false; loginButton.disabled = false; loginButton.removeAttribute('aria-busy'); email.disabled = false; password.disabled = false; void guardAccount().catch(reportError); }
         });
         document.body.appendChild(blocked);
         email.focus();
