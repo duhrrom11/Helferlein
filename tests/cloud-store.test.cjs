@@ -63,6 +63,23 @@ function harness(online = true) {
   assert.equal(await h.store.flush(), true);
   assert.equal(await h.store.hasPending(), false);
   assert.deepEqual(h.rows[0].data, { plants: [1, 2] });
+  // Simulate an upload committed remotely but the client never received the ack.
+  h.navigator.onLine = false;
+  assert.equal(await h.store.save({ plants: [1, 2, 3] }), false);
+  h.rows[0].data = { plants: [1, 2, 3] };
+  h.rows[0].updated_at = 'remote-ack-lost';
+  h.navigator.onLine = true;
+  assert.equal(await h.store.flush(), true);
+  assert.equal(await h.store.hasPending(), false);
+  assert.equal(h.rows.length, 1);
+  // A different remote value must not be silently overwritten.
+  h.navigator.onLine = false;
+  await h.store.save({ plants: [9] });
+  h.rows[0].data = { plants: [777] };
+  h.rows[0].updated_at = 'remote-conflict';
+  h.navigator.onLine = true;
+  await assert.rejects(h.store.flush(), /Cloud changed/);
+  assert.equal(await h.store.hasPending(), true);
   h.setUser('bob');
   assert.equal((await h.store.load()).source, 'cloud-empty');
   assert.equal(await h.store.hasPending(), false);
