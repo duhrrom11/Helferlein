@@ -1771,7 +1771,27 @@
             doc.setFontSize(10);
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
 
-            let y = 38;
+            let totalIncome = 0;
+            let totalExpense = 0;
+            let validEntries = 0;
+            data.forEach(r => {
+                if (!r || typeof r !== 'object') return;
+                const price = Number(r.price);
+                if (!Number.isFinite(price) || price < 0) return;
+                validEntries++;
+                if (r.entryType === 'einnahme' || r.category === 'Einnahme') totalIncome += price;
+                else totalExpense += price;
+            });
+            const money = amount => amount.toFixed(2).replace('.', ',') + ' EUR';
+            doc.setFontSize(11);
+            doc.text('Zusammenfassung (alle Buchungen)', 14, 39);
+            doc.setFontSize(10);
+            doc.text('Buchungen: ' + validEntries, 14, 46);
+            doc.text('Einnahmen: ' + money(totalIncome), 14, 52);
+            doc.text('Ausgaben: ' + money(totalExpense), 14, 58);
+            doc.text('Saldo: ' + money(totalIncome - totalExpense), 14, 64);
+
+            let y = 76;
             data.forEach((r) => {
                 if (!r || typeof r !== 'object') return;
                 const sign = (r.entryType === 'einnahme' || r.category === 'Einnahme') ? '+' : '-';
