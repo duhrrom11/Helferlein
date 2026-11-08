@@ -929,8 +929,14 @@
                 const wrappingKey = await crypto.subtle.deriveKey({
                     name: 'PBKDF2', salt, iterations: 600000, hash: 'SHA-256'
                 }, baseKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
-                const wrapped = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, wrappingKey,
-                    Uint8Array.from(currentMasterKeyHex.match(/.{2}/g), byte => parseInt(byte, 16)));
+                const rawMasterKey = Uint8Array.from(currentMasterKeyHex.match(/.{2}/g),
+                    byte => parseInt(byte, 16));
+                let wrapped;
+                try {
+                    wrapped = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, wrappingKey, rawMasterKey);
+                } finally {
+                    rawMasterKey.fill(0);
+                }
                 const b64 = bytes => btoa(String.fromCharCode(...new Uint8Array(bytes)));
                 const recovery = { version: 1, kdf: 'PBKDF2-SHA256', iterations: 600000,
                     salt: b64(salt), iv: b64(iv), ciphertext: b64(wrapped) };
