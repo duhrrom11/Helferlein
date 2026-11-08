@@ -50,6 +50,14 @@ function harness(online = true) {
     store: window.HelferleinCloudStore.createStore(client, 'plants') };
 }
 (async () => {
+  const firstOffline = harness(false);
+  assert.equal(await firstOffline.store.save({ plants: [42] }), false);
+  assert.equal(await firstOffline.store.hasPending(), true);
+  firstOffline.navigator.onLine = true;
+  await assert.rejects(firstOffline.store.flush(), /baseline unknown/);
+  assert.equal(await firstOffline.store.hasPending(), true);
+  assert.equal(firstOffline.rows.length, 0);
+
   const h = harness();
   assert.equal((await h.store.load()).source, 'cloud-empty');
   assert.equal(await h.store.save({ plants: [1] }), true);
