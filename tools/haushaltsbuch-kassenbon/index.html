@@ -602,7 +602,14 @@
         }
 
         function saveData(data) {
-            localStorage.setItem('kassenbon_data', JSON.stringify(data));
+            try {
+                localStorage.setItem('kassenbon_data', JSON.stringify(data));
+                return true;
+            } catch (error) {
+                console.error('Speichern fehlgeschlagen:', error);
+                alert('Speichern fehlgeschlagen. Der Gerätespeicher ist möglicherweise voll oder blockiert. Bitte Daten sichern und Speicherplatz prüfen.');
+                return false;
+            }
         }
 
         function getBudgets() {
@@ -615,7 +622,14 @@
         }
 
         function saveBudgets(budgets) {
-            localStorage.setItem('budgetbuch_budgets', JSON.stringify(budgets));
+            try {
+                localStorage.setItem('budgetbuch_budgets', JSON.stringify(budgets));
+                return true;
+            } catch (error) {
+                console.error('Speichern fehlgeschlagen:', error);
+                alert('Speichern fehlgeschlagen. Der Gerätespeicher ist möglicherweise voll oder blockiert. Bitte Daten sichern und Speicherplatz prüfen.');
+                return false;
+            }
         }
 
         function getSavingsGoals() {
@@ -628,7 +642,14 @@
         }
 
         function saveSavingsGoals(goals) {
-            localStorage.setItem('budgetbuch_goals', JSON.stringify(goals));
+            try {
+                localStorage.setItem('budgetbuch_goals', JSON.stringify(goals));
+                return true;
+            } catch (error) {
+                console.error('Speichern fehlgeschlagen:', error);
+                alert('Speichern fehlgeschlagen. Der Gerätespeicher ist möglicherweise voll oder blockiert. Bitte Daten sichern und Speicherplatz prüfen.');
+                return false;
+            }
         }
 
         function updateFormUI() {
@@ -813,7 +834,7 @@
                 const second = b && Number.isFinite(new Date(b.date).getTime()) ? new Date(b.date).getTime() : 0;
                 return second - first;
             });
-            saveData(data);
+            if (!saveData(data)) return;
 
             resetForm();
             renderApp();
@@ -897,7 +918,7 @@
         function deleteReceipt(id) {
             if (!confirm("⚠️ Diese Buchung wirklich löschen?")) return;
             let data = getData().filter(item => item.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             if (editingReceiptId === id) cancelEdit();
             renderApp();
         }
@@ -1185,7 +1206,7 @@
                 }
                 budgets[category] = amount;
             }
-            saveBudgets(budgets);
+            if (!saveBudgets(budgets)) return;
             closeBudgetModal();
             renderApp();
         }
@@ -1209,7 +1230,7 @@
 
             const goals = getSavingsGoals();
             goals.push({ id: Date.now(), title, target, current });
-            saveSavingsGoals(goals);
+            if (!saveSavingsGoals(goals)) return;
 
             document.getElementById('goalTitle').value = "";
             document.getElementById('goalTarget').value = "";
@@ -1226,14 +1247,14 @@
             if (amount > 0) {
                 const previous = Number(goal.current);
                 goal.current = (Number.isFinite(previous) ? previous : 0) + amount;
-                saveSavingsGoals(goals);
+                if (!saveSavingsGoals(goals)) return;
                 renderApp();
             }
         }
 
         function deleteSavingsGoal(id) {
             if (!confirm("Sparziel löschen?")) return;
-            saveSavingsGoals(getSavingsGoals().filter(g => g.id !== id));
+            if (!saveSavingsGoals(getSavingsGoals().filter(g => g && g.id !== id))) return;
             renderApp();
         }
 
