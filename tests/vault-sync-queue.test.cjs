@@ -392,6 +392,19 @@ test('Lesende Wiederherstellungsprobe erkennt aktiven Schluesselwechsel waehrend
   assert.doesNotMatch(source, /localStorage\.setItem/);
 });
 
+test('Cloud-Backup-Status erkennt Schluessel- und Revisionswechsel vor Erfolgsmeldung', () => {
+  const start = html.indexOf('async function checkSupabaseVaultBackup()');
+  const end = html.indexOf('async function ', start + 20);
+  const source = html.slice(start, end < 0 ? undefined : end);
+  assert.match(source, /const startingMasterKeyHex = currentMasterKeyHex/);
+  assert.match(source, /const startingRevision = localSaveRevision/);
+  const keyGuard = source.lastIndexOf('currentMasterKeyHex !== startingMasterKeyHex');
+  const revisionGuard = source.lastIndexOf('localSaveRevision !== startingRevision');
+  const success = source.indexOf('alert(configMatches');
+  assert.ok(keyGuard > 0 && revisionGuard > 0 && success > keyGuard && success > revisionGuard);
+  assert.doesNotMatch(source, /localStorage\.setItem/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
