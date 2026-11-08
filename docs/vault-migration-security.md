@@ -10,6 +10,10 @@ Produktiv geprueft: Supabase hat aktuell die Tabellen `user_data`, `wg_spaces` u
 
 **Umsetzungsreihenfolge:** (1) sicheren neuen, benutzergebundenen Cloud-Tresor mit Auth und serverseitiger Autorisierung implementieren; (2) lokale Verschluesselung und Wiederherstellung ohne Datenverlust sicherstellen; (3) vorhandene Tresore erst nach gesonderter Eigentuemerpruefung migrieren; (4) produktive Bereitstellung mit Sicherheitspruefungen, Monitoring und Rollback; (5) die Browseroberflaeche erst dann auf den neuen Speicherweg umstellen. Keine pauschale Freigabe alter Firebase-Regeln.
 
+## Fruehe Validierung der wiederhergestellten Kontakte
+
+Entschluesselte Cloud-Konfigurationen werden nun **vor** der abschliessenden Wiederherstellungsbestaetigung auf Pflichtfelder, Intervall und Zeitstempel sowie auf gueltige Kontaktobjekte geprueft. Die Namen der Kontaktobjekte muessen Strings mit begrenzter Laenge sein. Bei fehlerhaften Angaben wird der Vorgang abgebrochen, bevor der lokale Tresor geschrieben wird.
+
 ## Zusätzliche Konsistenz- und Formatkontrollen
 
 Vor der manuellen Supabase-Sicherung muss der aktive lokale AES-Schluessel exakt dem im gespeicherten Tresor hinterlegten Schluessel entsprechen. Bei der Cloud-Wiederherstellung werden entschluesselte Metadaten vor dem lokalen Schreiben auf Pflichtfelder, plausibles Check-in-Intervall, parsebaren Zeitstempel und Obergrenzen der Kontaktlisten geprueft. Ungueltige Konfiguration fuehrt zum Abbruch ohne Ueberschreiben lokaler Daten.
