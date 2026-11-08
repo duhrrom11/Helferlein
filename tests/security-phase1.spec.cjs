@@ -129,3 +129,35 @@ test('Legacy Nachlass vault remains readable and migration only after consent',a
  await page.getByRole('button',{name:'Tresor entsperren'}).click();
  await expect(page.locator('#vault-password-gate')).toHaveCount(0);
 });
+
+test('Malicious recipe HTML renders as inert text, not executable elements',async({page})=>{
+ await page.goto(root+'/tools/backform-umrechner/index.html',{waitUntil:'domcontentloaded'});
+ await page.locator('#recipe-name').fill('<img src=x onerror="window.__xssHit=true">');
+ await page.locator('#recipe-input').fill('250 g <img src=x onerror="window.__xssHit=true">');
+ await page.evaluate(()=>calculateRecipe());
+ const result=await page.evaluate(()=>{
+  const root=document.getElementById('recipe-output')||document.getElementById('recipe-result');
+  return {hit:window.__xssHit===true,html:root?.innerHTML||'',text:root?.textContent||''};
+ });
+ expect(result.hit).toBe(false);
+ expect(result.html).not.toContain('<img');
+ expect(result.text).toContain('<img');
+});
+test('Escaped QR onclick argument remains inert and preserves exact input',async({page})=>{
+ await page.goto(root+'/tools/umzugskisten-inventar/index.html',{waitUntil:'domcontentloaded'});
+ const result=await page.evaluate(()=>{
+  const payload='");window.__xssHit=true;//<img src=x onerror=alert(1)>';
+  window.__received=null;
+  window.__qrFixture=value=>{window.__received=value;};
+  const b=document.createElement('div');
+  b.innerHTML='<button onclick="window.__qrFixture('+HelferleinSafe.jsArg(payload)+')">Test</button>';
+  document.body.append(b);
+  b.querySelector('button').click();
+  const r={received:window.__received,hit:window.__xssHit===true,images:b.querySelectorAll('img').length};
+  b.remove();
+  return r;
+ });
+ expect(result.received).toBe('");window.__xssHit=true;//<img src=x onerror=alert(1)>');
+ expect(result.hit).toBe(false);
+ expect(result.images).toBe(0);
+});
