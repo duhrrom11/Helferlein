@@ -357,6 +357,20 @@
         </div>
     </div>
 
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        window.HelferleinCloudMigration.mount({
+          client: window.supabaseClient,
+          tool: 'zaehlerstaende-erfassen',
+          localKey: 'energie_tracker_pro_v8',
+          collection: 'readings',
+          refresh: () => window.location.reload()
+        });
+      });
+    </script>
     <!-- Skript Logik -->
     <script>
         // Supabase Konfiguration (exakt von der Hauptseite übernommen)
