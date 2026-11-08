@@ -6,6 +6,13 @@
     let enabledUser = null;
     let queue = Promise.resolve();
     const enabledKey = uid => 'helferlein_cloud_enabled_' + tool + '_' + uid;
+    const ownerKey = 'helferlein_cloud_owner_' + tool;
+    // The legacy application still reads one shared localStorage key.
+    // Fail closed when a different account is active; never upload its contents.
+    function assertOwner(uid) {
+      const owner = localStorage.getItem(ownerKey);
+      if (owner !== uid) throw new Error('Benutzerwechsel erkannt: lokaler Speicher ist nicht diesem Konto zugeordnet. Cloud-Sync gesperrt.');
+    }
     async function currentUser() {
       const { data, error } = await client.auth.getUser();
       if (error) throw error;
@@ -13,11 +20,16 @@
     }
     async function isEnabled() {
       const user = await currentUser();
-      return !!user && user.id === enabledUser && localStorage.getItem(enabledKey(user.id)) === 'true';
+      return !!user && user.id === enabledUser &&
+        localStorage.getItem(ownerKey) === user.id &&
+        localStorage.getItem(enabledKey(user.id)) === 'true';
     }
     async function enable() {
       const user = await currentUser();
       if (!user) throw new Error('Bitte zuerst anmelden');
+      const existingOwner = localStorage.getItem(ownerKey);
+      if (existingOwner && existingOwner !== user.id) throw new Error('Lokale Daten gehören zu einem anderen Konto; Übernahme gesperrt');
+      localStorage.setItem(ownerKey, user.id);
       enabledUser = user.id;
       localStorage.setItem(enabledKey(user.id), 'true');
     }
@@ -27,6 +39,8 @@
       queue = queue.catch(() => {}).then(async () => {
         if (!await isEnabled()) return;
         try {
+          const user = await currentUser();
+          assertOwner(user.id);
           const uploaded = await store.save(data);
           status.textContent = uploaded ? 'Lokal und in Supabase gespeichert' : 'Lokal gespeichert · Cloud-Synchronisierung ausstehend';
         } catch (error) {
@@ -96,6 +110,9 @@
       if (!navigator.onLine) throw new Error('Für die erste Übernahme ist Internet erforderlich');
       const local = localData();
       if (!local) throw new Error('Keine gültigen lokalen Daten vorhanden');
+      const owner = localStorage.getItem(ownerKey);
+      const user = await currentUser();
+      if (owner && owner !== user.id) throw new Error('Lokale Daten sind einem anderen Benutzer zugeordnet');
       if (await store.hasPending()) throw new Error('Zuerst ausstehende Synchronisierung klären');
       const cloud = await store.load();
       if (cloud.source !== 'cloud-empty') throw new Error('Cloud enthält Daten oder ist nicht eindeutig erreichbar; Übernahme blockiert');
@@ -108,6 +125,9 @@
       await authenticated();
       if (!navigator.onLine) throw new Error('Cloud-Laden erfordert Internet');
       if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten vorhanden; automatisches Überschreiben ist gesperrt');
+      const owner = localStorage.getItem(ownerKey);
+      const user = await currentUser();
+      if (owner && owner !== user.id) throw new Error('Lokaler Speicher gehört einem anderen Konto');
       if (await store.hasPending()) throw new Error('Ausstehende lokale Änderungen vorhanden');
       const result = await store.load();
       if (result.source !== 'cloud') throw new Error('Keine eindeutig abrufbaren Cloud-Daten');
@@ -126,7 +146,8 @@
       status.textContent = done ? 'Synchronisierung abgeschlossen' : 'Keine Übertragung möglich oder erforderlich';
     });
     void currentUser().then(user => {
-      if (user && localStorage.getItem(enabledKey(user.id)) === 'true') {
+      if (user && localStorage.getItem(ownerKey) === user.id &&
+          localStorage.getItem(enabledKey(user.id)) === 'true') {
         enabledUser = user.id;
         void resume();
       }
