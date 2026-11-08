@@ -836,11 +836,17 @@
                     return alert('Lokaler Tresor wurde geändert. Bitte erneut versuchen.');
                 }
                 const { data: remote, error: readError } = await supabaseClient
-                    .from('vault_cloud_snapshots').select('vault_id')
+                    .from('vault_cloud_snapshots').select('vault_id,encrypted_data')
                     .eq('owner_user_id', user.id).maybeSingle();
                 if (readError) throw readError;
                 if (!remote || remote.vault_id !== cfg.vaultId) {
                     return alert('Bitte zuerst diesen Tresor bei Supabase sichern. Andere Tresore werden nicht überschrieben.');
+                }
+                const encrypted = remote.encrypted_data || {};
+                if (!encrypted.iv || !encrypted.ciphertext ||
+                    encrypted.iv !== cfg.encryptedData.iv ||
+                    encrypted.ciphertext !== cfg.encryptedData.ciphertext) {
+                    return alert('Cloud- und lokaler Tresorstand stimmen nicht überein. Bitte zuerst die aktuelle verschlüsselte Sicherung hochladen.');
                 }
                 const salt = crypto.getRandomValues(new Uint8Array(16));
                 const iv = crypto.getRandomValues(new Uint8Array(12));
