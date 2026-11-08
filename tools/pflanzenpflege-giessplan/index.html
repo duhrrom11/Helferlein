@@ -510,10 +510,17 @@
         function openRoiModal() { calculateRoiValues(); document.getElementById('roiModal').classList.remove('hidden'); }
         function closeRoiModal() { document.getElementById('roiModal').classList.add('hidden'); }
         function calculateRoiValues() {
-            let expenses = parseFloat(document.getElementById('roiExpenses').value) || 0;
-            let pricePerKg = parseFloat(document.getElementById('roiPricePerKg').value) || 4.50;
+            const expensesInput = document.getElementById('roiExpenses').value.trim();
+            const priceInput = document.getElementById('roiPricePerKg').value.trim();
+            const expenses = expensesInput === '' ? 0 : Number(expensesInput);
+            const pricePerKg = priceInput === '' ? 4.50 : Number(priceInput);
+            if (!Number.isFinite(expenses) || expenses < 0 || !Number.isFinite(pricePerKg) || pricePerKg < 0) {
+                document.getElementById('roiProfitDisplay').innerText = 'Ungültige Eingabe';
+                document.getElementById('roiDetailsText').innerText = 'Bitte gültige, nichtnegative Beträge eingeben.';
+                return;
+            }
             let data = getData();
-            let totalGrams = data.totalHarvestGrams || 0;
+            const totalGrams = Number(data.totalHarvestGrams) || 0;
             let totalKg = totalGrams / 1000;
             let harvestValue = totalKg * pricePerKg;
             let profit = harvestValue - expenses;
