@@ -838,7 +838,7 @@
             if (typeof text !== 'string') return null;
             const lines = text.split(/\r?\n/);
             const amountPattern = /(?:^|\s)(?:€|EUR)?\s*(\d{1,6}(?:[.,]\d{3})*[.,]\d{2}|\d{1,6}[.,]\d{2})\s*(?:€|EUR)?\s*$/i;
-            const totalLabel = /\b(?:gesamt(?:betrag)?|summe|total|zu zahlen|endbetrag)\b/i;
+            const totalLabel = /\b(?:gesamt(?:betrag|summe)?|summe|total|zu zahlen|zahlbetrag|endbetrag|rechnungsbetrag)\b/i;
             for (let i = lines.length - 1; i >= 0; i--) {
                 if (!totalLabel.test(lines[i])) continue;
                 const candidates = [lines[i]];
