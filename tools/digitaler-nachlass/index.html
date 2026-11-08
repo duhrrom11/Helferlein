@@ -1117,6 +1117,23 @@
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Der lokale Tresor wurde inzwischen geändert. Bitte erneut sichern.');
                 }
+                // Do not upload a configuration that a later recovery would reject.
+                if (typeof cfg.ownerName !== 'string' ||
+                    typeof cfg.ownerEmail !== 'string' ||
+                    !Number.isInteger(cfg.checkInIntervalDays) ||
+                    cfg.checkInIntervalDays < 1 || cfg.checkInIntervalDays > 3650 ||
+                    typeof cfg.lastCheckIn !== 'string' ||
+                    !Number.isFinite(Date.parse(cfg.lastCheckIn)) ||
+                    !Array.isArray(cfg.trustees) || cfg.trustees.length > 100 ||
+                    !Array.isArray(cfg.alarmPersons) || cfg.alarmPersons.length > 100 ||
+                    !cfg.trustees.every(person =>
+                        person && typeof person === 'object' && !Array.isArray(person) &&
+                        typeof person.name === 'string' && person.name.length <= 500) ||
+                    !cfg.alarmPersons.every(person =>
+                        person && typeof person === 'object' && !Array.isArray(person) &&
+                        typeof person.name === 'string' && person.name.length <= 500)) {
+                    return alert('Lokale Kontakte oder Check-in-Einstellungen sind unvollständig oder ungültig. Keine Cloud-Sicherung erstellt.');
+                }
                 // Protect all non-key local configuration with the same vault key.
                 const configPayload = {
                     ownerName: cfg.ownerName, ownerEmail: cfg.ownerEmail,
