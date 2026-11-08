@@ -982,8 +982,8 @@
             let sessionError = null;
             try {
                 const result = await supabaseClient.auth.getUser();
-                user = result.data?.user ?? null;
                 sessionError = result.error;
+                user = sessionError ? null : (result.data?.user ?? null);
             } catch (error) {
                 sessionError = error;
             }
