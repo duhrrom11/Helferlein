@@ -99,6 +99,12 @@ async function main() {
   const issues=await api('GET',base+'/issues?state=open&per_page=100');
   let issue=issues.find(i=>!i.pull_request && i.title===issueTitle && i.body?.includes(marker));
   let state=issue ? decodeState(issue.body) : null;
+  // Never overwrite an existing checkpoint when its format is unexpected.
+  // A reset would silently lose the handoff between night runs.
+  if (issue && (!state || !Number.isSafeInteger(state.cursor) ||
+      state.cursor < 0 || !Array.isArray(state.history))) {
+    throw new Error('Invalid night checkpoint in issue #' + issue.number + '; manual review required');
+  }
   if (!state) state={version:1,day:localDay,cursor:0,history:[],lastReportDay:null};
   if (!issue) issue=await api('POST',base+'/issues',{title:issueTitle,body:encodeState(state)});
   if (hour===6 && !manual) {
