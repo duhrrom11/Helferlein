@@ -19,7 +19,7 @@
 3. **Name:** `OPENAI_API_KEY`; **Value:** der neue geheime API-Key.
 4. Den Key niemals in Commit, Issue, Chat, Logs oder Workflow-Dateien eintragen. API-Nutzung kann Kosten verursachen; ein Budget/Usage-Limit beim API-Anbieter setzen.
 
-**Optional:** Das Modell ist derzeit im Workflow als `gpt-6-luna` festgelegt. Vor produktiver Verwendung die Berechtigung und Verfügbarkeit dieses Modells im API-Projekt prüfen. Die Modellwahl kann später in der Workflow-Datei angepasst werden.
+**Optional:** Das Modell ist derzeit im Workflow als `gpt-5-mini` festgelegt. Vor produktiver Verwendung die Berechtigung und Verfügbarkeit dieses Modells im API-Projekt prüfen. Die Modellwahl kann später in der Workflow-Datei angepasst werden.
 
 ## Freigaben
 
