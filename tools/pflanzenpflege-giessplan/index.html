@@ -889,8 +889,8 @@
                 if (!Array.isArray(p.waterHistory)) p.waterHistory = [];
                 if (p.lastWatered === todayStr || p.waterHistory.includes(todayStr)) return;
                 p.lastWatered = todayStr;
-                p.waterHistory.unshift(todayStr);
-                if(p.waterHistory.length > 5) p.waterHistory.pop();
+                p.waterHistory = [todayStr, ...p.waterHistory.filter(date => typeof date === 'string' &&
+                    isValidCalendarDate(date) && date !== todayStr)].slice(0, 5);
                 const ml = getMlForPot(p.potSize);
                 const usedLiters = ml / 1000;
                 const monthlyTotal = Number(data.monthWaterLiters);
