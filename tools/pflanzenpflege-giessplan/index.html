@@ -378,7 +378,7 @@
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
-        window.HelferleinCloudMigration.mount({
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
           client: supabaseClient,
           tool: 'pflanzenpflege-giessplan',
           localKey: 'pflanzen_pass_v10',
@@ -801,6 +801,9 @@
                     }
                 }
                 localStorage.setItem('pflanzen_pass_v10', JSON.stringify(data));
+                if (window.helferleinCloudBridge) {
+                    void window.helferleinCloudBridge.changed(data);
+                }
                 return true;
             } catch (error) {
                 console.error('Pflanzendaten konnten nicht gespeichert werden:', error);
