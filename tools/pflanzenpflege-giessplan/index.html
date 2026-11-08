@@ -901,6 +901,7 @@
             let overdueCount = 0;
             let totalWaterTodayMl = 0;
             const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
             let filteredPlants = data.plants;
             if (locFilter !== "") filteredPlants = filteredPlants.filter(p => p.location === locFilter);
@@ -909,11 +910,12 @@
                 container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Keine Pflanzen erfasst.</p>`;
             } else {
                 container.innerHTML = filteredPlants.map(p => {
-                    const lastWater = new Date(p.lastWatered);
+                    const lastWater = new Date(p.lastWatered + 'T00:00:00');
                     const nextWater = new Date(lastWater);
-                    nextWater.setDate(lastWater.getDate() + (Math.max(1, Number(p.interval) || 7)));
+                    nextWater.setDate(lastWater.getDate() + Math.max(1, Number(p.interval) || 7));
                     const diffWater = Number.isFinite(nextWater.getTime())
-                        ? Math.ceil((nextWater - today) / (1000 * 60 * 60 * 24)) : 0;
+                        ? Math.round((Date.UTC(nextWater.getFullYear(), nextWater.getMonth(), nextWater.getDate()) -
+                            Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000) : 0;
                     if (diffWater <= 0) totalWaterTodayMl += getMlForPot(p.potSize);
 
                     let badge = diffWater < 0 ? `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig (${Math.abs(diffWater)}T)</span>` :
