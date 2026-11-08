@@ -98,6 +98,20 @@ test('Cloud-Wiederherstellungsprobe entschluesselt nur lesend', () => {
   assert.doesNotMatch(source, /localStorage\.setItem|\.insert\(|\.update\(|\.upsert\(|\.delete\(/);
 });
 
+test('Cloud-Wiederherstellung verlangt Passwort und schuetzt vorhandene Eintraege', () => {
+  const start = html.indexOf('async function restoreVaultFromSupabase()');
+  const end = html.indexOf('// Opt-in: wrap only the random vault key', start);
+  assert.ok(start >= 0 && end > start);
+  const source = html.slice(start, end);
+  assert.match(source, /currentDecryptedVault\.entries\.length !== 0/);
+  assert.match(source, /localStorage\.getItem\('digital_estate_vault'\) !== localSnapshot/);
+  assert.match(source, /decryptVaultPayload\(remote\.encrypted_data, hexKey\)/);
+  assert.match(source, /crypto\.subtle\.decrypt/);
+  assert.match(source, /requestCloudRecoveryPassword/);
+  assert.match(html, /input\.type = 'password'/);
+  assert.match(html, /input\.value = ''/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
