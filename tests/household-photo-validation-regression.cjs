@@ -89,7 +89,7 @@ const canvas = {
 const filterContext = vm.createContext({
     rawImage: {width: 400, height: 8000},
     currentUploadedPhotos: ['original'],
-    safeReceiptPhoto: value => typeof value === 'string' && /^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(value),
+    safeReceiptPhoto: value => typeof value === 'string' && value.startsWith('data:image/jpeg;base64,') && value.length > 'data:image/jpeg;base64,'.length,
     document: {getElementById: id => id === 'photoCanvas' ? canvas : {value: '0'}}
 });
 vm.runInContext(html.slice(filterStart, filterEnd), filterContext);
