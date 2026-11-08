@@ -578,6 +578,7 @@
             if(!data.seeds) data.seeds = [];
             let currentYear = new Date().getFullYear();
             document.getElementById('seedList').innerHTML = data.seeds.map((s, idx) => {
+                if (!s || typeof s !== 'object' || Array.isArray(s)) return '';
                 const parsedYear = Number(s.year);
                 const validYear = Number.isInteger(parsedYear) && parsedYear >= 1900 && parsedYear <= currentYear + 1;
                 const age = validYear ? currentYear - parsedYear : null;
@@ -638,6 +639,7 @@
             let data = getData();
             if(!data.inventory) data.inventory = [];
             document.getElementById('inventoryList').innerHTML = data.inventory.map((item, idx) => {
+                if (!item || typeof item !== 'object' || Array.isArray(item)) return '';
                 let amazonUrl = `https://www.amazon.de/s?k=${encodeURIComponent(item.name)}&tag=duhrrom-21`;
                 return `
                     <div class="p-2.5 bg-gray-50 border rounded-xl flex justify-between items-center text-xs">
@@ -969,14 +971,15 @@
             const container = document.getElementById('plantsList');
             const locFilter = document.getElementById('filterLocation').value;
 
-            let totalCount = data.plants.length;
+            const validPlants = data.plants.filter(p => p && typeof p === 'object' && !Array.isArray(p));
+            let totalCount = validPlants.length;
             let dueSoonCount = 0;
             let overdueCount = 0;
             let totalWaterTodayMl = 0;
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            let filteredPlants = data.plants;
+            let filteredPlants = validPlants;
             if (locFilter !== "") filteredPlants = filteredPlants.filter(p => p.location === locFilter);
 
             if (filteredPlants.length === 0) {
