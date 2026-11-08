@@ -965,6 +965,8 @@
             const { data: authData, error: authError } = await supabaseClient.auth.getUser();
             const user = authData?.user;
             if (authError || !user) return alert('Bitte zuerst bei Supabase anmelden.');
+            const localSnapshot = localStorage.getItem('digital_estate_vault');
+            const startingRevision = localSaveRevision;
             const button = document.getElementById('supabaseRestorePreviewBtn');
             if (button) button.disabled = true;
             try {
@@ -976,6 +978,9 @@
                 const local = getVaultConfig();
                 if (!local || local.vaultId !== remote.vault_id) {
                     return alert('Cloud-Tresor und lokaler Tresor haben unterschiedliche IDs. Keine Wiederherstellung versucht.');
+                }
+                if (local.masterKeyHex !== currentMasterKeyHex) {
+                    return alert('Der lokale Tresorschlüssel stimmt nicht mit dem aktiven Schlüssel überein. Keine Daten verändert.');
                 }
                 const decrypted = await decryptVaultPayload(remote.encrypted_data, currentMasterKeyHex);
                 if (!decrypted || !Array.isArray(decrypted.entries)) {
@@ -990,6 +995,11 @@
                     configStatus = 'Verschlüsselte Einstellungen erfolgreich entschlüsselt: ' +
                         config.trustees.length + ' Vertrauenspersonen und ' +
                         config.alarmPersons.length + ' Alarmkontakte.';
+                }
+                if (localStorage.getItem('digital_estate_vault') !== localSnapshot ||
+                    localSaveRevision !== startingRevision ||
+                    lastPersistedRevision !== localSaveRevision) {
+                    return alert('Der lokale Tresor wurde während der Wiederherstellungsprüfung geändert. Bitte erneut prüfen.');
                 }
                 const date = remote.updated_at ? new Date(remote.updated_at).toLocaleString('de-DE') : 'unbekannt';
                 alert('Cloud-Sicherung vom ' + date + ' erfolgreich mit dem lokalen Schlüssel entschlüsselt. Enthaltene Einträge: ' +
