@@ -1,0 +1,19 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+
+const html = fs.readFileSync('tools/haushaltsbuch-kassenbon/index.html', 'utf8');
+const start = html.indexOf('function validateHaushaltsbuchBackup(parsed)');
+const end = html.indexOf('function importBackup(event)', start);
+assert.ok(start !== -1 && end > start, 'Household backup validator exists');
+const context = vm.createContext({});
+vm.runInContext(html.slice(start, end), context);
+const validate = input => vm.runInContext('validateHaushaltsbuchBackup(' + JSON.stringify(input) + ')', context);
+assert.equal(validate([{ title: 'Brot' }]).length, 1, 'Historical array backup');
+assert.equal(validate({ data: [{ title: 'Brot' }], budgets: { Essen: 100 }, goals: [] }).length, 3);
+assert.throws(() => validate({ flatmates: [], data: [] }), /kein Haushaltsbuch-Backup/);
+assert.throws(() => validate({ data: ['bad'] }), /Ungültige Einträge/);
+assert.throws(() => validate({ goals: [null] }), /Ungültige Einträge/);
+assert.throws(() => validate({ budgets: [] }), /Ungültiger Backup-Bereich/);
+assert.throws(() => validate({ foo: 1 }), /Unbekanntes Backup-Format/);
+console.log('Household backup validation regression checks passed');
