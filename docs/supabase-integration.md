@@ -166,3 +166,24 @@ Pending-Puffer. Ohne Unique-Constraint auf `(user_id, tool)` bleibt aber
 weiterhin ein Rennen möglich, bei dem beide Inserts erfolgreich sind.
 Eine produktive Schemaänderung wird erst nach expliziter Genehmigung und
 Prüfung bestehender Duplikate durchgeführt.
+
+
+## Weitere Sicherheitsarbeiten (November 2026)
+
+- Die sieben angebundenen Werkzeuge verweigern lokale Schreibzugriffe, wenn
+  bereits eine Kontozuordnung besteht, aber die Cloud-Brücke nicht geladen ist.
+- In Umzugskisten, Autokosten, Haustierpass, Verleih und Parkplatzverlauf
+  wurden 30 Aufrufstellen so geändert, dass nach fehlgeschlagenem Speichern
+  keine nachfolgenden UI-Aktionen als Erfolg ausgeführt werden.
+- Die Kontobrücke lässt bei bereits zugeordneten Konten lokale Schreibzugriffe
+  erst nach abgeschlossener Kontoverifikation zu; Auth-Ereignisse entziehen
+  diese Freigabe sofort bis zur erneuten Prüfung.
+- Der Cloud-Adapter übernimmt die neue Serverrevision erst beim finalen
+  Acknowledgement; ein nicht bestätigter Schreibvorgang soll den lokalen
+  Revisionsstand nicht voreilig erhöhen.
+
+**Wichtig:** Dies ist kein abgeschlossener Livegang. Für die Benutzertrennung
+sind weiterhin benutzerbezogene Legacy-Speicherschlüssel erforderlich.
+Die vier noch nicht vollständig integrierten Werkzeuge brauchen eigene
+Datenmodelle; insbesondere dürfen verschlüsselte Tresordaten nicht ohne
+abgenommenes Schlüsselkonzept übertragen werden.
