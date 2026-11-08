@@ -532,18 +532,18 @@
             let data = getData();
             if (data.tarifs) {
                 if (data.tarifs.Strom) {
-                    document.getElementById('tariffStromPriceHT').value = data.tarifs.Strom.priceHT || '';
-                    document.getElementById('tariffStromPriceNT').value = data.tarifs.Strom.priceNT || '';
-                    document.getElementById('tariffStromAbschlag').value = data.tarifs.Strom.abschlag || '';
+                    document.getElementById('tariffStromPriceHT').value = data.tarifs.Strom.priceHT ?? '';
+                    document.getElementById('tariffStromPriceNT').value = data.tarifs.Strom.priceNT ?? '';
+                    document.getElementById('tariffStromAbschlag').value = data.tarifs.Strom.abschlag ?? '';
                 }
                 if (data.tarifs.Wasser) {
-                    document.getElementById('tariffWasserPrice').value = data.tarifs.Wasser.price || '';
-                    document.getElementById('tariffWasserAbschlag').value = data.tarifs.Wasser.abschlag || '';
+                    document.getElementById('tariffWasserPrice').value = data.tarifs.Wasser.price ?? '';
+                    document.getElementById('tariffWasserAbschlag').value = data.tarifs.Wasser.abschlag ?? '';
                 }
                 if (data.tarifs.Gas) {
-                    document.getElementById('tariffGasPrice').value = data.tarifs.Gas.price || '';
-                    document.getElementById('tariffGasAbschlag').value = data.tarifs.Gas.abschlag || '';
-                    document.getElementById('tariffGasCalib').value = data.tarifs.Gas.calib || '11.2';
+                    document.getElementById('tariffGasPrice').value = data.tarifs.Gas.price ?? '';
+                    document.getElementById('tariffGasAbschlag').value = data.tarifs.Gas.abschlag ?? '';
+                    document.getElementById('tariffGasCalib').value = data.tarifs.Gas.calib ?? '11.2';
                 }
             }
         }
