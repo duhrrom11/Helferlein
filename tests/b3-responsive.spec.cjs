@@ -103,7 +103,7 @@ test('B3 dark mode keeps representative text, buttons and fields high contrast',
   await expect(page.locator('body')).toHaveClass(/b3-dark/);
   const values=await page.evaluate(()=>{
     function lum(rgb){
-      const m=rgb.match(/rgba?\\((\\d+),\\s*(\\d+),\\s*(\\d+)/);
+      const m=rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
       if(!m)throw new Error('Unexpected CSS color: '+rgb);
       const cs=m.slice(1,4).map(Number).map(n=>{
         const v=n/255;return v<=.04045?v/12.92:Math.pow((v+.055)/1.055,2.4);
