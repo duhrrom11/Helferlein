@@ -691,6 +691,57 @@
                 : 'Cloud-Synchronisierung nicht bestätigt (' + new Date().toLocaleString('de-DE') + '). Die Cloud kann fehlen oder einen älteren Stand enthalten. Bitte erneut synchronisieren und eine verschlüsselte lokale Sicherung erstellen.';
         }
 
+        function requestCloudRecoveryPassword(message) {
+            return new Promise(resolve => {
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px';
+                const form = document.createElement('form');
+                form.setAttribute('role', 'dialog');
+                form.setAttribute('aria-modal', 'true');
+                form.style.cssText = 'background:#0f172a;color:#fff;padding:24px;border:1px solid #475569;border-radius:16px;width:min(100%,440px)';
+                const label = document.createElement('label');
+                label.textContent = message;
+                label.style.cssText = 'display:block;margin-bottom:12px;font-size:14px';
+                const input = document.createElement('input');
+                input.type = 'password';
+                input.autocomplete = 'new-password';
+                input.required = true;
+                input.style.cssText = 'width:100%;padding:10px;color:#111;background:#fff;border-radius:6px';
+                label.appendChild(input);
+                const buttons = document.createElement('div');
+                buttons.style.cssText = 'display:flex;gap:12px;margin-top:16px';
+                const cancel = document.createElement('button');
+                cancel.type = 'button';
+                cancel.textContent = 'Abbrechen';
+                const submit = document.createElement('button');
+                submit.type = 'submit';
+                submit.textContent = 'Bestätigen';
+                for (const button of [cancel, submit]) {
+                    button.style.cssText = 'padding:10px;border-radius:6px;background:#334155;color:white';
+                    buttons.appendChild(button);
+                }
+                form.append(label, buttons);
+                overlay.appendChild(form);
+                document.body.appendChild(overlay);
+                const previousFocus = document.activeElement;
+                const finish = value => {
+                    input.value = '';
+                    overlay.remove();
+                    if (previousFocus && previousFocus.focus) previousFocus.focus();
+                    resolve(value);
+                };
+                cancel.addEventListener('click', () => finish(null));
+                form.addEventListener('submit', event => {
+                    event.preventDefault();
+                    finish(input.value);
+                });
+                overlay.addEventListener('keydown', event => {
+                    if (event.key === 'Escape') { event.preventDefault(); finish(null); }
+                });
+                input.focus();
+            });
+        }
+
         // Recovery is intentionally limited to a fresh, empty local vault.
         // Never replace a vault containing entries or with a pending local save.
         async function restoreVaultFromSupabase() {
@@ -707,7 +758,7 @@
                 return alert('Wiederherstellung nur bei leerem lokalen Tresor möglich. Bestehende Daten bleiben geschützt.');
             }
             if (!confirm('Der leere lokale Tresor wird durch die Cloud-Sicherung ersetzt. Vorher eine verschlüsselte lokale Sicherungsdatei erstellen. Fortfahren?')) return;
-            const password = prompt('Cloud-Wiederherstellungspasswort eingeben (nicht das Supabase-Anmeldepasswort):');
+            const password = await requestCloudRecoveryPassword('Cloud-Wiederherstellungspasswort eingeben (nicht das Supabase-Anmeldepasswort):');
             if (!password) return;
             const button = document.getElementById('supabaseRestoreBtn');
             if (button) button.disabled = true;
@@ -762,10 +813,10 @@
             const { data: authData, error: authError } = await supabaseClient.auth.getUser();
             const user = authData?.user;
             if (authError || !user) return alert('Bitte zuerst bei Supabase anmelden.');
-            const password = prompt('Ein eigenes, langes Cloud-Wiederherstellungspasswort festlegen (mindestens 16 Zeichen). Dieses Passwort ist NICHT dein Supabase-Anmeldepasswort. Ohne dieses Passwort ist eine Cloud-Wiederherstellung nicht möglich.');
+            const password = await requestCloudRecoveryPassword('Ein eigenes Cloud-Wiederherstellungspasswort festlegen (mindestens 16 Zeichen). Nicht das Supabase-Anmeldepasswort verwenden.');
             if (password === null) return;
             if (password.length < 16) return alert('Mindestens 16 Zeichen erforderlich.');
-            const confirmation = prompt('Cloud-Wiederherstellungspasswort erneut eingeben.');
+            const confirmation = await requestCloudRecoveryPassword('Cloud-Wiederherstellungspasswort erneut eingeben.');
             if (confirmation !== password) return alert('Die Passwörter stimmen nicht überein. Nichts wurde hochgeladen.');
             if (!confirm('Den lokalen Tresorschlüssel mit dem Wiederherstellungspasswort verschlüsseln und nur die verschlüsselte Schlüsselhülle im eigenen Supabase-Konto speichern? Das Passwort sicher getrennt aufbewahren.')) return;
             const button = document.getElementById('supabaseRecoveryKeyBtn');
