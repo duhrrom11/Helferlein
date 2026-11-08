@@ -123,5 +123,6 @@ test('B3 dark mode keeps representative text, buttons and fields high contrast',
       return {name,ratio:contrast(getComputedStyle(f).color,getComputedStyle(b).backgroundColor)};
     });
   });
+  console.log('B3_CONTRAST',JSON.stringify(values));
   for(const v of values)expect(v.ratio,v.name+' contrast ratio').toBeGreaterThanOrEqual(4.5);
 });
