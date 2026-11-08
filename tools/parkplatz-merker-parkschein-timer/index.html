@@ -463,7 +463,7 @@
                 photo,
                 date: now.toLocaleDateString('de-DE') + ' ' + now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})
             });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('parkDesc').value = "";
             document.getElementById('parkSector').value = "";
@@ -477,7 +477,7 @@
             if (!confirm("Möchtest du diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.sessions = data.sessions.filter(s => s.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderParkingList();
         }
 
