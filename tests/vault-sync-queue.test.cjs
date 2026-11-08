@@ -126,7 +126,7 @@ test('Wiederherstellung warnt nach erfolgreicher Entschluesselung vor fehlenden 
   const start = html.indexOf('async function restoreVaultFromSupabase()');
   const end = html.indexOf('// Opt-in: wrap only the random vault key', start);
   const source = html.slice(start, end);
-  assert.match(source, /Die lokalen Tresor-Einstellungen/);
+  assert.match(source, /Für diese ältere Sicherung fehlen Cloud-Einstellungen/);
   assert.match(source, /Kontakte, Alarmregeln und Check-in/);
   assert.ok(source.indexOf('Tresor erfolgreich entschlüsselt') < source.indexOf('localStorage.setItem'));
 });
@@ -140,6 +140,20 @@ test('Cloud-Restore mischt keine fremden Kontakt- oder Alarmdaten bei', () => {
   assert.match(source, /alarmPersons: \[\]/);
   assert.doesNotMatch(source, /const restored = \{ \.\.\.local/);
   assert.match(source, /rawKey\.fill\(0\)/);
+});
+
+test('Cloud-Backup verschluesselt Konfiguration und Restore prueft sie', () => {
+  const backupStart = html.indexOf('async function backupVaultToSupabase()');
+  const backupEnd = html.indexOf('function syncVaultToFirebase(', backupStart);
+  const backup = html.slice(backupStart, backupEnd);
+  assert.match(backup, /encryptVaultPayload\(configPayload, currentMasterKeyHex\)/);
+  assert.match(backup, /encrypted_config: encryptedConfig/);
+  const restoreStart = html.indexOf('async function restoreVaultFromSupabase()');
+  const restoreEnd = html.indexOf('// Opt-in: wrap only the random vault key', restoreStart);
+  const restore = html.slice(restoreStart, restoreEnd);
+  assert.match(restore, /decryptVaultPayload\(remote\.encrypted_config, hexKey\)/);
+  assert.match(restore, /restored\.trustees = recoveredConfig\.trustees/);
+  assert.match(restore, /restored\.alarmPersons = recoveredConfig\.alarmPersons/);
 });
 
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
