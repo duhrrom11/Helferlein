@@ -377,14 +377,19 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) { console.warn('Cloud-Synchronisierung nicht geladen'); return; }
+        if (window.helferleinCloudBridge) return;
         window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
           client: supabaseClient,
           tool: 'pflanzenpflege-giessplan',
           localKey: 'pflanzen_pass_v10',
           collection: 'plants',
-          refresh: () => window.location.reload()
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
         });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        }, { once: true });
       });
     </script>
     <!-- Script Logik -->
@@ -771,12 +776,13 @@
             try {
                 const stored = JSON.parse(localStorage.getItem('pflanzen_pass_v10'));
                 if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return defaults;
+                if (!Array.isArray(stored.plants)) { console.warn('Ungültige Pflanzensammlung im lokalen Speicher'); return defaults; }
                 return {
                     ...defaults,
                     ...stored,
-                    plants: Array.isArray(stored.plants) ? stored.plants : [],
-                    inventory: Array.isArray(stored.inventory) ? stored.inventory : defaults.inventory,
-                    seeds: Array.isArray(stored.seeds) ? stored.seeds : [],
+                    plants: stored.plants.filter(item => item && typeof item === 'object' && !Array.isArray(item)),
+                    inventory: Array.isArray(stored.inventory) ? stored.inventory.filter(item => item && typeof item === 'object') : defaults.inventory,
+                    seeds: Array.isArray(stored.seeds) ? stored.seeds.filter(item => item && typeof item === 'object') : [],
                     // Preserve extra legacy slots rather than silently deleting saved assignments.
                     beetSlots: Array.isArray(stored.beetSlots)
                         ? [...stored.beetSlots, ...Array(Math.max(0, 16 - stored.beetSlots.length)).fill(null)]
@@ -790,6 +796,7 @@
 
         function saveData(data) {
             try {
+                if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.plants)) throw new Error('Ungültige Pflanzendaten');
                 // Never overwrite an unreadable existing backup with empty defaults.
                 const existing = localStorage.getItem('pflanzen_pass_v10');
                 if (existing !== null) {
@@ -800,9 +807,11 @@
                         return false;
                     }
                 }
-                localStorage.setItem('pflanzen_pass_v10', JSON.stringify(data));
+                const serialized = JSON.stringify(data);
+                if (!serialized) throw new Error('Pflanzendaten nicht serialisierbar');
+                localStorage.setItem('pflanzen_pass_v10', serialized);
                 if (window.helferleinCloudBridge) {
-                    void window.helferleinCloudBridge.changed(data);
+                    void window.helferleinCloudBridge.changed(data).catch(error => console.error('Cloud-Übernahme ausstehend:', error));
                 }
                 return true;
             } catch (error) {
