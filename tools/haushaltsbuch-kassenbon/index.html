@@ -793,7 +793,7 @@
 
         function editReceipt(id) {
             const data = getData();
-            const r = data.find(item => item.id === id);
+            const r = data.find(item => item && item.id === id);
             if (!r) return;
 
             editingReceiptId = id;
@@ -815,7 +815,7 @@
             const radio = document.querySelector(`input[name="entryType"][value="${r.entryType || 'ausgabe'}"]`);
             if (radio) radio.checked = true;
 
-            const photos = r.photos || [];
+            const photos = Array.isArray(r.photos) ? r.photos.filter(src => safeReceiptPhoto(src)) : [];
             currentUploadedPhotos = [...photos];
             const previewContainer = document.getElementById('uploadGalleryPreview');
             previewContainer.innerHTML = "";
