@@ -442,6 +442,17 @@ test('Wiederherstellungsschluessel meldet Aenderungen waehrend des Cloud-Schreib
   assert.match(source.slice(saved, success), /localSaveRevision !== startingRevision/);
 });
 
+test('Aeltere Cloud-Sicherung meldet Gleichstand erst nach Entschluesselungspruefung', () => {
+  const start = html.indexOf('async function checkSupabaseVaultBackup()');
+  const end = html.indexOf('async function ', start + 20);
+  const source = html.slice(start, end < 0 ? undefined : end);
+  const key = source.indexOf('local.masterKeyHex !== currentMasterKeyHex');
+  const decrypt = source.indexOf('const verifiedCloudEntries = await decryptVaultPayload');
+  const legacy = source.indexOf('if (!remote.encrypted_config)');
+  assert.ok(key > 0 && decrypt > key && legacy > decrypt);
+  assert.match(source.slice(legacy), /entschlüsselbar und stimmt überein/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
