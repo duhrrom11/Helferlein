@@ -239,6 +239,17 @@ test('Passwort-Wiederherstellung loescht temporaere Masterkey-Bytes nach Verschl
   assert.match(source, /finally \{\s*rawMasterKey\.fill\(0\)/);
 });
 
+test('Cloud-Backup schuetzt vorhandenen Passwort-Recovery-Key bei Schluesselwechsel', () => {
+  const start = html.indexOf('async function backupVaultToSupabase()');
+  const end = html.indexOf('async function prepareSupabaseRecoveryKey()', start);
+  const source = html.slice(start, end);
+  assert.match(source, /select\('vault_id,encrypted_data,recovery_key'\)/);
+  assert.match(source, /if \(existing && existing\.recovery_key\)/);
+  assert.match(source, /decryptVaultPayload\(existing\.encrypted_data, currentMasterKeyHex\)/);
+  assert.ok(source.indexOf('if (existing && existing.recovery_key)') <
+    source.indexOf(".update({ encrypted_data:"));
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
