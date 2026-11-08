@@ -954,6 +954,14 @@
         }
 
         async function supabaseLogout() {
+            // Never discard unsaved shared-WG edits by signing out and clearing the cache.
+            if (isSecureWgId(wgBinId)) {
+                await secureWgSaving;
+                if (secureWgDirty) {
+                    alert('Abmeldung angehalten: WG-Änderungen sind noch nicht in der Cloud gespeichert. Bitte synchronisieren oder die Daten zuerst sichern.');
+                    return;
+                }
+            }
             const { error } = await supabaseClient.auth.signOut();
             if (error) return alert('Abmeldung fehlgeschlagen: ' + error.message);
             if (isSecureWgId(wgBinId)) {
