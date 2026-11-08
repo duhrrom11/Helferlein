@@ -752,10 +752,23 @@
             const localSnapshot = localStorage.getItem('digital_estate_vault');
             let local;
             try { local = localSnapshot ? JSON.parse(localSnapshot) : null; } catch {}
+            // An empty entries array does not mean the local vault is disposable:
+            // contacts and check-in settings may already contain real data.
+            const defaultTrustees = [
+                { id: 1, name: 'Person 1', role: 'Partner/in' },
+                { id: 2, name: 'Person 2', role: 'Kind' },
+                { id: 3, name: 'Notar', role: 'Rechtsbeistand' }
+            ];
+            const pristineMetadata = local &&
+                local.ownerName === 'Dein Name' && local.ownerEmail === '' &&
+                local.checkInIntervalDays === 30 &&
+                Array.isArray(local.alarmPersons) && local.alarmPersons.length === 0 &&
+                (JSON.stringify(local.trustees) === JSON.stringify(defaultTrustees) ||
+                    JSON.stringify(local.trustees) === '[]');
             if (!local || !currentDecryptedVault || !Array.isArray(currentDecryptedVault.entries) ||
-                currentDecryptedVault.entries.length !== 0 ||
+                currentDecryptedVault.entries.length !== 0 || !pristineMetadata ||
                 lastPersistedRevision !== localSaveRevision) {
-                return alert('Wiederherstellung nur bei leerem lokalen Tresor möglich. Bestehende Daten bleiben geschützt.');
+                return alert('Wiederherstellung nur bei einem neuen, unveränderten lokalen Tresor möglich. Bestehende Einträge, Kontakte und Einstellungen bleiben geschützt.');
             }
             if (!confirm('Der leere lokale Tresor wird durch die Cloud-Sicherung ersetzt. Vorher eine verschlüsselte lokale Sicherungsdatei erstellen. Fortfahren?')) return;
             const password = await requestCloudRecoveryPassword('Cloud-Wiederherstellungspasswort eingeben (nicht das Supabase-Anmeldepasswort):');
