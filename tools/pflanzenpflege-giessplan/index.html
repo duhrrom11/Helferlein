@@ -1011,6 +1011,22 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
+            // Dashboard totals cover every valid plant, regardless of the active room filter.
+            validPlants.forEach(p => {
+                if (!isValidCalendarDate(p.lastWatered)) return;
+                const last = new Date(p.lastWatered + 'T00:00:00');
+                const rawInterval = Number(p.interval);
+                const days = Number.isFinite(rawInterval) && rawInterval > 0 ? Math.max(1, Math.floor(rawInterval)) : 7;
+                const due = new Date(last);
+                due.setDate(last.getDate() + days);
+                if (!Number.isFinite(due.getTime())) return;
+                const difference = Math.round((Date.UTC(due.getFullYear(), due.getMonth(), due.getDate()) -
+                    Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
+                if (difference < 0) overdueCount++;
+                if (difference >= 0 && difference <= 2) dueSoonCount++;
+                if (difference <= 0) totalWaterTodayMl += getMlForPot(p.potSize);
+            });
+
             let filteredPlants = validPlants;
             if (locFilter !== "") filteredPlants = filteredPlants.filter(p =>
                 typeof p.location === 'string' && p.location.trim() === locFilter);
@@ -1028,12 +1044,6 @@
                     const diffWater = Number.isFinite(nextWater.getTime())
                         ? Math.round((Date.UTC(nextWater.getFullYear(), nextWater.getMonth(), nextWater.getDate()) -
                             Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000) : null;
-                    if (diffWater !== null) {
-                        if (diffWater < 0) overdueCount++;
-                        if (diffWater >= 0 && diffWater <= 2) dueSoonCount++;
-                        if (diffWater <= 0) totalWaterTodayMl += getMlForPot(p.potSize);
-                    }
-
                     let badge = diffWater === null
                         ? '<span class="text-[10px] bg-gray-100 text-gray-700 font-semibold px-2 py-0.5 rounded-full">⚠️ Gießdatum prüfen</span>'
                         : diffWater < 0 ? `<span class="text-[10px] bg-red-100 text-red-800 font-semibold px-2 py-0.5 rounded-full">🔴 Überfällig (${Math.abs(diffWater)}T)</span>` :
