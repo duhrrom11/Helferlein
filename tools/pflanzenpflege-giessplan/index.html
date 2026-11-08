@@ -696,7 +696,7 @@
             let data = getData();
             const filterLoc = document.getElementById('filterLocation');
             const locations = [...new Set(data.plants.map(p => p.location).filter(Boolean))];
-            filterLoc.innerHTML = '<option value="">Alle Standorte / Räume</option>' + locations.map(loc => `<option value="${HelferleinSafe.html(loc)}">${loc}</option>`).join('');
+            filterLoc.innerHTML = '<option value="">Alle Standorte / Räume</option>' + locations.map(loc => `<option value="${HelferleinSafe.html(loc)}">${HelferleinSafe.html(loc)}</option>`).join('');
         }
 
         function savePlant() {
@@ -870,19 +870,19 @@
 
                     let propBadge = "";
                     if(p.propagation && p.propagation !== 'Standard') {
-                        propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${p.propagation} ${p.propDate ? '('+p.propDate+')' : ''}</span>`;
+                        propBadge = `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">✂️ ${HelferleinSafe.html(p.propagation)} ${p.propDate ? '('+HelferleinSafe.html(p.propDate)+')' : ''}</span>`;
                     }
 
                     let harvestSum = p.harvestLog ? p.harvestLog.reduce((acc, h) => acc + h.grams, 0) : 0;
                     let harvestBadge = harvestSum > 0 ? `<span class="text-[10px] bg-purple-100 text-purple-800 font-semibold px-2 py-0.5 rounded-full">🍅 ${harvestSum >= 1000 ? (harvestSum/1000).toFixed(1)+'kg' : harvestSum+'g'}</span>` : '';
 
                     let diaryHtml = p.diary && p.diary.length > 0 ? `<div class="mt-2 bg-amber-50 border p-2 rounded-xl text-[11px] text-amber-900 space-y-1"><span class="font-bold">📖 Tagebuch:</span>` + 
-                        p.diary.map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${d.date}:</span> ${HelferleinSafe.html(d.text)}</div>`).join('') + `</div>` : '';
+                        p.diary.map(d => `<div class="text-[10px] text-gray-600"><span class="font-semibold">${HelferleinSafe.html(d.date)}:</span> ${HelferleinSafe.html(d.text)}</div>`).join('') + `</div>` : '';
 
                     return `
                         <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                             <div class="flex items-center space-x-3">
-                                ${p.photo ? `<img src="${HelferleinSafe.photo(p.photo)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="openGalleryModal(${p.id})">` : `<div onclick="openGalleryModal(${p.id})" class="w-12 h-12 bg-lime-100 text-lime-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer">📸</div>`}
+                                ${p.photo ? `<img src="${HelferleinSafe.photo(p.photo)}" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer" onclick="openGalleryModal(${HelferleinSafe.numericId(p.id)})">` : `<div onclick="openGalleryModal(${HelferleinSafe.numericId(p.id)})" class="w-12 h-12 bg-lime-100 text-lime-700 rounded-xl flex items-center justify-center font-bold text-xs cursor-pointer">📸</div>`}
                                 <div>
                                     <div class="flex items-center space-x-2 flex-wrap gap-1">
                                         <span class="text-xs font-bold text-gray-800">${HelferleinSafe.html(p.name)}</span>
@@ -900,13 +900,13 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 self-end md:self-center flex-wrap">
-                                <button onclick="waterPlant(${p.id})" class="px-3 py-1.5 bg-lime-600 hover:bg-lime-700 text-white rounded-xl text-xs font-semibold">💧 Gießen</button>
-                                <button onclick="openHarvestModal(${p.id})" class="px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-xs font-semibold" title="Ernte">🍅</button>
-                                <button onclick="openGalleryModal(${p.id})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-semibold" title="Galerie">📸</button>
-                                <button onclick="openDiaryModal(${p.id})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold" title="Tagebuch">📖</button>
+                                <button onclick="waterPlant(${HelferleinSafe.numericId(p.id)})" class="px-3 py-1.5 bg-lime-600 hover:bg-lime-700 text-white rounded-xl text-xs font-semibold">💧 Gießen</button>
+                                <button onclick="openHarvestModal(${HelferleinSafe.numericId(p.id)})" class="px-2.5 py-1.5 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-xs font-semibold" title="Ernte">🍅</button>
+                                <button onclick="openGalleryModal(${HelferleinSafe.numericId(p.id)})" class="px-2.5 py-1.5 bg-sky-50 text-sky-700 hover:bg-sky-100 rounded-xl text-xs font-semibold" title="Galerie">📸</button>
+                                <button onclick="openDiaryModal(${HelferleinSafe.numericId(p.id)})" class="px-2.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-xs font-semibold" title="Tagebuch">📖</button>
                                 <button onclick="showQrCode(${HelferleinSafe.jsArg(p.name)}, ${HelferleinSafe.jsArg(p.species)}, ${HelferleinSafe.jsArg(p.location)}, ${Number(p.interval) || 0})" class="px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-xs font-semibold" title="QR-Code">📱</button>
-                                <button onclick="openEditModal(${p.id})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
-                                <button onclick="deletePlant(${p.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
+                                <button onclick="openEditModal(${HelferleinSafe.numericId(p.id)})" class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-xs font-semibold" title="Bearbeiten">✏️</button>
+                                <button onclick="deletePlant(${HelferleinSafe.numericId(p.id)})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕</button>
                             </div>
                         </div>
                     `;
