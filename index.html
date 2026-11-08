@@ -753,6 +753,19 @@
                     if (!backup.tools[prefix]) backup.tools[prefix] = [];
                     backup.tools[prefix].push(key);
                 }
+                // Inform users about Helferlein data outside the supported backup allowlist.
+                // Never export unknown keys, authentication data or session secrets.
+                const skippedAppKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (!key || isHelferleinBackupKey(key) || isAuthSessionStorageKey(key)) continue;
+                    if (/^(?:wg_|bk_|kassenbon|budgetbuch|mini_homebox|digital_estate|kfz_|haustier_|park_|verleih_|pflanzen_|energie_|helperly_|hub_)/i.test(key)) {
+                        skippedAppKeys.push(key);
+                    }
+                }
+                if (skippedAppKeys.length) {
+                    alert("Hinweis: " + skippedAppKeys.length + " möglicherweise zu Helferlein gehörende lokale Datenspeicher werden von dieser Sicherung nicht erfasst. Bitte die jeweiligen Werkzeuge zusätzlich prüfen. Es werden keine unbekannten oder sicherheitskritischen Schlüssel automatisch übernommen.");
+                }
                 if (Object.keys(backup.localStorage).length === 0) { alert("Keine Daten zum Sichern vorhanden."); return; }
                 const containsVault = Object.prototype.hasOwnProperty.call(backup.localStorage, "digital_estate_vault");
                 const encrypted = arguments.length > 0 && arguments[0] === true;
@@ -816,6 +829,7 @@
             reader.onload = async function(e) {
                 try {
                     let backup = JSON.parse(e.target.result);
+                    const encryptedImport = backup?.app === "Helferlein" && backup?.format === "encrypted-backup-v1";
                     if (backup?.app === "Helferlein" && backup?.format === "encrypted-backup-v1") {
                         if (!crypto?.subtle || backup.kdf !== "PBKDF2-SHA256" ||
                             backup.cipher !== "AES-256-GCM" || backup.iterations !== 600000) {
@@ -860,7 +874,7 @@
                     const existing = supported.filter(([key]) => localStorage.getItem(key) !== null).length;
                     const containsVault = supported.some(([key]) => key === "digital_estate_vault");
                     const vaultWarning = containsVault
-                        ? " WARNUNG: Das Backup enthält Nachlass-Tresordaten. Diese können Schlüsselmaterial enthalten und sind nicht als sicher verschlüsselte Sicherung zu behandeln."
+                        ? (encryptedImport ? " Das Backup enthält Nachlass-Tresordaten. Nach der Wiederherstellung liegen diese wieder im lokalen Browser-Speicher." : " WARNUNG: Das unverschlüsselte Backup enthält Nachlass-Tresordaten und möglicherweise Schlüsselmaterial.")
                         : "";
                     const ignoredMessage = rejected.length
                         ? " " + rejected.length + " unbekannte oder sicherheitskritische Einträge werden aus Sicherheitsgründen NICHT importiert."
