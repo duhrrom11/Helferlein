@@ -64,31 +64,48 @@
     </style>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="assets/helferlein-b3-startseite.css">
+    <script defer src="assets/helferlein-b3-startseite.js"></script>
 </head>
-<body class="bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
+<body class="b3-home bg-gray-100 text-gray-900 min-h-full flex flex-col transition-colors duration-300">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
 
-    <!-- Header / Navbar -->
-    <header class="bg-white/95 backdrop-blur-md shadow-lg py-4 px-4 border-b border-gray-200 sticky top-0 z-40 transition-colors duration-300">
-        <div class="max-w-3xl mx-auto text-center">
-            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-600 via-teal-600 to-sky-600 bg-clip-text text-transparent inline-flex items-center justify-center gap-2">
-                ✨ Kostenlose Online-Tools & clevere Rechner ✨
-            </h1>
-            <p class="text-xs md:text-sm text-gray-500 mt-1">Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – ohne Anmeldung nutzbar, mit optionalem Konto.</p>
-        </div>
+    <!-- B3 Helferlein Hub: redesigned header and discoverability, same tools and storage -->
+<header class="b3-hub-header">
+ <div class="b3-hub-topbar">
+  <a class="b3-hub-logo" href="index.html" aria-label="Helferlein Startseite"><span class="b3-hub-logo-mark" aria-hidden="true">✳</span> Helferlein</a>
+  <nav class="b3-hub-nav" aria-label="Hauptnavigation">
+   <a href="#toolsGrid">Alle Tools</a>
+   <a href="#favoritesSection">⭐ Favoriten</a>
+   <span id="userInfo" class="b3-hub-account" role="status" aria-live="polite">Nicht angemeldet</span>
+   <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Einstellungen öffnen">⚙ Einstellungen</button>
+  </nav>
+ </div>
+ <div class="b3-hub-hero">
+  <div>
+   <span class="b3-hero-eyebrow">✦ Dein digitaler Werkzeugkasten</span>
+   <h1>Mehr Alltag.<br><span>Weniger Aufwand.</span></h1>
+   <p>Elf praktische Helfer für Finanzen, Zuhause, Organisation und unterwegs. Kostenlos im Browser – die meisten Funktionen auch ohne Konto.</p>
+   <div class="b3-hero-actions">
+    <a class="b3-hero-primary" href="#toolDiscovery">🔍 Tools entdecken</a>
+    <a class="b3-hero-secondary" href="#favoritesSection">⭐ Meine Favoriten</a>
+   </div>
+   <p class="b3-hero-status">✓ 11 kostenlose Web-Apps &nbsp;·&nbsp; ✓ Ohne Installation</p>
+  </div>
+  <aside class="b3-hero-preview" aria-label="Beliebte Helferlein-Tools">
+   <div class="b3-preview-heading">Schnellstart</div>
+   <div class="b3-preview-list">
+    <a href="tools/haushaltsbuch-kassenbon/index.html"><span class="b3-preview-icon">🧾</span> Haushaltsbuch</a>
+    <a href="tools/pflanzenpflege-giessplan/index.html"><span class="b3-preview-icon">🌿</span> Pflanzenpflege</a>
+    <a href="tools/backform-umrechner/index.html"><span class="b3-preview-icon">🍰</span> Backform-Umrechner</a>
+   </div>
+   <p style="margin-top:.9rem;font-size:.75rem;color:#e7f8f4">Lieblingstools mit einem Klick öffnen.</p>
+  </aside>
+ </div>
+</header>
 
-        <div class="mt-4 max-w-xl mx-auto px-4 flex items-center justify-center gap-2">
-            <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" class="px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl cursor-pointer">
-                ⚙️ Einstellungen
-            </button>
-            <div id="userInfo" role="status" aria-live="polite" class="text-xs text-gray-500 font-semibold">
-                Nicht angemeldet
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
+<!-- Main Content -->
+    <main id="main-content" tabindex="-1" class="b3-hub-main flex-grow container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
 
         <!-- Favoriten-Sektion -->
         <div id="favoritesSection" class="hidden space-y-3">
@@ -96,21 +113,31 @@
             <div id="favoritesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <!-- Hauptgrid Header mit Suchleiste -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center pt-2 gap-3">
-            <h2 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Alle 11 kostenlosen Online-Tools im Überblick</h2>
-            <div class="w-full md:w-80">
-                <input type="search" id="searchBox" inputmode="search" autocomplete="off" aria-label="Alltagstools durchsuchen" oninput="filterTools()" placeholder="🔍 Werkzeug suchen..." class="w-full px-4 py-2 rounded-xl text-xs bg-white text-gray-900 placeholder-gray-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-sky-500 border border-gray-300 transition-colors">
-            </div>
-        </div>
+        <!-- B3 Kategorie- und Suchbereich: rein lokale Filterung der vorhandenen Karten -->
+<section class="b3-discovery" id="toolDiscovery" aria-label="Werkzeugfinder">
+ <div class="b3-discovery-top">
+  <div><h2 class="b3-section-heading">Finde dein Helferlein</h2>
+    <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">11 von 11 Tools</p></div>
+  <div class="b3-search-wrap"><span class="b3-search-icon" aria-hidden="true">⌕</span>
+   <input type="search" id="searchBox" inputmode="search" autocomplete="off" aria-label="Alltagstools durchsuchen" oninput="filterTools()" placeholder="Tool oder Aufgabe suchen…">
+  </div>
+ </div>
+ <div class="b3-categories" role="group" aria-label="Tool-Kategorien">
+  <button type="button" class="b3-filter" data-b3-category-filter="alle" aria-pressed="true">Alle 11</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="finanzen" aria-pressed="false">💶 Finanzen</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="zuhause" aria-pressed="false">🏡 Zuhause</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="organisation" aria-pressed="false">📋 Organisation</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="unterwegs" aria-pressed="false">🚗 Unterwegs</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="tiere" aria-pressed="false">🐾 Tiere</button>
+ </div>
+</section>
+<p id="searchEmptyState" class="hidden text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-4" role="status" aria-live="polite">Keine passenden Tools gefunden. Bitte Suche oder Kategorie ändern.</p>
 
-        <p id="searchEmptyState" class="hidden text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-4" role="status" aria-live="polite">Keine passenden Werkzeuge gefunden. Bitte einen anderen Suchbegriff eingeben.</p>
-
-        <!-- Tools Grid (Alle 11 Tools) -->
+<!-- Tools Grid (Alle 11 Tools) -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
             <!-- Tool 1 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-name="haushaltsbuch ausgaben budget kassenbon scanner belege garantie rechner">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-category="finanzen" data-name="haushaltsbuch ausgaben budget kassenbon scanner belege garantie rechner">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-200 shadow-inner" aria-hidden="true">🧾</div>
@@ -130,7 +157,7 @@
             </div>
 
             <!-- Tool 2 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-name="umzugskisten app inventarliste inventar kisten qr code umzug lager">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kisten" data-category="zuhause" data-name="umzugskisten app inventarliste inventar kisten qr code umzug lager">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-200 shadow-inner" aria-hidden="true">📦</div>
@@ -150,7 +177,7 @@
             </div>
 
             <!-- Tool 3 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-name="wg organisator wg ausgaben aufteilen wg haushaltsbuch putzplan kalender">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wg-kasse" data-category="finanzen" data-name="wg organisator wg ausgaben aufteilen wg haushaltsbuch putzplan kalender">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-200 shadow-inner" aria-hidden="true">💶</div>
@@ -170,7 +197,7 @@
             </div>
 
             <!-- Tool 4 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-name="digitaler nachlass nachlassverwalter dokumente vorsorge sicherheitsprüfung">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="notizen" data-category="organisation" data-name="digitaler nachlass nachlassverwalter dokumente vorsorge sicherheitsprüfung">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl font-bold border border-purple-200 shadow-inner" aria-hidden="true">🔐</div>
@@ -190,7 +217,7 @@
             </div>
 
             <!-- Tool 5 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-name="autokosten rechner tankbuch reifenwechsel tüv fahrzeugkosten wartung">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kfz" data-category="unterwegs" data-name="autokosten rechner tankbuch reifenwechsel tüv fahrzeugkosten wartung">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl font-bold border border-red-200 shadow-inner" aria-hidden="true">🚗</div>
@@ -210,7 +237,7 @@
             </div>
 
             <!-- Tool 6 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-name="impfpass hund impfpass katze haustier gesundheitspass tierarzt impfungen">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="haustier" data-category="tiere" data-name="impfpass hund impfpass katze haustier gesundheitspass tierarzt impfungen">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 shadow-inner" aria-hidden="true">🐾</div>
@@ -230,7 +257,7 @@
             </div>
 
             <!-- Tool 7 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-name="parkplatz merken parkschein timer parkzeit gps auto wiederfinden">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="parken" data-category="unterwegs" data-name="parkplatz merken parkschein timer parkzeit gps auto wiederfinden">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-200 shadow-inner" aria-hidden="true">🅿️</div>
@@ -250,7 +277,7 @@
             </div>
 
             <!-- Tool 8 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-name="verliehene gegenstände verwalten werkzeug verleihen leihgaben kaution">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="verleih" data-category="organisation" data-name="verliehene gegenstände verwalten werkzeug verleihen leihgaben kaution">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-200 shadow-inner" aria-hidden="true">🤝</div>
@@ -270,7 +297,7 @@
             </div>
 
             <!-- Tool 9 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-name="pflanzenpflege app gießplan pflanzen gießen erinnerung düngeplan">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="pflanzen" data-category="zuhause" data-name="pflanzenpflege app gießplan pflanzen gießen erinnerung düngeplan">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-lime-50 text-lime-600 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-200 shadow-inner" aria-hidden="true">🌱</div>
@@ -290,7 +317,7 @@
             </div>
 
             <!-- Tool 10 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-name="zählerstände erfassen stromzähler wasserzähler gaszähler verbrauch kosten">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="energie" data-category="finanzen" data-name="zählerstände erfassen stromzähler wasserzähler gaszähler verbrauch kosten">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-200 shadow-inner" aria-hidden="true">⚡</div>
@@ -310,7 +337,7 @@
             </div>
 
             <!-- Tool 11 -->
-            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="backform" data-name="backform umrechnen backform rechner rezeptrechner zutaten teigmenge backzeit">
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="backform" data-category="zuhause" data-name="backform umrechnen backform rechner rezeptrechner zutaten teigmenge backzeit">
                 <div>
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-12 h-12 bg-pink-50 text-pink-600 rounded-xl flex items-center justify-center text-xl font-bold border border-pink-200 shadow-inner" aria-hidden="true">🍰</div>
@@ -333,7 +360,7 @@
     </main>
 
     <!-- FAQ-Sektion -->
-    <section class="container mx-auto px-4 max-w-7xl mt-8 pt-8 border-t border-gray-200">
+    <section class="b3-faq container mx-auto px-4 max-w-7xl mt-8 pt-8 border-t border-gray-200">
         <h2 class="text-lg font-bold text-gray-800 mb-4">Häufig gestellte Fragen (FAQ)</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600">
             <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-1">
@@ -355,21 +382,8 @@
         </div>
     </section>
 
-    <!-- KO-FI SEKTION VOR DEM FOOTER -->
-    <section class="container mx-auto px-4 max-w-7xl mt-8 pt-6 border-t border-gray-200">
-        <div class="bg-gradient-to-r from-amber-50 to-amber-100/50 border border-amber-200 rounded-2xl p-6 md:p-8 text-center shadow-sm">
-            <h3 class="text-lg font-bold text-gray-900 mb-2">Dir gefallen diese kostenlosen Tools? ☕</h3>
-            <p class="text-sm text-gray-600 max-w-2xl mx-auto mb-5">
-                Helferlein bleibt zu 100% kostenlos, kostenlos. Je nach Tool können externe Dienste eingebunden sein. Wenn dir die Web-Apps den Alltag erleichtern, freue ich mich riesig über einen virtuellen Kaffee!
-            </p>
-            <a href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-6 py-3 rounded-xl text-sm shadow-md transition-all hover:scale-105">
-                <span class="text-lg">☕</span> Auf Ko-fi unterstützen
-            </a>
-        </div>
-    </section>
-
     <!-- Footer -->
-    <footer class="mt-8 py-8 border-t border-gray-200 bg-white">
+    <footer class="b3-footer mt-8 py-8 border-t border-gray-200 bg-white">
         <div class="container mx-auto px-4 max-w-7xl text-center space-y-3">
             <h2 class="text-sm font-bold text-gray-800">Über Helferlein</h2>
             <p class="text-xs text-gray-500 leading-relaxed max-w-2xl mx-auto">
@@ -436,17 +450,22 @@
                 </div>
             </div>
 
-            <!-- KO-FI BUTTON IN DEN EINSTELLUNGEN -->
-            <div class="border-t border-gray-200 pt-4">
-                <label class="block text-xs font-semibold text-gray-600 mb-2">☕ Projekt unterstützen</label>
-                <a href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md transition-all">
-                    <span class="text-sm">☕</span> Kaffee spendieren
-                </a>
-            </div>
-
             <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
                 <button type="button" id="cancelSettingsBtn" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-xs font-semibold rounded-xl text-gray-700 cursor-pointer">Schließen</button>
             </div>
+<section class="b3-hub-settings" aria-label="Darstellung">
+ <h3>🎨 Darstellung</h3>
+ <label for="b3-hub-theme">Designmodus
+  <select id="b3-hub-theme" aria-label="Globaler Designmodus">
+   <option value="auto">Automatisch</option><option value="light">Hell</option><option value="dark">Dunkel</option>
+  </select>
+ </label>
+ <p>Deine Designauswahl gilt auch für die elf B3-Tools. Favoriten, Cloud-Konto und Backups bleiben davon unberührt.</p>
+</section>
+<div class="b3-hub-settings-footer">
+ <a href="https://ko-fi.com/duhrrom" rel="noopener noreferrer" target="_blank">☕ Kaffee spendieren</a>
+ <a href="#toolDiscovery" onclick="closeSettings()">↗ Entdecke mehr Helferlein</a>
+</div>
         </div>
     </div>
 
@@ -639,7 +658,9 @@
             document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
                 const name = card.getAttribute('data-name') || '', text = card.innerText.toLocaleLowerCase("de");
                 // Search only tool metadata, never private browser storage.
-                const visible = name.toLocaleLowerCase("de").includes(query) || text.includes(query);
+                const category = document.querySelector('[data-b3-category-filter][aria-pressed="true"]')?.getAttribute('data-b3-category-filter') || 'alle';
+                const categoryMatches = category === 'alle' || card.getAttribute('data-category') === category;
+                const visible = categoryMatches && (name.toLocaleLowerCase("de").includes(query) || text.includes(query));
                 card.style.display = visible ? "flex" : "none";
                 if (visible) matches++;
             });
