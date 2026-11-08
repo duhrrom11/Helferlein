@@ -43,4 +43,22 @@ assert.equal(ctx.currentUploadedPhotos[0], 'existing-photo');
 assert.equal(ctx.photoReadFailed, false);
 assert.equal(gallery.innerHTML, 'original');
 assert.match(alerts[alerts.length - 1], /maximal 4 MB/);
+let pendingImage;
+ctx.FileReader = class {
+    readAsDataURL() { this.onload({target: {result: 'data:image/png;base64,AAAA'}}); }
+};
+ctx.Image = class {
+    set src(value) { pendingImage = this; }
+};
+ctx.safeReceiptPhoto = () => true;
+gallery.children = [];
+gallery.insertBefore = () => {};
+gallery.classList.remove = () => {};
+ctx.document.getElementById = () => gallery;
+ctx.document.createElement = () => ({dataset: {}});
+ctx.loadPhotosToCanvas({target: {files: [{type: 'image/png', size: 100}], value: 'selected'}});
+assert.equal(ctx.pendingPhotoReads, 1, 'first image must finish decoding before save');
+pendingImage.onerror();
+assert.equal(ctx.pendingPhotoReads, 0);
+assert.equal(ctx.photoReadFailed, true, 'image decode failure blocks save');
 console.log('Receipt photo format regression checks passed');
