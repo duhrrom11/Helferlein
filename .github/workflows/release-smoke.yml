@@ -17,3 +17,4 @@ jobs:
           node-version: '22'
       - run: node scripts/release-smoke.cjs
       - run: node tests/wg-cache-regression.cjs
+      - run: node tests/household-csv-regression.cjs
