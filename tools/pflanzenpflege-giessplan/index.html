@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <!-- Fail closed before legacy scripts can paint account-owned local data. -->
+    <style>html.helferlein-account-check body{visibility:hidden!important}</style>
+    <script>
+      try {
+        if (localStorage.getItem('helferlein_cloud_owner_pflanzenpflege-giessplan')) {
+          document.documentElement.classList.add('helferlein-account-check');
+        }
+      } catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pflanzenpflege-App mit Gießplan | Helferlein</title>
