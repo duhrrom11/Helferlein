@@ -4,7 +4,7 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 
 ## Automatische Tests
 - `node --check amazon-wishlist/app.mjs`
-- `node --test amazon-wishlist/amazon-links.test.mjs`
+- `node --test amazon-wishlist/*.test.mjs`
 - GitHub Actions: Workflow `.github/workflows/amazon-wishlist.yml`; erfolgreichen Lauf vor Merge prüfen.
 
 ## Manuelle Browserprüfung (mit eigenen echten Konten, ohne Testdaten in der Produktivdatenbank)
@@ -16,6 +16,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 6. Ungültige URLs, fremde Domains, fehlerhafte ASINs und leere Titel müssen abgewiesen werden.
 7. Affiliate-Link muss `https://www.amazon.de/dp/ASIN?tag=duhrrom-21` verwenden.
 8. Mobile Ansicht, Tastaturbedienung, Fehleranzeigen, Pagination und langsame Netzwerke prüfen.
+10. Öffentliche Profilansicht über `?profile=handle` öffnen, Profil aus Suche auswählen, Profil-Link kopieren und fremde Wünsche korrekt anzeigen. Profilwechsel und Feed-Filter auf allen Seiten prüfen.
+11. Wunschbearbeitung: Notiz/Priorität ändern, Titel/ASIN unverändert lassen, Bearbeitung abbrechen und gerade bearbeiteten Wunsch löschen.
 9. Supabase Auth: E-Mail-Bestätigung, erlaubte Redirect-URLs, Missbrauchsschutz und Rate Limits prüfen.
 
 ## Offene Produktanforderungen vor öffentlichem Launch
@@ -23,3 +25,9 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Schutz gegen automatisierte Masseneinträge; RLS verhindert fremde Schreibzugriffe, ersetzt aber kein Rate Limiting.
 - Produktmetadaten nur aus erlaubter Quelle; aktuell manuelle Titel ohne Preise oder Bilder.
 - Veröffentlichung nur nach Review und bestätigtem CI-/Browser-Test; kein automatischer Merge.
+
+## Übergabe für weitere Entwicklungsläufe
+- Feature-Branch: `feature/amazon-wishlist-foundation`; PR #166 bleibt Draft. Aktuelle Änderungen über GitHub-Commit-Historie prüfen, nicht nur über Chatverläufe.
+- Neu: Öffentliche Profil-Wunschansicht mit `?profile=<handle>`, Suchergebnis-Aktion »Wünsche ansehen«, Profil-Link kopieren; nur bestehende RLS-lesbare Daten.
+- Wichtig: GitHub Actions `Amazon wishlist checks`, `Browser launch smoke` und weitere Workflows nach jedem Commit auf Abschluss und Erfolg prüfen; ein laufender Workflow ist kein bestandener Test.
+- Vor Launch zusätzlich Profile-Link-Fehlerfälle, Browser- und RLS-Tests prüfen. Keine Testdatensätze in Produktiv-Supabase erstellen.
