@@ -706,7 +706,12 @@
                 if (!local || local.vaultId !== remote.vault_id) {
                     return alert('Supabase-Sicherung vom ' + date + ' vorhanden, aber sie gehört zu einer anderen Tresor-ID. Es wurde nichts geändert.');
                 }
-                const matches = JSON.stringify(local.encryptedData) === JSON.stringify(remote.encrypted_data);
+                // PostgreSQL jsonb may reorder object keys; compare canonical fields.
+                const localEncrypted = local.encryptedData || {};
+                const remoteEncrypted = remote.encrypted_data || {};
+                const matches = ['iv', 'ciphertext'].every(key =>
+                    typeof localEncrypted[key] === 'string' &&
+                    localEncrypted[key] === remoteEncrypted[key]);
                 alert(matches
                     ? 'Supabase-Sicherung vom ' + date + ' entspricht dem lokal gespeicherten verschlüsselten Tresorstand. Dies ist keine Wiederherstellungsprüfung.'
                     : 'Supabase-Sicherung vom ' + date + ' weicht vom lokalen Tresorstand ab. Bitte lokale Änderungen prüfen und bei Bedarf erneut sichern.');
