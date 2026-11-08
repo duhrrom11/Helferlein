@@ -503,7 +503,7 @@
                     vet: { name: vetName, tel: vetTel, email: vetEmail, address: vetAddress },
                     tasso, photo: photoData, passport: passportData 
                 });
-                saveData(data);
+                if (!saveData(data)) return;
 
                 document.getElementById('petName').value = "";
                 document.getElementById('petSpecies').value = "";
@@ -577,7 +577,7 @@
             let data = getData();
             data.pets = data.pets.filter(p => p.id !== id);
             data.events = data.events.filter(e => e.petId !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             loadPetDropdowns();
             renderApp();
         }
@@ -590,7 +590,7 @@
             let data = getData();
             if (!data.meds) data.meds = [];
             data.meds.push({ id: Date.now(), name, stock: stock || '1 Packung' });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('medName').value = "";
             document.getElementById('medStock').value = "";
@@ -600,7 +600,7 @@
         function deleteMedication(id) {
             let data = getData();
             data.meds = data.meds.filter(m => m.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderApp();
         }
 
@@ -628,7 +628,7 @@
         function storeEventData(petId, type, date, title, cost, weight, expiryDate, receipt) {
             let data = getData();
             data.events.push({ id: Date.now(), petId, type, date, title, cost, weight, expiryDate, receipt });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('eventDate').value = "";
             document.getElementById('eventTitle').value = "";
@@ -643,7 +643,7 @@
             if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.events = data.events.filter(e => e.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderApp();
         }
 
