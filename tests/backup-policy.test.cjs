@@ -211,4 +211,7 @@ assert.match(html, /if \(!confirm\(/, 'Import must require user confirmation');
 assert.match(html, /if \(containsVault && !encrypted\)/, 'Vault backup must never export as plaintext');
 assert.match(html, /requestBackupPassword\("Neues Backup-Passwort/, 'Encryption must use masked password entry');
 assert.match(html, /plaintext\.byteLength > 20 \* 1024 \* 1024/, 'Decrypted backup must be size-bounded');
+assert.match(html, /entries\.length > 500/, 'Reject excessive restore entries');
+assert.match(html, /new Date\(backup\.created\)\.toLocaleString/, 'Show backup date before overwrite');
+assert.match(html, /Die Sicherung könnte unvollständig sein/, 'Warn before incomplete backup export');
 console.log('Backup policy OK: ' + cases.length + ' key cases and 15 integration checks');
