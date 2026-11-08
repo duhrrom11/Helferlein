@@ -634,13 +634,20 @@
             if (input === null) return;
             input = input.trim();
             if (!input) return;
-            if(input.toLowerCase() === 'leer') data.beetSlots[slotIndex] = null;
-            else {
-                let found = data.plants.find(p => p && typeof p === 'object' &&
-                    (String(p.id) === input.trim() || (typeof p.name === 'string' && p.name.toLowerCase().includes(input.toLowerCase()))));
-                if(found) data.beetSlots[slotIndex] = found.id;
-                else return alert("Nicht gefunden.");
+            let nextPlantId = null;
+            if (input.toLowerCase() !== 'leer') {
+                const candidates = data.plants.filter(p => p && typeof p === 'object' &&
+                    Number.isSafeInteger(p.id) && p.id >= 0);
+                const exactId = candidates.find(p => String(p.id) === input);
+                const matchingNames = candidates.filter(p => typeof p.name === 'string' &&
+                    p.name.toLowerCase().includes(input.toLowerCase()));
+                if (exactId) nextPlantId = exactId.id;
+                else if (matchingNames.length === 1) nextPlantId = matchingNames[0].id;
+                else if (matchingNames.length > 1) return alert('Mehrere Pflanzen gefunden. Bitte die eindeutige Pflanzen-ID eingeben.');
+                else return alert('Nicht gefunden.');
             }
+            if (data.beetSlots[slotIndex] === nextPlantId) return;
+            data.beetSlots[slotIndex] = nextPlantId;
             if (saveData(data)) renderBeetGrid();
         }
 
