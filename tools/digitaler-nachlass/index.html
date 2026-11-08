@@ -911,6 +911,8 @@
             const button = document.getElementById('supabaseRecoveryKeyBtn');
             if (button) button.disabled = true;
             try {
+                const startingMasterKeyHex = currentMasterKeyHex;
+                const startingRevision = localSaveRevision;
                 const snapshot = localStorage.getItem('digital_estate_vault');
                 const cfg = snapshot ? JSON.parse(snapshot) : null;
                 if (!cfg || !/^[a-f0-9]{64}$/i.test(currentMasterKeyHex || '') ||
@@ -937,6 +939,8 @@
                     return alert('Der lokale Tresorinhalt lässt sich mit dem aktuellen Schlüssel nicht entschlüsseln. Kein Wiederherstellungsschlüssel gespeichert.');
                 }
                 if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Tresor während der Entschlüsselungsprüfung geändert. Bitte erneut versuchen.');
                 }
@@ -947,7 +951,7 @@
                 const wrappingKey = await crypto.subtle.deriveKey({
                     name: 'PBKDF2', salt, iterations: 600000, hash: 'SHA-256'
                 }, baseKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
-                const rawMasterKey = Uint8Array.from(currentMasterKeyHex.match(/.{2}/g),
+                const rawMasterKey = Uint8Array.from(startingMasterKeyHex.match(/.{2}/g),
                     byte => parseInt(byte, 16));
                 let wrapped;
                 try {
@@ -959,6 +963,8 @@
                 const recovery = { version: 1, kdf: 'PBKDF2-SHA256', iterations: 600000,
                     salt: b64(salt), iv: b64(iv), ciphertext: b64(wrapped) };
                 if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Tresor während der Vorbereitung geändert. Bitte erneut versuchen.');
                 }
