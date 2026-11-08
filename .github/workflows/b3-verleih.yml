@@ -1,0 +1,36 @@
+name: B3 Verleih pilot
+on:
+  pull_request:
+    paths:
+      - 'assets/helferlein-b3*'
+      - 'tools/verliehene-gegenstaende-verwalten/index.html'
+      - 'tests/b3-verleih*'
+      - '.github/workflows/b3-verleih.yml'
+  push:
+    branches: ['design-b3-rollout-verleih']
+    paths:
+      - 'assets/helferlein-b3*'
+      - 'tools/verliehene-gegenstaende-verwalten/index.html'
+      - 'tests/b3-verleih*'
+      - '.github/workflows/b3-verleih.yml'
+permissions:
+  contents: read
+jobs:
+  verleih-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Static lending data and layout regression
+        run: node --test tests/b3-verleih.test.cjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock @playwright/test@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start static preview
+        run: python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/b3-verleih.log 2>&1 &
+      - name: Browser UI checks across mobile tablet desktop
+        run: npx playwright test tests/b3-verleih.spec.cjs --reporter=line --workers=1
