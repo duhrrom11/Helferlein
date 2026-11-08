@@ -768,9 +768,9 @@
             let p = data.plants.find(item => item.id === id);
             if (p) {
                 let todayStr = new Date().toISOString().split('T')[0];
-                p.lastWatered = todayStr;
-                if(!p.waterHistory) p.waterHistory = [];
+                if (!p.waterHistory) p.waterHistory = [];
                 if (p.waterHistory[0] === todayStr) return;
+                p.lastWatered = todayStr;
                 p.waterHistory.unshift(todayStr);
                 if(p.waterHistory.length > 5) p.waterHistory.pop();
                 let ml = getMlForPot(p.potSize);
