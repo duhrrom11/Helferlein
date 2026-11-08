@@ -24,17 +24,22 @@
     let lastUserId = null;
     let failedReads = 0;
     let failedWrites = 0;
+    let lastPendingBytes = null;
+    let lastBaselineBytes = null;
+    let lastReadSource = null;
     const snapshot = data => JSON.parse(JSON.stringify(data));
     const now = () => new Date().toISOString();
     const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
     const clone = value => snapshot(value);
     const payloadBytes = value => JSON.stringify(value);
+    const recordCount = value => isRecord(value) ? Object.keys(value).length : 0;
     const validRevision = value => value === null || (typeof value === 'string' && value.length > 0);
     const isValidUid = uid => typeof uid === 'string' && /^[a-z0-9-]{1,100}$/i.test(uid);
     const raw = key => localStorage.getItem(key);
     const has = key => raw(key) !== null;
     const ensureUnchanged = (key, bytes, reason) => { if (raw(key) !== bytes) { rememberConflict(reason); throw new Error('Local synchronization state changed: ' + reason); } };
     const readBytes = k => ({ pending: raw(k.pending), base: raw(k.base), revision: raw(k.revision) });
+    const notePending = k => { lastPendingBytes = raw(k.pending); lastBaselineBytes = raw(k.base); };
     const isConnected = () => typeof navigator !== 'undefined' && navigator.onLine;
     const rememberConflict = reason => { lastConflictAt = now(); lastConflict = { reason, at: lastConflictAt }; };
     const assertOpen = () => { if (closed) throw new Error('Cloud store is closed'); };
@@ -48,7 +53,7 @@
     };
     const write = (key, value) => { assertOpen(); localStorage.setItem(key, JSON.stringify(value)); stateVersion++; };
     const remove = key => { assertOpen(); localStorage.removeItem(key); stateVersion++; };
-    const writePending = (k, value) => { write(k.pending, value); lastPendingAt = now(); };
+    const writePending = (k, value) => { write(k.pending, value); notePending(k); lastPendingAt = now(); };
     async function userId() {
       assertOpen();
       const { data, error } = await client.auth.getUser();
@@ -88,7 +93,7 @@
     async function load() {
       assertOpen();
       const uid = await userId();
-      if (!uid) return { data: null, source: 'signed-out' };
+      if (!uid) { lastReadSource = 'signed-out'; return { data: null, source: 'signed-out' }; }
       ensureOwner(uid);
       if (flushing && operationOwner !== uid) { rememberConflict('other-account-flushing'); throw new Error('Another account has an active sync'); }
       const generation = stateVersion;
@@ -96,6 +101,7 @@
       const initialPendingBytes = raw(keys(uid).pending);
       const k = keys(uid);
       const pending = read(k.pending);
+      notePending(k);
       if (pendingAtStart !== has(k.pending)) { rememberConflict('pending-state-before-load'); throw new Error('Pending state changed before load'); }
       if (localStorage.getItem(k.pending) !== null && (!pending || typeof pending !== 'object' || Array.isArray(pending))) throw new Error('Invalid pending payload');
       if (localStorage.getItem(k.pending) !== null) {
@@ -104,6 +110,7 @@
         if (await userId() !== uid) throw new Error('Account changed during pending load');
         assertOpen();
         ensureUnchanged(k.pending, initialPendingBytes, 'pending-load-race');
+        lastReadSource = 'pending';
         return { data: clone(pending), source: 'pending' };
       }
       if (!isConnected()) {
@@ -114,6 +121,7 @@
         const cached = read(k.cache);
         if (cached !== null && !isRecord(cached)) throw new Error('Invalid offline cache');
         if (has(k.pending)) { rememberConflict('offline-read-race'); throw new Error('Pending changes appeared during offline read'); }
+        lastReadSource = 'offline';
         return { data: cached === null ? null : clone(cached), source: 'offline' };
       }
       try {
@@ -125,7 +133,8 @@
         write(k.revision, row ? row.updated_at : null);
         lastError = null;
         lastConflict = null;
-        return { data: row ? clone(row.data) : null, source: row ? 'cloud' : 'cloud-empty' };
+        lastReadSource = row ? 'cloud' : 'cloud-empty';
+        return { data: row ? clone(row.data) : null, source: lastReadSource };
       } catch (error) {
         if (await userId() !== uid) throw new Error('Account changed during cloud load');
         if (has(k.pending)) throw error;
@@ -135,7 +144,8 @@
         const cached = read(k.cache);
         if (cached !== null && !isRecord(cached)) throw new Error('Invalid offline cache');
         lastError = error;
-        return { data: cached === null ? null : clone(cached), source: 'offline-error', error };
+        lastReadSource = 'offline-error';
+        return { data: cached === null ? null : clone(cached), source: lastReadSource, error };
       }
     }
     async function flush() {
@@ -168,9 +178,11 @@
       write(k.revision, revision);
       write(k.cache, clone(pending));
       lastAckAt = now();
+      notePending(k);
       if (localStorage.getItem(k.pending) === payloadBytes(pending)) {
         remove(k.pending);
         remove(k.base);
+        notePending(k);
       } else {
         write(k.base, { revision });
       }
@@ -186,18 +198,20 @@
       assertOpen();
       if (saving && operationOwner && operationOwner !== uid) throw new Error('Account sync conflict');
       const pendingBytes = initialState.pending;
+      notePending(k);
       if (pendingBytes === null) return false;
       const baseBytes = initialState.base;
-      if (!isRecord(pending)) throw new Error('Invalid pending data; upload blocked');
+      if (!isRecord(pending)) { rememberConflict('invalid-pending-payload'); throw new Error('Invalid pending data; upload blocked'); }
       const base = read(k.base);
       if (!isRecord(base)) {
+        rememberConflict('missing-baseline');
         throw new Error('Missing sync baseline; manual reconciliation required');
       }
       if (base.unresolved) { rememberConflict('unresolved-baseline'); throw new Error('Cloud baseline unknown; local edits retained for manual reconciliation'); }
       if (!('revision' in base)) { rememberConflict('missing-revision'); throw new Error('Missing sync revision; local edits preserved'); }
-      if (!validRevision(base.revision)) throw new Error('Invalid sync revision');
-      if (base.revision === '') throw new Error('Empty sync revision');
-      if (typeof base.unresolved !== 'undefined' && base.unresolved !== false) throw new Error('Unexpected baseline state');
+      if (!validRevision(base.revision)) { rememberConflict('invalid-revision'); throw new Error('Invalid sync revision'); }
+      if (base.revision === '') { rememberConflict('empty-revision'); throw new Error('Empty sync revision'); }
+      if (typeof base.unresolved !== 'undefined' && base.unresolved !== false) { rememberConflict('unresolved-baseline-state'); throw new Error('Unexpected baseline state'); }
       assertPending(k, pendingBytes);
       const row = await fetchCloud(uid);
       if (await userId() !== uid) throw new Error('Account changed during sync; pending data preserved');
@@ -256,6 +270,7 @@
       // Keep it queued with the new server revision rather than deleting it.
       finishAcknowledged(k, pending, read(k.revision));
       lastSuccessfulSync = now();
+      notePending(k);
       lastConflict = null;
       failedWrites = 0;
       lastError = null;
@@ -265,9 +280,9 @@
       assertOpen();
       if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid local data payload');
       if (typeof navigator === 'undefined') throw new Error('Browser connection state unavailable');
-      if (!isRecord(data)) throw new Error('Expected record data');
-      if (Object.keys(data).length === 0) throw new Error('Empty payload requires explicit migration');
-      if (Object.getPrototypeOf(data) !== Object.prototype && Object.getPrototypeOf(data) !== null) throw new Error('Unsupported data prototype');
+      if (!isRecord(data)) { rememberConflict('invalid-save-payload'); throw new Error('Expected record data'); }
+      if (recordCount(data) === 0) { rememberConflict('empty-save-payload'); throw new Error('Empty payload requires explicit migration'); }
+      if (Object.getPrototypeOf(data) !== Object.prototype && Object.getPrototypeOf(data) !== null) { rememberConflict('unsupported-prototype'); throw new Error('Unsupported data prototype'); }
       // Serialize local writes as well as uploads, preserving each baseline.
       const previous = saving || Promise.resolve();
       const expectedUid = await userId();
@@ -276,7 +291,7 @@
       const immutable = snapshot(data);
       lastSaveAt = now();
       if (JSON.stringify(immutable) !== JSON.stringify(data)) throw new Error('Unsupported non-JSON payload');
-      if (!isRecord(immutable)) throw new Error('Invalid serialized payload');
+      if (!isRecord(immutable)) { rememberConflict('invalid-serialized-payload'); throw new Error('Invalid serialized payload'); }
       const next = previous.catch(() => {}).then(() => performSave(immutable, expectedUid));
       saving = next;
       try { return await next; } finally { if (saving === next) saving = null; }
@@ -387,7 +402,7 @@
     }
     function dispose() { closed = true; stateVersion++; lastError = null; lastUserId = null; }
     async function inspect() { assertOpen(); const uid = await userId(); if (!uid) return { signedOut: true }; const k = keys(uid); return { signedOut: false, pending: has(k.pending), cache: has(k.cache), baseline: has(k.base), revision: read(k.revision), lastConflict }; }
-    function status() { return { closed, syncing: !!flushing, saving: !!saving, operationOwner, stateVersion, lastCloudRead, lastSuccessfulSync, lastPendingAt, lastAckAt, lastSaveAt, lastReconcileAt, lastUserCheckAt, failedReads, failedWrites, lastConflict, lastError: lastError ? String(lastError.message || lastError) : null }; }
+    function status() { return { closed, syncing: !!flushing, saving: !!saving, operationOwner, stateVersion, lastCloudRead, lastSuccessfulSync, lastPendingAt, lastAckAt, lastSaveAt, lastReconcileAt, lastUserCheckAt, failedReads, failedWrites, lastReadSource, pendingPresent: lastPendingBytes !== null, baselinePresent: lastBaselineBytes !== null, lastConflict, lastError: lastError ? String(lastError.message || lastError) : null }; }
     return { load, save, flush, hasPending, reconcilePending, inspect, dispose, status };
   }
   global.HelferleinCloudStore = { createStore };
