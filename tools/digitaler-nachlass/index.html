@@ -1044,7 +1044,10 @@
             const snapshot = localStorage.getItem('digital_estate_vault');
             let cfg;
             try { cfg = snapshot ? JSON.parse(snapshot) : null; } catch { cfg = null; }
-            if (!cfg || !cfg.vaultId || !cfg.encryptedData || lastPersistedRevision !== localSaveRevision) {
+            if (!cfg || !cfg.vaultId || !cfg.encryptedData ||
+                !/^[a-f0-9]{64}$/i.test(currentMasterKeyHex || '') ||
+                cfg.masterKeyHex !== currentMasterKeyHex ||
+                lastPersistedRevision !== localSaveRevision) {
                 return alert('Bitte warten, bis alle lokalen Änderungen gespeichert sind.');
             }
             if (!confirm('Den aktuell lokal verschlüsselten Tresor einschließlich verschlüsselter Kontakte und Check-in-Einstellungen im angemeldeten Supabase-Konto sichern? Ein unverschlüsselter Tresorschlüssel wird nicht hochgeladen. Für den Gerätewechsel muss zusätzlich ein Wiederherstellungspasswort vorbereitet werden; eine verschlüsselte lokale Sicherungsdatei bleibt empfohlen.')) return;
