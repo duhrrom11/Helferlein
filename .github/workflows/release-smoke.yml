@@ -19,3 +19,4 @@ jobs:
       - run: node tests/wg-cache-regression.cjs
       - run: node tests/household-csv-regression.cjs
       - run: node tests/household-backup-regression.cjs
+      - run: node tests/household-render-regression.cjs
