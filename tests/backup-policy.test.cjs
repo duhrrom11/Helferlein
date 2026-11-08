@@ -35,6 +35,13 @@ const cases = [
     "wg_active_bin_id",
     true
   ],
+  ["wg_last_loaded_bin_id", true],
+  ["wg_kassenbon_data", true],
+  ["wg_budgetbuch_budgets", true],
+  ["wg_budgetbuch_goals", true],
+  ["helferlein_ui_theme_v1", true],
+  ["helferlein_ui_layout_nachlass_v1", true],
+  ["helferlein_ui_layout_backform_v1", true],
   [
     "wg_flatmates",
     true
@@ -201,4 +208,7 @@ assert.match(html, /rollbackFailed/, 'Report incomplete rollback');
 assert.match(html, /nicht unterstützte Einträge wurden übersprungen/, 'Report skipped keys after success');
 assert.match(html, /if \(!confirm\(/, 'Import must require user confirmation');
 
+assert.match(html, /if \(containsVault && !encrypted\)/, 'Vault backup must never export as plaintext');
+assert.match(html, /requestBackupPassword\("Neues Backup-Passwort/, 'Encryption must use masked password entry');
+assert.match(html, /plaintext\.byteLength > 20 \* 1024 \* 1024/, 'Decrypted backup must be size-bounded');
 console.log('Backup policy OK: ' + cases.length + ' key cases and 15 integration checks');
