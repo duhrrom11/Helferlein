@@ -42,6 +42,7 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../assets/helferlein-safe-output.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -649,10 +650,10 @@
                     let vetHtml = "";
                     if (p.vet && (p.vet.name || p.vet.tel)) {
                         vetHtml = `<div class="text-[11px] text-teal-700 mt-1 bg-white p-2 border rounded-xl space-y-0.5">
-                            <p class="font-bold">🏥 ${p.vet.name || 'Tierarzt'}</p>
-                            ${p.vet.address ? `<p class="text-gray-500">${p.vet.address}</p>` : ''}
+                            <p class="font-bold">🏥 ${HelferleinSafe.html(p.vet.name || 'Tierarzt')}</p>
+                            ${p.vet.address ? `<p class="text-gray-500">${HelferleinSafe.html(p.vet.address)}</p>` : ''}
                             <div class="flex gap-3 pt-0.5">
-                                ${p.vet.tel ? `<a href="tel:${p.vet.tel}" class="font-bold hover:underline">📞 ${p.vet.tel}</a>` : ''}
+                                ${p.vet.tel ? `<a href="tel:${p.vet.tel}" class="font-bold hover:underline">📞 ${HelferleinSafe.html(p.vet.tel)}</a>` : ''}
                                 ${p.vet.email ? `<a href="mailto:${p.vet.email}" class="text-blue-600 hover:underline">✉️ E-Mail</a>` : ''}
                             </div>
                         </div>`;
@@ -662,19 +663,19 @@
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="flex items-center space-x-3">
-                                    ${p.photo ? `<img src="${p.photo}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${p.photo}')" title="Foto vergrößern">` : defaultPetIcon}
+                                    ${p.photo ? `<img src="${HelferleinSafe.photo(p.photo)}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage('${HelferleinSafe.photo(p.photo)}')" title="Foto vergrößern">` : defaultPetIcon}
                                     <div>
-                                        <h4 class="font-bold text-sm text-teal-800">${p.name}</h4>
-                                        <p class="text-xs text-gray-600">${p.species || 'k.A.'} ${p.chip ? '| Chip: ' + p.chip : ''}</p>
+                                        <h4 class="font-bold text-sm text-teal-800">${HelferleinSafe.html(p.name)}</h4>
+                                        <p class="text-xs text-gray-600">${HelferleinSafe.html(p.species || 'k.A.')} ${HelferleinSafe.html(p.chip ? '| Chip: ' + p.chip : '')}</p>
                                     </div>
                                 </div>
                                 <button onclick="deletePet(${p.id})" class="text-xs text-red-500 hover:underline">Löschen</button>
                             </div>
                             <div class="text-[11px] flex flex-wrap gap-2 text-gray-600 pt-1">
                                 ${p.tasso ? `<span class="bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">🛡️ TASSO / Register</span>` : `<span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">Nicht registriert</span>`}
-                                ${p.food ? `<span>🥣 ${p.food}</span>` : ''}
-                                ${p.allergies ? `<span class="text-red-700 font-semibold">⚠️ Allergie: ${p.allergies}</span>` : ''}
-                                ${p.passport ? `<button onclick="zoomImage('${p.passport}')" class="text-blue-600 font-semibold underline">📄 EU-Ausweis anzeigen</button>` : ''}
+                                ${p.food ? `<span>🥣 ${HelferleinSafe.html(p.food)}</span>` : ''}
+                                ${p.allergies ? `<span class="text-red-700 font-semibold">⚠️ Allergie: ${HelferleinSafe.html(p.allergies)}</span>` : ''}
+                                ${p.passport ? `<button onclick="zoomImage('${HelferleinSafe.photo(p.passport)}')" class="text-blue-600 font-semibold underline">📄 EU-Ausweis anzeigen</button>` : ''}
                             </div>
                             ${vetHtml}
                         </div>
@@ -692,7 +693,7 @@
                     return `
                         <div class="p-3 border rounded-xl flex justify-between items-center text-xs ${stockBg}">
                             <div>
-                                <p class="font-bold">${m.name}</p>
+                                <p class="font-bold">${HelferleinSafe.html(m.name)}</p>
                                 <p class="text-[11px] ${isLowStock ? 'text-red-600 font-bold' : 'text-gray-600'}">Vorrat: ${m.stock} ${isLowStock ? '⚠️ Fast leer!' : ''}</p>
                             </div>
                             <button onclick="deleteMedication(${m.id})" class="text-red-500 font-bold px-2 hover:bg-red-100 rounded">✕</button>
@@ -735,7 +736,7 @@
                     return `
                         <div class="p-3 border rounded-xl ${statusColor}">
                             <p class="text-[11px] font-bold text-gray-500">${petName} (${e.type})</p>
-                            <p class="text-xs font-bold mt-0.5">${e.title}</p>
+                            <p class="text-xs font-bold mt-0.5">${HelferleinSafe.html(e.title)}</p>
                             <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString('de-DE')})</p>
                             ${expiryHint}
                             ${intervalHint}
@@ -786,7 +787,7 @@
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-[10px] bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">${e.type}</span>
-                                    <span class="text-xs font-bold text-gray-700">${petName}</span>
+                                    <span class="text-xs font-bold text-gray-700">${HelferleinSafe.html(petName)}</span>
                                     ${e.cost > 0 ? `<span class="text-[10px] bg-green-100 text-green-800 font-semibold px-2 py-0.5 rounded-full">${e.cost.toFixed(2).replace('.', ',')} €</span>` : ''}
                                     ${weightBadge}
                                 </div>
