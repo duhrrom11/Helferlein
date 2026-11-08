@@ -1269,43 +1269,62 @@
             window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${dateStr}&details=${details}`, '_blank');
         }
 
+        function escapeCalendarText(value) {
+            return String(value ?? '').replace(/\r\n|\r|\n/g, '\n')
+                .replace(/\\/g, '\\\\').replace(/;/g, '\\;')
+                .replace(/,/g, '\\,').replace(/\n/g, '\\n');
+        }
+
         function downloadICS(id) {
-            const data = getData();
-            const r = data.find(item => item.id === id);
+            const r = getData().find(item => item && item.id === id);
             if (!r) return;
 
             const buyDate = new Date(r.date);
+            const months = Number(r.warrantyMonths);
+            if (!Number.isFinite(buyDate.getTime()) || !Number.isFinite(months) || months <= 0) {
+                alert('Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.');
+                return;
+            }
             const expDate = new Date(buyDate);
-            expDate.setMonth(expDate.getMonth() + (r.warrantyMonths || 0));
-
+            expDate.setMonth(expDate.getMonth() + months);
             const reminderDate = new Date(expDate);
             reminderDate.setDate(reminderDate.getDate() - 30);
-
-            const fmt = (d) => d.toISOString().replace(/-|:|\.\d+/g, '').slice(0, 8);
-
-            const ics = 
-`BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Alltagshelferlein//Garantie Tracker//DE
-BEGIN:VEVENT
-SUMMARY:Garantie ablauf: ${r.title}
-DESCRIPTION:Die Garantie für ${r.title} (${r.store}) läuft am ${expDate.toLocaleDateString('de-DE')} ab.\\nS/N: ${r.sn || 'k.A.'}\\nKarton-Lagerort: ${r.location || 'k.A.'}
-DTSTART;VALUE=DATE:${fmt(reminderDate)}
-DTEND;VALUE=DATE:${fmt(reminderDate)}
-STATUS:CONFIRMED
-BEGIN:VALARM
-TRIGGER:-PT9H
-ACTION:DISPLAY
-DESCRIPTION:Erinnerung: Garantie läuft in 30 Tagen ab!
-END:VALARM
-END:VEVENT
-END:VCALENDAR`;
-
+            const endDate = new Date(reminderDate);
+            endDate.setDate(endDate.getDate() + 1);
+            const fmt = date => date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') +
+                String(date.getDate()).padStart(2, '0');
+            const title = escapeCalendarText(r.title || 'Beleg');
+            const description = escapeCalendarText('Die Garantie für ' + (r.title || 'Beleg') +
+                ' (' + (r.store || 'k.A.') + ') läuft am ' + expDate.toLocaleDateString('de-DE') +
+                ' ab.\nS/N: ' + (r.sn || 'k.A.') + '\nKarton-Lagerort: ' + (r.location || 'k.A.'));
+            const ics = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Alltagshelferlein//Garantie Tracker//DE',
+                'BEGIN:VEVENT',
+                'UID:' + encodeURIComponent(String(r.id ?? 'beleg')) + '-' + fmt(reminderDate) + '@helferlein.local',
+                'DTSTAMP:' + new Date().toISOString().replace(/[-:]|\.\d{3}/g, ''),
+                'SUMMARY:Garantie-Ablauf: ' + title,
+                'DESCRIPTION:' + description,
+                'DTSTART;VALUE=DATE:' + fmt(reminderDate),
+                'DTEND;VALUE=DATE:' + fmt(endDate),
+                'STATUS:CONFIRMED',
+                'BEGIN:VALARM',
+                'TRIGGER:-PT9H',
+                'ACTION:DISPLAY',
+                'DESCRIPTION:Garantie läuft in 30 Tagen ab!',
+                'END:VALARM',
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n') + '\r\n';
             const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `garantie-${r.title.toLowerCase().replace(/\s+/g, '-')}.ics`;
+            a.href = url;
+            a.download = 'garantie-' + String(r.title || 'beleg').toLowerCase()
+                .replace(/[^a-z0-9äöüß_-]+/gi, '-').slice(0, 80) + '.ics';
             a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         /* --- Export & Import --- */
