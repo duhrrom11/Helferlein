@@ -863,7 +863,8 @@
             document.getElementById('receiptIsTax').checked = !!r.isTax;
             document.getElementById('receiptNote').value = r.note || '';
 
-            const radio = document.querySelector(`input[name="entryType"][value="${r.entryType || 'ausgabe'}"]`);
+            const entryType = r.entryType === 'einnahme' ? 'einnahme' : 'ausgabe';
+            const radio = document.querySelector(`input[name="entryType"][value="${entryType}"]`);
             if (radio) radio.checked = true;
 
             const photos = Array.isArray(r.photos) ? r.photos.filter(src => safeReceiptPhoto(src)) : [];
@@ -902,6 +903,11 @@
             document.getElementById('receiptNote').value = "";
             document.getElementById('receiptWarranty').value = "0";
             document.getElementById('receiptReturnDays').value = "14";
+            document.getElementById('receiptLifespan').value = "5";
+            document.getElementById('receiptPaymentMethod').selectedIndex = 0;
+            const expenseRadio = document.querySelector('input[name="entryType"][value="ausgabe"]');
+            if (expenseRadio) expenseRadio.checked = true;
+            document.getElementById('receiptCategory').value = 'Lebensmittel';
             document.getElementById('receiptIsFixkosten').checked = false;
             document.getElementById('receiptIsTax').checked = false;
             document.getElementById('receiptPhotoInput').value = "";
@@ -913,6 +919,7 @@
             document.getElementById('cancelEditBtn').classList.add('hidden');
             document.getElementById('receiptDate').valueAsDate = new Date();
             currentUploadedPhotos = [];
+            rawImage = null;
         }
 
         function deleteReceipt(id) {
