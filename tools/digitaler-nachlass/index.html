@@ -668,8 +668,8 @@
             status.classList.toggle('bg-amber-950/70', !success);
             status.classList.toggle('text-amber-100', !success);
             status.textContent = success
-                ? 'Cloud-Synchronisierung bestätigt. Bitte trotzdem regelmäßig eine verschlüsselte lokale Sicherung erstellen.'
-                : 'Cloud-Synchronisierung fehlgeschlagen. Änderungen können ausschließlich lokal vorliegen. Bitte eine verschlüsselte Sicherung erstellen.';
+                ? 'Cloud-Synchronisierung bestätigt (' + new Date().toLocaleString('de-DE') + '). Bitte trotzdem regelmäßig eine verschlüsselte lokale Sicherung erstellen.'
+                : 'Cloud-Synchronisierung fehlgeschlagen (' + new Date().toLocaleString('de-DE') + '). Änderungen können ausschließlich lokal vorliegen. Bitte eine verschlüsselte Sicherung erstellen.';
         }
 
         function syncVaultToFirebase(silent = false) {
