@@ -16,7 +16,7 @@ const localDay = parts.year + '-' + parts.month + '-' + parts.day;
 const hour = Number(parts.hour);
 const minute = Number(parts.minute);
 const manual = process.env.GITHUB_EVENT_NAME === 'workflow_dispatch';
-const inWindow = hour < 6 || (hour === 6 && minute < 5);
+// Allow a short grace window for delayed GitHub cron delivery at 06:00.\nconst inWindow = hour < 6 || (hour === 6 && minute < 30);
 if (!manual && !inWindow) {
   console.log('Outside Berlin night window; no work.');
   process.exit(0);
