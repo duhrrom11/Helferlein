@@ -418,6 +418,19 @@ test('Cloud-Sicherung verhindert Upload bei zwischenzeitlichem Schluessel- oder 
   assert.ok(source.split('currentMasterKeyHex !== startingMasterKeyHex').length >= 5);
 });
 
+test('Wiederherstellungsschluessel-Upload stoppt bei aktivem Schluessel- oder Revisionswechsel', () => {
+  const start = html.indexOf('async function prepareSupabaseRecoveryKey()');
+  const end = html.indexOf('async function previewSupabaseVaultRecovery()', start);
+  const source = html.slice(start, end);
+  assert.match(source, /const startingMasterKeyHex = currentMasterKeyHex/);
+  assert.match(source, /const startingRevision = localSaveRevision/);
+  assert.match(source, /Uint8Array\.from\(startingMasterKeyHex\.match/);
+  const write = source.indexOf('.update({ recovery_key: recovery })');
+  assert.ok(write > source.lastIndexOf('currentMasterKeyHex !== startingMasterKeyHex'));
+  assert.ok(write > source.lastIndexOf('localSaveRevision !== startingRevision'));
+  assert.equal(source.split('currentMasterKeyHex !== startingMasterKeyHex').length - 1, 2);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
