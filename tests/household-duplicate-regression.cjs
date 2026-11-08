@@ -1,0 +1,18 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const html = fs.readFileSync('tools/haushaltsbuch-kassenbon/index.html', 'utf8');
+const start = html.indexOf('function saveReceipt()');
+const end = html.indexOf('function editReceipt(', start);
+assert.ok(start >= 0 && end > start, 'saveReceipt exists');
+const save = html.slice(start, end);
+const edit = save.indexOf('if (editingReceiptId !== null)');
+const add = save.indexOf('const newId = nextReceiptId(data)');
+assert.ok(edit >= 0 && add > edit, 'duplicate warning is in the new-entry branch');
+const duplicate = save.indexOf('const duplicate = data.some(', edit);
+assert.ok(duplicate > edit && duplicate < add, 'duplicate check precedes insertion');
+assert.match(save, /r\.date === date/);
+assert.match(save, /normalizeTitle\(r\.title\) === normalizeTitle\(title\)/);
+assert.match(save, /Number\(r\.price\) === price/);
+assert.match(save, /if \(duplicate && !confirm\(/);
+assert.match(save, /Trotzdem erneut speichern\?/);
+console.log('Household duplicate warning regression checks passed');

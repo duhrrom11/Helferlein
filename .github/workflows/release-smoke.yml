@@ -31,3 +31,4 @@ jobs:
       - run: node tests/household-ocr-total-regression.cjs
       - run: node tests/household-pdf-summary-regression.cjs
       - run: node tests/household-all-csv-regression.cjs
+      - run: node tests/household-duplicate-regression.cjs
