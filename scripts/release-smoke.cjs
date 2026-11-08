@@ -2,11 +2,13 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 
-const files = [
-  'index.html',
-  'tools/wg-organisator/index.html',
-  'tools/haushaltsbuch-kassenbon/index.html'
-];
+const homepage = fs.readFileSync('index.html', 'utf8');
+const linkedTools = [...new Set(
+  [...homepage.matchAll(/(?:href|src)="(tools\/[^"#?]+\.html)"/g)]
+    .map(match => match[1])
+)];
+assert.ok(linkedTools.length >= 11, 'Homepage must link to all 11 tools');
+const files = ['index.html', ...linkedTools];
 for (const file of files) {
   const html = fs.readFileSync(file, 'utf8');
   assert.match(html, /<!doctype html>/i, file + ' must be an HTML document');
@@ -17,8 +19,7 @@ for (const file of files) {
   }
   console.log('OK', file, scripts.length, 'inline scripts');
 }
-const homepage = fs.readFileSync('index.html', 'utf8');
-for (const target of files.slice(1)) {
+for (const target of linkedTools) {
   assert.ok(homepage.includes(target), 'Homepage must link to ' + target);
 }
 console.log('Release smoke checks passed');
