@@ -10,6 +10,10 @@ Produktiv geprueft: Supabase hat aktuell die Tabellen `user_data`, `wg_spaces` u
 
 **Umsetzungsreihenfolge:** (1) sicheren neuen, benutzergebundenen Cloud-Tresor mit Auth und serverseitiger Autorisierung implementieren; (2) lokale Verschluesselung und Wiederherstellung ohne Datenverlust sicherstellen; (3) vorhandene Tresore erst nach gesonderter Eigentuemerpruefung migrieren; (4) produktive Bereitstellung mit Sicherheitspruefungen, Monitoring und Rollback; (5) die Browseroberflaeche erst dann auf den neuen Speicherweg umstellen. Keine pauschale Freigabe alter Firebase-Regeln.
 
+## Erweitertes Cloud-Sicherungsstatusfenster
+
+Die Aktion `Supabase-Sicherungsstand pruefen` vergleicht nun neben Tresor-ID, IV und Ciphertext auch die **entschluesselte Cloud-Konfiguration** mit der aktuellen lokalen Konfiguration. Sie meldet Abweichungen bei Eigentuemerdaten, Vertrauenspersonen, Alarmkontakten und Check-in-Einstellungen sowie das Vorhandensein einer verschluesselten Wiederherstellungsschluesselhuelle. Die Pruefung ist lesend und ersetzt weder eine echte Wiederherstellung noch eine Ende-zu-Ende-Probe auf einem zweiten Geraet.
+
 ## Verschluesselte Konfigurationssicherung (2026-11-08)
 
 Die Supabase-Tabelle `vault_cloud_snapshots` besitzt jetzt ein optionales Feld `encrypted_config`. Bei **neuen manuellen Cloud-Sicherungen** werden Eigentuemername und -E-Mail, Vertrauenspersonen, Alarmkontakte, Check-in-Intervall und letzter Check-in **im Browser mit dem bestehenden Tresorschluessel AES-GCM-verschluesselt** und separat vom Eintragsinhalt hochgeladen. Diese Metadaten werden nicht im Klartext an Supabase uebertragen. Nach einer Wiederherstellung mit dem separaten Passwort werden diese Einstellungen nur dann uebernommen, wenn der Konfigurationsdatensatz erfolgreich entschluesselt und seine Struktur geprueft wurde. Bei aelteren Sicherungen ohne `encrypted_config` bleiben neutrale Standardwerte und der Hinweis zur Neueinrichtung erhalten. Alarm- und Check-in-Konfiguration nach dem Geraetewechsel immer kontrollieren; die alte Firebase-Anbindung bleibt getrennt.
