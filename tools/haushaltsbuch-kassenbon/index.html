@@ -718,7 +718,17 @@
             previewContainer.classList.remove('hidden');
 
             selectedFiles.forEach((file, idx) => {
-                const reader = new FileReader();
+                let reader;
+                try {
+                    reader = new FileReader();
+                } catch (error) {
+                    if (generation !== photoReadGeneration) return;
+                    pendingPhotoReads--;
+                    photoReadFailed = true;
+                    console.error('Bildleser konnte nicht gestartet werden:', error);
+                    alert('Der Browser konnte den Bildleser nicht starten. Bitte die Bildauswahl erneut versuchen.');
+                    return;
+                }
                 reader.onload = function(e) {
                     if (generation !== photoReadGeneration) return;
                     if (!safeReceiptPhoto(e.target.result)) {
@@ -758,7 +768,15 @@
                             photoReadFailed = true;
                             alert('Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.');
                         };
-                        img.src = e.target.result;
+                        try {
+                            img.src = e.target.result;
+                        } catch (error) {
+                            if (generation !== photoReadGeneration) return;
+                            pendingPhotoReads--;
+                            photoReadFailed = true;
+                            console.error('Belegbild konnte nicht geöffnet werden:', error);
+                            alert('Das erste Belegbild konnte nicht geöffnet werden. Bitte erneut auswählen.');
+                        }
                     }
                 };
                 reader.onerror = function() {
