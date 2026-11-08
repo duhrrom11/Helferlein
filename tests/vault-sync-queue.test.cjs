@@ -231,6 +231,14 @@ test('Wiederherstellung prueft Kontaktobjekte vor der letzten Bestaetigung', () 
   assert.match(source, /person\.name\.length <= 500/);
 });
 
+test('Passwort-Wiederherstellung loescht temporaere Masterkey-Bytes nach Verschluesselung', () => {
+  const start = html.indexOf('async function prepareSupabaseRecoveryKey()');
+  const end = html.indexOf('async function restoreVaultFromSupabase()', start);
+  const source = html.slice(start, end);
+  assert.match(source, /const rawMasterKey = Uint8Array\.from/);
+  assert.match(source, /finally \{\s*rawMasterKey\.fill\(0\)/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
