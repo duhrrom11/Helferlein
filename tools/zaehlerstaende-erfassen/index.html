@@ -493,8 +493,12 @@
         function getData() {
             try {
                 const stored = JSON.parse(localStorage.getItem('energie_tracker_pro_v8'));
-                return stored && Array.isArray(stored.readings) && stored.tarifs && typeof stored.tarifs === 'object' && !Array.isArray(stored.tarifs)
-                    ? stored : { readings: [], tarifs: {} };
+                if (!stored || !Array.isArray(stored.readings)) return { readings: [], tarifs: {} };
+                return {
+                    ...stored,
+                    tarifs: stored.tarifs && typeof stored.tarifs === 'object' && !Array.isArray(stored.tarifs)
+                        ? stored.tarifs : {}
+                };
             } catch(e) {
                 return { readings: [], tarifs: {} };
             }
@@ -659,14 +663,13 @@
             if (data.readings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
             let text = "⚡ Zählerstände-Übersicht:\n";
             let latest = {};
-            // Pick the newest reading per meter type, regardless of insertion order.
+            // Pick the newest reading per distinct meter, regardless of insertion order.
             data.readings.forEach(r => {
                 const key = JSON.stringify([r.type, r.name]);
                 if (!latest[key] || r.date > latest[key].date) latest[key] = r;
             });
-            for(let t in latest) {
-                let r = latest[t];
-                let unit = t.includes('Strom') || t === 'Gas' ? 'kWh' : 'm³';
+            for (const r of Object.values(latest)) {
+                let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                 text += `- ${r.type} (${r.name}): ${r.value} ${unit} (vom ${r.date})\n`;
             }
             navigator.clipboard.writeText(text).then(() => {
