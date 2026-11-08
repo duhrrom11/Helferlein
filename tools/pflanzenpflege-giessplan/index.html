@@ -860,7 +860,11 @@
             let data = getData();
             const existingIds = new Set(data.plants.filter(item => item && typeof item === 'object').map(item => item.id));
             let newId = Date.now() * 1000 + Math.floor(Math.random() * 1000);
-            while (existingIds.has(newId)) newId++;
+            if (!Number.isSafeInteger(newId)) return alert('Es konnte keine gültige Pflanzen-ID erzeugt werden.');
+            while (existingIds.has(newId)) {
+                newId++;
+                if (!Number.isSafeInteger(newId)) return alert('Es konnte keine eindeutige Pflanzen-ID erzeugt werden.');
+            }
             data.plants.push({ 
                 id: newId, 
                 name, species, location, light, potSize, interval, lastWatered, propagation, propDate, note, photo,
