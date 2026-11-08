@@ -1140,6 +1140,8 @@
             const { data: authData, error: authError } = await supabaseClient.auth.getUser();
             const user = authData?.user;
             if (authError || !user) return alert('Bitte zuerst bei Supabase anmelden.');
+            const startingMasterKeyHex = currentMasterKeyHex;
+            const startingRevision = localSaveRevision;
             const snapshot = localStorage.getItem('digital_estate_vault');
             let cfg;
             try { cfg = snapshot ? JSON.parse(snapshot) : null; } catch { cfg = null; }
@@ -1170,6 +1172,8 @@
                     }
                 }
                 if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Der lokale Tresor wurde inzwischen geändert. Bitte erneut sichern.');
                 }
@@ -1179,6 +1183,8 @@
                     return alert('Der lokale verschlüsselte Tresorinhalt konnte nicht geprüft werden. Die Cloud-Sicherung bleibt unverändert.');
                 }
                 if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Der lokale Tresor wurde während der Prüfung geändert. Bitte erneut sichern.');
                 }
@@ -1207,6 +1213,8 @@
                 };
                 const encryptedConfig = await encryptVaultPayload(configPayload, currentMasterKeyHex);
                 if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Lokaler Tresor wurde inzwischen geändert. Bitte erneut sichern.');
                 }
@@ -1226,6 +1234,8 @@
                     throw new Error('Cloud-Speicherung nicht bestätigt.');
                 }
                 if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Der vorherige Stand wurde gesichert, aber inzwischen gibt es neuere lokale Änderungen. Bitte erneut sichern.');
                 }
