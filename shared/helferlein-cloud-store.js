@@ -9,16 +9,21 @@
     let flushing = null;
     let saving = null;
     let operationOwner = null;
+    let closed = false;
     const snapshot = data => JSON.parse(JSON.stringify(data));
+    const assertOpen = () => { if (closed) throw new Error('Cloud store is closed'); };
     const read = key => {
+      assertOpen();
       const raw = localStorage.getItem(key);
       if (raw === null) return null;
       return JSON.parse(raw);
     };
-    const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+    const write = (key, value) => { assertOpen(); localStorage.setItem(key, JSON.stringify(value)); };
     async function userId() {
+      assertOpen();
       const { data, error } = await client.auth.getUser();
       if (error) throw error;
+      assertOpen();
       return data && data.user && typeof data.user.id === 'string' ? data.user.id : null;
     }
     function keys(uid) {
@@ -27,6 +32,7 @@
         revision: prefix + uid + '_revision', base: prefix + uid + '_base' };
     }
     async function fetchCloud(uid) {
+      assertOpen();
       const { data, error } = await client.from('user_data')
         .select('id,data,updated_at').eq('user_id', uid).eq('tool', tool)
         .order('updated_at', { ascending: false }).limit(2);
@@ -34,12 +40,13 @@
       if (!Array.isArray(data)) throw new Error('Invalid cloud response');
       if (data.length > 1) throw new Error('Multiple cloud records found; manual resolution required');
       const row = data[0] || null;
-      if (row && typeof row !== 'object') throw new Error('Invalid cloud record');
+      if (row && (typeof row !== 'object' || Array.isArray(row))) throw new Error('Invalid cloud record');
       if (row && (!row.id || typeof row.updated_at !== 'string' || !row.updated_at)) throw new Error('Invalid cloud record identity');
       if (row && (!row.data || typeof row.data !== 'object' || Array.isArray(row.data))) throw new Error('Invalid cloud payload');
       return row;
     }
     async function load() {
+      assertOpen();
       const uid = await userId();
       if (!uid) return { data: null, source: 'signed-out' };
       if (flushing && operationOwner !== uid) throw new Error('Another account has an active sync');
@@ -72,6 +79,7 @@
       }
     }
     async function flush() {
+      assertOpen();
       const uid = await userId();
       if (!uid) throw new Error('Sign in required');
       if (flushing) {
@@ -100,6 +108,7 @@
       }
     }
     async function performFlush(expectedUid) {
+      assertOpen();
       const uid = await userId();
       if (!uid || uid !== expectedUid) throw new Error('Account changed before flush');
       const k = keys(uid);
@@ -119,6 +128,7 @@
       const row = await fetchCloud(uid);
       if (await userId() !== uid) throw new Error('Account changed during sync; pending data preserved');
       if (localStorage.getItem(k.pending) !== pendingBytes) return false;
+      assertOpen();
       if ((row ? row.updated_at : null) !== base.revision) {
         // An earlier request may have reached Supabase before the browser lost
         // its response. An exact match is safe to acknowledge without writing.
@@ -154,6 +164,7 @@
         write(k.revision, data[0].updated_at);
       }
       if (await userId() !== uid) throw new Error('Account changed after sync; pending data preserved');
+      assertOpen();
       if (localStorage.getItem(k.pending) === null) throw new Error('Pending data unexpectedly removed');
       if (localStorage.getItem(k.base) !== JSON.stringify(base)) throw new Error('Baseline changed during upload');
       // A newer local edit may have arrived while the request was in flight.
@@ -162,6 +173,7 @@
       return true;
     }
     async function save(data) {
+      assertOpen();
       if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid local data payload');
       if (typeof navigator === 'undefined') throw new Error('Browser connection state unavailable');
       // Serialize local writes as well as uploads, preserving each baseline.
@@ -175,6 +187,7 @@
       try { return await next; } finally { if (saving === next) saving = null; }
     }
     async function performSave(data, expectedUid) {
+      assertOpen();
       const uid = await userId();
       if (!uid || uid !== expectedUid) throw new Error('Account changed before queued save');
       if (flushing && operationOwner !== uid) throw new Error('Different account has an active upload');
@@ -218,6 +231,7 @@
       return flush();
     }
     async function reconcilePending() {
+      assertOpen();
       // Explicit user action only. Never guess which conflicting version wins.
       const uid = await userId();
       if (!uid) throw new Error('Sign in required');
@@ -253,11 +267,13 @@
       // guarded by the existing fetch/compare path in performFlush().
       if (localStorage.getItem(k.pending) !== JSON.stringify(pending)) throw new Error('Local changes arrived during reconciliation');
       if (await userId() !== uid) throw new Error('Account changed before reconciliation commit');
+      assertOpen();
       if (!navigator.onLine) throw new Error('Connection lost before reconciliation commit');
       write(k.base, { revision: null });
       return { status: 'ready' };
     }
     async function hasPending() {
+      assertOpen();
       const uid = await userId();
       if (!uid) return false;
       if (flushing && operationOwner !== uid) throw new Error('Another account syncing');
@@ -265,7 +281,8 @@
       if (await userId() !== uid) throw new Error('Account changed during pending check');
       return exists;
     }
-    return { load, save, flush, hasPending, reconcilePending };
+    function dispose() { closed = true; }
+    return { load, save, flush, hasPending, reconcilePending, dispose };
   }
   global.HelferleinCloudStore = { createStore };
 })(window);
