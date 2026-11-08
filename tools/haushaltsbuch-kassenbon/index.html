@@ -786,7 +786,10 @@
                 }
                 const dateMatch = text.match(/(\d{2})[\.\/](\d{2})[\.\/](\d{4})/);
                 if (dateMatch && !document.getElementById('receiptDate').value) {
-                    document.getElementById('receiptDate').value = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
+                    const recognizedDate = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
+                    if (Number.isFinite(parseReceiptDate(recognizedDate).getTime())) {
+                        document.getElementById('receiptDate').value = recognizedDate;
+                    }
                 }
             } catch(e) {
                 if (generation === ocrGeneration) statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
