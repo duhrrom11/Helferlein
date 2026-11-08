@@ -1033,7 +1033,10 @@
             if (!wgBinId) return alert("Keine WG-ID aktiv.");
             if (isSecureWgId(wgBinId)) {
                 await secureWgSaving;
-                if (secureWgDirty && !confirm('Es gibt nicht gespeicherte WG-Änderungen. Trotzdem neu laden und diese verwerfen?')) return;
+                if (secureWgDirty) {
+                    alert('Nicht gespeicherte Änderungen vorhanden. Bitte die Daten vor dem Neuladen sichern. Ein automatisches Überschreiben wird verhindert.');
+                    return;
+                }
             } else if (!confirm('Cloud-Daten neu laden? Nicht synchronisierte lokale Änderungen können verloren gehen.')) return;
             try {
                 const loaded = await ladeWGausCloud();
