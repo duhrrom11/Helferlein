@@ -67,8 +67,8 @@ test('New Nachlass vault uses passphrase and never persists master key beside ci
  await page.goto(root+'/tools/digitaler-nachlass/index.html',{waitUntil:'domcontentloaded'});
  await expect(page.locator('#vault-password-gate')).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem('digital_estate_vault'))).toBeNull();
- await page.getByRole('textbox',{name:'Tresor-Passwort',exact:true}).fill('Langes-Sicheres-Tresorpasswort-2026');
- await page.getByRole('textbox',{name:'Tresor-Passwort bestätigen'}).fill('Langes-Sicheres-Tresorpasswort-2026');
+ await page.locator('input[aria-label="Tresor-Passwort"]').fill('Langes-Sicheres-Tresorpasswort-2026');
+ await page.locator('input[aria-label="Tresor-Passwort bestätigen"]').fill('Langes-Sicheres-Tresorpasswort-2026');
  await page.getByRole('button',{name:'Tresor geschützt erstellen'}).click();
  await expect(page.locator('#vault-password-gate')).toHaveCount(0);
  let cfg=await page.evaluate(()=>JSON.parse(localStorage.getItem('digital_estate_vault')));
@@ -78,10 +78,10 @@ test('New Nachlass vault uses passphrase and never persists master key beside ci
  expect(cfg.encryptedData.ciphertext).toBeTruthy();
  await page.reload({waitUntil:'domcontentloaded'});
  await expect(page.locator('#vault-password-gate')).toBeVisible();
- await page.getByRole('textbox',{name:'Tresor-Passwort',exact:true}).fill('FalschesPasswort');
+ await page.locator('input[aria-label="Tresor-Passwort"]').fill('FalschesPasswort');
  await page.getByRole('button',{name:'Tresor entsperren'}).click();
  await expect(page.locator('#vault-password-gate')).toBeVisible();
- await page.getByRole('textbox',{name:'Tresor-Passwort',exact:true}).fill('Langes-Sicheres-Tresorpasswort-2026');
+ await page.locator('input[aria-label="Tresor-Passwort"]').fill('Langes-Sicheres-Tresorpasswort-2026');
  await page.getByRole('button',{name:'Tresor entsperren'}).click();
  await expect(page.locator('#vault-password-gate')).toHaveCount(0);
  cfg=await page.evaluate(()=>JSON.parse(localStorage.getItem('digital_estate_vault')));
@@ -120,7 +120,7 @@ test('Legacy Nachlass vault remains readable and migration only after consent',a
  expect(dialogs.filter(x=>x==='prompt')).toHaveLength(2);
  await page.reload({waitUntil:'domcontentloaded'});
  await expect(page.locator('#vault-password-gate')).toBeVisible();
- await page.getByRole('textbox',{name:'Tresor-Passwort',exact:true}).fill('Sicheres-Migrations-Passwort-2026');
+ await page.locator('input[aria-label="Tresor-Passwort"]').fill('Sicheres-Migrations-Passwort-2026');
  await page.getByRole('button',{name:'Tresor entsperren'}).click();
  await expect(page.locator('#vault-password-gate')).toHaveCount(0);
 });
