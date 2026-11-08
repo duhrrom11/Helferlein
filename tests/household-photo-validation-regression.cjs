@@ -79,4 +79,26 @@ ctx.loadPhotosToCanvas({target: {files: [{type: 'image/png', size: 100}], value:
 assert.equal(ctx.pendingPhotoReads, 0, 'image source failure must finish pending upload');
 assert.equal(ctx.photoReadFailed, true, 'image source failure blocks saving');
 assert.match(alerts[alerts.length - 1], /nicht geöffnet/);
+const filterStart = html.indexOf('function applyCanvasFilter()');
+const filterEnd = html.indexOf('function extractReceiptTotal(', filterStart);
+const canvas = {
+    width: 0, height: 0,
+    getContext: () => ({drawImage() {}}),
+    toDataURL: () => 'data:image/jpeg;base64,AAAA'
+};
+const filterContext = vm.createContext({
+    rawImage: {width: 400, height: 8000},
+    currentUploadedPhotos: ['original'],
+    document: {getElementById: id => id === 'photoCanvas' ? canvas : {value: '0'}}
+});
+vm.runInContext(html.slice(filterStart, filterEnd), filterContext);
+filterContext.applyCanvasFilter();
+assert.equal(canvas.height, 900);
+assert.ok(canvas.width > 0 && canvas.width <= 600);
+filterContext.rawImage = {width: 8000, height: 400};
+filterContext.applyCanvasFilter();
+assert.equal(canvas.width, 600);
+assert.ok(canvas.height > 0 && canvas.height <= 900);
+filterContext.rawImage = {width: 0, height: 400};
+assert.throws(() => filterContext.applyCanvasFilter(), /Ungültige Bildabmessungen/);
 console.log('Receipt photo format regression checks passed');
