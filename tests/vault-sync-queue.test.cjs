@@ -370,6 +370,17 @@ test('Cloud-Backup-Status prueft auch die Entschluesselbarkeit der Eintraege', (
   assert.doesNotMatch(source, /localStorage\.setItem/);
 });
 
+test('Cloud-Backup-Status lehnt ungueltige wiederherstellbare Metadaten ab', () => {
+  const start = html.indexOf('async function checkSupabaseVaultBackup()');
+  const end = html.indexOf('async function ', start + 20);
+  const source = html.slice(start, end < 0 ? undefined : end);
+  assert.match(source, /cloudConfig\.checkInIntervalDays > 3650/);
+  assert.match(source, /Date\.parse\(cloudConfig\.lastCheckIn\)/);
+  assert.match(source, /cloudConfig\.trustees\.every/);
+  assert.match(source, /cloudConfig\.alarmPersons\.every/);
+  assert.doesNotMatch(source, /localStorage\.setItem/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
