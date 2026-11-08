@@ -92,10 +92,11 @@
       if (row && !isRecord(row)) { failedReads++; rememberConflict('invalid-cloud-row'); throw new Error('Invalid cloud record'); }
       if (row && (!row.id || typeof row.updated_at !== 'string' || !row.updated_at)) { failedReads++; rememberConflict('invalid-cloud-identity'); throw new Error('Invalid cloud record identity'); }
       if (row && !isRecord(row.data)) { failedReads++; rememberConflict('invalid-cloud-payload'); throw new Error('Invalid cloud payload'); }
-      if (row && recordCount(row.data) === 0) { rememberConflict('empty-cloud-payload'); throw new Error('Empty cloud payload'); }
+      // Empty JSON objects may be valid historical cloud records; preserve them.
       if (row && !Number.isSafeInteger(Number(row.id))) { rememberConflict('invalid-cloud-row-id'); throw new Error('Invalid cloud row id'); }
       if (row && Number(row.id) <= 0) { rememberConflict('nonpositive-cloud-row-id'); throw new Error('Invalid cloud row id'); }
       if (await userId() !== uid) { rememberConflict('cloud-read-account-change'); throw new Error('Account changed during cloud request'); }
+      if (closed) throw new Error('Store disposed during cloud request');
       assertOpen();
       return row;
     }
@@ -234,7 +235,7 @@
         // An earlier request may have reached Supabase before the browser lost
         // its response. An exact match is safe to acknowledge without writing.
         if (row && sameData(row.data, pending)) {
-        lastPendingStatus = false;
+          lastPendingStatus = false;
           lastConflict = null;
           if (await userId() !== uid) throw new Error('Account changed before acknowledging remote write');
           if (localStorage.getItem(k.pending) !== pendingBytes) return false;
@@ -327,6 +328,14 @@
             try {
               const row = await fetchCloud(uid);
               if (await userId() !== uid) throw new Error('Account changed while preparing save');
+              // The first edit must not silently adopt a remote revision when
+              // local data could be a divergent legacy snapshot.
+              if (row && !sameData(row.data, data)) {
+                write(k.base, { unresolved: true });
+                writePending(k, data);
+                rememberConflict('first-save-cloud-data-differs');
+                return false;
+              }
               write(k.cache, row ? clone(row.data) : null);
               write(k.revision, row ? row.updated_at : null);
             } catch (error) {
@@ -344,6 +353,7 @@
         write(k.base, { revision: read(k.revision) });
       }
       if (await userId() !== uid) throw new Error('Account changed before local pending write');
+      assertOpen();
       if (flushing && operationOwner !== uid) throw new Error('Account changed during upload');
       writePending(k, data);
       if (!isConnected()) return false;
@@ -377,12 +387,16 @@
       if (flushing) throw new Error('Sync already in progress');
       const pending = read(k.pending);
       if (!isRecord(pending)) { rememberConflict('reconcile-invalid-pending'); throw new Error('Invalid pending data'); }
+      const pendingBytes = raw(k.pending);
+      const baseBytes = raw(k.base);
       const row = await fetchCloud(uid);
       lastReconcileAt = now();
+      assertPending(k, pendingBytes);
+      assertBase(k, baseBytes);
       if (await userId() !== uid) { rememberConflict('reconcile-account-changed'); throw new Error('Account changed during reconciliation'); }
       assertOnline();
       if (row && sameData(row.data, pending)) {
-        assertPending(k, JSON.stringify(pending));
+        assertPending(k, pendingBytes);
         if (await userId() !== uid) throw new Error('Account changed during acknowledgement');
         finishAcknowledged(k, pending, row.updated_at);
         lastSuccessfulSync = new Date().toISOString();
