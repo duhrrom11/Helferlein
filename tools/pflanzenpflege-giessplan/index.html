@@ -731,7 +731,11 @@
                 let data = getData();
                 let p = data.plants.find(item => item && typeof item === 'object' && item.id === plantId);
                 if(p) {
-                    if (!Array.isArray(p.galleryPhotos)) p.galleryPhotos = p.photo ? [p.photo] : [];
+                    if (!Array.isArray(p.galleryPhotos)) p.galleryPhotos = [];
+                    if (p.galleryPhotos.length === 0 && typeof p.photo === 'string' &&
+                        /^data:image\/(?:jpeg|png|webp);base64,/.test(p.photo)) {
+                        p.galleryPhotos.push(p.photo);
+                    }
                     p.galleryPhotos.push(compressed);
                     if (!saveData(data)) return;
                     renderGalleryGrid(plantId); fileInput.value = "";
