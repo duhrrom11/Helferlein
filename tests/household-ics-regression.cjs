@@ -1,0 +1,18 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const html = fs.readFileSync('tools/haushaltsbuch-kassenbon/index.html', 'utf8');
+const a = html.indexOf('function escapeCalendarText(value)');
+const b = html.indexOf('function downloadICS(id)', a);
+assert.ok(a >= 0 && b > a, 'ICS escaping helper exists');
+const context = vm.createContext({});
+vm.runInContext(html.slice(a, b), context);
+const escape = value => vm.runInContext('escapeCalendarText(' + JSON.stringify(value) + ')', context);
+assert.equal(escape('Titel, A;B'), 'Titel\\, A\\;B');
+assert.equal(escape('Erste\nBEGIN:VEVENT'), 'Erste\\nBEGIN:VEVENT');
+assert.equal(escape('C:\\Dokument'), 'C:\\\\Dokument');
+assert.equal(escape('A\r\nB'), 'A\\nB');
+assert.equal(escape(null), '');
+assert.match(html.slice(b, html.indexOf('/* --- Export & Import --- */', b)), /DTEND;VALUE=DATE:/);
+assert.match(html.slice(b, html.indexOf('/* --- Export & Import --- */', b)), /URL\.revokeObjectURL/);
+console.log('Household calendar export regression checks passed');
