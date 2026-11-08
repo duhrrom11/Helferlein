@@ -219,6 +219,18 @@ test('Cloud-Restore lehnt ungueltige Konfigurationswerte vor dem Schreiben ab', 
     source.indexOf("localStorage.setItem('digital_estate_vault'"));
 });
 
+test('Wiederherstellung prueft Kontaktobjekte vor der letzten Bestaetigung', () => {
+  const start = html.indexOf('async function restoreVaultFromSupabase()');
+  const end = html.indexOf('// Opt-in: wrap only the random vault key', start);
+  const source = html.slice(start, end);
+  const check = source.indexOf('recoveredConfig.trustees.every');
+  const confirm = source.indexOf("if (!confirm('Cloud-Tresor erfolgreich entschlüsselt");
+  const write = source.indexOf("localStorage.setItem('digital_estate_vault'");
+  assert.ok(check > 0 && confirm > check && write > confirm);
+  assert.match(source, /recoveredConfig\.alarmPersons\.every/);
+  assert.match(source, /person\.name\.length <= 500/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
