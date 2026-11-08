@@ -40,6 +40,7 @@
       if (!navigator.onLine) return { data: read(k.cache), source: 'offline' };
       try {
         const row = await fetchCloud(uid);
+        if (await userId() !== uid) throw new Error('Account changed during cloud load');
         write(k.cache, row ? row.data : null);
         write(k.revision, row ? row.updated_at : null);
         return { data: row ? row.data : null, source: row ? 'cloud' : 'cloud-empty' };
@@ -63,6 +64,7 @@
         throw new Error('Missing sync baseline; manual reconciliation required');
       }
       const row = await fetchCloud(uid);
+      if (await userId() !== uid) throw new Error('Account changed during sync; pending data preserved');
       if ((row ? row.updated_at : null) !== base.revision) {
         throw new Error('Cloud changed since last sync; pending data preserved');
       }
@@ -81,6 +83,7 @@
         if (!data || data.length !== 1) throw new Error('Cloud insert not confirmed; pending data preserved');
         write(k.revision, data[0].updated_at);
       }
+      if (await userId() !== uid) throw new Error('Account changed after sync; pending data preserved');
       // A newer local edit may have arrived while the request was in flight.
       // Keep it queued with the new server revision rather than deleting it.
       write(k.cache, pending);
@@ -108,6 +111,7 @@
         if (localStorage.getItem(k.revision) === null) {
           if (!navigator.onLine) throw new Error('Cloud baseline unavailable while offline');
           const row = await fetchCloud(uid);
+          if (await userId() !== uid) throw new Error('Account changed while preparing save');
           write(k.cache, row ? row.data : null);
           write(k.revision, row ? row.updated_at : null);
         }
