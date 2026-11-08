@@ -38,3 +38,11 @@ test('Editor supports reversible changes and mobile navigation',()=>{
  assert.match(css,/min-width:1024px/);
  assert.match(css,/prefers-reduced-motion:reduce/);
 });
+
+test('B3 layout CSS preserves complete panels across tablet widths',()=>{
+ assert.doesNotMatch(css,/\\\\nbody/,'CSS must not include escaped line endings between selectors');
+ assert.match(css,/main\\.b3-dashboard>\\[data-b3-panel\\]\\{grid-column:span 12/);
+ assert.match(css,/@media\\(min-width:768px\\) and \\(max-width:1279px\\)/);
+ assert.match(css,/data-b3-panel="stats".*grid-template-columns:repeat\\(2,minmax\\(0,1fr\\)\\)/s);
+ assert.match(css,/body\\.b3-dark main\\.b3-dashboard \\[data-b3-panel="calendar"\\]/);
+});
