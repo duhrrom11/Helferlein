@@ -994,13 +994,21 @@
             if (error || !data?.user) throw new Error('Bitte zuerst in den Einstellungen anmelden.');
             return data.user;
         }
+        let secureWgRevision = null;
+        let secureWgSaving = Promise.resolve();
+        let secureWgDirty = false;
         async function saveSecureWg(payload) {
             await getAuthenticatedWgUser();
+            if (!secureWgRevision) throw new Error('WG muss vor dem Speichern neu geladen werden.');
             const id = wgBinId.slice(SECURE_WG_PREFIX.length);
+            const nextRevision = new Date().toISOString();
             const { data, error } = await supabaseClient.from('wg_spaces')
-                .update({ payload, updated_at: new Date().toISOString() })
-                .eq('id', id).select('id').single();
-            if (error || !data) throw new Error(error?.message || 'Kein Schreibzugriff auf diese WG.');
+                .update({ payload, updated_at: nextRevision })
+                .eq('id', id).eq('updated_at', secureWgRevision)
+                .select('updated_at').maybeSingle();
+            if (error) throw new Error(error.message);
+            if (!data) throw new Error('Speicherkonflikt: Die WG wurde zwischenzeitlich geändert. Bitte Änderungen sichern und neu laden.');
+            secureWgRevision = data.updated_at;
             return true;
         }
 
@@ -1023,6 +1031,13 @@
 
         async function manuelleSynchronisation() {
             if (!wgBinId) return alert("Keine WG-ID aktiv.");
+            if (isSecureWgId(wgBinId)) {
+                await secureWgSaving;
+                if (secureWgDirty) {
+                    alert('Nicht gespeicherte Änderungen vorhanden. Bitte die Daten vor dem Neuladen sichern. Ein automatisches Überschreiben wird verhindert.');
+                    return;
+                }
+            } else if (!confirm('Cloud-Daten neu laden? Nicht synchronisierte lokale Änderungen können verloren gehen.')) return;
             try {
                 const loaded = await ladeWGausCloud();
                 if (!loaded) throw new Error('Cloud-Daten konnten nicht geladen werden');
@@ -1137,12 +1152,14 @@
                 if (isSecureWgId(wgBinId)) {
                     await getAuthenticatedWgUser();
                     const { data, error } = await supabaseClient.from('wg_spaces')
-                        .select('payload').eq('id', wgBinId.slice(SECURE_WG_PREFIX.length)).single();
+                        .select('payload, updated_at').eq('id', wgBinId.slice(SECURE_WG_PREFIX.length)).single();
                     if (error || !data) throw new Error(error?.message || 'Kein Lesezugriff auf diese WG.');
                     const payload = data.payload;
                     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('Ungültige WG-Daten');
                     // Use the same field validation and local-cache hydration as legacy data.
-                    return await ladeWGObjekt(payload);
+                    const loaded = await ladeWGObjekt(payload);
+                    if (loaded) { secureWgRevision = data.updated_at; secureWgDirty = false; }
+                    return loaded;
                 }
                 let response = await fetch(NPOINT_API_BASE + wgBinId);
                 if (!response.ok) {
@@ -1215,8 +1232,25 @@
                 infoboard: getInfoData()
             };
             if (isSecureWgId(wgBinId)) {
-                try { return await saveSecureWg(backupObj); }
-                catch (error) { console.error('Geschützte WG-Speicherung fehlgeschlagen:', error); return false; }
+                secureWgDirty = true;
+                secureWgSaving = secureWgSaving.catch(() => false).then(async () => {
+                    try {
+                        const saved = await saveSecureWg({
+                            flatmates: getFlatmates(), notes: getNotes(), data: getData(),
+                            budgets: getBudgets(), goals: getSavingsGoals(), events: getEvents(),
+                            inventory: getInventory(), diets: getDiets(), cleaning: getCleaningPlan(),
+                            shopping: getShoppingList(), cooking: getCookingPlan(),
+                            contracts: getContracts(), infoboard: getInfoData()
+                        });
+                        secureWgDirty = false;
+                        return saved;
+                    } catch (error) {
+                        console.error('Geschützte WG-Speicherung fehlgeschlagen:', error);
+                        alert('WG-Änderungen konnten nicht gespeichert werden: ' + error.message);
+                        return false;
+                    }
+                });
+                return secureWgSaving;
             }
 
             if (wgBinId.startsWith('wg_')) {
