@@ -117,7 +117,7 @@ test('B3 dark mode keeps representative text, buttons and fields high contrast',
       ['Ko-fi','#settingsModal .b3-kofi-link','#settingsModal .b3-kofi-link'],
       ['discovery','#settingsModal .b3-home-link','#settingsModal .b3-preferences'],
       ['auth input','#auth-email','#auth-email'],
-      ['login button','#settingsModal button.bg-lime-600','#settingsModal button.bg-lime-600']
+      ['login button','#settingsModal button[onclick="supabaseLogin()"]','#settingsModal button[onclick="supabaseLogin()"]']
     ].map(([name,foreground,background])=>{
       const f=document.querySelector(foreground),b=document.querySelector(background);
       return {name,foreground:getComputedStyle(f).color,background:getComputedStyle(b).backgroundColor,ratio:contrast(getComputedStyle(f).color,getComputedStyle(b).backgroundColor)};
