@@ -250,6 +250,17 @@ test('Cloud-Backup schuetzt vorhandenen Passwort-Recovery-Key bei Schluesselwech
     source.indexOf(".update({ encrypted_data:"));
 });
 
+test('Cloud-Sicherungsstatus verwendet passenden Schluessel und stabilen lokalen Stand', () => {
+  const start = html.indexOf('async function checkSupabaseVaultBackup()');
+  const end = html.indexOf('async function backupVaultToSupabase()', start);
+  const source = html.slice(start, end);
+  assert.match(source, /local\.masterKeyHex !== currentMasterKeyHex/);
+  assert.match(source, /localStorage\.getItem\('digital_estate_vault'\) !== localSnapshot/);
+  assert.match(source, /lastPersistedRevision !== localSaveRevision/);
+  assert.ok(source.indexOf('local.masterKeyHex !== currentMasterKeyHex') <
+    source.indexOf('decryptVaultPayload(remote.encrypted_config, currentMasterKeyHex)'));
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
