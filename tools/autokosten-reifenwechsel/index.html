@@ -465,6 +465,10 @@
 
         function saveData(data) {
             if (!data || typeof data !== 'object' || !Array.isArray(data.cars)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_autokosten-reifenwechsel') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
             if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
                 alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
                 return false;
