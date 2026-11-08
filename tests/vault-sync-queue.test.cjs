@@ -272,6 +272,19 @@ test('Lesende Wiederherstellungsprobe erkennt Schluessel- und lokale Zwischensta
   assert.doesNotMatch(source, /localStorage\.setItem/);
 });
 
+test('Cloud-Backup validiert Konfiguration vor dem Verschluesseln und Upload', () => {
+  const start = html.indexOf('async function backupVaultToSupabase()');
+  const end = html.indexOf('async function prepareSupabaseRecoveryKey()', start);
+  const source = html.slice(start, end);
+  const guard = source.indexOf('!Array.isArray(cfg.trustees)');
+  const encrypt = source.indexOf('encryptVaultPayload(configPayload, currentMasterKeyHex)');
+  const upload = source.indexOf('.update({ encrypted_data:');
+  assert.ok(guard > 0 && encrypt > guard && upload > encrypt);
+  assert.match(source, /!Array\.isArray\(cfg\.alarmPersons\)/);
+  assert.match(source, /Date\.parse\(cfg\.lastCheckIn\)/);
+  assert.match(source, /cfg\.trustees\.every/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
