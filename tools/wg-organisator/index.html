@@ -892,8 +892,13 @@
         let wgBinId = urlParams.get('id');
         const savedWgId = localStorage.getItem('wg_active_bin_id');
 
-        if (!wgBinId && savedWgId) {
-            window.location.replace(window.location.pathname + "?id=" + savedWgId);
+        const validWgId = id => typeof id === 'string' && /^[a-zA-Z0-9_-]{4,128}$/.test(id);
+        if (wgBinId && !validWgId(wgBinId)) {
+            wgBinId = null;
+            alert('Ungültige WG-ID im Link.');
+        }
+        if (!wgBinId && validWgId(savedWgId)) {
+            window.location.replace(window.location.pathname + "?id=" + encodeURIComponent(savedWgId));
         } else if (wgBinId) {
             localStorage.setItem('wg_active_bin_id', wgBinId);
         }
@@ -1061,7 +1066,7 @@
                         <div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-3xl mx-auto">🏠</div>
                         <h2 class="text-xl font-black text-gray-900">Gemeinsamer WG-Planer</h2>
                         <p class="text-xs text-gray-500 leading-relaxed">
-                            Erstelle mit nur einem Klick deinen sicheren WG-Planer für dich und deine Mitbewohner.
+                            Erstelle einen gemeinsamen WG-Planer. Der WG-Link ist vertraulich und sollte nur mit Mitbewohnern geteilt werden.
                         </p>
                         <button onclick="erstelleNeueWGKonfiguration()" class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl text-sm shadow-md transition-all">
                             ✨ WG-Plan mit 1 Klick erstellen
@@ -1074,7 +1079,7 @@
         }
 
         async function ladeWGausCloud() {
-            if (!wgBinId) return false;
+            if (!wgBinId || !/^[a-zA-Z0-9_-]{4,128}$/.test(wgBinId)) return false;
             try {
                 let response = await fetch(NPOINT_API_BASE + wgBinId);
                 if (!response.ok) {
@@ -1093,6 +1098,14 @@
                                 (!cloudObj[key] || typeof cloudObj[key] !== 'object' || Array.isArray(cloudObj[key])))) {
                             throw new Error('Ungültiges WG-Cloud-Datenformat');
                         }
+                        // If switching WGs, discard only the previous WG's local cache.
+                        // Keep the current cache untouched until remote validation succeeds.
+                        if (localStorage.getItem('wg_last_loaded_bin_id') !== wgBinId) {
+                            ['wg_flatmates', 'wg_notes', 'wg_kassenbon_data', 'wg_budgetbuch_budgets',
+                             'wg_budgetbuch_goals', 'wg_events', 'wg_inventory', 'wg_diets',
+                             'wg_cleaning', 'wg_shopping', 'wg_cooking', 'wg_contracts',
+                             'wg_infoboard'].forEach(key => localStorage.removeItem(key));
+                        }
                         if (cloudObj.flatmates !== undefined) {
                             let fm = cloudObj.flatmates.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
                             localStorage.setItem('wg_flatmates', JSON.stringify(fm));
@@ -1110,8 +1123,10 @@
                         if (cloudObj.contracts !== undefined) localStorage.setItem('wg_contracts', JSON.stringify(cloudObj.contracts));
                         if (cloudObj.infoboard !== undefined) localStorage.setItem('wg_infoboard', JSON.stringify(cloudObj.infoboard));
                     }
-                    return cloudObj && typeof cloudObj === 'object' && !Array.isArray(cloudObj) &&
+                    const valid = cloudObj && typeof cloudObj === 'object' && !Array.isArray(cloudObj) &&
                         ['flatmates', 'notes', 'data', 'budgets', 'goals', 'events', 'inventory', 'diets', 'cleaning', 'shopping', 'cooking', 'contracts', 'infoboard'].some(key => Object.prototype.hasOwnProperty.call(cloudObj, key));
+                    if (valid) localStorage.setItem('wg_last_loaded_bin_id', wgBinId);
+                    return valid;
                 }
             } catch (error) {
                 console.error("Fehler beim Cloud-Laden:", error);
@@ -1120,7 +1135,7 @@
         }
 
         async function speichereWGinCloud() {
-            if (!wgBinId) return false;
+            if (!wgBinId || !/^[a-zA-Z0-9_-]{4,128}$/.test(wgBinId)) return false;
             const backupObj = {
                 flatmates: getFlatmates(),
                 notes: getNotes(),
@@ -1173,14 +1188,20 @@
             }
         }
 
-        function kopiereWGLink() {
-            navigator.clipboard.writeText(window.location.href);
-            alert("🔗 Link zum WG-Planer kopiert! Schicke ihn an deine Mitbewohner.");
+        async function kopiereWGLink() {
+            if (!validWgId(wgBinId)) return alert('Keine gültige WG-ID vorhanden.');
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                alert("🔗 WG-Link kopiert! Teile ihn nur mit berechtigten Personen.");
+            } catch (error) {
+                console.error('WG-Link konnte nicht kopiert werden:', error);
+                prompt('WG-Link manuell kopieren:', window.location.href);
+            }
         }
 
-        setInterval(() => {
-            if (wgBinId) ladeWGausCloud();
-        }, 30000);
+        // Automatic refresh is intentionally disabled: remote polling could overwrite
+        // newer unsaved local edits. Use the explicit manual sync action instead.
+        // Shared WG editing needs authenticated, conflict-aware cloud storage.
 
         const AMAZON_AFFILIATE_TAG = "duhrrom-21";
         const daysOfWeek = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
@@ -1201,7 +1222,21 @@
             document.getElementById('eventDate').valueAsDate = new Date();
             initCharts();
             
-            await ladeWGausCloud();
+            const loaded = await ladeWGausCloud();
+            if (!loaded) {
+                // A different WG must never silently inherit this browser's cached data.
+                const lastLoadedId = localStorage.getItem('wg_last_loaded_bin_id');
+                if (lastLoadedId !== wgBinId) {
+                    document.getElementById('main-content').replaceChildren();
+                    const warning = document.createElement('section');
+                    warning.className = 'p-6 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900';
+                    warning.textContent = 'Die WG-Cloud ist derzeit nicht erreichbar. Zur Vermeidung einer Datenvermischung werden keine gespeicherten Daten einer anderen WG angezeigt. Bitte später erneut laden.';
+                    document.getElementById('main-content').append(warning);
+                    checkUserSession();
+                    return;
+                }
+                alert('WG-Cloud nicht erreichbar. Lokale Daten dieser WG werden angezeigt; Änderungen können derzeit nicht zuverlässig synchronisiert werden.');
+            }
             renderApp();
             // Opening a WG must never write stale local data back over cloud records.
             checkUserSession();
@@ -1771,6 +1806,7 @@
         function toggleCleanTask(id) { const plan = getCleaningPlan(); const item = plan.find(p => p.id === id); if (item) { item.done = !item.done; saveCleaningPlan(plan); renderCleaningPlan(); } }
         function rotateCleaningPlan() {
             const plan = getCleaningPlan(); const mateNames = getFlatmateNames();
+            if (mateNames.length === 0) return alert('Bitte zuerst ein WG-Mitglied anlegen.');
             plan.forEach(p => { const curr = mateNames.indexOf(p.assignee); p.assignee = mateNames[(curr + 1) % mateNames.length]; p.done = false; });
             saveCleaningPlan(plan); renderCleaningPlan();
         }
@@ -1781,7 +1817,7 @@
             const assignee = document.getElementById('cleanTaskAssignee').value;
             if (!task) return alert("Bitte Aufgabe angeben!");
             const plan = getCleaningPlan(); plan.push({ id: Date.now(), task, assignee, done: false });
-            saveCleanTask(plan); closeAddCleanTaskModal(); renderApp();
+            saveCleaningPlan(plan); closeAddCleanTaskModal(); renderApp();
         }
         function deleteCleanTask(id) { saveCleaningPlan(getCleaningPlan().filter(p => p.id !== id)); renderApp(); }
 
@@ -1861,10 +1897,10 @@
         function closeContractModal() { document.getElementById('contractModal').classList.remove('flex'); document.getElementById('contractModal').classList.add('hidden'); }
         function saveContract() {
             const name = document.getElementById('contractName').value.trim();
-            const price = parseFloat(document.getElementById('contractPrice').value) || 0;
+            const price = Number(document.getElementById('contractPrice').value);
             const payer = document.getElementById('contractPayer').value;
             const noticeDate = document.getElementById('contractNoticeDate').value;
-            if (!name || price <= 0) return alert("Bitte Name und Kosten angeben!");
+            if (!name || !Number.isFinite(price) || price <= 0) return alert("Bitte Name und gültige Kosten angeben!");
             const contracts = getContracts(); contracts.push({ id: Date.now(), name, price, payer, noticeDate });
             saveContracts(contracts); closeContractModal(); renderApp();
         }
@@ -1894,9 +1930,16 @@
         function openWLANQRModal() {
             const modal = document.getElementById('wlanQrModal'); modal.classList.remove('hidden'); modal.classList.add('flex');
             const qrContainer = document.getElementById('wlanQrcode'); qrContainer.innerHTML = "";
-            const wifiString = `WIFI:S:WG-WLAN;T:WPA;P:${getInfoData().wifi || ''};;`;
+            // Ask for the actual credentials; never mistake the infoboard's free-text
+            // Wi-Fi description for a password or transmit credentials to a QR service.
+            const ssid = prompt('WLAN-Name (SSID):', '')?.trim();
+            if (!ssid) { qrContainer.textContent = 'Kein WLAN-Name angegeben.'; return; }
+            const password = prompt('WLAN-Passwort (wird nicht gespeichert):');
+            if (password === null) { qrContainer.textContent = 'QR-Erstellung abgebrochen.'; return; }
+            const escapeWifi = value => String(value).replace(/([\\;,:"])/g, '\\$1');
+            const wifiString = 'WIFI:T:WPA;S:' + escapeWifi(ssid) + ';P:' + escapeWifi(password) + ';;';
             if (typeof QRCode !== 'undefined') new QRCode(qrContainer, { text: wifiString, width: 140, height: 140 });
-            else { qrContainer.textContent = "QR-Code derzeit nicht verfügbar. Aus Datenschutzgründen wird das WLAN-Passwort nicht an einen externen QR-Dienst gesendet."; }
+            else qrContainer.textContent = 'QR-Code-Bibliothek nicht verfügbar.';
         }
         function closeWLANQRModal() { document.getElementById('wlanQrModal').classList.remove('flex'); document.getElementById('wlanQrModal').classList.add('hidden'); }
 
