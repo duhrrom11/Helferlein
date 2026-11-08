@@ -663,7 +663,7 @@
                         <div class="p-4 bg-gray-50 border rounded-2xl space-y-2">
                             <div class="flex items-center justify-between gap-3">
                                 <div class="flex items-center space-x-3">
-                                    ${p.photo ? `<img src="${HelferleinSafe.photo(p.photo)}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage(${HelferleinSafe.jsArg(HelferleinSafe.photo(p.photo))})" title="Foto vergrößern">` : defaultPetIcon}
+                                    ${p.photo ? `<img src="${HelferleinSafe.photo(p.photo)}" class="w-12 h-12 object-cover rounded-full border shadow-sm cursor-pointer flex-shrink-0" onclick="zoomImage(${HelferleinSafe.photoArg(p.photo)})" title="Foto vergrößern">` : defaultPetIcon}
                                     <div>
                                         <h4 class="font-bold text-sm text-teal-800">${HelferleinSafe.html(p.name)}</h4>
                                         <p class="text-xs text-gray-600">${HelferleinSafe.html(p.species || 'k.A.')} ${HelferleinSafe.html(p.chip ? '| Chip: ' + p.chip : '')}</p>
@@ -675,7 +675,7 @@
                                 ${p.tasso ? `<span class="bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-full">🛡️ TASSO / Register</span>` : `<span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">Nicht registriert</span>`}
                                 ${p.food ? `<span>🥣 ${HelferleinSafe.html(p.food)}</span>` : ''}
                                 ${p.allergies ? `<span class="text-red-700 font-semibold">⚠️ Allergie: ${HelferleinSafe.html(p.allergies)}</span>` : ''}
-                                ${p.passport ? `<button onclick="zoomImage(${HelferleinSafe.jsArg(HelferleinSafe.photo(p.passport))})" class="text-blue-600 font-semibold underline">📄 EU-Ausweis anzeigen</button>` : ''}
+                                ${p.passport ? `<button onclick="zoomImage(${HelferleinSafe.photoArg(p.passport)})" class="text-blue-600 font-semibold underline">📄 EU-Ausweis anzeigen</button>` : ''}
                             </div>
                             ${vetHtml}
                         </div>
@@ -778,7 +778,7 @@
                         weightBadge = `<span class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">${trendIcon} ${HelferleinSafe.html(e.weight)} kg</span>`;
                     }
 
-                    let receiptBtn = e.receipt ? `<button onclick="zoomImage(${HelferleinSafe.jsArg(HelferleinSafe.photo(e.receipt))})" class="px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-xs font-semibold hover:bg-teal-100" title="Beleg anzeigen">🧾 Beleg</button>` : '';
+                    let receiptBtn = e.receipt ? `<button onclick="zoomImage(${HelferleinSafe.photoArg(e.receipt)})" class="px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-xs font-semibold hover:bg-teal-100" title="Beleg anzeigen">🧾 Beleg</button>` : '';
 
                     let googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(e.title + ' (' + petName + ')')}&dates=${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}/${d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8)}&details=${encodeURIComponent('Haustier-Termin für ' + petName)}`;
                     
