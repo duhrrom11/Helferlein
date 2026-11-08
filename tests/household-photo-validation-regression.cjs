@@ -121,5 +121,5 @@ vm.runInContext(html.slice(safeFilterStart, safeFilterEnd), safeFilterContext);
 assert.doesNotThrow(() => safeFilterContext.tryApplyCanvasFilter());
 assert.equal(safeFilterContext.photoReadFailed, true);
 assert.match(filterAlerts[0], /erneut auswählen/);
-assert.equal((html.match(/onchange="tryApplyCanvasFilter\\(\\)"/g) || []).length, 2);
+assert.equal(html.split('onchange="tryApplyCanvasFilter()"').length - 1, 2);
 console.log('Receipt photo format regression checks passed');
