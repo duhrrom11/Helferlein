@@ -848,8 +848,12 @@
             let hasData = false;
 
             types.forEach(t => {
-                const matching = data.readings.filter(r => r.type === t)
-                    .sort((a,b) => new Date(b.date) - new Date(a.date));
+                const matching = data.readings.filter(r => {
+                    if (r.type !== t || typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
+                    const date = new Date(r.date);
+                    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === r.date &&
+                        Number.isFinite(Number(r.value)) && r.value !== '' && Number(r.value) >= 0;
+                }).sort((a,b) => new Date(b.date) - new Date(a.date));
                 const latestMeterName = matching[0]?.name;
                 let list = matching.filter(r => r.name === latestMeterName)
                     .sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -860,8 +864,10 @@
 
                     for (let i = 1; i < list.length; i++) {
                         const days = (new Date(list[i].date) - new Date(list[i-1].date)) / (1000 * 60 * 60 * 24);
-                        if (days > 0 && !list[i].isExchange && list[i].value >= list[i-1].value) {
-                            totalValidVal += list[i].value - list[i-1].value;
+                        const currentValue = Number(list[i].value);
+                        const previousValue = Number(list[i-1].value);
+                        if (days > 0 && !list[i].isExchange && currentValue >= previousValue) {
+                            totalValidVal += currentValue - previousValue;
                             validDays += days;
                         }
                     }
