@@ -755,11 +755,13 @@
                 }
                 if (Object.keys(backup.localStorage).length === 0) { alert("Keine Daten zum Sichern vorhanden."); return; }
                 const containsVault = Object.prototype.hasOwnProperty.call(backup.localStorage, "digital_estate_vault");
-                const warning = containsVault
-                    ? "Dieses Backup enthält möglicherweise vertrauliche Nachlassdaten und ist NICHT verschlüsselt. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren. Trotzdem exportieren?"
-                    : "Dieses Backup ist NICHT verschlüsselt und kann persönliche Daten enthalten. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren. Trotzdem exportieren?";
-                if (!confirm(warning)) return;
                 const encrypted = arguments.length > 0 && arguments[0] === true;
+                const warning = encrypted
+                    ? "Die Sicherung wird mit einem selbst gewählten Passwort verschlüsselt. Ohne dieses Passwort ist eine Wiederherstellung nicht möglich. Fortfahren?"
+                    : containsVault
+                    ? "Dieses Backup enthält möglicherweise vertrauliche Nachlassdaten und ist NICHT verschlüsselt. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren. Trotzdem exportieren?"
+                    : "Dieses Backup ist NICHT verschlüsselt und kann persönliche Daten enthalten. Nur auf einem vertrauenswürdigen Gerät speichern und sicher aufbewahren?";
+                if (!confirm(warning)) return;
                 let output = JSON.stringify(backup, null, 2);
                 if (encrypted) {
                     if (!crypto?.subtle || !crypto.getRandomValues) {
