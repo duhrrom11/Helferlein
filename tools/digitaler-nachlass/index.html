@@ -46,6 +46,13 @@
         <strong>Wichtiger Sicherheitshinweis:</strong> Der Schlüssel für die lokal verschlüsselten Nachlassdaten wird derzeit zusammen mit den Daten im Browser gespeichert. Wer Zugriff auf den Browser-Speicher oder ein vollständiges Nachlass-Backup erhält, kann diese Daten möglicherweise entschlüsseln. Bitte hier bis zur abgeschlossenen Sicherheitsüberarbeitung keine Passwörter, Zugangscodes oder anderen besonders vertraulichen Geheimnisse hinterlegen.
     </div>
 
+    <div role="status" class="mx-auto mt-2 max-w-5xl rounded-xl border border-amber-700 bg-amber-950/50 px-4 py-3 text-sm text-amber-100">
+        <strong>Cloud-Hinweis:</strong> Eine Supabase-Anmeldung sichert den Nachlass-Tresor nicht automatisch.
+        Die separate Firebase-Synchronisierung gilt nur dann als erfolgreich, wenn die Anwendung dies ausdrücklich bestätigt.
+        Bei einer Fehlermeldung bleiben Änderungen möglicherweise ausschließlich auf diesem Gerät gespeichert.
+        Bitte regelmäßig eine passwortgeschützte lokale Sicherung über die Helferlein-Startseite erstellen.
+    </div>
+
     <!-- SYNC MODAL -->
     <div id="syncModalOverlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl">
