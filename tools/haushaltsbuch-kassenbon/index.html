@@ -796,6 +796,23 @@
             return null;
         }
 
+        function extractReceiptDate(text) {
+            if (typeof text !== 'string') return null;
+            const candidates = [];
+            for (const line of text.split(/\r?\n/)) {
+                const matches = line.matchAll(/(^|[^\d])(\d{2})[./](\d{2})[./](\d{4})(?!\d)/g);
+                for (const match of matches) {
+                    const date = match[4] + '-' + match[3] + '-' + match[2];
+                    if (!Number.isFinite(parseReceiptDate(date).getTime())) continue;
+                    candidates.push({
+                        date,
+                        labeled: /\b(?:datum|kaufdatum|belegdatum|rechnungsdatum)\b/i.test(line)
+                    });
+                }
+            }
+            return (candidates.find(candidate => candidate.labeled) || candidates[0])?.date || null;
+        }
+
         /* --- Tesseract OCR --- */
         async function runOCR() {
             const input = document.getElementById('receiptPhotoInput');
@@ -820,11 +837,10 @@
                 if (recognizedPrice !== null && !document.getElementById('receiptPrice').value) {
                     document.getElementById('receiptPrice').value = recognizedPrice;
                 }
-                const dateMatch = text.match(/(\d{2})[\.\/](\d{2})[\.\/](\d{4})/);
                 const dateInput = document.getElementById('receiptDate');
-                if (dateMatch && (!dateInput.value || dateInput.dataset.autoDefault === 'true')) {
-                    const recognizedDate = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
-                    if (Number.isFinite(parseReceiptDate(recognizedDate).getTime())) {
+                if (!dateInput.value || dateInput.dataset.autoDefault === 'true') {
+                    const recognizedDate = extractReceiptDate(text);
+                    if (recognizedDate !== null) {
                         dateInput.value = recognizedDate;
                         dateInput.dataset.autoDefault = 'false';
                     }
