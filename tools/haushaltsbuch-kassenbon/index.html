@@ -819,8 +819,13 @@
             const b = parseInt(document.getElementById('filterBrightness').value);
             const c = parseInt(document.getElementById('filterContrast').value);
 
-            canvas.width = Math.min(rawImage.width, 600);
-            canvas.height = rawImage.height * (canvas.width / rawImage.width);
+            if (!Number.isFinite(rawImage.width) || !Number.isFinite(rawImage.height) ||
+                rawImage.width <= 0 || rawImage.height <= 0) {
+                throw new Error('Ungültige Bildabmessungen');
+            }
+            const scale = Math.min(1, 600 / rawImage.width, 900 / rawImage.height);
+            canvas.width = Math.max(1, Math.round(rawImage.width * scale));
+            canvas.height = Math.max(1, Math.round(rawImage.height * scale));
             ctx.filter = `brightness(${100 + b}%) contrast(${100 + c}%)`;
             ctx.drawImage(rawImage, 0, 0, canvas.width, canvas.height);
 
