@@ -119,6 +119,7 @@
 </div><details class="b3-more" id="b3-nachlass-more"><summary>☷ Weitere Tools</summary><div class="b3-more-content">
 <button id="manualSyncBtn" type="button" class="b3-more-item">☁️ Cloud-Synchronisation (bisheriger Weg)</button>
                 <button id="supabaseBackupBtn" type="button" class="b3-more-item">🔐 Verschlüsselten Tresor bei Supabase sichern</button>
+                <button id="supabaseBackupStatusBtn" type="button" class="b3-more-item">🔎 Supabase-Sicherungsstand prüfen</button>
 <button id="b3-nachlass-kit-action" type="button" class="b3-more-item">📄 Notfall-Kit öffnen</button>
 </div></details></nav>
 <!-- TAB 1: TRESOR -->
@@ -487,6 +488,7 @@
 
             bindClick('manualSyncBtn', () => syncVaultToFirebase(false));
             bindClick('supabaseBackupBtn', () => backupVaultToSupabase());
+            bindClick('supabaseBackupStatusBtn', () => checkSupabaseVaultBackup());
             bindClick('closeModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             bindClick('closeSuccessModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             bindClick('clearAlarmBtn', clearEmergencyAlarm);
@@ -681,6 +683,39 @@
             status.textContent = success
                 ? 'Cloud-Synchronisierung bestätigt (' + new Date().toLocaleString('de-DE') + '). Bitte trotzdem regelmäßig eine verschlüsselte lokale Sicherung erstellen.'
                 : 'Cloud-Synchronisierung nicht bestätigt (' + new Date().toLocaleString('de-DE') + '). Die Cloud kann fehlen oder einen älteren Stand enthalten. Bitte erneut synchronisieren und eine verschlüsselte lokale Sicherung erstellen.';
+        }
+
+        // Read-only status check; never imports or replaces local vault data.
+        async function checkSupabaseVaultBackup() {
+            const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+            const user = authData?.user;
+            if (authError || !user) return alert('Bitte zuerst bei Supabase anmelden.');
+            const button = document.getElementById('supabaseBackupStatusBtn');
+            if (button) button.disabled = true;
+            try {
+                const { data: remote, error } = await supabaseClient
+                    .from('vault_cloud_snapshots')
+                    .select('vault_id,updated_at,encrypted_data')
+                    .eq('owner_user_id', user.id).maybeSingle();
+                if (error) throw error;
+                if (!remote) return alert('In diesem Supabase-Konto ist noch keine verschlüsselte Tresor-Sicherung vorhanden.');
+                const localSnapshot = localStorage.getItem('digital_estate_vault');
+                let local = null;
+                try { local = localSnapshot ? JSON.parse(localSnapshot) : null; } catch {}
+                const date = remote.updated_at ? new Date(remote.updated_at).toLocaleString('de-DE') : 'unbekannt';
+                if (!local || local.vaultId !== remote.vault_id) {
+                    return alert('Supabase-Sicherung vom ' + date + ' vorhanden, aber sie gehört zu einer anderen Tresor-ID. Es wurde nichts geändert.');
+                }
+                const matches = JSON.stringify(local.encryptedData) === JSON.stringify(remote.encrypted_data);
+                alert(matches
+                    ? 'Supabase-Sicherung vom ' + date + ' entspricht dem lokal gespeicherten verschlüsselten Tresorstand. Dies ist keine Wiederherstellungsprüfung.'
+                    : 'Supabase-Sicherung vom ' + date + ' weicht vom lokalen Tresorstand ab. Bitte lokale Änderungen prüfen und bei Bedarf erneut sichern.');
+            } catch (error) {
+                console.error('Supabase-Sicherungsprüfung fehlgeschlagen:', error);
+                alert('Supabase-Sicherungsstand konnte nicht geprüft werden. Lokale Daten bleiben unverändert.');
+            } finally {
+                if (button) button.disabled = false;
+            }
         }
 
         // Explicit, account-bound encrypted cloud copy. No key or plaintext
