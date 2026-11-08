@@ -9,13 +9,20 @@
 
 ## Architektur
 - `amazon-links.mjs` validiert Amazon-Domains und ASIN und erzeugt kanonische Produktlinks mit konfigurierbarem Affiliate-Tag.
-- Wunschlisten-Datenmodell: `wishlist_profiles`, `wishlist_products`, `wishlist_wishes`, später `wishlist_follows`, `wishlist_collections`, `wishlist_comments`.
+- Wunschlisten-Datenmodell: `wishlist_profiles`, `wishlist_products`, `wishlist_wishes` und `wishlist_follows` sind im bestehenden Supabase-Projekt als eigene Tabellen mit RLS angelegt. `wishlist_collections` und `wishlist_comments` sind noch nicht umgesetzt.
 - Öffentliche Leserechte nur für ausdrücklich veröffentlichte Daten. Schreibrechte ausschließlich für Besitzer mittels `auth.uid()`; keine Freigabe von Auth-E-Mails.
 - Keine automatischen Produktmetadaten ohne erlaubte Datenquelle. Kein Scraping, keine erfundenen Preise.
-- Ranking, Feed, Trending, Zufall, Tageswunsch, Sammlungen, Kommentare und aggregierte Statistiken folgen stufenweise.
+- Öffentlicher Feed, Prioritätssortierung, Profil-Suche, Folgen/Entfolgen, eigene Wunschbearbeitung und teilbare Profil-Links sind im Draft implementiert. Ranking, Trending, Zufall, Tageswunsch, Sammlungen, Kommentare und aggregierte Statistiken folgen stufenweise.
 - Moderation, Abuse-Schutz, Pagination und Datenlöschung vor öffentlichem Start.
 
 ## Tests und Auslieferung
-`node --test amazon-wishlist/amazon-links.test.mjs`
+`node --check amazon-wishlist/app.mjs && node --test amazon-wishlist/*.test.mjs`
 
-Aktuell nur isolierte Hilfsfunktionen und Planung, **keine produktive Integration**. Vor Merge: Tests, Security-Review, Staging-Migration und Freigabe der Integration.
+**Status:** Browser-App im Entwicklungsbranch, nicht veröffentlicht. Die Wishlist-Tabellen existieren bereits im bestehenden Produktiv-Supabase-Projekt; keine Testdatensätze anlegen. Vor Merge: nachweislich erfolgreiche CI- und Browser-Tests, Security-Review, rechtliche Pflichtseiten und ausdrückliche Freigabe. Siehe `RELEASE-CHECKLIST.md`.
+
+## Übergabe für weitere Entwicklungsläufe
+- Draft-PR: https://github.com/duhrrom11/Helferlein/pull/166; Branch: `feature/amazon-wishlist-foundation`.
+- Immer zuerst den neuesten Branch-Stand lesen. Änderungen nur auf diesem Branch; niemals ungeprüft mergen oder deployen.
+- Öffentliche Profilansichten über `?profile=handle`; Auswahl aus der Suche aktualisiert die Browseradresse, ein anderer Feed-Filter entfernt den Profilparameter. `profilePageUrl` ist separat getestet.
+- CI-Status und GitHub-Actions-Workflow-Runs explizit prüfen; leere Statuslisten sind **kein** Testnachweis.
+
