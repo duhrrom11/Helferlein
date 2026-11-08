@@ -1098,6 +1098,14 @@
                                 (!cloudObj[key] || typeof cloudObj[key] !== 'object' || Array.isArray(cloudObj[key])))) {
                             throw new Error('Ungültiges WG-Cloud-Datenformat');
                         }
+                        // If switching WGs, discard only the previous WG's local cache.
+                        // Keep the current cache untouched until remote validation succeeds.
+                        if (localStorage.getItem('wg_last_loaded_bin_id') !== wgBinId) {
+                            ['wg_flatmates', 'wg_notes', 'wg_kassenbon_data', 'wg_budgetbuch_budgets',
+                             'wg_budgetbuch_goals', 'wg_events', 'wg_inventory', 'wg_diets',
+                             'wg_cleaning', 'wg_shopping', 'wg_cooking', 'wg_contracts',
+                             'wg_infoboard'].forEach(key => localStorage.removeItem(key));
+                        }
                         if (cloudObj.flatmates !== undefined) {
                             let fm = cloudObj.flatmates.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
                             localStorage.setItem('wg_flatmates', JSON.stringify(fm));
