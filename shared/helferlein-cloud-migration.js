@@ -50,6 +50,8 @@
       return queue;
     }
     async function resume() {
+      // Finish queued local writes before attempting a reconnect flush.
+      await queue.catch(() => {});
       if (!await isEnabled() || !navigator.onLine) return;
       try {
         const done = await store.flush();
@@ -75,7 +77,17 @@
         blocked.remove(); blocked = null;
       }
     }
-    client.auth.onAuthStateChange(() => { setTimeout(() => { void guardAccount().catch(() => {}); }, 0); });
+    client.auth.onAuthStateChange(() => {
+      // Never run account-sensitive queries synchronously inside the auth callback.
+      setTimeout(() => {
+        void guardAccount().catch(() => {});
+        void currentUser().then(user => {
+          enabledUser = user && localStorage.getItem(ownerKey) === user.id &&
+            localStorage.getItem(enabledKey(user.id)) === 'true' ? user.id : null;
+          if (enabledUser) void resume();
+        }).catch(() => { enabledUser = null; });
+      }, 0);
+    });
     const host = document.createElement('section');
     host.setAttribute('aria-label', 'Supabase-Datenübernahme');
     host.style.cssText = 'margin:12px 0;padding:12px;border:1px solid #94a3b8;border-radius:12px;background:#f8fafc;color:#0f172a;font:14px system-ui';
