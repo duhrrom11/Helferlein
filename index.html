@@ -749,6 +749,80 @@
             return (HELFERLEIN_BACKUP_KEYS.has(key) || knownLayout) && !isAuthSessionStorageKey(key);
         }
 
+        // Password input uses a masked dialog rather than a visible browser prompt.
+        function requestBackupPassword(message, confirmPassword = false) {
+            return new Promise(resolve => {
+                const overlay = document.createElement('div');
+                overlay.setAttribute('role', 'presentation');
+                overlay.className = 'fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4';
+                const dialog = document.createElement('form');
+                dialog.setAttribute('role', 'dialog');
+                dialog.setAttribute('aria-modal', 'true');
+                dialog.setAttribute('aria-label', 'Backup-Passwort');
+                dialog.className = 'w-full max-w-sm rounded-2xl bg-white p-5 text-gray-900 shadow-2xl';
+                const heading = document.createElement('h2');
+                heading.className = 'mb-3 text-lg font-bold';
+                heading.textContent = message;
+                const field = document.createElement('input');
+                field.type = 'password';
+                field.required = true;
+                field.autocomplete = 'off';
+                field.setAttribute('aria-label', 'Backup-Passwort');
+                field.className = 'w-full rounded-lg border border-gray-400 px-3 py-2 text-gray-900';
+                const second = document.createElement('input');
+                if (confirmPassword) {
+                    second.type = 'password';
+                    second.required = true;
+                    second.autocomplete = 'off';
+                    second.placeholder = 'Passwort wiederholen';
+                    second.setAttribute('aria-label', 'Backup-Passwort wiederholen');
+                    second.className = 'mt-3 w-full rounded-lg border border-gray-400 px-3 py-2 text-gray-900';
+                }
+                const error = document.createElement('p');
+                error.className = 'mt-2 text-sm text-red-700';
+                error.setAttribute('role', 'alert');
+                const controls = document.createElement('div');
+                controls.className = 'mt-4 flex justify-end gap-3';
+                const cancel = document.createElement('button');
+                cancel.type = 'button';
+                cancel.textContent = 'Abbrechen';
+                cancel.className = 'rounded-lg border px-3 py-2';
+                const submit = document.createElement('button');
+                submit.type = 'submit';
+                submit.textContent = 'Bestätigen';
+                submit.className = 'rounded-lg bg-indigo-700 px-3 py-2 text-white';
+                const finish = value => {
+                    document.removeEventListener('keydown', onEscape, true);
+                    overlay.remove();
+                    resolve(value);
+                };
+                const onEscape = event => {
+                    if (event.key === 'Escape') { event.preventDefault(); finish(null); }
+                };
+                cancel.addEventListener('click', () => finish(null));
+                dialog.addEventListener('submit', event => {
+                    event.preventDefault();
+                    if (confirmPassword && field.value.length < 12) {
+                        error.textContent = 'Bitte mindestens 12 Zeichen verwenden.';
+                        return;
+                    }
+                    if (confirmPassword && field.value !== second.value) {
+                        error.textContent = 'Die Passwörter stimmen nicht überein.';
+                        return;
+                    }
+                    finish(field.value);
+                });
+                controls.append(cancel, submit);
+                dialog.append(heading, field);
+                if (confirmPassword) dialog.append(second);
+                dialog.append(error, controls);
+                overlay.append(dialog);
+                document.body.append(overlay);
+                document.addEventListener('keydown', onEscape, true);
+                field.focus();
+            });
+        }
+
         async function exportGlobalBackup() {
             try {
                 const backup = { version: "2.0", app: "Helferlein", created: new Date().toISOString(), tools: Object.create(null), localStorage: Object.create(null) };
@@ -789,11 +863,8 @@
                     if (!crypto?.subtle || !crypto.getRandomValues) {
                         alert("Verschlüsselung ist in diesem Browser nicht verfügbar."); return;
                     }
-                    const password = prompt("Passwort für die verschlüsselte Sicherung eingeben (mindestens 12 Zeichen). Ohne dieses Passwort ist keine Wiederherstellung möglich:");
+                    const password = await requestBackupPassword("Neues Backup-Passwort (mindestens 12 Zeichen)", true);
                     if (password === null) return;
-                    if (password.length < 12) { alert("Bitte mindestens 12 Zeichen verwenden."); return; }
-                    const confirmation = prompt("Passwort zur Kontrolle erneut eingeben:");
-                    if (confirmation !== password) { alert("Passwörter stimmen nicht überein."); return; }
                     const salt = crypto.getRandomValues(new Uint8Array(16));
                     const iv = crypto.getRandomValues(new Uint8Array(12));
                     const keyMaterial = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
@@ -844,7 +915,7 @@
                             backup.cipher !== "AES-256-GCM" || backup.iterations !== 600000) {
                             alert("Dieses verschlüsselte Backup-Format wird nicht unterstützt."); return;
                         }
-                        const password = prompt("Passwort für die verschlüsselte Sicherung eingeben:");
+                        const password = await requestBackupPassword("Passwort zum Entschlüsseln eingeben");
                         if (password === null) return;
                         try {
                             const fromBase64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
