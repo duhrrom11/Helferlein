@@ -10,6 +10,10 @@ Produktiv geprueft: Supabase hat aktuell die Tabellen `user_data`, `wg_spaces` u
 
 **Umsetzungsreihenfolge:** (1) sicheren neuen, benutzergebundenen Cloud-Tresor mit Auth und serverseitiger Autorisierung implementieren; (2) lokale Verschluesselung und Wiederherstellung ohne Datenverlust sicherstellen; (3) vorhandene Tresore erst nach gesonderter Eigentuemerpruefung migrieren; (4) produktive Bereitstellung mit Sicherheitspruefungen, Monitoring und Rollback; (5) die Browseroberflaeche erst dann auf den neuen Speicherweg umstellen. Keine pauschale Freigabe alter Firebase-Regeln.
 
+## Aeltere Cloud-Sicherungen nur nach Entschluesselungspruefung bestaetigen
+
+Bei Cloud-Sicherungen ohne verschluesselte Konfiguration prueft die lesende Statusfunktion vor einer Uebereinstimmungsmeldung jetzt ebenfalls, ob die verschluesselten Tresoreintraege mit dem aktuellen lokalen Masterkey entschluesselbar sind. Ein reiner Bytevergleich von IV und Ciphertext gilt nicht mehr als ausreichender Nachweis. Die Warnung vor fehlenden Cloud-Einstellungen bleibt erhalten.
+
 ## Wiederherstellungsschluessel meldet Aenderungen waehrend des Uploads
 
 Nach dem bestaetigten Schreiben der verschluesselten Schluesselhuelle wird nochmals geprueft, ob sich lokaler Snapshot, aktiver Schluessel oder Revision waehrend des Cloud-Aufrufs veraendert haben. In diesem Fall meldet die App, dass der Schluessel nur fuer den vorherigen Stand gespeichert wurde, statt unbesehen einen aktuellen Stand zu bestaetigen. Der Cloud-Schreibvorgang wird dabei nicht rueckgaengig gemacht.
