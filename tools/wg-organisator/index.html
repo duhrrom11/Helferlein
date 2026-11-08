@@ -1108,7 +1108,12 @@
             if (secureWgSaveBlocked) throw new Error('Speichern nach einem Konflikt angehalten. Bitte Daten sichern und die WG kontrolliert neu laden.');
             if (!secureWgRevision) throw new Error('WG muss vor dem Speichern neu geladen werden.');
             const id = wgBinId.slice(SECURE_WG_PREFIX.length);
-            const nextRevision = new Date().toISOString();
+            // A new revision must differ from the previous one, even when
+            // two saves happen in the same millisecond or the client clock lags.
+            const previousRevisionMs = Date.parse(secureWgRevision);
+            if (!Number.isFinite(previousRevisionMs))
+                throw new Error('Ungültiger WG-Versionsstand. Bitte WG neu laden.');
+            const nextRevision = new Date(Math.max(Date.now(), previousRevisionMs + 1)).toISOString();
             const { data, error } = await supabaseClient.from('wg_spaces')
                 .update({ payload, updated_at: nextRevision })
                 .eq('id', id).eq('updated_at', secureWgRevision)
