@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -20,4 +20,16 @@ test('normalizes and checks handles',()=>{
 test('validates only allowed priorities',()=>{
  for(const value of ['1','2','3'])assert.equal(validatePriority(value),Number(value));
  for(const value of ['0','4','1.5','NaN','foo'])assert.throws(()=>validatePriority(value));
+});
+
+test('public profile URLs preserve safe query state and clear imported product links',()=>{
+ const base='https://example.org/amazon-wishlist/?url=https%3A%2F%2Fwww.amazon.de%2Fdp%2FB0ABC12345&lang=de';
+ const selected=new URL(profilePageUrl(base,'Alice_123'));
+ assert.equal(selected.searchParams.get('profile'),'alice_123');
+ assert.equal(selected.searchParams.get('url'),null);
+ assert.equal(selected.searchParams.get('lang'),'de');
+ const cleared=new URL(profilePageUrl(selected.toString()));
+ assert.equal(cleared.searchParams.get('profile'),null);
+ assert.equal(cleared.searchParams.get('lang'),'de');
+ assert.throws(()=>profilePageUrl(base,'invalid handle'));
 });
