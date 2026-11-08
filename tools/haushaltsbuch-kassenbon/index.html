@@ -667,7 +667,7 @@
             if (!files || files.length === 0) return;
             const generation = ++photoReadGeneration;
             pendingPhotoReads = files.length;
-            currentUploadedPhotos = [];
+            currentUploadedPhotos = Array(files.length).fill(null);
             rawImage = null;
             const previewContainer = document.getElementById('uploadGalleryPreview');
             previewContainer.innerHTML = "";
@@ -679,11 +679,13 @@
                     if (generation !== photoReadGeneration) return;
                     pendingPhotoReads--;
                     if (!safeReceiptPhoto(e.target.result)) return;
-                    currentUploadedPhotos.push(e.target.result);
+                    currentUploadedPhotos[idx] = e.target.result;
                     const imgThumb = document.createElement('img');
                     imgThumb.src = e.target.result;
                     imgThumb.className = "w-14 h-14 object-cover rounded-lg border shadow-sm";
-                    previewContainer.appendChild(imgThumb);
+                    imgThumb.dataset.photoIndex = String(idx);
+                    const next = [...previewContainer.children].find(child => Number(child.dataset.photoIndex) > idx);
+                    previewContainer.insertBefore(imgThumb, next || null);
 
                     if (idx === 0) {
                         const img = new Image();
@@ -781,6 +783,7 @@
                 return alert("Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.");
             }
 
+            currentUploadedPhotos = currentUploadedPhotos.filter(src => safeReceiptPhoto(src));
             let data = getData();
 
             if (editingReceiptId !== null) {
