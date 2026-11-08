@@ -17,6 +17,7 @@
     let activeOperation = null;
     let accountGeneration = 0;
     let statusGeneration = 0;
+    let reconnectInProgress = false;
     const enabledKey = uid => 'helferlein_cloud_enabled_' + tool + '_' + uid;
     const ownerKey = 'helferlein_cloud_owner_' + tool;
     const cacheKey = uid => 'helferlein_cloud_' + tool + '_' + uid + '_cache';
@@ -67,6 +68,8 @@
     }
     function reportError(error) { if (disposed) return; lastSyncError = error && error.message ? error.message : String(error); status.textContent = 'Cloud: ' + lastSyncError; }
     function setStatus(message) { if (!disposed) { statusGeneration++; status.textContent = message; } }
+    function statusError(prefix, error) { setStatus(prefix + ': ' + (error && error.message ? error.message : String(error))); }
+    function currentOwner() { return localStorage.getItem(ownerKey); }
     function changed(data) {
       if (disposed) return Promise.resolve(false);
       if (!data || typeof data !== 'object' || Array.isArray(data)) { reportError(new Error('Ungültige lokale Änderungen')); return Promise.resolve(false); }
@@ -97,18 +100,21 @@
       return queue;
     }
     async function refreshFromCloud() {
-      if (disposed || importInProgress || migrationInProgress) return false;
+      if (disposed || importInProgress || migrationInProgress || reconnectInProgress) return false;
       if (refreshInProgress || activeOperation || !navigator.onLine || !await isEnabled()) return false;
+      if (await store.hasPending()) return false;
       if (document.visibilityState === 'hidden') return false;
       refreshInProgress = true;
       activeOperation = 'refresh';
       const refreshOwner = enabledUser;
       const refreshGeneration = accountGeneration;
+      const ownerAtStart = currentOwner();
       try {
         await queue.catch(() => {});
         const user = await currentUser();
         if (refreshOwner !== enabledUser || refreshGeneration !== accountGeneration) return false;
         if (!user || !isOwner(user.id) || await store.hasPending()) return false;
+        if (ownerAtStart !== user.id) return false;
         const before = safeLocalBytes();
         if (before === null) return false;
         const cachedBytes = localStorage.getItem(cacheKey(user.id));
@@ -128,7 +134,7 @@
           if (JSON.stringify(previous) !== JSON.stringify(local)) return false;
         }
         if (before !== null && cachedBytes === null) return false;
-        if (localStorage.getItem(ownerKey) !== user.id) return false;
+        if (currentOwner() !== ownerAtStart) return false;
         const incoming = JSON.stringify(result.data);
         if (!incoming || incoming === 'null') return false;
         if (before === incoming) return false;
@@ -145,7 +151,9 @@
       finally { refreshInProgress = false; endOperation('refresh'); }
     }
     async function resume() {
-      if (disposed || migrationInProgress || importInProgress || activeOperation) return;
+      if (disposed || migrationInProgress || importInProgress || activeOperation || reconnectInProgress) return;
+      reconnectInProgress = true;
+      try {
       // Finish queued local writes before attempting a reconnect flush.
       await queue.catch(() => {});
       if (!await isEnabled() || !navigator.onLine || !localStorage.getItem(ownerKey)) return;
@@ -157,10 +165,11 @@
         if (!await store.hasPending()) await refreshFromCloud();
         if (done && await isEnabled() && localStorage.getItem(ownerKey) === user.id) status.textContent = 'Ausstehende Änderungen synchronisiert';
       } catch (error) {
-        status.textContent = 'Synchronisierung ausstehend: ' + (error.message || String(error));
+        statusError('Synchronisierung ausstehend', error);
       }
+      } finally { reconnectInProgress = false; }
     }
-    const onOnline = () => { void resume().catch(reportError); };
+    const onOnline = () => { if (!disposed) void resume().catch(reportError); };
     global.addEventListener('online', onOnline);
     let blocked = null;
     async function guardAccount() {
@@ -169,8 +178,9 @@
       const owner = localStorage.getItem(ownerKey);
       if ((await currentUser())?.id !== (user && user.id)) throw new Error('Account changed during guard');
       const mismatch = !!(owner && (!user || owner !== user.id));
+      if (disposed) return;
       if (mismatch) { enabledUser = null; accountGeneration++; }
-      if (!mismatch && !owner && blocked) { blocked.remove(); blocked = null; }
+      if (!mismatch && blocked) { blocked.remove(); blocked = null; }
       if (mismatch && !blocked) {
         blocked = document.createElement('div');
         blocked.setAttribute('role', 'alertdialog');
@@ -184,19 +194,23 @@
         back.textContent = 'Zur Anmeldung';
         back.style.cssText = 'padding:10px 16px;background:white;color:#0f172a;border-radius:8px;cursor:pointer';
         back.addEventListener('click', () => {
+          if (disposed) return;
           const login = document.querySelector('[id*="login" i], [id*="auth" i], [class*="login" i]');
           if (login && typeof login.scrollIntoView === 'function') login.scrollIntoView();
+          if (login && typeof login.focus === 'function') login.focus();
           status.textContent = 'Bitte zum ursprünglichen Konto zurückwechseln.';
         });
         blocked.append(message, back);
+        blocked.setAttribute('tabindex', '-1');
         document.body.appendChild(blocked);
+        blocked.focus();
       } else if (!mismatch && blocked) {
         blocked.remove(); blocked = null;
       }
     }
-    const onFocus = () => { void refreshFromCloud().catch(reportError); };
+    const onFocus = () => { if (!disposed) void refreshFromCloud().catch(reportError); };
     global.addEventListener('focus', onFocus);
-    const onVisibility = () => { if (document.visibilityState === 'visible') void refreshFromCloud().catch(reportError); };
+    const onVisibility = () => { if (!disposed && document.visibilityState === 'visible') void refreshFromCloud().catch(reportError); };
     document.addEventListener('visibilitychange', onVisibility);
     let authGeneration = 0;
     const authSubscription = client.auth.onAuthStateChange(() => {
@@ -205,8 +219,8 @@
       accountGeneration++;
       // Never run account-sensitive queries synchronously inside the auth callback.
       setTimeout(() => {
-        if (disposed) return;
-        void guardAccount().catch(error => { status.textContent = 'Kontoprüfung fehlgeschlagen: ' + error.message; });
+        if (disposed || generation !== authGeneration) return;
+        void guardAccount().catch(error => statusError('Kontoprüfung fehlgeschlagen', error));
         void currentUser().then(user => {
           if (generation !== authGeneration) return;
           if (disposed || generation !== authGeneration) return;
@@ -387,12 +401,13 @@
     });
     void guardAccount().catch(error => { status.textContent = 'Kontoprüfung fehlgeschlagen: ' + error.message; });
     void currentUser().then(user => {
+      if (disposed) return;
       if (user && isOwner(user.id) &&
           localStorage.getItem(enabledKey(user.id)) === 'true') {
         enabledUser = user.id;
         void resume().catch(error => { status.textContent = 'Cloud-Wiederaufnahme fehlgeschlagen: ' + error.message; });
       }
-    }).catch(error => { status.textContent = 'Cloud-Start fehlgeschlagen: ' + error.message; });
+    }).catch(error => statusError('Cloud-Start fehlgeschlagen', error));
     host.append(title, status, actions);
     (target || document.body).prepend(host);
     function dispose() {
@@ -402,6 +417,7 @@
       accountGeneration++;
       authGeneration++;
       activeOperation = null;
+      reconnectInProgress = false;
       global.removeEventListener('online', onOnline);
       global.removeEventListener('focus', onFocus);
       document.removeEventListener('visibilitychange', onVisibility);
