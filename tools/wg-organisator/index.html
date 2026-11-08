@@ -1002,6 +1002,45 @@
         }
 
         const NPOINT_API_BASE = "https://api.npoint.io/";
+        // Legacy cloud has no per-member authorization. It stays disabled until
+        // a user makes an informed, per-page decision.
+        let legacyWgCloudEnabled = false;
+        function enableLegacyWGCloud() {
+            if (legacyWgCloudEnabled) return true;
+            if (!window.confirm('ACHTUNG: Der bisherige WG-Cloud-Dienst verwendet nur eine teilbare WG-ID ohne eigene Nutzerberechtigungen. Personen mit der ID könnten Daten lesen oder ändern. Keine vertraulichen Daten synchronisieren. Für diese Sitzung freiwillig freigeben?')) return false;
+            legacyWgCloudEnabled = true;
+            const status = document.getElementById('b3-wg-legacy-cloud-status');
+            if (status) status.textContent = '⚠️ Legacy-Cloud in dieser Sitzung freigegeben';
+            return true;
+        }
+        function showLegacyWGCloudWarning() {
+            const host = document.getElementById('main-content');
+            if (!host || document.getElementById('b3-wg-legacy-cloud-warning')) return;
+            const section = document.createElement('section');
+            section.id = 'b3-wg-legacy-cloud-warning';
+            section.className = 'rounded-2xl border-2 border-amber-500 bg-amber-50 text-amber-950 p-4 text-sm space-y-2';
+            section.setAttribute('role','status');
+            const title = document.createElement('strong');
+            title.textContent = '⚠️ WG-Cloud: automatische Synchronisierung aus Sicherheitsgründen pausiert';
+            const note = document.createElement('p');
+            note.textContent = 'Die bisherige Cloud unterstützt keine überprüfbare Mitgliederberechtigung. Deine lokale WG bleibt verfügbar. Für bestehende WGs kannst du die Legacy-Synchronisierung für diese Sitzung bewusst freigeben.';
+            const status = document.createElement('p');
+            status.id = 'b3-wg-legacy-cloud-status';
+            status.textContent = 'Keine Freigabe erteilt';
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'rounded-xl bg-amber-900 text-white font-bold px-3 py-2';
+            button.textContent = 'Bisherige WG-Cloud bewusst freigeben';
+            button.addEventListener('click', async () => {
+                if (!enableLegacyWGCloud()) return;
+                const ok = await ladeWGausCloud();
+                if (ok) renderApp();
+                else alert('Cloud-Daten konnten nicht geladen werden. Lokale Daten bleiben erhalten.');
+            });
+            section.append(title,note,status,button);
+            host.prepend(section);
+        }
+
 
         const kofiSprueche = [
             "Spendier dem Entwickler einen Kaffee ☕",
@@ -1022,9 +1061,12 @@
 
         async function manuelleSynchronisation() {
             if (!wgBinId) return alert("Keine WG-ID aktiv.");
+            if (!enableLegacyWGCloud()) return;
             try {
-                await ladeWGausCloud();
-                alert("✅ Erfolgreich mit der Cloud synchronisiert!");
+                const ok = await ladeWGausCloud();
+                if (!ok) throw new Error('Cloud-Laden fehlgeschlagen');
+                renderApp();
+                alert("✅ Cloud-Daten geladen.");
             } catch (e) {
                 alert("❌ Synchronisation fehlgeschlagen.");
             }
@@ -1032,8 +1074,11 @@
 
         async function erstelleNeueWGKonfiguration() {
             const statusText = document.getElementById('setup-status');
-            if (statusText) statusText.innerText = "Erstelle Cloud-Speicher im Hintergrund...";
+            if (statusText) statusText.innerText = "Erstelle lokalen WG-Bereich...";
 
+            const bytes = crypto.getRandomValues(new Uint8Array(16));
+            wgBinId = 'local_' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+            localStorage.setItem('wg_active_bin_id', wgBinId);
             const leereWG = {
                 erstelltAm: new Date().toISOString(),
                 flatmates: [], notes: [], data: [], budgets: {}, goals: [],
@@ -1055,28 +1100,8 @@
             wgStorage.setItem('wg_contracts', JSON.stringify(leereWG.contracts));
             wgStorage.setItem('wg_infoboard', JSON.stringify(leereWG.infoboard));
 
-            try {
-                const response = await fetch(NPOINT_API_BASE, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(leereWG)
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.id) {
-                        localStorage.setItem('wg_active_bin_id', result.id);
-                        window.location.href = window.location.pathname + "?id=" + result.id;
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.warn("API Error", e);
-            }
-
-            const ersatzID = "wg_" + Math.random().toString(36).substring(2, 9);
-            localStorage.setItem('wg_active_bin_id', ersatzID);
-            window.location.href = window.location.pathname + "?id=" + ersatzID;
+            // Deliberately local-only until an authenticated sharing backend exists.
+            window.location.href = window.location.pathname + '?id=' + encodeURIComponent(wgBinId);
         }
 
         function zeigeErstellungsScreen() {
@@ -1108,7 +1133,7 @@
         }
 
         async function ladeWGausCloud() {
-            if (!wgBinId) return;
+            if (!wgBinId || !legacyWgCloudEnabled || wgBinId.startsWith('local_')) return false;
             try {
                 let response = await fetch(NPOINT_API_BASE + wgBinId);
                 if (!response.ok) {
@@ -1136,13 +1161,15 @@
                         if (cloudObj.infoboard !== undefined) wgStorage.setItem('wg_infoboard', JSON.stringify(cloudObj.infoboard));
                     }
                 }
+                return response.ok;
             } catch (error) {
                 console.error("Fehler beim Cloud-Laden:", error);
+                return false;
             }
         }
 
         async function speichereWGinCloud() {
-            if (!wgBinId) return;
+            if (!wgBinId || !legacyWgCloudEnabled || wgBinId.startsWith('local_')) return false;
             const backupObj = {
                 flatmates: getFlatmates(),
                 notes: getNotes(),
@@ -1197,7 +1224,7 @@
         }
 
         setInterval(() => {
-            if (wgBinId) ladeWGausCloud();
+            if (wgBinId && legacyWgCloudEnabled) ladeWGausCloud().then(ok => { if (ok) renderApp(); });
         }, 30000);
 
         const AMAZON_AFFILIATE_TAG = "duhrrom-21";
@@ -1219,9 +1246,9 @@
             document.getElementById('eventDate').valueAsDate = new Date();
             initCharts();
             
-            await ladeWGausCloud();
+            showLegacyWGCloudWarning();
             renderApp();
-            // Never write remote data merely because a WG page was opened.
+            // No silent cloud requests or writes on page load.
             checkUserSession();
         });
 
