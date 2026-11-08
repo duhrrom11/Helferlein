@@ -904,9 +904,11 @@
             try {
                 const snapshot = localStorage.getItem('digital_estate_vault');
                 const cfg = snapshot ? JSON.parse(snapshot) : null;
-                if (!cfg || cfg.masterKeyHex !== currentMasterKeyHex ||
+                if (!cfg || !/^[a-f0-9]{64}$/i.test(currentMasterKeyHex || '') ||
+                    cfg.masterKeyHex !== currentMasterKeyHex ||
+                    !cfg.encryptedData || !cfg.encryptedData.iv || !cfg.encryptedData.ciphertext ||
                     lastPersistedRevision !== localSaveRevision) {
-                    return alert('Lokaler Tresor wurde geändert. Bitte erneut versuchen.');
+                    return alert('Lokaler Tresorschlüssel oder Tresorstand ist ungültig oder wurde geändert. Bitte erneut versuchen.');
                 }
                 const { data: remote, error: readError } = await supabaseClient
                     .from('vault_cloud_snapshots').select('vault_id,encrypted_data')
