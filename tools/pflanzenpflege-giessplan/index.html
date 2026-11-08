@@ -709,6 +709,16 @@
 
         function saveData(data) {
             try {
+                // Never overwrite an unreadable existing backup with empty defaults.
+                const existing = localStorage.getItem('pflanzen_pass_v10');
+                if (existing !== null) {
+                    let parsed;
+                    try { parsed = JSON.parse(existing); } catch (_) { parsed = null; }
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.plants)) {
+                        alert('Vorhandene Pflanzendaten sind beschädigt. Speichern zum Schutz der Originaldaten blockiert.');
+                        return false;
+                    }
+                }
                 localStorage.setItem('pflanzen_pass_v10', JSON.stringify(data));
                 return true;
             } catch (error) {
