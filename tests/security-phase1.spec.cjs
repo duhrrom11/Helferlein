@@ -206,3 +206,48 @@ test('Legacy WG cloud import makes a restorable snapshot before replacing local 
  expect(restored.household).toBe('Privates Haushaltsbuch');
  expect(JSON.parse(restored.backup)[0].title).toBe('Remote WG-Beleg');
 });
+
+const hostileText='<img class="injected-xss" src=x onerror="window.__hacked=1">';
+test('Stored vehicle names, plates and action IDs cannot inject markup',async({page})=>{
+ const data={cars:[{id:'1);window.__hacked=1;//',name:hostileText,plate:hostileText,km:23000}],events:[],tires:[]};
+ await page.addInitScript(value=>localStorage.setItem('kfz_tracker_pro_v3',JSON.stringify(value)),data);
+ await page.goto(root+'/tools/autokosten-reifenwechsel/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#carsList')).toContainText('injected-xss');
+ expect(await page.locator('#carsList img.injected-xss').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
+ await expect(page.locator('#carsList [onclick*="window.__hacked"]')).toHaveCount(0);
+});
+test('Stored budget receipt title, notes and gallery images are inert',async({page})=>{
+ const item={id:12,title:hostileText,category:'Lebensmittel',price:8.4,date:'2026-11-08',entryType:'ausgabe',paymentMethod:'Karte',note:hostileText,photos:[],warrantyMonths:0,returnDays:0};
+ await page.addInitScript(value=>localStorage.setItem('kassenbon_data',JSON.stringify([value])),item);
+ await page.goto(root+'/tools/haushaltsbuch-kassenbon/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#receiptList, #receiptsList').first()).toContainText('injected-xss');
+ expect(await page.locator('img.injected-xss').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
+});
+test('Stored medication stock cannot inject HTML into pet dashboard',async({page})=>{
+ const data={pets:[],events:[],meds:[{id:15,name:'Futter',stock:hostileText}]};
+ await page.addInitScript(value=>localStorage.setItem('haustier_pass_pro_v5',JSON.stringify(value)),data);
+ await page.goto(root+'/tools/haustier-gesundheitspass/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#medicationList,#medsList').first()).toContainText('injected-xss');
+ expect(await page.locator('img.injected-xss').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
+});
+test('Imported plant inventory quantities and locations remain plain text',async({page})=>{
+ const data={plants:[],seeds:[],inventory:[{name:'Erde',qty:hostileText}],beetSlots:Array(16).fill(null),monthWaterLiters:0,totalHarvestGrams:0,cisternMax:500,cisternCurrent:500};
+ await page.addInitScript(value=>localStorage.setItem('pflanzen_pass_v10',JSON.stringify(value)),data);
+ await page.goto(root+'/tools/pflanzenpflege-giessplan/index.html',{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>renderInventoryList());
+ await expect(page.locator('#inventoryList')).toContainText('injected-xss');
+ expect(await page.locator('img.injected-xss').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
+});
+test('Imported moving-box location names cannot inject through select options',async({page})=>{
+ const data={locations:[{id:20,icon:'📦',name:hostileText}],boxes:[]};
+ await page.addInitScript(value=>localStorage.setItem('mini_homebox_pro',JSON.stringify(value)),data);
+ await page.goto(root+'/tools/umzugskisten-inventar/index.html',{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>loadLocationsDropdown());
+ await expect(page.locator('#boxLocationSelect')).toContainText('injected-xss');
+ expect(await page.locator('img.injected-xss').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
+});
