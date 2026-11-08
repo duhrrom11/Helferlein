@@ -122,6 +122,7 @@
                 <button id="supabaseBackupStatusBtn" type="button" class="b3-more-item">🔎 Supabase-Sicherungsstand prüfen</button>
                 <button id="supabaseRestorePreviewBtn" type="button" class="b3-more-item">🛡️ Cloud-Wiederherstellung sicher prüfen</button>
                 <button id="supabaseRecoveryKeyBtn" type="button" class="b3-more-item">🔑 Cloud-Wiederherstellung mit Passwort vorbereiten</button>
+                <button id="supabaseRestoreBtn" type="button" class="b3-more-item">📥 Tresor aus Supabase wiederherstellen</button>
 <button id="b3-nachlass-kit-action" type="button" class="b3-more-item">📄 Notfall-Kit öffnen</button>
 </div></details></nav>
 <!-- TAB 1: TRESOR -->
@@ -493,6 +494,7 @@
             bindClick('supabaseBackupStatusBtn', () => checkSupabaseVaultBackup());
             bindClick('supabaseRestorePreviewBtn', () => previewSupabaseVaultRecovery());
             bindClick('supabaseRecoveryKeyBtn', () => prepareSupabaseRecoveryKey());
+            bindClick('supabaseRestoreBtn', () => restoreVaultFromSupabase());
             bindClick('closeModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             bindClick('closeSuccessModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             bindClick('clearAlarmBtn', clearEmergencyAlarm);
@@ -687,6 +689,70 @@
             status.textContent = success
                 ? 'Cloud-Synchronisierung bestätigt (' + new Date().toLocaleString('de-DE') + '). Bitte trotzdem regelmäßig eine verschlüsselte lokale Sicherung erstellen.'
                 : 'Cloud-Synchronisierung nicht bestätigt (' + new Date().toLocaleString('de-DE') + '). Die Cloud kann fehlen oder einen älteren Stand enthalten. Bitte erneut synchronisieren und eine verschlüsselte lokale Sicherung erstellen.';
+        }
+
+        // Recovery is intentionally limited to a fresh, empty local vault.
+        // Never replace a vault containing entries or with a pending local save.
+        async function restoreVaultFromSupabase() {
+            if (!vaultReady) return alert('Lokaler Tresor nicht bereit.');
+            const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+            const user = authData?.user;
+            if (authError || !user) return alert('Bitte zuerst bei Supabase anmelden.');
+            const localSnapshot = localStorage.getItem('digital_estate_vault');
+            let local;
+            try { local = localSnapshot ? JSON.parse(localSnapshot) : null; } catch {}
+            if (!local || !currentDecryptedVault || !Array.isArray(currentDecryptedVault.entries) ||
+                currentDecryptedVault.entries.length !== 0 ||
+                lastPersistedRevision !== localSaveRevision) {
+                return alert('Wiederherstellung nur bei leerem lokalen Tresor möglich. Bestehende Daten bleiben geschützt.');
+            }
+            if (!confirm('Der leere lokale Tresor wird durch die Cloud-Sicherung ersetzt. Vorher eine verschlüsselte lokale Sicherungsdatei erstellen. Fortfahren?')) return;
+            const password = prompt('Cloud-Wiederherstellungspasswort eingeben (nicht das Supabase-Anmeldepasswort):');
+            if (!password) return;
+            const button = document.getElementById('supabaseRestoreBtn');
+            if (button) button.disabled = true;
+            try {
+                const { data: remote, error } = await supabaseClient
+                    .from('vault_cloud_snapshots').select('vault_id,encrypted_data,recovery_key')
+                    .eq('owner_user_id', user.id).maybeSingle();
+                if (error) throw error;
+                if (!remote || !remote.recovery_key) return alert('Keine Cloud-Sicherung mit Wiederherstellungsschlüssel vorhanden.');
+                const keyInfo = remote.recovery_key;
+                if (keyInfo.version !== 1 || keyInfo.kdf !== 'PBKDF2-SHA256' ||
+                    keyInfo.iterations !== 600000 || !/^v_[A-Za-z0-9_-]{8,80}$/.test(remote.vault_id)) {
+                    throw new Error('Unbekanntes Wiederherstellungsformat');
+                }
+                const decode = value => Uint8Array.from(atob(value), ch => ch.charCodeAt(0));
+                const salt = decode(keyInfo.salt), iv = decode(keyInfo.iv);
+                if (salt.length !== 16 || iv.length !== 12) throw new Error('Ungültige Schlüsselhülle');
+                const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(password),
+                    'PBKDF2', false, ['deriveKey']);
+                const wrappingKey = await crypto.subtle.deriveKey({
+                    name: 'PBKDF2', salt, iterations: 600000, hash: 'SHA-256'
+                }, baseKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+                const rawKey = new Uint8Array(await crypto.subtle.decrypt({
+                    name: 'AES-GCM', iv
+                }, wrappingKey, decode(keyInfo.ciphertext)));
+                if (rawKey.length !== 32) throw new Error('Ungültiger Tresorschlüssel');
+                const hexKey = Array.from(rawKey, byte => byte.toString(16).padStart(2, '0')).join('');
+                const decrypted = await decryptVaultPayload(remote.encrypted_data, hexKey);
+                if (!decrypted || !Array.isArray(decrypted.entries)) throw new Error('Tresor nicht entschlüsselbar');
+                if (localStorage.getItem('digital_estate_vault') !== localSnapshot ||
+                    lastPersistedRevision !== localSaveRevision ||
+                    currentDecryptedVault.entries.length !== 0) {
+                    return alert('Lokale Daten wurden inzwischen geändert. Wiederherstellung abgebrochen.');
+                }
+                const restored = { ...local, vaultId: remote.vault_id,
+                    masterKeyHex: hexKey, encryptedData: remote.encrypted_data };
+                localStorage.setItem('digital_estate_vault', JSON.stringify(restored));
+                alert('Cloud-Tresor wiederhergestellt. Die Seite wird neu geladen. Bitte sofort eine verschlüsselte lokale Sicherung erstellen.');
+                location.reload();
+            } catch (error) {
+                console.error('Cloud-Wiederherstellung fehlgeschlagen:', error);
+                alert('Cloud-Wiederherstellung fehlgeschlagen. Passwort oder Daten ungültig. Lokale Daten wurden nicht verändert.');
+            } finally {
+                if (button) button.disabled = false;
+            }
         }
 
         // Opt-in: wrap only the random vault key with a user-chosen recovery
