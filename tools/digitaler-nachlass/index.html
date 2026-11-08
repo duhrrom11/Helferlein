@@ -669,7 +669,7 @@
             status.classList.toggle('text-amber-100', !success);
             status.textContent = success
                 ? 'Cloud-Synchronisierung bestätigt (' + new Date().toLocaleString('de-DE') + '). Bitte trotzdem regelmäßig eine verschlüsselte lokale Sicherung erstellen.'
-                : 'Cloud-Synchronisierung fehlgeschlagen (' + new Date().toLocaleString('de-DE') + '). Änderungen können ausschließlich lokal vorliegen. Bitte eine verschlüsselte Sicherung erstellen.';
+                : 'Cloud-Synchronisierung nicht bestätigt (' + new Date().toLocaleString('de-DE') + '). Die Cloud kann fehlen oder einen älteren Stand enthalten. Bitte erneut synchronisieren und eine verschlüsselte lokale Sicherung erstellen.';
         }
 
         function syncVaultToFirebase(silent = false) {
