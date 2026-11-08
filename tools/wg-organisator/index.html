@@ -32,32 +32,63 @@
         .note-blue { background-color: #bae6fd; border-color: #38bdf8; color: #0c4a6e; }
         .note-purple { background-color: #e9d5ff; border-color: #c084fc; color: #581c87; }
     </style>
+    <link rel="stylesheet" href="../../assets/helferlein-b3.css">
+    <link rel="stylesheet" href="../../assets/helferlein-b3-wg.css">
+    <script>
+      window.HELFERLEIN_B3 = {
+        key:'wg',
+        name:'WG-Organisator',
+        panels:[
+          {id:'stats',name:'WG-Statistiken',size:'l'},
+          {id:'notes',name:'Pinnwand & Notizen',size:'l'},
+          {id:'info',name:'WG-Stammdaten',size:'m'},
+          {id:'analysis',name:'Ausgabenanalyse & Budgets',size:'l'},
+          {id:'goals',name:'Sparziele',size:'m'},
+          {id:'expenses',name:'Buchungen & Kassenbons',size:'l'},
+          {id:'debts',name:'Schulden & Ausgleich',size:'l'},
+          {id:'inventory',name:'WG-Inventar',size:'m'},
+          {id:'calendar',name:'WG-Kalender',size:'l'},
+          {id:'cleaning',name:'Putzplan & Einkaufsliste',size:'l'},
+          {id:'cooking',name:'Kochplan & Ernährung',size:'l'},
+          {id:'contracts',name:'Verträge & Abos',size:'m'},
+          {id:'recommendations',name:'Empfehlungen',size:'m'}
+        ],
+        navigation:[
+          ['🏠','Übersicht','#main-content'],
+          ['📊','Statistiken','#b3-stats'],
+          ['📌','Pinnwand','#b3-notes'],
+          ['💶','Ausgaben','#formCard'],
+          ['🧹','Putzplan','#b3-cleaning'],
+          ['📅','Kalender','#b3-calendar']
+        ],
+        extra:[
+          {label:'👥 Mitglieder / Kontakte',handler:'openMitbewohnerModal'},
+          {label:'🔄 Manuell synchronisieren',handler:'manuelleSynchronisation'},
+          {label:'📄 Finanzbericht (PDF)',handler:'exportAbrechnungPDF'},
+          {label:'🔗 WG-Link teilen',handler:'kopiereWGLink'},
+          {label:'📶 WLAN QR-Code',handler:'openWLANQRModal'}
+        ],
+        helpId:'helpModal',
+        helpToggle:'toggleHelpModal'
+      };
+    </script>
+    <script defer src="../../assets/helferlein-b3-core.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
 
     <!-- Header im exakten Mini-HomeBox-Stil -->
-    <header class="bg-emerald-800 text-white shadow-md py-6 px-4 text-center space-y-3">
-        <h1 class="text-3xl font-bold">🏠 WG-Organisator mit Haushaltsbuch</h1>
-        <p class="text-sm opacity-90">WG-Ausgaben aufteilen, Putzplan, Kalender und gemeinsame Aufgaben organisieren</p>
-
-        <!-- Header Action Buttons -->
-        <div class="flex flex-wrap justify-center gap-2 pt-1">
-            <button onclick="toggleSettingsModal()" class="px-4 py-2 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-xs font-bold shadow-sm transition">
-                ⚙️ Einstellungen & Cloud-Konto
-            </button>
-            <span id="header-user-badge" class="hidden items-center gap-2 px-3 py-2 bg-emerald-950/60 text-emerald-100 rounded-xl text-xs font-semibold border border-emerald-600/30">
-                <span id="sync-status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                👤 <span id="header-user-email">Nicht angemeldet</span>
-            </span>
-            <button onclick="toggleHelpModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm transition">
-                📖 Hilfe & Anleitung anzeigen
-            </button>
-            <button onclick="openMitbewohnerModal()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-sm transition">
-                👥 Mitglieder / Kontakte
-            </button>
-        </div>
-    </header>
+    <header class="b3-header">
+  <div class="b3-header-inner">
+    <span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+    <span class="b3-tool-icon" aria-hidden="true">🏠</span>
+    <div class="b3-tool-title">
+      <h1>WG-Organisator mit Haushaltsbuch</h1>
+      <p>WG-Ausgaben aufteilen, Putzplan, Kalender und gemeinsame Aufgaben organisieren</p>
+    </div>
+    <button type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen" onclick="toggleSettingsModal()">⚙</button>
+  </div>
+</header>
 
     <!-- MODAL: Einstellungen & Supabase Auth -->
     <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleSettingsModal()">
@@ -68,6 +99,10 @@
             </div>
             
             <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
+                <span id="header-user-badge" class="hidden items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold">
+                  <span id="sync-status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                  👤 <span id="header-user-email">Nicht angemeldet</span>
+                </span>
                 <div id="cloud-status-text" class="font-bold text-gray-700">Status: Nicht angemeldet</div>
                 <div id="cloud-user-display" class="text-emerald-700 font-semibold"></div>
             </div>
@@ -131,27 +166,8 @@
     <!-- Main Content -->
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-7xl space-y-6 mt-2">
         
-        <!-- Action Bar -->
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-            <a href="../../index.html" class="w-full sm:w-auto text-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold border border-gray-200 transition-all">
-                ← Zurück zur Startseite
-            </a>
-            
-            <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-stretch sm:justify-end">
-                <button onclick="manuelleSynchronisation()" class="flex-1 sm:flex-none px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-xl text-xs font-bold shadow-sm transition-all">
-                    🔄 Manuell Synchronisieren
-                </button>
-                <button onclick="exportAbrechnungPDF()" class="flex-1 sm:flex-none px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-xl text-xs font-bold shadow-sm transition-all">
-                    📄 Finanz-Bericht (PDF)
-                </button>
-                <button onclick="kopiereWGLink()" class="flex-1 sm:flex-none px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-sm transition-all">
-                    🔗 Link teilen
-                </button>
-            </div>
-        </div>
-
         <!-- Dashboard KPIs -->
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3" data-b3-panel="stats" id="b3-stats">
             <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200">
                 <p class="text-[10px] text-gray-500 font-medium">Monats-Einnahmen</p>
                 <h3 id="statIncome" class="text-sm md:text-base font-bold text-emerald-600">0,00 €</h3>
@@ -183,7 +199,7 @@
         </div>
 
         <!-- DIGITALE PINNWAND -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="notes" id="b3-notes">
             <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
                 <div>
                     <h3 class="font-bold text-base text-gray-900">📌 Digitale WG-Pinnwand & Sticky Notes</h3>
@@ -199,7 +215,7 @@
         </div>
 
         <!-- STAMMDATEN -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-b3-panel="info" id="b3-info">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4 lg:col-span-3">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">ℹ️ WG-Stammdaten</h3>
@@ -218,7 +234,7 @@
         </div>
 
         <!-- ANALYSE & BUDGETS -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" data-b3-panel="analysis" id="b3-analysis">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <h3 class="font-bold text-base text-gray-900 border-b pb-2">📊 Visuelle Finanz-Analyse</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -245,7 +261,7 @@
         </div>
 
         <!-- SPARSCHWEIN -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="goals" id="b3-goals">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="font-bold text-base text-gray-900">🐷 Sparschwein & Sparziele</h3>
                 <button onclick="openAddGoalModal()" class="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">+ Neues Sparziel</button>
@@ -256,7 +272,7 @@
         </div>
 
         <!-- FORMULAR: BUCHUNG / OCR -->
-        <div id="formCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+        <div id="formCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="expenses">
             <div class="flex justify-between items-center border-b pb-3">
                 <h2 id="formTitle" class="text-lg font-bold text-gray-900">✍️ Buchung / WG-Kassenbon erfassen</h2>
                 <button id="cancelEditBtn" onclick="cancelEdit()" class="hidden px-3 py-1 bg-gray-200 hover:bg-gray-300 text-xs font-bold rounded-lg text-gray-700">✕ Abbrechen</button>
@@ -365,7 +381,7 @@
         </div>
 
         <!-- SCHULDENMINIMIERER -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-b3-panel="debts" id="b3-debts">
             <div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-3 lg:col-span-1">
                 <div class="flex justify-between items-center">
                     <h3 class="font-bold text-sm text-emerald-900">🧮 Optimaler WG-Schuldenausgleich</h3>
@@ -409,7 +425,7 @@
         </div>
 
         <!-- INVENTAR -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="inventory" id="b3-inventory">
             <div class="flex justify-between items-center border-b pb-2">
                 <div>
                     <h3 class="font-bold text-base text-gray-900">📦 WG-Inventar & Auszugs-Restwert-Rechner</h3>
@@ -421,7 +437,7 @@
         </div>
 
         <!-- WG-KALENDER & SLOTS -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="calendar" id="b3-calendar">
             <div class="flex justify-between items-center border-b pb-3 flex-wrap gap-2">
                 <div>
                     <h3 class="font-bold text-base text-gray-900">📅 WG-Kalender & Slots</h3>
@@ -435,7 +451,7 @@
         </div>
 
         <!-- PUTZPLAN & EINKAUFSLISTE -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" data-b3-panel="cleaning" id="b3-cleaning">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">🧹 Rotierender Putzplan</h3>
@@ -461,7 +477,7 @@
         </div>
 
         <!-- KOCHPLANER & ERNÄHRUNG -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" data-b3-panel="cooking" id="b3-cooking">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
                 <div class="flex justify-between items-center border-b pb-2">
                     <h3 class="font-bold text-base text-gray-900">🍲 Wochenkochplaner</h3>
@@ -480,7 +496,7 @@
         </div>
 
         <!-- VERTRÄGE -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4" data-b3-panel="contracts" id="b3-contracts">
             <div class="flex justify-between items-center border-b pb-2">
                 <h3 class="font-bold text-base text-gray-900">📜 WG-Verträge & Abo-Manager</h3>
                 <button onclick="openContractModal()" class="px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold">+ Vertrag</button>
@@ -489,7 +505,7 @@
         </div>
 
         <!-- AMAZON AFFILIATE EMPFEHLUNGEN -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-3">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-3" data-b3-panel="recommendations" id="b3-recommendations">
             <h4 class="font-bold text-sm text-gray-700">🛒 Nützliches WG- & Haushalts-Zubehör auf Amazon</h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <a href="https://www.amazon.de/s?k=haushaltshelfer+wg+kochen&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-50 hover:bg-gray-100 border rounded-xl flex items-center space-x-3 transition">
@@ -510,7 +526,7 @@
         </div>
 
         <!-- KO-FI SUPPORT -->
-        <div class="pt-8 pb-4 text-center">
+        <div class="b3-legacy-kofi pt-8 pb-4 text-center">
             <a href="https://ko-fi.com/duhrrom11" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3.5 bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold rounded-2xl text-xs shadow-md border border-amber-300 transition-all transform hover:-translate-y-0.5">
                 <span>☕</span>
                 <span id="kofiText">Spendier dem Entwickler einen Kaffee</span>
@@ -1048,8 +1064,17 @@
         }
 
         function zeigeErstellungsScreen() {
-            document.body.innerHTML = `
-                <div class="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+            // The standalone B3 shell must remain available during first setup:
+            // replacing document.body would also remove navigation and settings.
+            const dashboard = document.getElementById('main-content');
+            if (!dashboard) return;
+            document.body.classList.add('b3-wg-unconfigured');
+            const setup = document.createElement('section');
+            setup.id = 'b3-wg-onboarding';
+            setup.setAttribute('aria-label','Neuen WG-Planer einrichten');
+            setup.className = 'b3-wg-onboarding';
+            setup.innerHTML = `
+                <div class="flex items-center justify-center p-4">
                     <div class="max-w-md w-full bg-white rounded-3xl p-8 border border-gray-200 shadow-xl text-center space-y-6">
                         <div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-3xl mx-auto">🏠</div>
                         <h2 class="text-xl font-black text-gray-900">Gemeinsamer WG-Planer</h2>
@@ -1063,6 +1088,7 @@
                     </div>
                 </div>
             `;
+            dashboard.prepend(setup);
         }
 
         async function ladeWGausCloud() {

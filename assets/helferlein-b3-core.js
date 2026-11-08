@@ -151,6 +151,7 @@ function init(){
      help?.scrollIntoView({block:'nearest',behavior:'smooth'});
    }else{
      if(typeof window.closeSettings==='function')window.closeSettings();
+     else modal.classList.add('hidden');
      help?.scrollIntoView({block:'start',behavior:'smooth'});
    }
   },true));
