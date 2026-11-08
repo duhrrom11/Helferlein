@@ -613,10 +613,10 @@
             const filterSelect = document.getElementById('filterPetSelect');
 
             const options = '<option value="">-- Haustier wählen --</option>' + 
-                data.pets.map(p => `<option value="${p.id}">${HelferleinSafe.html(p.name)} (${HelferleinSafe.html(p.species || 'Haustier')})</option>`).join('');
+                data.pets.map(p => `<option value="${HelferleinSafe.numericId(p.id)}">${HelferleinSafe.html(p.name)} (${HelferleinSafe.html(p.species || 'Haustier')})</option>`).join('');
             
             const filterOptions = '<option value="">Alle Haustiere anzeigen</option>' + 
-                data.pets.map(p => `<option value="${p.id}">${HelferleinSafe.html(p.name)}</option>`).join('');
+                data.pets.map(p => `<option value="${HelferleinSafe.numericId(p.id)}">${HelferleinSafe.html(p.name)}</option>`).join('');
 
             eventSelect.innerHTML = options;
             filterSelect.innerHTML = filterOptions;
@@ -694,7 +694,7 @@
                         <div class="p-3 border rounded-xl flex justify-between items-center text-xs ${stockBg}">
                             <div>
                                 <p class="font-bold">${HelferleinSafe.html(m.name)}</p>
-                                <p class="text-[11px] ${isLowStock ? 'text-red-600 font-bold' : 'text-gray-600'}">Vorrat: ${m.stock} ${isLowStock ? '⚠️ Fast leer!' : ''}</p>
+                                <p class="text-[11px] ${isLowStock ? 'text-red-600 font-bold' : 'text-gray-600'}">Vorrat: ${HelferleinSafe.html(m.stock)} ${isLowStock ? '⚠️ Fast leer!' : ''}</p>
                             </div>
                             <button onclick="deleteMedication(${HelferleinSafe.numericId(m.id)})" class="text-red-500 font-bold px-2 hover:bg-red-100 rounded">✕</button>
                         </div>
@@ -735,7 +735,7 @@
 
                     return `
                         <div class="p-3 border rounded-xl ${statusColor}">
-                            <p class="text-[11px] font-bold text-gray-500">${petName} (${HelferleinSafe.html(e.type)})</p>
+                            <p class="text-[11px] font-bold text-gray-500">${HelferleinSafe.html(petName)} (${HelferleinSafe.html(e.type)})</p>
                             <p class="text-xs font-bold mt-0.5">${HelferleinSafe.html(e.title)}</p>
                             <p class="text-[11px] mt-1">${diff < 0 ? '🔴 Überfällig seit ' + Math.abs(diff) + ' Tagen' : (diff === 0 ? '🟡 Heute fällig!' : '🟢 Fällig in ' + diff + ' Tagen')} (${d.toLocaleDateString('de-DE')})</p>
                             ${expiryHint}
@@ -775,7 +775,7 @@
                             else if (e.weight < prevWeight) trendIcon = "📉";
                             else trendIcon = "⚖️";
                         }
-                        weightBadge = `<span class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">${trendIcon} ${e.weight} kg</span>`;
+                        weightBadge = `<span class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">${trendIcon} ${HelferleinSafe.html(e.weight)} kg</span>`;
                     }
 
                     let receiptBtn = e.receipt ? `<button onclick="zoomImage(${HelferleinSafe.jsArg(HelferleinSafe.photo(e.receipt))})" class="px-2 py-1 bg-teal-50 text-teal-700 rounded-lg text-xs font-semibold hover:bg-teal-100" title="Beleg anzeigen">🧾 Beleg</button>` : '';
@@ -864,7 +864,7 @@
                 totalCosts += (e.cost || 0);
 
                 if (y > 270) { doc.addPage(); y = 20; }
-                let weightText = e.weight ? ` | ${e.weight} kg` : "";
+                let weightText = e.weight ? ` | ${HelferleinSafe.html(e.weight)} kg` : "";
                 let expText = e.expiryDate ? ` (Gültig bis: ${new Date(e.expiryDate).toLocaleDateString('de-DE')})` : "";
                 doc.text(`- [${e.type}] ${pName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 14, y);
                 y += 6;
