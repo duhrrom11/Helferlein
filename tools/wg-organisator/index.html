@@ -1287,11 +1287,11 @@
             if (!loaded) {
                 // A different WG must never silently inherit this browser's cached data.
                 const lastLoadedId = localStorage.getItem('wg_last_loaded_bin_id');
-                if (lastLoadedId !== wgBinId) {
+                if (isSecureWgId(wgBinId) || lastLoadedId !== wgBinId) {
                     document.getElementById('main-content').replaceChildren();
                     const warning = document.createElement('section');
                     warning.className = 'p-6 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900';
-                    warning.textContent = 'Die WG-Cloud ist derzeit nicht erreichbar. Zur Vermeidung einer Datenvermischung werden keine gespeicherten Daten einer anderen WG angezeigt. Bitte später erneut laden.';
+                    warning.textContent = 'Die WG konnte nicht sicher geladen werden. Bitte anmelden und die Verbindung prüfen. Es werden keine zwischengespeicherten WG-Daten angezeigt.';
                     document.getElementById('main-content').append(warning);
                     checkUserSession();
                     return;
