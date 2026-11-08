@@ -734,10 +734,15 @@
             "dismiss_frost",
             "pflanzen_pass_v10",
             "energie_tracker_pro_v8",
-            "helperly_recipes_pro"
+            "helperly_recipes_pro",
+            "helferlein_ui_theme_v1",
+            "helferlein_ui_layout_backform_v1",
+            "helferlein_ui_layout_nachlass_v1",
+            "helferlein_ui_layout_pflanzen_v1"
         ]);
         function isHelferleinBackupKey(key) {
-            return HELFERLEIN_BACKUP_KEYS.has(key) && !isAuthSessionStorageKey(key);
+            const knownLayout = /^helferlein_ui_layout_(?:energie|kassenbon|kisten|wg|notizen|kfz|haustier|verleih|pflanzen|nachlass|backform|parken|haushaltsbuch|umzugskisten)_v1$/.test(key);
+            return (HELFERLEIN_BACKUP_KEYS.has(key) || knownLayout) && !isAuthSessionStorageKey(key);
         }
 
         async function exportGlobalBackup() {
