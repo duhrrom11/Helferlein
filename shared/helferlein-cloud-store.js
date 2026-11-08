@@ -1,4 +1,4 @@
-/* Helferlein cloud persistence: draft adapter, not yet wired to live tools.
+/* Helferlein cloud persistence: opt-in adapter for two tools.
  * Legacy local data is never uploaded automatically.
  */
 (function (global) {
@@ -29,15 +29,23 @@
         .order('updated_at', { ascending: false }).limit(2);
       if (error) throw error;
       if (data.length > 1) throw new Error('Multiple cloud records found; manual resolution required');
-      return data[0] || null;
+      const row = data[0] || null;
+      if (row && (!row.data || typeof row.data !== 'object' || Array.isArray(row.data))) throw new Error('Invalid cloud payload');
+      return row;
     }
     async function load() {
       const uid = await userId();
       if (!uid) return { data: null, source: 'signed-out' };
       const k = keys(uid);
       const pending = read(k.pending);
-      if (localStorage.getItem(k.pending) !== null) return { data: pending, source: 'pending' };
-      if (!navigator.onLine) return { data: read(k.cache), source: 'offline' };
+      if (localStorage.getItem(k.pending) !== null) {
+        if (await userId() !== uid) throw new Error('Account changed during pending load');
+        return { data: pending, source: 'pending' };
+      }
+      if (!navigator.onLine) {
+        if (await userId() !== uid) throw new Error('Account changed during offline load');
+        return { data: read(k.cache), source: 'offline' };
+      }
       try {
         const row = await fetchCloud(uid);
         if (await userId() !== uid) throw new Error('Account changed during cloud load');
@@ -45,6 +53,7 @@
         write(k.revision, row ? row.updated_at : null);
         return { data: row ? row.data : null, source: row ? 'cloud' : 'cloud-empty' };
       } catch (error) {
+        if (await userId() !== uid) throw new Error('Account changed during cloud load');
         return { data: read(k.cache), source: 'offline-error', error };
       }
     }
@@ -93,17 +102,17 @@
         if (await userId() !== uid) throw new Error('Account changed before cloud update');
         const { data, error } = await client.from('user_data')
           .update({ data: pending, updated_at: new Date().toISOString() })
-          .eq('id', row.id).eq('user_id', uid).eq('updated_at', row.updated_at)
+          .eq('id', row.id).eq('user_id', uid).eq('tool', tool).eq('updated_at', row.updated_at)
           .select('id,updated_at');
         if (error) throw error;
-        if (!data || data.length !== 1) throw new Error('Concurrent cloud change; pending data preserved');
+        if (!data || data.length !== 1 || data[0].id !== row.id || !data[0].updated_at) throw new Error('Concurrent cloud change; pending data preserved');
         write(k.revision, data[0].updated_at);
       } else {
         if (await userId() !== uid) throw new Error('Account changed before cloud insert');
         const { data, error } = await client.from('user_data')
           .insert({ user_id: uid, tool, data: pending }).select('id,updated_at');
         if (error) throw error;
-        if (!data || data.length !== 1) throw new Error('Cloud insert not confirmed; pending data preserved');
+        if (!data || data.length !== 1 || !data[0].id || !data[0].updated_at) throw new Error('Cloud insert not confirmed; pending data preserved');
         write(k.revision, data[0].updated_at);
       }
       if (await userId() !== uid) throw new Error('Account changed after sync; pending data preserved');
@@ -113,6 +122,7 @@
       return true;
     }
     async function save(data) {
+      if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid local data payload');
       // Serialize local writes as well as uploads, preserving each baseline.
       const previous = saving || Promise.resolve();
       const next = previous.catch(() => {}).then(() => performSave(data));
@@ -170,12 +180,14 @@
       const row = await fetchCloud(uid);
       if (await userId() !== uid) throw new Error('Account changed during reconciliation');
       if (row && sameData(row.data, pending)) {
+        if (await userId() !== uid) throw new Error('Account changed during acknowledgement');
         finishAcknowledged(k, pending, row.updated_at);
         return { status: 'already-synced' };
       }
       if (row) return { status: 'conflict' };
       // Empty cloud is confirmed now. A later concurrent insert is still
       // guarded by the existing fetch/compare path in performFlush().
+      if (localStorage.getItem(k.pending) !== JSON.stringify(pending)) throw new Error('Local changes arrived during reconciliation');
       write(k.base, { revision: null });
       return { status: 'ready' };
     }
