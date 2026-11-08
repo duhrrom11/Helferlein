@@ -287,6 +287,7 @@
                     <div id="ocrStatus" class="text-xs text-emerald-800 font-semibold hidden">🔍 Scanne Kassenbon... Bitte warten.</div>
                 </div>
 
+                <button type="button" onclick="clearReceiptPhotos()" class="text-xs px-3 py-2 rounded-lg border border-red-200 text-red-700 bg-white hover:bg-red-50">🗑️ Alle Belegbilder entfernen</button>
                 <div id="uploadGalleryPreview" class="flex gap-2 overflow-x-auto py-2 hidden"></div>
 
                 <!-- Canvas Editor für Thermopapier Filter -->
@@ -726,6 +727,19 @@
             });
         }
 
+        function clearReceiptPhotos() {
+            photoReadGeneration++;
+            pendingPhotoReads = 0;
+            currentUploadedPhotos = [];
+            rawImage = null;
+            document.getElementById('receiptPhotoInput').value = '';
+            const preview = document.getElementById('uploadGalleryPreview');
+            preview.replaceChildren();
+            preview.classList.add('hidden');
+            document.getElementById('canvasEditor').classList.add('hidden');
+            document.getElementById('ocrStatus').classList.add('hidden');
+        }
+
         function applyCanvasFilter() {
             if (!rawImage) return;
             const canvas = document.getElementById('photoCanvas');
@@ -817,8 +831,7 @@
                     data[index] = {
                         ...data[index],
                         title, store, date, price, category, paymentMethod, warrantyMonths, returnDays, lifespan, sn, location, isFixkosten, isTax, note, entryType,
-                        photos: currentUploadedPhotos.length > 0 ? [...currentUploadedPhotos] :
-                            (Array.isArray(data[index].photos) ? data[index].photos.filter(src => safeReceiptPhoto(src)) : [])
+                        photos: [...currentUploadedPhotos]
                     };
                 }
             } else {
