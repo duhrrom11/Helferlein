@@ -704,11 +704,14 @@
 
         function copyShareText() {
             let data = getData();
-            if (data.readings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
+            const validReadings = data.readings.filter(r => r && typeof r === 'object' &&
+                typeof r.type === 'string' && typeof r.name === 'string' &&
+                typeof r.date === 'string' && r.value !== undefined && r.value !== null);
+            if (validReadings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
             let text = "⚡ Zählerstände-Übersicht:\n";
             let latest = {};
             // Pick the newest reading per distinct meter, regardless of insertion order.
-            data.readings.forEach(r => {
+            validReadings.forEach(r => {
                 const key = JSON.stringify([r.type, r.name]);
                 if (!latest[key] || r.date > latest[key].date) latest[key] = r;
             });
