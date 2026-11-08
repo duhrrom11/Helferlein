@@ -908,10 +908,13 @@
                 }
 
                 const buyDate = new Date(r.date);
-                const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
-                const lifespan = r.lifespan || 5;
-                const zeitwert = Math.max(0, price * (1 - (ageYears / lifespan)));
-                if (!isIncome) totalZeitwert += zeitwert;
+                const lifespanValue = Number(r.lifespan);
+                const lifespan = Number.isFinite(lifespanValue) && lifespanValue > 0 ? lifespanValue : 5;
+                if (!isIncome && Number.isFinite(buyDate.getTime()) && buyDate <= now) {
+                    const ageYears = (now - buyDate) / (1000 * 60 * 60 * 24 * 365.25);
+                    const zeitwert = Math.max(0, Math.max(0, price) * (1 - ageYears / lifespan));
+                    if (Number.isFinite(zeitwert)) totalZeitwert += zeitwert;
+                }
             });
 
             document.getElementById('statIncome').innerText = totalIncome.toFixed(2) + " €";
