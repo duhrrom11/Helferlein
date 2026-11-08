@@ -933,8 +933,11 @@
         }
 
         function deletePlant(id) {
-            if (!confirm("⚠️ Pflanze wirklich löschen?")) return;
             let data = getData();
+            if (!data.plants.some(item => item && typeof item === 'object' && item.id === id)) {
+                return alert('Pflanze nicht gefunden. Es wurde nichts gelöscht.');
+            }
+            if (!confirm("⚠️ Pflanze wirklich löschen?")) return;
             data.plants = data.plants.filter(item => !item || typeof item !== 'object' || item.id !== id);
             data.beetSlots = data.beetSlots.map(slotId => slotId === id ? null : slotId);
             if (!saveData(data)) return;
