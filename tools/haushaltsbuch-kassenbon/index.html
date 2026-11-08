@@ -1226,11 +1226,16 @@
             qrContainer.innerHTML = "";
             const qrText = `GERÄT: ${r.title}\nKAUFDATUM: ${r.date}\nHÄNDLER: ${r.store || 'k.A.'}\nSERIENNR: ${r.sn || 'k.A.'}`;
 
-            if (typeof QRCode !== 'undefined') {
-                try { new QRCode(qrContainer, { text: qrText, width: 120, height: 120 }); } 
-                catch(e) { qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}">`; }
+            // QR content includes private receipt data: never send it to a third-party image service.
+            if (typeof QRCode === 'undefined') {
+                qrContainer.textContent = 'QR-Code momentan nicht verfügbar. Bitte die Seite neu laden.';
             } else {
-                qrContainer.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrText)}">`;
+                try {
+                    new QRCode(qrContainer, { text: qrText, width: 120, height: 120 });
+                } catch (error) {
+                    console.error('QR-Code konnte nicht erstellt werden:', error);
+                    qrContainer.textContent = 'QR-Code konnte nicht erstellt werden.';
+                }
             }
         }
 
