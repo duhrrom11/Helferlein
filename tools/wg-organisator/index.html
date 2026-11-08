@@ -1140,7 +1140,7 @@
         }
 
         async function speichereWGinCloud() {
-            if (!wgBinId) return;
+            if (!wgBinId) return false;
             const backupObj = {
                 flatmates: getFlatmates(),
                 notes: getNotes(),
@@ -1166,16 +1166,17 @@
                     });
                     if (response.ok) {
                         const result = await response.json();
-                        if (result.id) {
+                        if (typeof result.id === 'string' && /^[a-zA-Z0-9_-]{4,128}$/.test(result.id)) {
                             wgBinId = result.id;
                             localStorage.setItem('wg_active_bin_id', wgBinId);
                             window.history.replaceState({}, '', window.location.pathname + "?id=" + wgBinId);
+                            return true;
                         }
                     }
                 } catch (e) {
                     console.error("Konnte keinen echten Cloud-Bin anlegen:", e);
                 }
-                return;
+                return false;
             }
 
             try {
@@ -1185,8 +1186,10 @@
                     body: JSON.stringify(backupObj)
                 });
                 if (!response.ok) throw new Error('WG-Cloud-Speicherung fehlgeschlagen: HTTP ' + response.status);
+                return true;
             } catch (error) {
                 console.error("Fehler beim Speichern in Cloud:", error);
+                return false;
             }
         }
 
