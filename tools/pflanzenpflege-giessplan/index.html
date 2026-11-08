@@ -649,8 +649,11 @@
         function closeHarvestModal() { document.getElementById('harvestModal').classList.add('hidden'); }
         function saveHarvest() {
             let plantId = parseInt(document.getElementById('harvestPlantId').value);
-            let grams = parseInt(document.getElementById('harvestWeightGrams').value) || 0;
-            if(grams <= 0) return;
+            const rawGrams = document.getElementById('harvestWeightGrams').value.trim();
+            const grams = Number(rawGrams);
+            if (!rawGrams || !Number.isSafeInteger(grams) || grams <= 0) {
+                return alert('Bitte eine gültige Erntemenge in ganzen Gramm eingeben.');
+            }
             let data = getData();
             let p = data.plants.find(item => item.id === plantId);
             if(p) {
