@@ -136,7 +136,7 @@ test('Malicious recipe HTML renders as inert text, not executable elements',asyn
  await page.locator('#recipe-input').fill('250 g <img src=x onerror="window.__xssHit=true">');
  await page.evaluate(()=>calculateRecipe());
  const result=await page.evaluate(()=>{
-  const root=document.getElementById('recipe-output')||document.getElementById('recipe-result');
+  const root=document.getElementById('print-card');
   return {hit:window.__xssHit===true,html:root?.innerHTML||'',text:root?.textContent||''};
  });
  expect(result.hit).toBe(false);
