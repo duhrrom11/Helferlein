@@ -21,4 +21,7 @@ assert.equal(extract('Milch 1,50\nSUMME\n12,80 €'), '12.80');
 assert.equal(extract('ZU ZAHLEN\nEUR 1.234,50'), '1234.50');
 assert.equal(extract('SUMME\nDanke für Ihren Einkauf\n12,80'), null);
 assert.equal(extract('SUMME\n0,00'), null);
+assert.equal(extract('SUMME\nArtikel 12,80'), null);
+assert.equal(extract('SUMME\nKarte 12,80'), null);
+assert.equal(extract('SUMME\n12,80 EUR'), '12.80');
 console.log('OCR total amount regression checks passed');
