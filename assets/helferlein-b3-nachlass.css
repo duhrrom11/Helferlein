@@ -69,3 +69,18 @@ body.b3-nachlass.b3-light .b3-settings-footer .b3-home-link{color:#5141a9}
  body.b3-nachlass main.b3-dashboard .tab-section>div{padding:1rem}
  body.b3-nachlass main.b3-dashboard .tab-section :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
 }
+
+/* Keep the legacy actions popup within the viewport on narrow phones, even
+   when the password setup card makes the page taller than the viewport. */
+@media(max-width:767px){
+ body.b3-nachlass .b3-vault-nav .b3-more[open] .b3-more-content{
+  position:fixed;
+  top:auto;
+  bottom:max(.8rem,env(safe-area-inset-bottom));
+  right:.8rem;
+  max-height:min(46dvh,380px);
+  overflow-y:auto;
+  width:min(290px,calc(100vw - 1.6rem));
+  z-index:80;
+ }
+}
