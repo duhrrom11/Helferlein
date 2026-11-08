@@ -10,15 +10,21 @@
     let saving = null;
     let operationOwner = null;
     let closed = false;
+    let stateVersion = 0;
+    let lastError = null;
     const snapshot = data => JSON.parse(JSON.stringify(data));
+    const isRecord = value => !!value && typeof value === 'object' && !Array.isArray(value);
+    const raw = key => localStorage.getItem(key);
     const assertOpen = () => { if (closed) throw new Error('Cloud store is closed'); };
+    const assertOnline = () => { if (!navigator.onLine) throw new Error('Offline; cloud write deferred'); };
     const read = key => {
       assertOpen();
-      const raw = localStorage.getItem(key);
-      if (raw === null) return null;
-      return JSON.parse(raw);
+      const value = raw(key);
+      if (value === null) return null;
+      try { return JSON.parse(value); } catch (_) { throw new Error('Stored synchronization metadata is not valid JSON: ' + key); }
     };
-    const write = (key, value) => { assertOpen(); localStorage.setItem(key, JSON.stringify(value)); };
+    const write = (key, value) => { assertOpen(); localStorage.setItem(key, JSON.stringify(value)); stateVersion++; };
+    const remove = key => { assertOpen(); localStorage.removeItem(key); stateVersion++; };
     async function userId() {
       assertOpen();
       const { data, error } = await client.auth.getUser();
@@ -27,22 +33,25 @@
       return data && data.user && typeof data.user.id === 'string' ? data.user.id : null;
     }
     function keys(uid) {
+      assertOpen();
       if (!/^[a-z0-9-]{1,100}$/i.test(uid)) throw new Error('Invalid user identity');
       return { cache: prefix + uid + '_cache', pending: prefix + uid + '_pending',
         revision: prefix + uid + '_revision', base: prefix + uid + '_base' };
     }
     async function fetchCloud(uid) {
       assertOpen();
+      if (!uid) throw new Error('Missing cloud user');
       const { data, error } = await client.from('user_data')
         .select('id,data,updated_at').eq('user_id', uid).eq('tool', tool)
         .order('updated_at', { ascending: false }).limit(2);
-      if (error) throw error;
+      if (error) { lastError = error; throw error; }
+      assertOpen();
       if (!Array.isArray(data)) throw new Error('Invalid cloud response');
       if (data.length > 1) throw new Error('Multiple cloud records found; manual resolution required');
       const row = data[0] || null;
       if (row && (typeof row !== 'object' || Array.isArray(row))) throw new Error('Invalid cloud record');
       if (row && (!row.id || typeof row.updated_at !== 'string' || !row.updated_at)) throw new Error('Invalid cloud record identity');
-      if (row && (!row.data || typeof row.data !== 'object' || Array.isArray(row.data))) throw new Error('Invalid cloud payload');
+      if (row && !isRecord(row.data)) throw new Error('Invalid cloud payload');
       return row;
     }
     async function load() {
@@ -50,6 +59,7 @@
       const uid = await userId();
       if (!uid) return { data: null, source: 'signed-out' };
       if (flushing && operationOwner !== uid) throw new Error('Another account has an active sync');
+      const generation = stateVersion;
       const k = keys(uid);
       const pending = read(k.pending);
       if (localStorage.getItem(k.pending) !== null && (!pending || typeof pending !== 'object' || Array.isArray(pending))) throw new Error('Invalid pending payload');
@@ -61,6 +71,7 @@
       if (!navigator.onLine) {
         if (flushing && operationOwner !== uid) throw new Error('Different account syncing');
         if (await userId() !== uid) throw new Error('Account changed during offline load');
+        assertOpen();
         const cached = read(k.cache);
         if (cached !== null && (typeof cached !== 'object' || Array.isArray(cached))) throw new Error('Invalid offline cache');
         return { data: cached, source: 'offline' };
@@ -68,11 +79,13 @@
       try {
         const row = await fetchCloud(uid);
         if (await userId() !== uid) throw new Error('Account changed during cloud load');
+        if (generation !== stateVersion) throw new Error('Local synchronization state changed during cloud load');
         write(k.cache, row ? row.data : null);
         write(k.revision, row ? row.updated_at : null);
         return { data: row ? row.data : null, source: row ? 'cloud' : 'cloud-empty' };
       } catch (error) {
         if (await userId() !== uid) throw new Error('Account changed during cloud load');
+        assertOpen();
         const cached = read(k.cache);
         if (cached !== null && (typeof cached !== 'object' || Array.isArray(cached))) throw new Error('Invalid offline cache');
         return { data: cached, source: 'offline-error', error };
@@ -96,13 +109,16 @@
       return value;
     }
     function sameData(a, b) { return JSON.stringify(canonical(a)) === JSON.stringify(canonical(b)); }
+    function assertPending(k, expected) { if (raw(k.pending) !== expected) throw new Error('Pending data changed during cloud operation'); }
+    function assertBase(k, expected) { if (raw(k.base) !== expected) throw new Error('Sync baseline changed during cloud operation'); }
     function finishAcknowledged(k, pending, revision) {
       if (typeof revision !== 'string' || !revision) throw new Error('Missing acknowledgement revision');
+      assertOpen();
       write(k.revision, revision);
       write(k.cache, pending);
       if (localStorage.getItem(k.pending) === JSON.stringify(pending)) {
-        localStorage.removeItem(k.pending);
-        localStorage.removeItem(k.base);
+        remove(k.pending);
+        remove(k.base);
       } else {
         write(k.base, { revision });
       }
@@ -115,16 +131,18 @@
       const pending = read(k.pending);
       if (localStorage.getItem(k.pending) === null || !navigator.onLine) return false;
       if (saving && operationOwner && operationOwner !== uid) throw new Error('Account sync conflict');
-      const pendingBytes = localStorage.getItem(k.pending);
+      const pendingBytes = raw(k.pending);
+      const baseBytes = raw(k.base);
       if (!pending || typeof pending !== 'object' || Array.isArray(pending)) throw new Error('Invalid pending data; upload blocked');
       const base = read(k.base);
-      if (base === null || typeof base !== 'object' || Array.isArray(base)) {
+      if (!isRecord(base)) {
         throw new Error('Missing sync baseline; manual reconciliation required');
       }
       if (base.unresolved) throw new Error('Cloud baseline unknown; local edits retained for manual reconciliation');
       if (!('revision' in base)) throw new Error('Missing sync revision; local edits preserved');
       if (base.revision !== null && typeof base.revision !== 'string') throw new Error('Invalid sync revision');
       if (base.revision === '') throw new Error('Empty sync revision');
+      assertPending(k, pendingBytes);
       const row = await fetchCloud(uid);
       if (await userId() !== uid) throw new Error('Account changed during sync; pending data preserved');
       if (localStorage.getItem(k.pending) !== pendingBytes) return false;
@@ -141,9 +159,9 @@
         throw new Error('Cloud changed since last sync; pending data preserved');
       }
       if (row && !row.updated_at) throw new Error('Cloud revision unavailable');
-      if (localStorage.getItem(k.base) !== JSON.stringify(base)) throw new Error('Baseline changed during sync');
+      assertBase(k, baseBytes);
       if (!navigator.onLine) return false;
-      if (localStorage.getItem(k.base) !== JSON.stringify(base)) return false;
+      if (raw(k.base) !== baseBytes) return false;
       if (row) {
         if (await userId() !== uid) throw new Error('Account changed before cloud update');
         if (localStorage.getItem(k.pending) !== pendingBytes) return false;
@@ -153,6 +171,7 @@
           .select('id,updated_at');
         if (error) throw error;
         if (!Array.isArray(data) || data.length !== 1 || data[0].id !== row.id || typeof data[0].updated_at !== 'string' || !data[0].updated_at) throw new Error('Concurrent cloud change; pending data preserved');
+        if (await userId() !== uid) throw new Error('Account changed after cloud update');
         write(k.revision, data[0].updated_at);
       } else {
         if (await userId() !== uid) throw new Error('Account changed before cloud insert');
@@ -161,12 +180,13 @@
           .insert({ user_id: uid, tool, data: pending }).select('id,updated_at');
         if (error) throw error;
         if (!Array.isArray(data) || data.length !== 1 || !data[0].id || typeof data[0].updated_at !== 'string' || !data[0].updated_at) throw new Error('Cloud insert not confirmed; pending data preserved');
+        if (await userId() !== uid) throw new Error('Account changed after cloud insert');
         write(k.revision, data[0].updated_at);
       }
       if (await userId() !== uid) throw new Error('Account changed after sync; pending data preserved');
       assertOpen();
       if (localStorage.getItem(k.pending) === null) throw new Error('Pending data unexpectedly removed');
-      if (localStorage.getItem(k.base) !== JSON.stringify(base)) throw new Error('Baseline changed during upload');
+      assertBase(k, baseBytes);
       // A newer local edit may have arrived while the request was in flight.
       // Keep it queued with the new server revision rather than deleting it.
       finishAcknowledged(k, pending, read(k.revision));
@@ -281,8 +301,9 @@
       if (await userId() !== uid) throw new Error('Account changed during pending check');
       return exists;
     }
-    function dispose() { closed = true; }
-    return { load, save, flush, hasPending, reconcilePending, dispose };
+    function dispose() { closed = true; stateVersion++; }
+    function status() { return { closed, syncing: !!flushing, saving: !!saving, operationOwner, stateVersion, lastError: lastError ? String(lastError.message || lastError) : null }; }
+    return { load, save, flush, hasPending, reconcilePending, dispose, status };
   }
   global.HelferleinCloudStore = { createStore };
 })(window);
