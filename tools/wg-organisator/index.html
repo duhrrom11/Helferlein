@@ -989,6 +989,51 @@
         function isSecureWgId(id) {
             return typeof id === 'string' && /^secure_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
         }
+        async function showWgMemberAccess() {
+            try {
+                const user = await getAuthenticatedWgUser();
+                const ownId = user.id;
+                if (!isSecureWgId(wgBinId)) {
+                    alert('Mitgliederverwaltung ist nur für geschützte WGs verfügbar.');
+                    return;
+                }
+                const id = wgBinId.slice(SECURE_WG_PREFIX.length);
+                const { data: space, error: spaceError } = await supabaseClient.from('wg_spaces')
+                    .select('owner_id').eq('id', id).single();
+                if (spaceError || !space) throw new Error('WG-Zugriff konnte nicht geprüft werden.');
+                if (space.owner_id !== ownId) {
+                    prompt('Deine Benutzer-ID zum Freigeben durch den WG-Eigentümer:', ownId);
+                    return;
+                }
+                const { data: members, error } = await supabaseClient.from('wg_members')
+                    .select('user_id').eq('wg_id', id);
+                if (error) throw new Error(error.message);
+                const existing = (members || []).map(m => m.user_id);
+                const action = prompt('WG-Mitglieder (nur Eigentümer).\nAktuell freigegebene Benutzer-IDs:\n' +
+                    (existing.join('\n') || '(keine)') +
+                    '\n\nNeue Benutzer-ID eintragen oder -ID zum Entfernen mit Minuszeichen voran:');
+                if (action === null || !action.trim()) return;
+                const remove = action.trim().startsWith('-');
+                const memberId = action.trim().replace(/^-/, '').trim();
+                if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(memberId))
+                    throw new Error('Ungültige Benutzer-ID. Das Mitglied muss sich zuerst registrieren.');
+                if (memberId === ownId) throw new Error('Der Eigentümer ist bereits berechtigt.');
+                if (!confirm((remove ? 'Zugriff entziehen für ' : 'Bearbeitungszugriff erteilen für ') + memberId + '?')) return;
+                if (remove) {
+                    const { error: deleteError } = await supabaseClient.from('wg_members')
+                        .delete().eq('wg_id', id).eq('user_id', memberId);
+                    if (deleteError) throw new Error(deleteError.message);
+                } else {
+                    const { error: insertError } = await supabaseClient.from('wg_members')
+                        .insert({ wg_id: id, user_id: memberId, owner_id: ownId });
+                    if (insertError) throw new Error(insertError.message);
+                }
+                alert(remove ? 'Mitgliederzugriff entfernt.' : 'Mitgliederzugriff erteilt. Der WG-Link kann jetzt geteilt werden.');
+            } catch (error) {
+                alert('Mitgliederverwaltung: ' + error.message);
+            }
+        }
+
         async function getAuthenticatedWgUser() {
             const { data, error } = await supabaseClient.auth.getUser();
             if (error || !data?.user) throw new Error('Bitte zuerst in den Einstellungen anmelden.');
@@ -1308,6 +1353,10 @@
         }
 
         async function kopiereWGLink() {
+            if (isSecureWgId(wgBinId)) {
+                const manage = confirm('Geschützte WG: Der Link allein erteilt keinen Zugriff.\nOK: Mitgliederzugriff verwalten / eigene Benutzer-ID anzeigen.\nAbbrechen: Link kopieren.');
+                if (manage) return showWgMemberAccess();
+            }
             if (!validWgId(wgBinId)) return alert('Keine gültige WG-ID vorhanden.');
             try {
                 await navigator.clipboard.writeText(window.location.href);
