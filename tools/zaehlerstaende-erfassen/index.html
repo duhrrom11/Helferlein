@@ -699,12 +699,12 @@
                     let diff = 0;
                     if (r.isExchange) {
                         diff = r.value;
-                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${r.value})</span>`;
+                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${HelferleinSafe.html(r.value)})</span>`;
                     } else {
                         diff = (r.value - prev.value).toFixed(2);
                         let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                         let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
-                        diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${prev.date})</span>`;
+                        diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${HelferleinSafe.html(prev.date)})</span>`;
                     }
                 } else if (r.isExchange) {
                     diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel Start</span>`;
@@ -723,11 +723,11 @@
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
                                     <span class="text-xs font-bold text-gray-800">${HelferleinSafe.html(r.name)}</span>
-                                    <span class="text-xs text-sky-700 font-semibold">(${r.type} - ${HelferleinSafe.html(r.location || 'Haupt')})</span>
+                                    <span class="text-xs text-sky-700 font-semibold">(${HelferleinSafe.html(r.type)} - ${HelferleinSafe.html(r.location || 'Haupt')})</span>
                                     ${diffText}
                                 </div>
                                 <p class="text-xs text-gray-600 mt-1">
-                                    Stand: <strong class="text-gray-900">${r.value} ${unitLabel}</strong> | Datum: ${r.date}
+                                    Stand: <strong class="text-gray-900">${HelferleinSafe.html(r.value)} ${unitLabel}</strong> | Datum: ${HelferleinSafe.html(r.date)}
                                     ${HelferleinSafe.html(r.note ? ' | Notiz: ' + r.note : '')}
                                 </p>
                             </div>
@@ -766,7 +766,7 @@
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-[11px] font-semibold text-gray-600">
-                            <span>Monat: ${k}</span>
+                            <span>Monat: ${HelferleinSafe.html(k)}</span>
                             <span>Gesamt-Zählerstand Index: ${val.toFixed(1)}</span>
                         </div>
                         <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
@@ -831,7 +831,7 @@
 
                         html += `
                             <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
-                                <h4 class="font-bold text-sm">${t} Prognose & Live-Kosten</h4>
+                                <h4 class="font-bold text-sm">${HelferleinSafe.html(t)} Prognose & Live-Kosten</h4>
                                 <p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${dailyCost} € / Tag</strong></p>
                                 <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
                                 <p class="text-xs">${compText}</p>
