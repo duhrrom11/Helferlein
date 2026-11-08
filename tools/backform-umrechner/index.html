@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3-backform.css">
     <script defer src="../../assets/helferlein-b3-backform.js"></script>
+  <script src="../../assets/helferlein-safe-output.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -851,7 +852,7 @@
             const unitSys = document.getElementById('unit-system').value;
 
             const lines = rawText.split('\n');
-            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${name} (Faktor ×${factor})</p>`;
+            let outputHtml = `<p class="font-bold text-slate-800 mb-1">${HelferleinSafe.html(name)} (Faktor ×${factor})</p>`;
 
             lines.forEach(line => {
                 if(!line.trim()) return;
@@ -863,15 +864,15 @@
 
                     if (unit.match(/ei|eier/i) || desc.includes('ei')) {
                         const eggs = Math.round(val);
-                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} Eier</span> ${match[4]}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${eggs} Eier</span> ${HelferleinSafe.html(match[4])}</div>`;
                     } else if (unitSys === 'imperial' && unit === 'g') {
                         let cups = (val / 125).toFixed(1);
-                        outputHtml += `<div><span class="text-orange-600 font-bold">ca. ${cups} Cups</span> ${match[4]}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">ca. ${cups} Cups</span> ${HelferleinSafe.html(match[4])}</div>`;
                     } else {
-                        outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${unit}</span> ${match[4]}</div>`;
+                        outputHtml += `<div><span class="text-orange-600 font-bold">${val.toFixed(1).replace('.0','')}${unit}</span> ${HelferleinSafe.html(match[4])}</div>`;
                     }
                 } else {
-                    outputHtml += `<div>${line}</div>`;
+                    outputHtml += `<div>${HelferleinSafe.html(line)}</div>`;
                 }
             });
 
@@ -898,14 +899,14 @@
                 html += `<div class="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h4 class="font-bold text-sm text-slate-800">${r.name}</h4>
-                            <p class="text-[11px] text-slate-500">Faktor: ×${r.factor} | ${r.date}</p>
+                            <h4 class="font-bold text-sm text-slate-800">${HelferleinSafe.html(r.name)}</h4>
+                            <p class="text-[11px] text-slate-500">Faktor: ×${r.factor} | ${HelferleinSafe.html(r.date)}</p>
                         </div>
                         <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium">Löschen</button>
                     </div>
                     <div>
                         <label class="block text-[10px] font-semibold text-slate-500 mb-1">Geling-Protokoll / Notiz:</label>
-                        <input type="text" value="${r.note || ''}" onchange="saveNote(${idx}, this.value)" placeholder="Z.B. Nächstes Mal 5 Min weniger backen..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
+                        <input type="text" value="${HelferleinSafe.html(r.note || '')}" onchange="saveNote(${idx}, this.value)" placeholder="Z.B. Nächstes Mal 5 Min weniger backen..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
                     </div>
                 </div>`;
             });
