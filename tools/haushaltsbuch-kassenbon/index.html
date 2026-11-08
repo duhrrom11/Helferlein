@@ -592,7 +592,8 @@
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('kassenbon_data')) || [];
+                const value = JSON.parse(localStorage.getItem('kassenbon_data'));
+                return Array.isArray(value) ? value : [];
             } catch(e) {
                 return [];
             }
@@ -604,7 +605,8 @@
 
         function getBudgets() {
             try {
-                return JSON.parse(localStorage.getItem('budgetbuch_budgets')) || {};
+                const value = JSON.parse(localStorage.getItem('budgetbuch_budgets'));
+                return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : {};
             } catch(e) {
                 return {};
             }
@@ -616,7 +618,8 @@
 
         function getSavingsGoals() {
             try {
-                return JSON.parse(localStorage.getItem('budgetbuch_goals')) || [];
+                const value = JSON.parse(localStorage.getItem('budgetbuch_goals'));
+                return Array.isArray(value) ? value : [];
             } catch(e) {
                 return [];
             }
