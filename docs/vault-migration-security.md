@@ -10,6 +10,10 @@ Produktiv geprueft: Supabase hat aktuell die Tabellen `user_data`, `wg_spaces` u
 
 **Umsetzungsreihenfolge:** (1) sicheren neuen, benutzergebundenen Cloud-Tresor mit Auth und serverseitiger Autorisierung implementieren; (2) lokale Verschluesselung und Wiederherstellung ohne Datenverlust sicherstellen; (3) vorhandene Tresore erst nach gesonderter Eigentuemerpruefung migrieren; (4) produktive Bereitstellung mit Sicherheitspruefungen, Monitoring und Rollback; (5) die Browseroberflaeche erst dann auf den neuen Speicherweg umstellen. Keine pauschale Freigabe alter Firebase-Regeln.
 
+## Cloud-Sicherungspruefung (2026-11-08)
+
+Die Nachlass-Seite bietet zusaetzlich die Aktion `Supabase-Sicherungsstand pruefen`. Sie liest ausschliesslich den dem angemeldeten Konto zugeordneten Datensatz und vergleicht Tresor-ID, IV und Ciphertext mit dem lokal gespeicherten Stand. Die Pruefung schreibt keine Daten und importiert keine Tresore. Unterschiedliche IV/Ciphertext-Werte beweisen nicht, dass die Klartextinhalte unterschiedlich sind; die Anzeige vergleicht lediglich den exakt gespeicherten verschluesselten Stand. Eine Wiederherstellungsprobe ist damit **nicht** ersetzt.
+
 ## Neuer Supabase-Sicherungspfad (2026-11-08)
 
 Produktiv ist die zusaetzliche Tabelle `public.vault_cloud_snapshots` mit RLS und vier eigentuemergebundenen Policies angelegt. Sie speichert nur `owner_user_id`, `vault_id`, `encrypted_data` und `updated_at`. Ein neuer manueller Knopf in der Nachlass-Seite erlaubt eine ausdruecklich bestaetigte, verschluesselte Kopie des lokalen Tresors in das aktuell angemeldete Supabase-Konto. Ein vorhandener, anders benannter Tresor im Konto wird nicht ueberschrieben.
