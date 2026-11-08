@@ -1122,9 +1122,16 @@
 
         function saveBudgetsFromModal() {
             const budgets = {};
-            document.querySelectorAll('#budgetInputList input').forEach(input => {
-                budgets[input.getAttribute('data-cat')] = parseFloat(input.value) || 0;
-            });
+            for (const input of document.querySelectorAll('#budgetInputList input')) {
+                const category = input.getAttribute('data-cat');
+                const amount = input.value.trim() === '' ? 0 : Number(input.value);
+                if (!Number.isFinite(amount) || amount < 0) {
+                    alert('Bitte für ' + category + ' einen gültigen Budgetbetrag ab 0 € eingeben.');
+                    input.focus();
+                    return;
+                }
+                budgets[category] = amount;
+            }
             saveBudgets(budgets);
             closeBudgetModal();
             renderApp();
@@ -1142,9 +1149,10 @@
 
         function saveSavingsGoal() {
             const title = document.getElementById('goalTitle').value.trim();
-            const target = parseFloat(document.getElementById('goalTarget').value) || 0;
-            const current = parseFloat(document.getElementById('goalCurrent').value) || 0;
-            if (!title || target <= 0) return alert("Bitte gültiges Sparziel und Zielbetrag eingeben!");
+            const target = Number(document.getElementById('goalTarget').value);
+            const current = Number(document.getElementById('goalCurrent').value);
+            if (!title || !Number.isFinite(target) || target <= 0 || !Number.isFinite(current) || current < 0)
+                return alert("Bitte gültigen Titel, positiven Zielbetrag und Startbetrag ab 0 € eingeben!");
 
             const goals = getSavingsGoals();
             goals.push({ id: Date.now(), title, target, current });
