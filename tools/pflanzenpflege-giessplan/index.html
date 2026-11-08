@@ -721,7 +721,9 @@
             document.getElementById('galleryGrid').innerHTML = photos.map((img, idx) => `<div class="relative group border rounded-xl overflow-hidden bg-gray-100"><img src="${escapeHtml(img)}" class="w-full h-32 object-cover"><span class="absolute bottom-1 left-1 bg-black bg-opacity-60 text-white text-[9px] px-1.5 py-0.5 rounded">Foto ${idx+1}</span></div>`).join('') || `<p class="col-span-2 text-xs text-gray-400 text-center py-4">Keine Fotos.</p>`;
         }
         function addGalleryPhoto() {
-            const plantId = parseInt(document.getElementById('galleryPlantId').value);
+            const rawId = document.getElementById('galleryPlantId').value;
+            const plantId = Number(rawId);
+            if (!/^\d+$/.test(rawId) || !Number.isSafeInteger(plantId)) return alert('Ungültige Pflanzen-ID.');
             const fileInput = document.getElementById('newGalleryPhoto');
             if(!fileInput.files || !fileInput.files[0]) return;
             compressImage(fileInput.files[0], (compressed) => {
