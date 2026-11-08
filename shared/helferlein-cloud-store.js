@@ -257,7 +257,7 @@
           .update({ data: pending, updated_at: new Date().toISOString() })
           .eq('id', row.id).eq('user_id', uid).eq('tool', tool).eq('updated_at', row.updated_at)
           .select('id,updated_at');
-        if (error) { lastError = error; failedWrites++; throw error; }
+        if (error) { lastError = error; failedWrites++; if (error.code === '23505') rememberConflict('unique-cloud-conflict'); throw error; }
         if (raw(k.pending) !== pendingBytes) rememberConflict('edit-during-update');
         if (!Array.isArray(data) || data.length !== 1 || data[0].id !== row.id || typeof data[0].updated_at !== 'string' || !data[0].updated_at) throw new Error('Concurrent cloud change; pending data preserved');
         if (await userId() !== uid) throw new Error('Account changed after cloud update');
@@ -267,7 +267,7 @@
         if (localStorage.getItem(k.pending) !== pendingBytes) return false;
         const { data, error } = await client.from('user_data')
           .insert({ user_id: uid, tool, data: pending }).select('id,updated_at');
-        if (error) { lastError = error; throw error; }
+        if (error) { lastError = error; failedWrites++; if (error.code === '23505') rememberConflict('concurrent-cloud-insert'); throw error; }
         if (raw(k.pending) !== pendingBytes) rememberConflict('edit-during-insert');
         if (!Array.isArray(data) || data.length !== 1 || !data[0].id || typeof data[0].updated_at !== 'string' || !data[0].updated_at) throw new Error('Cloud insert not confirmed; pending data preserved');
         if (await userId() !== uid) throw new Error('Account changed after cloud insert');
@@ -404,13 +404,13 @@
       }
       if (row) {
         rememberConflict('reconciliation-remote-exists');
-        if (localStorage.getItem(k.pending) !== JSON.stringify(pending)) throw new Error('Pending data changed during conflict detection');
+        assertPending(k, pendingBytes);
         return { status: 'conflict' };
       }
-      if (localStorage.getItem(k.base) !== JSON.stringify(base)) throw new Error('Baseline changed during reconciliation');
+      assertBase(k, baseBytes);
       // Empty cloud is confirmed now. A later concurrent insert is still
       // guarded by the existing fetch/compare path in performFlush().
-      assertPending(k, JSON.stringify(pending));
+      assertPending(k, pendingBytes);
       if (await userId() !== uid) throw new Error('Account changed before reconciliation commit');
       assertOpen();
       assertOnline();
