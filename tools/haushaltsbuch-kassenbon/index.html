@@ -847,6 +847,10 @@
 
             photoReadGeneration++;
             pendingPhotoReads = 0;
+            rawImage = null;
+            document.getElementById('receiptPhotoInput').value = '';
+            document.getElementById('canvasEditor').classList.add('hidden');
+            document.getElementById('ocrStatus').classList.add('hidden');
             editingReceiptId = id;
             document.getElementById('receiptTitle').value = r.title || '';
             document.getElementById('receiptStore').value = r.store || '';
@@ -912,6 +916,7 @@
             document.getElementById('receiptIsTax').checked = false;
             document.getElementById('receiptPhotoInput').value = "";
             document.getElementById('uploadGalleryPreview').classList.add('hidden');
+            document.getElementById('uploadGalleryPreview').replaceChildren();
             document.getElementById('canvasEditor').classList.add('hidden');
             document.getElementById('ocrStatus').classList.add('hidden');
             document.getElementById('formTitle').innerText = "✍️ Neue Buchung / Kassenbon erfassen";
