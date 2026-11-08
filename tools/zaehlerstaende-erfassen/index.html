@@ -492,14 +492,23 @@
 
         function getData() {
             try {
-                return JSON.parse(localStorage.getItem('energie_tracker_pro_v8')) || { readings: [], tarifs: {} };
+                const stored = JSON.parse(localStorage.getItem('energie_tracker_pro_v8'));
+                return stored && Array.isArray(stored.readings) && stored.tarifs && typeof stored.tarifs === 'object' && !Array.isArray(stored.tarifs)
+                    ? stored : { readings: [], tarifs: {} };
             } catch(e) {
                 return { readings: [], tarifs: {} };
             }
         }
 
         function saveData(data) {
-            localStorage.setItem('energie_tracker_pro_v8', JSON.stringify(data));
+            try {
+                localStorage.setItem('energie_tracker_pro_v8', JSON.stringify(data));
+                return true;
+            } catch (error) {
+                console.error('Zählerstände konnten nicht gespeichert werden:', error);
+                alert('Speichern fehlgeschlagen. Bitte Browser-Speicherplatz prüfen; die Eingaben nicht verwerfen.');
+                return false;
+            }
         }
 
         function loadTarifs() {
@@ -529,7 +538,7 @@
                 Wasser: { price: parseFloat(document.getElementById('tariffWasserPrice').value) || 0, abschlag: parseFloat(document.getElementById('tariffWasserAbschlag').value) || 0 },
                 Gas: { price: parseFloat(document.getElementById('tariffGasPrice').value) || 0, abschlag: parseFloat(document.getElementById('tariffGasAbschlag').value) || 0, calib: parseFloat(document.getElementById('tariffGasCalib').value) || 11.2 }
             };
-            saveData(data);
+            if (!saveData(data)) return;
             alert("Tarife & Abschläge erfolgreich gespeichert!");
             renderApp();
         }
@@ -544,7 +553,7 @@
             const isExchange = document.getElementById('meterExchangeCheck').checked;
             const photoInput = document.getElementById('meterPhotoInput');
 
-            if (!date || isNaN(value)) {
+            if (!date || !Number.isFinite(value) || value < 0) {
                 return alert("Bitte gültiges Ablesedatum und Zählerstand eingeben!");
             }
 
@@ -606,7 +615,7 @@
         function storeReadingRecord(type, name, location, date, value, note, isExchange, photo) {
             let data = getData();
             data.readings.push({
-                id: Date.now(),
+                id: Date.now() * 1000 + Math.floor(Math.random() * 1000),
                 type,
                 name,
                 location,
@@ -618,7 +627,7 @@
             });
 
             data.readings.sort((a, b) => new Date(b.date) - new Date(a.date));
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('meterValue').value = "";
             document.getElementById('meterNote').value = "";
@@ -633,8 +642,7 @@
             if (!confirm("⚠️ Diesen Zählerstand wirklich löschen?")) return;
             let data = getData();
             data.readings = data.readings.filter(item => item.id !== id);
-            saveData(data);
-            renderApp();
+            if (saveData(data)) renderApp();
         }
 
         function openPhotoModal(url) {
@@ -653,7 +661,8 @@
             let latest = {};
             // Pick the newest reading per meter type, regardless of insertion order.
             data.readings.forEach(r => {
-                if (!latest[r.type] || r.date > latest[r.type].date) latest[r.type] = r;
+                const key = JSON.stringify([r.type, r.name]);
+                if (!latest[key] || r.date > latest[key].date) latest[key] = r;
             });
             for(let t in latest) {
                 let r = latest[t];
@@ -662,6 +671,8 @@
             }
             navigator.clipboard.writeText(text).then(() => {
                 alert("📋 Zählerstände in die Zwischenablage kopiert! Du kannst sie jetzt direkt in WhatsApp oder E-Mail einfügen.");
+            }).catch(() => {
+                prompt('Zwischenablage nicht verfügbar. Text manuell kopieren:', text);
             });
         }
 
@@ -677,7 +688,7 @@
 
             document.getElementById('statTotalReadings').innerText = data.readings.length;
             document.getElementById('statStrom').innerText = data.readings.filter(r => r.type.includes('Strom')).length;
-            document.getElementById('statWasser').innerText = data.readings.filter(r => r.type.includes('wasser')).length;
+            document.getElementById('statWasser').innerText = data.readings.filter(r => r.type.toLowerCase().includes('wasser')).length;
             document.getElementById('statGas').innerText = data.readings.filter(r => r.type === 'Gas').length;
 
             renderPrognosis(data);
@@ -786,8 +797,10 @@
             let hasData = false;
 
             types.forEach(t => {
-                let list = data.readings
-                    .filter(r => r.type === t)
+                const matching = data.readings.filter(r => r.type === t)
+                    .sort((a,b) => new Date(b.date) - new Date(a.date));
+                const latestMeterName = matching[0]?.name;
+                let list = matching.filter(r => r.name === latestMeterName)
                     .sort((a,b) => new Date(a.date) - new Date(b.date));
 
                 if (list.length >= 2) {
@@ -797,10 +810,8 @@
                     let lastDate = new Date(list[list.length - 1].date);
 
                     for (let i = 1; i < list.length; i++) {
-                        if (list[i].isExchange) {
-                            totalValidVal += list[i].value;
-                        } else {
-                            totalValidVal += (list[i].value - list[i-1].value);
+                        if (!list[i].isExchange && list[i].value >= list[i-1].value) {
+                            totalValidVal += list[i].value - list[i-1].value;
                         }
                     }
 
@@ -811,7 +822,7 @@
                         let tarifKey = t === 'Kaltwasser' ? 'Wasser' : t;
                         
                         let price = 0;
-                        if (t === 'Strom' && data.tarifs && data.tarifs.Strom) price = data.tarifs.Strom.priceHT || 0.35;
+                        if (t === 'Strom' && data.tarifs && data.tarifs.Strom) price = data.tarifs.Strom.priceHT ?? 0;
                         else if (data.tarifs && data.tarifs[tarifKey]) price = data.tarifs[tarifKey].price || 0;
 
                         let abschlag = data.tarifs && data.tarifs[tarifKey] ? data.tarifs[tarifKey].abschlag : 0;
