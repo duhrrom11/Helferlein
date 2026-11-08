@@ -1081,10 +1081,10 @@
                         <div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-3xl mx-auto">🏠</div>
                         <h2 class="text-xl font-black text-gray-900">Gemeinsamer WG-Planer</h2>
                         <p class="text-xs text-gray-500 leading-relaxed">
-                            Erstelle einen gemeinsamen WG-Planer. Der WG-Link ist vertraulich und sollte nur mit Mitbewohnern geteilt werden.
+                            Neue WG-Daten werden geschützt in deinem angemeldeten Konto gespeichert. Zugriff hat zunächst nur der Ersteller; gemeinsames Bearbeiten erfordert eine spätere Mitgliederfreigabe.
                         </p>
                         <button onclick="erstelleNeueWGKonfiguration()" class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl text-sm shadow-md transition-all">
-                            ✨ WG-Plan mit 1 Klick erstellen
+                            🔐 Private WG erstellen (Anmeldung erforderlich)
                         </button>
                         <p id="setup-status" class="text-xs text-emerald-700 font-semibold h-4"></p>
                     </div>
@@ -1275,6 +1275,9 @@
             if (!wgBinId) {
                 zeigeErstellungsScreen();
                 return;
+            }
+            if (!isSecureWgId(wgBinId)) {
+                alert('Hinweis: Diese ältere WG verwendet einen ungeschützten Link-Speicher. Wer die WG-ID kennt, kann die Daten möglicherweise lesen oder verändern. Für neue WGs steht geschützter Kontospeicher zur Verfügung.');
             }
             document.getElementById('receiptDate').valueAsDate = new Date();
             document.getElementById('eventDate').valueAsDate = new Date();
