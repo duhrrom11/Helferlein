@@ -40,9 +40,9 @@ test('Editor supports reversible changes and mobile navigation',()=>{
 });
 
 test('B3 layout CSS preserves complete panels across tablet widths',()=>{
- assert.doesNotMatch(css,/\\\\nbody/,'CSS must not include escaped line endings between selectors');
- assert.match(css,/main\\.b3-dashboard>\\[data-b3-panel\\]\\{grid-column:span 12/);
- assert.match(css,/@media\\(min-width:768px\\) and \\(max-width:1279px\\)/);
- assert.match(css,/data-b3-panel="stats".*grid-template-columns:repeat\\(2,minmax\\(0,1fr\\)\\)/s);
- assert.match(css,/body\\.b3-dark main\\.b3-dashboard \\[data-b3-panel="calendar"\\]/);
+ assert.ok(!css.includes('}\\\\nbody'),'No literal escaped newline joining selectors');
+ assert.ok(css.includes('main.b3-dashboard>[data-b3-panel]{grid-column:span 12'),'Panels must span the full dashboard grid');
+ assert.ok(css.includes('@media(min-width:768px) and (max-width:1279px)'),'Tablet breakpoint');
+ assert.ok(css.includes('data-b3-panel="stats"]{grid-template-columns:repeat(2,minmax(0,1fr))'),'Stats must use two columns on tablet');
+ assert.ok(css.includes('body.b3-dark main.b3-dashboard [data-b3-panel="calendar"]'),'Readable dark calendar');
 });
