@@ -1287,14 +1287,21 @@ END:VCALENDAR`;
             };
             const blob = new Blob([JSON.stringify(backupObj)], { type: 'application/json' });
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
+            const backupUrl = URL.createObjectURL(blob);
+            a.href = backupUrl;
             a.download = `haushaltsbuch-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
+            setTimeout(() => URL.revokeObjectURL(backupUrl), 1000);
         }
 
         function importBackup(event) {
             const file = event.target.files[0];
             if (!file) return;
+            if (file.size > 20 * 1024 * 1024) {
+                alert("Backup zu groß (maximal 20 MB).");
+                event.target.value = '';
+                return;
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -1307,6 +1314,7 @@ END:VCALENDAR`;
                         throw new Error('Dies ist kein Haushaltsbuch-Backup.');
                     }
                     if (Array.isArray(parsed)) {
+                        if (!confirm("Vorhandene Haushaltsbuch-Buchungen durch die importierten Daten ersetzen? Bitte vorher ein Backup herunterladen.")) return;
                         saveData(parsed);
                     } else if (isObject && (
                         Array.isArray(parsed.data) || Array.isArray(parsed.goals) ||
@@ -1315,6 +1323,7 @@ END:VCALENDAR`;
                         if (parsed.data !== undefined && !Array.isArray(parsed.data)) throw new Error('Ungültige Buchungen');
                         if (parsed.goals !== undefined && !Array.isArray(parsed.goals)) throw new Error('Ungültige Sparziele');
                         if (parsed.budgets !== undefined && (!parsed.budgets || typeof parsed.budgets !== 'object' || Array.isArray(parsed.budgets))) throw new Error('Ungültige Budgets');
+                        if (!confirm("Vorhandene Haushaltsbuch-Daten durch die importierten Bereiche ersetzen? Bitte vorher ein Backup herunterladen.")) return;
                         if (parsed.data !== undefined) saveData(parsed.data);
                         if (parsed.budgets !== undefined) saveBudgets(parsed.budgets);
                         if (parsed.goals !== undefined) saveSavingsGoals(parsed.goals);
@@ -1323,7 +1332,16 @@ END:VCALENDAR`;
                     }
                     renderApp();
                     alert("Backup erfolgreich importiert!");
-                } catch(err) { alert("Fehler beim Import."); }
+                } catch(err) {
+                    console.error("Haushaltsbuch-Import fehlgeschlagen:", err);
+                    alert("Import fehlgeschlagen: " + (err.message || "Ungültige Datei"));
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.onerror = () => {
+                alert("Die Backup-Datei konnte nicht gelesen werden.");
+                event.target.value = '';
             };
             reader.readAsText(file);
         }
