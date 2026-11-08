@@ -1369,7 +1369,12 @@
             try { 
                 const data = JSON.parse(localStorage.getItem('wg_flatmates'));
                 if (Array.isArray(data)) {
-                    return data.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
+                    return data.filter(m => typeof m === 'string' || (m && typeof m === 'object' && !Array.isArray(m)))
+                        .map(m => typeof m === 'string'
+                            ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" }
+                            : { vorname: String(m.vorname ?? ''), nachname: String(m.nachname ?? ''),
+                                email: String(m.email ?? ''), phone: String(m.phone ?? ''),
+                                insta: String(m.insta ?? ''), fb: String(m.fb ?? '') });
                 }
                 return []; 
             } catch(e) { 
@@ -1451,6 +1456,11 @@
             return String(value ?? '').replace(/[&<>"']/g, char => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             })[char]);
+        }
+
+        // Never interpolate cloud-provided record IDs as executable JavaScript.
+        function safeInlineId(id) {
+            return typeof id === 'number' && Number.isSafeInteger(id) && id >= 0 ? String(id) : 'null';
         }
 
         /* Render App */
@@ -1580,9 +1590,9 @@
                     <div class="pt-2 border-t border-black/10 flex justify-between items-center text-[10px] font-semibold opacity-80">
                         <span>👤 ${escapeUserHtml(n.author)} (${escapeUserHtml(n.date || 'Heute')})</span>
                         <div class="flex items-center gap-1">
-                            <button onclick="togglePinNote(${n.id})" class="p-0.5">${n.pinned ? '📌' : '📍'}</button>
-                            <button onclick="editNote(${n.id})" class="p-0.5">✏️</button>
-                            <button onclick="deleteNote(${n.id})" class="text-red-700 font-bold p-0.5">&times;</button>
+                            <button onclick="togglePinNote(${safeInlineId(n.id)})" class="p-0.5">${n.pinned ? '📌' : '📍'}</button>
+                            <button onclick="editNote(${safeInlineId(n.id)})" class="p-0.5">✏️</button>
+                            <button onclick="deleteNote(${safeInlineId(n.id)})" class="text-red-700 font-bold p-0.5">&times;</button>
                         </div>
                     </div>
                 </div>
@@ -1646,7 +1656,7 @@
                         <p class="text-[11px] opacity-80 mt-1">📅 ${escapeUserHtml(ev.date)} ${ev.timeStart ? '| ⏰ ' + escapeUserHtml(ev.timeStart) : ''}</p>
                         <p class="text-[10px] opacity-70">Von: <strong>${escapeUserHtml(ev.owner)}</strong></p>
                     </div>
-                    <button onclick="deleteEvent(${ev.id})" class="text-gray-400 hover:text-red-500 font-bold text-sm">&times;</button>
+                    <button onclick="deleteEvent(${safeInlineId(ev.id)})" class="text-gray-400 hover:text-red-500 font-bold text-sm">&times;</button>
                 </div>
             `).join('');
         }
@@ -1680,7 +1690,7 @@
                 return `
                     <div class="p-3 bg-teal-50/60 border border-teal-200 rounded-xl space-y-1.5 text-xs">
                         <div class="flex justify-between font-bold text-teal-950">
-                            <span>📦 ${escapeUserHtml(item.title)}</span><button onclick="deleteInventoryItem(${item.id})" class="text-red-500">&times;</button>
+                            <span>📦 ${escapeUserHtml(item.title)}</span><button onclick="deleteInventoryItem(${safeInlineId(item.id)})" class="text-red-500">&times;</button>
                         </div>
                         <p class="text-gray-600 text-[11px]">Kauf: ${item.price.toFixed(2)} € (${item.date})</p>
                         <div class="pt-1 border-t border-teal-200 flex justify-between items-center text-[11px]">
@@ -1803,8 +1813,8 @@
                             </div>
                         </div>
                         <div class="flex gap-1">
-                            <button onclick="editReceipt(${r.id})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-bold">✏️</button>
-                            <button onclick="deleteReceipt(${r.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">✕</button>
+                            <button onclick="editReceipt(${safeInlineId(r.id)})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-bold">✏️</button>
+                            <button onclick="deleteReceipt(${safeInlineId(r.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">✕</button>
                         </div>
                     </div>
                 `;
@@ -1886,10 +1896,10 @@
                 const percent = Math.min(100, (g.current / g.target) * 100);
                 return `
                     <div class="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 text-xs">
-                        <div class="flex justify-between font-bold text-emerald-900"><span>${escapeUserHtml(g.title)}</span><button onclick="deleteSavingsGoal(${g.id})" class="text-red-500">✕</button></div>
+                        <div class="flex justify-between font-bold text-emerald-900"><span>${escapeUserHtml(g.title)}</span><button onclick="deleteSavingsGoal(${safeInlineId(g.id)})" class="text-red-500">✕</button></div>
                         <div class="flex justify-between text-[11px]"><span>Gespart: <strong>${g.current.toFixed(2)} €</strong></span><span>Ziel: ${g.target.toFixed(2)} €</span></div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-2 transition-all" style="width: ${percent}%"></div></div>
-                        <button onclick="depositGoal(${g.id})" class="w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">+ Einzahlen</button>
+                        <button onclick="depositGoal(${safeInlineId(g.id)})" class="w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">+ Einzahlen</button>
                     </div>
                 `;
             }).join('');
@@ -1921,7 +1931,7 @@
                         <input type="checkbox" ${p.done ? 'checked' : ''} onchange="toggleCleanTask(${p.id})" class="w-4 h-4 text-emerald-600 rounded">
                         <span class="${p.done ? 'line-through text-gray-400' : 'font-bold text-gray-900'}">${escapeUserHtml(p.task)} (${escapeUserHtml(p.assignee)})</span>
                     </div>
-                    <button onclick="deleteCleanTask(${p.id})" class="text-gray-400 hover:text-red-500 font-bold">&times;</button>
+                    <button onclick="deleteCleanTask(${safeInlineId(p.id)})" class="text-gray-400 hover:text-red-500 font-bold">&times;</button>
                 </div>
             `).join('');
         }
@@ -1952,8 +1962,8 @@
                     <span class="font-medium text-gray-800">${escapeUserHtml(item.title)}</span>
                     <div class="flex gap-1.5">
                         <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
-                        <button onclick="transferShoppingToExpense(${item.id})" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
-                        <button onclick="deleteShoppingItem(${item.id})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
+                        <button onclick="transferShoppingToExpense(${safeInlineId(item.id)})" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
+                        <button onclick="deleteShoppingItem(${safeInlineId(item.id)})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
                     </div>
                 </div>
             `).join('');
@@ -2011,7 +2021,7 @@
             container.innerHTML = contracts.map(c => `
                 <div class="p-2.5 bg-indigo-50 border rounded-xl flex justify-between items-center text-xs">
                     <div><strong>${escapeUserHtml(c.name)}</strong> <span class="text-gray-500">(${escapeUserHtml(c.payer)})</span></div>
-                    <div class="flex items-center gap-2"><span class="font-bold text-indigo-900">${c.price.toFixed(2)} €/Mo</span><button onclick="deleteContract(${c.id})" class="text-red-500 font-bold">&times;</button></div>
+                    <div class="flex items-center gap-2"><span class="font-bold text-indigo-900">${Number.isFinite(Number(c.price)) ? Number(c.price).toFixed(2) : '–'} €/Mo</span><button onclick="deleteContract(${safeInlineId(c.id)})" class="text-red-500 font-bold">&times;</button></div>
                 </div>
             `).join('');
         }
