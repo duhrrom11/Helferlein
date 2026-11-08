@@ -15,7 +15,7 @@ body.b3 .b3-header{background:linear-gradient(112deg,#075132 0%,#138b46 56%,#7bd
 .b3-nav a:hover,.b3-nav a:focus-visible{background:#c8f2d6;outline-offset:2px}
 .b3-nav a:first-child{background:linear-gradient(120deg,#087e52,#23b68c);color:white}
 body.b3 main.b3-dashboard{max-width:none;margin:0;min-width:0;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-content:start;gap:1rem;padding:0 0 6rem}
-body.b3 main.b3-dashboard>[data-b3-panel]{grid-column:span 12;min-width:0;order:var(--b3-order,0)}
+body.b3 main.b3-dashboard>:not([data-b3-panel]){grid-column:1/-1}\nbody.b3 main.b3-dashboard>[data-b3-panel]{grid-column:span 12;min-width:0;order:var(--b3-order,0)}
 @media(min-width:1024px){body.b3 main.b3-dashboard>[data-b3-size="s"]{grid-column:span 4}body.b3 main.b3-dashboard>[data-b3-size="m"]{grid-column:span 6}}
 @media(min-width:768px) and (max-width:1023px){body.b3 main.b3-dashboard>[data-b3-size="s"],body.b3 main.b3-dashboard>[data-b3-size="m"]{grid-column:span 6}}
 body.b3 main.b3-dashboard>[data-b3-hidden="true"]{display:none!important}
