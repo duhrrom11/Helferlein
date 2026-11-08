@@ -157,11 +157,33 @@
       }
       return flush();
     }
+    async function reconcilePending() {
+      // Explicit user action only. Never guess which conflicting version wins.
+      const uid = await userId();
+      if (!uid) throw new Error('Sign in required');
+      if (!navigator.onLine) throw new Error('Internet connection required');
+      const k = keys(uid);
+      if (localStorage.getItem(k.pending) === null) return { status: 'nothing-pending' };
+      const base = read(k.base);
+      if (!base || !base.unresolved) return { status: 'baseline-known' };
+      const pending = read(k.pending);
+      const row = await fetchCloud(uid);
+      if (await userId() !== uid) throw new Error('Account changed during reconciliation');
+      if (row && sameData(row.data, pending)) {
+        finishAcknowledged(k, pending, row.updated_at);
+        return { status: 'already-synced' };
+      }
+      if (row) return { status: 'conflict' };
+      // Empty cloud is confirmed now. A later concurrent insert is still
+      // guarded by the existing fetch/compare path in performFlush().
+      write(k.base, { revision: null });
+      return { status: 'ready' };
+    }
     async function hasPending() {
       const uid = await userId();
       return uid ? localStorage.getItem(keys(uid).pending) !== null : false;
     }
-    return { load, save, flush, hasPending };
+    return { load, save, flush, hasPending, reconcilePending };
   }
   global.HelferleinCloudStore = { createStore };
 })(window);
