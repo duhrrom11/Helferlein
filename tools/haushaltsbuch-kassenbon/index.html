@@ -48,6 +48,7 @@
           ['📋','Buchungen','#b3-history']
         ],
         extra:[
+          {label:'📊 Alle Buchungen (CSV)',handler:'exportAllBookingsCSV'},
           {label:'💼 Steuer-Export (CSV)',handler:'exportSteuerCSV'},
           {label:'📄 Finanzbericht (PDF)',handler:'exportPDF'},
           {label:'💾 Backup herunterladen',handler:'exportBackup'},
@@ -1635,6 +1636,29 @@
             const text = String(value ?? '');
             const safe = /^\s*[=+\-@]/.test(text) ? "'" + text : text;
             return '"' + safe.replace(/"/g, '""') + '"';
+        }
+
+        function exportAllBookingsCSV() {
+            const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
+            if (data.length === 0) return alert('Keine Buchungen für den CSV-Export vorhanden.');
+            const rows = [['Datum', 'Typ', 'Titel', 'Haendler', 'Kategorie', 'Preis_EUR',
+                'Zahlungsart', 'Fixkosten', 'Steuerrelevant', 'Seriennummer', 'Notiz'].join(';')];
+            for (const r of data) {
+                const price = Number(r.price);
+                const fields = [r.date, r.entryType, r.title, r.store, r.category,
+                    Number.isFinite(price) ? price.toFixed(2) : '',
+                    r.paymentMethod, r.isFixkosten === true ? 'Ja' : 'Nein',
+                    r.isTax === true ? 'Ja' : 'Nein', r.sn, r.note];
+                rows.push(fields.map(steuerCsvFeld).join(';'));
+            }
+            const csv = '\uFEFF' + rows.join('\r\n') + '\r\n';
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = 'alle-buchungen-' + new Date().toISOString().split('T')[0] + '.csv';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function exportSteuerCSV() {
