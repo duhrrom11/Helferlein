@@ -25,7 +25,8 @@ const request={
   model,
   instructions,
   input:[{role:'user',content:'Erstelle eine kurze, rein lesende Aufgabenanalyse aus diesen Dokumenten:\n'+JSON.stringify(context)}],
-  max_output_tokens:1000,
+  max_output_tokens:2500,
+  reasoning:{effort:'low'},
   store:false
 };
 async function main(){
@@ -44,7 +45,7 @@ async function main(){
  const output=(data.output||[]).filter(x=>x.type==='message')
    .flatMap(x=>x.content||[]).filter(x=>x.type==='output_text')
    .map(x=>x.text).join('\n').slice(0,12000);
- if(!output)throw Error('No model text returned');
+ if(!output)throw Error('No model text returned (status='+String(data.status||'unknown')+', incomplete_reason='+String(data.incomplete_details?.reason||'none')+'). No response body logged.');
  const summary=process.env.GITHUB_STEP_SUMMARY;
  const safe=output.replace(/\r/g,'').replace(/(^|\n)::/g,'$1: :');
  const body='## Helferlein – OpenAI Read-only Analyse\n\n'+safe+
