@@ -4,7 +4,7 @@ on:
   # GitHub schedules use UTC. Run frequently and gate by Europe/Berlin in Node
   # so winter/summer time switches are handled without manual cron changes.
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/5 22-23,0-5 * * *'
   workflow_dispatch:
 
 permissions:
