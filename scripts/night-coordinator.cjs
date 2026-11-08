@@ -96,8 +96,15 @@ function decodeState(body) {
 async function main() {
   const [owner, name]=repo.split('/');
   const base='/repos/'+encodeURIComponent(owner)+'/'+encodeURIComponent(name);
-  const issues=await api('GET',base+'/issues?state=open&per_page=100');
-  let issue=issues.find(i=>!i.pull_request && i.title===issueTitle && i.body?.includes(marker));
+  // The repository can have more than 100 open issues. Search all pages
+  // instead of silently creating a duplicate checkpoint.
+  let issue;
+  for (let page=1; page<=20; page++) {
+    const issues=await api('GET',base+'/issues?state=open&per_page=100&page='+page);
+    issue=issues.find(i=>!i.pull_request && i.title===issueTitle);
+    if (issue || issues.length<100) break;
+    if (page===20) throw new Error('Issue search exceeded 2000 entries; refusing to create a duplicate checkpoint');
+  }
   let state=issue ? decodeState(issue.body) : null;
   // Never overwrite an existing checkpoint when its format is unexpected.
   // A reset would silently lose the handoff between night runs.
