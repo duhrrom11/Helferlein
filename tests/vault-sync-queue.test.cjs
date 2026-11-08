@@ -304,6 +304,18 @@ test('Cloud-Backup entschluesselt Eintraege vor dem Ueberschreiben', () => {
   assert.match(source, /Der lokale Tresor wurde während der Prüfung geändert/);
 });
 
+test('Wiederherstellungspasswort nur bei entschluesselbarem lokalem Tresor', () => {
+  const start = html.indexOf('async function prepareSupabaseRecoveryKey()');
+  const end = html.indexOf('async function restoreVaultFromSupabase()', start);
+  const source = html.slice(start, end);
+  const verify = source.indexOf('decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex)');
+  const wrap = source.indexOf("crypto.subtle.encrypt({ name: 'AES-GCM', iv }, wrappingKey, rawMasterKey)");
+  const upload = source.indexOf('.update({ recovery_key: recovery })');
+  assert.ok(verify > 0 && wrap > verify && upload > wrap);
+  assert.match(source, /!Array\.isArray\(verifiedVault\.entries\)/);
+  assert.match(source, /Tresor während der Entschlüsselungsprüfung geändert/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
