@@ -992,7 +992,9 @@
         async function manuelleSynchronisation() {
             if (!wgBinId) return alert("Keine WG-ID aktiv.");
             try {
-                await ladeWGausCloud();
+                const loaded = await ladeWGausCloud();
+                if (!loaded) throw new Error('Cloud-Daten konnten nicht geladen werden');
+                renderApp();
                 alert("✅ Erfolgreich mit der Cloud synchronisiert!");
             } catch (e) {
                 alert("❌ Synchronisation fehlgeschlagen.");
@@ -1092,7 +1094,7 @@
         }
 
         async function ladeWGausCloud() {
-            if (!wgBinId) return;
+            if (!wgBinId) return false;
             try {
                 let response = await fetch(NPOINT_API_BASE + wgBinId);
                 if (!response.ok) {
@@ -1119,10 +1121,12 @@
                         if (cloudObj.contracts !== undefined) localStorage.setItem('wg_contracts', JSON.stringify(cloudObj.contracts));
                         if (cloudObj.infoboard !== undefined) localStorage.setItem('wg_infoboard', JSON.stringify(cloudObj.infoboard));
                     }
+                    return true;
                 }
             } catch (error) {
                 console.error("Fehler beim Cloud-Laden:", error);
             }
+            return false;
         }
 
         async function speichereWGinCloud() {
@@ -1205,7 +1209,7 @@
             
             await ladeWGausCloud();
             renderApp();
-            await speichereWGinCloud();
+            // Opening a WG must never write stale local data back over cloud records.
             checkUserSession();
         });
 
