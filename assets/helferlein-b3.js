@@ -21,6 +21,23 @@
     const dark=theme==='dark'||(theme==='auto'&&media.matches);
     document.body.classList.toggle('b3-dark',dark);
     document.documentElement.style.colorScheme=dark?'dark':'light';
+    // Account actions have legacy Tailwind fills; guarantee accessible contrast
+    // even when CDN-generated utility styles arrive after the local stylesheet.
+    [
+      ['#settingsModal button[onclick="supabaseLogin()"]','#246b3f','#ffffff'],
+      ['#settingsModal button[onclick="supabaseRegister()"]','#31495f','#f7fbff'],
+      ['#settingsModal button[onclick="supabaseLogout()"]','#4b2934','#ffdce1']
+    ].forEach(([selector,bg,fg])=>{
+      const el=document.querySelector(selector);
+      if(!el)return;
+      if(dark){
+        el.style.setProperty('background-color',bg,'important');
+        el.style.setProperty('color',fg,'important');
+      }else{
+        el.style.removeProperty('background-color');
+        el.style.removeProperty('color');
+      }
+    });
     document.querySelectorAll('[data-b3-theme]').forEach(el=>{el.value=theme});
   }
   function loadLayout(){
