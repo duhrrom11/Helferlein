@@ -1644,6 +1644,19 @@
             const rows = [['Datum', 'Typ', 'Titel', 'Haendler', 'Kategorie', 'Preis_EUR',
                 'Zahlungsart', 'Fixkosten', 'Steuerrelevant', 'Garantie_Monate',
                 'Rueckgabe_Tage', 'Lebensdauer_Jahre', 'Seriennummer', 'Lagerort', 'Notiz'].join(';')];
+            // Nur die Exportansicht sortieren; die gespeicherte Reihenfolge bleibt erhalten.
+            const bookingDate = r => {
+                if (typeof r.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return null;
+                const parsed = parseReceiptDate(r.date);
+                return Number.isFinite(parsed.getTime()) ? r.date : null;
+            };
+            data.sort((a, b) => {
+                const aDate = bookingDate(a);
+                const bDate = bookingDate(b);
+                if (aDate === null) return bDate === null ? 0 : 1;
+                if (bDate === null) return -1;
+                return aDate < bDate ? -1 : aDate > bDate ? 1 : 0;
+            });
             for (const r of data) {
                 const price = Number(r.price);
                 const fields = [r.date, r.entryType, r.title, r.store, r.category,
