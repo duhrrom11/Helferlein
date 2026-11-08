@@ -107,4 +107,19 @@ const originalPhoto = filterContext.currentUploadedPhotos[0];
 canvas.toDataURL = () => 'data:,';
 assert.throws(() => filterContext.applyCanvasFilter(), /nicht gültig gespeichert/);
 assert.equal(filterContext.currentUploadedPhotos[0], originalPhoto, 'invalid canvas result must not replace photo');
+const safeFilterStart = html.indexOf('function tryApplyCanvasFilter()');
+const safeFilterEnd = html.indexOf('function extractReceiptTotal(', safeFilterStart);
+assert.ok(safeFilterStart >= 0 && safeFilterEnd > safeFilterStart);
+const filterAlerts = [];
+const safeFilterContext = vm.createContext({
+    applyCanvasFilter() { throw new Error('Canvas unavailable'); },
+    photoReadFailed: false,
+    console: {error() {}},
+    alert: message => filterAlerts.push(message)
+});
+vm.runInContext(html.slice(safeFilterStart, safeFilterEnd), safeFilterContext);
+assert.doesNotThrow(() => safeFilterContext.tryApplyCanvasFilter());
+assert.equal(safeFilterContext.photoReadFailed, true);
+assert.match(filterAlerts[0], /erneut auswählen/);
+assert.equal((html.match(/onchange="tryApplyCanvasFilter\\(\\)"/g) || []).length, 2);
 console.log('Receipt photo format regression checks passed');
