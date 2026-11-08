@@ -25,7 +25,8 @@ test('WG legacy cloud cannot run without explicit per-tab agreement',()=>{
  assert.match(wg,/let legacyWgCloudEnabled = false/);
  assert.match(wg,/window\.confirm\('ACHTUNG:/);
  assert.match(wg,/if \(!wgBinId \|\| !legacyWgCloudEnabled/);
- assert.match(wg,/if \(wgBinId && legacyWgCloudEnabled\) ladeWGausCloud/);
+ assert.doesNotMatch(wg,/setInterval\\(\\(\\) =>\\s*\\{\\s*if \\(wgBinId && legacyWgCloudEnabled\\)/);
+ assert.match(wg,/Vor dem Cloud-Import konnte keine lokale Sicherung angelegt werden/);
 });
 test('Safe HTML helper escapes markup and rejects script protocols and SVG images',()=>{
  const js=read('assets/helferlein-safe-output.js');
