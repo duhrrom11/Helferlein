@@ -68,6 +68,16 @@ test('manueller Snapshot-Konflikt beendet Ladeanzeige mit Fehlermeldung', () => 
   assert.match(html, /if \(stillCurrent\) \{/);
 });
 
+test('Supabase-Cloud-Sicherung ist explizit und kontogebunden', () => {
+  assert.match(html, /bindClick\('supabaseBackupBtn', \(\) => backupVaultToSupabase\(\)\)/);
+  assert.match(html, /supabaseClient\.auth\.getUser\(\)/);
+  assert.match(html, /\.from\('vault_cloud_snapshots'\)/);
+  assert.match(html, /existing\.vault_id !== cfg\.vaultId/);
+  assert.match(html, /\.eq\('owner_user_id', user\.id\)\.eq\('vault_id', cfg\.vaultId\)/);
+  assert.match(html, /encrypted_data: cfg\.encryptedData/);
+  assert.doesNotMatch(html, /encrypted_data: cfg\.masterKeyHex/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
