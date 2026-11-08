@@ -35,11 +35,14 @@
             background: white;
         }
     </style>
+    <link rel="stylesheet" href="../../assets/helferlein-b3.css">
+    <link rel="stylesheet" href="../../assets/helferlein-b3-nachlass.css">
+    <script defer src="../../assets/helferlein-b3-nachlass.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
 
-    <div role="alert" class="mx-auto mt-3 max-w-5xl rounded-xl border border-amber-700 bg-amber-950/70 px-4 py-3 text-sm text-amber-100">
+    <div role="alert" class="b3-security-notice mx-auto mt-3 max-w-5xl rounded-xl border border-amber-700 bg-amber-950/70 px-4 py-3 text-sm text-amber-100">
         <strong>Wichtiger Sicherheitshinweis:</strong> Der Schlüssel für die lokal verschlüsselten Nachlassdaten wird derzeit zusammen mit den Daten im Browser gespeichert. Wer Zugriff auf den Browser-Speicher oder ein vollständiges Nachlass-Backup erhält, kann diese Daten möglicherweise entschlüsseln. Bitte hier bis zur abgeschlossenen Sicherheitsüberarbeitung keine Passwörter, Zugangscodes oder anderen besonders vertraulichen Geheimnisse hinterlegen.
     </div>
 
@@ -86,42 +89,28 @@
     </div>
 
     <!-- HEADER MIT ZURÜCK-BUTTON -->
-    <header class="bg-slate-950 border-b border-slate-800 text-white py-4 px-4 shadow-xl">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <!-- ZURÜCK BUTTON -->
-                <a href="../../index.html" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-xs flex items-center shadow-md border border-slate-700 mr-2 transition-all">
-                    ◀ Zurück zur Startseite
-                </a>
-                
-                <div class="p-2 bg-indigo-600 rounded-xl text-xl hidden md:block">🏛️</div>
-                <div>
-                    <h1 class="text-base md:text-lg font-black tracking-tight">Digitaler Nachlassverwalter</h1>
-                    <p class="text-[10px] md:text-[11px] text-slate-400">Sicherheitsprüfung ausstehend – bitte keine Passwörter, PINs oder vertraulichen Zugangsdaten speichern</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <span id="header-user-info" class="hidden sm:inline-block text-xs text-slate-400 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">Nicht angemeldet</span>
-                <button id="manualSyncBtn" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-md">
-                    ☁️ Synch.
-                </button>
-            </div>
-        </div>
-    </header>
+    <header class="b3-header"><div class="b3-header-inner">
+<span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+<span class="b3-tool-icon" aria-hidden="true">🏛️</span>
+<div class="b3-tool-title"><h1>Digitaler Nachlassverwalter</h1><p>Sicherheitsprüfung ausstehend – keine Passwörter, PINs oder Zugangsdaten speichern</p></div>
+<button id="b3-nachlass-settings" type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button>
+</div></header>
 
     <!-- MAIN CONTAINER -->
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
 
-        <!-- TABS NAVIGATION -->
-        <div class="flex border-b border-slate-800 space-x-6 text-sm font-medium overflow-x-auto scrollbar-hide">
-            <button data-tab="vault" class="tab-btn active pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">🔐 Tresor</button>
-            <button data-tab="deadman" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">⏰ Totmannschalter</button>
-            <button data-tab="trustees" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">👥 Vertrauenspersonen</button>
-            <button data-tab="kit" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">📄 Notfall-Kit</button>
-            <button data-tab="settings" class="tab-btn pb-3 border-b-2 border-transparent hover:text-indigo-400 whitespace-nowrap">⚙️ Einstellungen</button>
-        </div>
-
-        <!-- TAB 1: TRESOR -->
+        <!-- B3-Navigation; data-tab handlers remain unchanged -->
+<nav class="b3-vault-nav" aria-label="Nachlassverwaltung"><div class="b3-vault-nav-links">
+<button type="button" data-tab="vault" class="tab-btn active">🔐 Tresor</button>
+<button type="button" data-tab="deadman" class="tab-btn">⏰ Totmannschalter</button>
+<button type="button" data-tab="trustees" class="tab-btn">👥 Vertrauenspersonen</button>
+<button type="button" data-tab="kit" class="tab-btn">📄 Notfall-Kit</button>
+<button type="button" data-tab="settings" class="tab-btn">⚙️ Einstellungen</button>
+</div><details class="b3-more" id="b3-nachlass-more"><summary>☷ Weitere Tools</summary><div class="b3-more-content">
+<button id="manualSyncBtn" type="button" class="b3-more-item">☁️ Cloud-Synchronisation</button>
+<button id="b3-nachlass-kit-action" type="button" class="b3-more-item">📄 Notfall-Kit öffnen</button>
+</div></details></nav>
+<!-- TAB 1: TRESOR -->
         <div id="section-vault" class="tab-section space-y-6">
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
                 <h2 class="text-sm font-bold text-slate-100">✍️ Neuen Nachlass-Eintrag erfassen</h2>
@@ -341,6 +330,18 @@
                     💾 Daten speichern & Synchronisieren
                 </button>
             </div>
+<section id="b3-nachlass-preferences" class="b3-nachlass-preferences" aria-label="Darstellung und Dashboard">
+<h3>🎨 Darstellung & Dashboard</h3>
+<label for="b3-nachlass-theme">Designmodus
+<select id="b3-nachlass-theme" aria-label="Globaler Designmodus">
+<option value="auto">Automatisch</option><option value="light">Hell</option><option value="dark">Dunkel</option>
+</select></label>
+<button type="button" id="b3-nachlass-edit">✎ Dashboard bearbeiten</button>
+<div id="b3-nachlass-editor" hidden aria-label="Dashboard-Einstellungen"></div>
+<p class="text-xs">Tresor, Totmannschalter und Vertrauenspersonen bleiben aus Sicherheitsgründen immer erreichbar.</p></section>
+<div class="b3-settings-footer">
+<a class="b3-kofi-link" href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener noreferrer">☕ Kaffee spendieren</a>
+<a class="b3-home-link" href="../../index.html">↗ Entdecke mehr Helferlein</a></div>
         </div>
 
     </main>

@@ -1,0 +1,36 @@
+name: B3 Startseite
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'assets/helferlein-b3-startseite*'
+      - 'tests/b3-startseite*'
+      - '.github/workflows/b3-startseite.yml'
+  push:
+    branches: ['design-b3-rollout-startseite']
+    paths:
+      - 'index.html'
+      - 'assets/helferlein-b3-startseite*'
+      - 'tests/b3-startseite*'
+      - '.github/workflows/b3-startseite.yml'
+permissions:
+  contents: read
+jobs:
+  homepage-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Homepage route, favorites, account and backup contract checks
+        run: node --test tests/b3-startseite.test.cjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock @playwright/test@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Start local static site
+        run: python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/b3-startseite.log 2>&1 &
+      - name: Check home page on mobile tablet desktop
+        run: npx playwright test tests/b3-startseite.spec.cjs --reporter=line --workers=1
