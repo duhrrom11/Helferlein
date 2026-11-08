@@ -59,6 +59,23 @@
       }
     }
     global.addEventListener('online', () => { void resume(); });
+    let blocked = null;
+    async function guardAccount() {
+      const user = await currentUser();
+      const owner = localStorage.getItem(ownerKey);
+      const mismatch = !!(owner && (!user || owner !== user.id));
+      if (mismatch && !blocked) {
+        blocked = document.createElement('div');
+        blocked.setAttribute('role', 'alertdialog');
+        blocked.setAttribute('aria-modal', 'true');
+        blocked.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#0f172a;color:white;display:flex;align-items:center;justify-content:center;padding:24px;font:18px system-ui;text-align:center';
+        blocked.textContent = 'Dieses Gerät enthält lokale Daten eines anderen Kontos. Zum Schutz vor Vermischung ist die Anwendung gesperrt. Bitte zum ursprünglichen Konto zurückwechseln. Die Daten wurden nicht gelöscht.';
+        document.body.appendChild(blocked);
+      } else if (!mismatch && blocked) {
+        blocked.remove(); blocked = null;
+      }
+    }
+    client.auth.onAuthStateChange(() => { setTimeout(() => { void guardAccount().catch(() => {}); }, 0); });
     const host = document.createElement('section');
     host.setAttribute('aria-label', 'Supabase-Datenübernahme');
     host.style.cssText = 'margin:12px 0;padding:12px;border:1px solid #94a3b8;border-radius:12px;background:#f8fafc;color:#0f172a;font:14px system-ui';
@@ -145,6 +162,7 @@
       const done = await store.flush();
       status.textContent = done ? 'Synchronisierung abgeschlossen' : 'Keine Übertragung möglich oder erforderlich';
     });
+    void guardAccount().catch(() => {});
     void currentUser().then(user => {
       if (user && localStorage.getItem(ownerKey) === user.id &&
           localStorage.getItem(enabledKey(user.id)) === 'true') {
