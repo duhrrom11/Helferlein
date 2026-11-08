@@ -1304,8 +1304,7 @@
             const warrantyMonths = Number(r.warrantyMonths);
             let warrantyLabel = 'Keine gültige Garantieangabe';
             if (Number.isFinite(buyDate.getTime()) && Number.isFinite(warrantyMonths) && warrantyMonths > 0) {
-                const expDate = new Date(buyDate);
-                expDate.setMonth(expDate.getMonth() + warrantyMonths);
+                const expDate = addWarrantyMonths(buyDate, warrantyMonths);
                 if (expDate) warrantyLabel = 'Garantie bis: ' + expDate.toLocaleDateString('de-DE');
             }
             document.getElementById('stickerWarranty').innerText = warrantyLabel;
@@ -1337,7 +1336,6 @@
             const r = data.find(item => item && item.id === id);
             if (!r) return;
             const buyDate = new Date(r.date);
-            const expDate = new Date(buyDate);
             const months = Number(r.warrantyMonths);
             if (!Number.isFinite(buyDate.getTime()) || !Number.isFinite(months) || months <= 0) {
                 alert('Für diesen Beleg fehlt ein gültiges Kaufdatum oder eine Garantiedauer.');
