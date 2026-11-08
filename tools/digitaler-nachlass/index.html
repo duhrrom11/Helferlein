@@ -804,8 +804,19 @@
                     currentDecryptedVault.entries.length !== 0) {
                     return alert('Lokale Daten wurden inzwischen geändert. Wiederherstellung abgebrochen.');
                 }
-                const restored = { ...local, vaultId: remote.vault_id,
-                    masterKeyHex: hexKey, encryptedData: remote.encrypted_data };
+                // Never silently retain a different local vault's contacts,
+                // alarms or check-in state under the recovered cloud vault ID.
+                const restored = {
+                    vaultId: remote.vault_id,
+                    masterKeyHex: hexKey,
+                    encryptedData: remote.encrypted_data,
+                    ownerName: 'Dein Name',
+                    ownerEmail: '',
+                    checkInIntervalDays: 30,
+                    lastCheckIn: new Date().toISOString(),
+                    trustees: [],
+                    alarmPersons: []
+                };
                 localStorage.setItem('digital_estate_vault', JSON.stringify(restored));
                 alert('Cloud-Tresor wiederhergestellt. Die Seite wird neu geladen. Bitte sofort eine verschlüsselte lokale Sicherung erstellen.');
                 location.reload();
