@@ -149,9 +149,12 @@
       }
       write(k.pending, data);
       if (!navigator.onLine) return false;
-      // If a previous upload is running, leave this revision queued for the
-      // next flush instead of treating that earlier upload as this save.
-      if (flushing) return false;
+      // Wait for an in-flight upload, then send the latest queued snapshot.
+      // Otherwise a second edit could remain pending indefinitely while online.
+      if (flushing) {
+        try { await flushing; } catch (_) { return false; }
+        if (await userId() !== uid) return false;
+      }
       return flush();
     }
     async function hasPending() {
