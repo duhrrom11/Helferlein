@@ -742,12 +742,12 @@
             const title = document.getElementById('receiptTitle').value.trim();
             const store = document.getElementById('receiptStore').value.trim();
             const date = document.getElementById('receiptDate').value;
-            const price = parseFloat(document.getElementById('receiptPrice').value) || 0;
+            const price = Number(document.getElementById('receiptPrice').value);
             const category = document.getElementById('receiptCategory').value;
             const paymentMethod = document.getElementById('receiptPaymentMethod').value;
-            const warrantyMonths = parseInt(document.getElementById('receiptWarranty').value) || 0;
-            const returnDays = parseInt(document.getElementById('receiptReturnDays').value) || 0;
-            const lifespan = parseFloat(document.getElementById('receiptLifespan').value) || 5;
+            const warrantyMonths = Number(document.getElementById('receiptWarranty').value);
+            const returnDays = Number(document.getElementById('receiptReturnDays').value);
+            const lifespan = Number(document.getElementById('receiptLifespan').value);
             const sn = document.getElementById('receiptSN').value.trim();
             const location = document.getElementById('receiptLocation').value.trim();
             const isFixkosten = document.getElementById('receiptIsFixkosten').checked;
@@ -755,8 +755,14 @@
             const note = document.getElementById('receiptNote').value.trim();
             const entryType = document.querySelector('input[name="entryType"]:checked').value;
 
-            if (!title || !date || price <= 0) {
-                return alert("Bitte Titel, Kaufdatum und einen gültigen Betrag angeben!");
+            if (!title || !date || !Number.isFinite(new Date(date).getTime()) ||
+                !Number.isFinite(price) || price <= 0) {
+                return alert("Bitte Titel, gültiges Kaufdatum und einen positiven Betrag angeben!");
+            }
+            if (!Number.isSafeInteger(warrantyMonths) || warrantyMonths < 0 ||
+                !Number.isSafeInteger(returnDays) || returnDays < 0 ||
+                !Number.isFinite(lifespan) || lifespan <= 0) {
+                return alert("Bitte gültige Garantie-, Rückgabe- und Lebensdauerwerte angeben.");
             }
 
             let data = getData();
