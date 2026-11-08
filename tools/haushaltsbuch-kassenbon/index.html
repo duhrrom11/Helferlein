@@ -566,6 +566,7 @@
 
         let currentUploadedPhotos = [];
         let pendingPhotoReads = 0;
+        let photoReadFailed = false;
         let photoReadGeneration = 0;
         let ocrGeneration = 0;
         let rawImage = null;
@@ -697,6 +698,7 @@
             const generation = ++photoReadGeneration;
             ocrGeneration++;
             pendingPhotoReads = files.length;
+            photoReadFailed = false;
             currentUploadedPhotos = Array(files.length).fill(null);
             rawImage = null;
             const previewContainer = document.getElementById('uploadGalleryPreview');
@@ -708,7 +710,11 @@
                 reader.onload = function(e) {
                     if (generation !== photoReadGeneration) return;
                     pendingPhotoReads--;
-                    if (!safeReceiptPhoto(e.target.result)) return;
+                    if (!safeReceiptPhoto(e.target.result)) {
+                        photoReadFailed = true;
+                        alert('Ein Belegbild hat ein ungültiges Format. Bitte die Bildauswahl erneut versuchen.');
+                        return;
+                    }
                     currentUploadedPhotos[idx] = e.target.result;
                     const imgThumb = document.createElement('img');
                     imgThumb.src = e.target.result;
@@ -731,6 +737,7 @@
                 reader.onerror = function() {
                     if (generation !== photoReadGeneration) return;
                     pendingPhotoReads--;
+                    photoReadFailed = true;
                     alert('Ein Belegbild konnte nicht gelesen werden. Bitte die Bildauswahl erneut versuchen.');
                 };
                 reader.readAsDataURL(file);
@@ -741,6 +748,7 @@
             ocrGeneration++;
             photoReadGeneration++;
             pendingPhotoReads = 0;
+            photoReadFailed = false;
             currentUploadedPhotos = [];
             rawImage = null;
             document.getElementById('receiptPhotoInput').value = '';
@@ -810,6 +818,10 @@
 
         /* --- Buchung Speichern --- */
         function saveReceipt() {
+            if (photoReadFailed) {
+                alert('Mindestens ein Belegbild konnte nicht geladen werden. Bitte Bilder erneut auswählen oder entfernen.');
+                return;
+            }
             if (pendingPhotoReads > 0) {
                 alert('Die Belegbilder werden noch geladen. Bitte kurz warten und erneut speichern.');
                 return;
@@ -883,6 +895,7 @@
             photoReadGeneration++;
             ocrGeneration++;
             pendingPhotoReads = 0;
+            photoReadFailed = false;
             rawImage = null;
             document.getElementById('receiptPhotoInput').value = '';
             document.getElementById('canvasEditor').classList.add('hidden');
@@ -935,6 +948,7 @@
             ocrGeneration++;
             photoReadGeneration++;
             pendingPhotoReads = 0;
+            photoReadFailed = false;
             editingReceiptId = null;
             document.getElementById('receiptTitle').value = "";
             document.getElementById('receiptStore').value = "";
