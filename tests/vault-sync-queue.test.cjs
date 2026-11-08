@@ -156,6 +156,17 @@ test('Cloud-Backup verschluesselt Konfiguration und Restore prueft sie', () => {
   assert.match(restore, /restored\.alarmPersons = recoveredConfig\.alarmPersons/);
 });
 
+test('Supabase-Status kontrolliert auch verschluesselte Konfiguration und Recovery-Key', () => {
+  const start = html.indexOf('async function checkSupabaseVaultBackup()');
+  const end = html.indexOf('// Explicit, account-bound encrypted cloud copy', start);
+  const source = html.slice(start, end);
+  assert.match(source, /encrypted_config,recovery_key/);
+  assert.match(source, /decryptVaultPayload\(remote\.encrypted_config, currentMasterKeyHex\)/);
+  assert.match(source, /configMatches/);
+  assert.match(source, /remote\.recovery_key/);
+  assert.doesNotMatch(source, /localStorage\.setItem|\.insert\(|\.update\(/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
