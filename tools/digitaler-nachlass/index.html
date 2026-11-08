@@ -1061,6 +1061,8 @@
                     .eq('owner_user_id', user.id).maybeSingle();
                 if (error) throw error;
                 if (!remote) return alert('In diesem Supabase-Konto ist noch keine verschlüsselte Tresor-Sicherung vorhanden.');
+                const startingMasterKeyHex = currentMasterKeyHex;
+                const startingRevision = localSaveRevision;
                 const localSnapshot = localStorage.getItem('digital_estate_vault');
                 let local = null;
                 try { local = localSnapshot ? JSON.parse(localSnapshot) : null; } catch {}
@@ -1110,8 +1112,10 @@
                 const keys = ['ownerName', 'ownerEmail', 'checkInIntervalDays',
                     'lastCheckIn', 'trustees', 'alarmPersons'];
                 if (localStorage.getItem('digital_estate_vault') !== localSnapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision) {
-                    return alert('Der lokale Tresor wurde während der Cloud-Prüfung geändert. Bitte die Prüfung wiederholen.');
+                    return alert('Der lokale Tresor oder aktive Schlüssel wurde während der Cloud-Prüfung geändert. Bitte die Prüfung wiederholen.');
                 }
                 const configMatches = keys.every(key =>
                     JSON.stringify(cloudConfig[key] ?? null) === JSON.stringify(local[key] ?? null));
