@@ -14,7 +14,7 @@ async function feed(){if(feedBusy){feedRefreshPending=true;return;}feedBusy=true
 async function searchPeople(){
  const term=$('peopleSearch').value.trim();
  if(term.length<2){$('peopleResults').textContent='Mindestens zwei Zeichen eingeben.';return;}
- const safe=term.replace(/[%_,()]/g,'').slice(0,80);
+ const safe=term.replace(/[^a-zA-Z0-9äöüÄÖÜß -]/g,'').slice(0,80);
  if(safe.length<2){$('peopleResults').textContent='Suchbegriff prüfen.';return;}
  const result=await db.from('wishlist_profiles').select('user_id,handle,display_name,bio').or('handle.ilike.%'+safe+'%,display_name.ilike.%'+safe+'%').order('handle').limit(20);
  if(result.error)throw result.error;
