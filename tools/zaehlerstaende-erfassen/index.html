@@ -892,35 +892,31 @@
                         let yearlyEst = (daily * 365).toFixed(1);
                         let tarifKey = t === 'Kaltwasser' ? 'Wasser' : t;
                         
-                        let price = 0;
-                        if (t === 'Strom' && data.tarifs && data.tarifs.Strom) price = data.tarifs.Strom.priceHT ?? 0;
-                        else if (data.tarifs && data.tarifs[tarifKey]) price = data.tarifs[tarifKey].price || 0;
-
-                        let abschlag = data.tarifs && data.tarifs[tarifKey] ? data.tarifs[tarifKey].abschlag : 0;
-                        let yearlyCost = (yearlyEst * price).toFixed(2);
-                        let yearlyAbschlag = (abschlag * 12).toFixed(2);
-                        let diffCost = (yearlyCost - yearlyAbschlag).toFixed(2);
-                        let dailyCost = (yearlyCost / 365).toFixed(2);
-
-                        let recommendedAbschlag = Math.ceil((yearlyCost / 12) / 10) * 10;
-                        let unit = t.includes('Strom') || t === 'Gas' ? 'kWh' : 'm³';
-                        let isNachzahlung = diffCost > 0;
-                        let statusColor = isNachzahlung ? 'text-red-600' : 'text-emerald-600';
-
-                        // No previous-year estimate is shown without actual prior-year readings.
+                        const tarif = data.tarifs?.[tarifKey];
+                        const rawPrice = t === 'Strom' ? tarif?.priceHT : tarif?.price;
+                        const hasPrice = rawPrice !== undefined && rawPrice !== null && rawPrice !== '' &&
+                            Number.isFinite(Number(rawPrice)) && Number(rawPrice) >= 0;
+                        const rawAbschlag = tarif?.abschlag;
+                        const hasAbschlag = rawAbschlag !== undefined && rawAbschlag !== null && rawAbschlag !== '' &&
+                            Number.isFinite(Number(rawAbschlag)) && Number(rawAbschlag) >= 0;
+                        const yearlyCost = hasPrice ? Number(yearlyEst) * Number(rawPrice) : null;
+                        const yearlyAbschlag = hasAbschlag ? Number(rawAbschlag) * 12 : null;
+                        const unit = t === 'Strom' || t === 'Gas' ? 'kWh' : 'm³';
 
                         html += `
                             <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
                                 <h4 class="font-bold text-sm">${t} Prognose & Live-Kosten</h4>
-                                <p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${dailyCost} € / Tag</strong></p>
                                 <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
-                                <p class="text-xs">Kosten: <strong>${yearlyCost} €</strong> (Bezahlt: ${yearlyAbschlag} €)</p>
-                                <p class="text-xs font-bold ${statusColor}">
-                                    ${isNachzahlung ? '⚠️ Nachzahlung: ca. ' + diffCost + ' €' : '🎉 Guthaben: ca. ' + Math.abs(diffCost) + ' €'}
-                                </p>
-                                <p class="text-xs bg-white p-2 rounded-lg border font-semibold text-sky-900">
-                                    💡 Neuer Abschlag: <span class="text-sky-700 text-sm">${recommendedAbschlag} € / Monat</span>
-                                </p>
+                                ${yearlyCost === null
+                                    ? '<p class="text-xs text-amber-700">Kostenprognose nicht verfügbar: gültigen Tarifpreis hinterlegen.</p>'
+                                    : `<p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${(yearlyCost / 365).toFixed(2)} € / Tag</strong></p>
+                                       <p class="text-xs">Kosten: <strong>${yearlyCost.toFixed(2)} €</strong>${yearlyAbschlag === null ? ' (Abschlag nicht hinterlegt)' : ` (Bezahlt: ${yearlyAbschlag.toFixed(2)} €)`}</p>
+                                       ${yearlyAbschlag === null ? '' : `<p class="text-xs font-bold ${yearlyCost > yearlyAbschlag ? 'text-red-600' : 'text-emerald-600'}">
+                                           ${yearlyCost > yearlyAbschlag ? '⚠️ Nachzahlung: ca. ' + (yearlyCost - yearlyAbschlag).toFixed(2) + ' €' : '🎉 Guthaben: ca. ' + (yearlyAbschlag - yearlyCost).toFixed(2) + ' €'}
+                                       </p>`}
+                                       <p class="text-xs bg-white p-2 rounded-lg border font-semibold text-sky-900">
+                                           💡 Neuer Abschlag: <span class="text-sky-700 text-sm">${(Math.ceil((yearlyCost / 12) / 10) * 10).toFixed(0)} € / Monat</span>
+                                       </p>`}
                             </div>
                         `;
                     }
