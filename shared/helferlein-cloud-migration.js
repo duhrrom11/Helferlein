@@ -77,12 +77,25 @@
       const owner = localStorage.getItem(ownerKey);
       if ((await currentUser())?.id !== (user && user.id)) throw new Error('Account changed during guard');
       const mismatch = !!(owner && (!user || owner !== user.id));
+      if (!mismatch && !owner && blocked) { blocked.remove(); blocked = null; }
       if (mismatch && !blocked) {
         blocked = document.createElement('div');
         blocked.setAttribute('role', 'alertdialog');
         blocked.setAttribute('aria-modal', 'true');
-        blocked.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#0f172a;color:white;display:flex;align-items:center;justify-content:center;padding:24px;font:18px system-ui;text-align:center';
-        blocked.textContent = 'Dieses Gerät enthält lokale Daten eines anderen Kontos. Zum Schutz vor Vermischung ist die Anwendung gesperrt. Bitte zum ursprünglichen Konto zurückwechseln. Die Daten wurden nicht gelöscht.';
+        blocked.setAttribute('aria-label', 'Kontoschutz');
+        blocked.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#0f172a;color:white;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:24px;font:18px system-ui;text-align:center';
+        const message = document.createElement('p');
+        message.textContent = 'Dieses Gerät enthält lokale Daten eines anderen Kontos. Die Dateneingabe bleibt gesperrt, bis das ursprüngliche Konto wieder angemeldet ist. Daten werden nicht gelöscht.';
+        const back = document.createElement('button');
+        back.type = 'button';
+        back.textContent = 'Zur Anmeldung';
+        back.style.cssText = 'padding:10px 16px;background:white;color:#0f172a;border-radius:8px;cursor:pointer';
+        back.addEventListener('click', () => {
+          const login = document.querySelector('[id*="login" i], [id*="auth" i], [class*="login" i]');
+          if (login && typeof login.scrollIntoView === 'function') login.scrollIntoView();
+          status.textContent = 'Bitte zum ursprünglichen Konto zurückwechseln.';
+        });
+        blocked.append(message, back);
         document.body.appendChild(blocked);
       } else if (!mismatch && blocked) {
         blocked.remove(); blocked = null;
@@ -117,6 +130,7 @@
       b.type = 'button'; b.textContent = label;
       b.style.cssText = 'padding:7px 10px;border:1px solid #64748b;border-radius:8px;background:white;color:#0f172a';
       b.addEventListener('click', async () => {
+        if (b.disabled) return;
         for (const item of actions.querySelectorAll('button')) item.disabled = true;
         try { await handler(); } catch (error) {
           status.textContent = 'Fehler: ' + (error.message || String(error));
@@ -124,6 +138,7 @@
           for (const item of actions.querySelectorAll('button')) item.disabled = false;
         }
       });
+      b.setAttribute('aria-label', label);
       actions.appendChild(b);
     }
     function localData() {
@@ -139,14 +154,16 @@
     async function authenticated() {
       const { data, error } = await client.auth.getUser();
       if (error) throw error;
-      if (!data.user) throw new Error('Bitte zuerst anmelden');
+      if (!data || !data.user || !data.user.id) throw new Error('Bitte zuerst anmelden');
     }
     button('Cloud-Status anzeigen', async () => {
       await authenticated();
       const user = await currentUser();
       const owner = localStorage.getItem(ownerKey);
+      if (!user || !user.id) throw new Error('Anmeldung nicht mehr verfügbar');
       if (owner && owner !== user.id) throw new Error('Lokale Daten gehören zu einem anderen Konto');
       const result = await store.load();
+      if (localStorage.getItem(ownerKey) !== owner) throw new Error('Kontozuordnung während Statusabfrage gewechselt');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Statusabfrage gewechselt');
       const local = localData();
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Statusanzeige gewechselt');
@@ -162,10 +179,12 @@
       const originalBytes = localStorage.getItem(localKey);
       const owner = localStorage.getItem(ownerKey);
       const user = await currentUser();
+      if (!user || !user.id) throw new Error('Anmeldung während Datenübernahme verloren');
       if (owner && owner !== user.id) throw new Error('Lokale Daten sind einem anderen Benutzer zugeordnet');
       if (await store.hasPending()) throw new Error('Zuerst ausstehende Synchronisierung klären');
       const cloud = await store.load();
       if (cloud.source !== 'cloud-empty') throw new Error('Cloud enthält Daten oder ist nicht eindeutig erreichbar; Übernahme blockiert');
+      if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Prüfung gewechselt');
       if (!confirm('Lokale ' + local[collection].length + ' Einträge einmalig in die leere Supabase-Cloud übertragen? Lokale Daten bleiben erhalten.')) return;
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
       if (localStorage.getItem(localKey) !== originalBytes) throw new Error('Lokale Daten haben sich während der Bestätigung geändert; bitte erneut prüfen');
@@ -173,6 +192,7 @@
       const result = await store.save(local);
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Übertragung gewechselt');
       if (result && localStorage.getItem(localKey) !== originalBytes) throw new Error('Lokale Daten nach Upload verändert; automatische Aktivierung gesperrt');
+      if (result && !navigator.onLine) throw new Error('Verbindung nach Übertragung verloren; bitte Cloud-Status prüfen');
       if (result) await enable();
       status.textContent = result ? 'Daten übertragen · weitere Änderungen werden synchronisiert.' : 'Übertragung ausstehend.';
     });
@@ -182,37 +202,43 @@
       if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten vorhanden; automatisches Überschreiben ist gesperrt');
       const owner = localStorage.getItem(ownerKey);
       const user = await currentUser();
+      if (!user || !user.id) throw new Error('Anmeldung während Cloud-Laden verloren');
       if (owner && owner !== user.id) throw new Error('Lokaler Speicher gehört einem anderen Konto');
       if (await store.hasPending()) throw new Error('Ausstehende lokale Änderungen vorhanden');
       const result = await store.load();
       if (result.source !== 'cloud') throw new Error('Keine eindeutig abrufbaren Cloud-Daten');
+      if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Abfrage gewechselt');
       if (!result.data || typeof result.data !== 'object' || Array.isArray(result.data) || !Array.isArray(result.data[collection])) throw new Error('Cloud-Datenformat ungültig');
       if (!confirm(result.data[collection].length + ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?')) return;
       // Recheck before writing: never replace local data added while awaiting confirmation.
       if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten wurden inzwischen angelegt');
+      if (!await isEnabled() && enabledUser !== null) throw new Error('Cloud-Zuordnung während Übernahme geändert');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
       if (localStorage.getItem(ownerKey) !== owner) throw new Error('Kontozuordnung hat sich geändert');
       if (await store.hasPending()) throw new Error('Neue lokale Änderungen erkannt; Cloud-Übernahme abgebrochen');
       if (!navigator.onLine) throw new Error('Verbindung während Cloud-Übernahme verloren');
       localStorage.setItem(localKey, JSON.stringify(result.data));
       await enable();
+      if ((await currentUser())?.id !== user.id) throw new Error('Konto nach Übernahme gewechselt');
       status.textContent = 'Cloud-Daten lokal geladen. Seite wird aktualisiert.';
-      if (typeof refresh === 'function') refresh();
+      if (typeof refresh === 'function') { try { refresh(); } catch (error) { status.textContent = 'Daten übernommen, Anzeige konnte nicht aktualisiert werden: ' + error.message; } }
     });
     button('Offline-Änderungen abgleichen', async () => {
       if (!await isEnabled()) throw new Error('Cloud-Synchronisierung ist nicht aktiviert');
       const user = await currentUser();
-      assertOwner(user.id);
+      assertOwner(user && user.id);
       await queue.catch(() => {});
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während des Abgleichs gewechselt');
       if (!navigator.onLine) throw new Error('Für den Offline-Abgleich ist wieder Internet erforderlich');
       const result = await store.reconcilePending();
       assertOwner(user.id);
+      if ((await currentUser())?.id !== user.id) throw new Error('Konto während des Abgleichs gewechselt');
       if (result.status === 'conflict') {
         status.textContent = 'Konflikt: Cloud und lokale Änderungen unterscheiden sich. Keine Daten überschrieben.';
         return;
       }
       if (result.status === 'ready') {
+        if (!await isEnabled()) throw new Error('Synchronisierung wurde deaktiviert');
         if (!confirm('Die Cloud ist leer. Ausstehende lokale Änderungen jetzt nach Supabase übertragen?')) {
           status.textContent = 'Übertragung nicht bestätigt; lokale Änderungen bleiben erhalten.';
           return;
@@ -236,6 +262,7 @@
       if (!await isEnabled()) throw new Error('Cloud-Synchronisierung während des Vorgangs deaktiviert');
       if (!navigator.onLine) throw new Error('Für manuelle Synchronisierung ist Internet erforderlich');
       const done = await store.flush();
+      if (localStorage.getItem(ownerKey) !== user.id) throw new Error('Kontozuordnung während Synchronisierung gewechselt');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Synchronisierung gewechselt');
       status.textContent = done ? 'Synchronisierung abgeschlossen' : 'Keine Übertragung möglich oder erforderlich';
     });
