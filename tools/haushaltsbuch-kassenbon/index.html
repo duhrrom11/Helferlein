@@ -1729,8 +1729,8 @@
                             item && typeof item === 'object' ? Object.keys(item).length : 0;
                         return sectionLabels[key] + ': ' + count(existing) + ' vorhanden → ' + count(incoming) + ' im Backup';
                     });
-                    if (!confirm('Backup-Import prüfen:\\n\\n' + preview.join('\\n') +
-                        '\\n\\nNur diese Bereiche werden vollständig ersetzt. Andere Bereiche bleiben unverändert.\\nBitte vorher ein Backup herunterladen.\\n\\nImport fortsetzen?')) return;
+                    if (!confirm('Backup-Import prüfen:\n\n' + preview.join('\n') +
+                        '\n\nNur diese Bereiche werden vollständig ersetzt. Andere Bereiche bleiben unverändert.\nBitte vorher ein Backup herunterladen.\n\nImport fortsetzen?')) return;
                     const previous = changes.map(([key]) => [key, localStorage.getItem(key)]);
                     try {
                         for (const [key, value] of changes) localStorage.setItem(key, value);
