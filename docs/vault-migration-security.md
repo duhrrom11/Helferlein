@@ -10,6 +10,10 @@ Produktiv geprueft: Supabase hat aktuell die Tabellen `user_data`, `wg_spaces` u
 
 **Umsetzungsreihenfolge:** (1) sicheren neuen, benutzergebundenen Cloud-Tresor mit Auth und serverseitiger Autorisierung implementieren; (2) lokale Verschluesselung und Wiederherstellung ohne Datenverlust sicherstellen; (3) vorhandene Tresore erst nach gesonderter Eigentuemerpruefung migrieren; (4) produktive Bereitstellung mit Sicherheitspruefungen, Monitoring und Rollback; (5) die Browseroberflaeche erst dann auf den neuen Speicherweg umstellen. Keine pauschale Freigabe alter Firebase-Regeln.
 
+## Letzte Wiederherstellungskontrolle gegen asynchrone Aenderungen
+
+Unmittelbar vor dem lokalen Schreiben des entschluesselten Cloud-Tresors werden nun auch die zu Beginn festgehaltene Speicherversion und der aktive Masterkey erneut verglichen. Ausserdem wird die lokale Eintragsliste nochmals auf einen unveraenderten leeren Zustand geprueft. Bei einem Wechsel wird die Wiederherstellung abgebrochen, ohne lokale Daten zu ersetzen.
+
 ## Masterkey-Format vor dem Passwortschutz pruefen
 
 Vor dem Verpacken des Masterkeys in die passwortgeschuetzte Schluesselhuelle prueft die Anwendung das 64-stellige hexadezimale AES-256-Schluesselformat sowie das Vorhandensein der verschluesselten lokalen Datenfelder. Fehlerhafte Schluessel werden vor der Verarbeitung der Schluesselbytes abgewiesen.
