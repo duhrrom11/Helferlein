@@ -28,9 +28,19 @@ class ThrowingReader {
 }
 ctx.FileReader = ThrowingReader;
 ctx.console = {error() {}};
-const validInput = {files: [{type: 'image/png'}], value: 'selected'};
+const validInput = {files: [{type: 'image/png', size: 1024}], value: 'selected'};
 ctx.loadPhotosToCanvas({target: validInput});
 assert.equal(ctx.pendingPhotoReads, 0, 'failed reads must not leave upload pending');
 assert.equal(ctx.photoReadFailed, true, 'failed reads block saving');
 assert.match(alerts[alerts.length - 1], /nicht geöffnet/);
+ctx.photoReadFailed = false;
+ctx.currentUploadedPhotos = ['existing-photo'];
+gallery.innerHTML = 'original';
+const oversizedInput = {files: [{type: 'image/png', size: 5 * 1024 * 1024}], value: 'selected'};
+ctx.loadPhotosToCanvas({target: oversizedInput});
+assert.equal(oversizedInput.value, '');
+assert.equal(ctx.currentUploadedPhotos[0], 'existing-photo');
+assert.equal(ctx.photoReadFailed, false);
+assert.equal(gallery.innerHTML, 'original');
+assert.match(alerts[alerts.length - 1], /maximal 4 MB/);
 console.log('Receipt photo format regression checks passed');
