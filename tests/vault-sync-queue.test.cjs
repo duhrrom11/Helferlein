@@ -285,6 +285,14 @@ test('Cloud-Backup validiert Konfiguration vor dem Verschluesseln und Upload', (
   assert.match(source, /cfg\.trustees\.every/);
 });
 
+test('Cloud-Restore respektiert absichtlich geleerte Vertrauenspersonenliste', () => {
+  const start = html.indexOf('async function restoreVaultFromSupabase()');
+  const end = html.indexOf('async function ', start + 20);
+  const source = html.slice(start, end < 0 ? undefined : end);
+  assert.match(source, /JSON\.stringify\(local\.trustees\) === JSON\.stringify\(defaultTrustees\)/);
+  assert.doesNotMatch(source, /JSON\.stringify\(local\.trustees\) === '\[\]'/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
