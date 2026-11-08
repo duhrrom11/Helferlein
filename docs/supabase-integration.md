@@ -48,3 +48,74 @@ Die opt-in-Übernahme ist für den Entwurfs-PR vorgesehen, nicht für die produk
 Nach einer **ausdrücklich bestätigten** Erstübernahme wird für den angemeldeten Benutzer die Cloud-Synchronisierung aktiviert. Erfolgreiche synchrone lokale `saveData()`-Aufrufe in Pflanzenpflege und Zählerstände melden den neuen Stand zusätzlich an die Cloud-Warteschlange. Beim Wiederverbinden kann der ausstehende Stand übertragen werden. Die lokale Speicherung bleibt die unmittelbare Schreibquelle der bisherigen Oberfläche; ein fehlgeschlagener Cloud-Aufruf darf sie nicht rückgängig machen.
 
 **Nicht freigeben, bevor gelöst:** Die bisherigen lokalen Datenschlüssel sind nicht benutzerbezogen. Ein Benutzerwechsel am selben Browser kann sonst fremde lokale Daten anzeigen. Deshalb ist der Entwurfsbranch ausdrücklich **nicht mergefähig**, bis der Benutzerwechsel und das Cache-Switching sauber implementiert sind. Auch parallele Cloud-Neuanlagen benötigen eine eindeutige Datenbank-Constraint; kein produktiver Schemaeingriff ohne gesonderte Prüfung. Konflikte müssen sichtbar und ohne Datenverlust auflösbar sein.
+
+
+## Integrationsstand (November 2026)
+
+Die oben beschriebenen frühen Zwischenstände sind historisch. Aktuell werden die beiden
+Werkzeuge **Pflanzenpflege/Gießplan** und **Zählerstände erfassen** mit dem gemeinsamen
+Cloud-Adapter und einer Opt-in-Migrationsoberfläche geladen. Nach bestätigter Aktivierung
+melden beide Werkzeuge lokale Speicherungen an eine benutzerbezogene Supabase-Warteschlange.
+Offline-Änderungen bleiben im Browser gespeichert, bis eine sichere Übertragung möglich ist.
+Eine Online-Aktualisierung übernimmt Supabase-Daten nur, wenn der sichtbare lokale Stand
+noch der zuvor bekannten Cloud-Kopie entspricht und keine Änderungen ausstehen.
+
+### Bekannte produktionskritische Grenzen
+
+1. Die beiden Oberflächen verwenden weiterhin die **gemeinsam benannten lokalen Schlüssel**.
+   Der Kontoschutzdialog sperrt zwar bei erkannter Kontodifferenz die Bedienung, aber
+   die Benutzertrennung ist nicht durchgängig. Eine benutzerbezogene Datenzugriffsschicht
+   muss vor der Livefreigabe eingeführt werden.
+2. Der Datenfluss ist noch **lokal zuerst**, nicht vollständig Supabase-autoritativ.
+   Das ist eine Übergangslösung, kein abgeschlossener Online-/Offline-Betrieb.
+3. Auf `public.user_data` fehlt eine eindeutige Constraint für `(user_id, tool)`.
+   Parallele erstmalige Inserts können Duplikate erzeugen. Der Client stoppt bei
+   erkannten Duplikaten, kann deren Entstehung aber ohne Datenbankconstraint nicht verhindern.
+4. Nicht alle Helferlein-Werkzeuge sind angebunden. Die übrigen Speicherformate
+   müssen vor der Umstellung einzeln erfasst und sicher migriert werden.
+5. Eine unabhängige Abnahme der kritischen Pfade steht noch aus. Auf Wunsch des
+   Betreibers werden derzeit keine automatischen oder manuellen Tests ausgeführt.
+
+### Vorbereitende, ausschließlich lesende Datenbankabfragen
+
+Diese Abfragen sind **nur als Vorlage** dokumentiert. Sie werden nicht automatisch
+auf der Produktivdatenbank ausgeführt.
+
+```sql
+-- Vor jeder eindeutigen Einschränkung zunächst vorhandene Duplikate finden.
+select user_id, tool, count(*) as rows_per_tool
+from public.user_data
+group by user_id, tool
+having count(*) > 1
+order by rows_per_tool desc;
+
+-- Bestehende Index-/Constraint-Definitionen ohne Datenänderung prüfen.
+select indexname, indexdef
+from pg_indexes
+where schemaname = 'public' and tablename = 'user_data';
+```
+
+### Schemaänderung nur nach gesonderter Freigabe
+
+Eine eindeutige Einschränkung kann erst nach Analyse und gegebenenfalls manueller,
+verlustfreier Auflösung vorhandener Duplikate eingeführt werden. **Nicht ungeprüft ausführen:**
+
+```sql
+-- ENTWURF; NICHT AUTOMATISCH AUSFÜHREN.
+-- Vorher RLS, vorhandene Duplikate und abhängige Clients prüfen.
+create unique index concurrently if not exists user_data_user_tool_unique
+on public.user_data (user_id, tool);
+```
+
+Der Index schützt nur vor parallelen Duplikaten. Der Client muss zusätzlich
+Unique-Violations als Konflikt behandeln und den ausstehenden lokalen Stand behalten.
+
+### Freigabekriterien
+
+- Alle Werkzeuge sind inventarisiert, angebunden und pro Konto isoliert.
+- Online-Daten stammen aus Supabase; lokale Änderungen sind nur Offline-Puffer.
+- Bestehende Daten sind ohne stille Uploads, Löschungen oder Überschreibungen übernehmbar.
+- Gleichzeitige Erst-Inserts und Revisionen sind auf Datenbank- und Client-Seite abgesichert.
+- Konflikte können nachvollziehbar und ohne Datenverlust behandelt werden.
+- Die technische Abnahme ist ausdrücklich beauftragt und erfolgreich abgeschlossen.
+- Merge und Veröffentlichung erfolgen erst nach gesonderter Freigabe.
