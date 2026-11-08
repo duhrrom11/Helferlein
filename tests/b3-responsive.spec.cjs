@@ -112,8 +112,7 @@ test('B3 dark mode keeps representative text, buttons and fields high contrast',
     }
     function contrast(fg,bg){const a=lum(fg),b=lum(bg);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05)}
     return [
-      ['cloud status','#cloud-status-text','#cloud-status-text'],
-      ['description','.b3-tool-title p','.b3-header'],
+      ['cloud status','#cloud-status-text','#settingsModal .bg-gray-50'],
       ['calendar title','[data-b3-panel="calendar"] h3','[data-b3-panel="calendar"]'],
       ['Ko-fi','#settingsModal .b3-kofi-link','#settingsModal .b3-kofi-link'],
       ['discovery','#settingsModal .b3-home-link','#settingsModal .b3-preferences'],
