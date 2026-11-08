@@ -80,10 +80,15 @@ test('New Nachlass vault uses passphrase and never persists master key beside ci
  await expect(page.locator('#vault-password-gate')).toBeVisible();
  await page.locator('input[aria-label="Tresor-Passwort"]').fill('FalschesPasswort');
  await page.getByRole('button',{name:'Tresor entsperren'}).click();
- await expect(page.locator('#vault-password-gate')).toBeVisible();
+ await expect(page.locator('#vault-password-gate [role="alert"]')).toContainText('Falsches Passwort',{timeout:12000});
  await page.locator('input[aria-label="Tresor-Passwort"]').fill('Langes-Sicheres-Tresorpasswort-2026');
  await page.getByRole('button',{name:'Tresor entsperren'}).click();
- await expect(page.locator('#vault-password-gate')).toHaveCount(0);
+ try {
+  await expect(page.locator('#vault-password-gate')).toHaveCount(0,{timeout:12000});
+ }catch(e){
+  console.log('Tresor-Entsperrstatus:',await page.locator('#vault-password-gate [role="alert"]').textContent());
+  throw e;
+ }
  cfg=await page.evaluate(()=>JSON.parse(localStorage.getItem('digital_estate_vault')));
  expect(cfg.masterKeyHex).toBeUndefined();
 });
