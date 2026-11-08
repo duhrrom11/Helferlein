@@ -754,7 +754,7 @@
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-1">
-                                            <button onclick="showQrCode(${b.id}, '${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100" title="QR-Code & Deep-Link">🖨️</button>
+                                            <button onclick="showQrCode(${b.id}, ${HelferleinSafe.jsArg(b.name)}, ${HelferleinSafe.jsArg(b.desc)})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100" title="QR-Code & Deep-Link">🖨️</button>
                                             <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200" title="Bearbeiten">✏️</button>
                                             <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
                                         </div>
@@ -803,7 +803,7 @@
                         doc.setFont("helvetica", "normal");
                         doc.setFontSize(10);
                         const statusText = b.lentTo ? ` [Ausgeliehen an: ${b.lentTo}]` : '';
-                        const subStr = b.subItems && b.subItems.length > 0 ? ` | Artikel: ${b.subItems.map(s => s.name).join(', ')}` : '';
+                        const subStr = b.subItems && b.subItems.length > 0 ? ` | Artikel: ${HelferleinSafe.html(b.subItems.map(s => s.name).join(', '))}` : '';
                         doc.text(`  • ${b.name}${statusText}`, 14, y);
                         doc.text(`Wert: ${(b.value || 0).toFixed(2)} EUR${subStr}`, 90, y);
                         y += 6;
