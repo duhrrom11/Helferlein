@@ -274,6 +274,7 @@
       if (!mismatch && blocked) { blocked.remove(); blocked = null; lastConflictMessage = null; }
       if (mismatch && !blocked) {
         blocked = document.createElement('div');
+        blocked.className = 'helferlein-account-dialog';
         blocked.setAttribute('role', 'alertdialog');
         blocked.setAttribute('aria-modal', 'true');
         blocked.setAttribute('aria-label', 'Kontoschutz');
