@@ -567,6 +567,7 @@
         let currentUploadedPhotos = [];
         let pendingPhotoReads = 0;
         let photoReadGeneration = 0;
+        let ocrGeneration = 0;
         let rawImage = null;
         let editingReceiptId = null;
 
@@ -688,6 +689,7 @@
             const files = event.target.files;
             if (!files || files.length === 0) return;
             const generation = ++photoReadGeneration;
+            ocrGeneration++;
             pendingPhotoReads = files.length;
             currentUploadedPhotos = Array(files.length).fill(null);
             rawImage = null;
@@ -728,6 +730,7 @@
         }
 
         function clearReceiptPhotos() {
+            ocrGeneration++;
             photoReadGeneration++;
             pendingPhotoReads = 0;
             currentUploadedPhotos = [];
@@ -761,14 +764,18 @@
         async function runOCR() {
             const input = document.getElementById('receiptPhotoInput');
             if (!input.files || !input.files[0]) return alert("Bitte wähle zuerst ein Belegfoto aus!");
+            const generation = ++ocrGeneration;
+            const file = input.files[0];
             const statusEl = document.getElementById('ocrStatus');
+            let worker = null;
             statusEl.innerText = "🔍 Scanne Kassenbon... Bitte warten.";
             statusEl.classList.remove('hidden');
 
             try {
-                const worker = await Tesseract.createWorker('deu');
-                const ret = await worker.recognize(input.files[0]);
-                await worker.terminate();
+                worker = await Tesseract.createWorker('deu');
+                if (generation !== ocrGeneration) return;
+                const ret = await worker.recognize(file);
+                if (generation !== ocrGeneration) return;
 
                 const text = ret.data.text;
                 statusEl.innerText = "✅ OCR Scan erfolgreich!";
@@ -782,7 +789,11 @@
                     document.getElementById('receiptDate').value = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
                 }
             } catch(e) {
-                statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+                if (generation === ocrGeneration) statusEl.innerText = "❌ Texterkennung fehlgeschlagen.";
+            } finally {
+                if (worker) {
+                    try { await worker.terminate(); } catch (error) { console.warn('OCR worker cleanup:', error); }
+                }
             }
         }
 
@@ -859,6 +870,7 @@
             if (!r) return;
 
             photoReadGeneration++;
+            ocrGeneration++;
             pendingPhotoReads = 0;
             rawImage = null;
             document.getElementById('receiptPhotoInput').value = '';
@@ -909,6 +921,7 @@
         function cancelEdit() { resetForm(); }
 
         function resetForm() {
+            ocrGeneration++;
             photoReadGeneration++;
             pendingPhotoReads = 0;
             editingReceiptId = null;
