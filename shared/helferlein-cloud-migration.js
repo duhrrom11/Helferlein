@@ -1,0 +1,84 @@
+/* Opt-in migration controls. Never replace existing local records automatically. */
+(function (global) {
+  'use strict';
+  function mount({ client, tool, localKey, collection, refresh, target }) {
+    const store = global.HelferleinCloudStore.createStore(client, tool);
+    const host = document.createElement('section');
+    host.setAttribute('aria-label', 'Supabase-Datenübernahme');
+    host.style.cssText = 'margin:12px 0;padding:12px;border:1px solid #94a3b8;border-radius:12px;background:#f8fafc;color:#0f172a;font:14px system-ui';
+    const title = document.createElement('strong');
+    title.textContent = 'Supabase-Datenübernahme (freiwillig)';
+    const status = document.createElement('p');
+    status.setAttribute('role', 'status');
+    status.textContent = 'Lokale Daten bleiben unverändert, bis du eine Übernahme bestätigst.';
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
+    function button(label, handler) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = label;
+      b.style.cssText = 'padding:7px 10px;border:1px solid #64748b;border-radius:8px;background:white;color:#0f172a';
+      b.addEventListener('click', async () => {
+        for (const item of actions.querySelectorAll('button')) item.disabled = true;
+        try { await handler(); } catch (error) {
+          status.textContent = 'Fehler: ' + (error.message || String(error));
+        } finally {
+          for (const item of actions.querySelectorAll('button')) item.disabled = false;
+        }
+      });
+      actions.appendChild(b);
+    }
+    function localData() {
+      const raw = localStorage.getItem(localKey);
+      if (raw === null) return null;
+      const value = JSON.parse(raw);
+      if (!value || typeof value !== 'object' || !Array.isArray(value[collection])) {
+        throw new Error('Lokale Daten sind nicht lesbar; keine Übernahme möglich');
+      }
+      return value;
+    }
+    async function authenticated() {
+      const { data, error } = await client.auth.getUser();
+      if (error) throw error;
+      if (!data.user) throw new Error('Bitte zuerst anmelden');
+    }
+    button('Cloud-Status anzeigen', async () => {
+      await authenticated();
+      const result = await store.load();
+      const local = localData();
+      status.textContent = 'Cloud: ' + result.source + ' · Lokal: ' +
+        (local ? local[collection].length + ' Einträge' : 'keine Daten') +
+        (await store.hasPending() ? ' · Synchronisierung ausstehend' : '');
+    });
+    button('Lokale Daten in Supabase übernehmen', async () => {
+      await authenticated();
+      if (!navigator.onLine) throw new Error('Für die erste Übernahme ist Internet erforderlich');
+      const local = localData();
+      if (!local) throw new Error('Keine gültigen lokalen Daten vorhanden');
+      if (await store.hasPending()) throw new Error('Zuerst ausstehende Synchronisierung klären');
+      const cloud = await store.load();
+      if (cloud.source !== 'cloud-empty') throw new Error('Cloud enthält Daten oder ist nicht eindeutig erreichbar; Übernahme blockiert');
+      if (!confirm('Lokale ' + local[collection].length + ' Einträge einmalig in die leere Supabase-Cloud übertragen? Lokale Daten bleiben erhalten.')) return;
+      const result = await store.save(local);
+      status.textContent = result ? 'Daten nach Supabase übertragen. Lokale Daten bleiben erhalten.' : 'Übertragung ausstehend.';
+    });
+    button('Cloud-Daten lokal übernehmen', async () => {
+      await authenticated();
+      if (!navigator.onLine) throw new Error('Cloud-Laden erfordert Internet');
+      if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten vorhanden; automatisches Überschreiben ist gesperrt');
+      if (await store.hasPending()) throw new Error('Ausstehende lokale Änderungen vorhanden');
+      const result = await store.load();
+      if (result.source !== 'cloud') throw new Error('Keine eindeutig abrufbaren Cloud-Daten');
+      if (!result.data || !Array.isArray(result.data[collection])) throw new Error('Cloud-Datenformat ungültig');
+      if (!confirm(result.data[collection].length + ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?')) return;
+      // Recheck before writing: never replace local data added while awaiting confirmation.
+      if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten wurden inzwischen angelegt');
+      localStorage.setItem(localKey, JSON.stringify(result.data));
+      status.textContent = 'Cloud-Daten lokal geladen. Seite wird aktualisiert.';
+      if (typeof refresh === 'function') refresh();
+    });
+    host.append(title, status, actions);
+    (target || document.body).prepend(host);
+    return { store, host };
+  }
+  global.HelferleinCloudMigration = Object.freeze({ mount });
+})(window);
