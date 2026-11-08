@@ -698,6 +698,15 @@
                 alert('Bitte nur JPG-, PNG-, GIF- oder WebP-Bilder auswählen. Bereits vorhandene Belegbilder bleiben erhalten.');
                 return;
             }
+            // Fotos werden als Base64 im begrenzten Gerätespeicher abgelegt.
+            // Große Mehrfach-Uploads vor dem Ersetzen vorhandener Bilder abweisen.
+            const maxTotalPhotoBytes = 4 * 1024 * 1024;
+            if (selectedFiles.some(file => !Number.isFinite(file.size) || file.size <= 0) ||
+                selectedFiles.reduce((total, file) => total + file.size, 0) > maxTotalPhotoBytes) {
+                event.target.value = '';
+                alert('Die ausgewählten Belegbilder sind zusammen zu groß (maximal 4 MB). Bitte kleinere Fotos auswählen. Bereits vorhandene Belegbilder bleiben erhalten.');
+                return;
+            }
             const generation = ++photoReadGeneration;
             ocrGeneration++;
             pendingPhotoReads = files.length;
