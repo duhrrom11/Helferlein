@@ -201,6 +201,24 @@ test('Cloud-Restore kontrolliert unveraenderte Metadaten auch direkt vor dem Sch
   assert.ok(write > guard);
 });
 
+test('Cloud-Backup verlangt identischen aktiven Tresorschluessel', () => {
+  const start = html.indexOf('async function backupVaultToSupabase()');
+  const end = html.indexOf('function syncVaultToFirebase(', start);
+  const source = html.slice(start, end);
+  assert.match(source, /cfg\.masterKeyHex !== currentMasterKeyHex/);
+});
+
+test('Cloud-Restore lehnt ungueltige Konfigurationswerte vor dem Schreiben ab', () => {
+  const start = html.indexOf('async function restoreVaultFromSupabase()');
+  const end = html.indexOf('// Opt-in: wrap only the random vault key', start);
+  const source = html.slice(start, end);
+  assert.match(source, /recoveredConfig\.checkInIntervalDays > 3650/);
+  assert.match(source, /Date\.parse\(recoveredConfig\.lastCheckIn\)/);
+  assert.match(source, /recoveredConfig\.alarmPersons\.length > 100/);
+  assert.ok(source.indexOf('Verschlüsselte Konfiguration enthält ungültige Einstellungen') <
+    source.indexOf("localStorage.setItem('digital_estate_vault'"));
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
