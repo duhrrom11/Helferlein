@@ -731,6 +731,7 @@
 
                 // A newer local edit must not be represented as already cloud-saved.
                 if (syncRevision !== localSaveRevision) return false;
+                if (localStorage.getItem('digital_estate_vault') !== JSON.stringify(cfg)) return false;
                 await db.collection("vaults").doc(cfg.vaultId).set({
                     vaultId: cfg.vaultId,
                     ownerName: cfg.ownerName || "",
