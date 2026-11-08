@@ -1149,8 +1149,17 @@
             if (isSecureWgId(wgBinId)) {
                 await secureWgSaving;
                 if (secureWgDirty) {
-                    alert('Nicht gespeicherte Änderungen vorhanden. Bitte die Daten vor dem Neuladen sichern. Ein automatisches Überschreiben wird verhindert.');
-                    return;
+                    if (secureWgSaveBlocked) {
+                        alert('Speicherkonflikt: Die WG wurde andernorts geändert. Lokale Änderungen bleiben erhalten; bitte vor dem Neuladen sichern.');
+                        return;
+                    }
+                    // Manual sync first retries pending local edits. Never reload remote
+                    // data while an unconfirmed local write could be overwritten.
+                    const saved = await speichereWGinCloud();
+                    if (!saved || secureWgDirty) {
+                        alert('WG-Änderungen sind noch nicht in Supabase gespeichert. Lokale Daten bleiben erhalten.');
+                        return;
+                    }
                 }
             } else if (!confirm('Cloud-Daten neu laden? Nicht synchronisierte lokale Änderungen können verloren gehen.')) return;
             try {
