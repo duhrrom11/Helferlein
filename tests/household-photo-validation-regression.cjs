@@ -89,6 +89,7 @@ const canvas = {
 const filterContext = vm.createContext({
     rawImage: {width: 400, height: 8000},
     currentUploadedPhotos: ['original'],
+    safeReceiptPhoto: value => typeof value === 'string' && /^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(value),
     document: {getElementById: id => id === 'photoCanvas' ? canvas : {value: '0'}}
 });
 vm.runInContext(html.slice(filterStart, filterEnd), filterContext);
@@ -101,4 +102,9 @@ assert.equal(canvas.width, 600);
 assert.ok(canvas.height > 0 && canvas.height <= 900);
 filterContext.rawImage = {width: 0, height: 400};
 assert.throws(() => filterContext.applyCanvasFilter(), /Ungültige Bildabmessungen/);
+filterContext.rawImage = {width: 200, height: 200};
+const originalPhoto = filterContext.currentUploadedPhotos[0];
+canvas.toDataURL = () => 'data:,';
+assert.throws(() => filterContext.applyCanvasFilter(), /nicht gültig gespeichert/);
+assert.equal(filterContext.currentUploadedPhotos[0], originalPhoto, 'invalid canvas result must not replace photo');
 console.log('Receipt photo format regression checks passed');
