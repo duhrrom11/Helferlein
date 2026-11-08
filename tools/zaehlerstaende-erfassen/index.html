@@ -48,6 +48,7 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../assets/helferlein-safe-output.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -698,12 +699,12 @@
                     let diff = 0;
                     if (r.isExchange) {
                         diff = r.value;
-                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${r.value})</span>`;
+                        diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel (Start: ${HelferleinSafe.html(r.value)})</span>`;
                     } else {
                         diff = (r.value - prev.value).toFixed(2);
                         let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                         let badgeColor = diff >= 0 ? 'bg-sky-100 text-sky-800' : 'bg-red-100 text-red-800';
-                        diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${prev.date})</span>`;
+                        diffText = `<span class="text-[10px] ${badgeColor} font-semibold px-2 py-0.5 rounded-full">Differenz: ${diff > 0 ? '+' + diff : diff} ${unit} (seit ${HelferleinSafe.html(prev.date)})</span>`;
                     }
                 } else if (r.isExchange) {
                     diffText = `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">🔄 Zählerwechsel Start</span>`;
@@ -718,21 +719,21 @@
                 return `
                     <div class="p-4 bg-gray-50 border rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div class="flex items-center space-x-3">
-                            ${r.photo ? `<img src="${r.photo}" onclick="openPhotoModal('${r.photo}')" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity" title="Foto vergrößern">` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
+                            ${r.photo ? `<img src="${HelferleinSafe.photo(r.photo)}" onclick="openPhotoModal(${HelferleinSafe.photoArg(r.photo)})" class="w-12 h-12 object-cover rounded-xl border shadow-sm cursor-pointer hover:opacity-80 transition-opacity" title="Foto vergrößern">` : `<div class="w-12 h-12 bg-sky-100 text-sky-700 rounded-xl flex items-center justify-center font-bold text-lg">${icon}</div>`}
                             <div>
                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                    <span class="text-xs font-bold text-gray-800">${r.name}</span>
-                                    <span class="text-xs text-sky-700 font-semibold">(${r.type} - ${r.location || 'Haupt'})</span>
+                                    <span class="text-xs font-bold text-gray-800">${HelferleinSafe.html(r.name)}</span>
+                                    <span class="text-xs text-sky-700 font-semibold">(${HelferleinSafe.html(r.type)} - ${HelferleinSafe.html(r.location || 'Haupt')})</span>
                                     ${diffText}
                                 </div>
                                 <p class="text-xs text-gray-600 mt-1">
-                                    Stand: <strong class="text-gray-900">${r.value} ${unitLabel}</strong> | Datum: ${r.date}
-                                    ${r.note ? ' | Notiz: ' + r.note : ''}
+                                    Stand: <strong class="text-gray-900">${HelferleinSafe.html(r.value)} ${unitLabel}</strong> | Datum: ${HelferleinSafe.html(r.date)}
+                                    ${HelferleinSafe.html(r.note ? ' | Notiz: ' + r.note : '')}
                                 </p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 self-end md:self-center">
-                            <button onclick="deleteReading(${r.id})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕ Löschen</button>
+                            <button onclick="deleteReading(${HelferleinSafe.numericId(r.id)})" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold">✕ Löschen</button>
                         </div>
                     </div>
                 `;
@@ -765,7 +766,7 @@
                 return `
                     <div class="space-y-1">
                         <div class="flex justify-between text-[11px] font-semibold text-gray-600">
-                            <span>Monat: ${k}</span>
+                            <span>Monat: ${HelferleinSafe.html(k)}</span>
                             <span>Gesamt-Zählerstand Index: ${val.toFixed(1)}</span>
                         </div>
                         <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
@@ -830,7 +831,7 @@
 
                         html += `
                             <div class="p-4 bg-gray-50 border rounded-xl space-y-1.5">
-                                <h4 class="font-bold text-sm">${t} Prognose & Live-Kosten</h4>
+                                <h4 class="font-bold text-sm">${HelferleinSafe.html(t)} Prognose & Live-Kosten</h4>
                                 <p class="text-xs">Tages-Schnitt: <strong class="text-sky-700">${dailyCost} € / Tag</strong></p>
                                 <p class="text-xs">Hochrechnung / Jahr: <strong>${yearlyEst} ${unit}</strong></p>
                                 <p class="text-xs">${compText}</p>
@@ -870,7 +871,7 @@
             data.readings.forEach((r, idx) => {
                 if (y > 250) { doc.addPage(); y = 20; }
                 let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
-                doc.text(`${idx + 1}. [${r.type}] ${r.name} (${r.location || 'Haupt'})`, 14, y);
+                doc.text(`${idx + 1}. [${r.type}] ${r.name} (${HelferleinSafe.html(r.location || 'Haupt')})`, 14, y);
                 doc.text(`Ablesedatum: ${r.date} | Zählerstand: ${r.value} ${unit}`, 14, y + 6);
                 if(r.note) doc.text(`Bemerkung: ${r.note}`, 14, y + 12);
                 y += 20;
@@ -928,7 +929,7 @@
             data.readings.forEach((r) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
-                doc.text(`${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`, 14, y);
+                doc.text(`${r.date} | ${r.type} (${r.name} - ${HelferleinSafe.html(r.location || 'Haupt')}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`, 14, y);
                 y += 8;
             });
 

@@ -64,6 +64,8 @@
         extra:[
           {label:'👥 Mitglieder / Kontakte',handler:'openMitbewohnerModal'},
           {label:'🔄 Manuell synchronisieren',handler:'manuelleSynchronisation'},
+          {label:'🧳 Lokale Altbestände prüfen',handler:'importLegacyWgData'},
+          {label:'↩ Letzten Cloud-Import zurücknehmen',handler:'restoreLatestWgCloudSnapshot'},
           {label:'📄 Finanzbericht (PDF)',handler:'exportAbrechnungPDF'},
           {label:'🔗 WG-Link teilen',handler:'kopiereWGLink'},
           {label:'📶 WLAN QR-Code',handler:'openWLANQRModal'}
@@ -73,6 +75,7 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../assets/helferlein-safe-output.js"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -891,6 +894,71 @@
         const urlParams = new URLSearchParams(window.location.search);
         let wgBinId = urlParams.get('id');
         const savedWgId = localStorage.getItem('wg_active_bin_id');
+        // Per-WG browser namespace. Keep legacy values untouched: the standalone
+        // Haushaltsbuch uses kassenbon_data / budgetbuch_* on the same origin.
+        // Existing data can be imported explicitly after making a backup.
+        const WG_LEGACY_KEYS = Object.freeze(["wg_flatmates","wg_notes","kassenbon_data","budgetbuch_budgets","budgetbuch_goals","wg_events","wg_inventory","wg_diets","wg_cleaning","wg_shopping","wg_cooking","wg_contracts","wg_infoboard"]);
+        const WG_SHARED_HOUSEHOLD_KEYS = Object.freeze(['kassenbon_data','budgetbuch_budgets','budgetbuch_goals']);
+        const wgStorage = Object.freeze({
+            key(name) {
+                if (!WG_LEGACY_KEYS.includes(name) || !wgBinId) throw new Error('Unbekannter oder nicht aktiver WG-Speicher');
+                return 'helferlein_wg_v2_' + encodeURIComponent(wgBinId) + '_' + name;
+            },
+            getItem(name) { return localStorage.getItem(this.key(name)); },
+            setItem(name, value) { return localStorage.setItem(this.key(name), value); }
+        });
+        // Restore the most recent local snapshot created before an explicit
+        // legacy cloud import. Never touch the standalone household budget keys.
+        function restoreLatestWgCloudSnapshot() {
+            if (!wgBinId) return alert('Bitte zuerst eine WG öffnen.');
+            const prefix = 'helferlein_wg_backup_' + encodeURIComponent(wgBinId) + '_';
+            const backups = Object.keys(localStorage).filter(k => k.startsWith(prefix)).sort().reverse();
+            if (!backups.length) return alert('Für diese WG ist keine frühere Cloud-Import-Sicherung vorhanden.');
+            const source = backups[0];
+            let snapshot;
+            try { snapshot = JSON.parse(localStorage.getItem(source)); }
+            catch { return alert('Die Sicherung ist beschädigt; es wurde nichts verändert.'); }
+            const previous = snapshot?.previous;
+            if (snapshot?.wgId !== wgBinId || !previous || typeof previous !== 'object' || Array.isArray(previous)
+                || !Object.keys(previous).length || Object.keys(previous).some(k => !WG_LEGACY_KEYS.includes(k)
+                    || (previous[k] !== null && typeof previous[k] !== 'string'))) {
+                return alert('Die Sicherung ist unvollständig oder gehört nicht zu dieser WG.');
+            }
+            if (!window.confirm('Letzten WG-Cloud-Import zurücknehmen? Die aktuellen WG-Daten werden zuvor separat gesichert. Das persönliche Haushaltsbuch bleibt unverändert.')) return;
+            const before = {};
+            for (const key of Object.keys(previous)) before[key] = wgStorage.getItem(key);
+            const recoveryKey = 'helferlein_wg_recovery_' + encodeURIComponent(wgBinId)
+                + '_' + new Date().toISOString().replace(/[:.]/g,'-');
+            try {
+                // Refuse restoration if a recovery snapshot cannot be written.
+                localStorage.setItem(recoveryKey,JSON.stringify({wgId:wgBinId,createdAt:new Date().toISOString(),before}));
+                for (const [key,value] of Object.entries(previous)) {
+                    if (value === null) localStorage.removeItem(wgStorage.key(key));
+                    else wgStorage.setItem(key,value);
+                }
+                renderApp();
+                alert('Lokaler WG-Stand wiederhergestellt. Der zuvor aktuelle Stand wurde unter ' + recoveryKey + ' gesichert.');
+            } catch(error) {
+                alert('Wiederherstellung fehlgeschlagen. Eine Sicherung des vorherigen Stands wurde soweit möglich erstellt. Bitte Daten prüfen.');
+            }
+        }
+        function importLegacyWgData() {
+            if (!wgBinId) return alert('Bitte zuerst eine WG öffnen.');
+            const candidates = WG_LEGACY_KEYS.filter(k => localStorage.getItem(k) !== null && wgStorage.getItem(k) === null);
+            if (!candidates.length) return alert('Keine noch nicht übernommenen lokalen Altbestände gefunden.');
+            // Never overwrite existing namespaced data or change legacy household entries.
+            const personal = candidates.filter(k => WG_SHARED_HOUSEHOLD_KEYS.includes(k));
+            const message = 'Es gibt ältere WG-Daten in diesem Browser. Ein Import könnte auch Daten aus dem eigenständigen Haushaltsbuch umfassen. Erstelle vorher eine vollständige Sicherung!\\n\\n'
+              + 'Auswahl: ' + candidates.join(', ') + '\\n\\n'
+              + (personal.length ? 'ACHTUNG: Finanzdaten können aus dem privaten Haushaltsbuch stammen.\\n' : '')
+              + 'Nur importieren, wenn die Daten wirklich zu dieser WG gehören. Jetzt kopieren?';
+            if (!window.confirm(message)) return;
+            try {
+                for (const key of candidates) wgStorage.setItem(key, localStorage.getItem(key));
+                alert('Altdaten wurden in den separaten WG-Speicher kopiert. Das Original wurde nicht verändert. Bitte Seite aktualisieren.');
+            } catch(e) { alert('Import nicht vollständig: Bitte Speicherplatz und Datensicherung prüfen.'); }
+        }
+
 
         if (!wgBinId && savedWgId) {
             window.location.replace(window.location.pathname + "?id=" + savedWgId);
@@ -971,6 +1039,45 @@
         }
 
         const NPOINT_API_BASE = "https://api.npoint.io/";
+        // Legacy cloud has no per-member authorization. It stays disabled until
+        // a user makes an informed, per-page decision.
+        let legacyWgCloudEnabled = false;
+        function enableLegacyWGCloud() {
+            if (legacyWgCloudEnabled) return true;
+            if (!window.confirm('ACHTUNG: Der bisherige WG-Cloud-Dienst verwendet nur eine teilbare WG-ID ohne eigene Nutzerberechtigungen. Personen mit der ID könnten Daten lesen oder ändern. Keine vertraulichen Daten synchronisieren. Für diese Sitzung freiwillig freigeben?')) return false;
+            legacyWgCloudEnabled = true;
+            const status = document.getElementById('b3-wg-legacy-cloud-status');
+            if (status) status.textContent = '⚠️ Legacy-Cloud in dieser Sitzung freigegeben';
+            return true;
+        }
+        function showLegacyWGCloudWarning() {
+            const host = document.getElementById('main-content');
+            if (!host || document.getElementById('b3-wg-legacy-cloud-warning')) return;
+            const section = document.createElement('section');
+            section.id = 'b3-wg-legacy-cloud-warning';
+            section.className = 'rounded-2xl border-2 border-amber-500 bg-amber-50 text-amber-950 p-4 text-sm space-y-2';
+            section.setAttribute('role','status');
+            const title = document.createElement('strong');
+            title.textContent = '⚠️ WG-Cloud: automatische Synchronisierung aus Sicherheitsgründen pausiert';
+            const note = document.createElement('p');
+            note.textContent = 'Die bisherige Cloud unterstützt keine überprüfbare Mitgliederberechtigung. Deine lokale WG bleibt verfügbar. Für bestehende WGs kannst du die Legacy-Synchronisierung für diese Sitzung bewusst freigeben.';
+            const status = document.createElement('p');
+            status.id = 'b3-wg-legacy-cloud-status';
+            status.textContent = 'Keine Freigabe erteilt';
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'rounded-xl bg-amber-900 text-white font-bold px-3 py-2';
+            button.textContent = 'Bisherige WG-Cloud bewusst freigeben';
+            button.addEventListener('click', async () => {
+                if (!enableLegacyWGCloud()) return;
+                const ok = await ladeWGausCloud();
+                if (ok) renderApp();
+                else alert('Cloud-Daten konnten nicht geladen werden. Lokale Daten bleiben erhalten.');
+            });
+            section.append(title,note,status,button);
+            host.prepend(section);
+        }
+
 
         const kofiSprueche = [
             "Spendier dem Entwickler einen Kaffee ☕",
@@ -991,9 +1098,12 @@
 
         async function manuelleSynchronisation() {
             if (!wgBinId) return alert("Keine WG-ID aktiv.");
+            if (!enableLegacyWGCloud()) return;
             try {
-                await ladeWGausCloud();
-                alert("✅ Erfolgreich mit der Cloud synchronisiert!");
+                const ok = await ladeWGausCloud();
+                if (!ok) throw new Error('Cloud-Laden fehlgeschlagen');
+                renderApp();
+                alert("✅ Cloud-Daten geladen.");
             } catch (e) {
                 alert("❌ Synchronisation fehlgeschlagen.");
             }
@@ -1001,66 +1111,34 @@
 
         async function erstelleNeueWGKonfiguration() {
             const statusText = document.getElementById('setup-status');
-            if (statusText) statusText.innerText = "Erstelle Cloud-Speicher im Hintergrund...";
+            if (statusText) statusText.innerText = "Erstelle lokalen WG-Bereich...";
 
+            const bytes = crypto.getRandomValues(new Uint8Array(16));
+            wgBinId = 'local_' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+            localStorage.setItem('wg_active_bin_id', wgBinId);
             const leereWG = {
                 erstelltAm: new Date().toISOString(),
-                flatmates: [
-                    { vorname: "Alex", nachname: "Alex", email: "", phone: "", insta: "", fb: "" },
-                    { vorname: "Sam", nachname: "Sam", email: "", phone: "", insta: "", fb: "" }
-                ],
-                notes: [
-                    { id: 1, title: "📦 Paket im Flur", content: "Postbote hat ein Paket für Sam abgegeben, steht neben dem Schuhregal.", author: "Alex", color: "yellow", pinned: true, date: "2026-11-02" }
-                ],
-                data: [],
-                budgets: { "Lebensmittel": 400, "Wohnen": 800, "Energie": 150, "Auto": 250, "Freizeit": 200, "Elektronik": 100, "Gesundheit": 80, "Verträge": 120, "Sonstiges": 100 },
-                goals: [],
-                events: [],
-                inventory: [],
-                diets: {},
-                cleaning: [{ id: 1, task: "Badezimmer & WC wischen", assignee: "Alex", done: false }],
-                shopping: [],
-                cooking: daysOfWeek.map(d => ({ day: d, chef: "Frei", dish: "", ingredients: "" })),
-                contracts: [],
-                infoboard: { wifi: "WG-Supernet-2026", landlord: "Hr. Weber (+49 170 1234567)", caretaker: "Hr. Müller (+49 171 9876543)", trash: "Bio (Di) | Restmüll (Fr)" }
+                flatmates: [], notes: [], data: [], budgets: {}, goals: [],
+                events: [], inventory: [], diets: {}, cleaning: [], shopping: [],
+                cooking: [], contracts: [], infoboard: { wifi:'', landlord:'', caretaker:'', trash:'' }
             };
 
-            localStorage.setItem('wg_flatmates', JSON.stringify(leereWG.flatmates));
-            localStorage.setItem('wg_notes', JSON.stringify(leereWG.notes));
-            localStorage.setItem('kassenbon_data', JSON.stringify(leereWG.data));
-            localStorage.setItem('budgetbuch_budgets', JSON.stringify(leereWG.budgets));
-            localStorage.setItem('budgetbuch_goals', JSON.stringify(leereWG.goals));
-            localStorage.setItem('wg_events', JSON.stringify(leereWG.events));
-            localStorage.setItem('wg_inventory', JSON.stringify(leereWG.inventory));
-            localStorage.setItem('wg_diets', JSON.stringify(leereWG.diets));
-            localStorage.setItem('wg_cleaning', JSON.stringify(leereWG.cleaning));
-            localStorage.setItem('wg_shopping', JSON.stringify(leereWG.shopping));
-            localStorage.setItem('wg_cooking', JSON.stringify(leereWG.cooking));
-            localStorage.setItem('wg_contracts', JSON.stringify(leereWG.contracts));
-            localStorage.setItem('wg_infoboard', JSON.stringify(leereWG.infoboard));
+            wgStorage.setItem('wg_flatmates', JSON.stringify(leereWG.flatmates));
+            wgStorage.setItem('wg_notes', JSON.stringify(leereWG.notes));
+            wgStorage.setItem('kassenbon_data', JSON.stringify(leereWG.data));
+            wgStorage.setItem('budgetbuch_budgets', JSON.stringify(leereWG.budgets));
+            wgStorage.setItem('budgetbuch_goals', JSON.stringify(leereWG.goals));
+            wgStorage.setItem('wg_events', JSON.stringify(leereWG.events));
+            wgStorage.setItem('wg_inventory', JSON.stringify(leereWG.inventory));
+            wgStorage.setItem('wg_diets', JSON.stringify(leereWG.diets));
+            wgStorage.setItem('wg_cleaning', JSON.stringify(leereWG.cleaning));
+            wgStorage.setItem('wg_shopping', JSON.stringify(leereWG.shopping));
+            wgStorage.setItem('wg_cooking', JSON.stringify(leereWG.cooking));
+            wgStorage.setItem('wg_contracts', JSON.stringify(leereWG.contracts));
+            wgStorage.setItem('wg_infoboard', JSON.stringify(leereWG.infoboard));
 
-            try {
-                const response = await fetch(NPOINT_API_BASE, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(leereWG)
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.id) {
-                        localStorage.setItem('wg_active_bin_id', result.id);
-                        window.location.href = window.location.pathname + "?id=" + result.id;
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.warn("API Error", e);
-            }
-
-            const ersatzID = "wg_" + Math.random().toString(36).substring(2, 9);
-            localStorage.setItem('wg_active_bin_id', ersatzID);
-            window.location.href = window.location.pathname + "?id=" + ersatzID;
+            // Deliberately local-only until an authenticated sharing backend exists.
+            window.location.href = window.location.pathname + '?id=' + encodeURIComponent(wgBinId);
         }
 
         function zeigeErstellungsScreen() {
@@ -1092,7 +1170,7 @@
         }
 
         async function ladeWGausCloud() {
-            if (!wgBinId) return;
+            if (!wgBinId || !legacyWgCloudEnabled || wgBinId.startsWith('local_')) return false;
             try {
                 let response = await fetch(NPOINT_API_BASE + wgBinId);
                 if (!response.ok) {
@@ -1101,32 +1179,60 @@
                 
                 if (response.ok) {
                     const cloudObj = await response.json();
-                    if (cloudObj && Object.keys(cloudObj).length > 0) {
+                    if (!cloudObj || Array.isArray(cloudObj) || typeof cloudObj !== 'object')
+                        throw new Error('Ungültige WG-Cloud-Daten; lokal wurde nichts überschrieben.');
+                    if (Object.keys(cloudObj).length > 0) {
+                        const replacementFields = [
+                            ['flatmates','wg_flatmates'], ['notes','wg_notes'],
+                            ['data','kassenbon_data'], ['budgets','budgetbuch_budgets'],
+                            ['goals','budgetbuch_goals'], ['events','wg_events'],
+                            ['inventory','wg_inventory'], ['diets','wg_diets'],
+                            ['cleaning','wg_cleaning'], ['shopping','wg_shopping'],
+                            ['cooking','wg_cooking'], ['contracts','wg_contracts'],
+                            ['infoboard','wg_infoboard']
+                        ];
+                        // Abort before mutating anything if the snapshot cannot be
+                        // stored, e.g. when the browser storage quota is exhausted.
+                        const previous = {};
+                        for (const [field,key] of replacementFields)
+                            if (Object.prototype.hasOwnProperty.call(cloudObj,field)) {
+                                previous[key] = wgStorage.getItem(key);
+                            }
+                        const snapshotId = 'helferlein_wg_backup_' + encodeURIComponent(wgBinId)
+                            + '_' + new Date().toISOString().replace(/[:.]/g,'-');
+                        try { localStorage.setItem(snapshotId,JSON.stringify({
+                            createdAt:new Date().toISOString(),wgId:wgBinId,previous
+                        })); }
+                        catch(e){ throw new Error('Vor dem Cloud-Import konnte keine lokale Sicherung angelegt werden. Keine Daten wurden verändert.'); }
+                        if (!window.confirm('WG-Cloud-Daten importieren? Die bisherigen lokalen WG-Daten wurden vorab unter ' + snapshotId + ' gesichert. Der Import kann lokale Änderungen ersetzen.'))
+                            return false;
                         if (cloudObj.flatmates !== undefined) {
                             let fm = cloudObj.flatmates.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
-                            localStorage.setItem('wg_flatmates', JSON.stringify(fm));
+                            wgStorage.setItem('wg_flatmates', JSON.stringify(fm));
                         }
-                        if (cloudObj.notes !== undefined) localStorage.setItem('wg_notes', JSON.stringify(cloudObj.notes));
-                        if (cloudObj.data !== undefined) localStorage.setItem('kassenbon_data', JSON.stringify(cloudObj.data));
-                        if (cloudObj.budgets !== undefined) localStorage.setItem('budgetbuch_budgets', JSON.stringify(cloudObj.budgets));
-                        if (cloudObj.goals !== undefined) localStorage.setItem('budgetbuch_goals', JSON.stringify(cloudObj.goals));
-                        if (cloudObj.events !== undefined) localStorage.setItem('wg_events', JSON.stringify(cloudObj.events));
-                        if (cloudObj.inventory !== undefined) localStorage.setItem('wg_inventory', JSON.stringify(cloudObj.inventory));
-                        if (cloudObj.diets !== undefined) localStorage.setItem('wg_diets', JSON.stringify(cloudObj.diets));
-                        if (cloudObj.cleaning !== undefined) localStorage.setItem('wg_cleaning', JSON.stringify(cloudObj.cleaning));
-                        if (cloudObj.shopping !== undefined) localStorage.setItem('wg_shopping', JSON.stringify(cloudObj.shopping));
-                        if (cloudObj.cooking !== undefined) localStorage.setItem('wg_cooking', JSON.stringify(cloudObj.cooking));
-                        if (cloudObj.contracts !== undefined) localStorage.setItem('wg_contracts', JSON.stringify(cloudObj.contracts));
-                        if (cloudObj.infoboard !== undefined) localStorage.setItem('wg_infoboard', JSON.stringify(cloudObj.infoboard));
+                        if (cloudObj.notes !== undefined) wgStorage.setItem('wg_notes', JSON.stringify(cloudObj.notes));
+                        if (cloudObj.data !== undefined) wgStorage.setItem('kassenbon_data', JSON.stringify(cloudObj.data));
+                        if (cloudObj.budgets !== undefined) wgStorage.setItem('budgetbuch_budgets', JSON.stringify(cloudObj.budgets));
+                        if (cloudObj.goals !== undefined) wgStorage.setItem('budgetbuch_goals', JSON.stringify(cloudObj.goals));
+                        if (cloudObj.events !== undefined) wgStorage.setItem('wg_events', JSON.stringify(cloudObj.events));
+                        if (cloudObj.inventory !== undefined) wgStorage.setItem('wg_inventory', JSON.stringify(cloudObj.inventory));
+                        if (cloudObj.diets !== undefined) wgStorage.setItem('wg_diets', JSON.stringify(cloudObj.diets));
+                        if (cloudObj.cleaning !== undefined) wgStorage.setItem('wg_cleaning', JSON.stringify(cloudObj.cleaning));
+                        if (cloudObj.shopping !== undefined) wgStorage.setItem('wg_shopping', JSON.stringify(cloudObj.shopping));
+                        if (cloudObj.cooking !== undefined) wgStorage.setItem('wg_cooking', JSON.stringify(cloudObj.cooking));
+                        if (cloudObj.contracts !== undefined) wgStorage.setItem('wg_contracts', JSON.stringify(cloudObj.contracts));
+                        if (cloudObj.infoboard !== undefined) wgStorage.setItem('wg_infoboard', JSON.stringify(cloudObj.infoboard));
                     }
                 }
+                return response.ok;
             } catch (error) {
                 console.error("Fehler beim Cloud-Laden:", error);
+                return false;
             }
         }
 
         async function speichereWGinCloud() {
-            if (!wgBinId) return;
+            if (!wgBinId || !legacyWgCloudEnabled || wgBinId.startsWith('local_')) return false;
             const backupObj = {
                 flatmates: getFlatmates(),
                 notes: getNotes(),
@@ -1180,9 +1286,9 @@
             alert("🔗 Link zum WG-Planer kopiert! Schicke ihn an deine Mitbewohner.");
         }
 
-        setInterval(() => {
-            if (wgBinId) ladeWGausCloud();
-        }, 30000);
+        // Intentionally no automatic polling: remote legacy data may have been
+        // changed by an unrelated holder of the shared URL. The owner must
+        // decide when to import remote changes and gets a local snapshot first.
 
         const AMAZON_AFFILIATE_TAG = "duhrrom-21";
         const daysOfWeek = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
@@ -1203,65 +1309,65 @@
             document.getElementById('eventDate').valueAsDate = new Date();
             initCharts();
             
-            await ladeWGausCloud();
+            showLegacyWGCloudWarning();
             renderApp();
-            await speichereWGinCloud();
+            // No silent cloud requests or writes on page load.
             checkUserSession();
         });
 
         /* Storage Helper */
         function getFlatmates() { 
             try { 
-                const data = JSON.parse(localStorage.getItem('wg_flatmates'));
+                const data = JSON.parse(wgStorage.getItem('wg_flatmates'));
                 if (Array.isArray(data)) {
                     return data.map(m => typeof m === 'string' ? { vorname: m, nachname: "", email: "", phone: "", insta: "", fb: "" } : m);
                 }
-                return [{ vorname: "Alex", nachname: "", email: "", phone: "", insta: "", fb: "" }]; 
+                return []; 
             } catch(e) { 
-                return [{ vorname: "Alex", nachname: "", email: "", phone: "", insta: "", fb: "" }]; 
+                return []; 
             } 
         }
-        function saveFlatmates(data, sync = true) { localStorage.setItem('wg_flatmates', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function saveFlatmates(data, sync = true) { wgStorage.setItem('wg_flatmates', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getFlatmateNames() {
             return getFlatmates().map(m => m.nachname ? `${m.vorname} ${m.nachname}` : m.vorname);
         }
 
-        function getNotes() { try { return JSON.parse(localStorage.getItem('wg_notes')) || []; } catch(e) { return []; } }
-        function saveNotes(data, sync = true) { localStorage.setItem('wg_notes', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getNotes() { try { return JSON.parse(wgStorage.getItem('wg_notes')) || []; } catch(e) { return []; } }
+        function saveNotes(data, sync = true) { wgStorage.setItem('wg_notes', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getData() { try { return JSON.parse(localStorage.getItem('kassenbon_data')) || []; } catch(e) { return []; } }
-        function saveData(data, sync = true) { localStorage.setItem('kassenbon_data', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getData() { try { return JSON.parse(wgStorage.getItem('kassenbon_data')) || []; } catch(e) { return []; } }
+        function saveData(data, sync = true) { wgStorage.setItem('kassenbon_data', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getBudgets() { try { return JSON.parse(localStorage.getItem('budgetbuch_budgets')) || { "Lebensmittel": 400, "Wohnen": 800, "Energie": 150, "Auto": 250, "Freizeit": 200, "Elektronik": 100, "Gesundheit": 80, "Verträge": 120, "Sonstiges": 100 }; } catch(e) { return {}; } }
-        function saveBudgets(data, sync = true) { localStorage.setItem('budgetbuch_budgets', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getBudgets() { try { return JSON.parse(wgStorage.getItem('budgetbuch_budgets')) || { "Lebensmittel": 400, "Wohnen": 800, "Energie": 150, "Auto": 250, "Freizeit": 200, "Elektronik": 100, "Gesundheit": 80, "Verträge": 120, "Sonstiges": 100 }; } catch(e) { return {}; } }
+        function saveBudgets(data, sync = true) { wgStorage.setItem('budgetbuch_budgets', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getSavingsGoals() { try { return JSON.parse(localStorage.getItem('budgetbuch_goals')) || []; } catch(e) { return []; } }
-        function saveSavingsGoals(data, sync = true) { localStorage.setItem('budgetbuch_goals', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getSavingsGoals() { try { return JSON.parse(wgStorage.getItem('budgetbuch_goals')) || []; } catch(e) { return []; } }
+        function saveSavingsGoals(data, sync = true) { wgStorage.setItem('budgetbuch_goals', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getEvents() { try { return JSON.parse(localStorage.getItem('wg_events')) || []; } catch(e) { return []; } }
-        function saveEvents(data, sync = true) { localStorage.setItem('wg_events', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getEvents() { try { return JSON.parse(wgStorage.getItem('wg_events')) || []; } catch(e) { return []; } }
+        function saveEvents(data, sync = true) { wgStorage.setItem('wg_events', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getInventory() { try { return JSON.parse(localStorage.getItem('wg_inventory')) || []; } catch(e) { return []; } }
-        function saveInventory(data, sync = true) { localStorage.setItem('wg_inventory', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getInventory() { try { return JSON.parse(wgStorage.getItem('wg_inventory')) || []; } catch(e) { return []; } }
+        function saveInventory(data, sync = true) { wgStorage.setItem('wg_inventory', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getDiets() { try { return JSON.parse(localStorage.getItem('wg_diets')) || {}; } catch(e) { return {}; } }
-        function saveDiets(data, sync = true) { localStorage.setItem('wg_diets', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getDiets() { try { return JSON.parse(wgStorage.getItem('wg_diets')) || {}; } catch(e) { return {}; } }
+        function saveDiets(data, sync = true) { wgStorage.setItem('wg_diets', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getCleaningPlan() { try { return JSON.parse(localStorage.getItem('wg_cleaning')) || []; } catch(e) { return []; } }
-        function saveCleaningPlan(data, sync = true) { localStorage.setItem('wg_cleaning', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getCleaningPlan() { try { return JSON.parse(wgStorage.getItem('wg_cleaning')) || []; } catch(e) { return []; } }
+        function saveCleaningPlan(data, sync = true) { wgStorage.setItem('wg_cleaning', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getShoppingList() { try { return JSON.parse(localStorage.getItem('wg_shopping')) || []; } catch(e) { return []; } }
-        function saveShoppingList(data, sync = true) { localStorage.setItem('wg_shopping', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getShoppingList() { try { return JSON.parse(wgStorage.getItem('wg_shopping')) || []; } catch(e) { return []; } }
+        function saveShoppingList(data, sync = true) { wgStorage.setItem('wg_shopping', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getCookingPlan() { try { return JSON.parse(localStorage.getItem('wg_cooking')) || daysOfWeek.map(d => ({ day: d, chef: "Frei", dish: "", ingredients: "" })); } catch(e) { return []; } }
-        function saveCookingPlan(data, sync = true) { localStorage.setItem('wg_cooking', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getCookingPlan() { try { return JSON.parse(wgStorage.getItem('wg_cooking')) || daysOfWeek.map(d => ({ day: d, chef: "Frei", dish: "", ingredients: "" })); } catch(e) { return []; } }
+        function saveCookingPlan(data, sync = true) { wgStorage.setItem('wg_cooking', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getContracts() { try { return JSON.parse(localStorage.getItem('wg_contracts')) || []; } catch(e) { return []; } }
-        function saveContracts(data, sync = true) { localStorage.setItem('wg_contracts', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getContracts() { try { return JSON.parse(wgStorage.getItem('wg_contracts')) || []; } catch(e) { return []; } }
+        function saveContracts(data, sync = true) { wgStorage.setItem('wg_contracts', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getInfoData() { try { return JSON.parse(localStorage.getItem('wg_infoboard')) || { wifi: "WG-Supernet-2026", landlord: "Hr. Weber (+49 170 1234567)", caretaker: "Hr. Müller (+49 171 9876543)", trash: "Bio (Di) | Restmüll (Fr)" }; } catch(e) { return {}; } }
-        function saveInfoData(data, sync = true) { localStorage.setItem('wg_infoboard', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getInfoData() { try { return JSON.parse(wgStorage.getItem('wg_infoboard')) || { wifi:'', landlord:'', caretaker:'', trash:'' }; } catch(e) { return {}; } }
+        function saveInfoData(data, sync = true) { wgStorage.setItem('wg_infoboard', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function updateFormUI() {
             const type = document.querySelector('input[name="entryType"]:checked').value;
@@ -1425,9 +1531,9 @@
                     <div class="pt-2 border-t border-black/10 flex justify-between items-center text-[10px] font-semibold opacity-80">
                         <span>👤 ${escapeUserHtml(n.author)} (${escapeUserHtml(n.date || 'Heute')})</span>
                         <div class="flex items-center gap-1">
-                            <button onclick="togglePinNote(${n.id})" class="p-0.5">${n.pinned ? '📌' : '📍'}</button>
-                            <button onclick="editNote(${n.id})" class="p-0.5">✏️</button>
-                            <button onclick="deleteNote(${n.id})" class="text-red-700 font-bold p-0.5">&times;</button>
+                            <button onclick="togglePinNote(${HelferleinSafe.numericId(n.id)})" class="p-0.5">${n.pinned ? '📌' : '📍'}</button>
+                            <button onclick="editNote(${HelferleinSafe.numericId(n.id)})" class="p-0.5">✏️</button>
+                            <button onclick="deleteNote(${HelferleinSafe.numericId(n.id)})" class="text-red-700 font-bold p-0.5">&times;</button>
                         </div>
                     </div>
                 </div>
@@ -1491,7 +1597,7 @@
                         <p class="text-[11px] opacity-80 mt-1">📅 ${escapeUserHtml(ev.date)} ${ev.timeStart ? '| ⏰ ' + escapeUserHtml(ev.timeStart) : ''}</p>
                         <p class="text-[10px] opacity-70">Von: <strong>${escapeUserHtml(ev.owner)}</strong></p>
                     </div>
-                    <button onclick="deleteEvent(${ev.id})" class="text-gray-400 hover:text-red-500 font-bold text-sm">&times;</button>
+                    <button onclick="deleteEvent(${HelferleinSafe.numericId(ev.id)})" class="text-gray-400 hover:text-red-500 font-bold text-sm">&times;</button>
                 </div>
             `).join('');
         }
@@ -1525,9 +1631,9 @@
                 return `
                     <div class="p-3 bg-teal-50/60 border border-teal-200 rounded-xl space-y-1.5 text-xs">
                         <div class="flex justify-between font-bold text-teal-950">
-                            <span>📦 ${escapeUserHtml(item.title)}</span><button onclick="deleteInventoryItem(${item.id})" class="text-red-500">&times;</button>
+                            <span>📦 ${escapeUserHtml(item.title)}</span><button onclick="deleteInventoryItem(${HelferleinSafe.numericId(item.id)})" class="text-red-500">&times;</button>
                         </div>
-                        <p class="text-gray-600 text-[11px]">Kauf: ${item.price.toFixed(2)} € (${item.date})</p>
+                        <p class="text-gray-600 text-[11px]">Kauf: ${item.price.toFixed(2)} € (${escapeUserHtml(item.date)})</p>
                         <div class="pt-1 border-t border-teal-200 flex justify-between items-center text-[11px]">
                             <span>Zeitwert: <strong class="text-teal-900">${zeitwert.toFixed(2)} €</strong></span>
                             <span class="text-teal-800 font-semibold">Anteil: ${share.toFixed(2)} €/p.P.</span>
@@ -1648,8 +1754,8 @@
                             </div>
                         </div>
                         <div class="flex gap-1">
-                            <button onclick="editReceipt(${r.id})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-bold">✏️</button>
-                            <button onclick="deleteReceipt(${r.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">✕</button>
+                            <button onclick="editReceipt(${HelferleinSafe.numericId(r.id)})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded text-xs font-bold">✏️</button>
+                            <button onclick="deleteReceipt(${HelferleinSafe.numericId(r.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">✕</button>
                         </div>
                     </div>
                 `;
@@ -1731,10 +1837,10 @@
                 const percent = Math.min(100, (g.current / g.target) * 100);
                 return `
                     <div class="p-3.5 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2 text-xs">
-                        <div class="flex justify-between font-bold text-emerald-900"><span>${escapeUserHtml(g.title)}</span><button onclick="deleteSavingsGoal(${g.id})" class="text-red-500">✕</button></div>
+                        <div class="flex justify-between font-bold text-emerald-900"><span>${escapeUserHtml(g.title)}</span><button onclick="deleteSavingsGoal(${HelferleinSafe.numericId(g.id)})" class="text-red-500">✕</button></div>
                         <div class="flex justify-between text-[11px]"><span>Gespart: <strong>${g.current.toFixed(2)} €</strong></span><span>Ziel: ${g.target.toFixed(2)} €</span></div>
                         <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-600 h-2 transition-all" style="width: ${percent}%"></div></div>
-                        <button onclick="depositGoal(${g.id})" class="w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">+ Einzahlen</button>
+                        <button onclick="depositGoal(${HelferleinSafe.numericId(g.id)})" class="w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">+ Einzahlen</button>
                     </div>
                 `;
             }).join('');
@@ -1763,10 +1869,10 @@
             container.innerHTML = plan.map(p => `
                 <div class="p-2.5 ${p.done ? 'bg-emerald-50 border-emerald-200' : 'bg-gray-50 border-gray-200'} border rounded-xl flex justify-between items-center text-xs">
                     <div class="flex items-center space-x-2">
-                        <input type="checkbox" ${p.done ? 'checked' : ''} onchange="toggleCleanTask(${p.id})" class="w-4 h-4 text-emerald-600 rounded">
+                        <input type="checkbox" ${p.done ? 'checked' : ''} onchange="toggleCleanTask(${HelferleinSafe.numericId(p.id)})" class="w-4 h-4 text-emerald-600 rounded">
                         <span class="${p.done ? 'line-through text-gray-400' : 'font-bold text-gray-900'}">${escapeUserHtml(p.task)} (${escapeUserHtml(p.assignee)})</span>
                     </div>
-                    <button onclick="deleteCleanTask(${p.id})" class="text-gray-400 hover:text-red-500 font-bold">&times;</button>
+                    <button onclick="deleteCleanTask(${HelferleinSafe.numericId(p.id)})" class="text-gray-400 hover:text-red-500 font-bold">&times;</button>
                 </div>
             `).join('');
         }
@@ -1796,8 +1902,8 @@
                     <span class="font-medium text-gray-800">${escapeUserHtml(item.title)}</span>
                     <div class="flex gap-1.5">
                         <a href="https://www.amazon.de/s?k=${encodeURIComponent(item.title)}&tag=${AMAZON_AFFILIATE_TAG}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded font-bold text-[10px]">📦 Amazon</a>
-                        <button onclick="transferShoppingToExpense(${item.id})" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
-                        <button onclick="deleteShoppingItem(${item.id})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
+                        <button onclick="transferShoppingToExpense(${HelferleinSafe.numericId(item.id)})" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded font-bold text-[10px]">🧾 Buchen</button>
+                        <button onclick="deleteShoppingItem(${HelferleinSafe.numericId(item.id)})" class="text-gray-400 hover:text-red-500 font-bold px-1">&times;</button>
                     </div>
                 </div>
             `).join('');
@@ -1855,7 +1961,7 @@
             container.innerHTML = contracts.map(c => `
                 <div class="p-2.5 bg-indigo-50 border rounded-xl flex justify-between items-center text-xs">
                     <div><strong>${escapeUserHtml(c.name)}</strong> <span class="text-gray-500">(${escapeUserHtml(c.payer)})</span></div>
-                    <div class="flex items-center gap-2"><span class="font-bold text-indigo-900">${c.price.toFixed(2)} €/Mo</span><button onclick="deleteContract(${c.id})" class="text-red-500 font-bold">&times;</button></div>
+                    <div class="flex items-center gap-2"><span class="font-bold text-indigo-900">${c.price.toFixed(2)} €/Mo</span><button onclick="deleteContract(${HelferleinSafe.numericId(c.id)})" class="text-red-500 font-bold">&times;</button></div>
                 </div>
             `).join('');
         }
@@ -2058,7 +2164,7 @@
             doc.setFontSize(16); doc.text("WG- & Haushaltsbuch Abrechnung", 14, 20);
             doc.setFontSize(10); doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
             let y = 38;
-            getData().forEach(r => { if (y > 270) { doc.addPage(); y = 20; } doc.text(`${r.date} | ${r.title} (${r.category}): ${r.price.toFixed(2)} EUR [${r.payer || 'Privat'}]`, 14, y); y += 6; });
+            getData().forEach(r => { if (y > 270) { doc.addPage(); y = 20; } doc.text(`${r.date} | ${r.title} (${r.category}): ${r.price.toFixed(2)} EUR [${escapeUserHtml(r.payer || 'Privat')}]`, 14, y); y += 6; });
             doc.save(`haushaltsbericht-${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>

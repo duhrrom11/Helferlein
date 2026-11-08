@@ -330,6 +330,11 @@
                     💾 Daten speichern & Synchronisieren
                 </button>
             </div>
+<section id="b3-vault-legacy-warning" hidden class="rounded-xl border-2 border-amber-500 bg-amber-950 p-4 text-amber-100 space-y-2" role="alert">
+  <strong>⚠️ Bestehender Tresor: Schlüssel liegt noch zusammen mit den verschlüsselten Daten.</strong>
+  <p class="text-xs">Die Schlüsselumstellung macht bereits verteilte Notfall-Links ungültig. Bitte vorab Backups und Vertrauenspersonen berücksichtigen.</p>
+  <button type="button" onclick="migrateLegacyVaultToPassphrase()" class="rounded-lg bg-amber-500 text-slate-950 font-bold text-xs px-3 py-2">Bestehenden Tresor nach Sicherung mit Passwort schützen</button>
+</section>
 <section id="b3-nachlass-preferences" class="b3-nachlass-preferences" aria-label="Darstellung und Dashboard">
 <h3>🎨 Darstellung & Dashboard</h3>
 <label for="b3-nachlass-theme">Designmodus
@@ -449,7 +454,7 @@
 
             (async () => {
                 try {
-                    await initVault();
+                    if (!await initVault()) return; // Unlock/setup form handles its own activation.
                     vaultReady = true;
                     renderApp();
                     await checkIncomingAlarms();
@@ -555,57 +560,149 @@
             } catch(e) { return null; }
         }
 
-        async function initVault() {
-            const storedVault = localStorage.getItem('digital_estate_vault');
-            let cfg = null;
-            if (storedVault !== null) {
-                try {
-                    cfg = JSON.parse(storedVault);
-                } catch (error) {
-                    throw new Error("Vorhandene Tresordaten sind nicht lesbar. Der Datensatz wurde nicht überschrieben.");
-                }
-                if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg) ||
-                    !/^[a-f0-9]{64}$/i.test(cfg.masterKeyHex || '') ||
-                    !cfg.encryptedData || typeof cfg.encryptedData !== 'object') {
-                    throw new Error("Vorhandene Tresordaten sind unvollständig oder beschädigt. Der Datensatz wurde nicht überschrieben.");
-                }
-            }
-
-            if (storedVault === null) {
-                const randomBytes = crypto.getRandomValues(new Uint8Array(32));
-                currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
-                const vaultId = "v_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
-
-                currentDecryptedVault = { entries: [] };
-                cfg = {
-                    vaultId: vaultId,
-                    ownerName: "Dein Name",
-                    ownerEmail: "",
-                    masterKeyHex: currentMasterKeyHex,
-                    checkInIntervalDays: 30,
-                    lastCheckIn: new Date().toISOString(),
-                    trustees: [
-                        { id: 1, name: "Person 1", role: "Partner/in" },
-                        { id: 2, name: "Person 2", role: "Kind" },
-                        { id: 3, name: "Notar", role: "Rechtsbeistand" }
-                    ],
-                    alarmPersons: []
-                };
-                cfg.encryptedData = await encryptVaultPayload(currentDecryptedVault, currentMasterKeyHex);
-                localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
-            } else {
-                currentMasterKeyHex = cfg.masterKeyHex;
-                if (!cfg.alarmPersons) cfg.alarmPersons = [];
-                const dec = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
-                if (!dec || !Array.isArray(dec.entries)) {
-                    throw new Error("Der Tresor konnte nicht entschlüsselt werden. Vorhandene Daten bleiben unverändert.");
-                }
-                currentDecryptedVault = dec;
-            }
+        // The encrypted vault key is derived from a separately entered password.
+        // It is kept in memory only, never alongside encrypted data in localStorage.
+        const VAULT_KDF_ITERATIONS = 350000;
+        async function deriveVaultKeyHex(passphrase, saltHex, iterations=VAULT_KDF_ITERATIONS) {
+            if (!/^[0-9a-f]{32}$/i.test(saltHex) || !Number.isInteger(iterations) || iterations < 200000 || iterations > 1000000)
+                throw new Error('Ungültige Schlüsselableitungsparameter.');
+            const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveBits']);
+            const salt = Uint8Array.from(saltHex.match(/.{2}/g), x => parseInt(x,16));
+            const bits = await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations,hash:'SHA-256'},base,256);
+            return Array.from(new Uint8Array(bits),x=>x.toString(16).padStart(2,'0')).join('');
         }
-
+        function makeVaultKdf() {
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+            return {alg:'PBKDF2-SHA256',saltHex:Array.from(salt,x=>x.toString(16).padStart(2,'0')).join(''),iterations:VAULT_KDF_ITERATIONS};
+        }
+        function vaultKdfValid(kdf) {
+            return kdf && kdf.alg==='PBKDF2-SHA256' && /^[0-9a-f]{32}$/i.test(kdf.saltHex || '')
+                && Number.isInteger(kdf.iterations) && kdf.iterations>=200000 && kdf.iterations<=1000000;
+        }
+        function showVaultPasswordGate(mode, cfg=null) {
+            const existing=document.getElementById('vault-password-gate');
+            if(existing)existing.remove();
+            const parent=document.getElementById('main-content');
+            if(!parent)throw new Error('Tresor-Oberfläche nicht verfügbar.');
+            const panel=document.createElement('section');
+            panel.id='vault-password-gate';
+            panel.setAttribute('role','region');
+            panel.setAttribute('aria-label',mode==='create'?'Geschützten Tresor erstellen':'Tresor entsperren');
+            panel.className='rounded-2xl border-2 border-indigo-500 bg-slate-950 text-white p-5 space-y-3 shadow-xl';
+            const heading=document.createElement('h2');heading.className='text-lg font-bold';
+            heading.textContent=mode==='create'?'🔐 Geschützten Nachlass-Tresor einrichten':'🔐 Tresor mit Passwort entsperren';
+            const info=document.createElement('p');info.className='text-sm text-slate-200';
+            info.textContent=mode==='create'
+                ? 'Wähle ein langes, einzigartiges Tresor-Passwort. Der Schlüssel wird daraus abgeleitet und nicht gespeichert. Ohne dieses Passwort kannst du den Tresor nach einem Neuladen nicht mehr öffnen. Sichere es an einem separaten, vertrauenswürdigen Ort.'
+                : 'Gib dein Tresor-Passwort ein. Es wird nicht gespeichert. Der Inhalt bleibt bis zum Entsperren geschützt.';
+            const form=document.createElement('form');form.className='space-y-3';
+            const password=document.createElement('input');password.type='password';password.required=true;
+            password.minLength=mode==='create'?12:1;password.autocomplete='off';password.placeholder='Tresor-Passwort';
+            password.setAttribute('aria-label','Tresor-Passwort');
+            password.className='w-full rounded-xl bg-slate-900 text-white p-3 border border-slate-600';
+            form.append(password);
+            let repeat=null;
+            if(mode==='create'){
+                repeat=document.createElement('input');repeat.type='password';repeat.required=true;repeat.minLength=12;
+                repeat.autocomplete='off';repeat.placeholder='Passwort wiederholen';
+                repeat.setAttribute('aria-label','Tresor-Passwort bestätigen');
+                repeat.className=password.className;form.append(repeat);
+            }
+            const submit=document.createElement('button');submit.type='submit';
+            submit.className='rounded-xl bg-indigo-600 text-white font-bold px-4 py-3';
+            submit.textContent=mode==='create'?'Tresor geschützt erstellen':'Tresor entsperren';
+            const status=document.createElement('p');status.setAttribute('role','alert');status.className='text-sm text-amber-200';
+            form.append(submit,status);
+            form.addEventListener('submit',async e=>{
+                e.preventDefault();submit.disabled=true;status.textContent='Schlüssel wird abgeleitet …';
+                try{
+                    const pass=password.value;
+                    if(mode==='create' && (pass.length<12 || pass!==repeat.value))
+                        throw new Error('Mindestens zwölf Zeichen verwenden und Passwort identisch bestätigen.');
+                    if(mode==='create'){
+                        // Never overwrite an existing or partially damaged vault.
+                        if(localStorage.getItem('digital_estate_vault')!==null)throw new Error('Es sind bereits Tresordaten vorhanden.');
+                        const kdf=makeVaultKdf();
+                        const derived=await deriveVaultKeyHex(pass,kdf.saltHex,kdf.iterations);
+                        const vaultId='v_'+Array.from(crypto.getRandomValues(new Uint8Array(12)),x=>x.toString(16).padStart(2,'0')).join('');
+                        const data={entries:[]};
+                        const next={
+                            vaultId,ownerName:'',ownerEmail:'',passwordKdf:kdf,checkInIntervalDays:30,
+                            lastCheckIn:new Date().toISOString(),trustees:[],alarmPersons:[],
+                            encryptedData:await encryptVaultPayload(data,derived)
+                        };
+                        localStorage.setItem('digital_estate_vault',JSON.stringify(next));
+                        currentMasterKeyHex=derived;currentDecryptedVault=data;
+                    }else{
+                        const derived=await deriveVaultKeyHex(pass,cfg.passwordKdf.saltHex,cfg.passwordKdf.iterations);
+                        const data=await decryptVaultPayload(cfg.encryptedData,derived);
+                        if(!data || !Array.isArray(data.entries))throw new Error('Falsches Passwort oder beschädigte Daten. Es wurde nichts überschrieben.');
+                        currentMasterKeyHex=derived;currentDecryptedVault=data;
+                    }
+                    password.value='';if(repeat)repeat.value='';
+                    vaultReady=true;panel.remove();renderApp();await checkIncomingAlarms();
+                }catch(error){
+                    status.textContent=error.message;submit.disabled=false;
+                    password.value='';if(repeat)repeat.value='';
+                }
+            });
+            panel.append(heading,info,form);parent.prepend(panel);
+        }
+        async function initVault() {
+            const storedVault=localStorage.getItem('digital_estate_vault');
+            if(storedVault===null){showVaultPasswordGate('create');return false;}
+            let cfg;
+            try{cfg=JSON.parse(storedVault);}catch{throw new Error('Bestehende Tresordaten sind nicht lesbar und wurden nicht überschrieben.');}
+            const legacy=/^[a-f0-9]{64}$/i.test(cfg?.masterKeyHex || '');
+            const protectedVault=vaultKdfValid(cfg?.passwordKdf);
+            if(!cfg || typeof cfg!=='object' || Array.isArray(cfg) || !cfg.encryptedData || typeof cfg.encryptedData!=='object' || (!legacy&&!protectedVault))
+                throw new Error('Tresordaten unvollständig oder beschädigt; keine Daten wurden überschrieben.');
+            if(protectedVault){
+                showVaultPasswordGate('unlock',cfg);
+                return false;
+            }
+            currentMasterKeyHex=cfg.masterKeyHex; // Legacy key, until explicit migration.
+            const dec=await decryptVaultPayload(cfg.encryptedData,currentMasterKeyHex);
+            if(!dec || !Array.isArray(dec.entries))throw new Error('Tresor konnte nicht entschlüsselt werden. Vorhandene Daten bleiben unverändert.');
+            currentDecryptedVault=dec;
+            const banner=document.getElementById('b3-vault-legacy-warning');
+            if(banner)banner.hidden=false;
+            return true;
+        }
         function getVaultConfig() {
-            return JSON.parse(localStorage.getItem('digital_estate_vault'));
+            const raw=localStorage.getItem('digital_estate_vault');
+            if(raw===null)return null;
+            const cfg=JSON.parse(raw);
+            // Non-enumerable: existing kit generation can use the in-memory key,
+            // but JSON.stringify cannot silently persist it in protected vaults.
+            if(vaultKdfValid(cfg.passwordKdf) && currentMasterKeyHex){
+                Object.defineProperty(cfg,'masterKeyHex',{value:currentMasterKeyHex,enumerable:false,configurable:true});
+            }
+            return cfg;
+        }
+        async function migrateLegacyVaultToPassphrase() {
+            if(!vaultReady)return alert('Tresor muss zunächst entsperrt sein.');
+            const existing=JSON.parse(localStorage.getItem('digital_estate_vault')||'null');
+            if(!existing?.masterKeyHex)return alert('Dieser Tresor verwendet bereits eine getrennte Schlüsselableitung.');
+            if(!confirm('WARNUNG: Die Umstellung verschlüsselt den Tresor mit einem neuen Schlüssel. Bisherige Notfall-Links und Notfall-Kits werden ungültig und müssen neu ausgegeben werden. Die bestehende Cloud-Kopie kann noch den alten Stand enthalten. Bitte vorher sichere Backups und einen Migrationsplan für alle Vertrauenspersonen vorbereiten. Wirklich fortfahren?'))return;
+            const pass=prompt('Neues Tresor-Passwort (mindestens 12 Zeichen). Es wird NICHT gespeichert:');
+            if(pass===null)return;
+            const verify=prompt('Neues Tresor-Passwort wiederholen:');
+            if(pass.length<12 || pass!==verify)return alert('Passwort zu kurz oder nicht identisch. Keine Daten geändert.');
+            try{
+                const kdf=makeVaultKdf();
+                const derived=await deriveVaultKeyHex(pass,kdf.saltHex,kdf.iterations);
+                const protectedData=await encryptVaultPayload(currentDecryptedVault,derived);
+                const next={...existing,passwordKdf:kdf,encryptedData:protectedData};
+                delete next.masterKeyHex;
+                // Atomic localStorage replacement; neither backup nor original values
+                // are overwritten unless the new ciphertext was generated successfully.
+                localStorage.setItem('digital_estate_vault',JSON.stringify(next));
+                currentMasterKeyHex=derived;
+                const banner=document.getElementById('b3-vault-legacy-warning');
+                if(banner)banner.hidden=true;
+                alert('Tresor geschützt. Neue Notfall-Kits und Links ausstellen. Cloud-Daten gesondert prüfen.');
+            }catch(error){alert('Migration fehlgeschlagen. Bestehender Tresor wurde nicht verändert. '+error.message);}
         }
 
         // Nur der zuletzt gestartete lokale Speichervorgang darf schreiben.

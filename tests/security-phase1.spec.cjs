@@ -1,0 +1,253 @@
+const {test,expect}=require('@playwright/test');
+const root='http://127.0.0.1:8765';
+test('WG new local workspace never overwrites the standalone household book',async({page})=>{
+ await page.addInitScript(()=>{
+  localStorage.setItem('kassenbon_data',JSON.stringify([{id:987,title:'Privates Haushaltsbuch'}]));
+  localStorage.setItem('budgetbuch_budgets',JSON.stringify({Privat:900}));
+  localStorage.setItem('budgetbuch_goals',JSON.stringify([{title:'Privat sparen'}]));
+ });
+ await page.goto(root+'/tools/wg-organisator/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#b3-wg-onboarding')).toBeVisible();
+ await page.getByRole('button',{name:/WG-Plan mit 1 Klick erstellen/}).click();
+ await page.waitForURL(/\?id=local_[a-f0-9]{32}/);
+ await expect(page.locator('#b3-wg-legacy-cloud-warning')).toBeVisible();
+ const result=await page.evaluate(()=>({
+  receipts:JSON.parse(localStorage.getItem('kassenbon_data')),
+  budgets:JSON.parse(localStorage.getItem('budgetbuch_budgets')),
+  goals:JSON.parse(localStorage.getItem('budgetbuch_goals')),
+  wgKeys:Object.keys(localStorage).filter(k=>k.startsWith('helferlein_wg_v2_'))
+ }));
+ expect(result.receipts).toEqual([{id:987,title:'Privates Haushaltsbuch'}]);
+ expect(result.budgets).toEqual({Privat:900});
+ expect(result.goals).toEqual([{title:'Privat sparen'}]);
+ expect(result.wgKeys.length).toBeGreaterThanOrEqual(10);
+ expect(await page.evaluate(()=>localStorage.getItem('wg_active_bin_id'))).toMatch(/^local_[a-f0-9]{32}$/);
+});
+test('WG does not contact unsecured cloud on initial load',async({page})=>{
+ let cloudCalls=0;
+ await page.route(/api\.npoint\.io|jsonkeeper\.com/,route=>{cloudCalls++;return route.abort()});
+ await page.goto(root+'/tools/wg-organisator/index.html?id=local_existing',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#b3-wg-legacy-cloud-warning')).toBeVisible();
+ await page.waitForTimeout(1200);
+ expect(cloudCalls).toBe(0);
+});
+test('WG legacy transfer requires affirmative confirmation and never deletes source keys',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('wg_notes','[{"id":12,"title":"Altbestand"}]'));
+ await page.goto(root+'/tools/wg-organisator/index.html?id=local_other',{waitUntil:'domcontentloaded'});
+ page.once('dialog',dlg=>dlg.dismiss());
+ await page.evaluate(()=>importLegacyWgData());
+ let x=await page.evaluate(()=>({legacy:localStorage.getItem('wg_notes'),namespaced:localStorage.getItem('helferlein_wg_v2_local_other_wg_notes')}));
+ expect(x.legacy).toContain('Altbestand');expect(x.namespaced).toBeNull();
+ page.once('dialog',dlg=>dlg.accept());
+ await page.evaluate(()=>importLegacyWgData());
+ // Import also shows an informational alert.
+ page.once('dialog',dlg=>dlg.accept());
+ x=await page.evaluate(()=>({legacy:localStorage.getItem('wg_notes'),namespaced:localStorage.getItem('helferlein_wg_v2_local_other_wg_notes')}));
+ expect(x.namespaced).toBe(x.legacy);
+});
+for(const p of [
+ 'tools/autokosten-reifenwechsel/index.html',
+ 'tools/haushaltsbuch-kassenbon/index.html',
+ 'tools/haustier-gesundheitspass/index.html',
+ 'tools/umzugskisten-inventar/index.html',
+ 'tools/parkplatz-merker-parkschein-timer/index.html',
+ 'tools/zaehlerstaende-erfassen/index.html'
+]){
+ test('Output helper available in '+p,async({page})=>{
+  await page.goto(root+'/'+p,{waitUntil:'domcontentloaded'});
+  const x=await page.evaluate(()=>({
+   escape:window.HelferleinSafe?.html('<img src=x onerror=alert(1)>'),
+   image:window.HelferleinSafe?.photo('javascript:alert(1)')
+  }));
+  expect(x.escape).toContain('&lt;img');expect(x.image).toBe('');
+ });
+}
+
+test('New Nachlass vault uses passphrase and never persists master key beside ciphertext',async({page})=>{
+ await page.goto(root+'/tools/digitaler-nachlass/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#vault-password-gate')).toBeVisible();
+ expect(await page.evaluate(()=>localStorage.getItem('digital_estate_vault'))).toBeNull();
+ await page.locator('input[aria-label="Tresor-Passwort"]').fill('Langes-Sicheres-Tresorpasswort-2026');
+ await page.locator('input[aria-label="Tresor-Passwort bestätigen"]').fill('Langes-Sicheres-Tresorpasswort-2026');
+ await page.getByRole('button',{name:'Tresor geschützt erstellen'}).click();
+ await expect(page.locator('#vault-password-gate')).toHaveCount(0);
+ let cfg=await page.evaluate(()=>JSON.parse(localStorage.getItem('digital_estate_vault')));
+ expect(cfg.masterKeyHex).toBeUndefined();
+ expect(cfg.passwordKdf.alg).toBe('PBKDF2-SHA256');
+ expect(cfg.passwordKdf.iterations).toBeGreaterThanOrEqual(200000);
+ expect(cfg.encryptedData.ciphertext).toBeTruthy();
+ await page.reload({waitUntil:'domcontentloaded'});
+ await expect(page.locator('#vault-password-gate')).toBeVisible();
+ await page.locator('input[aria-label="Tresor-Passwort"]').fill('FalschesPasswort');
+ await page.getByRole('button',{name:'Tresor entsperren'}).click();
+ await expect(page.locator('#vault-password-gate [role="alert"]')).toContainText('Falsches Passwort',{timeout:12000});
+ await page.locator('input[aria-label="Tresor-Passwort"]').fill('Langes-Sicheres-Tresorpasswort-2026');
+ await page.getByRole('button',{name:'Tresor entsperren'}).click();
+ try {
+  await expect(page.locator('#vault-password-gate')).toHaveCount(0,{timeout:12000});
+ }catch(e){
+  console.log('Tresor-Entsperrstatus:',await page.locator('#vault-password-gate [role="alert"]').textContent());
+  throw e;
+ }
+ cfg=await page.evaluate(()=>JSON.parse(localStorage.getItem('digital_estate_vault')));
+ expect(cfg.masterKeyHex).toBeUndefined();
+});
+test('Legacy Nachlass vault remains readable and migration only after consent',async({page})=>{
+ await page.goto(root+'/tools/digitaler-nachlass/index.html',{waitUntil:'domcontentloaded'});
+ await page.evaluate(async()=>{
+  const key=new Uint8Array(32);crypto.getRandomValues(key);
+  const hex=Array.from(key,x=>x.toString(16).padStart(2,'0')).join('');
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const cryptoKey=await crypto.subtle.importKey('raw',key,{name:'AES-GCM'},false,['encrypt']);
+  const ciphertext=await crypto.subtle.encrypt({name:'AES-GCM',iv},cryptoKey,new TextEncoder().encode(JSON.stringify({entries:[]})));
+  const b64=v=>btoa(String.fromCharCode(...new Uint8Array(v)));
+  localStorage.setItem('digital_estate_vault',JSON.stringify({
+   vaultId:'v_local_fixture',ownerName:'',ownerEmail:'',masterKeyHex:hex,
+   checkInIntervalDays:30,lastCheckIn:new Date().toISOString(),trustees:[],alarmPersons:[],
+   encryptedData:{iv:b64(iv),ciphertext:b64(ciphertext)}
+  }));
+ });
+ await page.reload({waitUntil:'domcontentloaded'});
+ await page.locator('.tab-btn[data-tab="settings"]').first().evaluate(e=>e.click());
+ await expect(page.locator('#b3-vault-legacy-warning')).toBeVisible();
+ const dialogs=[];
+ page.on('dialog',async dialog=>{
+  dialogs.push(dialog.type());
+  if(dialog.type()==='prompt')await dialog.accept('Sicheres-Migrations-Passwort-2026');
+  else await dialog.accept();
+ });
+ await page.locator('#b3-vault-legacy-warning button').click();
+ await expect(page.locator('#b3-vault-legacy-warning')).toBeHidden();
+ const cfg=await page.evaluate(()=>JSON.parse(localStorage.getItem('digital_estate_vault')));
+ expect(cfg.masterKeyHex).toBeUndefined();
+ expect(cfg.passwordKdf.alg).toBe('PBKDF2-SHA256');
+ expect(dialogs).toContain('confirm');
+ expect(dialogs.filter(x=>x==='prompt')).toHaveLength(2);
+ await page.reload({waitUntil:'domcontentloaded'});
+ await expect(page.locator('#vault-password-gate')).toBeVisible();
+ await page.locator('input[aria-label="Tresor-Passwort"]').fill('Sicheres-Migrations-Passwort-2026');
+ await page.getByRole('button',{name:'Tresor entsperren'}).click();
+ await expect(page.locator('#vault-password-gate')).toHaveCount(0);
+});
+
+test('Malicious recipe HTML renders as inert text, not executable elements',async({page})=>{
+ await page.goto(root+'/tools/backform-umrechner/index.html',{waitUntil:'domcontentloaded'});
+ await page.locator('#recipe-name').fill('<img src=x onerror="window.__xssHit=true">');
+ await page.locator('#recipe-input').fill('250 g <img src=x onerror="window.__xssHit=true">');
+ await page.evaluate(()=>calculateRecipe());
+ const result=await page.evaluate(()=>{
+  const root=document.getElementById('print-card');
+  return {hit:window.__xssHit===true,html:root?.innerHTML||'',text:root?.textContent||''};
+ });
+ expect(result.hit).toBe(false);
+ expect(result.html).not.toContain('<img');
+ expect(result.text).toContain('<img');
+});
+test('Escaped QR onclick argument remains inert and preserves exact input',async({page})=>{
+ await page.goto(root+'/tools/umzugskisten-inventar/index.html',{waitUntil:'domcontentloaded'});
+ const result=await page.evaluate(()=>{
+  const payload='");window.__xssHit=true;//<img src=x onerror=alert(1)>';
+  window.__received=null;
+  window.__qrFixture=value=>{window.__received=value;};
+  const b=document.createElement('div');
+  b.innerHTML='<button onclick="window.__qrFixture('+HelferleinSafe.jsArg(payload)+')">Test</button>';
+  document.body.append(b);
+  b.querySelector('button').click();
+  const r={received:window.__received,hit:window.__xssHit===true,images:b.querySelectorAll('img').length};
+  b.remove();
+  return r;
+ });
+ expect(result.received).toBe('");window.__xssHit=true;//<img src=x onerror=alert(1)>');
+ expect(result.hit).toBe(false);
+ expect(result.images).toBe(0);
+});
+
+test('Legacy WG cloud import makes a restorable snapshot before replacing local records',async({page})=>{
+ await page.addInitScript(()=>{
+  localStorage.setItem('kassenbon_data',JSON.stringify([{id:1,title:'Privates Haushaltsbuch'}]));
+  localStorage.setItem('helferlein_wg_v2_oldSharedId_kassenbon_data',JSON.stringify([{id:2,title:'Lokaler WG-Beleg'}]));
+ });
+ let requests=0;
+ await page.route('https://api.npoint.io/oldSharedId',route=>{
+   requests++;
+   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+     data:[{id:3,title:'Remote WG-Beleg'}],flatmates:[],notes:[]
+   })});
+ });
+ await page.goto(root+'/tools/wg-organisator/index.html?id=oldSharedId',{waitUntil:'domcontentloaded'});
+ expect(requests).toBe(0);
+ let confirms=0;
+ page.on('dialog',async dialog=>{
+   if(dialog.type()==='confirm'){confirms++;await dialog.accept();}
+   else await dialog.accept();
+ });
+ await page.getByRole('button',{name:'Bisherige WG-Cloud bewusst freigeben'}).click();
+ await expect.poll(()=>requests).toBe(1);
+ await expect.poll(async()=>page.evaluate(()=>JSON.parse(localStorage.getItem('helferlein_wg_v2_oldSharedId_kassenbon_data'))[0].title)).toBe('Remote WG-Beleg');
+ const result=await page.evaluate(()=>{
+  const key=Object.keys(localStorage).find(k=>k.startsWith('helferlein_wg_backup_oldSharedId_'));
+  return {previous:JSON.parse(localStorage.getItem(key)).previous.kassenbon_data,
+    household:JSON.parse(localStorage.getItem('kassenbon_data'))[0].title,backup:key};
+ });
+ expect(result.household).toBe('Privates Haushaltsbuch');
+ expect(JSON.parse(result.previous)[0].title).toBe('Lokaler WG-Beleg');
+ expect(result.backup).toBeTruthy();
+ expect(confirms).toBeGreaterThanOrEqual(2);
+ await page.evaluate(()=>restoreLatestWgCloudSnapshot());
+ const restored=await page.evaluate(()=>{
+  const recovery=Object.keys(localStorage).find(k=>k.startsWith('helferlein_wg_recovery_oldSharedId_'));
+  return {
+    wg:JSON.parse(localStorage.getItem('helferlein_wg_v2_oldSharedId_kassenbon_data'))[0].title,
+    household:JSON.parse(localStorage.getItem('kassenbon_data'))[0].title,
+    backup:JSON.parse(localStorage.getItem(recovery)).before.kassenbon_data
+  };
+ });
+ expect(restored.wg).toBe('Lokaler WG-Beleg');
+ expect(restored.household).toBe('Privates Haushaltsbuch');
+ expect(JSON.parse(restored.backup)[0].title).toBe('Remote WG-Beleg');
+});
+
+const hostileText='<img class="injected-xss" src=x>';
+test('Stored vehicle names, plates and action IDs cannot inject markup',async({page})=>{
+ const data={cars:[{id:'1);window.__hacked=1;//',name:hostileText,plate:hostileText,km:23000}],events:[],tires:[]};
+ await page.addInitScript(value=>localStorage.setItem('kfz_tracker_pro_v3',JSON.stringify(value)),data);
+ await page.goto(root+'/tools/autokosten-reifenwechsel/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#carsList')).toContainText('injected-xss');
+ expect(await page.locator('#carsList img.injected-xss').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
+ await expect(page.locator('#carsList [onclick*="window.__hacked"]')).toHaveCount(0);
+});
+test('Stored budget receipt title, notes and gallery images are inert',async({page})=>{
+ const item={id:12,title:hostileText,category:'Lebensmittel',price:8.4,date:'2026-11-08',entryType:'ausgabe',paymentMethod:'Karte',note:hostileText,photos:[],warrantyMonths:0,returnDays:0};
+ await page.addInitScript(value=>localStorage.setItem('kassenbon_data',JSON.stringify([value])),item);
+ await page.goto(root+'/tools/haushaltsbuch-kassenbon/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#receiptsList')).toContainText('injected-xss');
+ expect(await page.locator('img.injected-xss').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
+});
+test('Stored medication stock cannot inject HTML into pet dashboard',async({page})=>{
+ const data={pets:[],events:[],meds:[{id:15,name:'Futter',stock:hostileText}]};
+ await page.addInitScript(value=>localStorage.setItem('haustier_pass_pro_v5',JSON.stringify(value)),data);
+ await page.goto(root+'/tools/haustier-gesundheitspass/index.html',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#medList')).toContainText('injected-xss');
+ expect(await page.locator('img.injected-xss').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
+});
+test('Imported plant inventory quantities and locations remain plain text',async({page})=>{
+ const data={plants:[],seeds:[],inventory:[{name:'Erde',qty:hostileText}],beetSlots:Array(16).fill(null),monthWaterLiters:0,totalHarvestGrams:0,cisternMax:500,cisternCurrent:500};
+ await page.addInitScript(value=>localStorage.setItem('pflanzen_pass_v10',JSON.stringify(value)),data);
+ await page.goto(root+'/tools/pflanzenpflege-giessplan/index.html',{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>renderInventoryList());
+ await expect(page.locator('#inventoryList')).toContainText('injected-xss');
+ expect(await page.locator('img.injected-xss').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
+});
+test('Imported moving-box location names cannot inject through select options',async({page})=>{
+ const data={locations:[{id:20,icon:'📦',name:hostileText}],boxes:[]};
+ await page.addInitScript(value=>localStorage.setItem('mini_homebox_pro',JSON.stringify(value)),data);
+ await page.goto(root+'/tools/umzugskisten-inventar/index.html',{waitUntil:'domcontentloaded'});
+ await page.evaluate(()=>loadLocationsDropdown());
+ await expect(page.locator('#boxLocationSelect')).toContainText('injected-xss');
+ expect(await page.locator('img.injected-xss').count()).toBe(0);
+ expect(await page.evaluate(()=>window.__hacked)).toBeUndefined();
+});

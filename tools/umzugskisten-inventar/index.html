@@ -46,6 +46,7 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../assets/helferlein-safe-output.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -495,7 +496,7 @@
         function loadLocationsDropdown() {
             let data = getData();
             const html = '<option value="">-- Standort wählen --</option>' + 
-                data.locations.map(l => `<option value="${l.id}">${l.icon || '📍'} ${l.name}</option>`).join('');
+                data.locations.map(l => `<option value="${HelferleinSafe.numericId(l.id)}">${HelferleinSafe.html(l.icon || '📍')} ${HelferleinSafe.html(l.name)}</option>`).join('');
             document.getElementById('boxLocationSelect').innerHTML = html;
             document.getElementById('editBoxLocSelect').innerHTML = html;
         }
@@ -581,7 +582,7 @@
             }
             container.innerHTML = activeSubItemsTemp.map((item, idx) => `
                 <div class="flex justify-between items-center bg-gray-50 p-2 border rounded-xl text-xs">
-                    <span><b>${item.name}</b> (${(item.value || 0).toFixed(2)} €)</span>
+                    <span><b>${HelferleinSafe.html(item.name)}</b> (${(item.value || 0).toFixed(2)} €)</span>
                     <button onclick="removeSubItem(${idx})" class="text-red-500 font-bold px-2 py-0.5 hover:bg-red-50 rounded-lg">✕</button>
                 </div>
             `).join('');
@@ -665,7 +666,7 @@
                 locStatsCard.classList.remove('hidden');
                 locStatsList.innerHTML = data.locations.map(loc => {
                     const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + (b.value || 0), 0);
-                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${loc.icon || '📍'} ${loc.name}</p><p class="text-sm font-bold text-amber-800">${locVal.toFixed(2).replace('.', ',')} €</p></div>`;
+                    return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${HelferleinSafe.html(loc.icon || '📍')} ${HelferleinSafe.html(loc.name)}</p><p class="text-sm font-bold text-amber-800">${locVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
                 locStatsCard.classList.add('hidden');
@@ -720,10 +721,10 @@
                 return `
                     <div class="border rounded-2xl p-4 bg-gray-50 space-y-3">
                         <div class="flex justify-between items-center border-b pb-2">
-                            <h4 class="font-bold text-md text-amber-800">${loc.icon || '📍'} Standort: ${loc.name}</h4>
+                            <h4 class="font-bold text-md text-amber-800">${HelferleinSafe.html(loc.icon || '📍')} Standort: ${HelferleinSafe.html(loc.name)}</h4>
                             <div class="flex gap-3">
-                                <button onclick="editLocation(${loc.id})" class="text-xs text-blue-600 hover:underline">✏️ Bearbeiten</button>
-                                <button onclick="deleteLocation(${loc.id})" class="text-xs text-red-500 hover:underline">🗑️ Löschen</button>
+                                <button onclick="editLocation(${HelferleinSafe.numericId(loc.id)})" class="text-xs text-blue-600 hover:underline">✏️ Bearbeiten</button>
+                                <button onclick="deleteLocation(${HelferleinSafe.numericId(loc.id)})" class="text-xs text-red-500 hover:underline">🗑️ Löschen</button>
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -735,27 +736,27 @@
                                 return `
                                     <div class="bg-white p-3 border rounded-xl flex items-center justify-between shadow-sm gap-3 ${isExpired ? 'border-red-400 bg-red-50/30' : ''}">
                                         <div class="flex items-center space-x-3">
-                                            ${b.photo ? `<img src="${b.photo}" onclick="zoomImage('${b.photo}')" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
+                                            ${b.photo ? `<img src="${HelferleinSafe.photo(b.photo)}" onclick="zoomImage(${HelferleinSafe.photoArg(b.photo)})" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Kein Bild</div>'}
                                             <div>
                                                 <div class="flex items-center space-x-2 flex-wrap gap-1">
-                                                    <h5 class="font-bold text-sm">📦 ${b.name}</h5>
-                                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${b.tag || 'Standard'}</span>
-                                                    ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="Ausgeliehen an: ${b.lentTo}">🤝 Ausgeliehen (${b.lentTo})</span>` : ''}
+                                                    <h5 class="font-bold text-sm">📦 ${HelferleinSafe.html(b.name)}</h5>
+                                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold">${HelferleinSafe.html(b.tag || 'Standard')}</span>
+                                                    ${isLent ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold" title="Ausgeliehen an: ${HelferleinSafe.html(b.lentTo)}">🤝 Ausgeliehen (${HelferleinSafe.html(b.lentTo)})</span>` : ''}
                                                     ${isExpired ? `<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-bold" title="Ablaufdatum überschritten!">⚠️ Ablauf</span>` : ''}
                                                 </div>
-                                                <p class="text-xs text-gray-600 mt-0.5">${b.desc || 'Keine Beschreibung'}</p>
-                                                ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">Inhalt: ${subItemsText}</p>` : ''}
+                                                <p class="text-xs text-gray-600 mt-0.5">${HelferleinSafe.html(b.desc || 'Keine Beschreibung')}</p>
+                                                ${subItemsText ? `<p class="text-[11px] text-indigo-600 font-medium mt-0.5">Inhalt: ${HelferleinSafe.html(subItemsText)}</p>` : ''}
                                                 <div class="flex gap-3 text-[11px] text-gray-500 mt-0.5">
                                                     <span class="font-semibold text-green-600">Wert: ${(b.value || 0).toFixed(2).replace('.', ',')} €</span>
-                                                    ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${b.barcode}</span>` : ''}
-                                                    ${b.expiry ? `<span>Ablauf: ${b.expiry.split('-').reverse().join('.')}</span>` : ''}
+                                                    ${b.barcode ? `<span class="font-mono text-gray-400">EAN: ${HelferleinSafe.html(b.barcode)}</span>` : ''}
+                                                    ${b.expiry ? `<span>Ablauf: ${HelferleinSafe.html(b.expiry.split('-').reverse().join('.'))}</span>` : ''}
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="flex items-center gap-1">
-                                            <button onclick="showQrCode(${b.id}, '${b.name}', '${b.desc}')" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100" title="QR-Code & Deep-Link">🖨️</button>
-                                            <button onclick="openEditBoxModal(${b.id})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200" title="Bearbeiten">✏️</button>
-                                            <button onclick="deleteBox(${b.id})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
+                                            <button onclick="showQrCode(${HelferleinSafe.numericId(b.id)}, ${HelferleinSafe.jsArg(b.name)}, ${HelferleinSafe.jsArg(b.desc)})" class="px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-semibold hover:bg-amber-100" title="QR-Code & Deep-Link">🖨️</button>
+                                            <button onclick="openEditBoxModal(${HelferleinSafe.numericId(b.id)})" class="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200" title="Bearbeiten">✏️</button>
+                                            <button onclick="deleteBox(${HelferleinSafe.numericId(b.id)})" class="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-100" title="Löschen">✕</button>
                                         </div>
                                     </div>
                                 `;
@@ -802,7 +803,7 @@
                         doc.setFont("helvetica", "normal");
                         doc.setFontSize(10);
                         const statusText = b.lentTo ? ` [Ausgeliehen an: ${b.lentTo}]` : '';
-                        const subStr = b.subItems && b.subItems.length > 0 ? ` | Artikel: ${b.subItems.map(s => s.name).join(', ')}` : '';
+                        const subStr = b.subItems && b.subItems.length > 0 ? ` | Artikel: ${HelferleinSafe.html(b.subItems.map(s => s.name).join(', '))}` : '';
                         doc.text(`  • ${b.name}${statusText}`, 14, y);
                         doc.text(`Wert: ${(b.value || 0).toFixed(2)} EUR${subStr}`, 90, y);
                         y += 6;
@@ -887,7 +888,7 @@
                 doc.text(`Ort: ${cleanLocName}`, textX, y + 14);
                 doc.text(`Inhalt: ${b.desc || '-'}`, textX, y + 20);
                 doc.text(`Wert: ${(b.value || 0).toFixed(2)} €`, textX, y + 26);
-                doc.text(`Tag: ${b.tag || 'Standard'}`, textX, y + 32);
+                doc.text(`Tag: ${HelferleinSafe.html(b.tag || 'Standard')}`, textX, y + 32);
 
                 if (x === 14) { 
                     x = 110; 
