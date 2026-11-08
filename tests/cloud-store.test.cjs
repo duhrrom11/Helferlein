@@ -1,0 +1,72 @@
+/* Node.js-only unit checks; no network or production data. Run: node tests/cloud-store.test.cjs */
+'use strict';
+const assert = require('node:assert/strict');
+const vm = require('node:vm');
+const fs = require('node:fs');
+const script = fs.readFileSync('shared/helferlein-cloud-store.js', 'utf8');
+function harness(online = true) {
+  const entries = new Map();
+  const localStorage = {
+    getItem: k => entries.has(k) ? entries.get(k) : null,
+    setItem: (k, v) => entries.set(k, String(v)),
+    removeItem: k => entries.delete(k)
+  };
+  const rows = [];
+  let uid = 'alice';
+  const client = {
+    auth: { getUser: async () => ({ data: { user: uid ? { id: uid } : null }, error: null }) },
+    from: table => {
+      assert.equal(table, 'user_data');
+      let filters = {};
+      const query = {
+        select() { return query; },
+        eq(k, v) { filters[k] = v; return query; },
+        order() { return query; },
+        limit: async () => ({ data: rows.filter(r => Object.entries(filters).every(([k,v]) => r[k] === v)), error: null }),
+        insert(value) {
+          const row = { id: rows.length + 1, updated_at: 'revision-1', ...value };
+          rows.push(row);
+          return { select: async () => ({ data: [{ id: row.id, updated_at: row.updated_at }], error: null }) };
+        },
+        update(value) {
+          return {
+            eq(k, v) { filters[k] = v; return this; },
+            select: async () => {
+              const row = rows.find(r => Object.entries(filters).every(([k,v]) => r[k] === v));
+              if (!row) return { data: [], error: null };
+              Object.assign(row, value);
+              return { data: [{ id: row.id, updated_at: row.updated_at }], error: null };
+            }
+          };
+        }
+      };
+      return query;
+    }
+  };
+  const window = {};
+  const navigator = { onLine: online };
+  vm.runInNewContext(script, { window, navigator, localStorage, JSON, Promise, Error, Date });
+  return { client, rows, navigator, localStorage, setUser: id => { uid = id; },
+    store: window.HelferleinCloudStore.createStore(client, 'plants') };
+}
+(async () => {
+  const h = harness();
+  assert.equal((await h.store.load()).source, 'cloud-empty');
+  assert.equal(await h.store.save({ plants: [1] }), true);
+  assert.equal(h.rows.length, 1);
+  assert.deepEqual(h.rows[0].data, { plants: [1] });
+  h.navigator.onLine = false;
+  assert.equal(await h.store.save({ plants: [1, 2] }), false);
+  assert.equal(await h.store.hasPending(), true);
+  assert.equal((await h.store.load()).source, 'pending');
+  h.navigator.onLine = true;
+  assert.equal(await h.store.flush(), true);
+  assert.equal(await h.store.hasPending(), false);
+  assert.deepEqual(h.rows[0].data, { plants: [1, 2] });
+  h.setUser('bob');
+  assert.equal((await h.store.load()).source, 'cloud-empty');
+  assert.equal(await h.store.hasPending(), false);
+  h.setUser(null);
+  assert.equal((await h.store.load()).source, 'signed-out');
+  console.log('Cloud store unit checks passed');
+})().catch(error => { console.error(error); process.exitCode = 1; });
