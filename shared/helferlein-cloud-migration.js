@@ -3,6 +3,48 @@
   'use strict';
   function mount({ client, tool, localKey, collection, refresh, target }) {
     const store = global.HelferleinCloudStore.createStore(client, tool);
+    let enabledUser = null;
+    let queue = Promise.resolve();
+    const enabledKey = uid => 'helferlein_cloud_enabled_' + tool + '_' + uid;
+    async function currentUser() {
+      const { data, error } = await client.auth.getUser();
+      if (error) throw error;
+      return data.user;
+    }
+    async function isEnabled() {
+      const user = await currentUser();
+      return !!user && user.id === enabledUser && localStorage.getItem(enabledKey(user.id)) === 'true';
+    }
+    async function enable() {
+      const user = await currentUser();
+      if (!user) throw new Error('Bitte zuerst anmelden');
+      enabledUser = user.id;
+      localStorage.setItem(enabledKey(user.id), 'true');
+    }
+    function changed(data) {
+      // Called after the existing synchronous local save succeeded.
+      // Failed uploads must remain pending, and are never silently discarded.
+      queue = queue.catch(() => {}).then(async () => {
+        if (!await isEnabled()) return;
+        try {
+          const uploaded = await store.save(data);
+          status.textContent = uploaded ? 'Lokal und in Supabase gespeichert' : 'Lokal gespeichert · Cloud-Synchronisierung ausstehend';
+        } catch (error) {
+          status.textContent = 'Lokal gespeichert · Cloud-Synchronisierung fehlgeschlagen: ' + error.message;
+        }
+      });
+      return queue;
+    }
+    async function resume() {
+      if (!await isEnabled() || !navigator.onLine) return;
+      try {
+        const done = await store.flush();
+        if (done) status.textContent = 'Ausstehende Änderungen synchronisiert';
+      } catch (error) {
+        status.textContent = 'Synchronisierung ausstehend: ' + error.message;
+      }
+    }
+    global.addEventListener('online', () => { void resume(); });
     const host = document.createElement('section');
     host.setAttribute('aria-label', 'Supabase-Datenübernahme');
     host.style.cssText = 'margin:12px 0;padding:12px;border:1px solid #94a3b8;border-radius:12px;background:#f8fafc;color:#0f172a;font:14px system-ui';
@@ -59,7 +101,8 @@
       if (cloud.source !== 'cloud-empty') throw new Error('Cloud enthält Daten oder ist nicht eindeutig erreichbar; Übernahme blockiert');
       if (!confirm('Lokale ' + local[collection].length + ' Einträge einmalig in die leere Supabase-Cloud übertragen? Lokale Daten bleiben erhalten.')) return;
       const result = await store.save(local);
-      status.textContent = result ? 'Daten nach Supabase übertragen. Lokale Daten bleiben erhalten.' : 'Übertragung ausstehend.';
+      if (result) await enable();
+      status.textContent = result ? 'Daten übertragen · weitere Änderungen werden synchronisiert.' : 'Übertragung ausstehend.';
     });
     button('Cloud-Daten lokal übernehmen', async () => {
       await authenticated();
@@ -73,12 +116,24 @@
       // Recheck before writing: never replace local data added while awaiting confirmation.
       if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten wurden inzwischen angelegt');
       localStorage.setItem(localKey, JSON.stringify(result.data));
+      await enable();
       status.textContent = 'Cloud-Daten lokal geladen. Seite wird aktualisiert.';
       if (typeof refresh === 'function') refresh();
     });
+    button('Ausstehende Änderungen synchronisieren', async () => {
+      if (!await isEnabled()) throw new Error('Cloud-Synchronisierung zuerst durch bestätigte Übernahme aktivieren');
+      const done = await store.flush();
+      status.textContent = done ? 'Synchronisierung abgeschlossen' : 'Keine Übertragung möglich oder erforderlich';
+    });
+    void currentUser().then(user => {
+      if (user && localStorage.getItem(enabledKey(user.id)) === 'true') {
+        enabledUser = user.id;
+        void resume();
+      }
+    }).catch(() => {});
     host.append(title, status, actions);
     (target || document.body).prepend(host);
-    return { store, host };
+    return { store, host, changed, resume };
   }
   global.HelferleinCloudMigration = Object.freeze({ mount });
 })(window);
