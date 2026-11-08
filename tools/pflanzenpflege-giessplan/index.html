@@ -373,6 +373,20 @@
         </div>
     </div>
 
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        window.HelferleinCloudMigration.mount({
+          client: supabaseClient,
+          tool: 'pflanzenpflege-giessplan',
+          localKey: 'pflanzen_pass_v10',
+          collection: 'plants',
+          refresh: () => window.location.reload()
+        });
+      });
+    </script>
     <!-- Script Logik -->
     <script>
         // Supabase Konfiguration & Instanz
