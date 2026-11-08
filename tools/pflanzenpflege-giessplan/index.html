@@ -610,6 +610,7 @@
         function removeSeedItem(idx) {
             let data = getData();
             if (!Number.isSafeInteger(idx) || idx < 0 || idx >= data.seeds.length) return;
+            if (!data.seeds[idx] || typeof data.seeds[idx] !== 'object' || Array.isArray(data.seeds[idx])) return;
             data.seeds.splice(idx, 1);
             if (saveData(data)) renderSeedList();
         }
@@ -678,6 +679,7 @@
         function removeInventoryItem(idx) {
             let data = getData();
             if (!Number.isSafeInteger(idx) || idx < 0 || idx >= data.inventory.length) return;
+            if (!data.inventory[idx] || typeof data.inventory[idx] !== 'object' || Array.isArray(data.inventory[idx])) return;
             data.inventory.splice(idx, 1);
             if (saveData(data)) renderInventoryList();
         }
