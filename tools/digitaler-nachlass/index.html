@@ -761,7 +761,9 @@
                 return true;
             } catch(e) {
                 if (!silent) {
-                    document.getElementById('syncErrorMessage').innerText = e.message;
+                    console.error("Firebase-Synchronisierung fehlgeschlagen:", e);
+                    document.getElementById('syncErrorMessage').innerText =
+                        "Cloud-Synchronisierung nicht möglich. Bitte Internetverbindung und Berechtigungen prüfen und später erneut versuchen.";
                     document.getElementById('syncStatusLoading').classList.add('hidden');
                     document.getElementById('syncStatusError').classList.remove('hidden');
                 }
