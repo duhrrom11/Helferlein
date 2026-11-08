@@ -479,7 +479,7 @@
             list.innerHTML = filteredSessions.map(s => `
                 <div class="p-4 bg-gray-50 border rounded-2xl flex items-center justify-between shadow-sm gap-3">
                     <div class="flex items-center space-x-3">
-                        ${s.photo ? `<img src="${HelferleinSafe.photo(s.photo)}" onclick="zoomImage(${HelferleinSafe.jsArg(HelferleinSafe.photo(s.photo))})" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Beleg</div>'}
+                        ${s.photo ? `<img src="${HelferleinSafe.photo(s.photo)}" onclick="zoomImage(${HelferleinSafe.photoArg(s.photo)})" class="w-12 h-12 object-cover rounded-xl cursor-pointer border shadow-sm hover:opacity-80">` : '<div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-[10px] text-gray-400">Beleg</div>'}
                         <div>
                             <h4 class="font-bold text-sm">📍 ${HelferleinSafe.html(s.desc)}</h4>
                             ${s.sector ? `<p class="text-xs font-semibold text-amber-700">🅿️ Sektor: ${HelferleinSafe.html(s.sector)}</p>` : ''}
