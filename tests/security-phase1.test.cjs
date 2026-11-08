@@ -51,3 +51,16 @@ test('High-risk tool cards use shared escaping for user entries',()=>{
   for(const v of checks)assert.ok(html.includes(v),tool+': '+v);
  }
 });
+
+test('New Nachlass vault uses password KDF without persisted master key',()=>{
+ const vault=read('tools/digitaler-nachlass/index.html');
+ assert.ok(vault.includes("const VAULT_KDF_ITERATIONS = 350000"));
+ assert.ok(vault.includes("crypto.subtle.deriveBits"));
+ assert.ok(vault.includes("passwordKdf:kdf"));
+ assert.ok(vault.includes("delete next.masterKeyHex"));
+ assert.ok(vault.includes("Object.defineProperty(cfg,'masterKeyHex'"));
+ assert.ok(vault.includes("showVaultPasswordGate('create')"));
+ assert.ok(vault.includes("showVaultPasswordGate('unlock',cfg)"));
+ assert.ok(vault.includes("function migrateLegacyVaultToPassphrase()"));
+ assert.doesNotMatch(vault,/masterKeyHex: currentMasterKeyHex/);
+});
