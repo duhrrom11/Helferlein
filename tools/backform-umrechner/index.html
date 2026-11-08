@@ -31,80 +31,40 @@
             #print-card { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; }
         }
     </style>
+    <link rel="stylesheet" href="../../assets/helferlein-b3.css">
+    <link rel="stylesheet" href="../../assets/helferlein-b3-backform.css">
+    <script defer src="../../assets/helferlein-b3-backform.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
 
     <!-- Header mit Titel, Untertitel, Zurück-Button, Anleitung & Einstellungen -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            
-            <!-- Linker Bereich: Zurück zur Startseite, Icon, Titel & Untertitel -->
-            <div class="flex items-center space-x-3">
-                <a href="../../index.html" class="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition flex items-center justify-center" title="Zurück zur Startseite">
-                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                </a>
-                <div class="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-md shadow-orange-500/25 shrink-0">
-                    <i data-lucide="cake" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight text-slate-900">Backform-Umrechner & Rezeptrechner</h1>
-                    <p class="text-xs text-slate-500">Backformen umrechnen, Rezeptmengen anpassen und Backzeiten abschätzen</p>
-                </div>
-            </div>
+    <header class="b3-header">
+<div class="b3-header-inner">
+  <span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+  <span class="b3-tool-icon" aria-hidden="true">🍰</span>
+  <div class="b3-tool-title"><h1>Backform-Umrechner & Rezeptrechner</h1><p>Backformen umrechnen, Zutatenmengen anpassen und Backzeiten abschätzen</p></div>
+  <button type="button" class="b3-settings-trigger" onclick="openSettings()" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button>
+</div></header>
 
-            <!-- Rechter Bereich: Anleitung & Einstellungen-Button -->
-            <div class="flex items-center space-x-2 sm:space-x-3">
-                <button onclick="toggleHelp()" class="px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-medium text-xs transition flex items-center gap-1.5">
-                    <i data-lucide="book-open" class="w-4 h-4 text-orange-600"></i> Anleitung
-                </button>
-                <button onclick="openSettings()" class="px-3.5 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-medium text-xs transition flex items-center gap-1.5 shadow-sm shadow-orange-500/20">
-                    <i data-lucide="settings" class="w-4 h-4"></i> Einstellungen & Cloud
-                </button>
-            </div>
-        </div>
+    <!-- B3 Navigation: original tab buttons still call openTab() -->
+<nav class="b3-backform-nav" aria-label="Backform-Werkzeuge">
+ <div class="b3-backform-tabs">
+  <button type="button" class="b3-tab bg-orange-50" onclick="openTab('rechner')" id="btn-tab-rechner">🧮 Rechner</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('finder')" id="btn-tab-finder">⭕ Formen-Finder</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('substanz')" id="btn-tab-substanz">🥄 Ersatz & Zucker</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('tools')" id="btn-tab-tools">💶 Extras & Kosten</button>
+  <button type="button" class="b3-tab text-slate-600 hover:bg-slate-100" onclick="openTab('rezepte')" id="btn-tab-rezepte">📚 Gespeicherte Rezepte</button>
+ </div>
+ <details class="b3-more" id="b3-backform-more"><summary>☷ Weitere Tools</summary>
+ <div class="b3-more-content">
+  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openCookMode()">⏱️ Kochmodus & Multi-Timer</button>
+  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openTab('rezepte')">📚 Gespeicherte Rezepte öffnen</button>
+  <button class="b3-more-item" type="button" onclick="document.getElementById('b3-backform-more').open=false;openSettings();toggleHelp()">📖 Hilfe & Anleitung</button>
+ </div></details>
+</nav>
 
-        <!-- Ausklappbare Anleitung (Accordion im Header) -->
-        <div id="help-box" class="hidden border-t border-slate-100 bg-orange-50/40 px-4 sm:px-8 py-4">
-            <div class="max-w-4xl mx-auto space-y-2">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-orange-900">Kurzanleitung – So funktioniert's:</h3>
-                    <button onclick="toggleHelp()" class="text-slate-400 hover:text-slate-600 text-xs">Schließen ✕</button>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-600">
-                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
-                        <strong class="text-slate-800 block mb-0.5">1. Rezept & Basis</strong>
-                        Gib Zeit, Temperatur und deine Zutaten im Rechner ein.
-                    </div>
-                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
-                        <strong class="text-slate-800 block mb-0.5">2. Form vergleichen</strong>
-                        Wähle Original- und Zielform (oder 2er-Mix) aus.
-                    </div>
-                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
-                        <strong class="text-slate-800 block mb-0.5">3. Cloud-Konto</strong>
-                        Verbinde dein Supabase-Konto für die Datensicherung.
-                    </div>
-                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
-                        <strong class="text-slate-800 block mb-0.5">4. Kochmodus</strong>
-                        Starte den Multi-Timer direkt in der Küche!
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Navigation Tabs -->
-    <nav class="bg-white border-b border-slate-200 px-4 sm:px-8 py-2">
-        <div class="max-w-7xl mx-auto flex items-center space-x-2 overflow-x-auto">
-            <button onclick="openTab('rechner')" id="btn-tab-rechner" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-orange-50 text-orange-600 transition whitespace-nowrap">Rechner</button>
-            <button onclick="openTab('finder')" id="btn-tab-finder" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Formen-Finder</button>
-            <button onclick="openTab('substanz')" id="btn-tab-substanz" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Ersatz & Zucker</button>
-            <button onclick="openTab('tools')" id="btn-tab-tools" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Extras & Kosten</button>
-            <button onclick="openTab('rezepte')" id="btn-tab-rezepte" class="px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition whitespace-nowrap">Gespeicherte</button>
-        </div>
-    </nav>
-
-    <!-- Main Container -->
+<!-- Main Container -->
     <main id="main-content" tabindex="-1" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
         <!-- Left / Main Column -->
@@ -598,6 +558,47 @@
                 <button onclick="saveSettings()" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl text-xs transition">Speichern</button>
                 <button onclick="closeSettings()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-xs transition">Schließen</button>
             </div>
+<section id="b3-backform-preferences" aria-label="Darstellung und Dashboard">
+  <h3>🎨 Darstellung & Dashboard</h3>
+  <label for="b3-backform-theme">Designmodus
+    <select id="b3-backform-theme" aria-label="Globaler Designmodus">
+      <option value="auto">Automatisch</option><option value="light">Hell</option><option value="dark">Dunkel</option>
+    </select>
+  </label>
+  <button type="button" id="b3-backform-edit">✎ Dashboard bearbeiten</button>
+  <div id="b3-backform-editor" hidden aria-label="Dashboard-Einstellungen"></div>
+  <p class="text-xs">Alle Rechenwerkzeuge bleiben erreichbar. Hier kannst du Reihenfolge und Kartendichte anpassen.</p>
+  <div class="b3-backform-help"><div id="help-box" class="hidden border-t border-slate-100 bg-orange-50/40 px-4 sm:px-8 py-4">
+            <div class="max-w-4xl mx-auto space-y-2">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-orange-900">Kurzanleitung – So funktioniert's:</h3>
+                    <button onclick="toggleHelp()" class="text-slate-400 hover:text-slate-600 text-xs">Schließen ✕</button>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-600">
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">1. Rezept & Basis</strong>
+                        Gib Zeit, Temperatur und deine Zutaten im Rechner ein.
+                    </div>
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">2. Form vergleichen</strong>
+                        Wähle Original- und Zielform (oder 2er-Mix) aus.
+                    </div>
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">3. Cloud-Konto</strong>
+                        Verbinde dein Supabase-Konto für die Datensicherung.
+                    </div>
+                    <div class="p-2.5 bg-white rounded-xl border border-orange-100 shadow-sm">
+                        <strong class="text-slate-800 block mb-0.5">4. Kochmodus</strong>
+                        Starte den Multi-Timer direkt in der Küche!
+                    </div>
+                </div>
+            </div>
+        </div></div>
+</section>
+<div class="b3-settings-footer">
+ <a class="b3-kofi-link" href="https://ko-fi.com/duhrrom" target="_blank" rel="noopener noreferrer">☕ Kaffee spendieren</a>
+ <a class="b3-home-link" href="../../index.html">↗ Entdecke mehr Helferlein</a>
+</div>
         </div>
     </div>
 
