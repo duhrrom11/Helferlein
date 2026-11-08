@@ -827,7 +827,8 @@
                 }
                 if (localStorage.getItem('digital_estate_vault') !== localSnapshot ||
                     lastPersistedRevision !== localSaveRevision ||
-                    currentDecryptedVault.entries.length !== 0) {
+                    currentDecryptedVault.entries.length !== 0 ||
+                    !pristineMetadata) {
                     return alert('Lokale Daten wurden inzwischen geändert. Wiederherstellung abgebrochen.');
                 }
                 // Never silently retain a different local vault's contacts,
