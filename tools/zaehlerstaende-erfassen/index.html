@@ -651,8 +651,9 @@
             if (data.readings.length === 0) return alert("Keine Zählerstände zum Teilen vorhanden.");
             let text = "⚡ Zählerstände-Übersicht:\n";
             let latest = {};
+            // Pick the newest reading per meter type, regardless of insertion order.
             data.readings.forEach(r => {
-                if(!latest[r.type]) latest[r.type] = r;
+                if (!latest[r.type] || r.date > latest[r.type].date) latest[r.type] = r;
             });
             for(let t in latest) {
                 let r = latest[t];
