@@ -17,7 +17,7 @@ on:
       - '.github/workflows/b3-pilot.yml'
 jobs:
   ui-regression:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
     steps:
