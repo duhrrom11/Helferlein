@@ -930,7 +930,7 @@
             if (button) button.disabled = true;
             try {
                 const { data: remote, error } = await supabaseClient
-                    .from('vault_cloud_snapshots').select('vault_id,encrypted_data,updated_at')
+                    .from('vault_cloud_snapshots').select('vault_id,encrypted_data,encrypted_config,updated_at')
                     .eq('owner_user_id', user.id).maybeSingle();
                 if (error) throw error;
                 if (!remote) return alert('Keine Cloud-Sicherung für dieses Konto vorhanden.');
@@ -942,8 +942,20 @@
                 if (!decrypted || !Array.isArray(decrypted.entries)) {
                     return alert('Cloud-Sicherung lässt sich mit dem lokalen Schlüssel nicht entschlüsseln. Keine Daten wurden verändert.');
                 }
+                let configStatus = 'Ältere Sicherung ohne Cloud-Einstellungen.';
+                if (remote.encrypted_config) {
+                    const config = await decryptVaultPayload(remote.encrypted_config, currentMasterKeyHex);
+                    if (!config || !Array.isArray(config.trustees) || !Array.isArray(config.alarmPersons)) {
+                        return alert('Tresoreinträge entschlüsselbar, aber die verschlüsselten Kontakte und Einstellungen konnten nicht geprüft werden. Keine Daten verändert.');
+                    }
+                    configStatus = 'Verschlüsselte Einstellungen erfolgreich entschlüsselt: ' +
+                        config.trustees.length + ' Vertrauenspersonen und ' +
+                        config.alarmPersons.length + ' Alarmkontakte.';
+                }
                 const date = remote.updated_at ? new Date(remote.updated_at).toLocaleString('de-DE') : 'unbekannt';
-                alert('Cloud-Sicherung vom ' + date + ' erfolgreich mit dem lokalen Schlüssel entschlüsselt. Enthaltene Einträge: ' + decrypted.entries.length + '. Dies war nur eine Prüfung: Lokale Daten wurden nicht überschrieben.');
+                alert('Cloud-Sicherung vom ' + date + ' erfolgreich mit dem lokalen Schlüssel entschlüsselt. Enthaltene Einträge: ' +
+                    decrypted.entries.length + '. ' + configStatus +
+                    ' Dies war nur eine Prüfung: Lokale Daten wurden nicht überschrieben.');
             } catch (error) {
                 console.error('Cloud-Wiederherstellungsprüfung fehlgeschlagen:', error);
                 alert('Cloud-Wiederherstellungsprüfung fehlgeschlagen. Lokale Daten wurden nicht verändert.');
