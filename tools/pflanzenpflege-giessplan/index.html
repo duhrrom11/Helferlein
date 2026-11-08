@@ -654,7 +654,7 @@
             let qty = document.getElementById('invItemQty').value.trim();
             if(!name) return;
             let data = getData();
-            if(!data.inventory) data.inventory = [];
+            if (!Array.isArray(data.inventory)) data.inventory = [];
             data.inventory.push({ name, qty: qty || '1 Stk' });
             if (!saveData(data)) return;
             document.getElementById('invItemName').value = ""; document.getElementById('invItemQty').value = "";
