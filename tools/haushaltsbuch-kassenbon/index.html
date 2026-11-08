@@ -800,9 +800,12 @@
             if (typeof text !== 'string') return null;
             const candidates = [];
             for (const line of text.split(/\r?\n/)) {
-                const matches = line.matchAll(/(^|[^\d])(\d{2})[./](\d{2})[./](\d{4})(?!\d)/g);
+                const matches = line.matchAll(/(^|[^\d])(?:(\d{1,2})[./](\d{1,2})[./](\d{4})|(\d{4})-(\d{1,2})-(\d{1,2}))(?!\d)/g);
                 for (const match of matches) {
-                    const date = match[4] + '-' + match[3] + '-' + match[2];
+                    const year = match[4] || match[5];
+                    const month = String(Number(match[3] || match[6])).padStart(2, '0');
+                    const day = String(Number(match[2] || match[7])).padStart(2, '0');
+                    const date = year + '-' + month + '-' + day;
                     if (!Number.isFinite(parseReceiptDate(date).getTime())) continue;
                     candidates.push({
                         date,
