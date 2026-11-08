@@ -502,7 +502,8 @@
         }
 
         function getMlForPot(potSize) {
-            let ps = parseInt(potSize) || 15;
+            const parsed = Number(potSize);
+            let ps = Number.isFinite(parsed) && parsed > 0 ? parsed : 15;
             return ps <= 10 ? 120 : (ps <= 15 ? 300 : (ps <= 20 ? 600 : 1500));
         }
 
@@ -625,9 +626,12 @@
         }
         function assignToBeet(slotIndex) {
             let data = getData();
+            if (!Number.isSafeInteger(slotIndex) || slotIndex < 0 || slotIndex >= data.beetSlots.length) return;
             let plantNames = data.plants.filter(p => p && typeof p === 'object').map(p => `${p.id}: ${p.name}`).join('\n');
             let input = prompt(`Pflanze für Beet-Feld ${slotIndex+1}:\n\n${plantNames}\n\n('leer' zum Leeren)`);
-            if(!input) return;
+            if (input === null) return;
+            input = input.trim();
+            if (!input) return;
             if(input.toLowerCase() === 'leer') data.beetSlots[slotIndex] = null;
             else {
                 let found = data.plants.find(p => p && typeof p === 'object' &&
