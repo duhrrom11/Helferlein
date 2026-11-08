@@ -731,8 +731,16 @@
                 }
 
                 // A newer local edit must not be represented as already cloud-saved.
-                if (syncRevision !== localSaveRevision) return false;
-                if (localStorage.getItem('digital_estate_vault') !== localSnapshot) return false;
+                if (syncRevision !== localSaveRevision ||
+                    localStorage.getItem('digital_estate_vault') !== localSnapshot) {
+                    if (!silent) {
+                        document.getElementById('syncErrorMessage').innerText =
+                            "Der lokale Tresor wurde während der Vorbereitung geändert. Bitte erneut synchronisieren.";
+                        document.getElementById('syncStatusLoading').classList.add('hidden');
+                        document.getElementById('syncStatusError').classList.remove('hidden');
+                    }
+                    return false;
+                }
                 await db.collection("vaults").doc(cfg.vaultId).set({
                     vaultId: cfg.vaultId,
                     ownerName: cfg.ownerName || "",
@@ -771,7 +779,10 @@
                 } catch (alarmError) {
                     console.warn("Alarmprüfung nach Cloud-Speicherung fehlgeschlagen:", alarmError);
                 }
-                return true;
+                // Alarm checks are asynchronous: local changes during this
+                // follow-up must not turn an old cloud snapshot into a success.
+                return syncRevision === localSaveRevision &&
+                    localStorage.getItem('digital_estate_vault') === localSnapshot;
             } catch(e) {
                 if (!silent) {
                     console.error("Firebase-Synchronisierung fehlgeschlagen:", e);
