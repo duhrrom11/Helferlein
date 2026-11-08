@@ -61,6 +61,7 @@
     function keys(uid) {
       assertOpen();
       if (!isValidUid(uid)) throw new Error('Invalid user identity');
+      assertOpen();
       return { cache: prefix + uid + '_cache', pending: prefix + uid + '_pending',
         revision: prefix + uid + '_revision', base: prefix + uid + '_base' };
     }
@@ -80,6 +81,7 @@
       if (row && !isRecord(row)) { failedReads++; rememberConflict('invalid-cloud-row'); throw new Error('Invalid cloud record'); }
       if (row && (!row.id || typeof row.updated_at !== 'string' || !row.updated_at)) { failedReads++; rememberConflict('invalid-cloud-identity'); throw new Error('Invalid cloud record identity'); }
       if (row && !isRecord(row.data)) { failedReads++; rememberConflict('invalid-cloud-payload'); throw new Error('Invalid cloud payload'); }
+      if (row && !Number.isSafeInteger(Number(row.id))) { rememberConflict('invalid-cloud-row-id'); throw new Error('Invalid cloud row id'); }
       if (await userId() !== uid) { rememberConflict('cloud-read-account-change'); throw new Error('Account changed during cloud request'); }
       return row;
     }
@@ -94,7 +96,7 @@
       const initialPendingBytes = raw(keys(uid).pending);
       const k = keys(uid);
       const pending = read(k.pending);
-      if (pendingAtStart !== has(k.pending)) throw new Error('Pending state changed before load');
+      if (pendingAtStart !== has(k.pending)) { rememberConflict('pending-state-before-load'); throw new Error('Pending state changed before load'); }
       if (localStorage.getItem(k.pending) !== null && (!pending || typeof pending !== 'object' || Array.isArray(pending))) throw new Error('Invalid pending payload');
       if (localStorage.getItem(k.pending) !== null) {
         if (!pendingAtStart) throw new Error('Pending state changed during load');
@@ -107,7 +109,7 @@
       if (!isConnected()) {
         if (flushing && operationOwner !== uid) throw new Error('Different account syncing');
         if (await userId() !== uid) throw new Error('Account changed during offline load');
-        if (generation !== stateVersion) throw new Error('Local state changed during offline load');
+        if (generation !== stateVersion) { rememberConflict('offline-cache-race'); throw new Error('Local state changed during offline load'); }
         assertOpen();
         const cached = read(k.cache);
         if (cached !== null && !isRecord(cached)) throw new Error('Invalid offline cache');
@@ -248,6 +250,7 @@
       if (raw(k.revision) === initialState.revision && initialState.revision !== null) throw new Error('Cloud revision was not advanced');
       assertOpen();
       if (localStorage.getItem(k.pending) === null) { rememberConflict('pending-removed'); throw new Error('Pending data unexpectedly removed'); }
+      if (closed) throw new Error('Store disposed before acknowledgement');
       assertBase(k, baseBytes);
       // A newer local edit may have arrived while the request was in flight.
       // Keep it queued with the new server revision rather than deleting it.
