@@ -973,6 +973,12 @@
                     .from('vault_cloud_snapshots').update({ recovery_key: recovery })
                     .eq('owner_user_id', user.id).eq('vault_id', cfg.vaultId).select('vault_id');
                 if (saveError || !saved || saved.length !== 1) throw saveError || new Error('Nicht bestätigt');
+                if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    localSaveRevision !== startingRevision ||
+                    lastPersistedRevision !== localSaveRevision) {
+                    return alert('Wiederherstellungsschlüssel für den vorherigen Tresorstand gespeichert, aber der lokale Tresor wurde inzwischen geändert. Bitte Sicherungsstand und Schlüssel erneut prüfen.');
+                }
                 alert('Verschlüsselter Wiederherstellungsschlüssel gespeichert. Passwort unbedingt getrennt aufbewahren. Die Cloud-Wiederherstellung steht über „Tresor aus Supabase wiederherstellen“ auf einem neuen Gerät bereit. Bitte zusätzlich eine verschlüsselte lokale Sicherung aufbewahren.');
             } catch (error) {
                 console.error('Cloud-Schlüsselvorbereitung fehlgeschlagen:', error);
