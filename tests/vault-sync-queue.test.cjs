@@ -167,6 +167,17 @@ test('Supabase-Status kontrolliert auch verschluesselte Konfiguration und Recove
   assert.doesNotMatch(source, /localStorage\.setItem|\.insert\(|\.update\(/);
 });
 
+test('Lesende Cloud-Wiederherstellungsprobe kontrolliert auch Kontakte', () => {
+  const start = html.indexOf('async function previewSupabaseVaultRecovery()');
+  const end = html.indexOf('// Read-only status check; never imports', start);
+  const source = html.slice(start, end);
+  assert.match(source, /encrypted_config,updated_at/);
+  assert.match(source, /decryptVaultPayload\(remote\.encrypted_config, currentMasterKeyHex\)/);
+  assert.match(source, /config\.trustees\.length/);
+  assert.match(source, /config\.alarmPersons\.length/);
+  assert.doesNotMatch(source, /localStorage\.setItem|\.insert\(|\.update\(/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
