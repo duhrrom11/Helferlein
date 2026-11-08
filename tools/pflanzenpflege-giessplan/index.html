@@ -579,11 +579,11 @@
             let data = getData();
             if(!data.seeds) data.seeds = [];
             data.seeds.push({ name, year });
-            saveData(data);
+            if (!saveData(data)) return;
             document.getElementById('seedName').value = ""; document.getElementById('seedYear').value = "";
             renderSeedList();
         }
-        function removeSeedItem(idx) { let data = getData(); data.seeds.splice(idx, 1); saveData(data); renderSeedList(); }
+        function removeSeedItem(idx) { let data = getData(); data.seeds.splice(idx, 1); if (saveData(data)) renderSeedList(); }
 
         // Beet
         function openBeetModal() { renderBeetGrid(); document.getElementById('beetModal').classList.remove('hidden'); }
@@ -636,11 +636,11 @@
             let data = getData();
             if(!data.inventory) data.inventory = [];
             data.inventory.push({ name, qty: qty || '1 Stk' });
-            saveData(data);
+            if (!saveData(data)) return;
             document.getElementById('invItemName').value = ""; document.getElementById('invItemQty').value = "";
             renderInventoryList();
         }
-        function removeInventoryItem(idx) { let data = getData(); data.inventory.splice(idx, 1); saveData(data); renderInventoryList(); }
+        function removeInventoryItem(idx) { let data = getData(); data.inventory.splice(idx, 1); if (saveData(data)) renderInventoryList(); }
 
         // Ernte
         function openHarvestModal(plantId) { document.getElementById('harvestPlantId').value = plantId; document.getElementById('harvestWeightGrams').value = ""; document.getElementById('harvestModal').classList.remove('hidden'); }
@@ -679,7 +679,8 @@
                 if(p) {
                     if(!p.galleryPhotos) p.galleryPhotos = p.photo ? [p.photo] : [];
                     p.galleryPhotos.push(compressed);
-                    saveData(data); renderGalleryGrid(plantId); fileInput.value = "";
+                    if (!saveData(data)) return;
+                    renderGalleryGrid(plantId); fileInput.value = "";
                 }
             });
         }
@@ -800,7 +801,10 @@
             if(!text) return;
             let data = getData();
             let p = data.plants.find(item => item.id === id);
-            if(p) { if(!p.diary) p.diary = []; p.diary.unshift({ date: new Date().toLocaleDateString('de-DE'), text: text }); saveData(data); }
+            if (!p) return;
+            if (!p.diary) p.diary = [];
+            p.diary.unshift({ date: new Date().toLocaleDateString('de-DE'), text: text });
+            if (!saveData(data)) return;
             closeDiaryModal(); renderApp();
         }
 
