@@ -1,0 +1,28 @@
+name: B3 pilot UI checks
+on:
+  pull_request:
+    paths:
+      - 'assets/helferlein-b3.css'
+      - 'assets/helferlein-b3.js'
+      - 'tools/pflanzenpflege-giessplan/index.html'
+      - 'tests/b3-pilot.test.cjs'
+      - '.github/workflows/b3-pilot.yml'
+  push:
+    paths:
+      - 'assets/helferlein-b3.css'
+      - 'assets/helferlein-b3.js'
+      - 'tools/pflanzenpflege-giessplan/index.html'
+      - 'tests/b3-pilot.test.cjs'
+      - '.github/workflows/b3-pilot.yml'
+jobs:
+  ui-regression:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check B3 pilot invariants
+        run: node --test tests/b3-pilot.test.cjs
