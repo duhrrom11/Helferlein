@@ -1,82 +1,105 @@
-/* Helferlein: authenticated cloud persistence with a local offline queue.
- * No automatic upload of legacy browser data: migration must be user-approved.
- * The caller owns rendering and supplies its own local storage key.
+/* Helferlein cloud persistence: draft adapter, not yet wired to live tools.
+ * Legacy local data is never uploaded automatically.
  */
 (function (global) {
   'use strict';
-  function createStore(client, tool, localKey) {
-    if (!client || !tool || !localKey) throw new Error('Cloud store configuration missing');
-    const pendingKey = 'helferlein_pending_' + tool;
-    const cacheKey = 'helferlein_cache_' + tool;
+  function createStore(client, tool) {
+    if (!client || !/^[a-z0-9_-]{1,80}$/i.test(tool)) throw new Error('Invalid cloud store configuration');
+    const prefix = 'helferlein_cloud_' + tool + '_';
     const read = key => {
-      try { const raw = localStorage.getItem(key); return raw === null ? null : JSON.parse(raw); }
-      catch (_) { return null; }
+      const raw = localStorage.getItem(key);
+      if (raw === null) return null;
+      return JSON.parse(raw);
     };
-    async function currentUser() {
+    const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+    async function userId() {
       const { data, error } = await client.auth.getUser();
       if (error) throw error;
-      return data.user;
+      return data.user ? data.user.id : null;
     }
-    async function fetchCloud(user) {
+    function keys(uid) {
+      return { cache: prefix + uid + '_cache', pending: prefix + uid + '_pending',
+        revision: prefix + uid + '_revision', base: prefix + uid + '_base' };
+    }
+    async function fetchCloud(uid) {
       const { data, error } = await client.from('user_data')
-        .select('id,data,updated_at').eq('user_id', user.id).eq('tool', tool)
-        .order('updated_at', { ascending: false }).limit(1);
+        .select('id,data,updated_at').eq('user_id', uid).eq('tool', tool)
+        .order('updated_at', { ascending: false }).limit(2);
       if (error) throw error;
+      if (data.length > 1) throw new Error('Multiple cloud records found; manual resolution required');
       return data[0] || null;
     }
     async function load() {
-      const pending = read(pendingKey);
+      const uid = await userId();
+      if (!uid) return { data: null, source: 'signed-out' };
+      const k = keys(uid);
+      const pending = read(k.pending);
       if (pending !== null) return { data: pending, source: 'pending' };
-      if (!navigator.onLine) return { data: read(cacheKey), source: 'offline' };
-      const user = await currentUser();
-      if (!user) return { data: read(localKey), source: 'local-unauthenticated' };
+      if (!navigator.onLine) return { data: read(k.cache), source: 'offline' };
       try {
-        const row = await fetchCloud(user);
-        if (row) {
-          localStorage.setItem(cacheKey, JSON.stringify(row.data));
-          return { data: row.data, source: 'cloud' };
-        }
-        return { data: null, source: 'cloud-empty' };
+        const row = await fetchCloud(uid);
+        write(k.cache, row ? row.data : null);
+        write(k.revision, row ? row.updated_at : null);
+        return { data: row ? row.data : null, source: row ? 'cloud' : 'cloud-empty' };
       } catch (error) {
-        return { data: read(cacheKey), source: 'offline-error', error };
+        return { data: read(k.cache), source: 'offline-error', error };
       }
     }
     async function flush() {
-      const pending = read(pendingKey);
+      const uid = await userId();
+      if (!uid) throw new Error('Sign in required');
+      const k = keys(uid);
+      const pending = read(k.pending);
       if (pending === null || !navigator.onLine) return false;
-      const user = await currentUser();
-      if (!user) return false;
-      const row = await fetchCloud(user);
-      // No blind overwrite: the server may have changed while this device was offline.
-      const base = read(pendingKey + '_base');
-      if (row && base !== row.updated_at) {
-        throw new Error('Cloud conflict: remote data changed; resolve before syncing');
+      const base = read(k.base);
+      if (base === null || typeof base !== 'object' || !('revision' in base)) {
+        throw new Error('Missing sync baseline; manual reconciliation required');
+      }
+      const row = await fetchCloud(uid);
+      if ((row ? row.updated_at : null) !== base.revision) {
+        throw new Error('Cloud changed since last sync; pending data preserved');
       }
       if (row) {
-        const { error } = await client.from('user_data').update({ data: pending, updated_at: new Date().toISOString() })
-          .eq('id', row.id).eq('user_id', user.id).eq('updated_at', row.updated_at).select('id');
+        const { data, error } = await client.from('user_data')
+          .update({ data: pending, updated_at: new Date().toISOString() })
+          .eq('id', row.id).eq('user_id', uid).eq('updated_at', row.updated_at)
+          .select('id,updated_at');
         if (error) throw error;
+        if (!data || data.length !== 1) throw new Error('Concurrent cloud change; pending data preserved');
+        write(k.revision, data[0].updated_at);
       } else {
-        if (base !== null) throw new Error('Cloud conflict: previous record missing');
-        const { error } = await client.from('user_data').insert({ user_id: user.id, tool, data: pending });
+        const { data, error } = await client.from('user_data')
+          .insert({ user_id: uid, tool, data: pending }).select('id,updated_at');
         if (error) throw error;
+        if (!data || data.length !== 1) throw new Error('Cloud insert not confirmed; pending data preserved');
+        write(k.revision, data[0].updated_at);
       }
-      localStorage.setItem(cacheKey, JSON.stringify(pending));
-      localStorage.removeItem(pendingKey);
-      localStorage.removeItem(pendingKey + '_base');
+      write(k.cache, pending);
+      localStorage.removeItem(k.pending);
+      localStorage.removeItem(k.base);
       return true;
     }
     async function save(data) {
-      const user = await currentUser();
-      if (!user) throw new Error('Sign in before saving cloud data');
-      if (read(pendingKey) === null) {
-        const row = navigator.onLine ? await fetchCloud(user) : null;
-        localStorage.setItem(pendingKey + '_base', JSON.stringify(row ? row.updated_at : null));
+      const uid = await userId();
+      if (!uid) throw new Error('Sign in required');
+      const k = keys(uid);
+      if (read(k.pending) === null) {
+        // Only a known revision (including an explicitly fetched empty cloud) is safe.
+        if (localStorage.getItem(k.revision) === null) {
+          if (!navigator.onLine) throw new Error('Cloud baseline unavailable while offline');
+          await load();
+        }
+        write(k.base, { revision: read(k.revision) });
       }
-      localStorage.setItem(pendingKey, JSON.stringify(data));
+      write(k.pending, data);
+      if (!navigator.onLine) return false;
       return flush();
     }
-    return { load, save, flush, hasPending: () => read(pendingKey) !== null };
+    async function hasPending() {
+      const uid = await userId();
+      return uid ? read(keys(uid).pending) !== null : false;
+    }
+    return { load, save, flush, hasPending };
   }
   global.HelferleinCloudStore = { createStore };
 })(window);
