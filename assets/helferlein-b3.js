@@ -4,7 +4,6 @@
   const THEME_KEY = 'helferlein_ui_theme_v1';
   const LAYOUT_KEY = 'helferlein_ui_layout_pflanzen_v1';
   const definitions = [
-    {id:'actions',name:'Werkzeuge & Schnellzugriff',size:'l',locked:true},
     {id:'stats',name:'Pflanzen-Statistiken',size:'l'},
     {id:'calendar',name:'Garten-Saisonkalender',size:'m'},
     {id:'create',name:'Pflanze erfassen',size:'l'},
@@ -98,7 +97,7 @@
   }
   function closeEditor(host){
     draft=null;host.hidden=true;host.replaceChildren();
-    const btn=document.getElementById('b3-edit-open');if(btn){btn.disabled=false;btn.focus()}
+    const btn=document.getElementById('b3-edit-open');if(btn){btn.disabled=false}
   }
   function init(){
     document.body.classList.add('b3');
@@ -106,7 +105,6 @@
     const main=document.getElementById('main-content');if(!main)return;
     main.classList.add('b3-dashboard');
     const targets={
-      actions:main.querySelector('[data-b3-panel="actions"]'),
       stats:main.querySelector('[data-b3-panel="stats"]'),
       calendar:main.querySelector('[data-b3-panel="calendar"]'),
       create:main.querySelector('[data-b3-panel="create"]'),
@@ -116,39 +114,86 @@
     if(Object.values(targets).some(v=>!v)){console.warn('B3: Layout-Abschnitte unvollständig; Editor nicht gestartet');return}
     const shell=create('div',{class:'b3-shell'});
     const nav=create('nav',{class:'b3-nav','aria-label':'Pflanzenpflege Navigation'});
-    const links=[['🌱','Übersicht','#main-content'],['📊','Statistiken','#b3-stats'],['📅','Gießplan','#b3-calendar'],['➕','Pflanze erfassen','#b3-create'],['🪴','Meine Pflanzen','#b3-plants']];
-    links.forEach(([icon,label,href])=>{const a=create('a',{href},icon+' '+label);nav.append(a)});
-    main.parentNode.insertBefore(shell,main);shell.append(nav,main);
-    const toolbar=create('div',{class:'b3-edit-toolbar'});
-    toolbar.append(create('strong',{},'Meine Pflanzenpflege'));
-    const edit=button('✎ Dashboard bearbeiten',()=>{
-      draft=clone(layout);
-      const host=document.getElementById('b3-editor');host.hidden=false;
-      edit.disabled=true;editorRender(host);renderLayout(draft);
-      host.scrollIntoView({block:'nearest',behavior:'smooth'});
-    },true);
-    edit.id='b3-edit-open';toolbar.append(edit);
-    const label=create('label',{class:'text-sm'},'Design: ');
-    const select=create('select',{'aria-label':'Globaler Designmodus','data-b3-theme':'true',class:'rounded-lg border p-2 text-sm'});
-    [['auto','Automatisch'],['light','Hell'],['dark','Dunkel']].forEach(([value,name])=>select.append(create('option',{value},name)));
-    select.value=theme;select.addEventListener('change',()=>{theme=select.value;if(!safeWrite(THEME_KEY,theme))window.alert('Designmodus konnte nicht gespeichert werden');applyTheme()});
-    label.append(select);toolbar.append(label);
-    const editor=create('section',{id:'b3-editor',class:'b3-editor','aria-label':'Dashboard bearbeiten'});editor.hidden=true;
-    main.prepend(editor);main.prepend(toolbar);
-    renderLayout(layout);
-    const mobile=create('nav',{class:'b3-mobile-nav','aria-label':'Mobile Pflanzenpflege-Navigation'});
-    [['🏠','Übersicht','#main-content'],['🌱','Pflanzen','#b3-plants'],['📅','Gießplan','#b3-calendar'],['✎','Bearbeiten','#b3-editor']].forEach(([icon,label,href])=>{
-      const a=create('a',{href});a.append(create('span',{},icon),document.createTextNode(label));
-      if(label==='Bearbeiten')a.addEventListener('click',ev=>{ev.preventDefault();if(!draft)edit.click();else editor.scrollIntoView()});
-      mobile.append(a);
+    const links=[
+      ['🌱','Übersicht','#main-content'],
+      ['📊','Statistiken','#b3-stats'],
+      ['📅','Gießplan','#b3-calendar'],
+      ['➕','Pflanze erfassen','#b3-create'],
+      ['🪴','Meine Pflanzen','#b3-plants']
+    ];
+    links.forEach(([icon,label,href])=>{
+      const a=create('a',{href},icon+' '+label);
+      nav.append(a);
     });
-    document.body.append(mobile);
-    let lastY=window.scrollY;
-    window.addEventListener('scroll',()=>{
-      const y=window.scrollY,delta=y-lastY;
-      if(Math.abs(delta)>7){mobile.classList.toggle('b3-scrolled-away',delta>0&&y>140);lastY=y}
-    },{passive:true});
-    mobile.addEventListener('focusin',()=>mobile.classList.remove('b3-scrolled-away'));
+    const more=create('details',{class:'b3-more'});
+    const moreTitle=create('summary',{},'☷ Weitere Tools');
+    more.append(moreTitle);
+    const moreContent=create('div',{class:'b3-more-content'});
+    [
+      ['💰 Garten-ROI','openRoiModal()'],
+      ['🌧️ Zisterne','openCisternModal()'],
+      ['🌰 Saatgut','openSeedsModal()'],
+      ['📦 Lager & Nachbestellen','openInventoryModal()'],
+      ['🌿 Beet','openBeetModal()'],
+      ['📄 PDF exportieren','exportPDF()']
+    ].forEach(([label,handler])=>{
+      const b=create('button',{type:'button',class:'b3-more-item'},label);
+      // Preserve calls to existing tool actions; do not modify their implementations.
+      b.addEventListener('click',()=>{
+        const fn=window[handler.slice(0,-2)];
+        more.open=false;
+        if(typeof fn==='function')fn();
+      });
+      moreContent.append(b);
+    });
+    more.append(moreContent);
+    nav.append(more);
+    main.parentNode.insertBefore(shell,main);
+    shell.append(nav,main);
+    // The settings dialog is the single entry point for personalization and account.
+    const modal=document.getElementById('settingsModal');
+    const modalSurface=modal?.firstElementChild;
+    const prefs=create('section',{class:'b3-preferences','aria-label':'Darstellung und Dashboard'});
+    prefs.append(create('h4',{},'Darstellung & Dashboard'));
+    const label=create('label',{},'Designmodus');
+    const select=create('select',{'aria-label':'Globaler Designmodus','data-b3-theme':'true',class:'b3-theme-select'});
+    [['auto','Automatisch'],['light','Hell'],['dark','Dunkel']].forEach(([value,name])=>
+      select.append(create('option',{value},name))
+    );
+    select.value=theme;
+    select.addEventListener('change',()=>{
+      theme=select.value;
+      if(!safeWrite(THEME_KEY,theme))window.alert('Designmodus konnte nicht gespeichert werden');
+      applyTheme();
+    });
+    label.append(select);
+    prefs.append(label);
+    const edit=button('✎ Dashboard bearbeiten',()=>{
+      if(!draft)draft=clone(layout);
+      const host=document.getElementById('b3-editor');
+      host.hidden=false;
+      edit.disabled=true;
+      editorRender(host);
+      renderLayout(draft);
+      modal?.classList.add('hidden');
+      host.scrollIntoView({block:'start',behavior:'smooth'});
+    },true);
+    edit.id='b3-edit-open';
+    prefs.append(edit);
+    const home=create('a',{href:'../../index.html',class:'b3-home-link'},'↗ Zur Helferlein-Hauptseite');
+    prefs.append(home);
+    const help=button('❔ Hilfe & Anleitung',()=>{
+      modal?.classList.add('hidden');
+      if(typeof window.toggleHelpModal==='function')window.toggleHelpModal();
+    },true);
+    prefs.append(help);
+    // Place preferences after account status; retain auth UI and all original IDs.
+    if(modalSurface)modalSurface.append(prefs);
+    const editor=create('section',{id:'b3-editor',class:'b3-editor','aria-label':'Dashboard bearbeiten'});editor.hidden=true;
+    main.prepend(editor);
+    renderLayout(layout);
+    // Only one tool-navigation row under the header, including on phones.
+    // Remove the former duplicate mobile bottom bar.
     media.addEventListener?.('change',applyTheme);
     window.addEventListener('storage',e=>{
       if(e.key===THEME_KEY){theme=['light','dark','auto'].includes(e.newValue)?e.newValue:'auto';applyTheme()}
