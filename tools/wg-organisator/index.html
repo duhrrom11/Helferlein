@@ -1007,24 +1007,19 @@
 
             const leereWG = {
                 erstelltAm: new Date().toISOString(),
-                flatmates: [
-                    { vorname: "Alex", nachname: "Alex", email: "", phone: "", insta: "", fb: "" },
-                    { vorname: "Sam", nachname: "Sam", email: "", phone: "", insta: "", fb: "" }
-                ],
-                notes: [
-                    { id: 1, title: "📦 Paket im Flur", content: "Postbote hat ein Paket für Sam abgegeben, steht neben dem Schuhregal.", author: "Alex", color: "yellow", pinned: true, date: "2026-11-02" }
-                ],
+                flatmates: [],
+                notes: [],
                 data: [],
                 budgets: { "Lebensmittel": 400, "Wohnen": 800, "Energie": 150, "Auto": 250, "Freizeit": 200, "Elektronik": 100, "Gesundheit": 80, "Verträge": 120, "Sonstiges": 100 },
                 goals: [],
                 events: [],
                 inventory: [],
                 diets: {},
-                cleaning: [{ id: 1, task: "Badezimmer & WC wischen", assignee: "Alex", done: false }],
+                cleaning: [],
                 shopping: [],
                 cooking: daysOfWeek.map(d => ({ day: d, chef: "Frei", dish: "", ingredients: "" })),
                 contracts: [],
-                infoboard: { wifi: "WG-Supernet-2026", landlord: "Hr. Weber (+49 170 1234567)", caretaker: "Hr. Müller (+49 171 9876543)", trash: "Bio (Di) | Restmüll (Fr)" }
+                infoboard: { wifi: "", landlord: "", caretaker: "", trash: "" }
             };
 
             localStorage.setItem('wg_flatmates', JSON.stringify(leereWG.flatmates));
@@ -1050,9 +1045,9 @@
                 
                 if (response.ok) {
                     const result = await response.json();
-                    if (result.id) {
+                    if (typeof result.id === 'string' && /^[a-zA-Z0-9_-]{4,128}$/.test(result.id)) {
                         localStorage.setItem('wg_active_bin_id', result.id);
-                        window.location.href = window.location.pathname + "?id=" + result.id;
+                        window.location.href = window.location.pathname + "?id=" + encodeURIComponent(result.id);
                         return;
                     }
                 }
@@ -1060,9 +1055,8 @@
                 console.warn("API Error", e);
             }
 
-            const ersatzID = "wg_" + Math.random().toString(36).substring(2, 9);
-            localStorage.setItem('wg_active_bin_id', ersatzID);
-            window.location.href = window.location.pathname + "?id=" + ersatzID;
+            if (statusText) statusText.innerText = "Cloud-Speicher konnte nicht erstellt werden. Bitte erneut versuchen.";
+            alert("❌ WG konnte nicht erstellt werden. Es wurde keine WG-ID gespeichert.");
         }
 
         function zeigeErstellungsScreen() {
