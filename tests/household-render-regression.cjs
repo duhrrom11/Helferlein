@@ -1,0 +1,21 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+
+const html = fs.readFileSync('tools/haushaltsbuch-kassenbon/index.html', 'utf8');
+const start = html.indexOf('function escapeHaushaltsHtml(value)');
+const end = html.indexOf('function renderSavingsGoals()', start);
+assert.ok(start !== -1 && end > start, 'Household rendering helpers exist');
+const context = vm.createContext({});
+vm.runInContext(html.slice(start, end), context);
+const call = (fn, arg) => vm.runInContext(fn + '(' + JSON.stringify(arg) + ')', context);
+assert.equal(call('escapeHaushaltsHtml', '<img src="x">&'), '&lt;img src=&quot;x&quot;&gt;&amp;');
+assert.equal(call('escapeHaushaltsHtml', "'"), '&#39;');
+assert.equal(call('safeHaushaltsId', 123), '123');
+assert.equal(call('safeHaushaltsId', '123'), 'null');
+assert.equal(call('safeHaushaltsId', -1), 'null');
+assert.equal(call('safeReceiptPhoto', 'javascript:alert(1)'), '');
+assert.equal(call('safeReceiptPhoto', 'data:text/html;base64,abcd'), '');
+assert.equal(call('safeReceiptPhoto', 'data:image/png;base64,abcd'), 'data:image/png;base64,abcd');
+assert.equal(call('safeReceiptPhoto', 'https://example.org/photo.jpg'), 'https://example.org/photo.jpg');
+console.log('Household rendering safety regression checks passed');
