@@ -15,9 +15,24 @@ body.b3 .b3-header{background:linear-gradient(112deg,#075132 0%,#138b46 56%,#7bd
 .b3-nav a:hover,.b3-nav a:focus-visible{background:#c8f2d6;outline-offset:2px}
 .b3-nav a:first-child{background:linear-gradient(120deg,#087e52,#23b68c);color:white}
 body.b3 main.b3-dashboard{max-width:none;margin:0;min-width:0;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-content:start;gap:1rem;padding:0 0 6rem}
-body.b3 main.b3-dashboard>:not([data-b3-panel]){grid-column:1/-1}\nbody.b3 main.b3-dashboard>[data-b3-panel]{grid-column:span 12;min-width:0;order:var(--b3-order,0)}
-@media(min-width:1024px){body.b3 main.b3-dashboard>[data-b3-size="s"]{grid-column:span 4}body.b3 main.b3-dashboard>[data-b3-size="m"]{grid-column:span 6}}
-@media(min-width:768px) and (max-width:1023px){body.b3 main.b3-dashboard>[data-b3-size="s"],body.b3 main.b3-dashboard>[data-b3-size="m"]{grid-column:span 6}}
+body.b3 main.b3-dashboard>:not([data-b3-panel]){grid-column:1/-1}
+body.b3 main.b3-dashboard>[data-b3-panel]{grid-column:span 12;min-width:0;order:var(--b3-order,0)}
+/* Keine halbbreiten Funktionsformulare auf Tablets. Dashboard-Karten erst ab sehr breiten Desktops aufteilen. */
+@media(min-width:1280px){
+ body.b3 main.b3-dashboard>[data-b3-size="s"]{grid-column:span 4}
+ body.b3 main.b3-dashboard>[data-b3-size="m"]{grid-column:span 6}
+}
+@media(min-width:768px) and (max-width:1279px){
+ body.b3 main.b3-dashboard>[data-b3-panel]{grid-column:1/-1}
+ /* Das bestehende 6-Spalten-Statistikraster braucht auf dem Tablet breitere Karten. */
+ body.b3 main.b3-dashboard>[data-b3-panel="stats"]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(min-width:1024px) and (max-width:1279px){
+ body.b3 main.b3-dashboard>[data-b3-panel="stats"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:767px){
+ body.b3 main.b3-dashboard>[data-b3-panel="stats"]{grid-template-columns:minmax(0,1fr)!important}
+}
 body.b3 main.b3-dashboard>[data-b3-hidden="true"]{display:none!important}
 body.b3 .b3-edit-toolbar{grid-column:1/-1;order:-999;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;background:var(--b3-surface);border:1px solid var(--b3-line);padding:.75rem;border-radius:16px}
 .b3-action{border-radius:12px;padding:.65rem .85rem;background:linear-gradient(120deg,#087e52,#18b5a2);color:#fff;font-size:.82rem;font-weight:750;min-height:40px}
@@ -43,3 +58,10 @@ body.b3-dark #settingsModal .text-gray-800,body.b3-dark #helpModal .text-gray-80
 @media(max-width:1023px){.b3-shell{display:block;padding:.7rem}.b3-nav{position:static;display:flex;overflow-x:auto;gap:.3rem;margin-bottom:.8rem;white-space:nowrap}.b3-nav a{flex-shrink:0}.b3-header-inner{gap:.6rem}}
 @media(max-width:767px){.b3-header-inner{gap:.5rem}.b3-brand{font-size:.95rem}.b3-tool-icon{width:36px;height:36px;font-size:1.2rem}.b3-tool-title{min-width:120px}.b3-tool-title h1{font-size:.9rem}.b3-tool-title p{display:none}.b3-header-actions{width:100%;justify-content:flex-end}.b3-header-actions button{font-size:.72rem;padding:.5rem}.b3-nav{display:none}.b3-mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:45;justify-content:space-around;gap:.15rem;padding:.5rem .35rem calc(.5rem + env(safe-area-inset-bottom));background:var(--b3-surface);border-top:1px solid var(--b3-line);box-shadow:0 -4px 18px #0002;transition:transform .22s ease}.b3-mobile-nav.b3-scrolled-away{transform:translateY(110%)}.b3-mobile-nav a{display:grid;place-items:center;gap:.15rem;min-width:0;flex:1;color:var(--b3-ink);font-size:.68rem;text-decoration:none}.b3-mobile-nav a span{font-size:1.15rem}body.b3 main.b3-dashboard>[data-b3-panel]{grid-column:1/-1!important}body.b3 main.b3-dashboard{padding-bottom:7rem}}
 @media(prefers-reduced-motion:reduce){.b3-mobile-nav{transition:none}}
+
+/* Formulare und dynamisch befüllte Karten dürfen das Elternraster nie aufweiten. */
+body.b3 main.b3-dashboard>[data-b3-panel],body.b3 main.b3-dashboard>[data-b3-panel]>*{min-width:0;max-width:100%;box-sizing:border-box}
+body.b3 main.b3-dashboard>[data-b3-panel] input,body.b3 main.b3-dashboard>[data-b3-panel] select,body.b3 main.b3-dashboard>[data-b3-panel] textarea{max-width:100%}
+body.b3-dark main.b3-dashboard [data-b3-panel="calendar"],body.b3-dark main.b3-dashboard [data-b3-panel="calendar"] h3,body.b3-dark main.b3-dashboard [data-b3-panel="calendar"] p{background:#234036;color:#e5ffe9!important}
+body.b3-dark main.b3-dashboard [data-b3-panel="calendar"] span{color:#164129}
+@media(min-width:768px) and (max-width:1279px){body.b3 .b3-header-inner{max-width:100%}body.b3 main.b3-dashboard{width:100%;overflow-wrap:anywhere}}
