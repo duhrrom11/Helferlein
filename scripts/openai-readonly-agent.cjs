@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const assert=require('node:assert/strict');
 const key=process.env.OPENAI_API_KEY;
 if (!key) {console.log('OPENAI_API_KEY missing: no API request made.');process.exit(0);}
-const model=process.env.OPENAI_MODEL || 'gpt-6-luna';
+const model=process.env.OPENAI_MODEL || 'gpt-5-mini';
 if(!/^[a-zA-Z0-9._-]{2,80}$/.test(model)) throw Error('Invalid model name');
 const files=['docs/supabase-produktivabnahme.md','docs/nachtbetrieb.md','docs/coding-agent-sicherheitskonzept.md'];
 const context=files.map(file=>{
