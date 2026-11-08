@@ -978,10 +978,15 @@
 
             let y = 38;
             data.readings.forEach((r) => {
-                if (y > 270) { doc.addPage(); y = 20; }
-                let unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
-                doc.text(`${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`, 14, y);
-                y += 8;
+                const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
+                const line = `${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
+                const lines = doc.splitTextToSize(line, 180);
+                lines.forEach(textLine => {
+                    if (y > 275) { doc.addPage(); y = 20; }
+                    doc.text(textLine, 14, y);
+                    y += 6;
+                });
+                y += 2;
             });
 
             doc.save(`zaehlerstaende-${new Date().toISOString().split('T')[0]}.pdf`);
