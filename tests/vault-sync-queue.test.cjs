@@ -405,6 +405,19 @@ test('Cloud-Backup-Status erkennt Schluessel- und Revisionswechsel vor Erfolgsme
   assert.doesNotMatch(source, /localStorage\.setItem/);
 });
 
+test('Cloud-Sicherung verhindert Upload bei zwischenzeitlichem Schluessel- oder Revisionswechsel', () => {
+  const start = html.indexOf('async function backupVaultToSupabase()');
+  const end = html.indexOf('function syncVaultToFirebase(', start);
+  const source = html.slice(start, end);
+  assert.match(source, /const startingMasterKeyHex = currentMasterKeyHex/);
+  assert.match(source, /const startingRevision = localSaveRevision/);
+  const write = source.indexOf(".update({ encrypted_data:");
+  const guard = source.lastIndexOf('currentMasterKeyHex !== startingMasterKeyHex', write);
+  const revision = source.lastIndexOf('localSaveRevision !== startingRevision', write);
+  assert.ok(guard > 0 && revision > 0 && write > guard && write > revision);
+  assert.ok(source.split('currentMasterKeyHex !== startingMasterKeyHex').length >= 5);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
