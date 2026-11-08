@@ -2101,7 +2101,7 @@
             doc.setFontSize(16); doc.text("WG- & Haushaltsbuch Abrechnung", 14, 20);
             doc.setFontSize(10); doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
             let y = 38;
-            getData().forEach(r => { if (y > 270) { doc.addPage(); y = 20; } doc.text(`${r.date} | ${r.title} (${r.category}): ${r.price.toFixed(2)} EUR [${r.payer || 'Privat'}]`, 14, y); y += 6; });
+            getData().forEach(r => { if (y > 270) { doc.addPage(); y = 20; } doc.text(`${r.date} | ${r.title} (${r.category}): ${r.price.toFixed(2)} EUR [${escapeUserHtml(r.payer || 'Privat')}]`, 14, y); y += 6; });
             doc.save(`haushaltsbericht-${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>
