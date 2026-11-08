@@ -696,7 +696,7 @@
             let data = getData();
             const filterLoc = document.getElementById('filterLocation');
             const locations = [...new Set(data.plants.map(p => p.location).filter(Boolean))];
-            filterLoc.innerHTML = '<option value="">Alle Standorte / Räume</option>' + locations.map(loc => `<option value="${loc}">${loc}</option>`).join('');
+            filterLoc.innerHTML = '<option value="">Alle Standorte / Räume</option>' + locations.map(loc => `<option value="${HelferleinSafe.html(loc)}">${loc}</option>`).join('');
         }
 
         function savePlant() {
