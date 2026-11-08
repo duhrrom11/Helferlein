@@ -41,14 +41,17 @@
     async function load() {
       const uid = await userId();
       if (!uid) return { data: null, source: 'signed-out' };
+      if (flushing && operationOwner !== uid) throw new Error('Another account has an active sync');
       const k = keys(uid);
       const pending = read(k.pending);
       if (localStorage.getItem(k.pending) !== null && (!pending || typeof pending !== 'object' || Array.isArray(pending))) throw new Error('Invalid pending payload');
       if (localStorage.getItem(k.pending) !== null) {
+        if (flushing && operationOwner !== uid) throw new Error('Different account syncing');
         if (await userId() !== uid) throw new Error('Account changed during pending load');
         return { data: pending, source: 'pending' };
       }
       if (!navigator.onLine) {
+        if (flushing && operationOwner !== uid) throw new Error('Different account syncing');
         if (await userId() !== uid) throw new Error('Account changed during offline load');
         const cached = read(k.cache);
         if (cached !== null && (typeof cached !== 'object' || Array.isArray(cached))) throw new Error('Invalid offline cache');
@@ -168,6 +171,7 @@
       const uid = await userId();
       if (!uid || uid !== expectedUid) throw new Error('Account changed before queued save');
       const k = keys(uid);
+      if (flushing && operationOwner !== uid) throw new Error('Different account syncing');
       if (localStorage.getItem(k.pending) === null) {
         // Record the local edit even when the first baseline cannot be fetched.
         // It must NOT be uploaded until the baseline is known and reconciled.
@@ -195,6 +199,7 @@
       if (await userId() !== uid) throw new Error('Account changed before local pending write');
       write(k.pending, data);
       if (!navigator.onLine) return false;
+      if (await userId() !== uid) throw new Error('Account changed after pending save');
       // Wait for an in-flight upload, then send the latest queued snapshot.
       // Otherwise a second edit could remain pending indefinitely while online.
       if (flushing) {
@@ -207,11 +212,18 @@
       // Explicit user action only. Never guess which conflicting version wins.
       const uid = await userId();
       if (!uid) throw new Error('Sign in required');
+      if (flushing && operationOwner !== uid) throw new Error('Another account syncing');
       if (!navigator.onLine) throw new Error('Internet connection required');
       const k = keys(uid);
-      if (localStorage.getItem(k.pending) === null) return { status: 'nothing-pending' };
+      if (localStorage.getItem(k.pending) === null) {
+        if (await userId() !== uid) throw new Error('Account changed during pending inspection');
+        return { status: 'nothing-pending' };
+      }
       const base = read(k.base);
-      if (!base || !base.unresolved) return { status: 'baseline-known' };
+      if (!base || !base.unresolved) {
+        if (await userId() !== uid) throw new Error('Account changed during baseline inspection');
+        return { status: 'baseline-known' };
+      }
       if (flushing) throw new Error('Sync already in progress');
       const pending = read(k.pending);
       if (!pending || typeof pending !== 'object' || Array.isArray(pending)) throw new Error('Invalid pending data');
@@ -223,18 +235,23 @@
         finishAcknowledged(k, pending, row.updated_at);
         return { status: 'already-synced' };
       }
-      if (row) return { status: 'conflict' };
+      if (row) {
+        if (localStorage.getItem(k.pending) !== JSON.stringify(pending)) throw new Error('Pending data changed during conflict detection');
+        return { status: 'conflict' };
+      }
       if (localStorage.getItem(k.base) !== JSON.stringify(base)) throw new Error('Baseline changed during reconciliation');
       // Empty cloud is confirmed now. A later concurrent insert is still
       // guarded by the existing fetch/compare path in performFlush().
       if (localStorage.getItem(k.pending) !== JSON.stringify(pending)) throw new Error('Local changes arrived during reconciliation');
       if (await userId() !== uid) throw new Error('Account changed before reconciliation commit');
+      if (!navigator.onLine) throw new Error('Connection lost before reconciliation commit');
       write(k.base, { revision: null });
       return { status: 'ready' };
     }
     async function hasPending() {
       const uid = await userId();
       if (!uid) return false;
+      if (flushing && operationOwner !== uid) throw new Error('Another account syncing');
       const exists = localStorage.getItem(keys(uid).pending) !== null;
       if (await userId() !== uid) throw new Error('Account changed during pending check');
       return exists;
