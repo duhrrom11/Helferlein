@@ -10,6 +10,12 @@ Produktiv geprueft: Supabase hat aktuell die Tabellen `user_data`, `wg_spaces` u
 
 **Umsetzungsreihenfolge:** (1) sicheren neuen, benutzergebundenen Cloud-Tresor mit Auth und serverseitiger Autorisierung implementieren; (2) lokale Verschluesselung und Wiederherstellung ohne Datenverlust sicherstellen; (3) vorhandene Tresore erst nach gesonderter Eigentuemerpruefung migrieren; (4) produktive Bereitstellung mit Sicherheitspruefungen, Monitoring und Rollback; (5) die Browseroberflaeche erst dann auf den neuen Speicherweg umstellen. Keine pauschale Freigabe alter Firebase-Regeln.
 
+## Neuer Supabase-Sicherungspfad (2026-11-08)
+
+Produktiv ist die zusaetzliche Tabelle `public.vault_cloud_snapshots` mit RLS und vier eigentuemergebundenen Policies angelegt. Sie speichert nur `owner_user_id`, `vault_id`, `encrypted_data` und `updated_at`. Ein neuer manueller Knopf in der Nachlass-Seite erlaubt eine ausdruecklich bestaetigte, verschluesselte Kopie des lokalen Tresors in das aktuell angemeldete Supabase-Konto. Ein vorhandener, anders benannter Tresor im Konto wird nicht ueberschrieben.
+
+**Grenze:** Dies ist noch keine vollstaendige Cloud-Wiederherstellung oder Migration des alten Firebase-Tresors. Der lokale `masterKeyHex` wird absichtlich nicht hochgeladen. Ohne lokal aufbewahrten Schluessel bzw. verschluesselte lokale Sicherungsdatei ist der Cloud-Datensatz allein nicht entschluesselbar. Die bisherige Firebase-Synchronisierung und Alarmfunktionen sind davon getrennt. Bestehende Firestore-Regeln bleiben gesperrt. Die neue Supabase-Kopie muss vor einer allgemeinen Cloud-Freigabe mit echten Benutzerkonten kontrolliert und ein sicherer Wiederherstellungsweg implementiert werden.
+
 ## Voraussetzungen
 
 1. Firestore-Datenbank durch den Projektadministrator gesichert; Wiederherstellbarkeit geprueft.
