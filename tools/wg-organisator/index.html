@@ -935,7 +935,16 @@
         }
 
         async function supabaseLogout() {
-            await supabaseClient.auth.signOut();
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) return alert('Abmeldung fehlgeschlagen: ' + error.message);
+            if (isSecureWgId(wgBinId)) {
+                ['wg_flatmates', 'wg_notes', 'wg_kassenbon_data', 'wg_budgetbuch_budgets',
+                 'wg_budgetbuch_goals', 'wg_events', 'wg_inventory', 'wg_diets',
+                 'wg_cleaning', 'wg_shopping', 'wg_cooking', 'wg_contracts',
+                 'wg_infoboard', 'wg_last_loaded_bin_id'].forEach(key => localStorage.removeItem(key));
+                window.location.reload();
+                return;
+            }
             checkUserSession();
             alert('Abgemeldet.');
         }
@@ -976,6 +985,24 @@
         }
 
         const NPOINT_API_BASE = "https://api.npoint.io/";
+        const SECURE_WG_PREFIX = 'secure_';
+        function isSecureWgId(id) {
+            return typeof id === 'string' && /^secure_[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+        }
+        async function getAuthenticatedWgUser() {
+            const { data, error } = await supabaseClient.auth.getUser();
+            if (error || !data?.user) throw new Error('Bitte zuerst in den Einstellungen anmelden.');
+            return data.user;
+        }
+        async function saveSecureWg(payload) {
+            await getAuthenticatedWgUser();
+            const id = wgBinId.slice(SECURE_WG_PREFIX.length);
+            const { data, error } = await supabaseClient.from('wg_spaces')
+                .update({ payload, updated_at: new Date().toISOString() })
+                .eq('id', id).select('id').single();
+            if (error || !data) throw new Error(error?.message || 'Kein Schreibzugriff auf diese WG.');
+            return true;
+        }
 
         const kofiSprueche = [
             "Spendier dem Entwickler einen Kaffee ☕",
@@ -1028,26 +1055,23 @@
             };
 
             try {
-                const response = await fetch(NPOINT_API_BASE, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(leereWG)
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    if (typeof result.id === 'string' && /^[a-zA-Z0-9_-]{4,128}$/.test(result.id)) {
-                        localStorage.setItem('wg_active_bin_id', result.id);
-                        window.location.href = window.location.pathname + "?id=" + encodeURIComponent(result.id);
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.warn("API Error", e);
+                const user = await getAuthenticatedWgUser();
+                const { data, error } = await supabaseClient.from('wg_spaces')
+                    .insert({ owner_id: user.id, payload: leereWG })
+                    .select('id').single();
+                if (error || !data?.id) throw new Error(error?.message || 'WG konnte nicht erstellt werden.');
+                const newId = SECURE_WG_PREFIX + data.id;
+                localStorage.setItem('wg_active_bin_id', newId);
+                window.location.href = window.location.pathname + '?id=' + encodeURIComponent(newId);
+                return;
+            } catch (error) {
+                console.error('Geschützte WG-Erstellung fehlgeschlagen:', error);
+                if (statusText) statusText.innerText = error.message;
+                alert(error.message);
+                return;
             }
 
-            if (statusText) statusText.innerText = "Cloud-Speicher konnte nicht erstellt werden. Bitte erneut versuchen.";
-            alert("❌ WG konnte nicht erstellt werden. Es wurde keine WG-ID gespeichert.");
+
         }
 
         function zeigeErstellungsScreen() {
@@ -1066,10 +1090,10 @@
                         <div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-3xl mx-auto">🏠</div>
                         <h2 class="text-xl font-black text-gray-900">Gemeinsamer WG-Planer</h2>
                         <p class="text-xs text-gray-500 leading-relaxed">
-                            Erstelle einen gemeinsamen WG-Planer. Der WG-Link ist vertraulich und sollte nur mit Mitbewohnern geteilt werden.
+                            Neue WG-Daten werden geschützt in deinem angemeldeten Konto gespeichert. Zugriff hat zunächst nur der Ersteller; gemeinsames Bearbeiten erfordert eine spätere Mitgliederfreigabe.
                         </p>
                         <button onclick="erstelleNeueWGKonfiguration()" class="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl text-sm shadow-md transition-all">
-                            ✨ WG-Plan mit 1 Klick erstellen
+                            🔐 Private WG erstellen (Anmeldung erforderlich)
                         </button>
                         <p id="setup-status" class="text-xs text-emerald-700 font-semibold h-4"></p>
                     </div>
@@ -1078,9 +1102,48 @@
             dashboard.prepend(setup);
         }
 
+        async function ladeWGObjekt(cloudObj) {
+            const arrayFields = ['flatmates', 'notes', 'data', 'goals', 'events', 'inventory', 'cleaning', 'shopping', 'cooking', 'contracts'];
+            const objectFields = ['budgets', 'diets', 'infoboard'];
+            if (arrayFields.some(key => cloudObj[key] !== undefined && !Array.isArray(cloudObj[key])) ||
+                objectFields.some(key => cloudObj[key] !== undefined &&
+                    (!cloudObj[key] || typeof cloudObj[key] !== 'object' || Array.isArray(cloudObj[key]))))
+                throw new Error('Ungültiges WG-Datenformat');
+            const fields = {
+                flatmates: 'wg_flatmates', notes: 'wg_notes', data: 'wg_kassenbon_data',
+                budgets: 'wg_budgetbuch_budgets', goals: 'wg_budgetbuch_goals',
+                events: 'wg_events', inventory: 'wg_inventory', diets: 'wg_diets',
+                cleaning: 'wg_cleaning', shopping: 'wg_shopping', cooking: 'wg_cooking',
+                contracts: 'wg_contracts', infoboard: 'wg_infoboard'
+            };
+            if (!Object.keys(fields).some(key => Object.prototype.hasOwnProperty.call(cloudObj, key)))
+                throw new Error('WG-Daten fehlen');
+            if (localStorage.getItem('wg_last_loaded_bin_id') !== wgBinId)
+                Object.values(fields).forEach(key => localStorage.removeItem(key));
+            for (const [key, storageKey] of Object.entries(fields)) {
+                if (cloudObj[key] === undefined) continue;
+                const value = key === 'flatmates' ? cloudObj[key].map(m =>
+                    typeof m === 'string' ? { vorname: m, nachname: '', email: '', phone: '', insta: '', fb: '' } : m
+                ) : cloudObj[key];
+                localStorage.setItem(storageKey, JSON.stringify(value));
+            }
+            localStorage.setItem('wg_last_loaded_bin_id', wgBinId);
+            return true;
+        }
+
         async function ladeWGausCloud() {
             if (!wgBinId || !/^[a-zA-Z0-9_-]{4,128}$/.test(wgBinId)) return false;
             try {
+                if (isSecureWgId(wgBinId)) {
+                    await getAuthenticatedWgUser();
+                    const { data, error } = await supabaseClient.from('wg_spaces')
+                        .select('payload').eq('id', wgBinId.slice(SECURE_WG_PREFIX.length)).single();
+                    if (error || !data) throw new Error(error?.message || 'Kein Lesezugriff auf diese WG.');
+                    const payload = data.payload;
+                    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('Ungültige WG-Daten');
+                    // Use the same field validation and local-cache hydration as legacy data.
+                    return await ladeWGObjekt(payload);
+                }
                 let response = await fetch(NPOINT_API_BASE + wgBinId);
                 if (!response.ok) {
                     response = await fetch("https://jsonkeeper.com/b/" + wgBinId);
@@ -1151,6 +1214,10 @@
                 contracts: getContracts(),
                 infoboard: getInfoData()
             };
+            if (isSecureWgId(wgBinId)) {
+                try { return await saveSecureWg(backupObj); }
+                catch (error) { console.error('Geschützte WG-Speicherung fehlgeschlagen:', error); return false; }
+            }
 
             if (wgBinId.startsWith('wg_')) {
                 try {
@@ -1218,6 +1285,9 @@
                 zeigeErstellungsScreen();
                 return;
             }
+            if (!isSecureWgId(wgBinId)) {
+                alert('Hinweis: Diese ältere WG verwendet einen ungeschützten Link-Speicher. Wer die WG-ID kennt, kann die Daten möglicherweise lesen oder verändern. Für neue WGs steht geschützter Kontospeicher zur Verfügung.');
+            }
             document.getElementById('receiptDate').valueAsDate = new Date();
             document.getElementById('eventDate').valueAsDate = new Date();
             initCharts();
@@ -1226,11 +1296,11 @@
             if (!loaded) {
                 // A different WG must never silently inherit this browser's cached data.
                 const lastLoadedId = localStorage.getItem('wg_last_loaded_bin_id');
-                if (lastLoadedId !== wgBinId) {
+                if (isSecureWgId(wgBinId) || lastLoadedId !== wgBinId) {
                     document.getElementById('main-content').replaceChildren();
                     const warning = document.createElement('section');
                     warning.className = 'p-6 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900';
-                    warning.textContent = 'Die WG-Cloud ist derzeit nicht erreichbar. Zur Vermeidung einer Datenvermischung werden keine gespeicherten Daten einer anderen WG angezeigt. Bitte später erneut laden.';
+                    warning.textContent = 'Die WG konnte nicht sicher geladen werden. Bitte anmelden und die Verbindung prüfen. Es werden keine zwischengespeicherten WG-Daten angezeigt.';
                     document.getElementById('main-content').append(warning);
                     checkUserSession();
                     return;
