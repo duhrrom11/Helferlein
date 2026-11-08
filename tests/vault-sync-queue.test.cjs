@@ -337,6 +337,17 @@ test('Cloud-Restore prueft unmittelbar vor dem Schreiben Schluessel und Startrev
   assert.match(source.slice(finalGuard, write), /!currentDecryptedVault/);
 });
 
+test('Cloud-Restore weist falsche Laenge der passwortgeschuetzten Schluesselhuelle ab', () => {
+  const start = html.indexOf('async function restoreVaultFromSupabase()');
+  const end = html.indexOf('async function ', start + 20);
+  const source = html.slice(start, end < 0 ? undefined : end);
+  const validate = source.indexOf('wrappedKey.length !== 48');
+  const derive = source.indexOf('crypto.subtle.deriveKey(');
+  assert.ok(validate > 0 && derive > validate);
+  assert.match(source, /salt.length !== 16 \|\| iv.length !== 12/);
+  assert.match(source, /wrappingKey, wrappedKey/);
+});
+
 test('ein fehlgeschlagener Auftrag blockiert den naechsten nicht', async () => {
   const calls = [];
   const { sync } = setup(async () => {
