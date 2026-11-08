@@ -7,7 +7,7 @@ const root = path.resolve(__dirname,'..');
 const html = fs.readFileSync(path.join(root,'tools/pflanzenpflege-giessplan/index.html'),'utf8');
 const css = fs.readFileSync(path.join(root,'assets/helferlein-b3.css'),'utf8');
 const js = fs.readFileSync(path.join(root,'assets/helferlein-b3.js'),'utf8');
-const panels = ['actions','stats','calendar','create','plants','recommendations'];
+const panels = ['stats','calendar','create','plants','recommendations'];
 test('B3 resources are wired and dashboard panels unique',()=>{
  assert.match(html,/href="\.\.\/\.\.\/assets\/helferlein-b3\.css"/);
  assert.match(html,/src="\.\.\/\.\.\/assets\/helferlein-b3\.js"/);
@@ -30,8 +30,8 @@ test('Global theme and per-tool layout use separate versioned keys',()=>{
  assert.match(js,/localStorage\.setItem/);
  assert.doesNotMatch(js,/supabaseClient|\.from\(|deletePlant\(|savePlant\(/);
 });
-test('Editor supports reversible changes and mobile navigation',()=>{
- for(const label of ['Speichern','Abbrechen','Standardlayout','Sichtbar','b3-mobile-nav','b3-scrolled-away']){
+test('Editor supports reversible changes and consolidated navigation',()=>{
+ for(const label of ['Speichern','Abbrechen','Standardlayout','Sichtbar','b3-nav-links','Weitere Tools']){
    assert.ok(js.includes(label)||css.includes(label),label);
  }
  assert.match(css,/max-width:767px/);
@@ -45,4 +45,16 @@ test('B3 layout CSS preserves complete panels across tablet widths',()=>{
  assert.ok(css.includes('@media(min-width:768px) and (max-width:1279px)'),'Tablet breakpoint');
  assert.ok(css.includes('data-b3-panel="stats"]{grid-template-columns:repeat(2,minmax(0,1fr))'),'Stats must use two columns on tablet');
  assert.ok(css.includes('body.b3-dark main.b3-dashboard [data-b3-panel="calendar"]'),'Readable dark calendar');
+});
+
+test('Header has exactly one settings control and no redundant home button',()=>{
+ assert.match(html,/class="b3-settings-trigger"/);
+ assert.match(html,/aria-label="Einstellungen öffnen"/);
+ assert.doesNotMatch(html,/← Zurück zur Startseite/);
+ assert.doesNotMatch(html,/data-b3-panel="actions"/);
+ assert.match(js,/Darstellung & Dashboard/);
+ assert.match(js,/Zur Helferlein-Hauptseite/);
+ assert.match(js,/Weitere Tools/);
+ assert.match(js,/openRoiModal\(\)/);
+ assert.match(js,/openCisternModal\(\)/);
 });
