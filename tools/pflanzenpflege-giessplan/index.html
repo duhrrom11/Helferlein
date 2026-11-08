@@ -704,7 +704,7 @@
             const location = document.getElementById('plantLocation').value.trim();
             const light = document.getElementById('plantLight').value;
             const potSize = document.getElementById('plantPotSize').value;
-            const interval = parseInt(document.getElementById('plantInterval').value) || 7;
+            const interval = Math.max(1, parseInt(document.getElementById('plantInterval').value, 10) || 7);
             const lastWatered = document.getElementById('plantLastWatered').value;
             const propagation = document.getElementById('plantPropagation').value;
             const propDate = document.getElementById('plantPropDate').value;
@@ -745,7 +745,7 @@
         function storePlant(name, species, location, light, potSize, interval, lastWatered, propagation, propDate, note, photo) {
             let data = getData();
             data.plants.push({ 
-                id: Date.now(), 
+                id: Date.now() * 1000 + Math.floor(Math.random() * 1000), 
                 name, species, location, light, potSize, interval, lastWatered, propagation, propDate, note, photo,
                 galleryPhotos: photo ? [photo] : [],
                 waterHistory: [lastWatered], diary: [], harvestLog: []
@@ -770,11 +770,12 @@
                 let todayStr = new Date().toISOString().split('T')[0];
                 p.lastWatered = todayStr;
                 if(!p.waterHistory) p.waterHistory = [];
+                if (p.waterHistory[0] === todayStr) return;
                 p.waterHistory.unshift(todayStr);
                 if(p.waterHistory.length > 5) p.waterHistory.pop();
                 let ml = getMlForPot(p.potSize);
                 data.monthWaterLiters = (data.monthWaterLiters || 0) + (ml / 1000);
-                data.cisternCurrent = Math.max(0, (data.cisternCurrent || data.cisternMax || 500) - (ml / 1000));
+                data.cisternCurrent = Math.max(0, (data.cisternCurrent ?? data.cisternMax ?? 500) - (ml / 1000));
                 saveData(data);
                 renderApp();
                 updateCisternDisplay();
@@ -821,10 +822,12 @@
             let data = getData();
             let p = data.plants.find(item => item.id === id);
             if (p) {
-                p.name = document.getElementById('editName').value.trim();
+                const editedName = document.getElementById('editName').value.trim();
+                if (!editedName) return alert('Bitte einen Pflanzennamen eingeben.');
+                p.name = editedName;
                 p.species = document.getElementById('editSpecies').value.trim();
                 p.location = document.getElementById('editLocation').value.trim();
-                p.interval = parseInt(document.getElementById('editInterval').value) || 7;
+                p.interval = Math.max(1, parseInt(document.getElementById('editInterval').value, 10) || 7);
                 p.lastWatered = document.getElementById('editLastWatered').value;
                 p.note = document.getElementById('editNote').value.trim();
                 saveData(data);
