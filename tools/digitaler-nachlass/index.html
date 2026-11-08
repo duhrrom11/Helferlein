@@ -767,10 +767,6 @@
                 }
                 // Keine alte Konfiguration zurück in localStorage schreiben:
                 // Während des Cloud-Aufrufs können neuere lokale Änderungen entstanden sein.
-                if (!silent) {
-                    document.getElementById('syncStatusLoading').classList.add('hidden');
-                    document.getElementById('syncStatusSuccess').classList.remove('hidden');
-                }
                 // Der erfolgreiche Firestore-Schreibvorgang ist bereits bestätigt.
                 // Ein Fehler bei der nachgelagerten Alarmabfrage darf diesen Erfolg
                 // nicht nachträglich als fehlgeschlagene Speicherung darstellen.
@@ -781,8 +777,20 @@
                 }
                 // Alarm checks are asynchronous: local changes during this
                 // follow-up must not turn an old cloud snapshot into a success.
-                return syncRevision === localSaveRevision &&
+                const stillCurrent = syncRevision === localSaveRevision &&
                     localStorage.getItem('digital_estate_vault') === localSnapshot;
+                if (!silent) {
+                    document.getElementById('syncStatusLoading').classList.add('hidden');
+                    if (stillCurrent) {
+                        document.getElementById('syncStatusSuccess').classList.remove('hidden');
+                    } else {
+                        document.getElementById('syncErrorMessage').innerText =
+                            "Nach der Cloud-Speicherung wurden neuere lokale Änderungen erkannt. Bitte erneut synchronisieren.";
+                        document.getElementById('syncStatusSuccess').classList.add('hidden');
+                        document.getElementById('syncStatusError').classList.remove('hidden');
+                    }
+                }
+                return stillCurrent;
             } catch(e) {
                 if (!silent) {
                     console.error("Firebase-Synchronisierung fehlgeschlagen:", e);
