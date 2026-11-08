@@ -1027,9 +1027,9 @@
 
             localStorage.setItem('wg_flatmates', JSON.stringify(leereWG.flatmates));
             localStorage.setItem('wg_notes', JSON.stringify(leereWG.notes));
-            localStorage.setItem('kassenbon_data', JSON.stringify(leereWG.data));
-            localStorage.setItem('budgetbuch_budgets', JSON.stringify(leereWG.budgets));
-            localStorage.setItem('budgetbuch_goals', JSON.stringify(leereWG.goals));
+            localStorage.setItem('wg_kassenbon_data', JSON.stringify(leereWG.data));
+            localStorage.setItem('wg_budgetbuch_budgets', JSON.stringify(leereWG.budgets));
+            localStorage.setItem('wg_budgetbuch_goals', JSON.stringify(leereWG.goals));
             localStorage.setItem('wg_events', JSON.stringify(leereWG.events));
             localStorage.setItem('wg_inventory', JSON.stringify(leereWG.inventory));
             localStorage.setItem('wg_diets', JSON.stringify(leereWG.diets));
@@ -1107,9 +1107,9 @@
                             localStorage.setItem('wg_flatmates', JSON.stringify(fm));
                         }
                         if (cloudObj.notes !== undefined) localStorage.setItem('wg_notes', JSON.stringify(cloudObj.notes));
-                        if (cloudObj.data !== undefined) localStorage.setItem('kassenbon_data', JSON.stringify(cloudObj.data));
-                        if (cloudObj.budgets !== undefined) localStorage.setItem('budgetbuch_budgets', JSON.stringify(cloudObj.budgets));
-                        if (cloudObj.goals !== undefined) localStorage.setItem('budgetbuch_goals', JSON.stringify(cloudObj.goals));
+                        if (cloudObj.data !== undefined) localStorage.setItem('wg_kassenbon_data', JSON.stringify(cloudObj.data));
+                        if (cloudObj.budgets !== undefined) localStorage.setItem('wg_budgetbuch_budgets', JSON.stringify(cloudObj.budgets));
+                        if (cloudObj.goals !== undefined) localStorage.setItem('wg_budgetbuch_goals', JSON.stringify(cloudObj.goals));
                         if (cloudObj.events !== undefined) localStorage.setItem('wg_events', JSON.stringify(cloudObj.events));
                         if (cloudObj.inventory !== undefined) localStorage.setItem('wg_inventory', JSON.stringify(cloudObj.inventory));
                         if (cloudObj.diets !== undefined) localStorage.setItem('wg_diets', JSON.stringify(cloudObj.diets));
@@ -1230,14 +1230,14 @@
         function getNotes() { try { return JSON.parse(localStorage.getItem('wg_notes')) || []; } catch(e) { return []; } }
         function saveNotes(data, sync = true) { localStorage.setItem('wg_notes', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getData() { try { return JSON.parse(localStorage.getItem('kassenbon_data')) || []; } catch(e) { return []; } }
-        function saveData(data, sync = true) { localStorage.setItem('kassenbon_data', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getData() { try { return JSON.parse(localStorage.getItem('wg_kassenbon_data')) || []; } catch(e) { return []; } }
+        function saveData(data, sync = true) { localStorage.setItem('wg_kassenbon_data', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getBudgets() { try { return JSON.parse(localStorage.getItem('budgetbuch_budgets')) || { "Lebensmittel": 400, "Wohnen": 800, "Energie": 150, "Auto": 250, "Freizeit": 200, "Elektronik": 100, "Gesundheit": 80, "Verträge": 120, "Sonstiges": 100 }; } catch(e) { return {}; } }
-        function saveBudgets(data, sync = true) { localStorage.setItem('budgetbuch_budgets', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getBudgets() { try { return JSON.parse(localStorage.getItem('wg_budgetbuch_budgets')) || { "Lebensmittel": 400, "Wohnen": 800, "Energie": 150, "Auto": 250, "Freizeit": 200, "Elektronik": 100, "Gesundheit": 80, "Verträge": 120, "Sonstiges": 100 }; } catch(e) { return {}; } }
+        function saveBudgets(data, sync = true) { localStorage.setItem('wg_budgetbuch_budgets', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
-        function getSavingsGoals() { try { return JSON.parse(localStorage.getItem('budgetbuch_goals')) || []; } catch(e) { return []; } }
-        function saveSavingsGoals(data, sync = true) { localStorage.setItem('budgetbuch_goals', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
+        function getSavingsGoals() { try { return JSON.parse(localStorage.getItem('wg_budgetbuch_goals')) || []; } catch(e) { return []; } }
+        function saveSavingsGoals(data, sync = true) { localStorage.setItem('wg_budgetbuch_goals', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
 
         function getEvents() { try { return JSON.parse(localStorage.getItem('wg_events')) || []; } catch(e) { return []; } }
         function saveEvents(data, sync = true) { localStorage.setItem('wg_events', JSON.stringify(data)); if(sync) speichereWGinCloud(); }
