@@ -39,6 +39,10 @@
     let lastGuardMismatch = null;
     let lastEnableAt = null;
     let lastRefreshSkippedAt = null;
+    let lastOperationStartedAt = null;
+    let lastOperationEndedAt = null;
+    let lastOwnerAtStatus = null;
+    let lastAuthStateAt = null;
     const enabledKey = uid => 'helferlein_cloud_enabled_' + tool + '_' + uid;
     const ownerKey = 'helferlein_cloud_owner_' + tool;
     const cacheKey = uid => 'helferlein_cloud_' + tool + '_' + uid + '_cache';
@@ -47,8 +51,8 @@
     // Fail closed when a different account is active; never upload its contents.
     function assertActive() { if (disposed) throw new Error('Cloud-Verbindung wurde beendet'); }
     function requireOnlineAndActive() { assertActive(); ensureOnline(); }
-    function beginOperation(name) { assertActive(); if (accountSwitchInProgress) throw new Error('Kontowechsel läuft'); if (activeOperation) throw new Error('Ein anderer Cloud-Vorgang läuft: ' + activeOperation); activeOperation = name; }
-    function endOperation(name) { if (activeOperation === name) activeOperation = null; }
+    function beginOperation(name) { assertActive(); if (accountSwitchInProgress) throw new Error('Kontowechsel läuft'); if (activeOperation) throw new Error('Ein anderer Cloud-Vorgang läuft: ' + activeOperation); activeOperation = name; lastOperationStartedAt = now(); }
+    function endOperation(name) { if (activeOperation === name) { activeOperation = null; lastOperationEndedAt = now(); } }
     function isBusy() { return disposed || !!activeOperation || importInProgress || migrationInProgress || accountSwitchInProgress; }
     function assertOwner(uid) {
       assertActive();
@@ -60,12 +64,13 @@
     async function currentUser() {
       assertActive();
       const { data, error } = await client.auth.getUser();
-      if (error) { lastStatusErrorAt = now(); throw error; }
+      if (error) { lastStatusErrorAt = now(); lastSyncError = error.message || String(error); throw error; }
       assertActive();
       lastAuthCheckAt = now();
+      lastOwnerAtStatus = currentOwner();
       return data && data.user && typeof data.user.id === 'string' ? data.user : null;
     }
-    function isOwner(uid) { return !!uid && currentOwner() === uid; }
+    function isOwner(uid) { return ownerMatches(uid); }
     function ensureOwner(uid) { assertActive(); if (!isOwner(uid)) throw new Error('Lokale Kontozuordnung hat sich geändert'); }
     function ensureOnline() { if (typeof navigator === 'undefined' || !navigator.onLine) throw new Error('Internetverbindung erforderlich'); }
     function ensureNoPending(pending) { lastPendingCheckAt = now(); if (pending) { lastConflictMessage = 'Ausstehende Offline-Daten'; throw new Error('Ausstehende lokale Änderungen müssen zuerst geklärt werden'); } }
@@ -75,6 +80,7 @@
       if (disposed) return false;
       const user = await currentUser();
       if (disposed) return false;
+      if (accountSwitchInProgress) return false;
       return !!user && user.id === enabledUser &&
         isOwner(user.id) &&
         localStorage.getItem(enabledKey(user.id)) === 'true';
@@ -93,13 +99,13 @@
       const user = await currentUser();
       requireUser(user);
       const existingOwner = currentOwner();
-      if (existingOwner && existingOwner !== user.id) { lastConflictMessage = 'Lokale Daten gehören zu einem anderen Konto'; throw new Error('Lokale Daten gehören zu einem anderen Konto; Übernahme gesperrt'); }
-      if ((await currentUser())?.id !== user.id) throw new Error('Konto vor Aktivierung gewechselt');
+      if (existingOwner && existingOwner !== user.id) { lastConflictMessage = 'Lokale Daten gehören zu einem anderen Konto'; lastStatusErrorAt = now(); throw new Error('Lokale Daten gehören zu einem anderen Konto; Übernahme gesperrt'); }
+      if ((await currentUser())?.id !== user.id) { lastConflictMessage = 'Konto vor Aktivierung gewechselt'; throw new Error('Konto vor Aktivierung gewechselt'); }
       assertActive();
       localStorage.setItem(ownerKey, user.id);
-      if (currentOwner() !== user.id) throw new Error('Kontozuordnung konnte nicht gespeichert werden');
+      if (currentOwner() !== user.id) { lastConflictMessage = 'Kontozuordnung konnte nicht gespeichert werden'; throw new Error('Kontozuordnung konnte nicht gespeichert werden'); }
       localStorage.setItem(enabledKey(user.id), 'true');
-      if (localStorage.getItem(enabledKey(user.id)) !== 'true') throw new Error('Cloud-Aktivierung konnte nicht gespeichert werden');
+      if (localStorage.getItem(enabledKey(user.id)) !== 'true') { lastConflictMessage = 'Cloud-Aktivierung konnte nicht gespeichert werden'; throw new Error('Cloud-Aktivierung konnte nicht gespeichert werden'); }
       enabledUser = user.id;
       accountGeneration++;
       lastAccountChangeAt = now();
@@ -109,12 +115,14 @@
     function setStatus(message) { if (!disposed) { statusGeneration++; status.textContent = message; } }
     function statusError(prefix, error) { lastStatusErrorAt = now(); lastConflictMessage = error && error.message ? error.message : String(error); setStatus(prefix + ': ' + lastConflictMessage); }
     function currentOwner() { return localStorage.getItem(ownerKey); }
+    function ownerMatches(uid) { return !!uid && currentOwner() === uid; }
     function assertSameAccount(uid, generation) { if (!sameAccount(uid, generation)) throw new Error('Konto während Cloud-Vorgang gewechselt'); }
     function sameAccount(uid, generation) { return !disposed && !!uid && enabledUser === uid && accountGeneration === generation && isOwner(uid); }
     function changed(data) {
       if (disposed) return Promise.resolve(false);
       lastLocalChangeAt = now();
-      if (accountSwitchInProgress) return Promise.resolve(false);
+      lastOwnerAtStatus = currentOwner();
+      if (accountSwitchInProgress) { lastConflictMessage = 'Kontowechsel während Änderung'; return Promise.resolve(false); }
       if (!validPayload(data)) { reportError(new Error('Ungültige lokale Änderungen')); return Promise.resolve(false); }
       // Called after the existing synchronous local save succeeded.
       // Failed uploads must remain pending, and are never silently discarded.
@@ -123,14 +131,14 @@
       if (activeOperation === 'import' || activeOperation === 'upload') { lastConflictMessage = 'Datenübernahme läuft'; return Promise.resolve(false); }
       if (expectedOwner && !validPayload(data)) { reportError(new Error('Ungültige Werkzeugdaten')); return Promise.resolve(false); }
       if (expectedOwner && enabledUser && expectedOwner !== enabledUser) { reportError(new Error('Kontowechsel während lokaler Änderung')); return Promise.resolve(false); }
-      if (expectedOwner && currentOwner() !== expectedOwner) return Promise.resolve(false);
+      if (expectedOwner && currentOwner() !== expectedOwner) { lastConflictMessage = 'Kontozuordnung während Änderung gewechselt'; return Promise.resolve(false); }
       let snapshot;
       try { snapshot = JSON.parse(JSON.stringify(data)); } catch (error) { reportError(error); return Promise.reject(new Error('Änderungen konnten nicht serialisiert werden')); }
       queue = queue.catch(() => {}).then(async () => {
         assertActive();
-        if (accountSwitchInProgress) return false;
-        if (disposed || expectedGeneration !== accountGeneration) return false;
-        if (!await isEnabled() || currentOwner() !== expectedOwner) return false;
+        if (accountSwitchInProgress) { lastConflictMessage = 'Kontowechsel während Cloud-Speicherung'; return false; }
+        if (disposed || expectedGeneration !== accountGeneration) { lastConflictMessage = 'Konto während Cloud-Speicherung geändert'; return false; }
+        if (!await isEnabled() || currentOwner() !== expectedOwner) { lastConflictMessage = 'Cloud-Speicherung für Konto nicht aktiv'; return false; }
         if (!validPayload(snapshot)) throw new Error('Ungültige Datensammlung vor Cloud-Speicherung');
         try {
           const user = await currentUser();
@@ -152,10 +160,10 @@
       refreshAttempts++;
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') { lastRefreshSkippedAt = now(); return false; }
       if (refreshInProgress || activeOperation || !navigator.onLine || !await isEnabled()) { lastRefreshSkippedAt = now(); return false; }
-      if (currentOwner() !== enabledUser) { lastRefreshSkippedAt = now(); return false; }
+      if (currentOwner() !== enabledUser) { lastRefreshSkippedAt = now(); lastConflictMessage = 'Kontozuordnung passt nicht'; return false; }
       if (lastConflictMessage && (await store.hasPending())) return false;
-      if (safeLocalBytes() === null) { lastRefreshSkippedAt = now(); return false; }
-      if (await store.hasPending()) { lastRefreshSkippedAt = now(); return false; }
+      if (safeLocalBytes() === null) { lastRefreshSkippedAt = now(); lastConflictMessage = 'Keine lokalen Daten für Cloud-Aktualisierung'; return false; }
+      if (await store.hasPending()) { lastRefreshSkippedAt = now(); lastConflictMessage = 'Offline-Änderungen vor Cloud-Aktualisierung'; return false; }
       if (document.visibilityState === 'hidden') { lastRefreshSkippedAt = now(); return false; }
       refreshInProgress = true;
       activeOperation = 'refresh';
@@ -163,7 +171,7 @@
       const refreshGeneration = accountGeneration;
       const ownerAtStart = currentOwner();
       try {
-        if (!ownerAtStart) { lastRefreshSkippedAt = now(); return false; }
+        if (!ownerAtStart) { lastRefreshSkippedAt = now(); lastConflictMessage = 'Kontozuordnung fehlt'; return false; }
         await queue.catch(() => {});
         const user = await currentUser();
         if (!sameAccount(refreshOwner, refreshGeneration)) return false;
@@ -173,7 +181,7 @@
         if (!isOwner(user.id)) return false;
         const before = safeLocalBytes();
         if (before === null) return false;
-        if (!hasValidLocal()) return false;
+        if (!hasValidLocal()) { lastConflictMessage = 'Lokale Daten ungültig'; return false; }
         if (!isOwner(refreshOwner)) return false;
         if (accountSwitchInProgress) return false;
         const cachedBytes = localStorage.getItem(cacheKey(user.id));
@@ -201,7 +209,7 @@
         if (!sameAccount(refreshOwner, refreshGeneration)) return false;
         const incoming = JSON.stringify(result.data);
         if (!incoming || incoming === 'null') return false;
-        if (before === incoming) { lastRefreshAt = now(); lastSyncError = null; return false; }
+        if (before === incoming) { lastRefreshAt = now(); lastSyncError = null; lastConflictMessage = null; return false; }
         if ((await currentUser())?.id !== user.id) return false;
         if (refreshOwner !== enabledUser || refreshGeneration !== accountGeneration) return false;
         if (await store.hasPending()) return false;
@@ -221,7 +229,7 @@
     async function resume() {
       if (disposed || migrationInProgress || importInProgress || activeOperation || reconnectInProgress || accountSwitchInProgress) return;
       reconnectAttempts++;
-      if (!navigator.onLine || !currentOwner()) return;
+      if (!navigator.onLine || !currentOwner()) { lastRefreshSkippedAt = now(); return; }
       reconnectInProgress = true;
       const reconnectGeneration = accountGeneration;
       const reconnectOwner = currentOwner();
@@ -229,8 +237,8 @@
         assertActive();
       // Finish queued local writes before attempting a reconnect flush.
       await queue.catch(() => {});
-      if (!await isEnabled() || !navigator.onLine || !reconnectOwner) return;
-      if (refreshInProgress) return;
+      if (!await isEnabled() || !navigator.onLine || !reconnectOwner) { lastRefreshSkippedAt = now(); return; }
+      if (refreshInProgress) { lastRefreshSkippedAt = now(); return; }
       try {
         const user = await currentUser();
         assertOwner(user && user.id);
@@ -258,9 +266,10 @@
       if (disposed) return;
       const mismatch = !!(owner && (!user || owner !== user.id));
       lastGuardMismatch = mismatch;
+      lastOwnerAtStatus = owner;
       if (accountSwitchInProgress) return;
       if (disposed) return;
-      if (mismatch && enabledUser !== null) { enabledUser = null; accountGeneration++; lastAccountChangeAt = now(); lastCloudSource = null; }
+      if (mismatch && enabledUser !== null) { enabledUser = null; accountGeneration++; lastAccountChangeAt = now(); lastCloudSource = null; lastSyncError = 'Kontowechsel erkannt'; }
       if (!mismatch && blocked) { blocked.remove(); blocked = null; lastConflictMessage = null; }
       if (mismatch && !blocked) {
         blocked = document.createElement('div');
@@ -560,6 +569,7 @@
       accountGeneration++;
       authGeneration++;
       lastAccountChangeAt = now();
+      lastAuthStateAt = now();
       accountSwitchInProgress = false;
       activeOperation = null;
       reconnectInProgress = false;
@@ -572,7 +582,7 @@
       store.dispose();
       host.remove();
     }
-    return { store, host, changed, resume, refreshFromCloud, dispose, getStatus: () => ({ disposed, enabledUser, activeOperation, lastSyncError, lastConflictMessage, lastCloudSource, accountSwitchInProgress, statusGeneration, lastRefreshAt, lastReconnectAt, lastLocalChangeAt, lastAccountChangeAt, lastAuthCheckAt, lastPendingCheckAt, lastStatusErrorAt, lastUploadAt, lastImportAt, refreshAttempts, refreshApplied, reconnectAttempts, reconnectSuccesses, store: store.status() }) };
+    return { store, host, changed, resume, refreshFromCloud, dispose, getStatus: () => ({ disposed, enabledUser, activeOperation, lastSyncError, lastConflictMessage, lastCloudSource, accountSwitchInProgress, statusGeneration, lastRefreshAt, lastReconnectAt, lastLocalChangeAt, lastAccountChangeAt, lastAuthCheckAt, lastPendingCheckAt, lastStatusErrorAt, lastUploadAt, lastImportAt, lastGuardAt, lastGuardMismatch, lastEnableAt, lastRefreshSkippedAt, lastOperationStartedAt, lastOperationEndedAt, lastOwnerAtStatus, lastAuthStateAt, refreshAttempts, refreshApplied, reconnectAttempts, reconnectSuccesses, store: store.status() }) };
   }
   global.HelferleinCloudMigration = Object.freeze({ mount });
 })(window);
