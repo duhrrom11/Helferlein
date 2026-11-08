@@ -274,7 +274,6 @@
         write(k.revision, data[0].updated_at);
       }
       if (await userId() !== uid) { rememberConflict('post-write-account-change'); throw new Error('Account changed after sync; pending data preserved'); }
-      if (raw(k.revision) === initialState.revision && initialState.revision !== null) throw new Error('Cloud revision was not advanced');
       assertOpen();
       if (localStorage.getItem(k.pending) === null) { rememberConflict('pending-removed'); throw new Error('Pending data unexpectedly removed'); }
       if (closed) throw new Error('Store disposed before acknowledgement');
@@ -331,15 +330,19 @@
               // The first edit must not silently adopt a remote revision when
               // local data could be a divergent legacy snapshot.
               if (row && !sameData(row.data, data)) {
+                if (await userId() !== uid) throw new Error('Account changed during first-save conflict check');
+                assertOpen();
                 write(k.base, { unresolved: true });
                 writePending(k, data);
                 rememberConflict('first-save-cloud-data-differs');
                 return false;
               }
+              if (await userId() !== uid) throw new Error('Account changed before first-save baseline');
+              assertOpen();
               write(k.cache, row ? clone(row.data) : null);
               write(k.revision, row ? row.updated_at : null);
             } catch (error) {
-              if (await userId() !== uid) throw error;
+              if (await userId() !== uid || closed) throw error;
               write(k.base, { unresolved: true });
               writePending(k, data);
               return false;
@@ -397,6 +400,7 @@
       assertOnline();
       if (row && sameData(row.data, pending)) {
         assertPending(k, pendingBytes);
+        assertBase(k, baseBytes);
         if (await userId() !== uid) throw new Error('Account changed during acknowledgement');
         finishAcknowledged(k, pending, row.updated_at);
         lastSuccessfulSync = new Date().toISOString();
