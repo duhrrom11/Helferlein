@@ -576,8 +576,12 @@
         }
         function addSeedItem() {
             let name = document.getElementById('seedName').value.trim();
-            let year = parseInt(document.getElementById('seedYear').value) || new Date().getFullYear();
-            if(!name) return;
+            const rawYear = document.getElementById('seedYear').value.trim();
+            const year = rawYear === '' ? new Date().getFullYear() : Number(rawYear);
+            if (!name) return;
+            if (!Number.isInteger(year) || year < 1900 || year > new Date().getFullYear() + 1) {
+                return alert('Bitte ein gültiges Saatgutjahr eingeben.');
+            }
             let data = getData();
             if(!data.seeds) data.seeds = [];
             data.seeds.push({ name, year });
