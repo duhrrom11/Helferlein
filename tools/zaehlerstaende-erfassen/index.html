@@ -592,7 +592,13 @@
             }
 
             let data = getData();
-            let sameTypeReadings = data.readings.filter(r => r.type === type && r.name === name && r.date < date).sort((a,b) => new Date(b.date) - new Date(a.date));
+            let sameTypeReadings = data.readings.filter(r => {
+                if (r.type !== type || r.name !== name || typeof r.date !== 'string' || r.date >= date ||
+                    !/^\d{4}-\d{2}-\d{2}$/.test(r.date)) return false;
+                const previousDate = new Date(r.date);
+                return Number.isFinite(previousDate.getTime()) && previousDate.toISOString().slice(0, 10) === r.date &&
+                    r.value !== '' && Number.isFinite(Number(r.value)) && Number(r.value) >= 0;
+            }).sort((a,b) => new Date(b.date) - new Date(a.date));
             if (sameTypeReadings.length > 0 && !isExchange) {
                 let last = sameTypeReadings[0];
                 let daysBetween = (new Date(date) - new Date(last.date)) / (1000 * 60 * 60 * 24);
