@@ -42,6 +42,7 @@ async function main(){
    if(!response.ok)throw Error('OpenAI API HTTP '+response.status+' (details suppressed)');
    data=await response.json();
  } finally {clearTimeout(timeout);}
+ if(data.status !== 'completed') throw Error('OpenAI response not completed (details suppressed)');
  const output=(data.output||[]).filter(x=>x.type==='message')
    .flatMap(x=>x.content||[]).filter(x=>x.type==='output_text')
    .map(x=>x.text).join('\n').slice(0,12000);
