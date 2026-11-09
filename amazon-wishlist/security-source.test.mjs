@@ -18,3 +18,23 @@ test('UI warns that wish notes and profile information are public',()=>{
  assert.match(html,/öffentlich angezeigt/);
  assert.match(html,/für alle sichtbar/);
 });
+
+test('every statically referenced UI element exists exactly once',()=>{
+ const references=[...app.matchAll(/\\$\\('([A-Za-z][\\w-]*)'\\)/g)].map(match=>match[1]);
+ const declared=[...html.matchAll(/\\bid="([^"]+)"/g)].map(match=>match[1]);
+ const ids=new Set(declared);
+ assert.ok(references.length>=20,'expected the wishlist UI to be wired to the document');
+ for(const id of new Set(references))assert.ok(ids.has(id),'missing UI element: '+id);
+ assert.equal(ids.size,declared.length,'duplicate HTML IDs');
+});
+
+test('external Amazon links use noreferrer and sponsored attributes',()=>{
+ assert.match(app,/a\\.target='\\_blank'/);
+ assert.match(app,/a\\.rel='noopener noreferrer sponsored'/);
+});
+
+test('wishlist UI does not load a service role key or expose user emails in public projections',()=>{
+ const projections=[...app.matchAll(/\\.select\\(\\s*(['"`])([\\s\\S]*?)\\1\\s*\\)/g)].map(match=>match[2]);
+ assert.ok(projections.length>=5);
+ for(const projection of projections)assert.doesNotMatch(projection,/(^|[,()])\\s*(email|encrypted_password|raw_user_meta_data)\\s*(,|$)/i);
+});
