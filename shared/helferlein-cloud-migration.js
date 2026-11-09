@@ -109,7 +109,7 @@
     }
     function encodeLocal(value) {
       assertValidPayload(value);
-      return JSON.stringify(localFormat === 'object' ? value : value[collection]);
+      return JSON.stringify(localFormat === 'object' || localFormat === 'bundle' ? value : value[collection]);
     }
     function safeParseLocal() { const bytes = safeLocalBytes(); if (bytes === null) return null; try { return decodeLocal(JSON.parse(bytes)); } catch (_) { throw new Error('Lokale Daten beschädigt; Original bleibt erhalten'); } }
     async function isEnabled() {
