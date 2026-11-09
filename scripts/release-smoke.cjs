@@ -3,12 +3,12 @@ const vm = require('node:vm');
 const assert = require('node:assert/strict');
 
 const homepage = fs.readFileSync('index.html', 'utf8');
-// Offline release guardrails: these are structural checks, not browser tests.
-assert.match(homepage, /<html\\b[^>]*\\blang=["']de["']/i, 'Homepage must declare German language');
-assert.match(homepage, /<title>[^<\\s][^<]*<\\/title>/i, 'Homepage must have a nonempty title');
-assert.match(homepage, /<meta\\s+name=["']viewport["'][^>]*>/i, 'Homepage must declare a mobile viewport');
-assert.match(homepage, /<meta\\s+name=["']description["'][^>]*content=["'][^"']+["']/i, 'Homepage must have a nonempty SEO description');
-assert.match(homepage, /<link\\s+rel=["']canonical["'][^>]*href=["']https:\\/\\/[^"']+["']/i, 'Homepage must declare an HTTPS canonical URL');
+// Offline release guardrails: structural checks, not browser tests.
+assert.match(homepage, /<html\b[^>]*\blang=["']de["']/i, 'Homepage must declare German language');
+assert.match(homepage, /<title>[^<\s][^<]*<\/title>/i, 'Homepage must have a nonempty title');
+assert.match(homepage, /<meta\s+name=["']viewport["'][^>]*>/i, 'Homepage must declare a mobile viewport');
+assert.match(homepage, /<meta\s+name=["']description["'][^>]*content=["'][^"']+["']/i, 'Homepage must have a nonempty SEO description');
+assert.match(homepage, /<link\s+rel=["']canonical["'][^>]*href=["']https:\/\/[^"']+["']/i, 'Homepage must declare an HTTPS canonical URL');
 
 const linkedTools = [...new Set(
   [...homepage.matchAll(/(?:href|src)="(tools\/[^"#?]+\.html)"/g)]
