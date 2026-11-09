@@ -165,6 +165,87 @@
           : 'Lokale Übernahme abgebrochen; bisherige Daten wiederhergestellt.');
       }
     }
+    const slotKey = uid => 'helferlein_cloud_slot_' + tool + '_' + uid;
+    const switchJournalKey = 'helferlein_cloud_switch_' + tool;
+    function clearLocal() {
+      const keys = localFormat === 'bundle' ? bundleSources.map(src => src.key) : [localKey];
+      const previous = keys.map(key => ({ key, bytes: localStorage.getItem(key) }));
+      let cleared = 0;
+      try {
+        for (const key of keys) { localStorage.removeItem(key); cleared++; }
+      } catch (error) {
+        for (let i = 0; i < cleared; i++) {
+          if (previous[i].bytes !== null) localStorage.setItem(previous[i].key, previous[i].bytes);
+        }
+        throw error;
+      }
+    }
+    function restoreLocalBytes(bytes) {
+      if (bytes === null) clearLocal();
+      else writeLocal(decodeLocal(JSON.parse(bytes)));
+    }
+    function recoverAccountSwitch() {
+      const journalRaw = localStorage.getItem(switchJournalKey);
+      if (journalRaw === null) return false;
+      const journal = JSON.parse(journalRaw);
+      if (!journal || typeof journal.from !== 'string' ||
+          !(journal.bytes === null || typeof journal.bytes === 'string') ||
+          !/^[a-z0-9-]{1,100}$/i.test(journal.from)) throw new Error('Beschädigtes Konto-Wechselprotokoll; Speicher gesperrt');
+      restoreLocalBytes(journal.bytes);
+      localStorage.setItem(ownerKey, journal.from);
+      localStorage.removeItem(switchJournalKey);
+      return true;
+    }
+    async function switchToSignedInAccount() {
+      assertActive();
+      if (activeOperation || accountSwitchInProgress || importInProgress || migrationInProgress) throw new Error('Cloud-Vorgang noch aktiv');
+      const user = await currentUser();
+      const nextUid = requireUser(user);
+      const previousUid = currentOwner();
+      if (!previousUid || nextUid === previousUid) throw new Error('Kein Kontowechsel erforderlich');
+      if (!/^[a-z0-9-]{1,100}$/i.test(nextUid)) throw new Error('Ungültige Konto-ID');
+      const previousBytes = safeLocalBytes();
+      if (previousBytes !== null) assertValidPayload(decodeLocal(JSON.parse(previousBytes)));
+      const destination = localStorage.getItem(slotKey(nextUid));
+      let destinationBytes = null;
+      if (destination !== null) {
+        const stored = JSON.parse(destination);
+        if (!stored || !(stored.bytes === null || typeof stored.bytes === 'string'))
+          throw new Error('Gespeicherter Kontostand beschädigt. Wechsel gesperrt.');
+        destinationBytes = stored.bytes;
+        if (destinationBytes !== null) assertValidPayload(decodeLocal(JSON.parse(destinationBytes)));
+      }
+      if (!confirm('Zum angemeldeten Konto wechseln? Die bisherigen lokalen Daten werden separat gesichert; ausstehende Offline-Änderungen bleiben erhalten. Es wird nichts automatisch hochgeladen.')) return false;
+      if ((await currentUser())?.id !== nextUid || currentOwner() !== previousUid) throw new Error('Kontostand während der Bestätigung geändert');
+      ensureLocalUnchanged(previousBytes);
+      if (localStorage.getItem(switchJournalKey) !== null) throw new Error('Ein Kontowechsel muss zuerst wiederhergestellt werden');
+      accountSwitchInProgress = true;
+      document.documentElement.classList.add('helferlein-account-check');
+      let journalWritten = false;
+      try {
+        // Journal is intentionally written before changing any active legacy key.
+        localStorage.setItem(switchJournalKey, JSON.stringify({ from: previousUid, bytes: previousBytes }));
+        journalWritten = true;
+        localStorage.setItem(slotKey(previousUid), JSON.stringify({ bytes: previousBytes }));
+        restoreLocalBytes(destinationBytes);
+        localStorage.setItem(ownerKey, nextUid);
+        if (localStorage.getItem(ownerKey) !== nextUid) throw new Error('Kontozuordnung nicht gespeichert');
+        localStorage.removeItem(switchJournalKey);
+        journalWritten = false;
+        enabledUser = null;
+        verifiedOwner = null;
+        accountGeneration++;
+        global.location.reload();
+        return true;
+      } catch (error) {
+        if (journalWritten) {
+          try { recoverAccountSwitch(); } catch (restoreError) {
+            throw new Error('Kontowechsel gesperrt: Wiederherstellung fehlgeschlagen. Originaldaten und Wechselprotokoll bleiben im Browser gespeichert.');
+          }
+        }
+        throw error;
+      } finally { accountSwitchInProgress = false; }
+    }
     function localCount(data) { return validPayload(data) ? entryCount(data) : null; }
     function validateLocal() { const data = safeParseLocal(); if (data !== null) ensureCollection(data); return data; }
     function hasValidLocal() { try { return validPayload(validateLocal()); } catch (_) { return false; } }
@@ -336,6 +417,15 @@
       } finally { reconnectInProgress = false; }
       if (!disposed && sameAccount(enabledUser, reconnectGeneration) && reconnectOwner === currentOwner()) void refreshFromCloud().catch(reportError);
     }
+    let recoveredAccountSwitch = false;
+    try { recoveredAccountSwitch = recoverAccountSwitch(); }
+    catch (error) { document.documentElement.classList.add('helferlein-account-check'); throw error; }
+    if (recoveredAccountSwitch) {
+      // The HTML was already parsed; restart with the restored owner's data.
+      document.documentElement.classList.add('helferlein-account-check');
+      global.location.reload();
+      return { dispose: () => store.dispose(), canWriteLocal: () => false };
+    }
     const onOnline = () => { if (!disposed) void resume().catch(reportError); };
     global.addEventListener('online', onOnline);
     let blocked = null;
@@ -365,7 +455,7 @@
         blocked.setAttribute('aria-live', 'polite');
         blocked.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#0f172a;color:white;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;padding:24px;font:18px system-ui;text-align:center';
         const message = document.createElement('p');
-        message.textContent = 'Dieses Gerät enthält lokale Daten eines anderen Kontos. Die Dateneingabe bleibt gesperrt, bis das ursprünglich zugeordnete Konto wieder angemeldet ist. Daten werden nicht gelöscht.';
+        message.textContent = 'Dieses Gerät enthält Daten eines anderen Kontos. Die Dateneingabe bleibt gesperrt. Du kannst das ursprüngliche Konto anmelden oder die Kontodaten getrennt wechseln, ohne sie automatisch hochzuladen.';
         const form = document.createElement('form');
         form.style.cssText = 'display:grid;gap:10px;width:min(100%,360px);margin:12px auto';
         const email = document.createElement('input');
@@ -403,7 +493,18 @@
           email.focus();
           setStatus('Bitte zum ursprünglichen Konto zurückwechseln.');
         });
-        blocked.append(message, form, back);
+        const switchButton = document.createElement('button');
+        switchButton.type = 'button';
+        switchButton.textContent = 'Zum derzeit angemeldeten Konto wechseln';
+        switchButton.style.cssText = 'padding:10px 16px;background:#c7f9e6;color:#0f172a;border-radius:8px;cursor:pointer';
+        switchButton.addEventListener('click', async () => {
+          if (disposed || accountSwitchInProgress) return;
+          switchButton.disabled = true;
+          try { await switchToSignedInAccount(); }
+          catch (error) { statusError('Kontowechsel fehlgeschlagen', error); }
+          finally { switchButton.disabled = false; }
+        });
+        blocked.append(message, form, back, switchButton);
         blocked.style.overflowY = 'auto';
         blocked.setAttribute('tabindex', '-1');
         blocked.setAttribute('aria-describedby', 'helferlein-account-protection-message-' + tool);
@@ -444,6 +545,19 @@
       // after account ownership has been checked and the mismatch dialog mounted.
       document.documentElement.classList.remove('helferlein-account-check');
     }
+    const watchedLocalKeys = localFormat === 'bundle' ? bundleSources.map(src => src.key) : [localKey];
+    const onStorage = event => {
+      if (disposed || (event.key !== null && event.key !== ownerKey &&
+          event.key !== switchJournalKey && !watchedLocalKeys.includes(event.key))) return;
+      verifiedOwner = null;
+      enabledUser = null;
+      accountGeneration++;
+      document.documentElement.classList.add('helferlein-account-check');
+      // Another tab may have switched the shared legacy storage.
+      // Reload rather than render stale account-owned records.
+      global.location.reload();
+    };
+    global.addEventListener('storage', onStorage);
     const onFocus = () => { if (!disposed) void refreshFromCloud().catch(reportError); };
     global.addEventListener('focus', onFocus);
     const onVisibility = () => { if (!disposed && document.visibilityState === 'visible') void refreshFromCloud().catch(reportError); };
@@ -667,6 +781,7 @@
       reconnectInProgress = false;
       global.removeEventListener('online', onOnline);
       global.removeEventListener('focus', onFocus);
+      global.removeEventListener('storage', onStorage);
       document.removeEventListener('visibilitychange', onVisibility);
       if (authSubscription && authSubscription.data && authSubscription.data.subscription) authSubscription.data.subscription.unsubscribe();
       if (blocked) { blocked.remove(); blocked = null; }
