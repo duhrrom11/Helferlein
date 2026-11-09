@@ -32,16 +32,16 @@ const request={
 async function main(){
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),90000);
- let response;
+ let data;
  try {
-   response=await fetch('https://api.openai.com/v1/responses',{
+   const response=await fetch('https://api.openai.com/v1/responses',{
      method:'POST',signal:controller.signal,
      headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},
      body:JSON.stringify(request)
    });
+   if(!response.ok)throw Error('OpenAI API HTTP '+response.status+' (details suppressed)');
+   data=await response.json();
  } finally {clearTimeout(timeout);}
- if(!response.ok)throw Error('OpenAI API HTTP '+response.status+' (details suppressed)');
- const data=await response.json();
  const output=(data.output||[]).filter(x=>x.type==='message')
    .flatMap(x=>x.content||[]).filter(x=>x.type==='output_text')
    .map(x=>x.text).join('\n').slice(0,12000);
