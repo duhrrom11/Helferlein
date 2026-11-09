@@ -87,3 +87,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Commit `630c3e46b3ec1335fb8ac0b8ad96770b650f4053`: Bei einem Wechsel der angemeldeten Nutzer-ID (auch Abmeldung) wird die Suchgeneration erhöht und die bisherige Profilsuche sofort geleert. Damit bleiben keine alten Folgen-/Entfolgen-Schaltflächen einer vorherigen Sitzung sichtbar; bereits laufende Suchantworten werden verworfen.
 - Browser-Regression noch offen: Profil mit angemeldetem Konto suchen, abmelden, kontrollieren, dass Ergebnisse/Aktionsschaltflächen verschwinden; anschließend eine absichtlich verzögerte Suche starten und währenddessen die Sitzung wechseln. Nach dem Wechsel dürfen die alten Ergebnisse nicht zurückkehren.
 - Keine Supabase-Migration, keine Produktivdatenänderung, kein Deployment. Für den aktuellen Commit CI separat prüfen.
+
+## Asynchrone Authentifizierungsantworten (09.11.2026, 13 Uhr MEZ)
+- Commit `66bc9eacaf7ac0ed3a4c88956056c97f4ccccfcd`: Jede `auth()`-Abfrage bekommt eine Generation. Antworten einer überholten `getUser()`-Anfrage werden ignoriert; ebenso ein Profil-Leseergebnis, wenn währenddessen eine neuere Auth-Abfrage gestartet wurde oder die aktive Nutzer-ID nicht mehr passt. So kann eine langsame frühere Antwort nach einem Sitzungswechsel keine veralteten Profildaten in das Formular zurückschreiben.
+- **Noch nachzuweisen:** Browser-Test mit verzögerter `getUser()`- und `wishlist_profiles`-Antwort bei Abmeldung/Kontowechsel; nur der neueste Sitzungszustand darf sichtbar bleiben. Auch Login, Logout, Registrierung und Passwortfeld-Reset prüfen.
+- Vor Merge: CI des neuesten Commits und RLS-/Browser-E2E-Prüfungen nachweisen. Keine produktiven Daten verändert; kein Deployment.
