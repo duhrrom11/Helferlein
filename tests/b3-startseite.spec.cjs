@@ -62,7 +62,7 @@ test('B3 home settings preserve cloud, safety backup and footer links',async({pa
  await expect(page.locator('#settingsModal button[onclick="exportGlobalBackup(false)"]')).toContainText('Ohne Schutz');
  await expect(page.locator('#settingsModal input[type="file"][onchange="importGlobalBackup(event)"]')).toHaveAttribute('accept',/.json/);
  await expect(page.locator('#b3-hub-theme')).toBeVisible();
- await expect(page.locator('#settingsModal')).toContainText('Backup-Dateien sind nicht verschlüsselt');
+ await expect(page.locator('#settingsModal')).toContainText('Die einfache Backup-Datei ist unverschlüsselt und darf nicht geteilt werden.');
  const links=await page.locator('#settingsModal .b3-hub-settings-footer a').evaluateAll(a=>a.map(x=>({text:x.textContent.trim(),href:x.getAttribute('href')})));
  expect(links).toEqual([{text:'☕ Kaffee spendieren',href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'#toolDiscovery'}]);
 });
