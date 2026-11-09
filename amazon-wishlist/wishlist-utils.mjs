@@ -102,12 +102,18 @@ export function wishlistErrorMessage(error) {
  if(error?.code==='23503')return 'Der verknüpfte Eintrag ist nicht mehr verfügbar. Bitte neu laden.';
  if(error?.code==='429'||error?.status===429)return 'Zu viele Anfragen. Bitte warte kurz und versuche es erneut.';
  if(typeof error?.message==='string'&&/failed to fetch|networkerror|load failed|fetch failed/i.test(error.message))return 'Netzwerkfehler. Bitte Internetverbindung prüfen und erneut versuchen.';
- return typeof error?.message==='string'&&error.message.trim()?error.message:'Unbekannter Fehler. Bitte erneut versuchen.';
+ if(error?.code==='23514'||error?.code==='22P02')return 'Ungültige Eingabe. Bitte deine Angaben prüfen.';
+ if(error?.code==='PGRST116')return 'Eintrag nicht gefunden. Bitte neu laden.';
+ if(typeof error?.status==='number'&&error.status>=500)return 'Der Dienst ist vorübergehend nicht erreichbar. Bitte später erneut versuchen.';
+ if(typeof error?.status==='number'&&error.status>=400)return 'Anfrage fehlgeschlagen. Bitte Eingaben und Anmeldung prüfen.';
+ if(error instanceof Error&&!('code' in error)&&!('status' in error))return error.message||'Unbekannter Fehler. Bitte erneut versuchen.';
+ return 'Die Anfrage konnte nicht abgeschlossen werden. Bitte erneut versuchen.';
 }
 
 /** Copy links without requiring a secure-context Clipboard API. */
 export async function copyShareLink(text,clipboard=navigator.clipboard,doc=document) {
  if(typeof text!=='string'||!/^https:\/\//.test(text))throw Error('Ungültiger Link.');
+ try{const url=new URL(text);if(url.protocol!=='https:'||!url.hostname||url.username||url.password)throw Error('Ungültiger Link.');}catch{throw Error('Ungültiger Link.');}
  if(clipboard?.writeText){try{await clipboard.writeText(text);return 'clipboard'}catch{}}
  const input=doc.createElement('textarea');
  input.value=text;input.setAttribute('readonly','');input.style.position='fixed';input.style.left='-9999px';
