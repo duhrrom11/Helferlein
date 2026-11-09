@@ -296,7 +296,10 @@
       if (!isRecord(data)) { rememberConflict('invalid-save-payload'); throw new Error('Expected record data'); }
       if (typeof tool !== 'string' || !tool.trim()) throw new Error('Tool identifier unavailable');
       if (recordCount(data) === 0) { rememberConflict('empty-save-payload'); throw new Error('Empty payload requires explicit migration'); }
-      if (Object.getPrototypeOf(data) !== Object.prototype && Object.getPrototypeOf(data) !== null) { rememberConflict('unsupported-prototype'); throw new Error('Unsupported data prototype'); }
+      // Accept plain JSON objects created in another JavaScript realm (e.g. an iframe).
+      // Reject class instances and custom prototype chains before serializing.
+      const prototype = Object.getPrototypeOf(data);
+      if (prototype !== null && Object.getPrototypeOf(prototype) !== null) { rememberConflict('unsupported-prototype'); throw new Error('Unsupported data prototype'); }
       // Serialize local writes as well as uploads, preserving each baseline.
       const previous = saving || Promise.resolve();
       const expectedUid = await userId();
