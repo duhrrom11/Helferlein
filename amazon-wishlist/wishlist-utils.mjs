@@ -40,3 +40,12 @@ export function requestedProfileHandle(value) {
  if(typeof value!=='string')return null;
  try{return validateHandle(value)}catch{return null}
 }
+
+/** Enforce the public profile limits before sending data to Supabase. */
+export function validateProfileFields(displayName,bio) {
+ const display_name=typeof displayName==='string'?displayName.trim():'';
+ const description=typeof bio==='string'?bio.trim():'';
+ if(!display_name||display_name.length>80)throw Error('Profilname muss 1 bis 80 Zeichen enthalten');
+ if(description.length>500)throw Error('Profilbeschreibung darf maximal 500 Zeichen enthalten');
+ return {display_name,bio:description};
+}
