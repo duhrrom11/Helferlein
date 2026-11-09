@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const vm = require('node:vm');
 const fs = require('node:fs');
 const script = fs.readFileSync('shared/helferlein-cloud-store.js', 'utf8');
-function harness(online = true) {
+function harness(online = true, offlineSession = false) {
   const entries = new Map();
   const localStorage = {
     getItem: k => entries.has(k) ? entries.get(k) : null,
@@ -14,7 +14,12 @@ function harness(online = true) {
   const rows = [];
   let uid = 'alice';
   const client = {
-    auth: { getUser: async () => ({ data: { user: uid ? { id: uid } : null }, error: null }) },
+    auth: {
+      getUser: async () => offlineSession && !navigator.onLine
+        ? { data: { user: null }, error: new Error('Network unavailable') }
+        : { data: { user: uid ? { id: uid } : null }, error: null },
+      getSession: async () => ({ data: { session: uid ? { user: { id: uid }, expires_at: Date.now() / 1000 + 3600 } : null }, error: null })
+    },
     from: table => {
       assert.equal(table, 'user_data');
       let filters = {};
@@ -50,6 +55,21 @@ function harness(online = true) {
     store: window.HelferleinCloudStore.createStore(client, 'plants') };
 }
 (async () => {
+  const cachedOffline = harness(true, true);
+  cachedOffline.localStorage.setItem('helferlein_cloud_owner_plants', 'alice');
+  assert.equal(await cachedOffline.store.save({ plants: [1] }), true);
+  cachedOffline.navigator.onLine = false;
+  assert.equal(await cachedOffline.store.save({ plants: [1, 2] }), false,
+    'offline cached account writes pending instead of requiring network');
+  assert.equal(await cachedOffline.store.hasPending(), true);
+  cachedOffline.navigator.onLine = true;
+  assert.equal(await cachedOffline.store.flush(), true);
+  assert.equal(await cachedOffline.store.hasPending(), false);
+  assert.deepEqual(cachedOffline.rows[0].data, { plants: [1, 2] });
+  cachedOffline.navigator.onLine = false;
+  cachedOffline.localStorage.setItem('helferlein_cloud_owner_plants', 'bob');
+  await assert.rejects(cachedOffline.store.save({ plants: [3] }), /Sign in required/,
+    'different owner cannot write account pending data offline');
   const firstOffline = harness(false);
   assert.equal(await firstOffline.store.save({ plants: [42] }), false);
   assert.equal(await firstOffline.store.hasPending(), true);
