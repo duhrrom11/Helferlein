@@ -193,7 +193,9 @@ const journal = 'helferlein_cloud_switch_test-tool';
   const remoteHarness = harness(refreshed, A, { bundle: true, remoteData: remoteBundle });
   await remoteHarness.wait();
   const applied = await remoteHarness.bridge.refreshFromCloud();
-  assert.equal(applied, true, 'remote household changes should apply when local matches baseline');
+  // Mount may already refresh on startup; a second refresh then correctly returns false.
+  assert.ok(applied || remoteHarness.bridge.getStatus().refreshApplied > 0,
+    'remote household changes should apply on startup or explicit refresh');
   assert.equal(JSON.parse(refreshed.get('test_budgets')).food, 180,
     'remote budget update applied even when entries and goals are unchanged');
   assert.deepEqual(JSON.parse(refreshed.get('test_entries')), initialBundle.items);
