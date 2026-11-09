@@ -56,6 +56,7 @@ function init(){
   search.addEventListener('search',()=>{window.filterTools?.();refreshCount()});
   search.setAttribute('aria-keyshortcuts','/');
   search.setAttribute('spellcheck','false');
+  search.setAttribute('aria-describedby','b3-search-help');
   search.addEventListener('keydown',event=>{
    if(event.key==='Escape'&&search.value){event.preventDefault();search.value='';window.filterTools?.();refreshCount()}
   });
@@ -71,8 +72,26 @@ function init(){
  const categoryList=document.querySelector('.b3-categories');
  if(categoryList)categoryList.setAttribute('aria-label','Tool-Kategorien');
  const allFilter=filters.find(btn=>btn.getAttribute('data-b3-category-filter')==='alle');
- if(allFilter)allFilter.textContent='Alle '+document.querySelectorAll('#toolsGrid .tool-card').length;
+ const reset=()=>{
+  if(search)search.value='';
+  if(allFilter)filters.forEach(btn=>btn.setAttribute('aria-pressed',String(btn===allFilter)));
+  window.filterTools?.();refreshCount();
+  search?.focus();
+ };
  const empty=document.getElementById('searchEmptyState');
+ if(empty&&!document.getElementById('b3-reset-filters')){
+  const resetButton=document.createElement('button');
+  resetButton.type='button';resetButton.id='b3-reset-filters';
+  resetButton.textContent='Suche und Filter zurücksetzen';
+  resetButton.className='b3-reset-filters';
+  resetButton.addEventListener('click',reset);
+  empty.appendChild(document.createTextNode(' '));empty.appendChild(resetButton);
+ }
+ const help=document.createElement('span');
+ help.id='b3-search-help';help.className='sr-only';
+ help.textContent='Mit Schrägstrich Suche öffnen. Mehrere Wörter kombinieren. Escape löscht die Suche.';
+ search?.insertAdjacentElement('afterend',help);
+ if(allFilter)allFilter.textContent='Alle '+document.querySelectorAll('#toolsGrid .tool-card').length;
  if(empty)empty.setAttribute('aria-live','polite');
  applyTheme();
  if(typeof window.filterTools==='function')window.filterTools();
