@@ -2,15 +2,15 @@
 
 ## Status
 
-Der GitHub-Actions-Workflow `.github/workflows/night-coordinator.yml` und das Skript `scripts/night-coordinator.cjs` sind im Hauptzweig eingerichtet. **Dies ist ein lesender Prüf- und Dokumentationsbetrieb, noch kein autonomer Coding-Agent.** Ein erfolgreicher geplanter Lauf wurde noch nicht bestätigt.
+Der GitHub-Actions-Workflow `.github/workflows/night-coordinator.yml` und das Skript `scripts/night-coordinator.cjs` sind im Hauptzweig eingerichtet. **Dies ist ein rund um die Uhr laufender, lesender Prüf- und Dokumentationsbetrieb, kein autonomer Coding-Agent.** Geplante Läufe wurden bereits protokolliert; GitHub kann einzelne Termine dennoch auslassen.
 
 ## Zeitplan und Zeitzone
 
 - GitHub Actions plant `*/5 * * * *` in UTC.
-- Das Skript prüft die Ortszeit mit `Europe/Berlin`; Arbeitsschritte laufen nur zwischen 00:00 und 05:59 Uhr.
+- Die Repository-Prüfungen laufen rund um die Uhr; `Europe/Berlin` dient zur Tageszuordnung und für den Morgenbericht.
 - Um 06:00 Uhr Ortszeit wird ein Morgenbericht in einem GitHub-Issue erstellt. Eine kurze Kulanzzeit bis 06:29 Uhr erlaubt verzögerte GitHub-Schedule-Starts; der Bericht wird je Kalendertag höchstens einmal veröffentlicht.
-- GitHub garantiert **keine sekundengenaue Ausführung** und kann geplante Läufe verzögern oder auslassen. Auch 72 erfolgreiche Prüfungen pro Nacht sind nicht garantiert.
-- `workflow_dispatch` erlaubt einen manuellen Durchlauf. Manuelle Aufrufe außerhalb des Zeitfensters führen einen Prüf-Schritt aus, keinen produktiven Eingriff.
+- GitHub garantiert **keine sekundengenaue Ausführung** und kann geplante Läufe verzögern oder auslassen. Auch 288 erfolgreiche Prüfungen pro Tag sind nicht garantiert.
+- `workflow_dispatch` erlaubt einen manuellen Durchlauf. Manuelle Aufrufe führen ebenfalls einen Prüf-Schritt aus, keinen produktiven Eingriff.
 
 ## Dauerhafter Zustand und Chat-Wechsel
 
@@ -29,9 +29,9 @@ Das Skript erstellt bei Bedarf ein öffentliches GitHub-Issue **„Helferlein Na
 
 Die Routinen wechseln sich ab. Diese Prüfungen ersetzen **keine** Browser-, Authentifizierungs-, Berechtigungs- oder Wiederherstellungstests. Sie liefern keine eigenständige Live-Freigabe.
 
-## Coding-Agent-Konzept (noch nicht aktiv)
+## Coding-Agent und Freigabegrenzen
 
-Für tatsächliche Entwicklungsarbeiten ist ein separater Agent-Job mit eigener, eng begrenzter Berechtigung vorgesehen:
+Für tatsächliche Entwicklungsarbeiten ist ein separater Agent-Job mit eigener, eng begrenzter Berechtigung erforderlich. Der bestehende OpenAI-Draft-PR-Pilot erstellt bisher lediglich Vorschlagsdokumente und ist manuell startbar:
 
 1. **Auftrag:** Ein Agent liest die offene, versionierte Aufgabenliste und wählt eine kleine, klar definierte Änderung.
 2. **Isolierung:** Agent erhält nur Repository-Lesezugriff und Schreibrechte auf einen separaten Arbeitsbranch; niemals produktive Supabase-Schlüssel, Service-Role-Secrets oder Rechte für direkte Deployments.
