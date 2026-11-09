@@ -92,3 +92,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Commit `66bc9eacaf7ac0ed3a4c88956056c97f4ccccfcd`: Jede `auth()`-Abfrage bekommt eine Generation. Antworten einer überholten `getUser()`-Anfrage werden ignoriert; ebenso ein Profil-Leseergebnis, wenn währenddessen eine neuere Auth-Abfrage gestartet wurde oder die aktive Nutzer-ID nicht mehr passt. So kann eine langsame frühere Antwort nach einem Sitzungswechsel keine veralteten Profildaten in das Formular zurückschreiben.
 - **Noch nachzuweisen:** Browser-Test mit verzögerter `getUser()`- und `wishlist_profiles`-Antwort bei Abmeldung/Kontowechsel; nur der neueste Sitzungszustand darf sichtbar bleiben. Auch Login, Logout, Registrierung und Passwortfeld-Reset prüfen.
 - Vor Merge: CI des neuesten Commits und RLS-/Browser-E2E-Prüfungen nachweisen. Keine produktiven Daten verändert; kein Deployment.
+
+## Weitere Verbesserungen (09.11.2026)
+- Bereits vorhandene Wünsche werden beim erneuten Hinzufügen derselben ASIN nicht mehr stillschweigend durch ein Upsert überschrieben; die UI weist stattdessen auf die Bearbeitung des bestehenden Wunsches hin. Ein Unique-Constraint-Rennen wird als Duplikat behandelt.
+- Profilsuche lässt sich jetzt mit der Eingabetaste auslösen; Tastaturfokus für Textfelder wurde erweitert und Eingabefelder erhalten zusätzliche semantische Attribute.
+- Vor Freigabe besonders prüfen: Duplikat-Fehler bei gleichem Produkt, Unverändertheit der vorhandenen Notiz/Priorität, Suche mit Enter sowie Fokusmarkierung mit Tastatur. Die neuen Commits benötigen eigenen CI-Nachweis.
