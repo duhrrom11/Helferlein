@@ -250,3 +250,9 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Commit `5b0327e212501506cd94377c2b448871c17fdb32`: Nicht nur Supabase-Fehlerobjekte, sondern auch geworfene Fehler aus dem Profil-SELECT werden nach Prüfung von Auth-/Profilgeneration und Nutzeridentität über denselben fail-closed-Pfad verarbeitet. Das zuvor zwischengespeicherte Profil wird bei einem aktuellen Fehler invalidiert; alte Anfragen dürfen eine neue Sitzung nicht beeinträchtigen.
 - Noch offen: Browser-Negativtest mit absichtlich zurückgewiesenem Profil-SELECT nach bereits geladenem Profil sowie Test für überholte Rejection nach Kontowechsel. Keine Testdaten in Produktion.
 - CI für den aktuellen Branch-Head gesondert nachweisen. Keine Datenbank-, Merge- oder Deployment-Aktionen.
+
+## D/E – Community-Regeln und barrierearme Ergebnisdarstellung
+- Öffentliche Inhaltsregeln sind als aufklappbarer Bereich sichtbar: Datenschutz Dritter, Beleidigungen/Drohungen, Spam und irreführende Angaben. Es wird ausdrücklich darauf hingewiesen, dass Meldefunktion und Moderation noch fehlen.
+- Feed-Einträge erhalten visuell getrennte Karten; Statusmeldungen sind für Screenreader atomar und Feed/Profilsuche kennzeichnen laufende Anfragen mit `aria-busy`.
+- Offene Pflichtarbeit unverändert: tatsächliche Meldemöglichkeit, Moderationsverantwortung, serverseitiger Missbrauchsschutz und Freigabeprüfungen. Keine unbestätigten Kontaktadressen oder funktionslosen Aktionen erfunden.
+- Bestehende CI- und Browser-Smoke-Checks am aktuellen Head prüfen; keine produktiven Datenbankänderungen, kein Merge und kein Deployment.
