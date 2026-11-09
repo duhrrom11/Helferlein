@@ -57,7 +57,7 @@ function harness(shared, uid, options = {}) {
     HelferleinCloudStore: { createStore: () => ({
       dispose() {},
       status() { return {}; },
-      async load() { return { source: 'cloud-empty', data: null }; },
+      async load() { return options.remoteData ? { source: 'cloud', data: options.remoteData } : { source: 'cloud-empty', data: null }; },
       async hasPending() { return false; },
       async flush() { return false; },
       async save() { return options.holdSave ? new Promise(resolve => { finishSave = resolve; }) : true; }
@@ -179,6 +179,25 @@ const journal = 'helferlein_cloud_switch_test-tool';
   assert.equal(bundled.get('test_budgets'), '{"food":120}');
   assert.equal(bundled.get('test_goals'), '[{"id":"goal"}]');
   assert.equal(bundled.get(owner), A);
+
+  const initialBundle = { items: [{ id: 'entry' }], budgets: { food: 120 }, goals: [{ id: 'goal' }] };
+  const remoteBundle = { items: [{ id: 'entry' }], budgets: { food: 180 }, goals: [{ id: 'goal' }] };
+  const refreshed = new Map([
+    [owner, A],
+    ['helferlein_cloud_enabled_test-tool_' + A, 'true'],
+    ['helferlein_cloud_test-tool_' + A + '_cache', JSON.stringify(initialBundle)],
+    ['test_entries', JSON.stringify(initialBundle.items)],
+    ['test_budgets', JSON.stringify(initialBundle.budgets)],
+    ['test_goals', JSON.stringify(initialBundle.goals)]
+  ]);
+  const remoteHarness = harness(refreshed, A, { bundle: true, remoteData: remoteBundle });
+  await remoteHarness.wait();
+  const applied = await remoteHarness.bridge.refreshFromCloud();
+  assert.equal(applied, true, 'remote household changes should apply when local matches baseline');
+  assert.equal(JSON.parse(refreshed.get('test_budgets')).food, 180,
+    'remote budget update applied even when entries and goals are unchanged');
+  assert.deepEqual(JSON.parse(refreshed.get('test_entries')), initialBundle.items);
+  remoteHarness.bridge.dispose();
 
   console.log('Cloud account switching offline regression passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });
