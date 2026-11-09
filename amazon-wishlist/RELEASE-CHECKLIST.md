@@ -272,3 +272,10 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Sichtbare Wunschkarten werden getrennt vom serverseitigen Pagination-Offset gezählt; ausgeblendete Datensätze erhöhen den Sichtbarkeitszähler nicht.
 - Wenn alle geladenen Wünsche lokal ausgeblendet sind, erscheint ein Hinweis zur Wiederherstellung statt eines leeren Feeds.
 - Weiter offen: GitHub-CI-/Browsernachweis für neuesten Head, echte Meldungen/Moderation, serverseitiger Abuse-Schutz. Keine Supabase-Schreiboperation, kein Merge/Deployment.
+
+## Profilsuche: Netzwerkfehler und Ladezustand (09.11.2026, 23 Uhr MEZ)
+- `993987149267a11f76f930064d8105e2132ec056`: Sowohl Promise-Rejections bei der Profilsuche als auch beim Nachladen der eigenen Abonnements werden als aktuelle Fehler behandelt; Antworten/Fehler überholter Suchgenerationen bleiben ignoriert. Ein veralteter Request entfernt den Ladezustand einer neueren Suche nicht mehr.
+- `3278ff74d43a1dc3acbbb59abe6a0a500ba94154`: Eingabeänderung, Escape und Kontowechsel invalidieren die Suche und entfernen dabei den nicht mehr gültigen `aria-busy`-Status. Keine Serverdaten geändert.
+- Browser-Negativfälle offen: Zwei zeitlich vertauschte Suchen, erste schlägt fehl; die zweite bleibt bis zu ihrer Antwort als ladend gekennzeichnet. Nach Escape/Kontowechsel keine alte Fehlermeldung, kein alter Ladezustand. Außerdem Follow-SELECT als Promise-Rejection testen.
+- Lokal verfügbar: Node.js v22.16.0. GitHub-Checkout weiterhin durch `Could not resolve host: github.com` blockiert. Die vorhandene Suite wurde deshalb **nicht** ausgeführt. Nächste Handlung: GitHub-CI für den letzten Head nachweisen und im vollständigen Checkout `node --check amazon-wishlist/app.mjs && node --test amazon-wishlist/*.test.mjs` ausführen.
+- Kein Supabase-Schreibzugriff, keine Testdatensätze, kein Merge, kein Deployment und keine Veröffentlichung.
