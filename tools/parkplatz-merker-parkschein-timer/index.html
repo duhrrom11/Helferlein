@@ -355,7 +355,7 @@
 
         function runTimerLoop() {
             clearInterval(timerInterval);
-            if (!Number.isFinite(Number(activeEndTime))) return;
+            if (activeEndTime == null || !Number.isFinite(Number(activeEndTime))) return;
             const tick = () => {
                 const distance = Number(activeEndTime) - Date.now();
                 if (distance <= 0) {
