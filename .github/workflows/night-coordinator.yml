@@ -1,10 +1,9 @@
 name: Helferlein Nachtbetrieb
 
 on:
-  # GitHub schedules use UTC. Run frequently and gate by Europe/Berlin in Node
-  # so winter/summer time switches are handled without manual cron changes.
+  # UTC schedule: every five minutes, around the clock.
   schedule:
-    - cron: '*/5 22-23,0-5 * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -28,7 +27,7 @@ jobs:
         run: |
           node --check scripts/night-coordinator.cjs
           node scripts/night-coordinator-guardrails.cjs
-      - name: Read-only night check and checkpoint
+      - name: Read-only continuous check and checkpoint
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
