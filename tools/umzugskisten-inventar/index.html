@@ -653,7 +653,7 @@
 
             let totalBoxes = data.boxes.length;
             let totalLocs = data.locations.length;
-            let totalVal = data.boxes.reduce((sum, b) => sum + (b.value || 0), 0);
+            let totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
 
             document.getElementById('statBoxes').innerText = totalBoxes;
             document.getElementById('statLocs').innerText = totalLocs;
@@ -664,7 +664,7 @@
             if (totalLocs > 0 && totalVal > 0) {
                 locStatsCard.classList.remove('hidden');
                 locStatsList.innerHTML = data.locations.map(loc => {
-                    const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + (b.value || 0), 0);
+                    const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + Number(b.value || 0), 0);
                     return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${loc.icon || '📍'} ${loc.name}</p><p class="text-sm font-bold text-amber-800">${locVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
@@ -677,7 +677,7 @@
             if (totalBoxes > 0 && totalVal > 0) {
                 tagStatsCard.classList.remove('hidden');
                 tagStatsList.innerHTML = tags.map(t => {
-                    const tagVal = data.boxes.filter(b => (b.tag || 'Standard') === t).reduce((sum, b) => sum + (b.value || 0), 0);
+                    const tagVal = data.boxes.filter(b => (b.tag || 'Standard') === t).reduce((sum, b) => sum + Number(b.value || 0), 0);
                     return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${t}</p><p class="text-sm font-bold text-amber-800">${tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
@@ -811,7 +811,7 @@
                 y += 4;
             });
 
-            let totalVal = data.boxes.reduce((sum, b) => sum + (b.value || 0), 0);
+            let totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
             if (y > 270) { doc.addPage(); y = 20; }
             doc.setFont("helvetica", "bold");
             doc.setFontSize(12);
@@ -966,7 +966,7 @@
                     resBox.classList.remove('hidden');
 
                     if (decodedText.includes('?box=')) {
-                        const boxId = decodedText.split('?box=')[1];
+                        const boxId = new URL(decodedText, window.location.href).searchParams.get('box') || '';
                         document.getElementById('searchBox').value = boxId;
                     } else {
                         document.getElementById('searchBox').value = decodedText;
