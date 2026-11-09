@@ -2368,8 +2368,11 @@
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
             doc.setFontSize(16); doc.text("WG- & Haushaltsbuch Abrechnung", 14, 20);
             doc.setFontSize(10); doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
-            let y = 38;
-            getData().filter(r => r && typeof r === 'object' && !Array.isArray(r)).forEach(r => {
+            const entries = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
+            doc.text(`Buchungen: ${entries.length}`, 14, 35);
+            let y = 43;
+            if (!entries.length) doc.text("Keine Buchungen erfasst.", 14, y);
+            entries.forEach(r => {
                 const price = Number(r.price);
                 const line = `${r.date || '-'} | ${r.title || '-'} (${r.category || '-'}): ${Number.isFinite(price) ? price.toFixed(2) : '-'} EUR [${r.payer || 'Privat'}]`;
                 doc.splitTextToSize(line, 180).forEach(textLine => {
