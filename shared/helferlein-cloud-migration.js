@@ -26,6 +26,20 @@
     let accountGeneration = 0;
     let statusGeneration = 0;
     let reconnectInProgress = false;
+    let reconnectRetryTimer = null;
+    let reconnectRetryCount = 0;
+    function clearReconnectRetry() {
+      if (reconnectRetryTimer !== null) clearTimeout(reconnectRetryTimer);
+      reconnectRetryTimer = null;
+    }
+    function scheduleReconnectRetry() {
+      if (disposed || !navigator.onLine || !currentOwner() || reconnectRetryTimer !== null) return;
+      const delay = Math.min(60000, 5000 * Math.pow(2, Math.min(reconnectRetryCount++, 4)));
+      reconnectRetryTimer = setTimeout(() => {
+        reconnectRetryTimer = null;
+        if (!disposed) void resume().catch(reportError);
+      }, delay);
+    }
     let lastRefreshAt = null;
     let lastReconnectAt = null;
     let lastConflictMessage = null;
@@ -428,10 +442,12 @@
         if (disposed) return;
         if (!sameAccount(user.id, reconnectGeneration)) return;
         if (reconnectOwner !== currentOwner()) return;
-        if (!await store.hasPending()) { lastReconnectAt = now(); reconnectSuccesses++; lastConflictMessage = null; }
+        if (!await store.hasPending()) { lastReconnectAt = now(); reconnectSuccesses++; lastConflictMessage = null; reconnectRetryCount = 0; clearReconnectRetry(); }
+        else { setStatus('Lokal gespeichert · Cloud-Synchronisierung ausstehend'); }
         if (done && await isEnabled() && isOwner(user.id)) setStatus('Ausstehende Änderungen synchronisiert');
       } catch (error) {
-        statusError('Synchronisierung ausstehend', error);
+        statusError('Lokal gespeichert · Cloud-Synchronisierung ausstehend', error);
+        if (navigator.onLine && /fetch|network|timeout|connection|offline/i.test(String(error && error.message || error))) scheduleReconnectRetry();
       }
       } finally { reconnectInProgress = false; }
       if (!disposed && sameAccount(enabledUser, reconnectGeneration) && reconnectOwner === currentOwner()) void refreshFromCloud().catch(reportError);
@@ -445,7 +461,7 @@
       global.location.reload();
       return { dispose: () => store.dispose(), canWriteLocal: () => false };
     }
-    const onOnline = () => { if (!disposed) void resume().catch(reportError); };
+    const onOnline = () => { if (!disposed) { reconnectRetryCount = 0; clearReconnectRetry(); void resume().catch(reportError); } };
     global.addEventListener('online', onOnline);
     let blocked = null;
     async function guardAccount() {
@@ -577,9 +593,9 @@
       global.location.reload();
     };
     global.addEventListener('storage', onStorage);
-    const onFocus = () => { if (!disposed) void refreshFromCloud().catch(reportError); };
+    const onFocus = () => { if (!disposed) void resume().catch(reportError); };
     global.addEventListener('focus', onFocus);
-    const onVisibility = () => { if (!disposed && document.visibilityState === 'visible') void refreshFromCloud().catch(reportError); };
+    const onVisibility = () => { if (!disposed && document.visibilityState === 'visible') void resume().catch(reportError); };
     document.addEventListener('visibilitychange', onVisibility);
     let authGeneration = 0;
     const authSubscription = client.auth.onAuthStateChange(() => {
@@ -809,6 +825,7 @@
     function dispose() {
       if (disposed) return;
       disposed = true;
+      clearReconnectRetry();
       lastCloudSource = null;
       enabledUser = null;
       verifiedOwner = null;
