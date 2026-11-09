@@ -73,7 +73,9 @@ function harness(shared, uid, options = {}) {
     localStorage, setTimeout, confirm: () => true, console });
   vm.runInContext(script, ctx);
   const bridge = window.HelferleinCloudMigration.mount({
-    client, tool: 'test-tool', localKey: 'test_records', collection: 'items',
+    client, tool: options.plants ? 'pflanzenpflege-giessplan' : 'test-tool',
+    localKey: options.plants ? 'pflanzen_pass_v10' : 'test_records',
+    collection: options.plants ? 'plants' : 'items',
     ...(options.bundle ? { localFormat: 'bundle', bundleSources: [
       { key: 'test_entries', field: 'items', kind: 'array' },
       { key: 'test_budgets', field: 'budgets', kind: 'record' },
@@ -87,6 +89,12 @@ function harness(shared, uid, options = {}) {
     setUser(next) { uid = next; if (onAuthChange) onAuthChange('SIGNED_IN', {}); },
     finishSave() { assert.ok(finishSave, 'save started'); finishSave(true); },
     get reloads() { return reloads; },
+    async importCloud() {
+      await wait();
+      const button = elements.find(e => e.tagName === 'button' && e.textContent === 'Cloud-Daten lokal übernehmen');
+      assert.ok(button, 'cloud import action exists');
+      await button.listeners.click();
+    },
     async switch() {
       await wait();
       const button = elements.find(e => e.tagName === 'button' &&
@@ -200,6 +208,33 @@ const journal = 'helferlein_cloud_switch_test-tool';
     'remote budget update applied even when entries and goals are unchanged');
   assert.deepEqual(JSON.parse(refreshed.get('test_entries')), initialBundle.items);
   remoteHarness.bridge.dispose();
+
+  // Device 2: an untouched default plant record is safe to replace; any user edits remain protected.
+  const plantOwner = 'helferlein_cloud_owner_pflanzenpflege-giessplan';
+  const defaultPlants = { plants: [], monthWaterLiters: 0, totalHarvestGrams: 0,
+    inventory: [{ name: 'Tomatendünger Flüssig', qty: '1 L' }, { name: 'Bio Blumenerde', qty: '40 L' }],
+    seeds: [], beetSlots: Array(16).fill(null), cisternMax: 500, cisternCurrent: 500 };
+  const remotePlants = { ...defaultPlants, plants: [{ id: 'real-plant' }] };
+  const plantKey = 'pflanzen_pass_v10';
+  const safePlantStorage = new Map([[plantOwner, A], [plantKey, JSON.stringify(defaultPlants)]]);
+  const safePlant = harness(safePlantStorage, A, { plants: true, remoteData: remotePlants });
+  await safePlant.importCloud();
+  assert.equal(JSON.parse(safePlantStorage.get(plantKey)).plants[0].id, 'real-plant',
+    'cloud plant imported over untouched defaults');
+  safePlant.bridge.dispose();
+  for (const changed of [
+    { ...defaultPlants, inventory: [{ name: 'Personal', qty: '1' }] },
+    { ...defaultPlants, cisternCurrent: 250 },
+    { ...defaultPlants, plants: [{ id: 'local' }] },
+    { ...defaultPlants, extra: 'user data' }
+  ]) {
+    const original = JSON.stringify(changed);
+    const guardedStorage = new Map([[plantOwner, A], [plantKey, original]]);
+    const guarded = harness(guardedStorage, A, { plants: true, remoteData: remotePlants });
+    await guarded.importCloud();
+    assert.equal(guardedStorage.get(plantKey), original, 'modified local data must not be replaced');
+    guarded.bridge.dispose();
+  }
 
   console.log('Cloud account switching offline regression passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });
