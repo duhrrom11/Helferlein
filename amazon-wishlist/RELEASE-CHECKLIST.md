@@ -118,3 +118,10 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Profilsuche zeigt einen Ladezustand und verständliche Fehlermeldungen; fehlgeschlagene Feed-Abfragen zeigen einen Wiederholhinweis.
 - Der Pagination-Button startet deaktiviert und wird erst nach einer erfolgreichen Feed-Abfrage aktiviert. Such- und Feed-Bedienelemente sind ihren Ergebnisbereichen zugeordnet.
 - Noch offen: manuelle Race-Condition-Tests mit schnellem Kontowechsel und verzögerten API-Antworten sowie echte RLS-API-Tests. Keine Testdatensätze in der Produktivdatenbank.
+
+## Stabilisierung: Pagination und Eingabevalidierung
+- Der Feed speichert den Abfrage-Offset beim Start und verwirft Antworten, wenn der Offset inzwischen geändert wurde.
+- Ungültige Prioritätswerte wie `null`, `true` oder leere Arrays werden nicht mehr als gültige Zahlen interpretiert.
+- Profilsuche verlangt mindestens zwei alphanumerische Suchzeichen; reine Leerzeichen und Bindestriche zählen nicht.
+- Zusätzliche Unit-Tests sichern die Randfälle ab.
+- CI-Befund für `e6c04eb`: 5 von 6 Workflows erfolgreich; Browser launch smoke scheiterte nach 30 Sekunden im Navigationsfall `kisten` (68/69 Tests erfolgreich). Ursache nicht nachgewiesen; nicht als bestanden werten. Für aktuelle Commits CI erneut prüfen.
