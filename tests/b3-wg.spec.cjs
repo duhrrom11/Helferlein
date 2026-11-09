@@ -69,7 +69,7 @@ test('First visit shows original WG creation action but preserves navigation',as
  await page.setViewportSize({width:390,height:900});
  await page.goto(url,{waitUntil:'domcontentloaded'});
  await expect(page.locator('#b3-wg-onboarding')).toBeVisible();
- await expect(page.getByRole('button',{name:/WG-Plan mit 1 Klick erstellen/})).toBeVisible();
+ await expect(page.getByRole('button',{name:/Private WG erstellen \(Anmeldung erforderlich\)/})).toBeVisible();
  await expect(page.getByRole('button',{name:'Einstellungen öffnen'})).toBeVisible();
  await expect(page.locator('.b3-more summary')).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem('wg_active_bin_id'))).toBeNull();
