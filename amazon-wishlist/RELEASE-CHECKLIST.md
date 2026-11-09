@@ -97,3 +97,10 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Bereits vorhandene Wünsche werden beim erneuten Hinzufügen derselben ASIN nicht mehr stillschweigend durch ein Upsert überschrieben; die UI weist stattdessen auf die Bearbeitung des bestehenden Wunsches hin. Ein Unique-Constraint-Rennen wird als Duplikat behandelt.
 - Profilsuche lässt sich jetzt mit der Eingabetaste auslösen; Tastaturfokus für Textfelder wurde erweitert und Eingabefelder erhalten zusätzliche semantische Attribute.
 - Vor Freigabe besonders prüfen: Duplikat-Fehler bei gleichem Produkt, Unverändertheit der vorhandenen Notiz/Priorität, Suche mit Enter sowie Fokusmarkierung mit Tastatur. Die neuen Commits benötigen eigenen CI-Nachweis.
+
+## Entwicklungspaket: Suche, Feed und Barrierefreiheit
+- Fehlgeschlagene Feed-Abfragen deaktivieren den Pagination-Button, bis eine neue erfolgreiche Aktualisierung erfolgt; keine unbeabsichtigten weiteren Ladeversuche.
+- Nicht existierende Profil-Deep-Links wechseln in eine explizite leere Profilansicht statt stillschweigend den globalen Feed zu zeigen.
+- Suchergebnisse und Feed haben beschriftete Live-Regionen; lange Nutzereingaben brechen um.
+- Profil-Suchvalidierung wurde als separat getestete Hilfsfunktion zentralisiert, einschließlich Sonderzeichen- und Kurzsuchfällen.
+- Vor Merge im Browser überprüfen: ungültiger `?profile=`-Handle, nicht existierendes Profil, langsame/fehlerhafte Feed-Abfragen, Tastaturnavigation und Suchzeichen-Validierung. Keine Testdaten in Produktiv-Supabase.
