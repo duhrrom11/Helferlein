@@ -37,7 +37,7 @@ async function searchPeople(){
   if(user&&profile&&p.user_id!==user.id){
    const btn=document.createElement('button');btn.type='button';const isFollowing=followed.has(p.user_id);btn.textContent=isFollowing?'Nicht mehr folgen':'Folgen';
    btn.onclick=run(async()=>{
-     const ownerId=requireUser();const res=isFollowing?await db.from('wishlist_follows').delete().eq('follower_id',ownerId).eq('followed_id',p.user_id).select('follower_id'):await db.from('wishlist_follows').insert({follower_id:ownerId,followed_id:p.user_id});
+     const ownerId=requireUser();if(ownerId!==searchingUserId||generation!==peopleSearchGeneration||!item.isConnected)throw Error('Suchergebnis ist veraltet. Bitte erneut suchen.');const res=isFollowing?await db.from('wishlist_follows').delete().eq('follower_id',ownerId).eq('followed_id',p.user_id).select('follower_id'):await db.from('wishlist_follows').insert({follower_id:ownerId,followed_id:p.user_id});
      if(res.error)throw res.error;if(isFollowing&&!res.data?.length)throw Error('Abonnement konnte nicht entfernt werden');if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');
      await searchPeople();await refreshFeed();if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');report(isFollowing?'Nicht mehr abonniert':'Profil abonniert');
    });item.append(btn)
