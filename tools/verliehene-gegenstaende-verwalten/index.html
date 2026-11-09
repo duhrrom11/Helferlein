@@ -660,7 +660,7 @@
         }
 
         function downloadICS(title, dateStr, person) {
-            const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(dateStr));
+            const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr));
             if (!match) return alert("Ungültiges Rückgabedatum.");
             const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
             if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== dateStr)
@@ -669,13 +669,13 @@
             const startDate = formatDate(date);
             date.setUTCDate(date.getUTCDate() + 1);
             const endDate = formatDate(date);
-            const escapeIcs = value => String(value ?? '').replace(/\\\\/g, '\\\\\\\\').replace(/\\r?\\n/g, '\\\\n').replace(/,/g, '\\\\,').replace(/;/g, '\\\\;');
+            const escapeIcs = value => String(value ?? '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
             const icsContent = [
                 "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Helferlein//Verleih//DE",
                 "BEGIN:VEVENT", `SUMMARY:${escapeIcs(`Rückgabe: ${title} (${person})`)}`,
                 `DTSTART;VALUE=DATE:${startDate}`, `DTEND;VALUE=DATE:${endDate}`,
                 "DESCRIPTION:Verleih-Rückgabe fällig", "END:VEVENT", "END:VCALENDAR", ""
-            ].join("\\r\\n");
+            ].join("\r\n");
             const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
