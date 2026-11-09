@@ -36,6 +36,8 @@ function api(method, endpoint, body) {
         resolve(value);
       });
     });
+    // Avoid hanging indefinitely when GitHub's API does not respond.
+    req.setTimeout(15000, () => req.destroy(new Error('GitHub API request timed out')));
     req.on('error', reject);
     if (data) req.write(data);
     req.end();
