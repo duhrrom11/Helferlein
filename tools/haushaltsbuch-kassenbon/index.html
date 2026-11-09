@@ -647,6 +647,9 @@
         }
         function householdCloudCanSave() {
             try {
+                // Preserve legacy offline behavior before an account claims this browser.
+                if (typeof window === 'undefined' || (!window.helferleinCloudBridge &&
+                    !localStorage.getItem('helferlein_cloud_owner_haushaltsbuch-kassenbon'))) return true;
                 householdCloudSnapshot();
                 if (localStorage.getItem('helferlein_cloud_owner_haushaltsbuch-kassenbon') && !window.helferleinCloudBridge)
                     throw new Error('Kontoschutz noch nicht geladen; bitte Seite neu öffnen.');
@@ -659,7 +662,7 @@
             }
         }
         function householdCloudChanged() {
-            if (!window.helferleinCloudBridge) return;
+            if (typeof window === 'undefined' || !window.helferleinCloudBridge) return;
             void window.helferleinCloudBridge.changed(householdCloudSnapshot()).catch(error =>
                 console.error('Haushaltsbuch-Cloud-Synchronisierung ausstehend:', error));
         }
