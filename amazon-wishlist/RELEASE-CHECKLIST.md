@@ -57,3 +57,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Für den vorherigen Head `02eaa49cb101584439cc7ca3e9ea336fe91ab2bd` sind alle sechs PR-Workflows erfolgreich abgeschlossen, einschließlich `Amazon wishlist checks` (Run `42564977892`) und `B3 Startseite` (Run `42564978073`).
 - Importierte `?url=`-Amazon.de-Produktlinks werden nun zu `https://www.amazon.de/dp/ASIN` kanonisiert; externe Affiliate-/Tracking-Parameter gelangen nicht mehr in das Formular. Auch beim anonymen Auth-Reset bleibt nur die kanonische URL erhalten. Die Parser-Validierung begrenzt weiterhin die Eingabe auf gültige Amazon.de-Produktlinks.
 - Neuer Regressionstest deckt Tracking-Parameter, HTTP-Normalisierung, fremde Marktplätze, Lookalike-Domains und ungültige Links ab. **Für die neuen Commits ist CI noch separat nachzuweisen**; kein Browser-E2E-Nachweis und keine Änderung an der Produktivdatenbank.
+
+## Prüfung vom 09.11.2026 (08 Uhr MEZ)
+- Für den vorherigen Head `6093b2e035a0c2f645db2e2e0ca1ee51acc7f388` sind alle sechs PR-Workflows erfolgreich abgeschlossen, einschließlich `Amazon wishlist checks` und `B3 Startseite`.
+- Öffentliche Profil-Deep-Links normalisieren jetzt Großbuchstaben (z. B. `?profile=Alice_123` zu `alice_123` für die Datenbankabfrage), entsprechend der vorhandenen Benutzername-Validierung. Ungültige Parameter werden weiterhin ignoriert. Regressionstest ergänzt.
+- Neuer Head nach der Codeänderung: `51cae14282f124e6e13bc421789c7b0e9308add5`. Für diesen Stand CI separat prüfen; Browser-End-to-End-Prüfung für Deep-Links und RLS weiterhin offen. Keine Produktivdaten geändert.
