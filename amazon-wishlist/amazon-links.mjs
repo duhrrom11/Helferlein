@@ -19,3 +19,9 @@ export function affiliateUrl(product, tags) {
   url.searchParams.set('tag', tag);
   return url.toString();
 }
+
+/** Canonicalize externally shared Amazon.de links; discard third-party tracking parameters. */
+export function sharedAmazonProductUrl(input) {
+  const product=parseAmazonUrl(input);
+  return product?.marketplace==='amazon.de' ? 'https://www.amazon.de/dp/'+product.asin : null;
+}
