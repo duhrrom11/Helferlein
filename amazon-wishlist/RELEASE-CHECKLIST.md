@@ -133,3 +133,15 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Profilfelder werden bei Kontowechsel sofort geleert, bevor asynchron die Daten des neuen Kontos geladen werden.
 - Prioritäten akzeptieren nur die kanonischen Werte 1, 2, 3; numerische Umwege wie `01` oder `1e0` werden abgelehnt.
 - Vor Freigabe Browser-Test für Wiederholen nach Netzwerkfehler, schnellen Kontowechsel und vollständige CI auf dem letzten Commit nachholen. Kein Deployment.
+
+## Minimaler Freigabe-Gate (Nutzerwunsch: nur notwendige Tests)
+1. Letzter Commit: `node --check amazon-wishlist/app.mjs` und bestehende Amazon-Unit-Tests müssen erfolgreich sein; GitHub-Workflow `Amazon wishlist checks` muss grün sein.
+2. Bestehender Browser-Smoke-Workflow muss auf dem letzten Commit erfolgreich sein. Keine zusätzlichen umfangreichen Testkampagnen ohne konkreten Befund.
+3. Vor einer öffentlichen Freigabe bleiben zwingend: echter Nachweis, dass fremde Konten per RLS keine Profil-/Wunschdaten ändern können; Auth-/E-Mail-Konfiguration und rechtliche/Moderationsanforderungen klären. Keine Testdaten in produktiver Supabase anlegen.
+4. Kein automatischer Merge, kein Deployment. Die vollständige ältere Checkliste bleibt als Referenz bestehen, ist aber nicht als sofort durchzuführender Testumfang zu verstehen.
+
+## Aktuelles Entwicklungspaket
+- Bei belegtem Benutzernamen erscheint eine verständliche Fehlermeldung; fehlgeschlagene Produkt-Retry-Abfragen geben ihren tatsächlichen Fehler zurück.
+- Bearbeitungsaktionen merken sich die Wunsch-ID vor asynchronen Änderungen; doppelte manuelle Button-Deaktivierungen wurden entfernt.
+- Escape leert die Profilsuche; beim Verlassen der Profilansicht wird die alte Profilauswahl verworfen.
+- Formularaktionsbuttons haben explizite Typen und das Suchfeld verweist auf den Ergebnisbereich.
