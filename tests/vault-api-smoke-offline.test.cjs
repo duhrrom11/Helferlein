@@ -8,9 +8,14 @@ const script = path.join(__dirname, 'vault-api-smoke.cjs');
 
 function run(url, mocked = false) {
   const code = mocked
-    ? `globalThis.fetch = async (_url, options) => {
+    ? `const originalTimeout = AbortSignal.timeout;
+      AbortSignal.timeout = (milliseconds) => {
+        if (milliseconds !== 10000) throw Error('Timeout must be exactly 10000 ms');
+        return originalTimeout(milliseconds);
+      };
+      globalThis.fetch = async (_url, options) => {
         if (options.redirect !== 'manual') throw Error('Redirects must be disabled');
-        if (!options.signal || !options.signal.aborted && typeof options.signal.addEventListener !== 'function')
+        if (!options.signal || typeof options.signal.addEventListener !== 'function')
           throw Error('Request timeout signal missing');
         return {status: 401, text: async () => ''};
       };
@@ -51,6 +56,6 @@ test('uses manual redirects and a timeout signal for requests', () => {
   // The mocked 401 is sufficient for the first two checks; the OPTIONS check
   // must fail on status, proving the request was intercepted without network.
   assert.equal(result.status, 1, result.stderr);
-  assert.doesNotMatch(result.stderr, /timeout signal missing|Redirects must be disabled/);
+  assert.doesNotMatch(result.stderr, /timeout signal missing|Timeout must be exactly 10000 ms|Redirects must be disabled/);
   assert.match(result.stderr, /Smoke-Test fehlgeschlagen/);
 });
