@@ -65,11 +65,12 @@ function harness(shared, uid, options = {}) {
   };
   const client = {
     auth: {
-      getUser: async () => ({ data: { user: uid ? { id: uid } : null }, error: null }),
+      getUser: async () => options.offline ? { data: { user: null }, error: new Error('Network unavailable') } : ({ data: { user: uid ? { id: uid } : null }, error: null }),
+      getSession: async () => ({ data: { session: options.cachedUid ? { user: { id: options.cachedUid }, expires_at: options.expired ? 1 : Date.now() / 1000 + 3600 } : null }, error: null }),
       onAuthStateChange: callback => { onAuthChange = callback; return { data: { subscription: { unsubscribe() {} } } }; }
     }
   };
-  const ctx = vm.createContext({ window, document, navigator: { onLine: true },
+  const ctx = vm.createContext({ window, document, navigator: { onLine: !options.offline },
     localStorage, setTimeout, confirm: () => true, console });
   vm.runInContext(script, ctx);
   const bridge = window.HelferleinCloudMigration.mount({
@@ -112,6 +113,24 @@ const slot = uid => 'helferlein_cloud_slot_test-tool_' + uid;
 const journal = 'helferlein_cloud_switch_test-tool';
 
 (async () => {
+  const offlineStorage = new Map([[owner, A], ['test_records', JSON.stringify({ items: [{ id: 'a' }] })]]);
+  const offline = harness(offlineStorage, A, { offline: true, cachedUid: A });
+  await offline.wait();
+  assert.equal(offline.bridge.canWriteLocal(), true, 'matching cached session allows offline edit after reload');
+  offline.bridge.dispose();
+  const expired = harness(offlineStorage, A, { offline: true, cachedUid: A, expired: true });
+  await expired.wait();
+  assert.equal(expired.bridge.canWriteLocal(), false, 'expired session cannot unlock offline edits');
+  expired.bridge.dispose();
+  const wrong = harness(offlineStorage, B, { offline: true, cachedUid: B });
+  await wrong.wait();
+  assert.equal(wrong.bridge.canWriteLocal(), false, 'different cached account cannot unlock owner data');
+  wrong.bridge.dispose();
+  const missing = harness(offlineStorage, A, { offline: true });
+  await missing.wait();
+  assert.equal(missing.bridge.canWriteLocal(), false, 'missing session cannot unlock offline edits');
+  missing.bridge.dispose();
+
   const shared = new Map([[owner, A], ['test_records', JSON.stringify({ items: [{ id: 'a' }] })]]);
   const first = harness(shared, B);
   await first.switch();
