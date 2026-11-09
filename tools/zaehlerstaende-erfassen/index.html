@@ -1053,8 +1053,13 @@
             doc.setFontSize(10);
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
 
-            let y = 38;
-            data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r) => {
+            const readings = data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string');
+            doc.text(`Erfasste Ablesungen: ${readings.length}`, 14, 34);
+            let y = 44;
+            if (!readings.length) {
+                doc.text("Keine Zählerstände erfasst.", 14, y);
+            }
+            readings.forEach((r) => {
                 const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                 const line = `${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
                 const lines = doc.splitTextToSize(line, 180);
