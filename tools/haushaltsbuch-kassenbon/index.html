@@ -1684,7 +1684,7 @@
         }
 
         function exportSteuerCSV() {
-            const data = getData().filter(r => r && r.isTax);
+            const data = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r) && r.isTax === true);
             if (data.length === 0) return alert("Keine steuerrelevanten Buchungen gefunden!");
             const rows = [["Datum", "Typ", "Titel", "Haendler", "Kategorie", "Preis_EUR", "Zahlungsart", "Seriennummer", "Notiz"].join(';')];
             for (const r of data) {
@@ -1696,6 +1696,10 @@
                 ];
                 rows.push(fields.map(steuerCsvFeld).join(';'));
             }
+            // Stable chronological order in the export; saved bookings remain untouched.
+            const header = rows.shift();
+            rows.sort((a, b) => a.slice(0, 10).localeCompare(b.slice(0, 10)));
+            rows.unshift(header);
             const csv = '\uFEFF' + rows.join('\r\n') + '\r\n';
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const a = document.createElement('a');
