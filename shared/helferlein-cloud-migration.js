@@ -198,7 +198,10 @@
     }
     async function switchToSignedInAccount() {
       assertActive();
-      if (activeOperation || accountSwitchInProgress || importInProgress || migrationInProgress) throw new Error('Cloud-Vorgang noch aktiv');
+      if (activeOperation || accountSwitchInProgress || importInProgress || migrationInProgress || reconnectInProgress || refreshInProgress) throw new Error('Cloud-Vorgang noch aktiv');
+      // A queued save may not yet have recorded its offline pending snapshot.
+      // Never switch the visible legacy storage while that save is outstanding.
+      if (cloudChangeQueued > 0) throw new Error('Lokale Cloud-Änderungen werden noch gesichert. Bitte erneut versuchen.');
       const user = await currentUser();
       const nextUid = requireUser(user);
       const previousUid = currentOwner();
@@ -280,6 +283,7 @@
     function ownerMatches(uid) { return !!uid && currentOwner() === uid; }
     function assertSameAccount(uid, generation) { if (!sameAccount(uid, generation)) throw new Error('Konto während Cloud-Vorgang gewechselt'); }
     function sameAccount(uid, generation) { return !disposed && !!uid && enabledUser === uid && accountGeneration === generation && isOwner(uid); }
+    let cloudChangeQueued = 0;
     function changed(data) {
       if (disposed) return Promise.resolve(false);
       lastLocalChangeAt = now();
@@ -291,9 +295,11 @@
       const expectedOwner = currentOwner();
       const expectedGeneration = accountGeneration;
       if (activeOperation === 'import' || activeOperation === 'upload') { lastConflictMessage = 'Datenübernahme läuft'; return Promise.resolve(false); }
-      if (expectedOwner && (!enabledUser || expectedOwner !== enabledUser || verifiedOwner !== expectedOwner)) { reportError(new Error('Kontoprüfung für lokale Änderung nicht abgeschlossen')); return Promise.resolve(false); }
+      if (expectedOwner && verifiedOwner !== expectedOwner) { reportError(new Error('Kontoprüfung für lokale Änderung nicht abgeschlossen')); return Promise.resolve(false); }
+      if (expectedOwner && !enabledUser) { setStatus('Lokal gespeichert · Cloud-Übernahme für dieses Konto noch nicht aktiviert'); return Promise.resolve(false); }
       let snapshot;
       try { snapshot = JSON.parse(JSON.stringify(data)); } catch (error) { reportError(error); return Promise.reject(new Error('Änderungen konnten nicht serialisiert werden')); }
+      cloudChangeQueued++;
       queue = queue.catch(() => {}).then(async () => {
         assertActive();
         if (accountSwitchInProgress) { lastConflictMessage = 'Kontowechsel während Cloud-Speicherung'; return false; }
@@ -312,7 +318,7 @@
         } catch (error) {
           reportError(error);
         }
-      });
+      }).finally(() => { cloudChangeQueued--; });
       return queue;
     }
     async function refreshFromCloud() {
@@ -798,7 +804,9 @@
       if (activeOperation === 'import' || activeOperation === 'upload' || activeOperation === 'refresh') return false;
       const owner = currentOwner();
       if (!owner) return true; // Legacy data, not yet claimed by a cloud account.
-      return !!enabledUser && owner === enabledUser && verifiedOwner === owner;
+      // Newly switched accounts may edit their isolated local data before opting in.
+      // They cannot upload until the user explicitly completes migration.
+      return verifiedOwner === owner;
     }
     return { store, host, changed, canWriteLocal, resume, refreshFromCloud, dispose, getStatus: () => ({ disposed, enabledUser, activeOperation, lastSyncError, lastConflictMessage, lastCloudSource, accountSwitchInProgress, statusGeneration, lastRefreshAt, lastReconnectAt, lastLocalChangeAt, lastAccountChangeAt, lastAuthCheckAt, lastPendingCheckAt, lastStatusErrorAt, lastUploadAt, lastImportAt, lastGuardAt, lastGuardMismatch, lastEnableAt, lastRefreshSkippedAt, lastOperationStartedAt, lastOperationEndedAt, lastOwnerAtStatus, lastAuthStateAt, refreshAttempts, refreshApplied, reconnectAttempts, reconnectSuccesses, store: store.status() }) };
   }
