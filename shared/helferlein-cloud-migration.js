@@ -1,12 +1,18 @@
 /* Opt-in migration controls. Never replace existing local records automatically. */
 (function (global) {
   'use strict';
-  function mount({ client, tool, localKey, collection, refresh, target, localFormat = 'object' }) {
+  function mount({ client, tool, localKey, collection, refresh, target, localFormat = 'object', bundleSources = null }) {
     if (!client || !/^[a-z0-9_-]{1,80}$/i.test(tool) || !localKey || !collection) throw new Error('Invalid migration configuration');
     if (typeof localKey !== 'string' || localKey.length > 160 || !/^[a-z0-9_-]+$/i.test(localKey) || typeof collection !== 'string' || !/^[a-z]{1,40}$/i.test(collection)) throw new Error('Invalid local collection');
     if (!client.auth || typeof client.auth.onAuthStateChange !== 'function') throw new Error('Invalid auth client');
     if (target && typeof target.prepend !== 'function') throw new Error('Invalid migration target');
-    if (localFormat !== 'object' && localFormat !== 'array' && localFormat !== 'record') throw new Error('Invalid local data format');
+    if (localFormat !== 'object' && localFormat !== 'array' && localFormat !== 'record' && localFormat !== 'bundle') throw new Error('Invalid local data format');
+    if (localFormat === 'bundle' && (!Array.isArray(bundleSources) || bundleSources.length < 2 || bundleSources.some(src =>
+        !src || typeof src.key !== 'string' || !/^[a-z0-9_-]{1,160}$/i.test(src.key) ||
+        typeof src.field !== 'string' || !/^[a-z][a-z0-9_]{0,40}$/i.test(src.field) ||
+        (src.kind !== 'array' && src.kind !== 'record')) ||
+        new Set(bundleSources.map(src => src.key)).size !== bundleSources.length ||
+        new Set(bundleSources.map(src => src.field)).size !== bundleSources.length)) throw new Error('Invalid bundle sources');
     const store = global.HelferleinCloudStore.createStore(client, tool);
     let enabledUser = null;
     let verifiedOwner = null;
@@ -63,6 +69,9 @@
     }
     function validPayload(value) {
       if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+      if (localFormat === 'bundle') return bundleSources.every(src => src.kind === 'array'
+        ? Array.isArray(value[src.field])
+        : !!value[src.field] && typeof value[src.field] === 'object' && !Array.isArray(value[src.field]));
       const entries = value[collection];
       return localFormat === 'record'
         ? !!entries && typeof entries === 'object' && !Array.isArray(entries)
@@ -112,7 +121,50 @@
         verifiedOwner === user.id && isOwner(user.id) &&
         localStorage.getItem(enabledKey(user.id)) === 'true';
     }
-    function safeLocalBytes() { assertActive(); return localStorage.getItem(localKey); }
+    function safeLocalBytes() {
+      assertActive();
+      if (localFormat !== 'bundle') return localStorage.getItem(localKey);
+      const data = {};
+      let found = false;
+      for (const src of bundleSources) {
+        const bytes = localStorage.getItem(src.key);
+        if (bytes !== null) found = true;
+        let value;
+        try { value = bytes === null ? (src.kind === 'array' ? [] : {}) : JSON.parse(bytes); }
+        catch (_) { throw new Error('Ungültige vorhandene lokale Daten in ' + src.key); }
+        if (src.kind === 'array' ? !Array.isArray(value) : !value || typeof value !== 'object' || Array.isArray(value))
+          throw new Error('Ungültige vorhandene lokale Daten in ' + src.key);
+        data[src.field] = value;
+      }
+      return found ? JSON.stringify(data) : null;
+    }
+    function writeLocal(data) {
+      assertValidPayload(data);
+      if (localFormat !== 'bundle') {
+        localStorage.setItem(localKey, encodeLocal(data));
+        return;
+      }
+      const before = bundleSources.map(src => ({ key: src.key, bytes: localStorage.getItem(src.key) }));
+      let written = 0;
+      try {
+        for (const src of bundleSources) {
+          localStorage.setItem(src.key, JSON.stringify(data[src.field]));
+          written++;
+        }
+      } catch (error) {
+        let rollbackFailed = false;
+        for (let i = 0; i < written; i++) {
+          try {
+            const src = before[i];
+            if (src.bytes === null) localStorage.removeItem(src.key);
+            else localStorage.setItem(src.key, src.bytes);
+          } catch (_) { rollbackFailed = true; }
+        }
+        throw new Error(rollbackFailed
+          ? 'Lokale Wiederherstellung fehlgeschlagen; bitte bestehende Daten vor weiteren Änderungen sichern.'
+          : 'Lokale Übernahme abgebrochen; bisherige Daten wiederhergestellt.');
+      }
+    }
     function localCount(data) { return validPayload(data) ? entryCount(data) : null; }
     function validateLocal() { const data = safeParseLocal(); if (data !== null) ensureCollection(data); return data; }
     function hasValidLocal() { try { return validPayload(validateLocal()); } catch (_) { return false; } }
@@ -244,7 +296,7 @@
         ensureLocalUnchanged(before);
         ensureOwnerUnchanged(ownerAtStart);
         if (await store.hasPending()) return false;
-        localStorage.setItem(localKey, incoming);
+        writeLocal(result.data);
         refreshApplied++;
         lastRefreshAt = now();
         lastSyncError = null;
@@ -444,7 +496,7 @@
       actions.appendChild(b);
     }
     function localData() {
-      const raw = localStorage.getItem(localKey);
+      const raw = safeLocalBytes();
       if (raw === null) return null;
       let value;
       try { value = decodeLocal(JSON.parse(raw)); } catch (_) { throw new Error('Lokale Daten sind beschädigt; Original bleibt erhalten'); }
@@ -511,7 +563,7 @@
       try {
       await authenticated();
       ensureOnline();
-      if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten vorhanden; automatisches Überschreiben ist gesperrt');
+      if (safeLocalBytes() !== null) throw new Error('Lokale Daten vorhanden; automatisches Überschreiben ist gesperrt');
       const owner = localStorage.getItem(ownerKey);
       const user = await currentUser();
       if (!user || !user.id) throw new Error('Anmeldung während Cloud-Laden verloren');
@@ -524,13 +576,13 @@
       ensureCollection(result.data);
       if (!confirm(entryCount(result.data) + ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?')) return;
       // Recheck before writing: never replace local data added while awaiting confirmation.
-      if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten wurden inzwischen angelegt');
+      if (safeLocalBytes() !== null) throw new Error('Lokale Daten wurden inzwischen angelegt');
       if (!await isEnabled() && enabledUser !== null) throw new Error('Cloud-Zuordnung während Übernahme geändert');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
       ensureOwnerUnchanged(owner);
       if (await store.hasPending()) throw new Error('Neue lokale Änderungen erkannt; Cloud-Übernahme abgebrochen');
       ensureOnline();
-      localStorage.setItem(localKey, encodeLocal(result.data));
+      writeLocal(result.data);
       await enable();
       if ((await currentUser())?.id !== user.id) throw new Error('Konto nach Übernahme gewechselt');
       status.textContent = 'Cloud-Daten lokal geladen. Seite wird aktualisiert.';
