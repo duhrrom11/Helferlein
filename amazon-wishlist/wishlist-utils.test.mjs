@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -50,4 +50,18 @@ test('public profile fields are trimmed and length-limited',()=>{
  assert.deepEqual(validateProfileFields('Alice',''),{display_name:'Alice',bio:''});
  for(const value of ['', '  ', 'x'.repeat(81), null])assert.throws(()=>validateProfileFields(value,''));
  assert.throws(()=>validateProfileFields('Alice','x'.repeat(501)));
+});
+
+test('feed pagination handles empty, partial, exact and overflowing pages',()=>{
+ for(const count of [0,1,19,20,21,40]){
+  const rows=Array.from({length:count},(_,i)=>i);
+  const result=feedPage(rows);
+  assert.deepEqual(result.items,rows.slice(0,20));
+  assert.equal(result.hasMore,count>20);
+ }
+ const rows=Array.from({length:5},(_,i)=>i);
+ assert.deepEqual(feedPage(rows,3),{items:[0,1,2],hasMore:true});
+ assert.deepEqual(rows,[0,1,2,3,4]);
+ assert.throws(()=>feedPage(null));
+ assert.throws(()=>feedPage([],0));
 });
