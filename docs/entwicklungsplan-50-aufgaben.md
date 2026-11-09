@@ -4,12 +4,12 @@ Stand: 2026-11-09. Diese Liste ist eine **Priorisierung**, keine Behauptung, das
 
 **Status:** `[ ]` offen · `[x]` durch eigenen PR vorbereitet (noch nicht produktiv). Jede Aufgabe braucht vor Abschluss einen nachprüfbaren Nachweis.
 
-- [ ] **01** · P0 · Koordinator · Morgenbericht bei ausgefallenen 06-Uhr-Läufen nachholen
+- [x] **01** · P0 · Koordinator · Morgenbericht bei ausgefallenen 06-Uhr-Läufen nachholen — vorbereitet in Draft-PR #176; Review und Merge offen
 - [ ] **02** · P0 · Koordinator · Tagesstatistiken trotz 100-Einträge-Grenze erhalten
-- [ ] **03** · P0 · Koordinator · Manuelle Läufe in Berichten gesondert kennzeichnen
+- [x] **03** · P0 · Koordinator · Manuelle Läufe in Berichten gesondert kennzeichnen — vorbereitet in Draft-PR #176; Review und Merge offen
 - [ ] **04** · P0 · Koordinator · Doppelte Morgenberichte bei Wiederholung verhindern
 - [ ] **05** · P0 · Koordinator · Checkpoint-Struktur mit automatischen Offline-Tests absichern
-- [ ] **06** · P0 · Koordinator · GitHub-API-Timeouts begrenzen
+- [x] **06** · P0 · Koordinator · GitHub-API-Timeouts begrenzen — vorbereitet in Draft-PR #177; Review und Merge offen
 - [ ] **07** · P0 · Koordinator · GitHub-API-Fehler und Rate-Limits eindeutig protokollieren
 - [ ] **08** · P0 · Koordinator · Fehlgeschlagene Prüfungen als Warnung im Bericht hervorheben
 - [ ] **09** · P0 · Koordinator · Stale-Checkpoint-Erkennung ergänzen
