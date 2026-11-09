@@ -942,6 +942,9 @@
         let timeLeft = 45 * 60;
 
         function openCookMode() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
             const baseTime = parseFloat(document.getElementById('res-time').innerText) || 45;
             timerPhases[1].seconds = Math.max(1, Math.round(baseTime * 60));
             currentPhaseIdx = 1;
