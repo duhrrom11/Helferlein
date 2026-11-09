@@ -344,6 +344,10 @@
           if (await isEnabled() && currentOwner() === expectedOwner) setStatus(uploaded ? 'Lokal und in Supabase gespeichert' : 'Lokal gespeichert · Cloud-Synchronisierung ausstehend');
         } catch (error) {
           reportError(error);
+          if (navigator.onLine && /fetch|network|timeout|connection|offline/i.test(String(error && error.message || error))) {
+            setStatus('Lokal gespeichert · Cloud-Synchronisierung ausstehend');
+            scheduleReconnectRetry();
+          }
         }
       }).finally(() => { cloudChangeQueued--; });
       return queue;
