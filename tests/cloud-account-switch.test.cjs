@@ -5,10 +5,12 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const script = fs.readFileSync('shared/helferlein-cloud-migration.js', 'utf8');
 
-function harness(shared, uid) {
+function harness(shared, uid, options = {}) {
   const elements = [];
   const events = new Map();
   let reloads = 0;
+  let onAuthChange = null;
+  let finishSave = null;
   const classes = new Set(['helferlein-account-check']);
   class Element {
     constructor(tag) {
@@ -57,13 +59,14 @@ function harness(shared, uid) {
       status() { return {}; },
       async load() { return { source: 'cloud-empty', data: null }; },
       async hasPending() { return false; },
-      async flush() { return false; }
+      async flush() { return false; },
+      async save() { return options.holdSave ? new Promise(resolve => { finishSave = resolve; }) : true; }
     }) }
   };
   const client = {
     auth: {
       getUser: async () => ({ data: { user: uid ? { id: uid } : null }, error: null }),
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } })
+      onAuthStateChange: callback => { onAuthChange = callback; return { data: { subscription: { unsubscribe() {} } } }; }
     }
   };
   const ctx = vm.createContext({ window, document, navigator: { onLine: true },
@@ -76,6 +79,8 @@ function harness(shared, uid) {
   async function wait() { await new Promise(resolve => setTimeout(resolve, 20)); }
   return {
     wait, bridge, classes, shared,
+    setUser(next) { uid = next; if (onAuthChange) onAuthChange('SIGNED_IN', {}); },
+    finishSave() { assert.ok(finishSave, 'save started'); finishSave(true); },
     get reloads() { return reloads; },
     async switch() {
       await wait();
@@ -137,5 +142,20 @@ const journal = 'helferlein_cloud_switch_test-tool';
   await rejected.switch();
   assert.equal(shared.get(owner), A, 'damaged destination cannot replace active account');
   assert.equal(shared.has(journal), false);
+  const during = new Map([[owner, A],
+    ['helferlein_cloud_enabled_test-tool_' + A, 'true'],
+    ['test_records', JSON.stringify({ items: [{ id: 'pending' }] })]]);
+  const concurrent = harness(during, A, { holdSave: true });
+  await concurrent.wait();
+  const pending = concurrent.bridge.changed({ items: [{ id: 'pending-update' }] });
+  await concurrent.wait();
+  concurrent.setUser(B);
+  await concurrent.switch();
+  assert.equal(during.get(owner), A, 'switch blocked during unfinished save');
+  assert.equal(during.has(journal), false, 'blocked switch never starts journal');
+  concurrent.finishSave();
+  await pending;
+  concurrent.bridge.dispose();
+
   console.log('Cloud account switching offline regression passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });
