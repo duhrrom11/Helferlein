@@ -248,3 +248,19 @@ folgenden Fakten wurden direkt gegen das produktive Supabase-Schema geprüft:
 - Der gemeinsame Browser-Speicher und die aufwendige Mehrtab-Synchronisierung
   sind weiterhin ein Risiko, das vor einem produktiven Cloud-Livegang mit
   echten Browser- und Sitzungsszenarien abgenommen werden muss.
+
+### Korrektur: Cloud-Aktualisierung mehrteiliger Daten
+
+Beim Vergleich eines empfangenen Cloud-Stands mit den lokalen Daten muss
+für das Haushaltsbuch **das gesamte Paket** (Buchungen, Budgets und
+Sparziele) serialisiert und verglichen werden. Ein Vergleich nur der
+Buchungen übersieht Änderungen an Budgets und Sparzielen. Der Adapter
+verwendet dafür jetzt das vollständige Bundle; eine zusätzliche
+Offline-Regression deckt einen reinen Budget-Update-Fall ab.
+
+### Sicherheitsprüfung
+
+Der Supabase-Sicherheitsberater meldete am 9. November 2026 weiterhin
+nur die Auth-Warnung zur deaktivierten Prüfung kompromittierter Passwörter:
+https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+Diese Auth-Einstellung wurde nicht stillschweigend geändert.
