@@ -111,3 +111,10 @@ body.b3-home.b3-dark .b3-faq .grid a{color:#8de5e0}
 
 body.b3-home .b3-hub-account{font-size:.75rem;color:#e5f8f5;font-weight:700;padding:.5rem .65rem;border:1px solid #ffffff42;border-radius:10px;max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 @media(max-width:680px){body.b3-home .b3-hub-account{display:none}}
+
+/* Search clear action: visible only when a query exists. */
+body.b3-home .b3-search-wrap{position:relative}
+body.b3-home .b3-search-wrap #searchBox{padding-right:5.5rem}
+body.b3-home .b3-clear-search{position:absolute;right:.55rem;top:50%;transform:translateY(-50%);border:1px solid var(--hub-border);border-radius:9px;padding:.25rem .45rem;background:var(--hub-surface);color:var(--hub-ink);font-size:.75rem;font-weight:700;min-height:30px}
+body.b3-home .b3-clear-search:hover{border-color:var(--hub-primary)}
+body.b3-home .b3-clear-search[hidden]{display:none!important}
