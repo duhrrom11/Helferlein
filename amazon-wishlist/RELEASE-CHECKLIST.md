@@ -219,3 +219,10 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Änderung ausschließlich an JavaScript-Steuerfluss; keine Supabase-Daten, Policies oder Schemaänderungen.
 - Noch offen: `node --check amazon-wishlist/app.mjs`, `node --test amazon-wishlist/*.test.mjs`, aktueller GitHub-Actions-Lauf und Browser-Negativfall (fehlgeschlagene Feed-Abfrage sowie veraltete Antwort bei Filterwechsel). Die commitbezogene GitHub-Abfrage lieferte zum Prüfzeitpunkt keine Runs oder Statuschecks; dies ist kein Erfolgsnachweis.
 - PR bleibt Draft; kein Merge, Deployment oder Veröffentlichung.
+
+## Feed-Freshness-Regression (09.11.2026, 21 Uhr MEZ)
+- `838e2f0`: Reiner Helper `isFeedRequestStale` vergleicht Offset, Revision, Filter, Sortierung, Nutzer-ID und Profil-ID einer Feed-Anfrage mit dem aktuellen UI-Zustand.
+- `ef0610d`: Der Feed verwendet diesen Helper sowohl nach asynchronen Abfragen als auch im Fehlerpfad. Die lokale `isStale`-Closure bleibt außerhalb des `try`-Blocks, damit auch `catch` sie verwenden kann.
+- `2bcf965`: Unit-Test für unveränderten Zustand und jede einzelne Zustandsänderung (einschließlich Abmeldung/Kontowechsel) ergänzt.
+- **Kein Test-Erfolgsnachweis:** Die commitbezogene GitHub-Abfrage für `2bcf965` ergab weder PR-Workflow-Runs noch Combined-Statuses. Ein lokaler Checkout scheitert an DNS-Auflösung für github.com; die Node-Suite wurde deshalb nicht ausgeführt. Nächste Aktion: `node --check amazon-wishlist/app.mjs && node --check amazon-wishlist/wishlist-utils.mjs && node --test amazon-wishlist/*.test.mjs` im vollständigen Checkout ausführen und die CI-Gates für den neuesten Head verifizieren.
+- Kein Supabase-Zugriff, keine Testdaten, kein Merge, Deployment oder Veröffentlichung.
