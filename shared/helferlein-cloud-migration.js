@@ -677,6 +677,23 @@
       status.textContent = result ? 'Daten übertragen · weitere Änderungen werden synchronisiert.' : 'Übertragung ausstehend.';
       } finally { migrationInProgress = false; endOperation('upload'); }
     });
+    // Only the untouched, known plant-care defaults may be replaced without a manual backup.
+    // A zero-length plants list alone is not proof that other local tool data is empty.
+    function isUntouchedPlantDefaults(bytes) {
+      if (tool !== 'pflanzenpflege-giessplan' || localFormat !== 'object' || bytes === null) return false;
+      let value;
+      try { value = JSON.parse(bytes); } catch (_) { return false; }
+      if (!value || Array.isArray(value) || typeof value !== 'object') return false;
+      const defaults = {
+        plants: [], monthWaterLiters: 0, totalHarvestGrams: 0,
+        inventory: [{ name: 'Tomatendünger Flüssig', qty: '1 L' }, { name: 'Bio Blumenerde', qty: '40 L' }],
+        seeds: [], beetSlots: Array(16).fill(null), cisternMax: 500, cisternCurrent: 500
+      };
+      const keys = Object.keys(value);
+      if (keys.some(key => !Object.prototype.hasOwnProperty.call(defaults, key))) return false;
+      return keys.every(key => JSON.stringify(value[key]) === JSON.stringify(defaults[key])) &&
+        Array.isArray(value.plants) && value.plants.length === 0;
+    }
     button('Cloud-Daten lokal übernehmen', async () => {
       beginOperation('import');
       importInProgress = true;
