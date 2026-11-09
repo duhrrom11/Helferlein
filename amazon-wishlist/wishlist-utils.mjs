@@ -82,3 +82,8 @@ export function shouldRestoreSharedProductUrl(currentUrl,sharedUrl) {
 export function isFeedRequestStale(request,current) {
  return request.offset!==current.offset||request.revision!==current.revision||request.filter!==current.filter||request.sort!==current.sort||request.userId!==current.userId||request.profileId!==current.profileId;
 }
+
+/** A hidden profile or wish is filtered locally; pagination still advances over server rows. */
+export function isWishLocallyHidden(wish,hiddenWishIds,hiddenProfileIds) {
+ return hiddenWishIds.has(wish.id)||hiddenProfileIds.has(wish.user_id);
+}
