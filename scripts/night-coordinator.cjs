@@ -53,44 +53,43 @@ async function api(method, endpoint, body) {
     }
   }
 }
-const issueTitle = 'Helferlein Nachtbetrieb – dauerhafter Arbeitsstand';
-const marker = '<!-- HELFERLEIN_NIGHT_STATE_V1 -->';
+const issueTitle = 'Helferlein Wunschliste – Nachtschicht-Arbeitsstand';
+const marker = '<!-- HELFERLEIN_WISHLIST_NIGHT_STATE_V1 -->';
 const checks = [
-  {id:'supabase-migrations', label:'Produktive Supabase-Migrationen inventarisieren', run:() => {
-    const dir='supabase/migrations';
-    const files=fs.readdirSync(dir).filter(f=>f.endsWith('.sql'));
-    return files.length + ' versionierte SQL-Migrationen vorhanden';
-  }},
-  {id:'release-smoke', label:'Release-Smoke-Prüfung ausführen', run:() => {
+  {id:'wishlist-syntax', label:'Wunschlisten-Module auf Syntax prüfen', run:() => {
     const {spawnSync}=require('node:child_process');
-    const r=spawnSync(process.execPath,['scripts/release-smoke.cjs'],{encoding:'utf8',timeout:90000});
-    if (r.status!==0) throw new Error((r.stderr||r.stdout||'Smoke check failed').slice(-450));
-    return 'Release-Smoke-Prüfung erfolgreich';
+    for(const file of ['amazon-wishlist/app.mjs','amazon-wishlist/amazon-links.mjs','amazon-wishlist/wishlist-utils.mjs']){
+      const r=spawnSync(process.execPath,['--check',file],{encoding:'utf8',timeout:30000});
+      if(r.status!==0)throw Error(file+': '+(r.stderr||r.stdout||'Syntaxfehler').slice(-450));
+    }
+    return 'Alle drei Wunschlisten-Module syntaktisch gültig';
   }},
-  {id:'vault-gate', label:'Tresor-Freigabesperre überprüfen', run:() => {
-    const s=fs.readFileSync('supabase/functions/vault-api/index.ts','utf8');
-    if (!s.includes('vault_access_not_configured')) throw new Error('Tresor-API-Gate verändert: manuelle Prüfung nötig');
-    return 'Tresor-API weiterhin bewusst nicht freigeschaltet';
+  {id:'wishlist-unit', label:'Wunschlisten-Unit- und Sicherheitsprüfungen', run:() => {
+    const {spawnSync}=require('node:child_process');
+    const files=fs.readdirSync('amazon-wishlist').filter(f=>f.endsWith('.test.mjs')).sort().map(f=>'amazon-wishlist/'+f);
+    if(files.length<3)throw Error('Wunschlisten-Testdateien fehlen');
+    const r=spawnSync(process.execPath,['--test',...files],{encoding:'utf8',timeout:90000});
+    if(r.status!==0)throw Error((r.stderr||r.stdout||'Wunschlisten-Tests fehlgeschlagen').slice(-450));
+    return files.length+' Wunschlisten-Testdateien erfolgreich';
   }},
-  {id:'wg-auth', label:'WG-Anmelde- und Abmeldeschutz prüfen', run:() => {
-    const s=fs.readFileSync('tools/wg-organisator/index.html','utf8');
-    if (!s.includes('secureWgDirty') || !s.includes('sessionError')) throw new Error('WG-Schutzmarker fehlen');
-    return 'WG-Schutzmechanismen im Code vorhanden (kein Browser-E2E-Test)';
+  {id:'wishlist-public-safety', label:'Wunschlisten-Sicherheitsmarker prüfen', run:() => {
+    const app=fs.readFileSync('amazon-wishlist/app.mjs','utf8');
+    const html=fs.readFileSync('amazon-wishlist/index.html','utf8');
+    if(/service_role|sb_secret_|\\.innerHTML\\s*=|insertAdjacentHTML\\s*\\(/i.test(app+html))
+      throw Error('Privilegierter Schlüssel oder unsichere HTML-Injektion erkannt');
+    if(!html.includes('öffentlich')||!app.includes('noopener noreferrer sponsored'))
+      throw Error('Öffentlichkeitshinweis oder Partnerlink-Schutz fehlt');
+    return 'Keine Service-Role-Schlüssel oder direkte HTML-Injektion; Öffentlichkeitshinweis vorhanden';
   }},
-  {id:'rls-review', label:'RLS-Migrationen auf Vorhandensein prüfen', run:() => {
-    const s=fs.readFileSync('supabase/migrations/20261108233000_optimize_user_data_rls.sql','utf8');
-    if (!/auth\.uid\(\)/.test(s)) throw new Error('RLS-Migrationsmarker fehlt');
-    return 'RLS-Migration vorhanden; Live-Policy nicht erneut geprüft';
-  }},
-  {id:'acceptance', label:'Offene Produktivabnahme prüfen', run:() => {
-    const s=fs.readFileSync('docs/supabase-produktivabnahme.md','utf8');
-    const open=(s.match(/- \[ \]/g)||[]).length;
-    return open + ' offene dokumentierte Freigabekriterien';
+  {id:'wishlist-release', label:'Offene Wunschlisten-Freigabepunkte inventarisieren', run:() => {
+    const s=fs.readFileSync('amazon-wishlist/50-SCHRITTE.md','utf8');
+    const open=(s.match(/- \\[ \\]/g)||[]).length;
+    return open+' offene Wunschlisten-Aufgaben (nur Dokumentation; keine Freigabe)';
   }}
 ];
 function encodeState(s) {
   return marker + '\n\x60\x60\x60json\n' + JSON.stringify(s,null,2) + '\n\x60\x60\x60\n' +
-    '\nAutomatischer 24/7-Koordinator: nur Repository-Prüfungen und Issue-Protokoll. ' +
+    '\nAutomatische Wunschlisten-Nachtschicht: nur amazon-wishlist/ prüfen und Issue-Protokoll. ' +
     'Keine Datenbankänderungen, keine Deployments, keine Code-Commits. ' +
     'Ein Coding-Agent darf ausschließlich über einen separat freigegebenen PR-Prozess arbeiten.\n';
 }
@@ -127,10 +126,10 @@ async function main() {
   if (hour>=6 && !manual && state.lastReportDay!==localDay) {
     const runs=state.history.filter(x=>x.day===localDay && !x.manual);
     const report='### Morgenbericht '+localDay+' (Europe/Berlin)\n' +
-      'Automatische, ausschließlich lesende Prüfungen: '+runs.length+'\n' +
+      'Automatische, ausschließlich auf die Wunschliste begrenzte Prüfungen: '+runs.length+'\n' +
       'Erfolgreich: '+runs.filter(x=>x.ok).length+', Auffälligkeiten: '+runs.filter(x=>!x.ok).length+'\n\n' +
       runs.slice(-72).map(x=>'- '+x.time+' · '+x.task+' · '+(x.ok?'OK':'ACHTUNG')+' · '+x.result).join('\n') +
-      '\n\n**Keine Produktivänderungen automatisch ausgeführt.** Für Änderungen ist ein gesondert geprüfter Pull Request und die erforderliche Freigabe nötig.';
+      '\n\n**Keine Produktivänderungen automatisch ausgeführt.** Der Koordinator bearbeitet ausschließlich die Wunschliste und führt keine automatischen Änderungen aus.';
     await api('POST',base+'/issues/'+issue.number+'/comments',{body:report.slice(0,55000)});
     state.lastReportDay=localDay;
     summary='Morgenbericht '+localDay+' veröffentlicht in Issue #'+issue.number;
