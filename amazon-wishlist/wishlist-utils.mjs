@@ -72,3 +72,8 @@ export function validatedProfileSearch(input) {
  if(term.replace(/[ -]/g,'').length<2)throw Error('Bitte mindestens zwei gültige Suchzeichen eingeben');
  return term;
 }
+
+/** Preserve a shared product link across sign-in only while the user has not replaced it. */
+export function shouldRestoreSharedProductUrl(currentUrl,sharedUrl) {
+ return typeof sharedUrl==='string'&&sharedUrl.length>0&&currentUrl===sharedUrl;
+}
