@@ -163,3 +163,10 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Wiederholte Auth-Prüfungen ohne angemeldetes Konto setzen den Wunsch-Editor nicht unnötig zurück.
 - Nach erfolgreichem Wunsch-Insert wird das Eingabeformular vor dem Feed-Refresh geleert, damit ein separater Ladefehler keinen vermeintlich ungespeicherten Wunsch zurücklässt.
 - Vorheriger Commit `1eda734`: alle sechs GitHub-CI-Workflows erfolgreich. Für den aktuellen Commit gilt der CI-Status separat.
+
+## Stabilisierung: Sessionwechsel und Pagination
+- Stand `afa5cb0`: sechs GitHub-Workflows erfolgreich.
+- Beim Feed-Neuladen wird die Schaltfläche »Weitere Wünsche« bis zur erfolgreichen neuen Seite deaktiviert.
+- Erfolgsmeldungen nach Profil-, Wunsch- und Follow-Aktionen prüfen nach asynchronem Feed-Refresh erneut die aktive Sitzung.
+- Der Feed wird erst geleert, nachdem die vom Server gelieferte Seite erfolgreich validiert wurde.
+- Es bleiben nur die bestehenden notwendigen CI-Gates; keine neuen Testdaten in der produktiven Datenbank.
