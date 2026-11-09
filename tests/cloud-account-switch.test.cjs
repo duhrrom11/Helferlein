@@ -74,6 +74,11 @@ function harness(shared, uid, options = {}) {
   vm.runInContext(script, ctx);
   const bridge = window.HelferleinCloudMigration.mount({
     client, tool: 'test-tool', localKey: 'test_records', collection: 'items',
+    ...(options.bundle ? { localFormat: 'bundle', bundleSources: [
+      { key: 'test_entries', field: 'items', kind: 'array' },
+      { key: 'test_budgets', field: 'budgets', kind: 'record' },
+      { key: 'test_goals', field: 'goals', kind: 'array' }
+    ] } : {}),
     refresh() {}
   });
   async function wait() { await new Promise(resolve => setTimeout(resolve, 20)); }
@@ -156,6 +161,24 @@ const journal = 'helferlein_cloud_switch_test-tool';
   concurrent.finishSave();
   await pending;
   concurrent.bridge.dispose();
+
+  const bundled = new Map([[owner, A],
+    ['test_entries', '[{"id":"entry"}]'],
+    ['test_budgets', '{"food":120}'],
+    ['test_goals', '[{"id":"goal"}]']]);
+  const bundleA = harness(bundled, B, { bundle: true });
+  await bundleA.switch();
+  assert.equal(bundled.has('test_entries'), false);
+  assert.equal(bundled.has('test_budgets'), false);
+  assert.equal(bundled.has('test_goals'), false);
+  assert.equal(bundled.get(owner), B);
+  bundled.set('test_entries', '[{"id":"second-account"}]');
+  const bundleB = harness(bundled, A, { bundle: true });
+  await bundleB.switch();
+  assert.equal(bundled.get('test_entries'), '[{"id":"entry"}]');
+  assert.equal(bundled.get('test_budgets'), '{"food":120}');
+  assert.equal(bundled.get('test_goals'), '[{"id":"goal"}]');
+  assert.equal(bundled.get(owner), A);
 
   console.log('Cloud account switching offline regression passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });
