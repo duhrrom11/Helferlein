@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const workflow = fs.readFileSync('.github/workflows/night-coordinator.yml','utf8');
 const script = fs.readFileSync('scripts/night-coordinator.cjs','utf8');
-assert.match(workflow,/cron: '\\*\\/5 \\* \\* \\* \\*'/);
+assert.match(workflow,/cron: '\*\/5 \* \* \* \*'/);
 assert.match(workflow,/contents: read/);
 assert.match(workflow,/issues: write/);
 assert.doesNotMatch(workflow,/contents: write|deployments: write|pull-requests: write/);
