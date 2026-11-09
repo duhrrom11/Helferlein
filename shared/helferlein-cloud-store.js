@@ -59,6 +59,20 @@
     const remove = key => { assertOpen(); localStorage.removeItem(key); stateVersion++; };
     const writePending = (k, value) => { write(k.pending, value); notePending(k); lastPendingAt = now(); };
     async function userId() {
+      // Offline identity only enables account-scoped pending writes. Network operations
+      // still require a fresh authenticated identity when connectivity returns.
+      if (typeof navigator !== 'undefined' && !navigator.onLine && client.auth.getSession) {
+        const { data, error } = await client.auth.getSession();
+        if (error) throw error;
+        const session = data && data.session;
+        if (session && session.user && isValidUid(session.user.id) &&
+            Number.isFinite(session.expires_at) && session.expires_at > Date.now() / 1000 &&
+            localStorage.getItem('helferlein_cloud_owner_' + tool) === session.user.id) {
+          lastUserId = session.user.id;
+          return lastUserId;
+        }
+        return null;
+      }
       assertOpen();
       const { data, error } = await client.auth.getUser();
       if (error) { lastError = error; throw error; }
