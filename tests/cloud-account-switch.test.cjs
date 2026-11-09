@@ -86,6 +86,7 @@ function harness(shared, uid, options = {}) {
   async function wait() { await new Promise(resolve => setTimeout(resolve, 20)); }
   return {
     wait, bridge, classes, shared,
+    statusText() { return elements.find(e => e.tagName === 'p' && e.attrs.role === 'status')?.textContent; },
     setUser(next) { uid = next; if (onAuthChange) onAuthChange('SIGNED_IN', {}); },
     finishSave() { assert.ok(finishSave, 'save started'); finishSave(true); },
     get reloads() { return reloads; },
@@ -219,8 +220,8 @@ const journal = 'helferlein_cloud_switch_test-tool';
   const safePlantStorage = new Map([[plantOwner, A], [plantKey, JSON.stringify(defaultPlants)]]);
   const safePlant = harness(safePlantStorage, A, { plants: true, remoteData: remotePlants });
   await safePlant.importCloud();
-  assert.equal(JSON.parse(safePlantStorage.get(plantKey)).plants[0].id, 'real-plant',
-    'cloud plant imported over untouched defaults');
+  assert.equal(JSON.parse(safePlantStorage.get(plantKey)).plants[0]?.id, 'real-plant',
+    'cloud plant imported over untouched defaults: ' + safePlant.statusText());
   safePlant.bridge.dispose();
   for (const changed of [
     { ...defaultPlants, inventory: [{ name: 'Personal', qty: '1' }] },
