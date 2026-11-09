@@ -15,9 +15,13 @@ function applyTheme(){
  if(selector)selector.value=theme;
 }
 function refreshCount(){
- const visible=[...document.querySelectorAll('#toolsGrid .tool-card')].filter(c=>c.style.display!=='none').length;
+ const cards=[...document.querySelectorAll('#toolsGrid .tool-card')];
+ const visible=cards.filter(c=>c.style.display!=='none').length;
  const counter=document.getElementById('b3-result-count');
- if(counter)counter.textContent=visible+' von 11 Tools';
+ if(counter)counter.textContent=visible+' von '+cards.length+' Tools';
+ const clear=document.getElementById('b3-clear-search');
+ const search=document.getElementById('searchBox');
+ if(clear)clear.hidden=!search?.value;
 }
 function init(){
  document.body.classList.add('b3-home');
@@ -36,9 +40,36 @@ function init(){
   if(typeof window.filterTools==='function')window.filterTools();
   refreshCount();
  }));
- document.getElementById('searchBox')?.addEventListener('input',refreshCount);
+ const search=document.getElementById('searchBox');
+ if(search){
+  const wrap=search.closest('.b3-search-wrap');
+  if(wrap&&!document.getElementById('b3-clear-search')){
+   const clear=document.createElement('button');
+   clear.type='button';clear.id='b3-clear-search';
+   clear.className='b3-clear-search';clear.textContent='Löschen';
+   clear.setAttribute('aria-label','Suche löschen');
+   clear.hidden=true;
+   clear.addEventListener('click',()=>{search.value='';window.filterTools?.();refreshCount();search.focus()});
+   wrap.appendChild(clear);
+  }
+  search.addEventListener('input',refreshCount);
+  search.addEventListener('search',()=>{window.filterTools?.();refreshCount()});
+  search.addEventListener('keydown',event=>{
+   if(event.key==='Escape'&&search.value){event.preventDefault();search.value='';window.filterTools?.();refreshCount()}
+  });
+  document.addEventListener('keydown',event=>{
+   const target=event.target;
+   if(event.key==='/'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.isComposing&&
+      !(target instanceof HTMLElement&&
+       (target.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(target.tagName)))){
+    event.preventDefault();search.focus();
+   }
+  });
+ }
  const categoryList=document.querySelector('.b3-categories');
  if(categoryList)categoryList.setAttribute('aria-label','Tool-Kategorien');
+ const allFilter=filters.find(btn=>btn.getAttribute('data-b3-category-filter')==='alle');
+ if(allFilter)allFilter.textContent='Alle '+document.querySelectorAll('#toolsGrid .tool-card').length;
  applyTheme();refreshCount();
  prefersDark.addEventListener?.('change',applyTheme);
  window.addEventListener('storage',event=>{
