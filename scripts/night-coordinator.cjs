@@ -17,7 +17,7 @@ const hour = Number(parts.hour);
 const minute = Number(parts.minute);
 const manual = process.env.GITHUB_EVENT_NAME === 'workflow_dispatch';
 // Repository checks run 24/7; retain the 06:00 Berlin morning report.
-function api(method, endpoint, body) {
+function apiOnce(method, endpoint, body) {
   return new Promise((resolve, reject) => {
     const data = body === undefined ? undefined : JSON.stringify(body);
     const req = https.request('https://api.github.com' + endpoint, {
@@ -42,6 +42,16 @@ function api(method, endpoint, body) {
     if (data) req.write(data);
     req.end();
   });
+}
+// Retry only idempotent reads; retrying writes could duplicate reports or lose checkpoints.
+async function api(method, endpoint, body) {
+  for (let attempt=0; ; attempt++) {
+    try { return await apiOnce(method, endpoint, body); }
+    catch (e) {
+      if (method!=='GET' || attempt>=2 || !/GitHub API (429|502|503|504):|GitHub API request timed out/.test(String(e.message))) throw e;
+      await new Promise(resolve=>setTimeout(resolve, 1000 * (attempt+1)));
+    }
+  }
 }
 const issueTitle = 'Helferlein Nachtbetrieb – dauerhafter Arbeitsstand';
 const marker = '<!-- HELFERLEIN_NIGHT_STATE_V1 -->';
@@ -112,6 +122,8 @@ async function main() {
   if (!state) state={version:1,day:localDay,cursor:0,history:[],lastReportDay:null};
   if (!issue) issue=await api('POST',base+'/issues',{title:issueTitle,body:encodeState(state)});
   // If GitHub delays or skips the 06:00 run, publish once on the next scheduled run.
+  let failedCheck=false;
+  let summary='';
   if (hour>=6 && !manual && state.lastReportDay!==localDay) {
     const runs=state.history.filter(x=>x.day===localDay && !x.manual);
     const report='### Morgenbericht '+localDay+' (Europe/Berlin)\n' +
@@ -121,6 +133,7 @@ async function main() {
       '\n\n**Keine Produktivänderungen automatisch ausgeführt.** Für Änderungen ist ein gesondert geprüfter Pull Request und die erforderliche Freigabe nötig.';
     await api('POST',base+'/issues/'+issue.number+'/comments',{body:report.slice(0,55000)});
     state.lastReportDay=localDay;
+    summary='Morgenbericht '+localDay+' veröffentlicht in Issue #'+issue.number;
   } else {
     const task=checks[state.cursor % checks.length];
     let ok=true, result;
@@ -128,10 +141,14 @@ async function main() {
     const entry={day:localDay,time:parts.hour+':'+parts.minute,task:task.id,ok,result,manual};
     state.history.push(entry);
     state.cursor++;
+    failedCheck=!ok;
+    summary=entry.time+' '+entry.task+': '+(ok?'OK':'FEHLER')+' – '+result;
     console.log(JSON.stringify(entry));
   }
   state.history=state.history.slice(-100);
   state.day=localDay;
   await api('PATCH',base+'/issues/'+issue.number,{body:encodeState(state)});
+  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '### Helferlein-Koordinator\\n\\n'+summary+'\\n\\n[Status-Issue](https://github.com/'+repo+'/issues/'+issue.number+')\\n');
+  if (failedCheck) process.exitCode=1;
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
