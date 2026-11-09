@@ -677,13 +677,32 @@
       status.textContent = result ? 'Daten übertragen · weitere Änderungen werden synchronisiert.' : 'Übertragung ausstehend.';
       } finally { migrationInProgress = false; endOperation('upload'); }
     });
+    // Only the untouched, known plant-care defaults may be replaced without a manual backup.
+    // A zero-length plants list alone is not proof that other local tool data is empty.
+    function isUntouchedPlantDefaults(bytes) {
+      if (tool !== 'pflanzenpflege-giessplan' || localFormat !== 'object' || bytes === null) return false;
+      let value;
+      try { value = JSON.parse(bytes); } catch (_) { return false; }
+      if (!value || Array.isArray(value) || typeof value !== 'object') return false;
+      const defaults = {
+        plants: [], monthWaterLiters: 0, totalHarvestGrams: 0,
+        inventory: [{ name: 'Tomatendünger Flüssig', qty: '1 L' }, { name: 'Bio Blumenerde', qty: '40 L' }],
+        seeds: [], beetSlots: Array(16).fill(null), cisternMax: 500, cisternCurrent: 500
+      };
+      const keys = Object.keys(value);
+      if (keys.some(key => !Object.prototype.hasOwnProperty.call(defaults, key))) return false;
+      return keys.every(key => JSON.stringify(value[key]) === JSON.stringify(defaults[key])) &&
+        Array.isArray(value.plants) && value.plants.length === 0;
+    }
     button('Cloud-Daten lokal übernehmen', async () => {
       beginOperation('import');
       importInProgress = true;
       try {
       await authenticated();
       ensureOnline();
-      if (safeLocalBytes() !== null) throw new Error('Lokale Daten vorhanden; automatisches Überschreiben ist gesperrt');
+      const originalLocalBytes = safeLocalBytes();
+      const replaceUntouchedDefaults = isUntouchedPlantDefaults(originalLocalBytes);
+      if (originalLocalBytes !== null && !replaceUntouchedDefaults) throw new Error('Lokale Daten vorhanden; automatisches Überschreiben ist gesperrt');
       const owner = localStorage.getItem(ownerKey);
       const user = await currentUser();
       if (!user || !user.id) throw new Error('Anmeldung während Cloud-Laden verloren');
@@ -694,9 +713,11 @@
       if (!navigator.onLine) throw new Error('Verbindung beim Cloud-Laden verloren');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Abfrage gewechselt');
       ensureCollection(result.data);
-      if (!confirm(entryCount(result.data) + ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?')) return;
+      if (!confirm(entryCount(result.data) + (replaceUntouchedDefaults
+        ? ' Cloud-Einträge laden und die unveränderten lokalen Standardwerte ersetzen?'
+        : ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?'))) return;
       // Recheck before writing: never replace local data added while awaiting confirmation.
-      if (safeLocalBytes() !== null) throw new Error('Lokale Daten wurden inzwischen angelegt');
+      if (safeLocalBytes() !== originalLocalBytes) throw new Error('Lokale Daten wurden inzwischen geändert');
       if (!await isEnabled() && enabledUser !== null) throw new Error('Cloud-Zuordnung während Übernahme geändert');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
       ensureOwnerUnchanged(owner);
