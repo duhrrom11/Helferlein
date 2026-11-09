@@ -12,7 +12,7 @@ const docs=['docs/nachtbetrieb.md','docs/supabase-produktivabnahme.md'];
 const context=docs.map(file=>({file,content:fs.existsSync(file)?fs.readFileSync(file,'utf8').slice(0,10000):'Not found'}));
 // Never forward recognizable credentials from repository documents to the model.
 // This is a conservative preflight, not a substitute for secret scanning.
-const sensitive=/-----BEGIN (?:[A-Z ]*PRIVATE KEY)-----|\\b(?:sk-(?:proj-|live-)?[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,})\\b/;
+const sensitive=/-----BEGIN (?:[A-Z ]*PRIVATE KEY)-----|\b(?:sk-(?:proj-|live-)?[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,})\b/;
 if(context.some(doc=>sensitive.test(doc.content))) {
  throw Error('Sensitive credential pattern in agent context; request blocked (content suppressed)');
 }
