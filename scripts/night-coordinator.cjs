@@ -116,7 +116,12 @@ async function main() {
   // Never overwrite an existing checkpoint when its format is unexpected.
   // A reset would silently lose the handoff between night runs.
   if (issue && (!state || !Number.isSafeInteger(state.cursor) ||
-      state.cursor < 0 || !Array.isArray(state.history))) {
+      state.cursor < 0 || !Array.isArray(state.history) ||
+      !state.history.every(x => x && typeof x === 'object' &&
+        typeof x.day === 'string' && typeof x.time === 'string' &&
+        typeof x.task === 'string' && typeof x.ok === 'boolean' &&
+        typeof x.result === 'string' && typeof x.manual === 'boolean') ||
+      (state.lastReportDay !== null && typeof state.lastReportDay !== 'string'))) {
     throw new Error('Invalid night checkpoint in issue #' + issue.number + '; manual review required');
   }
   if (!state) state={version:1,day:localDay,cursor:0,history:[],lastReportDay:null};
