@@ -145,3 +145,9 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Bearbeitungsaktionen merken sich die Wunsch-ID vor asynchronen Änderungen; doppelte manuelle Button-Deaktivierungen wurden entfernt.
 - Escape leert die Profilsuche; beim Verlassen der Profilansicht wird die alte Profilauswahl verworfen.
 - Formularaktionsbuttons haben explizite Typen und das Suchfeld verweist auf den Ergebnisbereich.
+
+## Kritische Korrekturen nach CI-Fehler
+- Der Amazon-Wishlist-Workflow schlug auf Commit `3fd8e44` fehl; ein fehlender JavaScript-Anweisungstrenner im Lösch-Handler wurde korrigiert.
+- Beim Anlegen eines Wunsches wird vor dem endgültigen Insert geprüft, ob noch dasselbe Konto aktiv ist.
+- Leere Auth-Antworten werden ohne Laufzeitabbruch verarbeitet; ein Fehler beim Laden eines Profil-Deep-Links führt zu einem sichtbaren Hinweis statt zum allgemeinen Feed.
+- Weiterhin nur notwendige Gates: Syntaxprüfung, vorhandene Unit-Tests und vorhandene Browser-CI. Keine produktiven Testdatensätze.
