@@ -139,3 +139,19 @@ test('share helper prefers Clipboard API and uses DOM fallback safely',async()=>
  assert.equal(removed,true);
  await assert.rejects(()=>copyShareLink('javascript:alert(1)',clipboard));
 });
+
+test('backend error details are never shown to visitors',()=>{
+ const secret='internal-table-user@example.com';
+ assert.doesNotMatch(wishlistErrorMessage({code:'PGRST999',message:secret}),/internal-table/);
+ assert.doesNotMatch(wishlistErrorMessage({status:500,message:secret}),/internal-table/);
+ assert.match(wishlistErrorMessage({code:'23514'}),/Ungültige Eingabe/);
+ assert.match(wishlistErrorMessage({code:'PGRST116'}),/nicht gefunden/);
+ assert.match(wishlistErrorMessage(new Error('Bitte zuerst anmelden')),/Bitte zuerst anmelden/);
+});
+
+test('share links reject credentials and malformed HTTPS URLs',async()=>{
+ const clipboard={writeText:async()=>{throw Error('must not copy')}};
+ for(const link of ['https://user:pass@example.org/','https://','https://example.org@evil.test/','http://example.org/']){
+  await assert.rejects(()=>copyShareLink(link,clipboard),/Ungültiger Link/);
+ }
+});
