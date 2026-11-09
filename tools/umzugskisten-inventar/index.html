@@ -927,19 +927,36 @@
         }
 
         function importBackup(event) {
-            const file = event.target.files[0];
+            const input = event.target;
+            const file = input.files[0];
             if (!file) return;
+            if (file.size > 20 * 1024 * 1024) {
+                input.value = '';
+                return alert("Backup zu groß (maximal 20 MB).");
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
+                input.value = '';
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed.locations && parsed.boxes) {
-                        saveData(parsed);
-                        loadLocationsDropdown();
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) ||
+                        !Array.isArray(parsed.locations) || !Array.isArray(parsed.boxes) ||
+                        !parsed.locations.every(item => item && typeof item === 'object' && !Array.isArray(item)) ||
+                        !parsed.boxes.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
+                        return alert("Ungültiges Backup-Format.");
+                    }
+                    if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
+                    saveData(parsed);
+                    loadLocationsDropdown();
                         renderInventory();
-                        alert("Backup erfolgreich importiert!");
-                    } else { alert("Ungültiges Format."); }
-                } catch (err) { alert("Fehler beim Lesen der Datei."); }
+                    alert("Backup erfolgreich importiert!");
+                } catch (err) {
+                    alert("Fehler beim Lesen der Datei.");
+                }
+            };
+            reader.onerror = () => {
+                input.value = '';
+                alert("Backup-Datei konnte nicht gelesen werden.");
             };
             reader.readAsText(file);
         }
