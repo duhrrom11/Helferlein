@@ -62,3 +62,7 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Für den vorherigen Head `6093b2e035a0c2f645db2e2e0ca1ee51acc7f388` sind alle sechs PR-Workflows erfolgreich abgeschlossen, einschließlich `Amazon wishlist checks` und `B3 Startseite`.
 - Öffentliche Profil-Deep-Links normalisieren jetzt Großbuchstaben (z. B. `?profile=Alice_123` zu `alice_123` für die Datenbankabfrage), entsprechend der vorhandenen Benutzername-Validierung. Ungültige Parameter werden weiterhin ignoriert. Regressionstest ergänzt.
 - Neuer Head nach der Codeänderung: `51cae14282f124e6e13bc421789c7b0e9308add5`. Für diesen Stand CI separat prüfen; Browser-End-to-End-Prüfung für Deep-Links und RLS weiterhin offen. Keine Produktivdaten geändert.
+
+## Prüfung vom 09.11.2026 (09 Uhr MEZ)
+- Pagination-Fehler behoben: Der allgemeine Button-Wrapper aktivierte den Button »Mehr laden« nach jedem Klick erneut, selbst wenn der Feed keine weiteren Einträge hatte. Der dedizierte Handler lässt den von `feed()` ermittelten deaktivierten Zustand bestehen und aktiviert den Button nur nach einem Fehler wieder. Commit `9fd0081e238903330966a657d0140513f9b174f4`.
+- Weiterhin offen: Browser-Test mit genau 20 und 21 Wünschen, mehrfacher Filterwechsel, Fehlerfall beim Nachladen sowie CI für den neuesten Commit. Keine Änderungen an produktiven Daten; kein Merge und kein Deployment.
