@@ -47,6 +47,7 @@ async function searchPeople(){
   root.append(item)
  }
 }
+$('peopleSearch').addEventListener('input',()=>{peopleSearchGeneration++;$('peopleResults').replaceChildren()});
 $('searchPeople').onclick=run(searchPeople);
 $('feedFilter').onchange=run(async()=>{if($('feedFilter').value!=='profile'){$('profileFeedInfo').hidden=true;window.history.replaceState(null,'',profilePageUrl(window.location.href))}offset=0;await feed()});
 $('feedSort').onchange=run(async()=>{offset=0;await feed()});
