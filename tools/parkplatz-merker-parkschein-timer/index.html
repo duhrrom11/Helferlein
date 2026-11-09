@@ -515,11 +515,12 @@
             doc.setFont("helvetica", "normal");
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
+            const sessions = data.sessions.filter(s => s && typeof s === 'object' && !Array.isArray(s));
             let y = 35;
-            let totalCost = data.sessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
+            let totalCost = sessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
 
             doc.setFont("helvetica", "bold");
-            doc.text(`Gesamtkosten: ${totalCost.toFixed(2)} EUR`, 14, y);
+            doc.text(`Parkvorgänge: ${sessions.length} | Gesamtkosten: ${totalCost.toFixed(2)} EUR`, 14, y);
             y += 10;
 
             doc.setFont("helvetica", "underline");
@@ -527,7 +528,8 @@
             y += 7;
 
             doc.setFont("helvetica", "normal");
-            data.sessions.forEach((s, idx) => {
+            if (!sessions.length) doc.text("Keine Parkvorgänge erfasst.", 14, y);
+            sessions.forEach((s, idx) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let sectorText = s.sector ? ` [Sektor: ${s.sector}]` : "";
                 const lines = doc.splitTextToSize(`${idx + 1}. Standort: ${s.desc}${sectorText} | ${s.date} | ${Number(s.cost || 0).toFixed(2)} EUR`, 180);
