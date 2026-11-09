@@ -484,7 +484,7 @@
                             <h4 class="font-bold text-sm">📍 ${s.desc}</h4>
                             ${s.sector ? `<p class="text-xs font-semibold text-amber-700">🅿️ Sektor: ${s.sector}</p>` : ''}
                             <p class="text-xs text-gray-500">Datum: ${s.date} | Gebühr: <span class="font-semibold text-green-600">${Number(s.cost || 0).toFixed(2).replace('.', ',')} €</span></p>
-                            ${s.gps ? `<p class="text-[10px] text-blue-600 mt-0.5">GPS: ${s.gps.lat.toFixed(4)}, ${s.gps.lng.toFixed(4)}</p>` : ''}
+                            ${s.gps ? `<p class="text-[10px] text-blue-600 mt-0.5">GPS: ${Number(s.gps.lat).toFixed(4)}, ${Number(s.gps.lng).toFixed(4)}</p>` : ''}
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
