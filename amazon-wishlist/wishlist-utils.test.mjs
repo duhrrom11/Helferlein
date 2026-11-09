@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -70,4 +70,10 @@ test('auth credentials are validated and email whitespace removed',()=>{
  assert.deepEqual(validateCredentials('  person@example.org  ','abcdefgh'),{email:'person@example.org',password:'abcdefgh'});
  for(const email of ['', 'no-at-sign', 'x@', 'a @example.org', 'x@domain', 'a'.repeat(250)+'@example.org'])assert.throws(()=>validateCredentials(email,'abcdefgh'));
  for(const password of ['', 'short', null, undefined])assert.throws(()=>validateCredentials('person@example.org',password));
+});
+
+test('profile search rejects punctuation-only and one-character queries',()=>{
+ assert.equal(validatedProfileSearch('  Änne (42) '),'Änne 42');
+ for(const value of ['','!@#','a',' a! ',null,undefined])assert.throws(()=>validatedProfileSearch(value));
+ assert.equal(validatedProfileSearch(' a b '),'a b');
 });
