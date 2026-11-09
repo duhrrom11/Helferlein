@@ -198,3 +198,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Gezielte Browser-Regression erforderlich: angemeldet ohne vorhandenes Profil, Formular teilweise ausfüllen, Auth-Statusereignis auslösen und unveränderte Eingaben prüfen; danach abmelden und leere Profilfelder prüfen. Keine Testkonten/-daten in der Produktivdatenbank anlegen.
 - GitHub-Abfrage nach PR-Workflow-Runs für `6737d03` und `45d9457` ergab jeweils eine leere Liste; **kein CI-Erfolgsnachweis**. Die API-Abfrage ist auf PR-getriggerte Runs begrenzt. Vor Merge den aktuellen Head und alle erforderlichen Checks über GitHub Actions/PR-Checks eindeutig bestätigen.
 - Keine Datenbankänderungen, kein Merge und kein Deployment.
+
+## Schutz neuer Wunsch-Entwürfe bei langsamen Speicheraktionen
+- Ein Editor-Revisionszähler wird bei manuellen Änderungen, Bearbeitungswechseln und Reset erhöht. Nach asynchronem Speichern wird das Formular nur geleert, wenn der Entwurf zwischenzeitlich unverändert geblieben ist.
+- Ein aus einem alten Feed stammender Löschbutton lehnt die Aktion ab, wenn der Wunsch nicht dem inzwischen angemeldeten Konto gehört. Die Datenbankabfrage bleibt zusätzlich auf `user_id` eingeschränkt.
+- Freigabe bleibt ausstehend; keine produktiven Daten verändert und keine zusätzlichen Testdatensätze angelegt.
