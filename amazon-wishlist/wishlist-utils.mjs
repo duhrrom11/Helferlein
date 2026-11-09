@@ -49,3 +49,9 @@ export function validateProfileFields(displayName,bio) {
  if(description.length>500)throw Error('Profilbeschreibung darf maximal 500 Zeichen enthalten');
  return {display_name,bio:description};
 }
+
+/** Fetch one lookahead row to know whether another feed page exists. */
+export function feedPage(rows,pageSize=20) {
+ if(!Array.isArray(rows)||!Number.isInteger(pageSize)||pageSize<1)throw Error('Ungültige Feed-Seite');
+ return {items:rows.slice(0,pageSize),hasMore:rows.length>pageSize};
+}
