@@ -923,6 +923,7 @@
             a.href = url;
             a.download = `homebox-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function importBackup(event) {
