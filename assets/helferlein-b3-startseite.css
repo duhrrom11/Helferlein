@@ -118,3 +118,7 @@ body.b3-home .b3-search-wrap #searchBox{padding-right:5.5rem}
 body.b3-home .b3-clear-search{position:absolute;right:.55rem;top:50%;transform:translateY(-50%);border:1px solid var(--hub-border);border-radius:9px;padding:.25rem .45rem;background:var(--hub-surface);color:var(--hub-ink);font-size:.75rem;font-weight:700;min-height:30px}
 body.b3-home .b3-clear-search:hover{border-color:var(--hub-primary)}
 body.b3-home .b3-clear-search[hidden]{display:none!important}
+
+/* Accessible reset action for an empty search result. */
+.b3-reset-filters{display:inline-block;margin-left:.5rem;padding:.4rem .7rem;border-radius:.65rem;border:1px solid currentColor;font-weight:700;cursor:pointer;background:transparent;color:inherit}
+.b3-reset-filters:hover,.b3-reset-filters:focus-visible{outline:2px solid currentColor;outline-offset:2px}
