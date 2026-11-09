@@ -727,7 +727,7 @@
             } else {
                 carsContainer.innerHTML = data.cars.map(c => {
                     const carEvents = data.events.filter(e => e.carId === c.id);
-                    const carTotalCost = carEvents.reduce((sum, e) => sum + (e.cost || 0), 0);
+                    const carTotalCost = carEvents.reduce((sum, e) => sum + Number(e.cost || 0), 0);
                     let kmNum = parseFloat(c.km) || 0;
                     let costPerKm = (kmNum > 0 && carTotalCost > 0) ? (carTotalCost / kmNum).toFixed(2) : null;
 
@@ -847,7 +847,7 @@
             }
 
             document.getElementById('statEvents').innerText = filteredEvents.length;
-            let totalCosts = filteredEvents.reduce((sum, e) => sum + (e.cost || 0), 0);
+            let totalCosts = filteredEvents.reduce((sum, e) => sum + Number(e.cost || 0), 0);
             document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (filteredEvents.length === 0) {
@@ -869,7 +869,7 @@
                     let tankBadge = "";
                     if (e.type === 'Tanken') {
                         if (e.litres) tankBadge += `<span class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">⛽ ${e.litres} L</span>`;
-                        if (e.consumption) tankBadge += `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">⚡ ${e.consumption.toFixed(1).replace('.', ',')} l/100km</span>`;
+                        if (e.consumption) tankBadge += `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">⚡ ${Number(e.consumption).toFixed(1).replace('.', ',')} l/100km</span>`;
                         if (e.km) tankBadge += `<span class="text-[10px] bg-gray-100 text-gray-800 font-semibold px-2 py-0.5 rounded-full">📍 ${e.km} km</span>`;
                     }
 
@@ -948,8 +948,8 @@
             doc.setFont("helvetica", "normal");
             data.cars.forEach(c => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`- ${c.name} (${c.plate || 'k.A.'}), KM: ${c.km || 'k.A.'} | Vers.: ${c.insurance || '-'}`, 14, y);
-                y += 6;
+                const lines = doc.splitTextToSize(`- ${c.name} (${c.plate || 'k.A.'}), KM: ${c.km || 'k.A.'} | Vers.: ${c.insurance || '-'}`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 4;
@@ -962,18 +962,19 @@
             data.events.forEach(e => {
                 let car = data.cars.find(c => c.id === e.carId);
                 let cName = car ? car.name : "?";
-                totalCosts += (e.cost || 0);
+                totalCosts += Number(e.cost || 0);
 
                 if (y > 270) { doc.addPage(); y = 20; }
                 let treadText = e.tread ? ` | ${e.tread} mm` : "";
                 let tankText = e.litres ? ` | ${e.litres} L` : "";
                 let consText = e.consumption ? ` | ${e.consumption.toFixed(1)} l/100km` : "";
-                doc.text(`- [${e.type}] ${cName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 14, y);
-                y += 6;
+                const lines = doc.splitTextToSize(`- [${e.type}] ${cName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${Number(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 6;
             doc.setFont("helvetica", "bold");
+            if (y > 270) { doc.addPage(); y = 20; }
             doc.text(`Gesamtkosten: ${totalCosts.toFixed(2)} EUR`, 14, y);
 
             doc.save("kfz-wartungs-report.pdf");
