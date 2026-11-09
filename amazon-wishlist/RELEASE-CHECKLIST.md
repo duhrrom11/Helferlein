@@ -192,3 +192,9 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Hintergrund-Aktualisierungen des Profils erhalten noch nicht gespeicherte Formularänderungen, solange der Benutzer nicht gewechselt wurde.
 - Erfolgsmeldungen nach Profiländerungen prüfen die Sitzung erneut.
 - Nur bestehende CI-Checks, keine Testdaten und keine Änderungen an produktiven Supabase-Tabellen.
+
+## Nachprüfung: ungespeicherte Profilfelder (09.11.2026, 17 Uhr MEZ)
+- Commit `45d9457`: Bei Hintergrundaufrufen von `auth()` und noch nicht angelegtem Profil werden bereits eingetippte, ungespeicherte Werte für Benutzername, Anzeigename und Beschreibung nicht mehr wegen `previousProfile === null` überschrieben. Bei einem tatsächlichen Kontowechsel bleiben die bestehenden Zurücksetzungen aktiv.
+- Gezielte Browser-Regression erforderlich: angemeldet ohne vorhandenes Profil, Formular teilweise ausfüllen, Auth-Statusereignis auslösen und unveränderte Eingaben prüfen; danach abmelden und leere Profilfelder prüfen. Keine Testkonten/-daten in der Produktivdatenbank anlegen.
+- GitHub-Abfrage nach PR-Workflow-Runs für `6737d03` und `45d9457` ergab jeweils eine leere Liste; **kein CI-Erfolgsnachweis**. Die API-Abfrage ist auf PR-getriggerte Runs begrenzt. Vor Merge den aktuellen Head und alle erforderlichen Checks über GitHub Actions/PR-Checks eindeutig bestätigen.
+- Keine Datenbankänderungen, kein Merge und kein Deployment.
