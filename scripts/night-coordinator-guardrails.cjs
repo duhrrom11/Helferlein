@@ -30,6 +30,6 @@ assert.match(scoped,/wishlist-syntax/);
 assert.match(scoped,/wishlist-unit/);
 assert.match(scoped,/wishlist-public-safety/);
 assert.match(scoped,/wishlist-release/);
-assert.doesNotMatch(scoped,/tools\\/|vault-api|wg-organisator|release-smoke|supabase\\/migrations|supabase-produktivabnahme/);
+assert.doesNotMatch(scoped,/tools\/|vault-api|wg-organisator|release-smoke|supabase\/migrations|supabase-produktivabnahme/);
 assert.match(script,/Helferlein Wunschliste – Nachtschicht-Arbeitsstand/);
 console.log('Wishlist-only night coordinator guardrails: OK');
