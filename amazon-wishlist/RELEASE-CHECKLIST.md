@@ -66,3 +66,9 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 ## Prüfung vom 09.11.2026 (09 Uhr MEZ)
 - Pagination-Fehler behoben: Der allgemeine Button-Wrapper aktivierte den Button »Mehr laden« nach jedem Klick erneut, selbst wenn der Feed keine weiteren Einträge hatte. Der dedizierte Handler lässt den von `feed()` ermittelten deaktivierten Zustand bestehen und aktiviert den Button nur nach einem Fehler wieder. Commit `9fd0081e238903330966a657d0140513f9b174f4`.
 - Weiterhin offen: Browser-Test mit genau 20 und 21 Wünschen, mehrfacher Filterwechsel, Fehlerfall beim Nachladen sowie CI für den neuesten Commit. Keine Änderungen an produktiven Daten; kein Merge und kein Deployment.
+
+## Nachprüfung vom 09.11.2026 (09:27 Uhr MEZ)
+- Für Code-Commit `4f62a04b4bce0f67f676a5471521a1f28a06931c` sind sechs GitHub-Actions-Workflows **erfolgreich abgeschlossen**: `Amazon wishlist checks`, `Browser launch smoke`, `B3 Startseite`, `Backup security policy`, `Release smoke checks` und `Production route smoke`.
+- Der Commit leert das Passwortfeld auch bei fehlgeschlagener Anmeldung/Registrierung durch `finally`. Automatische CI ist erfolgreich, aber der interaktive Fehlerpfad ist noch nicht separat als Browser-End-to-End-Test nachgewiesen.
+- Live-Supabase-Sicherheitsprüfung: RLS ist für `wishlist_profiles`, `wishlist_products`, `wishlist_wishes`, `wishlist_follows` aktiv; anonyme Rollen besitzen ausschließlich `SELECT`, Eigentümerregeln sind für Schreibzugriffe vorhanden. Keine Daten oder Policies verändert. Auth-Sicherheitsadvisor meldet weiterhin deaktivierten Schutz vor kompromittierten Passwörtern; siehe https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection .
+- **Keine Freigabe:** Manuelle Browser-/RLS-Negativtests, Auth-Konfiguration, rechtliche Pflichtseiten und Abuse-Schutz bleiben offen. Deployment bleibt ausdrücklich verboten, Merge nur nach nachgewiesener Freigabereife.
