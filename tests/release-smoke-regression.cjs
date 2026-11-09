@@ -33,6 +33,8 @@ function expectFailure(name, mutate, fragment) {
   reset();
   mutate();
   const result = run();
+  assert.equal(result.error, undefined, name + ': test process failed to launch');
+  assert.notEqual(result.signal, 'SIGTERM', name + ': test timed out');
   assert.notEqual(result.status, 0, name + ': expected failure');
   assert.match(result.stderr + result.stdout, fragment, name + ': wrong error');
   console.log('PASS rejects:', name);
@@ -40,6 +42,7 @@ function expectFailure(name, mutate, fragment) {
 try {
   reset();
   const good = run();
+  assert.equal(good.error, undefined, 'valid fixture process must launch');
   assert.equal(good.status, 0, 'valid fixture should pass: ' + good.stderr);
   console.log('PASS accepts: valid 11-tool site');
 
@@ -52,7 +55,15 @@ try {
   expectFailure('missing tool title', () => write(tools[0], toolHtml.replace('<title>Tool</title>', '')), /nonempty title/);
   expectFailure('invalid inline JavaScript', () => write(tools[0], toolHtml.replace('const ok = 1;', 'const = ;')), /SyntaxError|Unexpected token/);
   expectFailure('invalid inline JSON', () => write('index.html', homepage.replace('{"ok":true}', '{oops}')), /SyntaxError|JSON/);
-  console.log('Release smoke regression fixtures passed');
+  expectFailure('missing homepage title', () => write('index.html', homepage.replace('<title>Helferlein</title>', '')), /nonempty title/);
+  expectFailure('missing homepage doctype', () => write('index.html', homepage.replace('<!doctype html>', '')), /HTML document/);
+  expectFailure('missing tool doctype', () => write(tools[0], toolHtml.replace('<!doctype html>', '')), /HTML document/);
+  expectFailure('missing tool html element', () => write(tools[0], toolHtml.replace('<html lang="de">', '<main>').replace('</html>', '</main>')), /html element/);
+  expectFailure('missing homepage html element', () => write('index.html', homepage.replace('<html lang="de">', '<main>').replace('</html>', '</main>')), /German language/);
+  expectFailure('missing tool link', () => write('index.html', homepage.replace('<a href="' + tools[0] + '">Tool</a>', '')), /all 11 tools/);
+  expectFailure('invalid homepage JavaScript', () => write('index.html', homepage.replace('</body>', '<script>const = ;</script></body>')), /SyntaxError|Unexpected token/);
+  expectFailure('empty meta description', () => write('index.html', homepage.replace('content="Elf praktische Tools"', 'content=""')), /SEO description/);
+  console.log('Release smoke regression fixtures passed (18 cases)');
 } finally {
   fs.rmSync(root, { recursive: true, force: true });
 }
