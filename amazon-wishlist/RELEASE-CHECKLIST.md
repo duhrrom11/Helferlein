@@ -266,3 +266,9 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Für lokal ausgeblendete Wünsche zeigt die Oberfläche die Anzahl und eine Wiederherstellen-Aktion. Wiederherstellen leert nur den flüchtigen Set im Browser und lädt den Feed erneut; keine Supabase-Schreiboperation.
 - Der Feed meldet den Ladefortschritt und die Zahl geladener Wünsche in einer separaten Live-Statuszeile. Die Anzahl bezeichnet die serverseitig geladenen Einträge vor lokalem Ausblenden.
 - Noch offen: echte Meldungen und Moderationsbearbeitung, serverseitiger Missbrauchsschutz, CI des letzten Heads und kurzer Browsercheck auf Mobilgerät/Tastatur. Kein Merge, Deployment oder Eingriff in produktive Daten.
+
+## D/E – Stabilisierung des lokalen Ausblendens
+- Kritischen Initialisierungsfehler korrigiert: Der Handler für `restoreHiddenWishes` wird erst nach Definition des `run`-Wrappers registriert (zuvor potenzieller `ReferenceError` beim Laden des Moduls).
+- Sichtbare Wunschkarten werden getrennt vom serverseitigen Pagination-Offset gezählt; ausgeblendete Datensätze erhöhen den Sichtbarkeitszähler nicht.
+- Wenn alle geladenen Wünsche lokal ausgeblendet sind, erscheint ein Hinweis zur Wiederherstellung statt eines leeren Feeds.
+- Weiter offen: GitHub-CI-/Browsernachweis für neuesten Head, echte Meldungen/Moderation, serverseitiger Abuse-Schutz. Keine Supabase-Schreiboperation, kein Merge/Deployment.
