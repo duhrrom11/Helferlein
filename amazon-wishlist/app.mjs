@@ -27,11 +27,10 @@ async function searchPeople(){
  $('peopleResults').setAttribute('aria-busy','true');$('peopleResults').textContent='Suche läuft …';
  let result;try{result=await db.from('wishlist_profiles').select('user_id,handle,display_name,bio').or('handle.ilike.%'+safe+'%,display_name.ilike.%'+safe+'%').order('handle').limit(20)}catch(e){result={error:e}}
  if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term)return;
- $('peopleResults').removeAttribute('aria-busy');
- if(result.error){$('peopleResults').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.';throw result.error;}
+ if(result.error){$('peopleResults').removeAttribute('aria-busy');$('peopleResults').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.';throw result.error;}
  let followed=new Set();
- if(user){let f;try{f=await db.from('wishlist_follows').select('followed_id').eq('follower_id',searchingUserId)}catch(e){f={error:e}}if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term)return;if(f.error){$('peopleResults').textContent='Abonnements konnten nicht geladen werden.';throw f.error;}followed=new Set(f.data.map(x=>x.followed_id))}
- const root=$('peopleResults');root.replaceChildren();
+ if(user){let f;try{f=await db.from('wishlist_follows').select('followed_id').eq('follower_id',searchingUserId)}catch(e){f={error:e}}if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term)return;if(f.error){$('peopleResults').removeAttribute('aria-busy');$('peopleResults').textContent='Abonnements konnten nicht geladen werden.';throw f.error;}followed=new Set(f.data.map(x=>x.followed_id))}
+ const root=$('peopleResults');root.removeAttribute('aria-busy');root.replaceChildren();
  if(!result.data.length){root.textContent='Keine Profile gefunden.';return;}
  for(const p of result.data){
   const item=document.createElement('div');item.className='item';
