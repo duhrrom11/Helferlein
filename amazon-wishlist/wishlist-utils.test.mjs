@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -84,4 +84,13 @@ test('shared product URL survives sign-in only while still present in the editor
  assert.equal(shouldRestoreSharedProductUrl('https://www.amazon.de/dp/B0OTHER123',shared),false);
  assert.equal(shouldRestoreSharedProductUrl('',shared),false);
  assert.equal(shouldRestoreSharedProductUrl(shared,null),false);
+});
+
+test('feed freshness guard detects filter, sorting, pagination and account changes',()=>{
+ const request={offset:20,revision:4,filter:'all',sort:'newest',userId:'account-a',profileId:null};
+ assert.equal(isFeedRequestStale(request,{...request}),false);
+ for(const [field,value] of Object.entries({offset:0,revision:5,filter:'mine',sort:'priority',userId:'account-b',profileId:'profile-a'})){
+  assert.equal(isFeedRequestStale(request,{...request,[field]:value}),true,field);
+ }
+ assert.equal(isFeedRequestStale(request,{...request,userId:null}),true);
 });
