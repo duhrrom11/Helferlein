@@ -653,19 +653,23 @@
 
         function filterTools() {
             const searchBox = document.getElementById('searchBox');
-            if(!searchBox) return;
-            const query = searchBox.value.toLocaleLowerCase("de").trim();
+            if (!searchBox) return;
+            const normalize = value => String(value || '').normalize('NFKD')
+                .replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('de')
+                .replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, ' ').trim();
+            const words = normalize(searchBox.value).split(' ').filter(Boolean);
+            const category = document.querySelector('[data-b3-category-filter][aria-pressed="true"]')?.getAttribute('data-b3-category-filter') || 'alle';
             let matches = 0;
             document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
-                const name = card.getAttribute('data-name') || '', text = card.innerText.toLocaleLowerCase("de");
-                // Search only tool metadata, never private browser storage.
-                const category = document.querySelector('[data-b3-category-filter][aria-pressed="true"]')?.getAttribute('data-b3-category-filter') || 'alle';
+                const searchable = normalize((card.getAttribute('data-name') || '') + ' ' + card.innerText);
                 const categoryMatches = category === 'alle' || card.getAttribute('data-category') === category;
-                const visible = categoryMatches && (name.toLocaleLowerCase("de").includes(query) || text.includes(query));
-                card.style.display = visible ? "flex" : "none";
+                const visible = categoryMatches && words.every(word => searchable.includes(word));
+                card.style.display = visible ? 'flex' : 'none';
                 if (visible) matches++;
             });
             document.getElementById('searchEmptyState')?.classList.toggle('hidden', matches !== 0);
+            const counter = document.getElementById('b3-result-count');
+            if (counter) counter.textContent = matches + ' von ' + document.querySelectorAll('#toolsGrid .tool-card').length + ' Tools';
         }
 
         function loadStats() {
