@@ -111,3 +111,10 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Bei Nutzerwechsel wird das Wunschformular sofort zurückgesetzt; ein vorheriges Profil bleibt nicht während des asynchronen Nachladens nutzbar.
 - Nicht vorhandene Profil-Deep-Links zeigen einen expliziten Hinweis; Notizen können mehrzeilig bearbeitet werden.
 - Manuell zu prüfen: Nutzerwechsel bei langsamem Netz, fehlende Profil-Deep-Links, Ladefehler, mehrzeilige Notizen und Bedienung mit Tastatur.
+
+## Paket: Asynchrone Sitzungs- und Fehlerbehandlung
+- Asynchrone Profil-Ladevorgänge werden bei Nutzerwechsel über eine separate Generation verworfen; alte Antworten dürfen die neuen Profilfelder nicht überschreiben.
+- Nach Profil-, Wunsch- und Abonnement-Schreibvorgängen wird geprüft, ob noch dasselbe Konto aktiv ist, bevor dessen Oberfläche aktualisiert wird.
+- Profilsuche zeigt einen Ladezustand und verständliche Fehlermeldungen; fehlgeschlagene Feed-Abfragen zeigen einen Wiederholhinweis.
+- Der Pagination-Button startet deaktiviert und wird erst nach einer erfolgreichen Feed-Abfrage aktiviert. Such- und Feed-Bedienelemente sind ihren Ergebnisbereichen zugeordnet.
+- Noch offen: manuelle Race-Condition-Tests mit schnellem Kontowechsel und verzögerten API-Antworten sowie echte RLS-API-Tests. Keine Testdatensätze in der Produktivdatenbank.
