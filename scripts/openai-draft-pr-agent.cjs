@@ -33,7 +33,7 @@ async function main(){
  } finally {clearTimeout(timeout);}
  if(data.status !== 'completed') throw Error('OpenAI response not completed (details suppressed)');
  const output=(data.output||[]).filter(x=>x.type==='message').flatMap(x=>x.content||[])
-   .filter(x=>x.type==='output_text').map(x=>x.text).join('\n').trim();
+   .filter(x=>x.type==='output_text' && typeof x.text==='string').map(x=>x.text).join('\n').trim();
  if(!output)throw Error('No model output (status='+String(data.status||'unknown')+')');
  if(output.length>14000)throw Error('Model output too long');
  // The file name is generated locally; the model never controls the path.
