@@ -82,3 +82,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Code-Commit `b03829af4a1294a50d55e94db5f18009a489b1f2`: Die asynchrone Profilsuche verwirft Ergebnisse einer älteren Anfrage, sobald eine neuere Suche gestartet wurde. Nach dem Laden der Abonnements wird erneut geprüft; auch ein zwischenzeitlicher Wechsel des angemeldeten Kontos verhindert die Anzeige veralteter Ergebnisse.
 - Browser-Regression offen: Zwei Suchanfragen mit absichtlich vertauschter Antwortreihenfolge auslösen; nur das neuere Ergebnis darf angezeigt werden. Während einer langsamen Suche abmelden bzw. Konto wechseln; veraltete Abonnementaktionen dürfen nicht erscheinen.
 - Kein Eingriff in Supabase oder Nutzerdaten. CI für den neuen Head erneut prüfen. Release weiterhin nicht freigegeben; kein Deployment.
+
+## Auth-Wechsel und asynchrone Profilsuche (09.11.2026)
+- Commit `630c3e46b3ec1335fb8ac0b8ad96770b650f4053`: Bei einem Wechsel der angemeldeten Nutzer-ID (auch Abmeldung) wird die Suchgeneration erhöht und die bisherige Profilsuche sofort geleert. Damit bleiben keine alten Folgen-/Entfolgen-Schaltflächen einer vorherigen Sitzung sichtbar; bereits laufende Suchantworten werden verworfen.
+- Browser-Regression noch offen: Profil mit angemeldetem Konto suchen, abmelden, kontrollieren, dass Ergebnisse/Aktionsschaltflächen verschwinden; anschließend eine absichtlich verzögerte Suche starten und währenddessen die Sitzung wechseln. Nach dem Wechsel dürfen die alten Ergebnisse nicht zurückkehren.
+- Keine Supabase-Migration, keine Produktivdatenänderung, kein Deployment. Für den aktuellen Commit CI separat prüfen.
