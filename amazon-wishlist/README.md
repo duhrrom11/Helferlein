@@ -26,3 +26,8 @@
 - Öffentliche Profilansichten über `?profile=handle`; Auswahl aus der Suche aktualisiert die Browseradresse, ein anderer Feed-Filter entfernt den Profilparameter. `profilePageUrl` ist separat getestet.
 - CI-Status und GitHub-Actions-Workflow-Runs explizit prüfen; leere Statuslisten sind **kein** Testnachweis.
 
+
+## Letzte Sicherheitskorrektur
+- Beim gleichzeitigen Anlegen derselben Amazon-ASIN wird ausschließlich PostgreSQL-Fehler `23505` (Unique Constraint) durch erneutes Lesen aufgelöst. Andere Fehler, insbesondere RLS-/Berechtigungsfehler, werden nicht länger durch einen Retry verdeckt.
+- Die Funktion »Profil-Link kopieren« verwendet dieselbe kanonische URL-Hilfsfunktion wie die Profilnavigation und erhält unabhängige Query-Parameter.
+- Neuer Unit-Test für die Fehlerklassifizierung. Nach Commit `eb0c434` ergaben die GitHub-Abfragen weiterhin keine CI-Statuses und keine commitgebundenen PR-Workflow-Runs. Das ist kein erfolgreicher Testnachweis. Lokaler Repository-Download aus der Ausführungsumgebung scheitert derzeit an DNS-Auflösung für github.com.
