@@ -180,3 +180,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Für vorherigen Code-Head `acc3673ed6ac933d5be0f4d19ec70542c73f2f28` sind sechs GitHub-Actions-Workflows erfolgreich abgeschlossen.
 - Korrektur für anonym geöffneten `?url=`-Produktlink: Beim späteren Anmelden wird der unverändert im Editor stehende kanonische Link trotz Formular-Reset erhalten. Ein vom Nutzer ersetzter Link wird nicht durch den ursprünglichen URL-Parameter überschrieben. Code-Commits `cfc6a5b`, `3216030`; Regressionstest `e1a0a77`.
 - Noch nachzuweisen: CI des aktuellen Heads, Browserablauf »geteilten Link anonym öffnen → anmelden → URL im Editor prüfen« und Browser-/RLS-Negativtests. Keine Testdatensätze, produktiven Datenbankänderungen, Merge- oder Deployment-Aktionen.
+
+## Feed- und Suchergebnis-Konsistenz
+- Feed-Elemente werden zunächst in einem `DocumentFragment` aufgebaut und erst nach erneuter Prüfung des Anfragezustands gemeinsam in die Oberfläche eingefügt. Dadurch werden veraltete Teilseiten bei zwischenzeitlichen Filter-/Sitzungswechseln nicht mehr angezeigt.
+- Suchantworten werden verworfen, wenn sich der Eingabetext während der Datenbankabfrage verändert hat.
+- Vorheriger Commit `b17eefc`: sechs CI-Workflows erfolgreich; für den neuesten Commit ist das Ergebnis separat zu prüfen.
