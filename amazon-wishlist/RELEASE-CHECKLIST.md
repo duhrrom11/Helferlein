@@ -279,3 +279,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Browser-Negativfälle offen: Zwei zeitlich vertauschte Suchen, erste schlägt fehl; die zweite bleibt bis zu ihrer Antwort als ladend gekennzeichnet. Nach Escape/Kontowechsel keine alte Fehlermeldung, kein alter Ladezustand. Außerdem Follow-SELECT als Promise-Rejection testen.
 - Lokal verfügbar: Node.js v22.16.0. GitHub-Checkout weiterhin durch `Could not resolve host: github.com` blockiert. Die vorhandene Suite wurde deshalb **nicht** ausgeführt. Nächste Handlung: GitHub-CI für den letzten Head nachweisen und im vollständigen Checkout `node --check amazon-wishlist/app.mjs && node --test amazon-wishlist/*.test.mjs` ausführen.
 - Kein Supabase-Schreibzugriff, keine Testdatensätze, kein Merge, kein Deployment und keine Veröffentlichung.
+
+## D/E – Einzelnes Ausblenden rückgängig machen
+- Neben dem Zurücksetzen aller ausgeblendeten Wünsche gibt es eine einmalige Rückgängig-Aktion für den zuletzt ausgeblendeten Wunsch. Nur flüchtiger Browserzustand; keine serverseitige Meldung oder Datenbankänderung.
+- Beim Ausblenden wird der Tastaturfokus auf die nächste sichtbare Aktion oder die Rückgängig-Schaltfläche verschoben. Fehlgeschlagene Feed-Anfragen werden in der Statuszeile als Fehler angezeigt.
+- Noch nicht abgeschlossen: echte Meldeinfrastruktur mit Rollen/RLS, Missbrauchsschutz, verantwortlicher Moderationsprozess und nachgewiesene CI-/Browserprüfungen. Nicht freigegeben.
