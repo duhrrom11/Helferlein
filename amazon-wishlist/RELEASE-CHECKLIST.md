@@ -151,3 +151,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Beim Anlegen eines Wunsches wird vor dem endgültigen Insert geprüft, ob noch dasselbe Konto aktiv ist.
 - Leere Auth-Antworten werden ohne Laufzeitabbruch verarbeitet; ein Fehler beim Laden eines Profil-Deep-Links führt zu einem sichtbaren Hinweis statt zum allgemeinen Feed.
 - Weiterhin nur notwendige Gates: Syntaxprüfung, vorhandene Unit-Tests und vorhandene Browser-CI. Keine produktiven Testdatensätze.
+
+## Sicherheitsnachbesserung (09.11.2026, 14 Uhr MEZ)
+- `auth()` behandelt einen Fehler bei `getUser()` jetzt fail-closed: eine zuvor sichtbare Sitzung wird aus dem UI entfernt, Profil-/Editorzustand zurückgesetzt und veraltete Suchergebnisse beim Identitätswechsel verworfen; der Fehler wird anschließend weiterhin an den Aufrufer gemeldet.
+- Bei fehlgeschlagener `signOut()`-Anfrage wird das Passwortfeld ebenfalls zuverlässig per `finally` geleert. Ein fehlgeschlagenes Sign-out gilt ausdrücklich **nicht** als erfolgreich abgemeldet; die Session wird dadurch nicht fälschlich bestätigt oder serverseitig verändert.
+- Code-Commit `6b02715fa9e0c2c3702c90ac5b00b8a3533b2dd8`. Notwendige Prüfungen: `node --check amazon-wishlist/app.mjs`, bestehende Wishlist-Unit-Tests und CI des letzten Heads; vor Freigabe zusätzlich Browser-Regression für getUser-Fehler nach zuvor erfolgreicher Anmeldung. Kein produktiver Datenbank-Schreibzugriff, kein Merge, kein Deployment.
