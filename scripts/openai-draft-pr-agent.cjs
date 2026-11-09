@@ -25,11 +25,12 @@ const request={
 };
 async function main(){
  const ctl=new AbortController();const timeout=setTimeout(()=>ctl.abort(),90000);
- let res;
- try{res=await fetch('https://api.openai.com/v1/responses',{method:'POST',signal:ctl.signal,headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(request)});}
- finally{clearTimeout(timeout);}
- if(!res.ok)throw Error('OpenAI API HTTP '+res.status+' (response suppressed)');
- const data=await res.json();
+ let data;
+ try {
+  const res=await fetch('https://api.openai.com/v1/responses',{method:'POST',signal:ctl.signal,headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(request)});
+  if(!res.ok)throw Error('OpenAI API HTTP '+res.status+' (response suppressed)');
+  data=await res.json();
+ } finally {clearTimeout(timeout);}
  const output=(data.output||[]).filter(x=>x.type==='message').flatMap(x=>x.content||[])
    .filter(x=>x.type==='output_text').map(x=>x.text).join('\n').trim();
  if(!output)throw Error('No model output (status='+String(data.status||'unknown')+')');
