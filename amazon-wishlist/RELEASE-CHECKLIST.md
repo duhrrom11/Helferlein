@@ -306,3 +306,9 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Separater zugänglicher Suchstatus informiert über laufende Suche und Anzahl gefundener Profile; die Obergrenze von 20 Suchergebnissen wird ausdrücklich benannt.
 - Suchfehler, Fehler beim Laden der Abonnements und Kontowechsel entfernen veraltete Ladehinweise.
 - Noch offen: Browser-/CI-Nachweis am letzten Commit und sichere serverseitige Meldungs-/Moderationsinfrastruktur. Keine Produktivdatenänderung oder Freigabe.
+
+## D – Profile für die Sitzung ausblenden
+- Öffentliche Wunschkarten fremder Profile bieten „Profil für mich ausblenden“. Der lokale Feed überspringt anschließend alle Wünsche dieses Profils; eigene Profilkarten erhalten diese Aktion nicht.
+- Separate Anzeige und Wiederherstellung ausgeblendeter Profile; beim Kontowechsel wird der Sitzungszustand verworfen. Die Pagination zählt weiterhin serverseitige Zeilen und überspringt lokal versteckte Karten.
+- Reine Filterung im Browser, **keine Meldung, Sperre oder serverseitige Moderation**. Unit-Test für unabhängiges Verstecken von Wunsch/Profil und Rücknahme hinzugefügt.
+- Vor Freigabe prüfen: echte Meldungs- und Moderationsstrecke, serverseitiger Missbrauchsschutz, RLS-/Berechtigungsprüfungen, Browser-Smoke (Filter, Pagination, Konto-Wechsel) und CI am letzten Head. Keine produktiven DB-Schreibvorgänge.
