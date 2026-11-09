@@ -19,7 +19,7 @@ test('normalizes and checks handles',()=>{
 
 test('validates only allowed priorities',()=>{
  for(const value of ['1','2','3'])assert.equal(validatePriority(value),Number(value));
- for(const value of ['0','4','1.5','NaN','foo'])assert.throws(()=>validatePriority(value));
+ for(const value of ['0','4','1.5','NaN','foo',null,undefined,true,false,{},[]])assert.throws(()=>validatePriority(value));
 });
 
 test('public profile URLs preserve safe query state and clear imported product links',()=>{
@@ -74,6 +74,6 @@ test('auth credentials are validated and email whitespace removed',()=>{
 
 test('profile search rejects punctuation-only and one-character queries',()=>{
  assert.equal(validatedProfileSearch('  Änne (42) '),'Änne 42');
- for(const value of ['','!@#','a',' a! ',null,undefined])assert.throws(()=>validatedProfileSearch(value));
+ for(const value of ['','!@#','a',' a! ','  ','--','a - ',null,undefined])assert.throws(()=>validatedProfileSearch(value));
  assert.equal(validatedProfileSearch(' a b '),'a b');
 });
