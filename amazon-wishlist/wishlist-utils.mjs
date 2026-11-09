@@ -55,3 +55,11 @@ export function feedPage(rows,pageSize=20) {
  if(!Array.isArray(rows)||!Number.isInteger(pageSize)||pageSize<1)throw Error('Ungültige Feed-Seite');
  return {items:rows.slice(0,pageSize),hasMore:rows.length>pageSize};
 }
+
+/** Reject empty credentials before invoking the remote auth endpoint. */
+export function validateCredentials(email,password) {
+ const address=typeof email==='string'?email.trim():'';
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)||address.length>254)throw Error('Bitte eine gültige E-Mail-Adresse eingeben');
+ if(typeof password!=='string'||password.length<8)throw Error('Passwort muss mindestens 8 Zeichen enthalten');
+ return {email:address,password};
+}
