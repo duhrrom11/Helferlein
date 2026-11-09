@@ -5,7 +5,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 ## Automatische Tests
 - `node --check amazon-wishlist/app.mjs`
 - `node --test amazon-wishlist/*.test.mjs`
-- GitHub Actions: Workflow `.github/workflows/amazon-wishlist.yml`; erfolgreichen Lauf vor Merge prüfen.
+- GitHub Actions: Workflow `.github/workflows/amazon-wishlist.yml`; erfolgreichen Lauf **für den jeweiligen neuesten Commit** vor Merge prüfen.
+- Nach erfolgreicher Anmeldung, Registrierung und Abmeldung prüfen, dass das Passwortfeld geleert wird; auch nach Auth-Statuswechsel ohne Sitzung.
 
 ## Manuelle Browserprüfung (mit eigenen echten Konten, ohne Testdaten in der Produktivdatenbank)
 1. Anonyme Startseite öffnen: Login sichtbar, Feed lesbar, keine Bearbeitungsaktionen.
@@ -31,3 +32,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Neu: Öffentliche Profil-Wunschansicht mit `?profile=<handle>`, Suchergebnis-Aktion »Wünsche ansehen«, Profil-Link kopieren; nur bestehende RLS-lesbare Daten.
 - Wichtig: GitHub Actions `Amazon wishlist checks`, `Browser launch smoke` und weitere Workflows nach jedem Commit auf Abschluss und Erfolg prüfen; ein laufender Workflow ist kein bestandener Test.
 - Vor Launch zusätzlich Profile-Link-Fehlerfälle, Browser- und RLS-Tests prüfen. Keine Testdatensätze in Produktiv-Supabase erstellen.
+
+## CI-Befund vom 09.11.2026 (03 Uhr MEZ)
+- Für Commit `f2257eb36ede3c905e35d57a71d0d93f1b7ec04a` ist `Amazon wishlist checks` (Run `42543252404`) **erfolgreich** abgeschlossen. Ebenso `Browser launch smoke` (Run `42543252531`), `Release smoke checks` und `Production route smoke`.
+- **Separater Blocker:** `B3 Startseite` (Run `42543252421`) ist fehlgeschlagen: In `tests/b3-startseite.spec.cjs:59` findet Playwright den erwarteten sichtbaren Button mit Namen `Backup` im Einstellungsdialog nicht. 8 von 9 Tests bestanden. Diesen Root-UI-Test vor Merge prüfen, unabhängig von den Wishlist-Tests.
+- Der jüngste Passwortfeld-Commit `9138fc67de60dfa6ac0b7d36a7ae9f22023bbece` hatte zum Abfragezeitpunkt noch keine zugeordneten Workflow-Runs; sein CI-Erfolg ist daher **nicht bestätigt**.
