@@ -627,6 +627,15 @@
             document.getElementById('guideSection').classList.toggle('hidden');
         }
 
+        function getData() {
+            try {
+                const value = JSON.parse(localStorage.getItem('kassenbon_data'));
+                return Array.isArray(value) ? value : [];
+            } catch(e) {
+                return [];
+            }
+        }
+
         function householdCloudSnapshot() {
             const sources = [
                 ['kassenbon_data', 'entries', 'array'],
@@ -665,15 +674,6 @@
             if (typeof window === 'undefined' || !window.helferleinCloudBridge) return;
             void window.helferleinCloudBridge.changed(householdCloudSnapshot()).catch(error =>
                 console.error('Haushaltsbuch-Cloud-Synchronisierung ausstehend:', error));
-        }
-
-        function getData() {
-            try {
-                const value = JSON.parse(localStorage.getItem('kassenbon_data'));
-                return Array.isArray(value) ? value : [];
-            } catch(e) {
-                return [];
-            }
         }
 
         function saveData(data) {
