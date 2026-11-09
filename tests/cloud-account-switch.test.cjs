@@ -104,6 +104,13 @@ const journal = 'helferlein_cloud_switch_test-tool';
   assert.equal(first.reloads, 1);
 
   shared.set('test_records', JSON.stringify({ items: [{ id: 'b' }] }));
+  const verifiedB = harness(shared, B);
+  await verifiedB.wait();
+  assert.equal(verifiedB.bridge.canWriteLocal(), true,
+    'verified newly switched account can save locally without opting into cloud');
+  assert.equal(await verifiedB.bridge.changed({ items: [{ id: 'local-b' }] }), false,
+    'local-only changes must not upload without opt-in');
+  verifiedB.bridge.dispose();
   const second = harness(shared, A);
   await second.switch();
   assert.equal(shared.get(owner), A);
