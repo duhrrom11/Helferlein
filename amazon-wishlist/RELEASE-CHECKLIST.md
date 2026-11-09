@@ -77,3 +77,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Für den vorherigen Dokumentations-Head `7a4bb2a118438f46d98b1feff90317a7bd6880a5` sind alle sechs PR-Workflows erfolgreich abgeschlossen, einschließlich `Amazon wishlist checks` und `B3 Startseite`.
 - Feed-Pagination holt jetzt 21 statt 20 Datensätze je Anfrage und zeigt maximal 20 an. Das zusätzliche Lookahead-Element bestimmt, ob »Mehr laden« tatsächlich sinnvoll ist; bei exakt 20 Einträgen bleibt der Button deaktiviert, statt eine leere Folgeseite anzufordern. Die 21. Zeile wird bei der nächsten Anfrage wieder ab Offset 20 gelesen, also nicht übersprungen.
 - Reiner Helper `feedPage` und Regressionstests für 0, 1, 19, 20, 21 und 40 Ergebnisse ergänzt. Code-Commits `7a1981f`, `c461ee2`, `9f399e1`. CI für den neuen Code-Head ist noch nicht bestätigt; Browser-/RLS-E2E-Prüfungen weiterhin offen. Keine Supabase-Änderung, kein Merge, kein Deployment.
+
+## Profil-Suchrennen (09.11.2026, 11 Uhr MEZ)
+- Code-Commit `b03829af4a1294a50d55e94db5f18009a489b1f2`: Die asynchrone Profilsuche verwirft Ergebnisse einer älteren Anfrage, sobald eine neuere Suche gestartet wurde. Nach dem Laden der Abonnements wird erneut geprüft; auch ein zwischenzeitlicher Wechsel des angemeldeten Kontos verhindert die Anzeige veralteter Ergebnisse.
+- Browser-Regression offen: Zwei Suchanfragen mit absichtlich vertauschter Antwortreihenfolge auslösen; nur das neuere Ergebnis darf angezeigt werden. Während einer langsamen Suche abmelden bzw. Konto wechseln; veraltete Abonnementaktionen dürfen nicht erscheinen.
+- Kein Eingriff in Supabase oder Nutzerdaten. CI für den neuen Head erneut prüfen. Release weiterhin nicht freigegeben; kein Deployment.
