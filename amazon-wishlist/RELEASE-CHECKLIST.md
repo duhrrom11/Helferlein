@@ -226,3 +226,10 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - `2bcf965`: Unit-Test für unveränderten Zustand und jede einzelne Zustandsänderung (einschließlich Abmeldung/Kontowechsel) ergänzt.
 - **Kein Test-Erfolgsnachweis:** Die commitbezogene GitHub-Abfrage für `2bcf965` ergab weder PR-Workflow-Runs noch Combined-Statuses. Ein lokaler Checkout scheitert an DNS-Auflösung für github.com; die Node-Suite wurde deshalb nicht ausgeführt. Nächste Aktion: `node --check amazon-wishlist/app.mjs && node --check amazon-wishlist/wishlist-utils.mjs && node --test amazon-wishlist/*.test.mjs` im vollständigen Checkout ausführen und die CI-Gates für den neuesten Head verifizieren.
 - Kein Supabase-Zugriff, keine Testdaten, kein Merge, Deployment oder Veröffentlichung.
+
+## D – Community und E – Bedienbarkeit (09.11.2026, 22 Uhr MEZ)
+- Mobile Gestaltung: flexible Abstände, größere Schaltflächen, mobile Aktionsgruppen, responsive Überschriften und gut lesbare Eingabefelder; Tastatur-Sprunglink zum Hauptinhalt ergänzt.
+- Öffentliche Inhalte: Hinweise gegen personenbezogene Daten Dritter, rechtswidrige Inhalte, Beleidigungen und unerwünschte Werbung sichtbar ergänzt. Das sind Hinweise, **keine** serverseitige Moderation oder wirksame Anti-Spam-Sperre.
+- Profilsuche und Feed haben zusätzliche Bedienhinweise, einschließlich Escape-Taste und erneuter Ladeaktion.
+- **Vor öffentlicher Freigabe offen:** verbindliche Community-Regeln, ein tatsächlicher Melde-/Moderationsprozess mit Verantwortlichkeiten und datenschutzgerechtem Ablauf, serverseitiges Rate Limiting/Abuse-Schutz. Keine funktionslose Melden-Schaltfläche vortäuschen.
+- Nur notwendige Checks: HTML/Browser-Smoke und vorhandene Wishlist-Tests am letzten Commit; manuelle kurze Tastatur-/Mobilprüfung. Kein Eingriff in produktive Supabase-Daten oder Policies, kein Merge/Deployment.
