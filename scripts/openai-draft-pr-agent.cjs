@@ -31,6 +31,7 @@ async function main(){
   if(!res.ok)throw Error('OpenAI API HTTP '+res.status+' (response suppressed)');
   data=await res.json();
  } finally {clearTimeout(timeout);}
+ if(data.status !== 'completed') throw Error('OpenAI response not completed (details suppressed)');
  const output=(data.output||[]).filter(x=>x.type==='message').flatMap(x=>x.content||[])
    .filter(x=>x.type==='output_text').map(x=>x.text).join('\n').trim();
  if(!output)throw Error('No model output (status='+String(data.status||'unknown')+')');
