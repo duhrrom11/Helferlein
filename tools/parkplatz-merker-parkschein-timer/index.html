@@ -355,12 +355,12 @@
 
         function runTimerLoop() {
             clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                let now = new Date().getTime();
-                let distance = activeEndTime - now;
-
-                if (distance < 0) {
+            if (!Number.isFinite(Number(activeEndTime))) return;
+            const tick = () => {
+                const distance = Number(activeEndTime) - Date.now();
+                if (distance <= 0) {
                     clearInterval(timerInterval);
+                    timerInterval = null;
                     document.getElementById("timerDisplay").innerText = "⏰ ABGELAUFEN!";
                     document.getElementById("timerStatus").innerText = "Bitte Parkzeit verlängern oder zum Auto gehen!";
                     if ("Notification" in window && Notification.permission === "granted") {
@@ -368,15 +368,16 @@
                     }
                     return;
                 }
-
-                let h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                let m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                let s = Math.floor((distance % (1000 * 60)) / 1000);
-
-                document.getElementById("timerDisplay").innerText = 
-                    (h > 0 ? h + "h " : "") + String(m).padStart(2, '0') + "m " + String(s).padStart(2, '0') + "s";
+                const remaining = Math.ceil(distance / 1000);
+                const h = Math.floor(remaining / 3600);
+                const m = Math.floor((remaining % 3600) / 60);
+                const sec = remaining % 60;
+                document.getElementById("timerDisplay").innerText =
+                    (h > 0 ? h + "h " : "") + String(m).padStart(2, '0') + "m " + String(sec).padStart(2, '0') + "s";
                 document.getElementById("timerStatus").innerText = "Parkzeit läuft...";
-            }, 1000);
+            };
+            tick();
+            if (Number(activeEndTime) > Date.now()) timerInterval = setInterval(tick, 1000);
         }
 
         function setFavorite(name) {
@@ -467,7 +468,7 @@
             }
 
             document.getElementById('statCount').innerText = data.sessions.length;
-            let totalCost = filteredSessions.reduce((sum, s) => sum + (s.cost || 0), 0);
+            let totalCost = filteredSessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
             document.getElementById('statCost').innerText = totalCost.toFixed(2).replace('.', ',') + ' €';
 
             if (filteredSessions.length === 0) {
