@@ -245,3 +245,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Regression noch offen: Nach bestehender Anmeldung `getUser()` gezielt als Rejection simulieren und sicherstellen, dass Editor, Profilfelder und Folgeaktionen nicht mehr als angemeldet angezeigt werden; zusätzlich schnelle Folgeaufrufe mit vertauschter Antwortreihenfolge prüfen.
 - Commitbezogene GitHub-PR-Workflow- und Combined-Status-Abfragen für den Ausgangs-Head `ce80161` waren leer; **kein** CI-Nachweis. Lokaler Git-Checkout wegen DNS-Auflösung von github.com nicht möglich. Nächste Aktion: bestehenden `Amazon wishlist checks` und Browser-Smoke für den neuesten Head prüfen; im vollständigen Checkout `node --check amazon-wishlist/app.mjs && node --test amazon-wishlist/*.test.mjs` ausführen.
 - Keine Testdaten, keine Supabase-Schema-/Policy-/Datenänderungen, kein Merge, Deployment oder Veröffentlichung.
+
+## Profilabfrage: Promise-Rejection abgesichert (09.11.2026)
+- Commit `5b0327e212501506cd94377c2b448871c17fdb32`: Nicht nur Supabase-Fehlerobjekte, sondern auch geworfene Fehler aus dem Profil-SELECT werden nach Prüfung von Auth-/Profilgeneration und Nutzeridentität über denselben fail-closed-Pfad verarbeitet. Das zuvor zwischengespeicherte Profil wird bei einem aktuellen Fehler invalidiert; alte Anfragen dürfen eine neue Sitzung nicht beeinträchtigen.
+- Noch offen: Browser-Negativtest mit absichtlich zurückgewiesenem Profil-SELECT nach bereits geladenem Profil sowie Test für überholte Rejection nach Kontowechsel. Keine Testdaten in Produktion.
+- CI für den aktuellen Branch-Head gesondert nachweisen. Keine Datenbank-, Merge- oder Deployment-Aktionen.
