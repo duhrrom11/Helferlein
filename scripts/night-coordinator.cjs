@@ -16,12 +16,7 @@ const localDay = parts.year + '-' + parts.month + '-' + parts.day;
 const hour = Number(parts.hour);
 const minute = Number(parts.minute);
 const manual = process.env.GITHUB_EVENT_NAME === 'workflow_dispatch';
-// Allow a short grace window for delayed GitHub cron delivery at 06:00.
-const inWindow = hour < 6 || (hour === 6 && minute < 30);
-if (!manual && !inWindow) {
-  console.log('Outside Berlin night window; no work.');
-  process.exit(0);
-}
+// Repository checks run 24/7; retain the 06:00 Berlin morning report.
 function api(method, endpoint, body) {
   return new Promise((resolve, reject) => {
     const data = body === undefined ? undefined : JSON.stringify(body);
@@ -83,7 +78,7 @@ const checks = [
 ];
 function encodeState(s) {
   return marker + '\n\x60\x60\x60json\n' + JSON.stringify(s,null,2) + '\n\x60\x60\x60\n' +
-    '\nAutomatischer Nachtkoordinator: nur Repository-Prüfungen und Issue-Protokoll. ' +
+    '\nAutomatischer 24/7-Koordinator: nur Repository-Prüfungen und Issue-Protokoll. ' +
     'Keine Datenbankänderungen, keine Deployments, keine Code-Commits. ' +
     'Ein Coding-Agent darf ausschließlich über einen separat freigegebenen PR-Prozess arbeiten.\n';
 }
