@@ -6,7 +6,7 @@
     if (typeof localKey !== 'string' || localKey.length > 160 || !/^[a-z0-9_-]+$/i.test(localKey) || typeof collection !== 'string' || !/^[a-z]{1,40}$/i.test(collection)) throw new Error('Invalid local collection');
     if (!client.auth || typeof client.auth.onAuthStateChange !== 'function') throw new Error('Invalid auth client');
     if (target && typeof target.prepend !== 'function') throw new Error('Invalid migration target');
-    if (localFormat !== 'object' && localFormat !== 'array') throw new Error('Invalid local data format');
+    if (localFormat !== 'object' && localFormat !== 'array' && localFormat !== 'record') throw new Error('Invalid local data format');
     const store = global.HelferleinCloudStore.createStore(client, tool);
     let enabledUser = null;
     let verifiedOwner = null;
@@ -61,7 +61,17 @@
       const owner = localStorage.getItem(ownerKey);
       if (!uid || owner !== uid) throw new Error('Benutzerwechsel erkannt: lokaler Speicher ist nicht diesem Konto zugeordnet. Cloud-Sync gesperrt.');
     }
-    function validPayload(value) { return !!value && typeof value === 'object' && !Array.isArray(value) && Array.isArray(value[collection]); }
+    function validPayload(value) {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+      const entries = value[collection];
+      return localFormat === 'record'
+        ? !!entries && typeof entries === 'object' && !Array.isArray(entries)
+        : Array.isArray(entries);
+    }
+    function entryCount(value) {
+      const entries = value[collection];
+      return Array.isArray(entries) ? entries.length : Object.keys(entries).length;
+    }
     function assertValidPayload(value) { if (!validPayload(value)) throw new Error('Werkzeugdaten haben ein ungültiges Format'); return value; }
     async function currentUser() {
       assertActive();
@@ -82,11 +92,15 @@
         if (!Array.isArray(value)) throw new Error('Erwartete lokale Liste nicht gefunden');
         return { [collection]: value };
       }
+      if (localFormat === 'record') {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Erwartetes lokales Objekt nicht gefunden');
+        return { [collection]: value };
+      }
       return value;
     }
     function encodeLocal(value) {
       assertValidPayload(value);
-      return JSON.stringify(localFormat === 'array' ? value[collection] : value);
+      return JSON.stringify(localFormat === 'object' ? value : value[collection]);
     }
     function safeParseLocal() { const bytes = safeLocalBytes(); if (bytes === null) return null; try { return decodeLocal(JSON.parse(bytes)); } catch (_) { throw new Error('Lokale Daten beschädigt; Original bleibt erhalten'); } }
     async function isEnabled() {
@@ -99,7 +113,7 @@
         localStorage.getItem(enabledKey(user.id)) === 'true';
     }
     function safeLocalBytes() { assertActive(); return localStorage.getItem(localKey); }
-    function localCount(data) { return validPayload(data) ? data[collection].length : null; }
+    function localCount(data) { return validPayload(data) ? entryCount(data) : null; }
     function validateLocal() { const data = safeParseLocal(); if (data !== null) ensureCollection(data); return data; }
     function hasValidLocal() { try { return validPayload(validateLocal()); } catch (_) { return false; } }
     function requireUser(user) { if (!user || typeof user.id !== 'string' || !user.id) throw new Error('Anmeldung erforderlich'); return user.id; }
@@ -201,8 +215,8 @@
         const result = await store.load();
         lastCloudSource = result.source;
         if (result.source !== 'cloud' || !validPayload(result.data)) return false;
-        if (result.data[collection].some(item => item === undefined)) return false;
-        if (result.data[collection].some(item => item === null)) return false;
+        if (Array.isArray(result.data[collection]) && result.data[collection].some(item => item === undefined)) return false;
+        if (Array.isArray(result.data[collection]) && result.data[collection].some(item => item === null)) return false;
         if (accountSwitchInProgress) return false;
         if (localStorage.getItem(enabledKey(user.id)) !== 'true') return false;
         if (disposed) return false;
@@ -434,7 +448,7 @@
       if (raw === null) return null;
       let value;
       try { value = decodeLocal(JSON.parse(raw)); } catch (_) { throw new Error('Lokale Daten sind beschädigt; Original bleibt erhalten'); }
-      if (!value || typeof value !== 'object' || Array.isArray(value) || !Array.isArray(value[collection])) {
+      if (!validPayload(value)) {
         throw new Error('Lokale Daten sind nicht lesbar; keine Übernahme möglich');
       }
       return value;
@@ -459,7 +473,7 @@
       const local = localData();
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Statusanzeige gewechselt');
       setStatus('Cloud: ' + result.source + ' · Lokal: ' +
-        (local ? local[collection].length + ' Einträge' : 'keine Daten') +
+        (local ? entryCount(local) + ' Einträge' : 'keine Daten') +
         (await store.hasPending() ? ' · Synchronisierung ausstehend' : ''));
     });
     button('Lokale Daten in Supabase übernehmen', async () => {
@@ -479,7 +493,7 @@
       const cloud = await store.load();
       if (cloud.source !== 'cloud-empty') { lastConflictMessage = 'Cloud enthält bereits Daten'; throw new Error('Cloud enthält Daten oder ist nicht eindeutig erreichbar; Übernahme blockiert'); }
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Prüfung gewechselt');
-      if (!confirm('Lokale ' + local[collection].length + ' Einträge einmalig in die leere Supabase-Cloud übertragen? Lokale Daten bleiben erhalten.')) return;
+      if (!confirm('Lokale ' + entryCount(local) + ' Einträge einmalig in die leere Supabase-Cloud übertragen? Lokale Daten bleiben erhalten.')) return;
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Bestätigung gewechselt');
       ensureLocalUnchanged(originalBytes);
       ensureOwnerUnchanged(owner);
@@ -508,7 +522,7 @@
       if (!navigator.onLine) throw new Error('Verbindung beim Cloud-Laden verloren');
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während Cloud-Abfrage gewechselt');
       ensureCollection(result.data);
-      if (!confirm(result.data[collection].length + ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?')) return;
+      if (!confirm(entryCount(result.data) + ' Cloud-Einträge in den bisher leeren lokalen Speicher laden?')) return;
       // Recheck before writing: never replace local data added while awaiting confirmation.
       if (localStorage.getItem(localKey) !== null) throw new Error('Lokale Daten wurden inzwischen angelegt');
       if (!await isEnabled() && enabledUser !== null) throw new Error('Cloud-Zuordnung während Übernahme geändert');
