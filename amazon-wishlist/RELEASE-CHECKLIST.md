@@ -312,3 +312,12 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Separate Anzeige und Wiederherstellung ausgeblendeter Profile; beim Kontowechsel wird der Sitzungszustand verworfen. Die Pagination zählt weiterhin serverseitige Zeilen und überspringt lokal versteckte Karten.
 - Reine Filterung im Browser, **keine Meldung, Sperre oder serverseitige Moderation**. Unit-Test für unabhängiges Verstecken von Wunsch/Profil und Rücknahme hinzugefügt.
 - Vor Freigabe prüfen: echte Meldungs- und Moderationsstrecke, serverseitiger Missbrauchsschutz, RLS-/Berechtigungsprüfungen, Browser-Smoke (Filter, Pagination, Konto-Wechsel) und CI am letzten Head. Keine produktiven DB-Schreibvorgänge.
+
+
+## Live-Sicherheitsaudit (10.11.2026, lesend)
+- Supabase-Projekt `avapuibsidubuzxjtyld`: RLS auf `wishlist_profiles`, `wishlist_products`, `wishlist_wishes`, `wishlist_follows` aktiv. `anon` besitzt jeweils nur SELECT; `authenticated` besitzt bei Profilen/Wünschen INSERT, UPDATE, DELETE, bei Follows INSERT/DELETE, bei Produkten INSERT.
+- Eigentümer-Policies: Profile und Wünsche mit `auth.uid() = user_id` (UPDATE mit USING und WITH CHECK), Follows mit `auth.uid() = follower_id`; Produkte können von jedem angemeldeten Benutzer eingefügt werden. Das ist kein serverseitiges Rate Limiting.
+- Öffentliche SELECT-Policies verwenden `true` für alle vier Tabellen. Vor Freigabe Spalten und Datenminimierung gesondert prüfen; RLS allein beschränkt keine Spalten.
+- Security Advisor meldet `auth_leaked_password_protection`: Schutz vor kompromittierten Passwörtern deaktiviert. Abhilfe: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+- Offen: serverseitige Schreibquoten/Spam-Abwehr (nicht durch Browser-Validierung ersetzen), tatsächliche RLS-Negativtests mit autorisierten Konten ohne Produktiv-Testdatensätze, Auth-Konfiguration und CI-/Browser-Nachweise für aktuellen Head.
+- Diese Prüfung führte keine INSERT-/UPDATE-/DELETE-Statements aus. Kein Merge, keine Veröffentlichung und keine Änderung an produktiven Policies.
