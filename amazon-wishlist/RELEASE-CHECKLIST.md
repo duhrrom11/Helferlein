@@ -203,3 +203,7 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Ein Editor-Revisionszähler wird bei manuellen Änderungen, Bearbeitungswechseln und Reset erhöht. Nach asynchronem Speichern wird das Formular nur geleert, wenn der Entwurf zwischenzeitlich unverändert geblieben ist.
 - Ein aus einem alten Feed stammender Löschbutton lehnt die Aktion ab, wenn der Wunsch nicht dem inzwischen angemeldeten Konto gehört. Die Datenbankabfrage bleibt zusätzlich auf `user_id` eingeschränkt.
 - Freigabe bleibt ausstehend; keine produktiven Daten verändert und keine zusätzlichen Testdatensätze angelegt.
+
+## Prüfung vom 09.11.2026 (18 Uhr MEZ): Veraltete Folgen-Aktionen
+- Code-Commit `17f3e614b2141adb18e7425ce123ff07eb01a880`: Ein bereits gerenderter Folgen-/Entfolgen-Button prüft vor dem Supabase-Schreibzugriff zusätzlich, ob die aktuelle Nutzer-ID zur ursprünglichen Suche passt, die Suchgeneration unverändert ist und das Suchergebnis noch im DOM hängt. Damit können veraltete Suchergebnisse nach Kontowechsel oder erneuter Suche keine neuen Abonnementänderungen mehr auslösen. Die bestehende Datenbank-RLS bleibt die maßgebliche Autorisierung.
+- Noch offen: gezielter Browser-Regressionstest (Suchergebnis anzeigen, Konto wechseln bzw. neue Suche starten, veralteten Button auslösen; keine Mutation); CI-Nachweis für den neuen Head und vollständige RLS-Negativtests. Keine produktiven Datensätze oder Policies verändert, kein Merge, kein Deployment.
