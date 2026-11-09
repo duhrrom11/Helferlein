@@ -261,3 +261,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Öffentliche Wunsch-Einträge können pro Browser-Sitzung ausgeblendet werden; die IDs werden nur im flüchtigen Speicher gehalten, keine Datenbankänderung oder Moderationsmeldung erfolgt. Nach Neuladen der Seite sind die Einträge wieder sichtbar.
 - Bereichsnavigation führt zur Profilsuche, zum öffentlichen Feed und (nur bei Anmeldung) zum eigenen Editor. Längere Feed-Listen werden nicht mehr vollständig als Live-Region vorgelesen; die bestehende Statusmeldung bleibt erhalten.
 - Offene Punkte: tatsächliche Melde- und Moderationsinfrastruktur, serverseitiger Abuse-Schutz, mobile/Tastatur-Browserprüfung und CI-Nachweis des neuesten Heads. Kein Merge, Deployment oder produktiver Datenbankzugriff.
+
+## D/E – Ausblenden rückgängig machen und Feed-Status
+- Für lokal ausgeblendete Wünsche zeigt die Oberfläche die Anzahl und eine Wiederherstellen-Aktion. Wiederherstellen leert nur den flüchtigen Set im Browser und lädt den Feed erneut; keine Supabase-Schreiboperation.
+- Der Feed meldet den Ladefortschritt und die Zahl geladener Wünsche in einer separaten Live-Statuszeile. Die Anzahl bezeichnet die serverseitig geladenen Einträge vor lokalem Ausblenden.
+- Noch offen: echte Meldungen und Moderationsbearbeitung, serverseitiger Missbrauchsschutz, CI des letzten Heads und kurzer Browsercheck auf Mobilgerät/Tastatur. Kein Merge, Deployment oder Eingriff in produktive Daten.
