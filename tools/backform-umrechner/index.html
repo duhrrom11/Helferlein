@@ -886,6 +886,12 @@
             renderSavedRecipes();
         }
 
+        function escapeRecipeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+        }
+
         function renderSavedRecipes() {
             let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
             const container = document.getElementById('saved-recipes-list');
@@ -898,14 +904,14 @@
                 html += `<div class="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h4 class="font-bold text-sm text-slate-800">${r.name}</h4>
-                            <p class="text-[11px] text-slate-500">Faktor: ×${r.factor} | ${r.date}</p>
+                            <h4 class="font-bold text-sm text-slate-800">${escapeRecipeHtml(r.name)}</h4>
+                            <p class="text-[11px] text-slate-500">Faktor: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
                         </div>
                         <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium">Löschen</button>
                     </div>
                     <div>
                         <label class="block text-[10px] font-semibold text-slate-500 mb-1">Geling-Protokoll / Notiz:</label>
-                        <input type="text" value="${r.note || ''}" onchange="saveNote(${idx}, this.value)" placeholder="Z.B. Nächstes Mal 5 Min weniger backen..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
+                        <input type="text" value="${escapeRecipeHtml(r.note)}" onchange="saveNote(${idx}, this.value)" placeholder="Z.B. Nächstes Mal 5 Min weniger backen..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
                     </div>
                 </div>`;
             });
