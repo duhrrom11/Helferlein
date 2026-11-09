@@ -295,3 +295,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Rückgängig-Schaltfläche wird vor dem Tastaturfokus sichtbar gemacht; `aria-controls` verweist auf den betroffenen Feed.
 - Lokale Ausblendungen werden bei Benutzerwechsel/Abmeldung verworfen, damit Konten im selben Browser keine versteckten Einträge des vorherigen Kontos übernehmen.
 - Erneute Prüfung erforderlich: CI am letzten Commit und Browser-Smoke für Ausblenden, Undo, Konto-Wechsel und Fokus. Die tatsächliche Melde-/Moderationsfunktion sowie serverseitiger Abuse-Schutz bleiben ausstehend.
+
+## D/E – Pagination und Suchstatus
+- Feed-Pagination entfernt einen zuvor angezeigten Leer-Hinweis nur dann, wenn tatsächlich neue sichtbare Wunschkarten nachgeladen wurden. Sind weitere Ergebnisse ebenfalls ausgeblendet, bleibt der Hinweis erhalten.
+- Ungültige Profilsuchbegriffe und verworfene Suchanfragen hinterlassen keinen irreführenden `aria-busy`-Status.
+- Noch offen: echte Meldefunktion und Moderationsinfrastruktur mit serverseitigem Abuse-Schutz; CI- und Browserprüfung am neuesten Stand. Keine produktive Supabase-Schema- oder Datenänderung.
