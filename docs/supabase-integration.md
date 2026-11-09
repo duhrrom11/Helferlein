@@ -230,3 +230,21 @@ folgenden Fakten wurden direkt gegen das produktive Supabase-Schema geprüft:
 4. Erst nach bestandener Freigabe den Entwurfs-PR zusammenführen
    und auf GitHub Pages veröffentlichen. Bis dahin bleibt die bestehende
    Live-Version unverändert.
+
+### Konto- und Offline-Schutz im Entwicklungsstand
+
+- Beim Wechsel zwischen zwei bereits bekannten Konten wird der lokale
+  Legacy-Datenbestand pro Werkzeug in einem eigenen Browser-Slot aufbewahrt.
+  Der Wechsel erfordert eine Bestätigung, prüft die Konto-ID erneut und
+  schreibt ein Wiederherstellungsprotokoll vor Änderungen an lokalen Daten.
+- Ein Kontowechsel wird verweigert, solange eine Cloud-Schreiboperation
+  in der Warteschlange steht oder gerade synchronisiert wird.
+- Ein neues, erfolgreich geprüftes Konto darf **lokal** speichern, ohne
+  damit unbemerkt die Cloud-Synchronisierung zu aktivieren. Für Cloud-Uploads
+  ist weiterhin die ausdrückliche Erstübernahme erforderlich.
+- Offline-CI-Prüfungen prüfen den Kontowechsel, unterbrochene Wechsel,
+  beschädigte Ziel-Slots, ausstehende Cloud-Schreibvorgänge und die
+  getrennte Wiederherstellung mehrerer Haushaltsbuch-Datensammlungen.
+- Der gemeinsame Browser-Speicher und die aufwendige Mehrtab-Synchronisierung
+  sind weiterhin ein Risiko, das vor einem produktiven Cloud-Livegang mit
+  echten Browser- und Sitzungsszenarien abgenommen werden muss.
