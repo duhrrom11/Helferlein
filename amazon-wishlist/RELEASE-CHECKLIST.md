@@ -156,3 +156,10 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - `auth()` behandelt einen Fehler bei `getUser()` jetzt fail-closed: eine zuvor sichtbare Sitzung wird aus dem UI entfernt, Profil-/Editorzustand zurückgesetzt und veraltete Suchergebnisse beim Identitätswechsel verworfen; der Fehler wird anschließend weiterhin an den Aufrufer gemeldet.
 - Bei fehlgeschlagener `signOut()`-Anfrage wird das Passwortfeld ebenfalls zuverlässig per `finally` geleert. Ein fehlgeschlagenes Sign-out gilt ausdrücklich **nicht** als erfolgreich abgemeldet; die Session wird dadurch nicht fälschlich bestätigt oder serverseitig verändert.
 - Code-Commit `6b02715fa9e0c2c3702c90ac5b00b8a3533b2dd8`. Notwendige Prüfungen: `node --check amazon-wishlist/app.mjs`, bestehende Wishlist-Unit-Tests und CI des letzten Heads; vor Freigabe zusätzlich Browser-Regression für getUser-Fehler nach zuvor erfolgreicher Anmeldung. Kein produktiver Datenbank-Schreibzugriff, kein Merge, kein Deployment.
+
+## Nächstes Stabilisierungspaket (minimaler Testumfang)
+- Importierte Amazon-Produktlinks bleiben bei bereits angemeldeten Konten nach dem ersten Auth-Aufruf erhalten.
+- Beim Wechsel zwischen Konten wird der vorherige Feed sofort geleert und seine laufende Anfrage invalidiert; der neue Feed wird anschließend geladen.
+- Wiederholte Auth-Prüfungen ohne angemeldetes Konto setzen den Wunsch-Editor nicht unnötig zurück.
+- Nach erfolgreichem Wunsch-Insert wird das Eingabeformular vor dem Feed-Refresh geleert, damit ein separater Ladefehler keinen vermeintlich ungespeicherten Wunsch zurücklässt.
+- Vorheriger Commit `1eda734`: alle sechs GitHub-CI-Workflows erfolgreich. Für den aktuellen Commit gilt der CI-Status separat.
