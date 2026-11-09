@@ -233,3 +233,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Profilsuche und Feed haben zusätzliche Bedienhinweise, einschließlich Escape-Taste und erneuter Ladeaktion.
 - **Vor öffentlicher Freigabe offen:** verbindliche Community-Regeln, ein tatsächlicher Melde-/Moderationsprozess mit Verantwortlichkeiten und datenschutzgerechtem Ablauf, serverseitiges Rate Limiting/Abuse-Schutz. Keine funktionslose Melden-Schaltfläche vortäuschen.
 - Nur notwendige Checks: HTML/Browser-Smoke und vorhandene Wishlist-Tests am letzten Commit; manuelle kurze Tastatur-/Mobilprüfung. Kein Eingriff in produktive Supabase-Daten oder Policies, kein Merge/Deployment.
+
+## Profil-Lesefehler und aktueller Qualitätsnachweis (09.11.2026, 22 Uhr MEZ)
+- Code-Commit `6c4ea8bc7c18fbf3a2ec5be49a138b5ab5042226`: Scheitert der `wishlist_profiles`-Lesezugriff für die weiterhin aktuelle Sitzung, wird das im Client zwischengespeicherte Profil vor der Fehlerweitergabe invalidiert. Damit kann ein vorheriger Profilzustand nicht mehr als erfolgreiche aktuelle Profilprüfung für `saveWish` dienen. Bei veralteten Antworten greifen weiterhin die Generation-/Identitätsprüfungen.
+- Gezielter Browser-Negativtest offen: Nach erfolgreicher Profilanzeige Profil-SELECT fehlschlagen lassen und `auth()` erneut auslösen; neue Wunsch-Speicherung muss bis zu einer erfolgreichen Profilprüfung abgewiesen werden. Bereits gespeicherte Daten dürfen sich nicht ändern.
+- GitHub ist maßgebliche Übergabequelle. Git-Checkout in dieser Ausführungsumgebung wegen DNS-Auflösung von github.com nicht möglich; keine lokalen Node- oder Browser-Tests behaupten. CI-Runs für den neuesten Head gesondert nachweisen. Kein produktiver Supabase-Zugriff, keine Testdaten, kein Merge, kein Deployment.
