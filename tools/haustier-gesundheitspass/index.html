@@ -846,8 +846,8 @@
                 if (y > 270) { doc.addPage(); y = 20; }
                 let tassoText = p.tasso ? " [TASSO]" : "";
                 let vetText = p.vet && p.vet.name ? ` | TA: ${p.vet.name} (${p.vet.tel || '-'})` : "";
-                doc.text(`- ${p.name} (${p.species || 'Haustier'}), Chip: ${p.chip || 'k.A.'}${tassoText}${vetText}`, 14, y);
-                y += 6;
+                const lines = doc.splitTextToSize(`- ${p.name} (${p.species || 'Haustier'}), Chip: ${p.chip || 'k.A.'}${tassoText}${vetText}`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 4;
@@ -860,17 +860,18 @@
             data.events.forEach(e => {
                 let pet = data.pets.find(p => p.id === e.petId);
                 let pName = pet ? pet.name : "?";
-                totalCosts += (e.cost || 0);
+                totalCosts += Number(e.cost || 0);
 
                 if (y > 270) { doc.addPage(); y = 20; }
                 let weightText = e.weight ? ` | ${e.weight} kg` : "";
                 let expText = e.expiryDate ? ` (Gültig bis: ${new Date(e.expiryDate).toLocaleDateString('de-DE')})` : "";
-                doc.text(`- [${e.type}] ${pName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 14, y);
-                y += 6;
+                const lines = doc.splitTextToSize(`- [${e.type}] ${pName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${Number(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 6;
             doc.setFont("helvetica", "bold");
+            if (y > 270) { doc.addPage(); y = 20; }
             doc.text(`Gesamtkosten: ${totalCosts.toFixed(2)} EUR`, 14, y);
 
             doc.save("haustier-gesundheits-report.pdf");
