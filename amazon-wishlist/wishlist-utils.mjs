@@ -77,3 +77,8 @@ export function validatedProfileSearch(input) {
 export function shouldRestoreSharedProductUrl(currentUrl,sharedUrl) {
  return typeof sharedUrl==='string'&&sharedUrl.length>0&&currentUrl===sharedUrl;
 }
+
+/** Compare a feed request snapshot with current UI state after async work. */
+export function isFeedRequestStale(request,current) {
+ return request.offset!==current.offset||request.revision!==current.revision||request.filter!==current.filter||request.sort!==current.sort||request.userId!==current.userId||request.profileId!==current.profileId;
+}
