@@ -39,7 +39,7 @@ async function searchPeople(){
     btn.disabled=true;
     try{
      const ownerId=requireUser();const res=isFollowing?await db.from('wishlist_follows').delete().eq('follower_id',ownerId).eq('followed_id',p.user_id).select('follower_id'):await db.from('wishlist_follows').insert({follower_id:ownerId,followed_id:p.user_id});
-     if(res.error)throw res.error;if(isFollowing&&!res.data?.length)throw Error('Abonnement konnte nicht entfernt werden');
+     if(res.error)throw res.error;if(isFollowing&&!res.data?.length)throw Error('Abonnement konnte nicht entfernt werden');if(user?.id!==ownerId)throw Error('Sitzung hat sich geändert');
      await searchPeople();await refreshFeed();report(isFollowing?'Nicht mehr abonniert':'Profil abonniert');
     }finally{btn.disabled=false}
    });item.append(btn)
