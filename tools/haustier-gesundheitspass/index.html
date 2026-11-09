@@ -631,7 +631,7 @@
             document.getElementById('statPets').innerText = data.pets.length;
             document.getElementById('statEvents').innerText = data.events.length;
                         
-            let totalCosts = data.events.reduce((sum, e) => sum + (e.cost || 0), 0);
+            let totalCosts = data.events.reduce((sum, e) => sum + Number(e.cost || 0), 0);
             document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (data.pets.length === 0) {
