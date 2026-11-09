@@ -10,6 +10,7 @@ on:
       - 'tools/pflanzenpflege-giessplan/index.html'
       - 'tools/zaehlerstaende-erfassen/index.html'
       - 'tests/cloud-store.test.cjs'
+      - 'tests/cloud-account-switch.test.cjs'
       - '.github/workflows/cloud-store-checks.yml'
   push:
     branches: [main]
@@ -22,6 +23,7 @@ on:
       - 'tools/pflanzenpflege-giessplan/index.html'
       - 'tools/zaehlerstaende-erfassen/index.html'
       - 'tests/cloud-store.test.cjs'
+      - 'tests/cloud-account-switch.test.cjs'
       - '.github/workflows/cloud-store-checks.yml'
 permissions:
   contents: read
@@ -39,4 +41,6 @@ jobs:
           node --check shared/helferlein-migration-inventory.js
           node --check shared/helferlein-cloud-migration.js
       - name: Isolated unit tests (no Supabase credentials)
-        run: node tests/cloud-store.test.cjs
+        run: |
+          node tests/cloud-store.test.cjs
+          node tests/cloud-account-switch.test.cjs
