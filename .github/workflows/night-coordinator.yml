@@ -26,6 +26,7 @@ jobs:
       - name: Validate coordinator syntax and safety guardrails
         run: |
           node --check scripts/night-coordinator.cjs
+          node --check scripts/night-coordinator-guardrails.cjs
           node scripts/night-coordinator-guardrails.cjs
       - name: Read-only continuous check and checkpoint
         env:
