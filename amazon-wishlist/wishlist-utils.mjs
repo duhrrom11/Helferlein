@@ -17,6 +17,7 @@ export function validateHandle(handle) {
 }
 
 export function validatePriority(input) {
+ if(typeof input!=='string'&&typeof input!=='number')throw Error('Ungültige Priorität');
  const value=Number(input);
  if(![1,2,3].includes(value))throw Error('Ungültige Priorität');
  return value;
@@ -67,6 +68,6 @@ export function validateCredentials(email,password) {
 /** A profile search must contain two useful characters after normalization. */
 export function validatedProfileSearch(input) {
  const term=normalizeProfileSearch(input);
- if(term.length<2)throw Error('Bitte mindestens zwei gültige Suchzeichen eingeben');
+ if(term.replace(/[ -]/g,'').length<2)throw Error('Bitte mindestens zwei gültige Suchzeichen eingeben');
  return term;
 }
