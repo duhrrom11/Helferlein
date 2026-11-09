@@ -44,7 +44,7 @@ async function main(){
  } finally {clearTimeout(timeout);}
  if(data.status !== 'completed') throw Error('OpenAI response not completed (details suppressed)');
  const output=(data.output||[]).filter(x=>x.type==='message')
-   .flatMap(x=>x.content||[]).filter(x=>x.type==='output_text')
+   .flatMap(x=>x.content||[]).filter(x=>x.type==='output_text' && typeof x.text==='string')
    .map(x=>x.text).join('\n').slice(0,12000);
  if(!output)throw Error('No model text returned (status='+String(data.status||'unknown')+', incomplete_reason='+String(data.incomplete_details?.reason||'none')+'). No response body logged.');
  const summary=process.env.GITHUB_STEP_SUMMARY;
