@@ -660,15 +660,29 @@
         }
 
         function downloadICS(title, dateStr, person) {
-            let d = new Date(dateStr);
-            let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Rückgabe: ${title} (${person})\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:Verleih-Rückgabe fällig\nEND:VEVENT\nEND:VCALENDAR`;
-            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = `Rueckgabe_${title.replace(/\s+/g, '_')}.ics`;
-            a.click();
+            const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr));
+            if (!match) return alert("Ungültiges Rückgabedatum.");
+            const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+            if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== dateStr)
+                return alert("Ungültiges Rückgabedatum.");
+            const formatDate = value => value.toISOString().slice(0, 10).replace(/-/g, '');
+            const startDate = formatDate(date);
+            date.setUTCDate(date.getUTCDate() + 1);
+            const endDate = formatDate(date);
+            const escapeIcs = value => String(value ?? '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+            const icsContent = [
+                "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Helferlein//Verleih//DE",
+                "BEGIN:VEVENT", `SUMMARY:${escapeIcs(`Rückgabe: ${title} (${person})`)}`,
+                `DTSTART;VALUE=DATE:${startDate}`, `DTEND;VALUE=DATE:${endDate}`,
+                "DESCRIPTION:Verleih-Rückgabe fällig", "END:VEVENT", "END:VCALENDAR", ""
+            ].join("\r\n");
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Rueckgabe_${String(title).replace(/[^a-z0-9_-]+/gi, '_')}.ics`;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function escapeHtml(value) {
@@ -885,7 +899,7 @@
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
             let y = 35;
-            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + (i.deposit || 0), 0);
+            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + Number(i.deposit || 0), 0);
 
             doc.setFont("helvetica", "bold");
             doc.text(`Offene Kaution / Wert: ${totalDeposit.toFixed(2)} EUR`, 14, y);
