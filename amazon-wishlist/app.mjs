@@ -23,10 +23,10 @@ async function searchPeople(){
  $('peopleResults').textContent='Suche läuft …';
  let safe;try{safe=validatedProfileSearch(term)}catch(e){$('peopleResults').textContent=e.message;return;}
  const result=await db.from('wishlist_profiles').select('user_id,handle,display_name,bio').or('handle.ilike.%'+safe+'%,display_name.ilike.%'+safe+'%').order('handle').limit(20);
- if(generation!==peopleSearchGeneration||user?.id!==searchingUserId)return;
+ if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term)return;
  if(result.error){$('peopleResults').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.';throw result.error;}
  let followed=new Set();
- if(user){const f=await db.from('wishlist_follows').select('followed_id').eq('follower_id',searchingUserId);if(generation!==peopleSearchGeneration||user?.id!==searchingUserId)return;if(f.error){$('peopleResults').textContent='Abonnements konnten nicht geladen werden.';throw f.error;}followed=new Set(f.data.map(x=>x.followed_id))}
+ if(user){const f=await db.from('wishlist_follows').select('followed_id').eq('follower_id',searchingUserId);if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term)return;if(f.error){$('peopleResults').textContent='Abonnements konnten nicht geladen werden.';throw f.error;}followed=new Set(f.data.map(x=>x.followed_id))}
  const root=$('peopleResults');root.replaceChildren();
  if(!result.data.length){root.textContent='Keine Profile gefunden.';return;}
  for(const p of result.data){
