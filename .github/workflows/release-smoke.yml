@@ -19,4 +19,6 @@ jobs:
       - name: Run all 16 regression checks and report failures together
         run: |
           node --check scripts/run-regressions.cjs
+          node --check tests/regression-runner-guardrails.cjs
+          node tests/regression-runner-guardrails.cjs
           node scripts/run-regressions.cjs
