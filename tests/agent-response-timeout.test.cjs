@@ -14,6 +14,10 @@ for (const name of ['openai-draft-pr-agent.cjs', 'openai-readonly-agent.cjs']) {
     assert.ok(guard >= 0 && output > guard, 'incomplete responses must be rejected before output is used');
     assert.match(source.slice(guard, output), /throw Error\('OpenAI response not completed \(details suppressed\)'\)/);
   });
+  test(name + ' ignores non-string API output blocks', () => {
+    const source = fs.readFileSync(path.join(__dirname, '..', 'scripts', name), 'utf8');
+    assert.match(source, /x\.type==='output_text' && typeof x\.text==='string'/);
+  });
   test(name + ' retains abort timeout through JSON parsing', () => {
     const source = fs.readFileSync(path.join(__dirname, '..', 'scripts', name), 'utf8');
     const start = source.indexOf('async function main()');
