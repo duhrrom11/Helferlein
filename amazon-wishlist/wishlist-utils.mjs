@@ -87,3 +87,34 @@ export function isFeedRequestStale(request,current) {
 export function isWishLocallyHidden(wish,hiddenWishIds,hiddenProfileIds) {
  return hiddenWishIds.has(wish.id)||hiddenProfileIds.has(wish.user_id);
 }
+
+/** A profile permalink is only built from a valid public handle. */
+export function profileDisplayLabel(displayName,handle) {
+ const name=typeof displayName==='string'?displayName.trim():'';
+ const safe=requestedProfileHandle(handle);
+ return safe?(name||'Profil')+' (@'+safe+')':(name||'Profil');
+}
+
+/** Convert database errors to actionable, non-sensitive German messages. */
+export function wishlistErrorMessage(error) {
+ if(error?.code==='23505')return 'Dieser Eintrag existiert bereits.';
+ if(error?.code==='42501'||error?.code==='PGRST301')return 'Keine Berechtigung. Bitte melde dich erneut an.';
+ if(error?.code==='23503')return 'Der verknüpfte Eintrag ist nicht mehr verfügbar. Bitte neu laden.';
+ if(error?.code==='429'||error?.status===429)return 'Zu viele Anfragen. Bitte warte kurz und versuche es erneut.';
+ if(typeof error?.message==='string'&&/failed to fetch|networkerror|load failed|fetch failed/i.test(error.message))return 'Netzwerkfehler. Bitte Internetverbindung prüfen und erneut versuchen.';
+ return typeof error?.message==='string'&&error.message.trim()?error.message:'Unbekannter Fehler. Bitte erneut versuchen.';
+}
+
+/** Copy links without requiring a secure-context Clipboard API. */
+export async function copyShareLink(text,clipboard=navigator.clipboard,doc=document) {
+ if(typeof text!=='string'||!/^https:\/\//.test(text))throw Error('Ungültiger Link.');
+ if(clipboard?.writeText){try{await clipboard.writeText(text);return 'clipboard'}catch{}}
+ const input=doc.createElement('textarea');
+ input.value=text;input.setAttribute('readonly','');input.style.position='fixed';input.style.left='-9999px';
+ doc.body.append(input);
+ try{
+  input.select();
+  if(typeof doc.execCommand!=='function'||!doc.execCommand('copy'))throw Error('Kopieren nicht möglich. Bitte den Link aus der Adresszeile kopieren.');
+  return 'fallback';
+ }finally{input.remove()}
+}
