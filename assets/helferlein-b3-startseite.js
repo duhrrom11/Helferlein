@@ -3,6 +3,8 @@
 (()=>{
 'use strict';
 const THEME_KEY='helferlein_ui_theme_v1';
+const RECENT_KEY='helferlein_recent_tools_v1';
+const readRecent=()=>{try{const v=JSON.parse(localStorage.getItem(RECENT_KEY)||'[]');return Array.isArray(v)?v.filter(x=>typeof x==='string'&&/^[a-z0-9-]+$/.test(x)).slice(0,4):[]}catch{return []}};
 const allowed=['auto','light','dark'];
 const prefersDark=window.matchMedia('(prefers-color-scheme: dark)');
 const getTheme=()=>{try{const stored=localStorage.getItem(THEME_KEY);return allowed.includes(stored)?stored:'auto'}catch{return 'auto'}};
@@ -24,6 +26,35 @@ function refreshCount(){
  if(clear)clear.hidden=!search?.value;
 }
 function init(){
+ const toolGrid=document.getElementById('toolsGrid');
+ const recentSection=document.createElement('section');
+ recentSection.id='b3-recent-section';recentSection.className='hidden space-y-3';
+ recentSection.setAttribute('aria-label','Zuletzt verwendete Tools');
+ recentSection.innerHTML='<h2 class="text-xs font-bold text-sky-700 uppercase tracking-wider">🕘 Zuletzt verwendet</h2><div id="b3-recent-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>';
+ const discovery=document.getElementById('toolDiscovery');
+ if(discovery?.parentElement)discovery.parentElement.insertBefore(recentSection,discovery);
+ function showRecent(){
+  const grid=document.getElementById('b3-recent-grid');if(!grid||!toolGrid)return;
+  grid.replaceChildren();
+  readRecent().forEach(id=>{
+   const card=[...toolGrid.querySelectorAll('.tool-card')].find(c=>c.dataset.id===id);
+   if(!card)return;
+   const clone=card.cloneNode(true);clone.style.display='flex';
+   const favorite=clone.querySelector('.fav-btn');if(favorite)favorite.remove();
+   grid.appendChild(clone);
+  });
+  recentSection.classList.toggle('hidden',!grid.children.length);
+ }
+ toolGrid?.addEventListener('click',event=>{
+  if(event.target.closest('.fav-btn'))return;
+  const link=event.target.closest('a[href]');
+  const card=link?.closest('.tool-card[data-id]');
+  if(!card)return;
+  const id=card.dataset.id;
+  try{localStorage.setItem(RECENT_KEY,JSON.stringify([id,...readRecent().filter(x=>x!==id)].slice(0,4)))}catch{return}
+  showRecent();
+ });
+ showRecent();
  document.body.classList.add('b3-home');
  const picker=document.getElementById('b3-hub-theme');
  if(picker){
@@ -62,7 +93,7 @@ function init(){
   });
   document.addEventListener('keydown',event=>{
    const target=event.target;
-   if(event.key==='/'&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.isComposing&&
+   if(event.key==='/'&&!event.shiftKey&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.isComposing&&
       !(target instanceof HTMLElement&&
        (target.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(target.tagName)))){
     event.preventDefault();search.focus();
