@@ -30,7 +30,7 @@ function init(){
   picker.value=theme;
   picker.addEventListener('change',()=>{
    theme=allowed.includes(picker.value)?picker.value:'auto';
-   try{localStorage.setItem(THEME_KEY,theme)}catch{alert('Designmodus konnte nicht gespeichert werden.')}
+   try{localStorage.setItem(THEME_KEY,theme)}catch{console.warn('Designmodus konnte nicht gespeichert werden.')}
    applyTheme();
   });
  }
@@ -54,6 +54,7 @@ function init(){
   }
   search.addEventListener('input',refreshCount);
   search.addEventListener('search',()=>{window.filterTools?.();refreshCount()});
+  search.setAttribute('aria-keyshortcuts','/');
   search.addEventListener('keydown',event=>{
    if(event.key==='Escape'&&search.value){event.preventDefault();search.value='';window.filterTools?.();refreshCount()}
   });
@@ -70,7 +71,9 @@ function init(){
  if(categoryList)categoryList.setAttribute('aria-label','Tool-Kategorien');
  const allFilter=filters.find(btn=>btn.getAttribute('data-b3-category-filter')==='alle');
  if(allFilter)allFilter.textContent='Alle '+document.querySelectorAll('#toolsGrid .tool-card').length;
- applyTheme();refreshCount();
+ applyTheme();
+ if(typeof window.filterTools==='function')window.filterTools();
+ refreshCount();
  prefersDark.addEventListener?.('change',applyTheme);
  window.addEventListener('storage',event=>{
   if(event.key===THEME_KEY){theme=allowed.includes(event.newValue)?event.newValue:'auto';applyTheme()}
