@@ -16,6 +16,7 @@ assert.doesNotMatch(script,/Outside Berlin night window/);
 assert.match(script,/hour>=6 && !manual && state.lastReportDay!==localDay/);
 assert.match(script,/day===localDay && !x.manual/);
 assert.match(script,/result,manual/);
+assert.match(script,/req\.setTimeout\(15000/);
 assert.match(script,/Invalid night checkpoint/);
 assert.match(script,/refusing to create a duplicate checkpoint/);
 assert.doesNotMatch(script,/SUPABASE_SERVICE_ROLE_KEY|supabase db push|supabase functions deploy/);
