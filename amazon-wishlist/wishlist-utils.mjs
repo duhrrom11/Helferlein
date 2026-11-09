@@ -18,6 +18,7 @@ export function validateHandle(handle) {
 
 export function validatePriority(input) {
  if(typeof input!=='string'&&typeof input!=='number')throw Error('Ungültige Priorität');
+ if(typeof input==='string'&&!/^[123]$/.test(input))throw Error('Ungültige Priorität');
  const value=Number(input);
  if(![1,2,3].includes(value))throw Error('Ungültige Priorität');
  return value;
