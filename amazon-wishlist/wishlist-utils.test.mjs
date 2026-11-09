@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -76,4 +76,12 @@ test('profile search rejects punctuation-only and one-character queries',()=>{
  assert.equal(validatedProfileSearch('  Änne (42) '),'Änne 42');
  for(const value of ['','!@#','a',' a! ','  ','--','a - ',null,undefined])assert.throws(()=>validatedProfileSearch(value));
  assert.equal(validatedProfileSearch(' a b '),'a b');
+});
+
+test('shared product URL survives sign-in only while still present in the editor',()=>{
+ const shared='https://www.amazon.de/dp/B0ABC12345';
+ assert.equal(shouldRestoreSharedProductUrl(shared,shared),true);
+ assert.equal(shouldRestoreSharedProductUrl('https://www.amazon.de/dp/B0OTHER123',shared),false);
+ assert.equal(shouldRestoreSharedProductUrl('',shared),false);
+ assert.equal(shouldRestoreSharedProductUrl(shared,null),false);
 });
