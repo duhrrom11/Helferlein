@@ -300,3 +300,9 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Feed-Pagination entfernt einen zuvor angezeigten Leer-Hinweis nur dann, wenn tatsächlich neue sichtbare Wunschkarten nachgeladen wurden. Sind weitere Ergebnisse ebenfalls ausgeblendet, bleibt der Hinweis erhalten.
 - Ungültige Profilsuchbegriffe und verworfene Suchanfragen hinterlassen keinen irreführenden `aria-busy`-Status.
 - Noch offen: echte Meldefunktion und Moderationsinfrastruktur mit serverseitigem Abuse-Schutz; CI- und Browserprüfung am neuesten Stand. Keine produktive Supabase-Schema- oder Datenänderung.
+
+## D/E – Profilsuche bedienen und verstehen
+- Eigene Schaltfläche „Suche zurücksetzen“ mit Tastaturfokus auf dem Eingabefeld; Escape verwendet denselben Weg und verwirft veraltete Suchergebnisse.
+- Separater zugänglicher Suchstatus informiert über laufende Suche und Anzahl gefundener Profile; die Obergrenze von 20 Suchergebnissen wird ausdrücklich benannt.
+- Suchfehler, Fehler beim Laden der Abonnements und Kontowechsel entfernen veraltete Ladehinweise.
+- Noch offen: Browser-/CI-Nachweis am letzten Commit und sichere serverseitige Meldungs-/Moderationsinfrastruktur. Keine Produktivdatenänderung oder Freigabe.
