@@ -34,3 +34,9 @@ export function profilePageUrl(currentUrl,handle=null) {
 export function isUniqueViolation(error) {
  return error?.code==='23505';
 }
+
+/** Normalize a deep-linked profile handle; reject malformed values safely. */
+export function requestedProfileHandle(value) {
+ if(typeof value!=='string')return null;
+ try{return validateHandle(value)}catch{return null}
+}
