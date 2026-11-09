@@ -23,10 +23,10 @@ async function searchPeople(){
  const generation=++peopleSearchGeneration;
  const searchingUserId=user?.id;
  const term=$('peopleSearch').value.trim();
- let safe;try{safe=validatedProfileSearch(term)}catch(e){$('peopleResults').textContent=e.message;return;}
+ let safe;try{safe=validatedProfileSearch(term)}catch(e){$('peopleResults').removeAttribute('aria-busy');$('peopleResults').textContent=e.message;return;}
  $('peopleResults').setAttribute('aria-busy','true');$('peopleResults').textContent='Suche läuft …';
  let result;try{result=await db.from('wishlist_profiles').select('user_id,handle,display_name,bio').or('handle.ilike.%'+safe+'%,display_name.ilike.%'+safe+'%').order('handle').limit(20)}catch(e){result={error:e}}
- if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term)return;
+ if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term){if(generation===peopleSearchGeneration)$('peopleResults').removeAttribute('aria-busy');return;}
  if(result.error){$('peopleResults').removeAttribute('aria-busy');$('peopleResults').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.';throw result.error;}
  let followed=new Set();
  if(user){let f;try{f=await db.from('wishlist_follows').select('followed_id').eq('follower_id',searchingUserId)}catch(e){f={error:e}}if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term)return;if(f.error){$('peopleResults').removeAttribute('aria-busy');$('peopleResults').textContent='Abonnements konnten nicht geladen werden.';throw f.error;}followed=new Set(f.data.map(x=>x.followed_id))}
