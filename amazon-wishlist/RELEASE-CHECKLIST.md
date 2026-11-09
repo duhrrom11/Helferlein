@@ -256,3 +256,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Feed-Einträge erhalten visuell getrennte Karten; Statusmeldungen sind für Screenreader atomar und Feed/Profilsuche kennzeichnen laufende Anfragen mit `aria-busy`.
 - Offene Pflichtarbeit unverändert: tatsächliche Meldemöglichkeit, Moderationsverantwortung, serverseitiger Missbrauchsschutz und Freigabeprüfungen. Keine unbestätigten Kontaktadressen oder funktionslosen Aktionen erfunden.
 - Bestehende CI- und Browser-Smoke-Checks am aktuellen Head prüfen; keine produktiven Datenbankänderungen, kein Merge und kein Deployment.
+
+## D/E – Lokales Ausblenden und Bereichsnavigation
+- Öffentliche Wunsch-Einträge können pro Browser-Sitzung ausgeblendet werden; die IDs werden nur im flüchtigen Speicher gehalten, keine Datenbankänderung oder Moderationsmeldung erfolgt. Nach Neuladen der Seite sind die Einträge wieder sichtbar.
+- Bereichsnavigation führt zur Profilsuche, zum öffentlichen Feed und (nur bei Anmeldung) zum eigenen Editor. Längere Feed-Listen werden nicht mehr vollständig als Live-Region vorgelesen; die bestehende Statusmeldung bleibt erhalten.
+- Offene Punkte: tatsächliche Melde- und Moderationsinfrastruktur, serverseitiger Abuse-Schutz, mobile/Tastatur-Browserprüfung und CI-Nachweis des neuesten Heads. Kein Merge, Deployment oder produktiver Datenbankzugriff.
