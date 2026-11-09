@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -93,4 +93,16 @@ test('feed freshness guard detects filter, sorting, pagination and account chang
   assert.equal(isFeedRequestStale(request,{...request,[field]:value}),true,field);
  }
  assert.equal(isFeedRequestStale(request,{...request,userId:null}),true);
+});
+
+
+test('local wish and profile hiding are independent and reversible',()=>{
+ const wish={id:'wish-a',user_id:'person-a'};
+ const wishes=new Set(),profiles=new Set();
+ assert.equal(isWishLocallyHidden(wish,wishes,profiles),false);
+ wishes.add('wish-a');assert.equal(isWishLocallyHidden(wish,wishes,profiles),true);
+ wishes.clear();profiles.add('person-a');assert.equal(isWishLocallyHidden(wish,wishes,profiles),true);
+ assert.equal(isWishLocallyHidden({id:'wish-b',user_id:'person-a'},wishes,profiles),true);
+ assert.equal(isWishLocallyHidden({id:'wish-c',user_id:'person-b'},wishes,profiles),false);
+ profiles.clear();assert.equal(isWishLocallyHidden(wish,wishes,profiles),false);
 });
