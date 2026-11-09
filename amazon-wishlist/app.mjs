@@ -23,14 +23,14 @@ async function searchPeople(){
  const generation=++peopleSearchGeneration;
  const searchingUserId=user?.id;
  const term=$('peopleSearch').value.trim();
- let safe;try{safe=validatedProfileSearch(term)}catch(e){$('peopleResults').removeAttribute('aria-busy');$('peopleResults').textContent=e.message;return;}
- $('peopleResults').setAttribute('aria-busy','true');$('peopleResults').textContent='Suche läuft …';
+ let safe;try{safe=validatedProfileSearch(term)}catch(e){$('peopleResults').removeAttribute('aria-busy');$('peopleSearchCount').textContent='';$('peopleResults').textContent=e.message;return;}
+ $('peopleResults').setAttribute('aria-busy','true');$('peopleSearchCount').textContent='Suche läuft …';$('peopleResults').textContent='Suche läuft …';
  let result;try{result=await db.from('wishlist_profiles').select('user_id,handle,display_name,bio').or('handle.ilike.%'+safe+'%,display_name.ilike.%'+safe+'%').order('handle').limit(20)}catch(e){result={error:e}}
  if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term){if(generation===peopleSearchGeneration)$('peopleResults').removeAttribute('aria-busy');return;}
  if(result.error){$('peopleResults').removeAttribute('aria-busy');$('peopleResults').textContent='Suche fehlgeschlagen. Bitte erneut versuchen.';throw result.error;}
  let followed=new Set();
  if(user){let f;try{f=await db.from('wishlist_follows').select('followed_id').eq('follower_id',searchingUserId)}catch(e){f={error:e}}if(generation!==peopleSearchGeneration||user?.id!==searchingUserId||$('peopleSearch').value.trim()!==term)return;if(f.error){$('peopleResults').removeAttribute('aria-busy');$('peopleResults').textContent='Abonnements konnten nicht geladen werden.';throw f.error;}followed=new Set(f.data.map(x=>x.followed_id))}
- const root=$('peopleResults');root.removeAttribute('aria-busy');root.replaceChildren();
+ const root=$('peopleResults');root.removeAttribute('aria-busy');root.replaceChildren();$('peopleSearchCount').textContent=result.data.length===20?'20 Profile gefunden (maximal 20 pro Suche).':result.data.length+' Profile gefunden.';
  if(!result.data.length){root.textContent='Keine Profile gefunden.';return;}
  for(const p of result.data){
   const item=document.createElement('div');item.className='item';
@@ -47,7 +47,7 @@ async function searchPeople(){
   root.append(item)
  }
 }
-const clearPeopleResults=()=>{peopleSearchGeneration++;$('peopleResults').removeAttribute('aria-busy');$('peopleResults').replaceChildren()};
+const clearPeopleResults=()=>{peopleSearchGeneration++;$('peopleResults').removeAttribute('aria-busy');$('peopleResults').replaceChildren();$('peopleSearchCount').textContent=''};
 $('peopleSearch').addEventListener('input',clearPeopleResults);
 $('clearPeopleSearch').onclick=()=>{$('peopleSearch').value='';clearPeopleResults();$('peopleSearch').focus();report('Profilsuche zurückgesetzt.')};
 $('peopleSearch').addEventListener('keydown',event=>{if(event.key==='Escape'){$('clearPeopleSearch').click()}});
