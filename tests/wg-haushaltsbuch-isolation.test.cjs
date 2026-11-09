@@ -31,23 +31,27 @@ test('both tools retain the same Supabase authentication project', () => {
   assert.match(household, /supabaseClient\.auth\.signInWithPassword/);
 });
 
-test('WG cloud finance maps exclusively to WG-local keys', () => {
+test('WG cloud hydration maps finance fields to WG-only local keys', () => {
+  assert.match(wg, /async function ladeWGObjekt\(cloudObj\)/);
   for (const [field, key] of [
     ['data', 'wg_kassenbon_data'],
     ['budgets', 'wg_budgetbuch_budgets'],
     ['goals', 'wg_budgetbuch_goals']
   ]) {
-    assert.ok(wg.includes("cloudObj."+field+" !== undefined) localStorage.setItem('"+key+"'"));
+    assert.ok(wg.includes(field + ": '" + key + "'"), 'Missing WG-only mapping: ' + field);
   }
+  assert.match(wg, /for \(const \[storageKey, serialized\] of entries\)/);
+  assert.match(wg, /localStorage\.setItem\(storageKey, serialized\)/);
 });
 
-test('WG cloud writes return explicit success/failure status', () => {
+test('WG cloud writes report failure and secure-WG saves track unsaved changes', () => {
   assert.match(wg, /async function speichereWGinCloud\(\)/);
-  assert.match(wg, /if \(!wgBinId\) return false;/);
+  assert.match(wg, /if \(!wgBinId \|\| !\/\^\[a-zA-Z0-9_-\]\{4,128\}\$\/\.test\(wgBinId\)\) return false/);
+  assert.match(wg, /secureWgDirty = true/);
+  assert.match(wg, /secureWgSaving = secureWgSaving\.catch\(\(\) => false\)\.then/);
   assert.match(wg, /WG-Cloud-Speicherung fehlgeschlagen/);
-  assert.match(wg, /return true;\s*} catch \(error\) \{\s*console\.error\("Fehler beim Speichern in Cloud:", error\);\s*return false;/);
+  assert.match(wg, /console\.error\("Fehler beim Speichern in Cloud:", error\)/);
 });
-
 test('household backups carry a format identifier and reject WG payloads', () => {
   assert.match(household, /format: 'helferlein-haushaltsbuch'/);
   assert.match(household, /Dies ist kein Haushaltsbuch-Backup/);
