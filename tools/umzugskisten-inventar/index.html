@@ -769,54 +769,45 @@
         function exportInventoryPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            let data = getData();
-
+            const data = getData();
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
             doc.text("Mini-HomeBox Pro - Inventar-Report", 14, 20);
-
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
             let y = 35;
-            data.locations.forEach(loc => {
-                if (y > 270) { doc.addPage(); y = 20; }
-                
-                const cleanLocName = loc.name.replace(/[\u{1F000}-\u{1F6FF}|[\u{1F900}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[📦🏠🚪🏡🚗🏢⛺📍]/gu, '').trim();
-
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(12);
-                doc.text(`Standort: ${cleanLocName}`, 14, y);
-                y += 7;
-
-                let locBoxes = data.boxes.filter(b => b.locId === loc.id);
-                if (locBoxes.length === 0) {
-                    doc.setFont("helvetica", "italic");
-                    doc.setFontSize(10);
-                    doc.text("  (Keine Kisten)", 14, y);
+            const writeWrapped = (value, bold = false, fontSize = 10) => {
+                doc.setFont("helvetica", bold ? "bold" : "normal");
+                doc.setFontSize(fontSize);
+                const lines = doc.splitTextToSize(String(value), 180);
+                lines.forEach(line => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(line, 14, y);
                     y += 6;
+                });
+            };
+
+            data.locations.forEach(loc => {
+                const cleanLocName = String(loc.name || '').replace(/[\u{1F000}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+                writeWrapped(`Standort: ${cleanLocName}`, true, 12);
+                y += 1;
+                const locBoxes = data.boxes.filter(b => b.locId === loc.id);
+                if (!locBoxes.length) {
+                    writeWrapped("  (Keine Kisten)");
                 } else {
                     locBoxes.forEach(b => {
-                        if (y > 270) { doc.addPage(); y = 20; }
-                        doc.setFont("helvetica", "normal");
-                        doc.setFontSize(10);
                         const statusText = b.lentTo ? ` [Ausgeliehen an: ${b.lentTo}]` : '';
-                        const subStr = b.subItems && b.subItems.length > 0 ? ` | Artikel: ${b.subItems.map(s => s.name).join(', ')}` : '';
-                        doc.text(`  • ${b.name}${statusText}`, 14, y);
-                        doc.text(`Wert: ${(b.value || 0).toFixed(2)} EUR${subStr}`, 90, y);
-                        y += 6;
+                        const subStr = Array.isArray(b.subItems) && b.subItems.length ? ` | Artikel: ${b.subItems.map(item => item.name).join(', ')}` : '';
+                        writeWrapped(`- ${b.name}${statusText} | Wert: ${Number(b.value || 0).toFixed(2)} EUR${subStr}`);
                     });
                 }
                 y += 4;
             });
-
-            let totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
-            if (y > 270) { doc.addPage(); y = 20; }
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(12);
-            doc.text(`Gesamtwert des Inventars: ${totalVal.toFixed(2)} EUR`, 14, y + 5);
-
+            const totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
+            y += 5;
+            writeWrapped(`Gesamtwert des Inventars: ${totalVal.toFixed(2)} EUR`, true, 12);
             doc.save("kisten-inventar-report.pdf");
         }
 
