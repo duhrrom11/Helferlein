@@ -28,7 +28,8 @@ async function check(name, request, expectedStatuses) {
   const response = await fetch(url, {
     ...request,
     headers: { apikey: anonKey, ...(request.headers || {}) },
-    redirect: 'manual', // Keine Weitergabe des apikey-Headers an Redirect-Ziele.\n    signal: AbortSignal.timeout(10000)
+    redirect: 'manual', // Keine Weitergabe des apikey-Headers an Redirect-Ziele.
+    signal: AbortSignal.timeout(10000)
   });
   assert.ok(expectedStatuses.includes(response.status),
     name + ': HTTP ' + response.status + ' statt ' + expectedStatuses.join('/'));
