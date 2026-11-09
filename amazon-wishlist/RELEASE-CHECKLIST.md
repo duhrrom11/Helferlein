@@ -321,3 +321,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Security Advisor meldet `auth_leaked_password_protection`: Schutz vor kompromittierten Passwörtern deaktiviert. Abhilfe: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
 - Offen: serverseitige Schreibquoten/Spam-Abwehr (nicht durch Browser-Validierung ersetzen), tatsächliche RLS-Negativtests mit autorisierten Konten ohne Produktiv-Testdatensätze, Auth-Konfiguration und CI-/Browser-Nachweise für aktuellen Head.
 - Diese Prüfung führte keine INSERT-/UPDATE-/DELETE-Statements aus. Kein Merge, keine Veröffentlichung und keine Änderung an produktiven Policies.
+
+## D – Leerer Feed und Tastaturfokus beim Ausblenden
+- Nach dem Ausblenden der letzten sichtbaren Wunschkarte wird ein erklärender Leerzustand gezeigt, einschließlich Hinweis auf die Wiederherstellung.
+- Beim Ausblenden eines fremden Profils erhält die bereits sichtbare Wiederherstellen-Schaltfläche den Fokus vor dem asynchronen Feed-Refresh.
+- Manuell zu prüfen: letzter sichtbarer Wunsch, Profil-Ausblendung bei langsamem Netzwerk, Tastaturfokus, Feed-Pagination sowie Wiederherstellen nach Fehlern. Kein Freigabenachweis durch diesen Commit.
