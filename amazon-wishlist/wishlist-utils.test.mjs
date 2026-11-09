@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -37,4 +37,10 @@ test('public profile URLs preserve safe query state and clear imported product l
 test('retries product creation only for PostgreSQL unique violations',()=>{
  assert.equal(isUniqueViolation({code:'23505'}),true);
  for(const error of [{code:'42501'},{code:'23503'},{message:'permission denied'},null,undefined])assert.equal(isUniqueViolation(error),false);
+});
+
+test('deep-linked profile handles are normalized and invalid values ignored',()=>{
+ assert.equal(requestedProfileHandle('Alice_123'),'alice_123');
+ assert.equal(requestedProfileHandle('  BOB  '),'bob');
+ for(const value of [null,'','ab','a b','üser','x'.repeat(31)])assert.equal(requestedProfileHandle(value),null);
 });
