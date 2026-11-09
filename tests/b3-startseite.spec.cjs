@@ -56,7 +56,11 @@ test('B3 home settings preserve cloud, safety backup and footer links',async({pa
  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
  await expect(page.locator('#settingsModal')).toBeVisible();
  await expect(page.locator('#cloudStatus')).toBeVisible();
- await expect(page.getByRole('button',{name:'Backup',exact:false})).toBeVisible();
+ await expect(page.locator('#settingsModal button[onclick="exportGlobalBackup(true)"]')).toBeVisible();
+ await expect(page.locator('#settingsModal button[onclick="exportGlobalBackup(true)"]')).toContainText('Verschlüsselt');
+ await expect(page.locator('#settingsModal button[onclick="exportGlobalBackup(false)"]')).toBeVisible();
+ await expect(page.locator('#settingsModal button[onclick="exportGlobalBackup(false)"]')).toContainText('Ohne Schutz');
+ await expect(page.locator('#settingsModal input[type="file"][onchange="importGlobalBackup(event)"]')).toHaveAttribute('accept',/.json/);
  await expect(page.locator('#b3-hub-theme')).toBeVisible();
  await expect(page.locator('#settingsModal')).toContainText('Backup-Dateien sind nicht verschlüsselt');
  const links=await page.locator('#settingsModal .b3-hub-settings-footer a').evaluateAll(a=>a.map(x=>({text:x.textContent.trim(),href:x.getAttribute('href')})));
