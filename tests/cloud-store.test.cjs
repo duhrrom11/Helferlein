@@ -18,7 +18,7 @@ function harness(online = true, offlineSession = false) {
       getUser: async () => offlineSession && !navigator.onLine
         ? { data: { user: null }, error: new Error('Network unavailable') }
         : { data: { user: uid ? { id: uid } : null }, error: null },
-      getSession: async () => ({ data: { session: uid ? { user: { id: uid }, expires_at: Date.now() / 1000 + 3600 } : null }, error: null })
+      ...(offlineSession ? { getSession: async () => ({ data: { session: uid ? { user: { id: uid }, expires_at: Date.now() / 1000 + 3600 } : null }, error: null }) } : {})
     },
     from: table => {
       assert.equal(table, 'user_data');
