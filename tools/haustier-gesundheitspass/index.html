@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="de" class="h-full">
 <head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_haustier-gesundheitspass')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digitaler Impfpass & Gesundheitspass für Haustiere | Helferlein</title>
@@ -42,6 +47,24 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        const client = window.supabaseClient;
+        if (!client || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client, tool: 'haustier-gesundheitspass', localKey: 'haustier_pass_pro_v5', collection: 'pets',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -414,7 +437,25 @@
         }
 
         function saveData(data) {
-            localStorage.setItem('haustier_pass_pro_v5', JSON.stringify(data));
+            if (!data || typeof data !== 'object' || !Array.isArray(data.pets)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_haustier-gesundheitspass') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
+                return false;
+            }
+            const existing = localStorage.getItem('haustier_pass_pro_v5');
+            if (existing !== null) {
+                try { if (!Array.isArray(JSON.parse(existing).pets)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('haustier_pass_pro_v5', JSON.stringify(data));
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
         }
 
         function updateEventFormFields() {
@@ -462,7 +503,7 @@
                     vet: { name: vetName, tel: vetTel, email: vetEmail, address: vetAddress },
                     tasso, photo: photoData, passport: passportData 
                 });
-                saveData(data);
+                if (!saveData(data)) return;
 
                 document.getElementById('petName').value = "";
                 document.getElementById('petSpecies').value = "";
@@ -536,7 +577,7 @@
             let data = getData();
             data.pets = data.pets.filter(p => p.id !== id);
             data.events = data.events.filter(e => e.petId !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             loadPetDropdowns();
             renderApp();
         }
@@ -549,7 +590,7 @@
             let data = getData();
             if (!data.meds) data.meds = [];
             data.meds.push({ id: Date.now(), name, stock: stock || '1 Packung' });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('medName').value = "";
             document.getElementById('medStock').value = "";
@@ -559,7 +600,7 @@
         function deleteMedication(id) {
             let data = getData();
             data.meds = data.meds.filter(m => m.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderApp();
         }
 
@@ -587,7 +628,7 @@
         function storeEventData(petId, type, date, title, cost, weight, expiryDate, receipt) {
             let data = getData();
             data.events.push({ id: Date.now(), petId, type, date, title, cost, weight, expiryDate, receipt });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('eventDate').value = "";
             document.getElementById('eventTitle').value = "";
@@ -602,7 +643,7 @@
             if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.events = data.events.filter(e => e.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderApp();
         }
 

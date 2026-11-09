@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <!-- Fail closed before legacy scripts can paint account-owned local data. -->
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try {
+        if (localStorage.getItem('helferlein_cloud_owner_pflanzenpflege-giessplan')) {
+          document.documentElement.classList.add('helferlein-account-check');
+        }
+      } catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pflanzenpflege-App mit Gießplan | Helferlein</title>
@@ -373,6 +382,30 @@
         </div>
     </div>
 
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) { console.warn('Cloud-Synchronisierung nicht geladen'); return; }
+        if (window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client: supabaseClient,
+          tool: 'pflanzenpflege-giessplan',
+          localKey: 'pflanzen_pass_v10',
+          collection: 'plants',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        // A page restored from the back/forward cache must not keep a disposed
+        // bridge: reload it to re-establish auth guards and synchronization.
+        window.addEventListener('pageshow', event => {
+          if (event.persisted) window.location.reload();
+        });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
     <!-- Script Logik -->
     <script>
         // Supabase Konfiguration & Instanz
@@ -757,12 +790,13 @@
             try {
                 const stored = JSON.parse(localStorage.getItem('pflanzen_pass_v10'));
                 if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return defaults;
+                if (!Array.isArray(stored.plants)) { console.warn('Ungültige Pflanzensammlung im lokalen Speicher'); return defaults; }
                 return {
                     ...defaults,
                     ...stored,
-                    plants: Array.isArray(stored.plants) ? stored.plants : [],
-                    inventory: Array.isArray(stored.inventory) ? stored.inventory : defaults.inventory,
-                    seeds: Array.isArray(stored.seeds) ? stored.seeds : [],
+                    plants: stored.plants.slice(),
+                    inventory: Array.isArray(stored.inventory) ? stored.inventory.slice() : defaults.inventory,
+                    seeds: Array.isArray(stored.seeds) ? stored.seeds.slice() : [],
                     // Preserve extra legacy slots rather than silently deleting saved assignments.
                     beetSlots: Array.isArray(stored.beetSlots)
                         ? [...stored.beetSlots, ...Array(Math.max(0, 16 - stored.beetSlots.length)).fill(null)]
@@ -776,6 +810,15 @@
 
         function saveData(data) {
             try {
+                if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.plants)) throw new Error('Ungültige Pflanzendaten');
+                if (localStorage.getItem('helferlein_cloud_owner_pflanzenpflege-giessplan') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                    alert('Lokale Speicherung ist während eines Kontowechsels oder einer Cloud-Datenübernahme gesperrt. Bitte zuerst das ursprüngliche Konto anmelden.');
+                    return false;
+                }
                 // Never overwrite an unreadable existing backup with empty defaults.
                 const existing = localStorage.getItem('pflanzen_pass_v10');
                 if (existing !== null) {
@@ -786,7 +829,12 @@
                         return false;
                     }
                 }
-                localStorage.setItem('pflanzen_pass_v10', JSON.stringify(data));
+                const serialized = JSON.stringify(data);
+                if (!serialized) throw new Error('Pflanzendaten nicht serialisierbar');
+                localStorage.setItem('pflanzen_pass_v10', serialized);
+                if (window.helferleinCloudBridge) {
+                    void window.helferleinCloudBridge.changed(data).catch(error => console.error('Cloud-Übernahme ausstehend:', error));
+                }
                 return true;
             } catch (error) {
                 console.error('Pflanzendaten konnten nicht gespeichert werden:', error);

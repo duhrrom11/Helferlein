@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>try { if (localStorage.getItem('helferlein_cloud_owner_parkplatz-merker-parkschein-timer')) document.documentElement.classList.add('helferlein-account-check'); } catch (_) { document.documentElement.classList.add('helferlein-account-check'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parkplatz-Merker & Parkschein-Timer | Helferlein</title>
@@ -40,6 +42,22 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client: supabaseClient, tool: 'parkplatz-merker-parkschein-timer', localKey: 'park_history_pro_v3', collection: 'sessions',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -306,7 +324,24 @@
         }
 
         function saveData(data) {
-            localStorage.setItem('park_history_pro_v3', JSON.stringify(data));
+            if (!data || !Array.isArray(data.sessions)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_parkplatz-merker-parkschein-timer') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.'); return false;
+            }
+            const previous = localStorage.getItem('park_history_pro_v3');
+            if (previous !== null) {
+                try { if (!Array.isArray(JSON.parse(previous).sessions)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Parkdaten beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('park_history_pro_v3', JSON.stringify(data));
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Parkdaten konnten nicht gespeichert werden', error); return false; }
         }
 
         function requestNotificationPermission() {
@@ -429,7 +464,7 @@
                 photo,
                 date: now.toLocaleDateString('de-DE') + ' ' + now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})
             });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('parkDesc').value = "";
             document.getElementById('parkSector').value = "";
@@ -443,7 +478,7 @@
             if (!confirm("Möchtest du diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.sessions = data.sessions.filter(s => s.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderParkingList();
         }
 
