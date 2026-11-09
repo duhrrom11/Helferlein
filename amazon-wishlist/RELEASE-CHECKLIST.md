@@ -185,3 +185,10 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Feed-Elemente werden zunächst in einem `DocumentFragment` aufgebaut und erst nach erneuter Prüfung des Anfragezustands gemeinsam in die Oberfläche eingefügt. Dadurch werden veraltete Teilseiten bei zwischenzeitlichen Filter-/Sitzungswechseln nicht mehr angezeigt.
 - Suchantworten werden verworfen, wenn sich der Eingabetext während der Datenbankabfrage verändert hat.
 - Vorheriger Commit `b17eefc`: sechs CI-Workflows erfolgreich; für den neuesten Commit ist das Ergebnis separat zu prüfen.
+
+## Weitere notwendige Korrekturen
+- Alte Feed-Ladefehler überschreiben keine Oberfläche mehr, wenn bereits ein neuer Feed-Refresh wartet.
+- Die Profilsuche prüft Eingaben vor der Ladeanzeige; ungültige öffentliche Profil-Links erhalten eine verständliche Meldung.
+- Hintergrund-Aktualisierungen des Profils erhalten noch nicht gespeicherte Formularänderungen, solange der Benutzer nicht gewechselt wurde.
+- Erfolgsmeldungen nach Profiländerungen prüfen die Sitzung erneut.
+- Nur bestehende CI-Checks, keine Testdaten und keine Änderungen an produktiven Supabase-Tabellen.
