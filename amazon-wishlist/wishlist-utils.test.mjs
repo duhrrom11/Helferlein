@@ -19,7 +19,7 @@ test('normalizes and checks handles',()=>{
 
 test('validates only allowed priorities',()=>{
  for(const value of ['1','2','3'])assert.equal(validatePriority(value),Number(value));
- for(const value of ['0','4','1.5','NaN','foo',null,undefined,true,false,{},[]])assert.throws(()=>validatePriority(value));
+ for(const value of ['0','4','1.5','NaN','foo',' 1 ','01','1e0',null,undefined,true,false,{},[]])assert.throws(()=>validatePriority(value));
 });
 
 test('public profile URLs preserve safe query state and clear imported product links',()=>{
