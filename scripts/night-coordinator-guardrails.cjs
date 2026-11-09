@@ -24,4 +24,10 @@ assert.match(script,/if \(failedCheck\) process\.exitCode=1/);
 assert.match(script,/Invalid night checkpoint/);
 assert.match(script,/refusing to create a duplicate checkpoint/);
 assert.doesNotMatch(script,/SUPABASE_SERVICE_ROLE_KEY|supabase db push|supabase functions deploy/);
+// The step summary must render Markdown paragraphs, not literal backslash-n text.
+const summaryLine = script.split('\n').find(line => line.includes('fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY'));
+assert.ok(summaryLine, 'GitHub step summary write missing');
+assert.ok(summaryLine.includes(String.raw`'### Helferlein-Koordinator\n\n'`), 'Summary heading needs paragraph breaks');
+assert.ok(summaryLine.includes(String.raw`+summary+'\n\n[Status-Issue]`), 'Status link needs paragraph breaks');
+assert.ok(!summaryLine.includes(String.raw`\\n`), 'Literal escaped newlines must not reach the summary');
 console.log('Night coordinator static guardrails: OK');

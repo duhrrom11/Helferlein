@@ -27,7 +27,9 @@ Das Skript erstellt bei Bedarf ein öffentliches GitHub-Issue **„Helferlein Na
 5. RLS-Migrationsdatei auf Vorhandensein prüfen.
 6. Offene Freigabekriterien aus `docs/supabase-produktivabnahme.md` zählen.
 
-Fehlgeschlagene Prüfungen werden im Issue protokolliert und markieren nun auch den GitHub-Actions-Lauf als fehlgeschlagen. Jeder Lauf schreibt eine Zusammenfassung mit Link zum Status-Issue. Bei vorübergehenden GitHub-API-Problemen (429, 502, 503, 504 oder Timeout) werden nur lesende GET-Anfragen höchstens zweimal erneut versucht. Schreibanfragen werden nicht wiederholt, damit keine doppelten Berichte entstehen.\n\nDie Routinen wechseln sich ab. Diese Prüfungen ersetzen **keine** Browser-, Authentifizierungs-, Berechtigungs- oder Wiederherstellungstests. Sie liefern keine eigenständige Live-Freigabe.
+Fehlgeschlagene Prüfungen werden im Issue protokolliert und markieren nun auch den GitHub-Actions-Lauf als fehlgeschlagen. Jeder Lauf schreibt eine Zusammenfassung mit Link zum Status-Issue. Bei vorübergehenden GitHub-API-Problemen (429, 502, 503, 504 oder Timeout) werden nur lesende GET-Anfragen höchstens zweimal erneut versucht. Schreibanfragen werden nicht wiederholt, damit keine doppelten Berichte entstehen.
+
+Die Routinen wechseln sich ab. Diese Prüfungen ersetzen **keine** Browser-, Authentifizierungs-, Berechtigungs- oder Wiederherstellungstests. Sie liefern keine eigenständige Live-Freigabe.
 
 ## Coding-Agent und Freigabegrenzen
 

@@ -148,7 +148,7 @@ async function main() {
   state.history=state.history.slice(-100);
   state.day=localDay;
   await api('PATCH',base+'/issues/'+issue.number,{body:encodeState(state)});
-  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '### Helferlein-Koordinator\\n\\n'+summary+'\\n\\n[Status-Issue](https://github.com/'+repo+'/issues/'+issue.number+')\\n');
+  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, '### Helferlein-Koordinator\n\n'+summary+'\n\n[Status-Issue](https://github.com/'+repo+'/issues/'+issue.number+')\n');
   if (failedCheck) process.exitCode=1;
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
