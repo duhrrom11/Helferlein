@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -43,4 +43,11 @@ test('deep-linked profile handles are normalized and invalid values ignored',()=
  assert.equal(requestedProfileHandle('Alice_123'),'alice_123');
  assert.equal(requestedProfileHandle('  BOB  '),'bob');
  for(const value of [null,'','ab','a b','üser','x'.repeat(31)])assert.equal(requestedProfileHandle(value),null);
+});
+
+test('public profile fields are trimmed and length-limited',()=>{
+ assert.deepEqual(validateProfileFields('  Alice  ','  Hallo  '),{display_name:'Alice',bio:'Hallo'});
+ assert.deepEqual(validateProfileFields('Alice',''),{display_name:'Alice',bio:''});
+ for(const value of ['', '  ', 'x'.repeat(81), null])assert.throws(()=>validateProfileFields(value,''));
+ assert.throws(()=>validateProfileFields('Alice','x'.repeat(501)));
 });
