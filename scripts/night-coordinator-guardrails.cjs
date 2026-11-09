@@ -24,4 +24,12 @@ assert.match(script,/if \(failedCheck\) process\.exitCode=1/);
 assert.match(script,/Invalid night checkpoint/);
 assert.match(script,/refusing to create a duplicate checkpoint/);
 assert.doesNotMatch(script,/SUPABASE_SERVICE_ROLE_KEY|supabase db push|supabase functions deploy/);
-console.log('Night coordinator static guardrails: OK');
+
+const scoped=script.slice(script.indexOf('const checks = ['),script.indexOf('function encodeState'));
+assert.match(scoped,/wishlist-syntax/);
+assert.match(scoped,/wishlist-unit/);
+assert.match(scoped,/wishlist-public-safety/);
+assert.match(scoped,/wishlist-release/);
+assert.doesNotMatch(scoped,/tools\\/|vault-api|wg-organisator|release-smoke|supabase\\/migrations|supabase-produktivabnahme/);
+assert.match(script,/Helferlein Wunschliste – Nachtschicht-Arbeitsstand/);
+console.log('Wishlist-only night coordinator guardrails: OK');
