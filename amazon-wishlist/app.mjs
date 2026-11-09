@@ -45,9 +45,10 @@ async function searchPeople(){
  }
 }
 $('peopleSearch').addEventListener('input',()=>{peopleSearchGeneration++;$('peopleResults').replaceChildren()});
+$('peopleSearch').addEventListener('keydown',event=>{if(event.key==='Escape'){$('peopleSearch').value='';peopleSearchGeneration++;$('peopleResults').replaceChildren()}});
 $('searchPeople').onclick=run(searchPeople);
 $('peopleSearch').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();$('searchPeople').click()}});
-$('feedFilter').onchange=run(async()=>{if($('feedFilter').value!=='profile'){$('profileFeedInfo').hidden=true;window.history.replaceState(null,'',profilePageUrl(window.location.href))}await refreshFeed()});
+$('feedFilter').onchange=run(async()=>{if($('feedFilter').value!=='profile'){selectedProfileId=null;$('feedFilter').querySelector('[value="profile"]').hidden=true;$('profileFeedInfo').hidden=true;window.history.replaceState(null,'',profilePageUrl(window.location.href))}await refreshFeed()});
 $('feedSort').onchange=run(async()=>{await refreshFeed()});
 $('reloadFeed').onclick=run(async()=>{await refreshFeed()});
 
