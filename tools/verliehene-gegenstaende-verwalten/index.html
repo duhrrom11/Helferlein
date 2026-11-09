@@ -859,7 +859,7 @@
                                         <span class="text-xs text-indigo-600 font-semibold">→ ${escapeHtml(i.person)}</span>
                                         ${badge}
                                         ${i.serial ? `<span class="text-[10px] font-mono bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border">SN: ${escapeHtml(i.serial)}</span>` : ''}
-                                        ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">Kaution: ${i.deposit.toFixed(2).replace('.', ',')} €</span>` : ''}
+                                        ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">Kaution: ${Number(i.deposit).toFixed(2).replace('.', ',')} €</span>` : ''}
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">Ausleihe: ${d.toLocaleDateString('de-DE')} ${i.returnDate ? '| Rückgabe: ' + new Date(i.returnDate).toLocaleDateString('de-DE') : ''} ${i.note ? '| Notiz: ' + escapeHtml(i.note) : ''}</p>
                                     ${i.status === 'active' ? `<div class="flex gap-1 mt-1.5 items-center"><span class="text-[10px] text-gray-400">Verlängern:</span> ${extendButtons}</div>` : ''}
