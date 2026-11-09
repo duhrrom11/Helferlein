@@ -515,7 +515,7 @@
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
             let y = 35;
-            let totalCost = data.sessions.reduce((sum, s) => sum + (s.cost || 0), 0);
+            let totalCost = data.sessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
 
             doc.setFont("helvetica", "bold");
             doc.text(`Gesamtkosten: ${totalCost.toFixed(2)} EUR`, 14, y);
@@ -529,8 +529,8 @@
             data.sessions.forEach((s, idx) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let sectorText = s.sector ? ` [Sektor: ${s.sector}]` : "";
-                doc.text(`${idx + 1}. Standort: ${s.desc}${sectorText} | ${s.date} | ${s.cost.toFixed(2)} EUR`, 14, y);
-                y += 6;
+                const lines = doc.splitTextToSize(`${idx + 1}. Standort: ${s.desc}${sectorText} | ${s.date} | ${Number(s.cost || 0).toFixed(2)} EUR`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             doc.save("park-report.pdf");

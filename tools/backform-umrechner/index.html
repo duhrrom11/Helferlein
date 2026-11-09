@@ -932,6 +932,7 @@
 
         // Multi-Timer Logik
         let timerInterval = null;
+        let timerDeadline = null;
         let timerPhases = [
             { title: "Phase 1: Teig gehen lassen / Kühlen", seconds: 30 * 60 },
             { title: "Phase 2: Backen im Ofen", seconds: 45 * 60 },
@@ -941,8 +942,11 @@
         let timeLeft = 45 * 60;
 
         function openCookMode() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
             const baseTime = parseFloat(document.getElementById('res-time').innerText) || 45;
-            timerPhases[1].seconds = baseTime * 60;
+            timerPhases[1].seconds = Math.max(1, Math.round(baseTime * 60));
             currentPhaseIdx = 1;
             timeLeft = timerPhases[currentPhaseIdx].seconds;
             updateTimerDisplay();
@@ -951,26 +955,44 @@
 
         function closeCookMode() {
             clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
             document.getElementById('cook-modal').classList.add('hidden');
         }
 
         function startTimer() {
             clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    updateTimerDisplay();
-                } else {
+            if (timeLeft <= 0) return;
+            // Use elapsed wall-clock time: background tabs can throttle intervals.
+            timerDeadline = Date.now() + timeLeft * 1000;
+            const tick = () => {
+                timeLeft = Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000));
+                updateTimerDisplay();
+                if (timeLeft === 0) {
                     clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerDeadline = null;
                     alert('Timer abgelaufen!');
                 }
-            }, 1000);
+            };
+            timerInterval = setInterval(tick, 1000);
+            tick();
         }
 
-        function pauseTimer() { clearInterval(timerInterval); }
+        function pauseTimer() {
+            if (timerDeadline !== null) {
+                timeLeft = Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000));
+                updateTimerDisplay();
+            }
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
+        }
 
         function nextTimerPhase() {
             clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
             currentPhaseIdx = (currentPhaseIdx + 1) % timerPhases.length;
             timeLeft = timerPhases[currentPhaseIdx].seconds;
             updateTimerDisplay();

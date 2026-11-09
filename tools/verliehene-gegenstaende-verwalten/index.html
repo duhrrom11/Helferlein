@@ -729,7 +729,7 @@
             let returnedCount = data.items.filter(i => i.status === 'returned').length;
             let lostCount = data.items.filter(i => i.status === 'lost').length;
             let overdueCount = 0;
-            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + (i.deposit || 0), 0);
+            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + Number(i.deposit || 0), 0);
 
             const today = new Date();
             let filteredItems = data.items;
@@ -900,9 +900,9 @@
                 if (y > 270) { doc.addPage(); y = 20; }
                 let statusLabel = i.status === 'returned' ? "[ZURÜCK]" : (i.status === 'lost' ? "[VERLOREN/DEFEKT]" : "[AKTIV]");
                 let serialText = i.serial ? ` (SN: ${i.serial})` : "";
-                let depText = i.deposit > 0 ? ` [Kaution: ${i.deposit.toFixed(2)} EUR]` : "";
-                doc.text(`- ${statusLabel} ${i.title}${serialText} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 14, y);
-                y += 6;
+                let depText = Number(i.deposit || 0) > 0 ? ` [Kaution: ${Number(i.deposit).toFixed(2)} EUR]` : "";
+                const lines = doc.splitTextToSize(`- ${statusLabel} ${i.title}${serialText} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             doc.save("verleih-report-pro.pdf");
