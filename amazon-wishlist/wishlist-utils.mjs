@@ -29,3 +29,8 @@ export function profilePageUrl(currentUrl,handle=null) {
  if(handle!==null){url.searchParams.delete('url');url.searchParams.set('profile',validateHandle(handle));}
  return url.toString();
 }
+
+/** Only a uniqueness race should trigger a retry after a product insert fails. */
+export function isUniqueViolation(error) {
+ return error?.code==='23505';
+}
