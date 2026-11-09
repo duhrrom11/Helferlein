@@ -13,6 +13,7 @@ assert.match(workflow,/persist-credentials: false/);
 assert.match(workflow,/cancel-in-progress: false/);
 assert.match(script,/timeZone: 'Europe\/Berlin'/);
 assert.doesNotMatch(script,/Outside Berlin night window/);
+assert.match(script,/req\.setTimeout\(15000/);
 assert.match(script,/Invalid night checkpoint/);
 assert.match(script,/refusing to create a duplicate checkpoint/);
 assert.doesNotMatch(script,/SUPABASE_SERVICE_ROLE_KEY|supabase db push|supabase functions deploy/);
