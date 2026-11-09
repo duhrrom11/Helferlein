@@ -104,3 +104,10 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Suchergebnisse und Feed haben beschriftete Live-Regionen; lange Nutzereingaben brechen um.
 - Profil-Suchvalidierung wurde als separat getestete Hilfsfunktion zentralisiert, einschließlich Sonderzeichen- und Kurzsuchfällen.
 - Vor Merge im Browser überprüfen: ungültiger `?profile=`-Handle, nicht existierendes Profil, langsame/fehlerhafte Feed-Abfragen, Tastaturnavigation und Suchzeichen-Validierung. Keine Testdaten in Produktiv-Supabase.
+
+## Entwicklungspaket: Sitzungswechsel und Bedienbarkeit
+- Feed-Aktualisierungen verwenden einen zentralen Refresh-Pfad, damit Pagination und veraltete Antworten konsistent zurückgesetzt werden.
+- Nach Ladefehlern bleibt »Weitere Wünsche« deaktiviert, bis der Feed über Filterwechsel oder erneute Aktion aktualisiert wird.
+- Bei Nutzerwechsel wird das Wunschformular sofort zurückgesetzt; ein vorheriges Profil bleibt nicht während des asynchronen Nachladens nutzbar.
+- Nicht vorhandene Profil-Deep-Links zeigen einen expliziten Hinweis; Notizen können mehrzeilig bearbeitet werden.
+- Manuell zu prüfen: Nutzerwechsel bei langsamem Netz, fehlende Profil-Deep-Links, Ladefehler, mehrzeilige Notizen und Bedienung mit Tastatur.
