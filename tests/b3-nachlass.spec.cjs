@@ -30,6 +30,7 @@ test('Nachlass original vault tabs and more actions are reachable',async({page})
  await expect(page.locator('#section-trustees')).toBeVisible();
  await page.locator('#b3-nachlass-more>summary').click();
  await expect(page.locator('#manualSyncBtn')).toBeVisible();
+ await page.locator('#b3-nachlass-more').evaluate(el=>{el.open=true});
  await page.locator('#b3-nachlass-kit-action').click();
  await expect(page.locator('#section-kit')).toBeVisible();
 });
