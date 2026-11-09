@@ -290,3 +290,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - `967b599ad2e1cd121aa655598529a5dab45e1d79`: Eine Promise-Rejection beim initialen `?profile=`-Lookup wird als sichtbarer Profil-Ladefehler behandelt, statt die gesamte Initialisierung vor dem Feed-Aufruf abzubrechen.
 - Zu prüfen: Suchanfrage mit verzögertem `wishlist_follows`-SELECT, danach Antwort bzw. Fehler; `aria-busy` muss bis zum Abschluss gesetzt bleiben. Öffentlichen Deep-Link mit abgewiesenem `wishlist_profiles`-SELECT laden: verständlicher Fehler und weiterhin funktionsfähiger Feed. Zusätzlich bestehende Syntax-/Unit- und Browser-Smoke-Checks für den letzten Commit.
 - Node.js v22.16.0 vorhanden, aber lokaler Checkout erneut an `Could not resolve host: github.com` gescheitert; keine lokalen Tests ausgeführt. Keine Änderungen an Supabase-Daten oder Policies, kein Merge, Deployment oder Veröffentlichung.
+
+## D/E – Fokus und Kontowechsel
+- Rückgängig-Schaltfläche wird vor dem Tastaturfokus sichtbar gemacht; `aria-controls` verweist auf den betroffenen Feed.
+- Lokale Ausblendungen werden bei Benutzerwechsel/Abmeldung verworfen, damit Konten im selben Browser keine versteckten Einträge des vorherigen Kontos übernehmen.
+- Erneute Prüfung erforderlich: CI am letzten Commit und Browser-Smoke für Ausblenden, Undo, Konto-Wechsel und Fokus. Die tatsächliche Melde-/Moderationsfunktion sowie serverseitiger Abuse-Schutz bleiben ausstehend.
