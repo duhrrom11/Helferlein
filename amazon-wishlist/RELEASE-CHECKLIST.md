@@ -175,3 +175,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Der importierte Amazon-Link aus `?url=` wird beim ersten Laden übernommen und beim initialen Auth-Übergang für angemeldete Nutzer wiederhergestellt.
 - Spätere Auth-Statusprüfungen und Kontowechsel überschreiben keine manuell eingegebene Produkt-URL mehr mit dem ursprünglichen Link.
 - Vorheriger Stand `aabdcf8`: alle sechs CI-Workflows erfolgreich; aktueller Stand benötigt eigenen CI-Abschluss.
+
+## Prüfung vom 09.11.2026 (16 Uhr MEZ)
+- Für vorherigen Code-Head `acc3673ed6ac933d5be0f4d19ec70542c73f2f28` sind sechs GitHub-Actions-Workflows erfolgreich abgeschlossen.
+- Korrektur für anonym geöffneten `?url=`-Produktlink: Beim späteren Anmelden wird der unverändert im Editor stehende kanonische Link trotz Formular-Reset erhalten. Ein vom Nutzer ersetzter Link wird nicht durch den ursprünglichen URL-Parameter überschrieben. Code-Commits `cfc6a5b`, `3216030`; Regressionstest `e1a0a77`.
+- Noch nachzuweisen: CI des aktuellen Heads, Browserablauf »geteilten Link anonym öffnen → anmelden → URL im Editor prüfen« und Browser-/RLS-Negativtests. Keine Testdatensätze, produktiven Datenbankänderungen, Merge- oder Deployment-Aktionen.
