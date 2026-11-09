@@ -47,8 +47,10 @@ async function searchPeople(){
   root.append(item)
  }
 }
-$('peopleSearch').addEventListener('input',()=>{peopleSearchGeneration++;$('peopleResults').removeAttribute('aria-busy');$('peopleResults').replaceChildren()});
-$('peopleSearch').addEventListener('keydown',event=>{if(event.key==='Escape'){$('peopleSearch').value='';peopleSearchGeneration++;$('peopleResults').removeAttribute('aria-busy');$('peopleResults').replaceChildren()}});
+const clearPeopleResults=()=>{peopleSearchGeneration++;$('peopleResults').removeAttribute('aria-busy');$('peopleResults').replaceChildren()};
+$('peopleSearch').addEventListener('input',clearPeopleResults);
+$('clearPeopleSearch').onclick=()=>{$('peopleSearch').value='';clearPeopleResults();$('peopleSearch').focus();report('Profilsuche zurückgesetzt.')};
+$('peopleSearch').addEventListener('keydown',event=>{if(event.key==='Escape'){$('clearPeopleSearch').click()}});
 $('searchPeople').onclick=run(searchPeople);
 $('peopleSearch').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();$('searchPeople').click()}});
 $('feedFilter').onchange=run(async()=>{if($('feedFilter').value!=='profile'){selectedProfileId=null;$('feedFilter').querySelector('[value="profile"]').hidden=true;$('profileFeedInfo').hidden=true;window.history.replaceState(null,'',profilePageUrl(window.location.href))}await refreshFeed()});
