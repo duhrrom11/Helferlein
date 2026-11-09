@@ -97,6 +97,7 @@ export function profileDisplayLabel(displayName,handle) {
 
 /** Convert database errors to actionable, non-sensitive German messages. */
 export function wishlistErrorMessage(error) {
+ if(!error)return 'Unbekannter Fehler. Bitte erneut versuchen.';
  if(error?.code==='23505')return 'Dieser Eintrag existiert bereits.';
  if(error?.code==='42501'||error?.code==='PGRST301')return 'Keine Berechtigung. Bitte melde dich erneut an.';
  if(error?.code==='23503')return 'Der verknüpfte Eintrag ist nicht mehr verfügbar. Bitte neu laden.';
