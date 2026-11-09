@@ -125,3 +125,11 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Profilsuche verlangt mindestens zwei alphanumerische Suchzeichen; reine Leerzeichen und Bindestriche zählen nicht.
 - Zusätzliche Unit-Tests sichern die Randfälle ab.
 - CI-Befund für `e6c04eb`: 5 von 6 Workflows erfolgreich; Browser launch smoke scheiterte nach 30 Sekunden im Navigationsfall `kisten` (68/69 Tests erfolgreich). Ursache nicht nachgewiesen; nicht als bestanden werten. Für aktuelle Commits CI erneut prüfen.
+
+## Paket: Browser-Navigation, Feed-Wiederholung und Profilwechsel
+- Navigationstests verwenden `noWaitAfter` beim Link-Klick, damit fremde/langsame Seitenressourcen die Navigation nicht unnötig blockieren; URL, sichtbarer Body und nichtleerer Seitentitel bleiben Pflicht.
+- Der zuvor einmalige Browser-Timeout (`kisten`, 30 Sekunden) war auf Commit `72821c2` nicht reproduzierbar; alle sechs CI-Workflows dort erfolgreich. Ursache weiterhin nicht abschließend geklärt.
+- Der öffentliche Wunsch-Feed besitzt nun eine explizite Schaltfläche »Erneut laden«, auch nach einem Ladefehler.
+- Profilfelder werden bei Kontowechsel sofort geleert, bevor asynchron die Daten des neuen Kontos geladen werden.
+- Prioritäten akzeptieren nur die kanonischen Werte 1, 2, 3; numerische Umwege wie `01` oder `1e0` werden abgelehnt.
+- Vor Freigabe Browser-Test für Wiederholen nach Netzwerkfehler, schnellen Kontowechsel und vollständige CI auf dem letzten Commit nachholen. Kein Deployment.
