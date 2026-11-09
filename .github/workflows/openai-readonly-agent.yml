@@ -20,7 +20,10 @@ jobs:
         with:
           persist-credentials: false
       - name: Validate agent syntax
-        run: node --check scripts/openai-readonly-agent.cjs
+        run: |
+          node --check scripts/openai-readonly-agent.cjs
+          node --check scripts/openai-readonly-agent-guardrails.cjs
+          node scripts/openai-readonly-agent-guardrails.cjs
       - name: Read-only analysis
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
