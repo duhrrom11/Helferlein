@@ -1,5 +1,5 @@
 import {parseAmazonUrl,affiliateUrl,sharedAmazonProductUrl} from './amazon-links.mjs';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials} from './wishlist-utils.mjs';
+import {validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch} from './wishlist-utils.mjs';
 const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
 const $=id=>document.getElementById(id);let user=null,profile=null,offset=0;let feedBusy=false;let feedRefreshPending=false;let feedRevision=0;let editingWishId=null;let selectedProfileId=null;let peopleSearchGeneration=0;let authGeneration=0;
 const report=(m)=>{$('status').textContent=m};
@@ -20,8 +20,7 @@ async function searchPeople(){
  const searchingUserId=user?.id;
  const term=$('peopleSearch').value.trim();
  if(term.length<2){$('peopleResults').textContent='Mindestens zwei Zeichen eingeben.';return;}
- const safe=normalizeProfileSearch(term);
- if(safe.length<2){$('peopleResults').textContent='Suchbegriff prüfen.';return;}
+ let safe;try{safe=validatedProfileSearch(term)}catch(e){$('peopleResults').textContent=e.message;return;}
  const result=await db.from('wishlist_profiles').select('user_id,handle,display_name,bio').or('handle.ilike.%'+safe+'%,display_name.ilike.%'+safe+'%').order('handle').limit(20);
  if(generation!==peopleSearchGeneration||user?.id!==searchingUserId)return;
  if(result.error)throw result.error;
