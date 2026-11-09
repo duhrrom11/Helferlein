@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -105,4 +105,37 @@ test('local wish and profile hiding are independent and reversible',()=>{
  assert.equal(isWishLocallyHidden({id:'wish-b',user_id:'person-a'},wishes,profiles),true);
  assert.equal(isWishLocallyHidden({id:'wish-c',user_id:'person-b'},wishes,profiles),false);
  profiles.clear();assert.equal(isWishLocallyHidden(wish,wishes,profiles),false);
+});
+
+test('profile labels do not construct permalinks from invalid handles',()=>{
+ assert.equal(profileDisplayLabel('  Anna ','ANNA_2'),'Anna (@anna_2)');
+ assert.equal(profileDisplayLabel('','abc'),'Profil (@abc)');
+ assert.equal(profileDisplayLabel('Alice','bad handle'),'Alice');
+ assert.equal(profileDisplayLabel(null,null),'Profil');
+});
+
+test('database errors become actionable messages without leaking internals',()=>{
+ assert.match(wishlistErrorMessage({code:'23505'}),/bereits/);
+ assert.match(wishlistErrorMessage({code:'42501'}),/Berechtigung/);
+ assert.match(wishlistErrorMessage({code:'23503'}),/nicht mehr/);
+ assert.match(wishlistErrorMessage({status:429}),/Zu viele/);
+ assert.match(wishlistErrorMessage({message:'Failed to fetch'}),/Netzwerkfehler/);
+ assert.match(wishlistErrorMessage(null),/Unbekannter Fehler/);
+});
+
+test('share helper prefers Clipboard API and uses DOM fallback safely',async()=>{
+ let copied='';
+ const clipboard={writeText:async value=>{copied=value}};
+ assert.equal(await copyShareLink('https://example.org/profile',clipboard),'clipboard');
+ assert.equal(copied,'https://example.org/profile');
+ let removed=false,selected=false;
+ const fakeDoc={
+  createElement:()=>({style:{},setAttribute(){},select(){selected=true},remove(){removed=true}}),
+  body:{append(){}},
+  execCommand:command=>command==='copy'
+ };
+ assert.equal(await copyShareLink('https://example.org/wish',null,fakeDoc),'fallback');
+ assert.equal(selected,true);
+ assert.equal(removed,true);
+ await assert.rejects(()=>copyShareLink('javascript:alert(1)',clipboard));
 });
