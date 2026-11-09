@@ -75,7 +75,7 @@ const checks = [
   {id:'wishlist-public-safety', label:'Wunschlisten-Sicherheitsmarker prüfen', run:() => {
     const app=fs.readFileSync('amazon-wishlist/app.mjs','utf8');
     const html=fs.readFileSync('amazon-wishlist/index.html','utf8');
-    if(/service_role|sb_secret_|\\.innerHTML\\s*=|insertAdjacentHTML\\s*\\(/i.test(app+html))
+    if(/service_role|sb_secret_|\.innerHTML\s*=|insertAdjacentHTML\s*\(/i.test(app+html))
       throw Error('Privilegierter Schlüssel oder unsichere HTML-Injektion erkannt');
     if(!html.includes('öffentlich')||!app.includes('noopener noreferrer sponsored'))
       throw Error('Öffentlichkeitshinweis oder Partnerlink-Schutz fehlt');
@@ -83,7 +83,7 @@ const checks = [
   }},
   {id:'wishlist-release', label:'Offene Wunschlisten-Freigabepunkte inventarisieren', run:() => {
     const s=fs.readFileSync('amazon-wishlist/50-SCHRITTE.md','utf8');
-    const open=(s.match(/- \\[ \\]/g)||[]).length;
+    const open=(s.match(/- \[ \]/g)||[]).length;
     return open+' offene Wunschlisten-Aufgaben (nur Dokumentation; keine Freigabe)';
   }}
 ];
