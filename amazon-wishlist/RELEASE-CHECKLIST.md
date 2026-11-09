@@ -170,3 +170,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Erfolgsmeldungen nach Profil-, Wunsch- und Follow-Aktionen prüfen nach asynchronem Feed-Refresh erneut die aktive Sitzung.
 - Der Feed wird erst geleert, nachdem die vom Server gelieferte Seite erfolgreich validiert wurde.
 - Es bleiben nur die bestehenden notwendigen CI-Gates; keine neuen Testdaten in der produktiven Datenbank.
+
+## Produktlink-Import: einmalig statt wiederholt
+- Der importierte Amazon-Link aus `?url=` wird beim ersten Laden übernommen und beim initialen Auth-Übergang für angemeldete Nutzer wiederhergestellt.
+- Spätere Auth-Statusprüfungen und Kontowechsel überschreiben keine manuell eingegebene Produkt-URL mehr mit dem ursprünglichen Link.
+- Vorheriger Stand `aabdcf8`: alle sechs CI-Workflows erfolgreich; aktueller Stand benötigt eigenen CI-Abschluss.
