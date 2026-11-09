@@ -3,6 +3,7 @@ import {validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniq
 const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
 const $=id=>document.getElementById(id);let user=null,profile=null,offset=0;let feedBusy=false;let feedRefreshPending=false;let feedRevision=0;let editingWishId=null;let selectedProfileId=null;let peopleSearchGeneration=0;let authGeneration=0;
 const report=(m)=>{$('status').textContent=m};
+const refreshFeed=async()=>{offset=0;feedRevision++;await feed()};
 const requireUser=()=>{if(!user)throw Error('Bitte zuerst anmelden');return user.id};
 function resetWishEditor() {editingWishId=null;$('editHint').hidden=true;$('url').disabled=false;$('url').value='';$('productTitle').value='';$('productTitle').disabled=false;$('wishNote').value='';$('priority').value='2';$('saveWish').textContent='Wunsch speichern'}
 $('cancelEdit').onclick=resetWishEditor;
