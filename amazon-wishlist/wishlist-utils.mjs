@@ -63,3 +63,10 @@ export function validateCredentials(email,password) {
  if(typeof password!=='string'||password.length<8)throw Error('Passwort muss mindestens 8 Zeichen enthalten');
  return {email:address,password};
 }
+
+/** A profile search must contain two useful characters after normalization. */
+export function validatedProfileSearch(input) {
+ const term=normalizeProfileSearch(input);
+ if(term.length<2)throw Error('Bitte mindestens zwei gültige Suchzeichen eingeben');
+ return term;
+}
