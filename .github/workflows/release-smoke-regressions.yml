@@ -1,0 +1,31 @@
+name: Release smoke regression fixtures
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/release-smoke.cjs'
+      - 'tests/release-smoke-regression.cjs'
+      - '.github/workflows/release-smoke-regressions.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/release-smoke.cjs'
+      - 'tests/release-smoke-regression.cjs'
+      - '.github/workflows/release-smoke-regressions.yml'
+permissions:
+  contents: read
+jobs:
+  smoke-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Validate test syntax
+        run: |
+          node --check scripts/release-smoke.cjs
+          node --check tests/release-smoke-regression.cjs
+      - name: Run positive and negative smoke fixtures
+        run: node tests/release-smoke-regression.cjs
