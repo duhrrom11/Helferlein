@@ -187,3 +187,46 @@ sind weiterhin benutzerbezogene Legacy-Speicherschlüssel erforderlich.
 Die vier noch nicht vollständig integrierten Werkzeuge brauchen eigene
 Datenmodelle; insbesondere dürfen verschlüsselte Tresordaten nicht ohne
 abgenommenes Schlüsselkonzept übertragen werden.
+
+## Technischer Stand nach Erweiterung vom 9. November 2026
+
+Die älteren Abschnitte oben beschreiben den damaligen Entwicklungsstand; die
+folgenden Fakten wurden direkt gegen das produktive Supabase-Schema geprüft:
+
+- `public.user_data` besitzt bereits die eindeutige Einschränkung
+  `user_data_user_id_tool_key` auf `(user_id, tool)`. Keine zweite
+  Einschränkung anlegen.
+- Zum Zeitpunkt der Prüfung: **0 Cloud-Zeilen, 0 doppelte Benutzer-/Tool-Paare**.
+  Keine produktiven Nutzerdaten wurden geschrieben oder importiert.
+- RLS ist für `user_data` aktiviert. Der Rolle `authenticated` wurden
+  SELECT/INSERT/UPDATE eingeräumt; die Zeilenrichtlinien sind an
+  `auth.uid() = user_id` gebunden.
+- Der Opt-in-Adapter ist im Entwurfsbranch für **neun** Werkzeuge eingebunden:
+  die oben genannten sieben sowie Backform-Umrechner (Array `recipes`)
+  und Haushaltsbuch (gemeinsames Paket aus Buchungen, Budgets und Sparzielen).
+- Der Haushaltsbuch-Adapter überträgt die drei Legacy-Schlüssel
+  `kassenbon_data`, `budgetbuch_budgets` und `budgetbuch_goals`
+  als **einen** Cloud-Stand. Eine lokale Cloud-Übernahme schreibt die drei
+  Schlüssel zusammen; bei lokalem Schreibfehler versucht der Adapter,
+  den alten Zustand wiederherzustellen.
+- Der WG-Organisator nutzt bereits eine eigene `wg_spaces`-Speicherung
+  samt Revisionsprüfung. Der digitale Nachlass hat eine getrennte
+  **verschlüsselte** Cloud-Sicherung; diese darf nicht durch den
+  unverschlüsselten `user_data`-Adapter ersetzt werden.
+
+### Vor einem Merge und Livegang weiterhin verbindlich
+
+1. Benutzerbezogene aktive lokale Datenbereiche für die neun
+   Legacy-Werkzeuge implementieren, damit Konto B am gleichen Gerät
+   nicht wegen des Speicherbereichs von Konto A dauerhaft blockiert wird.
+   Eine bloße HTML-Sichtschutz-Sperre reicht dafür nicht aus.
+2. Die neuen Array- und Mehrschlüssel-Formate mit echten Browserwechseln,
+   Unterbrechungen und konkurrierenden Schreibvorgängen abnehmen.
+   Bestehende Nutzerdaten dürfen dabei weder überschrieben noch
+   automatisch hochgeladen werden.
+3. Die unabhängigen Speicherwege des WG-Organisators und des
+   verschlüsselten Nachlasses getrennt auf Offline-Speicherung,
+   Rechteverwaltung und Wiederherstellung prüfen.
+4. Erst nach bestandener Freigabe den Entwurfs-PR zusammenführen
+   und auf GitHub Pages veröffentlichen. Bis dahin bleibt die bestehende
+   Live-Version unverändert.
