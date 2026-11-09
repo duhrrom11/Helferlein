@@ -82,7 +82,20 @@
       return Array.isArray(entries) ? entries.length : Object.keys(entries).length;
     }
     function assertValidPayload(value) { if (!validPayload(value)) throw new Error('Werkzeugdaten haben ein ungültiges Format'); return value; }
+    async function offlineSessionUser() {
+      // A locally cached session is only a provisional identity for offline local edits.
+      // Never use it to authorize an online upload or a cross-account switch.
+      if (typeof navigator === 'undefined' || navigator.onLine || !client.auth.getSession) return null;
+      const { data, error } = await client.auth.getSession();
+      if (error || !data || !data.session) return null;
+      const session = data.session;
+      if (!session.user || typeof session.user.id !== 'string' || !session.user.id ||
+          !Number.isFinite(session.expires_at) || session.expires_at <= Date.now() / 1000) return null;
+      return session.user;
+    }
     async function currentUser() {
+      const offlineUser = await offlineSessionUser();
+      if (offlineUser) return offlineUser;
       assertActive();
       const { data, error } = await client.auth.getUser();
       if (error) { lastStatusErrorAt = now(); lastSyncError = error.message || String(error); throw error; }
