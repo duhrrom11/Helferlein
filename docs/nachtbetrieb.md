@@ -8,7 +8,7 @@ Der GitHub-Actions-Workflow `.github/workflows/night-coordinator.yml` und das Sk
 
 - GitHub Actions plant `*/5 * * * *` in UTC.
 - Die Repository-Prüfungen laufen rund um die Uhr; `Europe/Berlin` dient zur Tageszuordnung und für den Morgenbericht.
-- Um 06:00 Uhr Ortszeit wird ein Morgenbericht in einem GitHub-Issue erstellt. Eine kurze Kulanzzeit bis 06:29 Uhr erlaubt verzögerte GitHub-Schedule-Starts; der Bericht wird je Kalendertag höchstens einmal veröffentlicht.
+- Ab 06:00 Uhr Ortszeit wird beim nächsten tatsächlich gestarteten planmäßigen Lauf ein Morgenbericht in einem GitHub-Issue erstellt. Fällt der 06-Uhr-Lauf aus, wird er am selben Kalendertag beim nächsten geplanten Lauf nachgeholt. Manuelle Prüfungen werden markiert und nicht als automatische Läufe gezählt; der Bericht wird je Kalendertag höchstens einmal veröffentlicht.
 - GitHub garantiert **keine sekundengenaue Ausführung** und kann geplante Läufe verzögern oder auslassen. Auch 288 erfolgreiche Prüfungen pro Tag sind nicht garantiert.
 - `workflow_dispatch` erlaubt einen manuellen Durchlauf. Manuelle Aufrufe führen ebenfalls einen Prüf-Schritt aus, keinen produktiven Eingriff.
 

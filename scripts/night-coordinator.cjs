@@ -109,9 +109,9 @@ async function main() {
   }
   if (!state) state={version:1,day:localDay,cursor:0,history:[],lastReportDay:null};
   if (!issue) issue=await api('POST',base+'/issues',{title:issueTitle,body:encodeState(state)});
-  if (hour===6 && !manual) {
-    if (state.lastReportDay===localDay) return console.log('Report already posted');
-    const runs=state.history.filter(x=>x.day===localDay);
+  // If GitHub delays or skips the 06:00 run, publish once on the next scheduled run.
+  if (hour>=6 && !manual && state.lastReportDay!==localDay) {
+    const runs=state.history.filter(x=>x.day===localDay && !x.manual);
     const report='### Morgenbericht '+localDay+' (Europe/Berlin)\n' +
       'Automatische, ausschließlich lesende Prüfungen: '+runs.length+'\n' +
       'Erfolgreich: '+runs.filter(x=>x.ok).length+', Auffälligkeiten: '+runs.filter(x=>!x.ok).length+'\n\n' +
@@ -123,7 +123,7 @@ async function main() {
     const task=checks[state.cursor % checks.length];
     let ok=true, result;
     try { result=task.run(); } catch(e) {ok=false;result=String(e.message||e).slice(0,450);}
-    const entry={day:localDay,time:parts.hour+':'+parts.minute,task:task.id,ok,result};
+    const entry={day:localDay,time:parts.hour+':'+parts.minute,task:task.id,ok,result,manual};
     state.history.push(entry);
     state.cursor++;
     console.log(JSON.stringify(entry));
