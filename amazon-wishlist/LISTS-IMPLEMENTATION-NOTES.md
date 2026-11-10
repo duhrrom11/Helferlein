@@ -108,3 +108,10 @@
 - Fehlgeschlagene und offene Aktionen können aus der Ergebnisübersicht bzw. Historie erneut zur Bestätigung vorbereitet werden. Der aktuelle Zuordnungszustand wird berücksichtigt; nach Listenwechsel ist zunächst ein erneuter Aufruf nach dem Laden erforderlich.
 - Bereits erfolgreich ausgeführte Zuordnungen bleiben bestehen. Es gibt kein automatisches Retry, keinen Rollback und keine Transaktion über alle Wünsche.
 - Nur kurze JavaScript-Syntax- und HTML-ID-Prüfung, kein vollständiger Browser-/Integrationstest. Keine Produktivdatenbankänderung, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Performance, Mobilbedienung und Ladefehler
+- Die beim vollständigen Laden paginierten `wishlist_list_items` werden zusätzlich pro Liste in `membershipByList` zwischengespeichert. `showItems()` verwendet diese Zuordnungen, statt bei jedem `render()` eine neue Abfrage auszuführen.
+- Während des Ladens sind Sammelaktionen gesperrt; unvollständige Mitgliedschaftsdaten werden nicht für Mehrfachänderungen verwendet.
+- Zugängliche Statusanzeige für Laden/Fehler mit erneutem Ladeversuch; Fehler beim Laden weiterer Wünsche oder Zuordnungen werden nicht als vollständiger Erfolg angezeigt.
+- Auf Mobilgeräten bleibt die Sammelwerkzeugleiste am unteren Bildschirmrand erreichbar; Touch-Flächen sind vergrößert.
+- Nur Syntax- und DOM-ID-Kurzprüfung. Noch kein vollständiger Browser-/Integrationstest; kein Merge, Deployment oder Änderung der produktiven Supabase-Datenbank.
