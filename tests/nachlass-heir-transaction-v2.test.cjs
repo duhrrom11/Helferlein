@@ -18,7 +18,7 @@ test('locked read occurs inside transaction and client is released',async()=>{
  const f=fake();
  const got=await createTransactionalHeirRepository(f.pool).readAuthorizedEnvelopeSnapshot({vaultId:id,userId});
  assert.deepEqual(got.envelope,{ciphertext:'encrypted'});
- assert.match(f.calls[0].sql,/^BEGIN ISOLATION LEVEL READ COMMITTED READ ONLY$/);
+ assert.match(f.calls[0].sql,/^BEGIN ISOLATION LEVEL READ COMMITTED$/);
  assert.match(f.calls[1].sql,/for share of v, m, e/i);
  assert.deepEqual(f.calls[1].args,[id,userId]);
  assert.equal(f.calls[2].sql,'COMMIT');
