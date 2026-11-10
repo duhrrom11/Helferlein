@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Jahreschronik mit Aufgaben-Snapshots)
+
+- **Neu umgesetzt:** Zukünftige historische Jahresabschlüsse speichern zusätzlich unveränderliche Aufgaben-Momentaufnahmen (`tasks_snapshot`, `task_count`, `task_done_count`) aus privaten, jahreszugeordneten Geschenk-Checklisten. Gespeichert werden Aufgaben-ID, Anlass-ID, Titel, Status, Fälligkeit, Priorität, Vorlagenschlüssel und Archivierungszeitpunkt.
+- **Additive Produktivmigration:** Optionale Felder in `wishlist_gift_year_closings`; bestehende Abschlüsse bleiben unverändert und enthalten weiterhin `NULL` als Kennzeichnung für fehlende historische Aufgaben-Snapshots. Die bestehende bestätigungspflichtige `wishlist_close_gift_year`-Funktion erfasst Geschenk-, Budget- und Aufgabenstand in einer Transaktion. Unveränderte owner-only SELECT-RLS, keine direkten Schreibrechte für Client-Rollen, kein Testabschluss.
+- **Mobile Jahreschronik:** Chronologische Karten für abgeschlossene Jahre, historische Aufgaben-Abschlussquote, Fortschrittsbalken, Vergleich der Ausgaben und Abschlussquoten mit dem vorherigen Abschluss sowie Details zu archivierten Aufgabenständen.
+- **Grenzen:** Nur Aufgaben mit `checklist_year` und `checklist_key` fließen in den Aufgaben-Snapshot ein. Historische Snapshots älterer Abschlüsse werden nicht rekonstruiert. Jahreschronik basiert auf gespeicherten Abschlüssen, nicht auf aktuellen offenen Jahresdaten. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private historische Jahresabschlüsse)
 
 - **Neu umgesetzt:** Einmalige, ausdrücklich bestätigte Jahresabschlüsse für Geschenkpläne und historische Jahresbudgets. Abschlusswerte (Geschenkzahl, verschenkte Geschenke, geplante und erfasste Beträge, Jahresbudgets) sowie einzelne Geschenk- und Budgeteinträge werden als JSONB-Momentaufnahme gespeichert.
