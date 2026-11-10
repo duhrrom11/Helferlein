@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Jährliche Geschenk-Checklisten und Archiv)
+
+- **Neu umgesetzt:** Jährlich getrennte Geschenk-Checklisten, manuelle Jahresauswahl (aktuell −3 bis +5 Jahre), Fortschrittsanzeige pro Anlass und Jahr sowie Archivieren/Wiederherstellen vollständiger Checklistenjahre.
+- **Additive Produktivmigration:** `wishlist_gift_tasks.checklist_year` (optional) und `archived_at` (optional). Zwei eindeutige partielle Indizes verhindern Duplikate für neue Jahres-Checklisten und schützen gleichzeitig alte Checklisten ohne Jahreszuordnung. Keine vorhandenen Aufgaben gelöscht oder umgeschrieben.
+- **Sichere RPCs:** `wishlist_create_occasion_checklist_year(occasion_id,template,year)` und `wishlist_archive_occasion_checklist_year(occasion_id,year,archive)` verwenden `SECURITY INVOKER`, leeren `search_path`, authentifizierte Ausführung und Prüfung der Anlass-Eigentümerschaft. Erzeugung transaktional mit `ON CONFLICT DO NOTHING`; Archivierung reversibel.
+- **Mobile Bedienung:** Jahresauswahl und Archivschaltflächen in `gift-tasks.html`; Jahresfortschritt in Aufgabenverwaltung und Geschenkzentrale. Archivierte Aufgaben werden aus aktiven Aufgaben- und Erinnerungsansichten ausgeblendet.
+- **Grenzen:** Bestehende Checklisten ohne Jahr werden nicht rückwirkend einem Jahr zugeordnet. Es gibt keine automatische Anlage neuer Checklisten ohne Nutzeraktion. Maximal 1000 Aufgaben pro Ansicht; vollständiger Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Geschenk-Checklisten pro Anlass)
 
 - **Neu umgesetzt:** Drei kostenlose Aufgabenpakete pro Anlass: Standard (5 Aufgaben), Kurzfristig (4 Aufgaben) und Versand (4 Aufgaben). Aufgaben erhalten vorgeschlagene Fälligkeiten relativ zum nächsten Anlass, Priorität und Erinnerungsfrist.
