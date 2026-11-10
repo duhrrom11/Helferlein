@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Interaktive private Geschenk-Wochenplanung)
+
+- **Neu umgesetzt:** Interaktive Aufgabenaktionen in der privaten Geschenk-Planungsassistenz: einzelne offene Aufgaben nach Bestätigungsdialog als erledigt markieren und Fälligkeitsdatum nach Bestätigungsdialog verschieben. Mobile Eingabefelder und Aktionsstatusmeldungen.
+- **Sichere Schreiboperationen:** Bestehende owner-only RLS auf `wishlist_gift_tasks`; Client-Update ist auf `id`, `user_id` und bisherigen Feldwert eingeschränkt (optimistische Konflikterkennung). Keine pauschalen Änderungen; nur die bestätigte Aufgabe wird geändert. Fehler und parallele Änderungen werden angezeigt.
+- **Wochenfortschritt:** Anteil erledigter, nicht archivierter Aufgaben mit Fälligkeitsdatum innerhalb der aktuellen Kalenderwoche; überfällige offene Aufgaben werden separat priorisiert. Anzeige wird nach erfolgreicher Aktion aktualisiert.
+- **Produktivschutz:** Keine Migration, keine Testdaten, keine Änderung historischer Jahresabschlüsse. Bestandsdaten bleiben erhalten; bestätigte Nutzeraktionen können ausschließlich Status und Fälligkeitsdatum einzelner Aufgaben ändern. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Intelligente private Geschenk-Wochenplanung)
 
 - **Neu umgesetzt:** In `gift-assistant.html` und `gift-assistant.mjs` erscheinen bestehende private Geschenkaufgaben mit Fälligkeit bis zum Ende der aktuellen Kalenderwoche, einschließlich überfälliger Aufgaben. Mobile Kennzahlen für überfällige, diese Woche fällige und hoch priorisierte Aufgaben.
