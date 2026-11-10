@@ -751,3 +751,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Kopiervorgänge bleiben nicht transaktional.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: Kopierfehler, mobile Checkboxen und veraltete Detaildialoge (2026-11-10)
+
+- [x] Fehler nach einem bereits fortgeschrittenen Listen-Reload verlieren die Meldung zu teilweise kopierten Zuordnungen nicht allein durch eine neue Dashboard-Generation; fremde Benutzerkontexte werden weiterhin ausgeschlossen.
+- [x] Blockierte mobile Sammelauswahl-Checkboxen stellen ihren Zustand aus `bulkIds` wieder her, statt blind zu invertieren.
+- [x] Blockierte oder fehlgeschlagene direkte Zuordnungs-Checkboxen stellen den Zustand aus `assignedIds` wieder her, statt einen möglicherweise bereits veralteten Wert umzuschalten.
+- [x] Beim Beginn der exklusiven Listenkopie werden offene Wunschdetails geschlossen, damit veraltete Detailaktionen nicht im Vordergrund bleiben.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; kein produktiver Datenbanktest. Nicht transaktionale Teilkopien bleiben ein Freigaberisiko.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
