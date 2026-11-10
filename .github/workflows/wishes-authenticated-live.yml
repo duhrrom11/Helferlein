@@ -15,7 +15,7 @@ jobs:
     env:
       WISHES_EXISTING_USER_EMAIL: ${{ secrets.WISHES_EXISTING_USER_EMAIL }}
       WISHES_EXISTING_USER_PASSWORD: ${{ secrets.WISHES_EXISTING_USER_PASSWORD }}
-      WISHES_LIVE_BASE: https://duhrrom11.github.io/Helferlein
+      WISHES_LIVE_BASE: http://127.0.0.1:8765
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,5 +29,10 @@ jobs:
           fi
       - name: Install browser dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Serve exact candidate commit locally without deploying
+        run: |
+          cd ..
+          python3 -m http.server 8765 --bind 127.0.0.1 > /dev/null 2>&1 &
+          sleep 2
       - name: Read-only authenticated browser sign-in and logout
         run: node authenticated-live-smoke.mjs
