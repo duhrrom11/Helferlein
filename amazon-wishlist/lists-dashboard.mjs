@@ -106,7 +106,7 @@ export function mountListsDashboard(db, getUser) {
    const actions=document.createElement('div');actions.className='list-card-actions';card.append(actions);
    actions.append(button(list.archived?'Archiviert – reaktivieren':'Öffnen',async()=>{if(list.archived)return msg('Bitte die Liste zuerst reaktivieren.');openList(list.id)}));
    if(!list.archived&&count>0)actions.append(button('Zugeordnete Wünsche',async()=>{if(bulkBusy)return;openList(list.id);$('listWishAssignment').value='assigned';selectedOnlyView=false;renderWishCards()}));
-   actions.append(button('Gestalten',async()=>{if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');if(list.archived)return msg('Archivierte Liste zuerst reaktivieren.');selected=list.id;render();openEditor(list)}));
+   actions.append(button('Gestalten',async()=>{if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');if(list.archived)return msg('Archivierte Liste zuerst reaktivieren.');if(getUser()?.id!==loadedOwner)return;openEditor(list)}));
    actions.append(button(list.archived?'Reaktivieren':'Archivieren',async()=>{if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');if(!list.archived&&!window.confirm('Liste „'+list.title+'“ archivieren? Die Wünsche bleiben erhalten.'))return;if(bulkBusy||getUser()?.id!==loadedOwner)return;const uid=owner(),generation=loadGeneration;const res=await db.from('wishlist_lists').update({archived:!list.archived}).eq('id',list.id).eq('user_id',uid);if(res.error)throw res.error;if(getUser()?.id!==uid||generation!==loadGeneration)return;await load()}));
 actions.append(button('Duplizieren',async()=>{if(bulkBusy||!membershipReady)return msg('Bitte zuerst die vollständigen Listenzuordnungen laden.');const uid=owner(),generation=loadGeneration;const originalIds=[...(membershipByList.get(list.id)||new Set())];if(!window.confirm('Liste „'+list.title+'“ mit '+originalIds.length+' Zuordnungen duplizieren? Die Wünsche selbst werden nicht kopiert.'))return;if(bulkBusy||!membershipReady||getUser()?.id!==uid||generation!==loadGeneration)return;const current=()=>getUser()?.id===uid&&generation===loadGeneration;const {data:copy,error}=await db.from('wishlist_lists').insert({user_id:uid,title:(list.title+' Kopie').slice(0,80),description:list.description,icon:list.icon,color:list.color,visibility:'private'}).select('id').single();if(error)throw error;if(!current())return;let copied=0;for(let i=0;i<originalIds.length;i+=100){if(!current())return;const batch=originalIds.slice(i,i+100).map(wish_id=>({list_id:copy.id,wish_id,user_id:uid}));const {error:copyError}=await db.from('wishlist_list_items').insert(batch);if(copyError){if(current()){msg('Kopie angelegt, aber nur '+copied+' von '+originalIds.length+' Zuordnungen übernommen. Bitte Kopie prüfen.');await load()}return}copied+=batch.length}if(!current())return;await load();if(getUser()?.id===uid)msg('Liste mit '+copied+' Zuordnungen dupliziert.')}));
    actions.append(button('Löschen',async()=>{if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');if(!confirm('Liste „'+list.title+'“ löschen? Die Wünsche selbst bleiben erhalten.'))return;if(bulkBusy||getUser()?.id!==loadedOwner)return;const uid=owner(),generation=loadGeneration;const {error}=await db.from('wishlist_lists').delete().eq('id',list.id).eq('user_id',uid);if(error)throw error;if(getUser()?.id!==uid||generation!==loadGeneration)return;await load()}));
@@ -373,6 +373,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||!membershipReady)retu
   $('listTitle').value=template.title;$('listDescription').value=template.description;$('listIcon').value=template.icon;$('listColor').value=template.color;
  };
  function openEditor(list){
+  if(bulkBusy||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===list.id&&!l.archived))return;
   $('editListId').value=list.id;$('editListTitle').value=list.title;$('editListDescription').value=list.description||'';
   $('editListIcon').value=list.icon;$('editListColor').value=list.color;
   $('editListForm').hidden=false;$('editListTitle').focus();$('editListForm').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -380,7 +381,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||!membershipReady)retu
  $('cancelListEdit').onclick=()=>{$('editListForm').hidden=true;$('editListId').value='';};
  $('editListForm').onsubmit=async event=>{
   event.preventDefault();const id=owner(),generation=loadGeneration,listId=$('editListId').value;
-  if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');if(!lists.some(l=>l.id===listId&&!l.archived))return msg('Bitte eine aktive Liste bearbeiten.');
+  if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');if(id!==loadedOwner)return;if(!lists.some(l=>l.id===listId&&!l.archived))return msg('Bitte eine aktive Liste bearbeiten.');
   const title=$('editListTitle').value.trim(),description=$('editListDescription').value.trim();
   if(!title||title.length>80||description.length>500)return msg('Bitte gültigen Namen und Beschreibung eingeben.');
   const save=$('saveListChanges');save.disabled=true;
