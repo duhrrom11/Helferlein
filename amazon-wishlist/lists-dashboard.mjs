@@ -57,9 +57,18 @@ export function mountListsDashboard(db, getUser) {
   $('bulkResultPanel').hidden=true;$('bulkConfirmDialog').close();$('listWishCards').replaceChildren();$('listWishCount').textContent='';updateBulkToolbar([]);renderProgress();
  }
  const msg=t=>{$('listsStatus').textContent=t;if(!$('editListForm').hidden)$('editListFeedback').textContent=t};
- const invalidField=(field,message)=>{field.setAttribute('aria-invalid','true');field.focus();msg(message)};
+ const invalidField=(field,message)=>{
+  field.setAttribute('aria-invalid','true');
+  const statusId=field.closest('#editListForm')?'editListFeedback':'listsStatus';
+  field.setAttribute('aria-describedby',statusId);
+  field.closest('details')?.setAttribute('open','');
+  msg(message);field.focus();
+ };
  for(const fieldId of ['listTitle','editListTitle','editListCoverUrl']){
-  const field=$(fieldId);for(const type of ['input','change'])field.addEventListener(type,()=>field.removeAttribute('aria-invalid'));
+  const field=$(fieldId);
+  for(const type of ['input','change'])field.addEventListener(type,()=>{
+   field.removeAttribute('aria-invalid');field.removeAttribute('aria-describedby');
+  });
  }
  const button=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=async()=>{if(b.disabled)return;b.disabled=true;try{await fn()}catch(e){msg(e.message||'Aktion fehlgeschlagen')}finally{if(b.isConnected)b.disabled=false}};return b};
  const owner=()=>{const u=getUser();if(!u)throw Error('Bitte anmelden');return u.id};
@@ -483,7 +492,7 @@ actions.append(button('Duplizieren',async()=>{
   listEditReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
   $('editListId').value=list.id;$('editListTitle').value=list.title;$('editListDescription').value=list.description||'';
   $('editListIcon').value=list.icon;$('editListColor').value=list.color;$('editListVisibility').value=list.visibility;$('editListCoverUrl').value=list.cover_url||'';
-  for(const fieldId of ['editListTitle','editListCoverUrl'])$(fieldId).removeAttribute('aria-invalid');
+  for(const fieldId of ['editListTitle','editListCoverUrl']){$(fieldId).removeAttribute('aria-invalid');$(fieldId).removeAttribute('aria-describedby')}
   $('editListFeedback').textContent='';$('editListForm').hidden=false;$('editListForm').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});$('editListTitle').focus({preventScroll:true});
  }
  $('cancelListEdit').onclick=()=>{$('editListForm').hidden=true;$('editListId').value='';$('editListFeedback').textContent='';finishListEditing();};
