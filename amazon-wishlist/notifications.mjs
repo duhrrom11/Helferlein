@@ -21,7 +21,7 @@ function render(){
   main.append(badge,h,p,time);
   if(item.event_type!=='follow'&&item.list_id){const a=document.createElement('a');a.href=url('./collection.html','?id='+encodeURIComponent(item.list_id));a.textContent='Sammlung öffnen ↗';main.append(a)}
   const button=document.createElement('button');button.type='button';button.textContent=item.read_at?'Gelesen':'Als gelesen markieren';button.disabled=Boolean(item.read_at);
-  button.addEventListener('click',async()=>{button.disabled=true;const {error}=await db.from('wishlist_notification_reads').upsert({user_id:user.id,event_key:item.event_key,read_at:new Date().toISOString()},{onConflict:'user_id,event_key'});if(error){button.disabled=false;message('Gelesen-Status konnte nicht gespeichert werden.')}else{item.read_at=new Date().toISOString();render();message('Gelesen-Status gespeichert.')}});
+  button.addEventListener('click',async()=>{button.disabled=true;const {error}=await db.from('wishlist_notification_reads').upsert({user_id:user.id,event_key:item.event_key,read_at:new Date().toISOString()},{onConflict:'user_id,event_key',ignoreDuplicates:true});if(error){button.disabled=false;message('Gelesen-Status konnte nicht gespeichert werden.')}else{item.read_at=new Date().toISOString();render();message('Gelesen-Status gespeichert.')}});
   card.append(main,button);root.append(card);
  }
  $('more').hidden=!hasMore;
@@ -54,7 +54,7 @@ $('markPage').addEventListener('click',async()=>{
  const pending=events.filter(e=>!e.read_at);if(!pending.length)return;
  $('markPage').disabled=true;
  const now=new Date().toISOString();
- const {error}=await db.from('wishlist_notification_reads').upsert(pending.map(e=>({user_id:user.id,event_key:e.event_key,read_at:now})),{onConflict:'user_id,event_key'});
+ const {error}=await db.from('wishlist_notification_reads').upsert(pending.map(e=>({user_id:user.id,event_key:e.event_key,read_at:now})),{onConflict:'user_id,event_key',ignoreDuplicates:true});
  if(error){message('Nicht alle Hinweise konnten als gelesen gespeichert werden.');render();return}
  pending.forEach(e=>e.read_at=now);render();message('Geladene Hinweise als gelesen gespeichert.');
 });
