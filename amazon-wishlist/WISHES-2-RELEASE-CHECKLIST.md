@@ -511,3 +511,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Minimaler statischer GitHub-Inhaltsabgleich durchgeführt; keine Laufzeit-/Browser-/Syntaxprüfung als erfolgreich bestätigt.
 - [ ] Mehrstufiges Verschieben und Duplizieren bleiben ohne serverseitige Transaktion nicht atomar. Fehlerfälle vor Freigabe gezielt prüfen.
 - [ ] Kein Merge, kein Deployment, keine Vercel-Aufrufe, keine produktiven Supabase-Änderungen, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
+
+## Autopilot: konkurrierende Wunschaktionen und barrierearme Karten (2026-11-10)
+
+- [x] Einzelverschieben und direkte Listenzuordnung verwenden eine kontobezogene Sperre pro Wunsch; zwei gleichzeitige Änderungen am selben Wunsch werden abgewiesen.
+- [x] Sperren werden auch bei Fehlern durch `finally` freigegeben; andere Wünsche bleiben unabhängig bearbeitbar.
+- [x] Sammelzuordnung und Mehrfachverschieben beginnen nicht, solange ein betroffener Wunsch gerade einzeln geändert wird; nach Bestätigung wird erneut geprüft.
+- [x] „Filter zurücksetzen“ aus einem leeren Wunsch-Ergebnis respektiert laufende Sammelaktionen.
+- [x] Wunschkarten erhalten eindeutige zugängliche Beschriftungen für Auswahl, Listenzuordnung, Verschieben und Notizaufklappen; dies hilft besonders bei schmalen mobilen Karten und Screenreadern.
+- [x] Minimale Syntaxprüfung des aktuellen Dashboard-Moduls mittels JavaScript-Parser (ohne Importzeilen) erfolgreich; GitHub-Inhaltsabgleich für Sperren und Beschriftungen erfolgreich.
+- [ ] Keine Browser-/End-to-End- oder produktive Datenbankprüfung ausgeführt. Mehrstufige Operationen bleiben ohne serverseitige Transaktion potenziell partiell.
+- [ ] Release bleibt gesperrt. Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
