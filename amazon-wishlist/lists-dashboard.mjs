@@ -1,12 +1,13 @@
+import {LIST_TEMPLATES,filterListWishes} from './list-features.mjs';
 // Multi-list dashboard. Requires LISTS-SCHEMA-PROPOSAL.sql to be reviewed and applied separately.
 export function mountListsDashboard(db, getUser) {
  const $=id=>document.getElementById(id);
  const root=$('listsDashboard');
- let lists=[],wishes=[],selected=null,loadedOwner=null,loadGeneration=0;
+ let lists=[],wishes=[],selected=null,loadedOwner=null,loadGeneration=0,itemsGeneration=0,assignedIds=new Set();
  const editorSelect=$('wishListSelect');
  function syncEditor(){const previous=editorSelect.value;editorSelect.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Ohne Liste speichern';editorSelect.append(empty);for(const list of lists.filter(x=>!x.archived)){const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title;editorSelect.append(option)}editorSelect.value=lists.some(x=>x.id===previous&&!x.archived)?previous:(lists.find(x=>x.title==='Meine Wünsche'&&!x.archived)?.id||'');editorSelect.disabled=!lists.length;}
  async function assignWish(wishId,listId,uid){if(!listId)return;const {error}=await db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid});if(error)throw error;}
- function reset(){++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;root.hidden=true;$('listsContent').replaceChildren();$('listItems').replaceChildren();syncEditor();}
+ function reset(){++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;assignedIds=new Set();++itemsGeneration;root.hidden=true;$('listsContent').replaceChildren();$('listItems').replaceChildren();syncEditor();}
 
  const msg=t=>{$('listsStatus').textContent=t};
  const button=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{await fn()}catch(e){msg(e.message||'Aktion fehlgeschlagen')}finally{b.disabled=false}};return b};
@@ -18,7 +19,7 @@ export function mountListsDashboard(db, getUser) {
   const id=owner();
   const [lr,wr]=await Promise.all([
    db.from('wishlist_lists').select('id,title,description,icon,color,visibility,archived,created_at').eq('user_id',id).order('created_at',{ascending:false}),
-   db.from('wishlist_wishes').select('id,note,wishlist_products(title)').eq('user_id',id).order('created_at',{ascending:false}).limit(200)
+   db.from('wishlist_wishes').select('id,note,priority,created_at,wishlist_products(title)').eq('user_id',id).order('created_at',{ascending:false}).limit(200)
   ]);
   if(getUser()?.id!==id||generation!==loadGeneration)return;
   if(lr.error){$('listsTotal').textContent='0';$('wishesTotal').textContent='0';lists=[];wishes=[];syncEditor();$('listsContent').replaceChildren();msg('Listenverwaltung vorbereitet. Das Datenbankschema wurde noch nicht freigeschaltet.');return}
@@ -45,23 +46,43 @@ export function mountListsDashboard(db, getUser) {
   }
   showItems().catch(e=>msg(e.message));
  }
- async function showItems(){
-  const area=$('listItems');area.replaceChildren();const list=lists.find(x=>x.id===selected);
-  if(!list){area.textContent='Wähle eine Liste aus.';return}
-  const title=document.createElement('h3');title.textContent='Wünsche in '+list.title;area.append(title);
-  const id=owner();
-  const {data,error}=await db.from('wishlist_list_items').select('wish_id').eq('list_id',list.id).eq('user_id',id);
-  if(error)throw error;if(getUser()?.id!==id||selected!==list.id)return;
-  const ids=new Set(data.map(x=>x.wish_id));
-  for(const wish of wishes){
-   const row=document.createElement('label');row.className='list-item-toggle';
-   const check=document.createElement('input');check.type='checkbox';check.checked=ids.has(wish.id);
-   const label=document.createElement('span');label.textContent=wish.wishlist_products?.title||'Wunsch';
-   check.onchange=async()=>{check.disabled=true;try{const q=check.checked?db.from('wishlist_list_items').insert({list_id:list.id,wish_id:wish.id,user_id:owner()}):db.from('wishlist_list_items').delete().eq('list_id',list.id).eq('wish_id',wish.id).eq('user_id',owner());const {error}=await q;if(error)throw error;msg('Wunschzuordnung gespeichert')}catch(e){check.checked=!check.checked;msg(e.message||'Zuordnung fehlgeschlagen')}finally{check.disabled=false}};
-   row.append(check,label);area.append(row);
+ function renderWishCards(){
+  const cards=$('listWishCards');cards.replaceChildren();
+  const list=lists.find(l=>l.id===selected);
+  if(!list)return;
+  const results=filterListWishes(wishes,{search:$('listWishSearch').value,priority:$('listWishPriority').value,assignment:$('listWishAssignment').value,assignedIds,sort:$('listWishSort').value});
+  $('listWishCount').textContent=results.length+' von '+wishes.length+' Wünschen angezeigt.';
+  if(!results.length){const empty=document.createElement('p');empty.textContent='Keine passenden Wünsche gefunden. Passe deine Filter an oder füge einen Wunsch hinzu.';cards.append(empty)}
+  for(const wish of results){
+   const card=document.createElement('article');card.className='list-wish-card';
+   const title=document.createElement('h4');title.textContent=wish.wishlist_products?.title||'Wunsch';
+   const priority=document.createElement('p');priority.className='wish-priority';priority.textContent=['','Sehr wichtig','Normal','Irgendwann'][wish.priority]||'Priorität '+wish.priority;
+   card.append(title,priority);
+   if(wish.note){const note=document.createElement('p');note.textContent=wish.note;card.append(note)}
+   const row=document.createElement('label');const check=document.createElement('input');check.type='checkbox';check.checked=assignedIds.has(wish.id);
+   const caption=document.createElement('span');caption.textContent='In dieser Liste';
+   check.onchange=async()=>{check.disabled=true;const uid=owner(),wanted=check.checked;try{
+    const query=wanted?db.from('wishlist_list_items').insert({list_id:list.id,wish_id:wish.id,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',list.id).eq('wish_id',wish.id).eq('user_id',uid);
+    const {error}=await query;if(error)throw error;if(getUser()?.id!==uid||selected!==list.id)return;
+    if(wanted)assignedIds.add(wish.id);else assignedIds.delete(wish.id);
+    msg('Wunschzuordnung gespeichert');renderWishCards();
+   }catch(e){check.checked=!wanted;msg(e.message||'Zuordnung fehlgeschlagen')}finally{check.disabled=false}};
+   row.append(check,caption);card.append(row);cards.append(card);
   }
-  if(!wishes.length){const p=document.createElement('p');p.textContent='Noch keine Wünsche. Füge zuerst im Wunsch-Editor einen Wunsch hinzu.';area.append(p)}
  }
+ async function showItems(){
+  const list=lists.find(x=>x.id===selected);const generation=++itemsGeneration;
+  $('listWishCards').replaceChildren();
+  if(!list){$('listWishCount').textContent='Wähle eine Liste aus.';return}
+  const uid=owner();const {data,error}=await db.from('wishlist_list_items').select('wish_id').eq('list_id',list.id).eq('user_id',uid);
+  if(error)throw error;if(getUser()?.id!==uid||selected!==list.id||generation!==itemsGeneration)return;
+  assignedIds=new Set((data||[]).map(x=>x.wish_id));renderWishCards();
+ }
+ for(const id of ['listWishSearch','listWishPriority','listWishAssignment','listWishSort'])$(id).addEventListener('input',renderWishCards);
+ $('listTemplate').onchange=()=>{
+  const template=LIST_TEMPLATES.find(t=>t.id===$('listTemplate').value)||LIST_TEMPLATES.at(-1);
+  $('listTitle').value=template.title;$('listDescription').value=template.description;$('listIcon').value=template.icon;$('listColor').value=template.color;
+ };
  function openEditor(list){
   $('editListId').value=list.id;$('editListTitle').value=list.title;$('editListDescription').value=list.description||'';
   $('editListIcon').value=list.icon;$('editListColor').value=list.color;
