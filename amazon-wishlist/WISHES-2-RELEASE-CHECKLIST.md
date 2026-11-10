@@ -486,3 +486,15 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Gezielte Browser-/Node-Regressionstests und RLS-Negativtests weiterhin vor Freigabe nötig; diese Änderungen wurden nicht als end-to-end getestet markiert.
 - [ ] Mehrfachverschieben bleibt ohne serverseitige Transaktion bei Netzwerk- oder Kontextfehlern potenziell partiell. Kein automatischer Rollback.
 - [ ] Freigabe nicht erteilt; kein Merge, Deployment, Vercel-Aufruf, produktiver Supabase-Eingriff oder kostenpflichtiger Dienst.
+
+## Autopilot: vollständige Duplikate, Kontoisolation und mobile Ladezustände (2026-11-10)
+
+- [x] Beim Wechsel des angemeldeten Kontos wird die bisher ausgewählte Liste vor der neuen Auswahl verworfen; die Liste des vorherigen Kontos wird nicht als aktiver Kontext übernommen.
+- [x] Laufende Sammelaktionen prüfen zusätzlich die Lade-Generation und veröffentlichen keinen Fortschritt aus einem veralteten Reload-Kontext.
+- [x] Listen-Duplikate verwenden die bereits vollständig paginiert geladene Zuordnungsübersicht statt eines unpaginierten Datenbankabrufs, der bei großen Listen nur einen Teil der Wünsche kopieren konnte.
+- [x] Duplizierung schreibt Zuordnungen in Paketen zu maximal 100 und informiert bei Teilfehlern über die bereits kopierte Anzahl; die Originalwünsche bleiben erhalten.
+- [x] Duplizierung bestätigt die Anzahl der zu kopierenden Zuordnungen und prüft vor Beginn und zwischen den Paketen den Benutzer-/Ladekontext.
+- [x] Mobile/kompakte Listenansicht: „Mehr laden“ wird bei fehlender Liste, ausstehender Zuordnung oder Neuladen ausgeblendet; der Listen-Editor wird ohne aktive Listen deaktiviert.
+- [ ] Browser- und Node-Syntax-/Regressionstests weiterhin vor Freigabe erforderlich. Die GitHub-Inhaltsprüfung ist keine Laufzeitprüfung.
+- [ ] Nicht-atomare mehrstufige Operationen (Duplizieren/Verschieben) können bei Netzwerkfehlern Teilergebnisse hinterlassen; keine automatische Rückabwicklung.
+- [ ] Freigabe bleibt gesperrt. Kein Vercel, kein Merge, kein Deployment, keine produktiven Supabase-Änderungen und keine kostenpflichtigen Dienste.
