@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Personalisierbares privates Geschenk-Startdashboard)
+
+- **Neu umgesetzt:** Einstellbare Sichtbarkeit für Kennzahlen, Tagesaufgaben, kommende Anlässe und Aufgabenfortschritt sowie bevorzugte Aufgabensortierung (Dringlichkeit/Priorität/Fälligkeit) und Anlasssortierung (Termin/Titel).
+- **Produktivmigration:** `wishlist_private_gift_home_display_preferences` erstellt `wishlist_gift_home_preferences` mit genau einer Zeile pro Nutzer und abgesicherten Sortierwerten. Bestehende Daten und historische Ereignisse nicht verändert; keine Testdaten.
+- **Sicheres Speichern:** Owner-only RLS für SELECT/INSERT/UPDATE/DELETE, keine anonymen Tabellenrechte. Änderungen werden erst nach Klick auf „Einstellungen sicher speichern“ als nutzergebundenes Upsert gespeichert. Ohne Datensatz gelten sichere Standardwerte.
+- **Frontend:** `amazon-wishlist/index.html` bietet mobile Einstellungsoberfläche; `gift-start.mjs` lädt die eigenen Präferenzen nach Anmeldung und aktualisiert Anzeige und Sortierung nach erfolgreichem Speichern.
+- **Prüfung:** RLS und anonyme Lesesperre für Präferenzen, Aufgaben und Anlässe bestätigt; JavaScript-Syntax geprüft. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Privates Geschenk-Startdashboard)
 
 - **Neu umgesetzt:** Mobilfreundliches, privates Geschenk-Startdashboard direkt auf `amazon-wishlist/index.html` mit eigenem Modul `gift-start.mjs`. Es erscheint nur nach erfolgreicher Supabase-Anmeldung und aktualisiert sich bei Authentifizierungsänderungen.
