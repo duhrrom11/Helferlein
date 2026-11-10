@@ -85,6 +85,8 @@ test('optional authenticated live browser smoke never writes production data',()
  assert.ok(smoke.includes('WISHES_EXISTING_USER_PASSWORD'));
  assert.ok(smoke.includes("locator('#signin').click()"));
  assert.ok(smoke.includes("locator('#logout').click()"));
+ assert.ok(smoke.includes("route.abort('blockedbyclient')"));
+ assert.ok(smoke.includes("if(blockedWrites.length)throw Error"));
  for(const forbidden of ['.from(','.insert(','.update(','.delete(','.upsert(','#signup','#saveWish','#createList']){
   assert.ok(!smoke.includes(forbidden),'Unexpected production write control: '+forbidden);
  }
