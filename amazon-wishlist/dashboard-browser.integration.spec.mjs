@@ -1,19 +1,9 @@
 import {test,expect} from '@playwright/test';
-import {readFile} from 'node:fs/promises';
+import {loadIsolatedWishesPage} from './isolated-browser-fixture.mjs';
 
-// Real dashboard module, isolated in a browser. No network requests or production database.
-const fixture=(await readFile(new URL('./index.html',import.meta.url),'utf8'))
- .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')
- .replace(/<link\b[^>]*>/gi,'');
-const modules=['lists-dashboard.mjs','bulk-helpers.mjs','list-features.mjs'];
+// Real dashboard module, isolated with strict CSP and read-only mock data.
 test.beforeEach(async({page})=>{
- await page.route('https://wishes.test/**',async route=>{
-  const name=new URL(route.request().url()).pathname.slice(1);
-  if(name==='index.html')return route.fulfill({status:200,contentType:'text/html',body:fixture});
-  if(modules.includes(name))return route.fulfill({status:200,contentType:'text/javascript',body:await readFile(new URL('./'+name,import.meta.url),'utf8')});
-  return route.abort();
- });
- await page.goto('https://wishes.test/index.html');
+ await loadIsolatedWishesPage(page,{dashboardModules:true});
  await page.evaluate(async()=>{
   const state={user:{id:'user-a'},fail:false,hold:null,writes:0,reads:[]};
   const lists=[
