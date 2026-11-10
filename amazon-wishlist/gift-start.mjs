@@ -110,11 +110,20 @@ function filterCheckpointRows(){
  if(field&&!checkpointGroups[field]?.some(k=>JSON.stringify(row.settings?.[k])!==JSON.stringify(preferences[k])))return false;
  return true;
  });
- for(const row of rows){const item=el('article','');item.className='home-history-entry';const stamp=new Date(row.created_at).toLocaleString('de-DE');item.append(el('strong','Sicherungspunkt vom '+stamp),el('p',settingsDiff(row.settings,preferences)));
+ for(const row of rows){
+ const item=document.createElement('li');const stamp=new Date(row.created_at).toLocaleString('de-DE');const time=document.createElement('time');time.dateTime=row.created_at;time.textContent=stamp;item.append(time);
+ const layoutName={custom:'Individuell',compact:'Kompakt',daily:'Tagesplanung',overview:'Geschenküberblick'}[row.settings?.active_layout]||'Unbekannt';
+ const tags=el('div','');tags.className='home-timeline-tags';tags.append(el('span','Layout: '+layoutName));const differing=Object.entries(compareFields).filter(([key])=>JSON.stringify(row.settings?.[key])!==JSON.stringify(preferences[key]));tags.append(el('span',differing.length+' Unterschiede zu heute'));item.append(tags);
+ const detail=document.createElement('details');const summary=document.createElement('summary');summary.textContent='Änderungsdetails anzeigen';detail.append(summary);
+ const list=document.createElement('ul');
+ if(!differing.length)list.append(el('li','Entspricht der aktuellen Konfiguration.'));
+ for(const [key,label] of differing){const li=el('li','');li.append(el('strong',label+': '),document.createTextNode(compareValue(key,row.settings?.[key])+' → '+compareValue(key,preferences[key])));list.append(li)}
+ detail.append(list);item.append(detail);
  const valid=safeHistorySettings({new_settings:row.settings});
- if(valid){const button=el('button','Mit aktueller Konfiguration vergleichen');button.type='button';button.addEventListener('click',()=>{if(currentUser!==checkpointOwner)return;renderCheckpointComparison(row);$('homeCheckpointStatus').textContent='Sicherungspunkt #'+row.id+' wird mit der aktuellen Konfiguration verglichen.'});item.append(button)}
+ if(valid){const button=el('button','Mit aktueller Konfiguration vergleichen');button.type='button';button.addEventListener('click',()=>{if(currentUser!==checkpointOwner)return;renderCheckpointComparison(row);$('homeCheckpointStatus').textContent='Sicherungspunkt #'+row.id+' wird mit der aktuellen Konfiguration verglichen. Zur Wiederherstellung die Bestätigung im Vergleich verwenden.'});item.append(button)}
  else item.append(el('p','Dieser Sicherungspunkt enthält keine vollständig gültige Konfiguration.'));
- root.append(item)}
+ root.append(item)
+ }
  if(!rows.length)root.append(el('p','Keine Sicherungspunkte entsprechen den Filtern.'));
  $('homeCheckpointStatus').textContent=rows.length+' von '+checkpointRows.length+' Sicherungspunkten angezeigt (maximal 20 pro Konto). Der Änderungsbereich bezieht sich auf Unterschiede zur aktuellen Konfiguration.';
 }
