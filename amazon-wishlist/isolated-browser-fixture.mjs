@@ -7,7 +7,7 @@ const allowedModules=new Set(['/lists-dashboard.mjs','/bulk-helpers.mjs','/list-
 // many equivalent spellings of script tags. Serve the original fixture under
 // a restrictive CSP and block all unapproved requests instead.
 export async function loadIsolatedWishesPage(page,{dashboardModules=false,htmlOverride=null}={}){
- const html=htmlOverride??await readFile(new URL('./index.html',import.meta.url),'utf8');
+ const html=htmlOverride??await readFile(new URL('./dashboard-test-fixture.html',import.meta.url),'utf8');
  await page.route('**/*',async route=>{
   const url=new URL(route.request().url());
   if(url.origin!==origin)return route.abort();
