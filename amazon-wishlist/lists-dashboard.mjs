@@ -373,7 +373,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
   $('listTitle').value=template.title;$('listDescription').value=template.description;$('listIcon').value=template.icon;$('listColor').value=template.color;
  };
  function openEditor(list){
-  if(bulkBusy||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===list.id&&!l.archived))return;
+  if(bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===list.id&&!l.archived))return;
   $('editListId').value=list.id;$('editListTitle').value=list.title;$('editListDescription').value=list.description||'';
   $('editListIcon').value=list.icon;$('editListColor').value=list.color;
   $('editListForm').hidden=false;$('editListTitle').focus();$('editListForm').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -381,7 +381,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
  $('cancelListEdit').onclick=()=>{$('editListForm').hidden=true;$('editListId').value='';};
  $('editListForm').onsubmit=async event=>{
   event.preventDefault();const id=owner(),generation=loadGeneration,listId=$('editListId').value;
-  if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');if(id!==loadedOwner)return;if(!lists.some(l=>l.id===listId&&!l.archived))return msg('Bitte eine aktive Liste bearbeiten.');
+  if(bulkBusy||activeWishMutations.size)return msg('Bitte laufende Wunschänderungen zuerst abschließen.');if(!membershipReady||id!==loadedOwner)return;if(!lists.some(l=>l.id===listId&&!l.archived))return msg('Bitte eine aktive Liste bearbeiten.');
   const title=$('editListTitle').value.trim(),description=$('editListDescription').value.trim();
   if(!title||title.length>80||description.length>500)return msg('Bitte gültigen Namen und Beschreibung eingeben.');
   const save=$('saveListChanges');save.disabled=true;
@@ -396,7 +396,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
  $('quickNewList').onclick=()=>{$('listTitle').focus();$('listTitle').scrollIntoView({behavior:'smooth',block:'center'})};
  $('quickAddWish').onclick=()=>{$('editor').scrollIntoView({behavior:'smooth',block:'start'});$('url').focus()};
  $('quickOpenSelected').onclick=()=>{if(!selected||!lists.some(l=>l.id===selected&&!l.archived))return msg('Bitte zuerst eine aktive Liste öffnen.');$('listItems').scrollIntoView({behavior:'smooth',block:'start'})};
- $('createList').onclick=async()=>{if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');const id=owner(),generation=loadGeneration;const title=$('listTitle').value.trim();if(!title||title.length>80){msg('Listenname muss 1 bis 80 Zeichen enthalten.');return}const payload={user_id:id,title,description:$('listDescription').value.trim().slice(0,500),icon:$('listIcon').value,color:$('listColor').value,visibility:$('listVisibility').value};$('createList').disabled=true;try{const {error}=await db.from('wishlist_lists').insert(payload);if(error)throw error;if(getUser()?.id!==id||generation!==loadGeneration)return;$('listTitle').value='';$('listDescription').value='';await load()}catch(e){if(getUser()?.id===id&&generation===loadGeneration)msg(e.message||'Liste konnte nicht angelegt werden')}finally{$('createList').disabled=false}};
+ $('createList').onclick=async()=>{if(bulkBusy||activeWishMutations.size)return msg('Bitte laufende Wunschänderungen zuerst abschließen.');const id=owner(),generation=loadGeneration;const title=$('listTitle').value.trim();if(!title||title.length>80){msg('Listenname muss 1 bis 80 Zeichen enthalten.');return}const payload={user_id:id,title,description:$('listDescription').value.trim().slice(0,500),icon:$('listIcon').value,color:$('listColor').value,visibility:$('listVisibility').value};$('createList').disabled=true;try{const {error}=await db.from('wishlist_lists').insert(payload);if(error)throw error;if(getUser()?.id!==id||generation!==loadGeneration)return;$('listTitle').value='';$('listDescription').value='';await load()}catch(e){if(getUser()?.id===id&&generation===loadGeneration)msg(e.message||'Liste konnte nicht angelegt werden')}finally{$('createList').disabled=false}};
  $('refreshLists').onclick=()=>load().catch(e=>msg(e.message));
  return {refresh:()=>load().catch(e=>msg(e.message)),reset,assignWish,selectedList:()=>loadedOwner===getUser()?.id?editorSelect.value:''};
 }
