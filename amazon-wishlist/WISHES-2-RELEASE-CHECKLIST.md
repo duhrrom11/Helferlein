@@ -181,3 +181,16 @@
 - [ ] Verifiziertes npm-Lockfile mit echten Registry-Integritätsdaten erstellen
 
 **Grenzen:** Die Tests verwenden Mock-Clients und einen isolierten JavaScript-Runner, keinen vollständigen DOM-/Browser-Test des Dashboards. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
+
+## Vollständige Zustandsbereinigung und Listenwechsel (2026-11-10)
+
+- [x] Nachgewiesene Schwachstelle behoben: Ein Reload ließ zuvor alte Mitgliedschafts-/Auswahlzustände und Wunschkarten bestehen, obwohl `membershipReady=false` war. `invalidateMembershipState()` bereinigt nun Zuordnungen, Zähler, Auswahl, Bulk-Ergebnis/-Bestätigung und Wunschkarten bereits beim Start
+- [x] Bei Listenwechsel während laufender Mitgliedschaftsabfrage werden alte Wunschkarten und die alte `assignedIds`-Auswahl zurückgesetzt
+- [x] Reine Funktion `membershipForSelectedList` gibt nur bei abgeschlossenem Mitgliedschaftssnapshot Listenzuordnungen zurück
+- [x] Drei neue Regressionstests: Listenwechsel während Reload, fehlgeschlagene zweite Mitgliedschaftsseite und erfolgreiche Aktualisierung für eine andere Liste
+- [x] **44/44 Branch-Logiktests** im isolierten JavaScript-Runner tatsächlich ausgeführt, 0 Fehler
+- [ ] Vollständige native Node-`--test`-Suite auf lokalem Feature-Checkout
+- [ ] Neun Playwright-Browserfälle und echte DOM-Interaktion mit Mock-Supabase
+- [ ] Verifiziertes npm-`package-lock.json` aus erreichbarer Registry
+
+**Abgrenzung:** Die drei neuen Tests prüfen die tatsächlich verwendete reine Listenzuordnungslogik mit simulierten Mitgliedschaftsantworten. Die vollständige Dashboard-DOM-Zustandsbereinigung wurde durch Quellcodeprüfung und JavaScript-Syntaxprüfung, aber noch nicht durch Browser-End-to-End-Tests verifiziert. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
