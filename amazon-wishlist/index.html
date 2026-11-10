@@ -696,7 +696,7 @@ main{padding-inline:12px}
   for(const item of sections){if(item===current)item.link.setAttribute('aria-current','location');else item.link.removeAttribute('aria-current')}
  }
  function schedule(){if(!ticking){ticking=true;requestAnimationFrame(update)}}
- top.addEventListener('click',()=>{window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});top.blur()});
+ top.addEventListener('click',()=>{const main=document.getElementById('main-content');if(main){main.tabIndex=-1;main.focus({preventScroll:true})}window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'})});
  addEventListener('scroll',schedule,{passive:true});addEventListener('resize',schedule);addEventListener('hashchange',schedule);
  for(const group of document.querySelectorAll('.wishlist-hub-group'))group.addEventListener('click',event=>{if(event.target.closest('a'))group.open=false});
  schedule();
