@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,bulkControlsEnabled,currentDashboardLoad} from './bulk-helpers.mjs';
+import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,bulkControlsEnabled,currentDashboardLoad,fetchDashboardBase} from './bulk-helpers.mjs';
 import {filterListWishes} from './list-features.mjs';
 
 const items=[
@@ -93,4 +93,68 @@ test('regression: rejected initial read may show error only for active load',asy
  status='loading';currentUser='user-b';generation=2;
  await load();
  assert.equal(status,'loading');
+});
+
+function mockSupabaseReads({lists=[{id:'list-1'}],wishes=[{id:'wish-1'}],failTable=null,wait=null}={}){
+ const reads=[],writes=[];
+ const client={
+  from(table){
+   const query={table,filters:[],sorts:[],rangeValue:null,
+    select(columns){this.columns=columns;return this},
+    eq(field,value){this.filters.push([field,value]);return this},
+    order(field,options){this.sorts.push([field,options]);return this},
+    range(from,to){this.rangeValue=[from,to];return this},
+    then(resolve,reject){return Promise.resolve().then(async()=>{
+     reads.push({table,columns:this.columns,filters:this.filters,sorts:this.sorts,range:this.rangeValue});
+     if(wait)await wait;
+     if(failTable===table)throw Error('mock read failed');
+     return {data:table==='wishlist_lists'?lists:wishes,error:null};
+    }).then(resolve,reject)}
+   };
+   return query;
+  }
+ };
+ return {client,reads,writes};
+}
+test('dashboard integration: injected Supabase client reads both tables for the current account without writes',async()=>{
+ const db=mockSupabaseReads();
+ const snapshot=await fetchDashboardBase(db.client,'user-a');
+ assert.deepEqual(snapshot.lists.data,[{id:'list-1'}]);
+ assert.deepEqual(snapshot.wishes.data,[{id:'wish-1'}]);
+ assert.deepEqual(db.reads.map(x=>x.table).sort(),['wishlist_lists','wishlist_wishes']);
+ assert.equal(db.reads.every(x=>x.filters.some(([k,v])=>k==='user_id'&&v==='user-a')),true);
+ assert.deepEqual(db.reads.find(x=>x.table==='wishlist_wishes').range,[0,999]);
+ assert.equal(db.writes.length,0);
+});
+test('dashboard integration: rejected Supabase read surfaces error and leaves bulk controls locked',async()=>{
+ const db=mockSupabaseReads({failTable:'wishlist_wishes'});
+ let membershipReady=false,bulkBusy=false,status='loading';
+ try{await fetchDashboardBase(db.client,'user-a')}catch(e){status='error';assert.match(e.message,/mock read failed/)}
+ assert.equal(status,'error');
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy}),false);
+ assert.equal(db.writes.length,0);
+});
+test('dashboard integration: account switch during delayed reload cannot publish stale snapshot',async()=>{
+ let release;const wait=new Promise(resolve=>{release=resolve});
+ const db=mockSupabaseReads({wait});
+ let userId='user-a',generation=1,published='none';
+ const pending=fetchDashboardBase(db.client,userId).then(snapshot=>{
+  if(currentDashboardLoad({requestedUserId:'user-a',currentUserId:userId,requestedGeneration:1,currentGeneration:generation}))published=snapshot.wishes.data[0].id;
+ });
+ userId='user-b';generation=2;
+ release();await pending;
+ assert.equal(published,'none');
+ assert.equal(db.writes.length,0);
+});
+test('dashboard integration: reload immediately locks bulk controls before new snapshot',async()=>{
+ let release;const wait=new Promise(resolve=>{release=resolve});
+ const db=mockSupabaseReads({wait});
+ let membershipReady=true,bulkBusy=false;
+ membershipReady=false;
+ const pending=fetchDashboardBase(db.client,'user-a');
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy}),false);
+ release();await pending;
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy}),false);
+ membershipReady=true;
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy}),true);
 });
