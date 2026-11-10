@@ -972,6 +972,6 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] URL-Parser prüft ASCII-Steuerzeichen jetzt **vor** `trim()`, damit nachgestellte Newlines/Tabs nicht verschwinden und ungültige URLs nicht versehentlich akzeptiert werden.
 - [x] GitHub Actions Lauf 42824778203 auf Commit `355d92da` ist **success** (inklusive Node-Tests und Syntaxprüfungen).
 - [x] CI gibt individuelle Test-Suite-Ergebnisse aus und führt anschließend einen verpflichtenden vollständigen Node-Testlauf durch.
-- [ ] CI des letzten Workflow-Commits `c0619732` separat bestätigen.
+- [x] CI des Workflow-Commits `c0619732` separat bestätigt: GitHub Actions Lauf 42824800184 **success**.
 - [ ] Pull Request #166 ist aktuell `mergeable=false` / `mergeable_state=dirty`: Konflikte mit `main` müssen vor einem Merge aufgelöst und erneut getestet werden.
 - [ ] Browser-/Mobilgeräteabnahme und Deployment-Ziel/Build-Konfiguration vor Produktionsfreigabe prüfen. Kein Merge, kein Deployment, keine produktive Datenbankmigration durchgeführt.
