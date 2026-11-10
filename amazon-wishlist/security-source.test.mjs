@@ -81,9 +81,11 @@ test('auth lifecycle refreshes private dashboard before profile requests and on 
 
 test('optional authenticated live browser smoke never writes production data',()=>{
  const smoke=readFileSync(new URL('./authenticated-live-smoke.mjs',import.meta.url),'utf8');
- assert.match(smoke,/WISHES_EXISTING_USER_EMAIL/);
- assert.match(smoke,/WISHES_EXISTING_USER_PASSWORD/);
- assert.match(smoke,/\\.locator\\('#signin'\\)\\.click\\(\\)/);
- assert.match(smoke,/\\.locator\\('#logout'\\)\\.click\\(\\)/);
- assert.doesNotMatch(smoke,/\\.from\\(|\\.insert\\(|\\.update\\(|\\.delete\\(|\\.upsert\\(|#signup|#saveWish|#createList/);
+ assert.ok(smoke.includes('WISHES_EXISTING_USER_EMAIL'));
+ assert.ok(smoke.includes('WISHES_EXISTING_USER_PASSWORD'));
+ assert.ok(smoke.includes("locator('#signin').click()"));
+ assert.ok(smoke.includes("locator('#logout').click()"));
+ for(const forbidden of ['.from(','.insert(','.update(','.delete(','.upsert(','#signup','#saveWish','#createList']){
+  assert.ok(!smoke.includes(forbidden),'Unexpected production write control: '+forbidden);
+ }
 });
