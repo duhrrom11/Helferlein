@@ -642,8 +642,7 @@ main{padding-inline:12px}
   template.closest('label').before(heading);
   heading.append(template.closest('label'),hint,create);
   const open=()=>{heading.open=true};
-  document.getElementById('homeNewList')?.addEventListener('click',open,true);
-  document.getElementById('createList')?.addEventListener('click',open,true);
+  for(const id of ['homeNewList','quickNewList','createList'])document.getElementById(id)?.addEventListener('click',open,true);
  }
  const recent=document.getElementById('homeRecentContent');
  const recentHeading=recent?.previousElementSibling;
@@ -657,6 +656,17 @@ main{padding-inline:12px}
   const details=document.createElement('details');details.className='wishlist-mobile-optional';details.id='mobileGiftExtra';
   const summary=document.createElement('summary');summary.textContent='Weitere Optionen: Drucken & Teilen';details.append(summary);
   actions.before(details);details.append(actions);
+ }
+ /* Desktop zeigt alle Inhalte; Smartphones behalten ihre selbstgewählten Klappzustände. */
+ const media=matchMedia('(min-width:760px)');
+ for(const details of document.querySelectorAll('#mobileListCreation,#mobileRecentLists,#mobileGiftExtra')){
+  let mobileOpen=false;
+  details.querySelector('summary')?.addEventListener('click',()=>{
+   if(!media.matches)mobileOpen=!details.open;
+  });
+  const adapt=()=>{details.open=media.matches||mobileOpen};
+  media.addEventListener?.('change',adapt);
+  adapt();
  }
 })();
 </script><script>
