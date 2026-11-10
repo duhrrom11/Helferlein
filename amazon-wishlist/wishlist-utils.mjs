@@ -163,7 +163,8 @@ export function exportWishlistJson(rows, publicProfile=null) {
  const wishes=rows.map(row=>{
   const product=row?.wishlist_products;
   if(!product||product.marketplace!=='amazon.de'||!/^[A-Z0-9]{10}$/.test(product.asin))throw Error('Ungültiger Exportdatensatz');
-  return {asin:product.asin,amazon_url:'https://www.amazon.de/dp/'+product.asin,title:String(product.title??''),note:String(row.note??''),priority:validatePriority(row.priority),created_at:String(row.created_at??'')};
+  const {title,note}=validateWishFields(product.title,row.note);
+  return {asin:product.asin,amazon_url:'https://www.amazon.de/dp/'+product.asin,title,note,priority:validatePriority(row.priority),created_at:String(row.created_at??'')};
  });
  const handle=requestedProfileHandle(publicProfile?.handle);
  return JSON.stringify({format:'helferlein-wishlist-backup',version:1,exported_at:new Date().toISOString(),profile:handle?{handle,display_name:String(publicProfile.display_name??''),bio:String(publicProfile.bio??'')}:null,wishes},null,2)+'\n';
