@@ -11,6 +11,13 @@ async function load(){
  const url=new URL('./index.html',location.href);url.searchParams.set('profile',profile.handle);$('wishes').href=url.href;
  const {data:lists,error:listsError}=await db.from('wishlist_lists').select('id,title,description,icon,color,cover_url').eq('user_id',profile.user_id).eq('visibility','public').eq('archived',false).order('created_at',{ascending:false}).limit(48);
  if(listsError)throw listsError;
+ const stats=await Promise.all([
+  db.from('wishlist_follows').select('follower_id',{count:'exact',head:true}).eq('followed_id',profile.user_id),
+  db.from('wishlist_follows').select('followed_id',{count:'exact',head:true}).eq('follower_id',profile.user_id)
+ ]);
+ $('statFollowers').textContent=stats[0].error?'–':String(stats[0].count??0);
+ $('statFollowing').textContent=stats[1].error?'–':String(stats[1].count??0);
+ $('statCollections').textContent=(lists||[]).length===48?'48+':String((lists||[]).length);
  const grid=$('grid');grid.replaceChildren();
  for(const list of lists||[]){
   const card=document.createElement('article');card.className='card';
