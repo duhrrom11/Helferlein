@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint} from './bulk-helpers.mjs';
+import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages} from './bulk-helpers.mjs';
 import {filterListWishes} from './list-features.mjs';
 
 const items=[
@@ -42,4 +42,18 @@ test('sort order by priority, title and oldest is stable',()=>{
  assert.deepEqual(filterListWishes(items,{sort:'priority'}).map(x=>x.id),['a','b','c']);
  assert.deepEqual(filterListWishes(items,{sort:'title-desc'}).map(x=>x.id),['c','b','a']);
  assert.deepEqual(filterListWishes(items,{sort:'oldest'}).map(x=>x.id),['a','c','b']);
+});
+
+test('pagination loads all pages in order',async()=>{
+ const pages=[[1,2],[3,4],[5]],calls=[];
+ const result=await fetchAllPages(async(from,to)=>{calls.push([from,to]);return {data:pages[calls.length-1]}},{pageSize:2});
+ assert.deepEqual(result,[1,2,3,4,5]);assert.deepEqual(calls,[[0,1],[2,3],[4,5]]);
+});
+test('pagination propagates load errors without returning partial data',async()=>{
+ await assert.rejects(()=>fetchAllPages(async()=>({error:new Error('network')})),/network/);
+});
+test('pagination ignores stale responses after account switch',async()=>{
+ let current=true;
+ const result=await fetchAllPages(async()=>{current=false;return {data:[1]}},{isCurrent:()=>current});
+ assert.equal(result,null);
 });
