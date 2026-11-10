@@ -55,3 +55,26 @@ Eine Supabase-basierte verschlüsselte Sicherung ist implementiert; ein realer W
 
 ## Betriebsregel
 Keine produktiven Datenbankänderungen, keine Testdaten in Produktivsystemen, keine stillschweigende Migration von Schlüsseln oder bestehenden Tresoren. Bis P0 abgeschlossen ist: keine Passwörter, PINs oder sonstige hochsensible Geheimnisse im Nachlass speichern. GitHub-Commit und Vercel-Build sind **kein** Sicherheitsfreigabenachweis.
+
+## Architekturentscheidung: Freigabe nicht mit Client-Uhr oder Erben-Link verwechseln
+
+**Ist-Zustand:** Der Haupt-Tresor generiert einen vollständigen Erben-Link einschließlich `#key=`. Das Erben-Portal lädt den verschlüsselten Tresor und entscheidet erst anschließend im Browser, ob die Frist abgelaufen ist. Ein vorzeitig verteiltes Schlüsselmaterial kann nicht durch eine UI-Sperre zurückgerufen werden.
+
+**Zielzustand (noch nicht implementiert):**
+1. Der Inhaber verschlüsselt Nachlassdaten mit einem zufälligen Datenverschlüsselungsschlüssel (DEK).
+2. Eine separate Erben-Schlüsselhülle wird mit einem für Erben bestimmten Freigabemechanismus gesichert. Der vollständige DEK darf vor Freigabe nicht im Erben-Link liegen.
+3. Eine serverseitige, authentisierte Freigabe-Instanz entscheidet auf Grundlage einer vertrauenswürdigen Serverzeit und widerrufbarer Kontaktberechtigungen. Vor Freigabe wird kein entschlüsselbares Erben-Schlüsselmaterial geliefert.
+4. Inhaber können Alarme stoppen und Empfänger widerrufen; Widerruf bereits offengelegter Schlüssel ist nur durch Schlüsselrotation möglich.
+5. Nach Freigabe wird ausschließlich das notwendige verschlüsselte Material ausgeliefert. Der Server soll keine Klartext-Nachlassinhalte erhalten.
+6. Bestehende Links bleiben bis zu einer ausdrücklich bestätigten Migration im Altformat; sie sind nicht durch diese Zielarchitektur geschützt.
+
+**Prüfpunkte vor Umsetzung:** Firestore-Regeln, Auth-Identitäten, Datenmodell und Backups; Recovery ohne altes Gerät; Alarmzustandsautomat; KDF-/Krypto-Review; Widerrufssemantik; Rollback; Browser-E2E. Ohne verifizierte Cloud-Regeln keine Freigabe des neuen Erben-Workflows.
+
+## Sicherheitsverbesserung der bestehenden Oberfläche (2026-11-10)
+
+- Die sichtbare Kontaktliste druckt den vollständigen geheimen Erben-Link nicht mehr als Text aus. **Rest-Risiko:** Der Link ist für Kopieren und E-Mail weiterhin in DOM-Attributen enthalten und kann von Skripten im selben Browser-Kontext gelesen werden. Dies ist keine Schlüsselisolierung.
+- Die Zwischenablage meldet Erfolg erst nach bestätigtem `writeText`-Aufruf; Fehler werden sichtbar.
+- Besitzer- und Erben-Portal lehnen AES-Schlüssel mit falschem Format ab, bevor sie Bytes importieren.
+- Die eigentliche Freigabelogik, Cloud-Zugriffsregeln und Altlink-Migration sind **weiterhin offen**.
+
+**Nächster verbindlicher Schritt:** Firebase-Regeln und serverseitiges Freigabemodell prüfen, anschließend eine isolierte Migration mit nachweisbarer Wiederherstellung entwerfen. Keine produktiven Datensätze oder Schlüssel automatisch umschreiben.
