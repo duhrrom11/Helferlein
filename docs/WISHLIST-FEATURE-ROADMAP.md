@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Privater Vergleich historischer Dashboard-Einstellungen)
+
+- **Neu umgesetzt:** Zwei gespeicherte historische Dashboard-Konfigurationen lassen sich aus den letzten 30 Verlaufseinträgen auswählen und in einer mobil horizontal scrollbar dargestellten Tabelle vergleichen.
+- **Nachvollziehbare Unterschiede:** Alle zwölf Dashboard-Einstellungsfelder werden nebeneinander gezeigt; abweichende Zeilen hervorgehoben und gezählt. Gespeicherte Vorlagen werden einschließlich ihrer enthaltenen Einstellungen lesbar aufgeschlüsselt.
+- **Wiederherstellung:** Jede vollständig gültige ausgewählte Version kann nach ausdrücklicher Bestätigung wiederhergestellt werden. Dies verwendet die vorhandene owner-geschützte Einstellungstabelle und erzeugt über den bestehenden Trigger einen neuen historischen Eintrag.
+- **Sicherheit und Datenbestand:** Keine Migration und keine Testdaten. Owner-only RLS beider Tabellen erneut geprüft, Historie ohne direkte INSERT/UPDATE/DELETE-Rechte, anon ohne Leserechte. Geschenkaufgaben, Anlässe und historische Produktivdaten unverändert.
+- **Prüfung:** JavaScript-Syntax geprüft. Ein Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Privater Dashboard-Einstellungsverlauf)
 
 - **Neu umgesetzt:** Eigentümergefilterter Einstellungsverlauf mit Zeitstempel, tatsächlich geänderten Konfigurationsfeldern und explizit bestätigter Wiederherstellung früherer vollständiger Konfigurationen.
