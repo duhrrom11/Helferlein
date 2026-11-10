@@ -98,3 +98,21 @@ test('CFRG base vector: independently derived KEM and key-schedule checkpoints',
  assert.equal(labeledExpand(suite,secret,'key',ks,32).toString('hex'),'f50b0609186798729ed0564b36ef2ef8044f1f9d05636874d1f46c819c7a669f');
  assert.equal(labeledExpand(suite,secret,'base_nonce',ks,12).toString('hex'),'151d9929e2449747889bc923');
 });
+
+test('CFRG JSON encryption[1] verifies sequence-one nonce and ciphertext independently',()=>{
+ // Pinned CFRG test-vectors.json, entry mode=0/kem_id=32/kdf_id=1/aead_id=2,
+ // encryptions[1]. This is a second encryption in the SAME suite vector,
+ // not an independent KEM setup or supported offline open() operation.
+ const {createDecipheriv}=require('node:crypto');
+ const hex=s=>Buffer.from(s,'hex');
+ const key=hex('f50b0609186798729ed0564b36ef2ef8044f1f9d05636874d1f46c819c7a669f');
+ const baseNonce=hex('151d9929e2449747889bc923');
+ const nonce=Buffer.from(baseNonce);nonce[11]^=1;
+ assert.equal(nonce.toString('hex'),'151d9929e2449747889bc922');
+ const ct=hex('2c43aff25343fdbff864506f0818b9d87df84ea01b1a2144d23b4d40c26bf655fdf197fe40297a8aebeed5cc2d');
+ const aad=hex('436f756e742d31');
+ const decipher=createDecipheriv('aes-256-gcm',key,nonce);
+ decipher.setAAD(aad);decipher.setAuthTag(ct.subarray(-16));
+ const pt=Buffer.concat([decipher.update(ct.subarray(0,-16)),decipher.final()]);
+ assert.equal(pt.toString('hex'),'4265617574792069732074727574682c20747275746820626561757479');
+});
