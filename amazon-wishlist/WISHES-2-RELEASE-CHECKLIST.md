@@ -279,3 +279,16 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Vor Freigabe: realen Ablauf von Mehrfachverschieben einschließlich Teilfehler und Kontowechsel manuell abnehmen; bei Bedarf serverseitig atomare Operation in einem gesondert freizugebenden Datenbankschritt entwickeln.
 
 **Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.**
+
+## Produktentwicklung: Wunschdetails, Schnellaktionen und Mobilansicht (2026-11-10)
+
+- [x] Wunschdetails zeigen alle zugeordneten Listen als anklickbare Direktzugriffe; beim Öffnen einer Liste wird der Wunsch über die Titelsuche hervorgehoben/gefiltert.
+- [x] Aus Wunschdetails direkt zur zugeordneten Liste springen und Wünsche für Sammelaktionen auswählen bzw. abwählen.
+- [x] Listenfilter per eigener Schaltfläche vollständig zurücksetzen (Suchbegriff, Listenansicht, Sortierung).
+- [x] Detaildialog mobil optimiert: begrenzte Viewportgröße, scrollbar, breitere Touch-Schaltflächen.
+- [x] Funktionsfehler behoben: Einzelzuordnung über Checkbox auf archivierten Listen jetzt sowohl im deaktivierten Zustand als auch im Eventhandler blockiert.
+- [x] Unumgängliche Minimalprüfung: aktualisiertes Dashboard-JavaScript syntaktisch geprüft.
+- [ ] Browser-/Nutzerabnahme der neuen Schnellaktionen und Detailansicht vor Freigabe offen. Die Suche nach Titel kann bei identischen Titeln mehrere Treffer zeigen.
+- [ ] Weiterhin kein vollständiger Produktions-Freigabenachweis.
+
+**Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
