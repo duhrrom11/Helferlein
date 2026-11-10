@@ -267,3 +267,15 @@ Auf Nutzerwunsch künftig **primär sichtbare Funktionen, Bedienbarkeit und real
 - [ ] Produktseitige Abnahme der Verschiebefunktion mit realistischen Berechtigungen und Fehlerfällen vor Freigabe nötig; **kein** produktiver Datenbanktest durchgeführt.
 
 Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
+
+## Produktfunktionen: Mehrfachverschieben, Listenorganisation und Mobilbedienung (2026-11-10)
+
+- [x] Mehrfachverschieben: Zielauswahl und „Ausgewählte verschieben“ in der Sammelwerkzeugleiste; nur bereits zur aktuellen aktiven Liste zugeordnete Wünsche werden berücksichtigt.
+- [x] Bestätigung vor Änderungen, sequenzielle Zielzuordnung vor Quellentfernung, Fortschrittsanzeige und Stoppen nach laufendem Wunsch. Bereits in der Zielliste vorhandene Wünsche werden dort nicht doppelt eingefügt.
+- [x] Teilfehler werden in der Statusmeldung kenntlich gemacht; Wunschdatensätze selbst werden nicht gelöscht. **Wichtig: keine atomare Transaktion**; bei Quell-Löschfehler oder unterbrochenem Kontext können Zuordnungen in beiden Listen bestehen bleiben.
+- [x] Mobilansicht: breite Bedienelemente für Einzel- und Mehrfachverschieben, bessere Zeilenumbrüche und Touch-Ziele für Listenaktionen.
+- [x] Listen nach Anzahl zugeordneter Wünsche auf- oder absteigend sortieren.
+- [x] Minimalprüfung: JavaScript-Syntax bei beiden Dashboard-Änderungen erfolgreich geprüft; keine umfassenden Tests oder produktiven Datenbankzugriffe.
+- [ ] Vor Freigabe: realen Ablauf von Mehrfachverschieben einschließlich Teilfehler und Kontowechsel manuell abnehmen; bei Bedarf serverseitig atomare Operation in einem gesondert freizugebenden Datenbankschritt entwickeln.
+
+**Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.**
