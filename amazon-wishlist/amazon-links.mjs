@@ -5,7 +5,7 @@ export function parseAmazonUrl(input) {
   let url;
   try { url = new URL(input.trim()); } catch { return null; }
   if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
-  const host = url.hostname.toLowerCase().replace(/^www\./,'').replace(/^smile\./,'');
+  const host = url.hostname.toLowerCase().replace(/^www\./,'').replace(/^smile\./,'').replace(/^m\./,'');
   if (!MARKETS.has(host) || url.username || url.password || url.port) return null;
   const match = url.pathname.match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})(?:[/?]|$)/i);
   if (!match) return null;
