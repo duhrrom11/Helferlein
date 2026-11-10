@@ -28,20 +28,24 @@ export function mountListsDashboard(db, getUser) {
  async function assignWish(wishId,listId,uid){if(!listId)return;const {error}=await db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid});if(error)throw error;}
  function reset(){++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;favoriteIds=new Set();recentIds=[];listCounts=new Map();assignedTotal=0;wishCategories={};wishMarkers={};detailWishId=null;$('wishDetailDialog').close();assignedIds=new Set();membershipByList=new Map();membershipReady=false;bulkIds.clear();allAssignedIds=new Set();bulkBusy=false;pendingBulk=null;lastBulkResult=null;bulkHistory=[];$('bulkResultPanel').hidden=true;$('bulkProgressPanel').hidden=true;renderBulkHistory();bulkStopRequested=true;++bulkRunId;visibleLimit=100;$('bulkConfirmDialog').close();++itemsGeneration;root.hidden=true;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';$('homeFavoritesContent').replaceChildren();$('homeRecentContent').replaceChildren();renderProgress();syncEditor();}
 
+ function invalidateMembershipState(){
+  membershipReady=false;membershipByList=new Map();assignedIds=new Set();allAssignedIds=new Set();listCounts=new Map();assignedTotal=0;bulkIds.clear();pendingBulk=null;lastBulkResult=null;
+  $('bulkResultPanel').hidden=true;$('bulkConfirmDialog').close();$('listWishCards').replaceChildren();$('listWishCount').textContent='';updateBulkToolbar([]);renderProgress();
+ }
  const msg=t=>{$('listsStatus').textContent=t};
  const button=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{await fn()}catch(e){msg(e.message||'Aktion fehlgeschlagen')}finally{b.disabled=false}};return b};
  const owner=()=>{const u=getUser();if(!u)throw Error('Bitte anmelden');return u.id};
  async function load(){
   if(!getUser()){reset();return}
   const generation=++loadGeneration;
-  membershipReady=false;root.hidden=false;updateBulkToolbar([]);setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
+  invalidateMembershipState();root.hidden=false;setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
   const id=owner();
   let lr,wr;
   try{({lists:lr,wishes:wr}=await fetchDashboardBase(db,id));
   }catch(e){if(!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;setItemsFeedback('error','Listen oder Wünsche konnten nicht geladen werden. Bitte erneut versuchen.');throw e}
   if(!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;
-  if(lr.error){membershipReady=false;membershipByList=new Map();setItemsFeedback('error','Listen konnten nicht geladen werden. Das erforderliche Listen-Schema ist möglicherweise noch nicht aktiviert.');allAssignedIds=new Set();bulkIds.clear();renderUnassigned();listCounts=new Map();assignedTotal=0;renderProgress();$('listsTotal').textContent='0';$('wishesTotal').textContent='0';lists=[];wishes=[];syncEditor();$('listsContent').replaceChildren();msg('Listenverwaltung vorbereitet. Das Datenbankschema wurde noch nicht freigeschaltet.');return}
-  if(wr.error){setItemsFeedback('error','Wünsche konnten nicht geladen werden. Bitte erneut versuchen.');throw wr.error}
+  if(lr.error){invalidateMembershipState();setItemsFeedback('error','Listen konnten nicht geladen werden. Das erforderliche Listen-Schema ist möglicherweise noch nicht aktiviert.');allAssignedIds=new Set();bulkIds.clear();renderUnassigned();listCounts=new Map();assignedTotal=0;renderProgress();$('listsTotal').textContent='0';$('wishesTotal').textContent='0';lists=[];wishes=[];syncEditor();$('listsContent').replaceChildren();msg('Listenverwaltung vorbereitet. Das Datenbankschema wurde noch nicht freigeschaltet.');return}
+  if(wr.error){invalidateMembershipState();setItemsFeedback('error','Wünsche konnten nicht geladen werden. Bitte erneut versuchen.');throw wr.error}
   let allWishes;
   try{
    const additional=wr.data?.length===1000?await fetchAllPages((from,to)=>db.from('wishlist_wishes').select('id,note,priority,created_at,wishlist_products(title)').eq('user_id',id).order('created_at',{ascending:false}).order('id',{ascending:false}).range(from+1000,to+1000),{isCurrent:()=>getUser()?.id===id&&generation===loadGeneration}):[];
@@ -52,7 +56,7 @@ export function mountListsDashboard(db, getUser) {
   if(loadedOwner!==id){bulkIds.clear();bulkHistory=[];renderBulkHistory();lastBulkResult=null;$('bulkResultPanel').hidden=true;visibleLimit=100;favoriteIds=readFavorites(id);recentIds=readRecent(id);wishCategories=readCategories(id);wishMarkers=readMarkers(id)}loadedOwner=id;lists=lr.data||[];wishes=allWishes;favoriteIds=new Set([...favoriteIds].filter(x=>lists.some(l=>l.id===x)));recentIds=recentIds.filter(x=>lists.some(l=>l.id===x));syncEditor();if(!lists.some(x=>x.id===selected)){selected=lists[0]?.id||null;lastBulkResult=null;$('bulkResultPanel').hidden=true;}
   let membershipRows;
   try{membershipRows=await fetchDashboardMembership(db,id,{isCurrent:()=>getUser()?.id===id&&generation===loadGeneration})}
-  catch(e){if(!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;membershipReady=false;setItemsFeedback('error','Listenzuordnungen konnten nicht vollständig geladen werden. Bitte erneut versuchen.');throw e}
+  catch(e){if(!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;invalidateMembershipState();setItemsFeedback('error','Listenzuordnungen konnten nicht vollständig geladen werden. Bitte erneut versuchen.');throw e}
   if(membershipRows===null||!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;
   membershipByList=new Map();for(const item of membershipRows){if(!membershipByList.has(item.list_id))membershipByList.set(item.list_id,new Set());membershipByList.get(item.list_id).add(item.wish_id)}membershipReady=true;listCounts=new Map();const unique=new Set();const known=new Set(wishes.map(w=>w.id));for(const item of membershipRows){listCounts.set(item.list_id,(listCounts.get(item.list_id)||0)+1);if(known.has(item.wish_id))unique.add(item.wish_id)}assignedTotal=unique.size;allAssignedIds=unique;renderUnassigned();renderProgress();renderRecent();setItemsFeedback('ready','');msg(lists.length+' Listen · '+wishes.length+' geladene Wünsche');$('listsTotal').textContent=String(lists.length);$('wishesTotal').textContent=String(wishes.length);render();
  }
@@ -156,7 +160,7 @@ export function mountListsDashboard(db, getUser) {
  async function showItems(){
   const list=lists.find(x=>x.id===selected);const generation=++itemsGeneration;
   if(!list){$('listWishCards').replaceChildren();$('listWishCount').textContent='Wähle eine Liste aus.';updateBulkToolbar([]);return}
-  if(!membershipReady){setItemsFeedback('loading','Zuordnungen werden geladen …');return}
+  if(!membershipReady){assignedIds=new Set();$('listWishCards').replaceChildren();$('listWishCount').textContent='';updateBulkToolbar([]);setItemsFeedback('loading','Zuordnungen werden geladen …');return}
   assignedIds=new Set(membershipByList.get(list.id)||[]);
   if(generation!==itemsGeneration)return;
   setItemsFeedback('ready','');renderWishCards();
