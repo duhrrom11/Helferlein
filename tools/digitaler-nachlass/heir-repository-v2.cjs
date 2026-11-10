@@ -25,7 +25,8 @@ function createHeirRepository(db) {
       if (!result || !Array.isArray(result.rows) || result.rows.length !== 1) return null;
       const r=result.rows[0];
       if (r.vault_id!==vaultId || r.membership_vault_id!==vaultId ||
-          r.heir_user_id!==userId || r.owner_user_id===userId || r.state!=='RELEASED' ||
+          r.heir_user_id!==userId || typeof r.owner_user_id!=='string' ||
+          !UUID.test(r.owner_user_id) || r.owner_user_id===userId || r.state!=='RELEASED' ||
           r.status!=='ACTIVE' || r.identity_verified!==true ||
           !r.encrypted_envelope || typeof r.encrypted_envelope!=='object' ||
           Array.isArray(r.encrypted_envelope)) return null;
