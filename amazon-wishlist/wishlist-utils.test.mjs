@@ -227,3 +227,12 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('share links work without browser globals and fail cleanly without a fallback',async()=>{
+ const url='https://example.org/amazon-wishlist/?profile=anna_123';
+ let copied;
+ assert.equal(await copyShareLink(url,{writeText:async value=>{copied=value}},undefined),'clipboard');
+ assert.equal(copied,url);
+ await assert.rejects(()=>copyShareLink(url,null,null),/Kopieren nicht möglich/);
+ await assert.rejects(()=>copyShareLink('javascript:alert(1)',null,null),/Ungültiger Link/);
+});
