@@ -17,11 +17,21 @@ export function mountListsDashboard(db, getUser) {
   if(!card)return;
   card.tabIndex=-1;card.focus({preventScroll:true});card.scrollIntoView({behavior:'smooth',block:'center'});
  }
+ function jumpToWishInList(wishId,listId){
+  if(!membershipReady||!lists.some(l=>l.id===listId&&membershipByList.get(l.id)?.has(wishId)))return;
+  const wish=wishes.find(w=>w.id===wishId);if(!wish)return;
+  $('wishDetailDialog').close();openList(listId);
+  $('listWishSearch').value='';
+  $('listWishAssignment').value='assigned';
+  const index=visibleWishes().findIndex(w=>w.id===wishId);
+  if(index<0){msg('Wunsch konnte in dieser Liste nicht gefunden werden.');return}
+  visibleLimit=Math.max(visibleLimit,index+1);renderWishCards();focusWishCard(wishId);
+ }
  function openWishDetail(wish){detailWishId=wish.id;
   const membership=$('wishDetailLists');membership.replaceChildren();
   const matching=membershipReady?lists.filter(l=>membershipByList.get(l.id)?.has(wish.id)):[];
   if(matching.length){const heading=document.createElement('strong');heading.textContent='In diesen Listen:';membership.append(heading);
-   for(const list of matching){const go=button(list.icon+' '+list.title,async()=>{$('wishDetailDialog').close();openList(list.id);$('listWishSearch').value=wish.wishlist_products?.title||'';renderWishCards();focusWishCard(wish.id)});membership.append(go)}
+   for(const list of matching){const go=button(list.icon+' '+list.title,async()=>jumpToWishInList(wish.id,list.id));membership.append(go)}
   }else{const hint=document.createElement('span');hint.textContent=membershipReady?'Noch keiner Liste zugeordnet':'Listenzuordnungen werden geladen';membership.append(hint)}
   $('wishDetailSelect').disabled=!membershipReady||bulkBusy||!lists.some(l=>l.id===selected&&!l.archived);
   $('wishDetailSelect').textContent=bulkIds.has(wish.id)?'Aus Sammelauswahl entfernen':'Für Sammelaktion auswählen';
@@ -321,7 +331,7 @@ export function mountListsDashboard(db, getUser) {
  $('wishDetailSelect').onclick=()=>{if(!detailWishId||!membershipReady||bulkBusy||!lists.some(l=>l.id===selected&&!l.archived))return;
   if(bulkIds.has(detailWishId))bulkIds.delete(detailWishId);else bulkIds.add(detailWishId);
   $('wishDetailSelect').textContent=bulkIds.has(detailWishId)?'Aus Sammelauswahl entfernen':'Für Sammelaktion auswählen';renderWishCards()};
- $('wishDetailJump').onclick=()=>{const id=detailWishId;if(!id)return;const list=lists.find(l=>membershipByList.get(l.id)?.has(id));if(!list)return;$('wishDetailDialog').close();openList(list.id);const wish=wishes.find(w=>w.id===id);$('listWishSearch').value=wish?.wishlist_products?.title||'';renderWishCards();focusWishCard(id)};
+ $('wishDetailJump').onclick=()=>{const id=detailWishId;if(!id||!membershipReady)return;const list=lists.find(l=>membershipByList.get(l.id)?.has(id));if(list)jumpToWishInList(id,list.id)};
  $('listsResetFilters').onclick=()=>{$('listsSearch').value='';$('listsView').value='all';$('listsSort').value='favorites';render()};
  $('bulkMoveTarget').onchange=()=>updateBulkToolbar();
  $('bulkMove').onclick=()=>moveSelectedWishes().catch(e=>{$('bulkStatus').textContent=e.message||'Verschieben fehlgeschlagen'});
