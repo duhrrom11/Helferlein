@@ -155,3 +155,14 @@ test('share links reject credentials and malformed HTTPS URLs',async()=>{
   await assert.rejects(()=>copyShareLink(link,clipboard),/Ungültiger Link/);
  }
 });
+
+test('unexpected native exception details are not exposed in the wishlist UI',()=>{
+ const internal='https://private.example.invalid/auth?token=secret';
+ for(const error of [new Error(internal),new TypeError('Failed to initialize '+internal),new Error('permission denied for wishlist_profiles')]){
+  assert.doesNotMatch(wishlistErrorMessage(error),/private\.example|token=|wishlist_profiles/);
+  assert.match(wishlistErrorMessage(error),/erneut versuchen/);
+ }
+ assert.equal(wishlistErrorMessage(new Error('Bitte zuerst anmelden')),'Bitte zuerst anmelden');
+ assert.equal(wishlistErrorMessage(new Error('Produkttitel muss 1 bis 250 Zeichen enthalten')),'Produkttitel muss 1 bis 250 Zeichen enthalten');
+ assert.match(wishlistErrorMessage(new TypeError('Failed to fetch')),/Netzwerkfehler/);
+});
