@@ -141,7 +141,9 @@ export function exportWishlistCsv(rows) {
  for(const row of rows){
   const product=row?.wishlist_products;
   if(!product||!/^([A-Z0-9]{10})$/.test(product.asin)||product.marketplace!=='amazon.de')throw Error('Ungültiger Exportdatensatz');
-  lines.push([product.asin,product.title,row.note,validatePriority(row.priority),row.created_at,'https://www.amazon.de/dp/'+product.asin].map(safe).join(';'));
+  if(typeof product.title!=='string'||(row.note!=null&&typeof row.note!=='string'))throw Error('Ungültiger Exportdatensatz');
+  const fields=validateWishFields(product.title,row.note);
+  lines.push([product.asin,fields.title,fields.note,validatePriority(row.priority),row.created_at,'https://www.amazon.de/dp/'+product.asin].map(safe).join(';'));
  }
  return '\uFEFF'+lines.join('\r\n')+'\r\n';
 }
@@ -164,7 +166,9 @@ export function exportWishlistJson(rows, publicProfile=null) {
  const wishes=rows.map(row=>{
   const product=row?.wishlist_products;
   if(!product||product.marketplace!=='amazon.de'||!/^[A-Z0-9]{10}$/.test(product.asin))throw Error('Ungültiger Exportdatensatz');
-  return {asin:product.asin,amazon_url:'https://www.amazon.de/dp/'+product.asin,title:String(product.title??''),note:String(row.note??''),priority:validatePriority(row.priority),created_at:String(row.created_at??'')};
+  if(typeof product.title!=='string'||(row.note!=null&&typeof row.note!=='string'))throw Error('Ungültiger Exportdatensatz');
+  const fields=validateWishFields(product.title,row.note);
+  return {asin:product.asin,amazon_url:'https://www.amazon.de/dp/'+product.asin,...fields,priority:validatePriority(row.priority),created_at:String(row.created_at??'')};
  });
  const handle=requestedProfileHandle(publicProfile?.handle);
  return JSON.stringify({format:'helferlein-wishlist-backup',version:1,exported_at:new Date().toISOString(),profile:handle?{handle,display_name:String(publicProfile.display_name??''),bio:String(publicProfile.bio??'')}:null,wishes},null,2)+'\n';
@@ -172,7 +176,7 @@ export function exportWishlistJson(rows, publicProfile=null) {
 
 /** A failed export must not retain stale progress text. */
 export function exportProgressText(count,total=null) {
- if(!Number.isSafeInteger(count)||count<0)throw Error('Ungültiger Exportfortschritt');
+ if(!Number.isSafeInteger(count)||count<0||(total!==null&&(!Number.isSafeInteger(total)||total<count)))throw Error('Ungültiger Exportfortschritt');
  return total===null?count+' Wünsche geladen …':count+' von '+total+' Wünschen geladen …';
 }
 
@@ -181,14 +185,14 @@ export function exportProgressText(count,total=null) {
  * The preview deliberately ignores any unrecognized fields, including account IDs.
  */
 export function previewWishlistBackup(raw) {
- if(typeof raw!=='string'||raw.length>2_000_000)throw Error('Sicherungsdatei fehlt oder ist zu groß (maximal 2 MB).');
+ if(typeof raw!=='string'||raw.length>2_000_000||new TextEncoder().encode(raw).byteLength>2_000_000)throw Error('Sicherungsdatei fehlt oder ist zu groß (maximal 2 MB).');
  let data;
  try{data=JSON.parse(raw)}catch{throw Error('Die Datei enthält kein gültiges JSON.')}
  if(!data||Array.isArray(data)||data.format!=='helferlein-wishlist-backup'||data.version!==1||!Array.isArray(data.wishes))throw Error('Keine unterstützte Helferlein-Wunschlisten-Sicherung.');
  if(data.wishes.length>10000)throw Error('Die Sicherung enthält zu viele Wünsche.');
  let profile=null;
  if(data.profile!==null&&data.profile!==undefined){
-  if(!data.profile||Array.isArray(data.profile))throw Error('Ungültiges Profil in der Sicherung.');
+  if(!data.profile||Array.isArray(data.profile)||typeof data.profile.handle!=='string'||typeof data.profile.display_name!=='string'||typeof data.profile.bio!=='string')throw Error('Ungültiges Profil in der Sicherung.');
   const handle=validateHandle(data.profile.handle);
   const fields=validateProfileFields(data.profile.display_name,data.profile.bio);
   profile={handle,...fields};
@@ -197,7 +201,9 @@ export function previewWishlistBackup(raw) {
  const wishes=data.wishes.map((row,index)=>{
   if(!row||Array.isArray(row)||typeof row!=='object')throw Error('Ungültiger Wunsch in Zeile '+(index+1)+'.');
   if(typeof row.asin!=='string'||!/^[A-Z0-9]{10}$/.test(row.asin))throw Error('Ungültige ASIN in Zeile '+(index+1)+'.');
+  if(typeof row.title!=='string'||typeof row.note!=='string')throw Error('Ungültiger Wunschtext in Zeile '+(index+1)+'.');
   const {title,note}=validateWishFields(row.title,row.note);
+  if(row.amazon_url!==undefined&&(typeof row.amazon_url!=='string'||row.amazon_url!=='https://www.amazon.de/dp/'+row.asin))throw Error('Ungültiger Amazon-Link in Zeile '+(index+1)+'.');
   const priority=validatePriority(row.priority);
   if(seen.has(row.asin))throw Error('Doppelte ASIN in der Sicherung: '+row.asin);
   seen.add(row.asin);
