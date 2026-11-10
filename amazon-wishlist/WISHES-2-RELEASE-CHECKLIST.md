@@ -930,3 +930,11 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Regressionstests für mobile, klassische und Smile-Hosts sowie ähnlich aussehende Fremddomains ergänzt.
 - [ ] CI-/Node-Testlauf für die neuen Änderungen noch nicht bestätigt; Browser- und Mobilgeräteabnahme weiterhin offen.
 - [ ] Freigabe weiterhin gesperrt: kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment. Mehrgeräte-Konflikte und nicht transaktionale Verschiebungen bleiben gesonderte Risiken.
+
+## Autopilot: URL-Eingabehärtung (2026-11-10)
+
+- [x] Produktlink-Parser lehnt eingebettete ASCII-Steuerzeichen, Leerzeichen und nicht eindeutige Eingaben vor der URL-Normalisierung ab.
+- [x] Gewöhnliche Amazon-Produktlinks mit Tracking-Query oder Fragment bleiben kompatibel; die ASIN-Erkennung bleibt auf zugelassene Hosts und Produktpfade beschränkt.
+- [x] Gezielte Regressionstests für fehlerhafte Eingaben und gültige Produktlinks ergänzt.
+- [ ] GitHub-Actions-Ergebnis und Browser-/Mobilgeräteabnahme dieser Änderung noch nicht bestätigt; keine Behauptung eines erfolgreichen CI-Laufs.
+- [ ] Freigabe gesperrt: kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment. Clientseitige Maßnahmen ersetzen keine serverseitige Zugriffskontrolle.
