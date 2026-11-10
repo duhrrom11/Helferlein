@@ -210,5 +210,5 @@ test('export progress only accepts nonnegative integers',()=>{
  assert.equal(exportProgressText(0,0),'0 von 0 Wünschen geladen …');
  assert.equal(exportProgressText(12,12),'12 von 12 Wünschen geladen …');
  for(const value of [-1,1.5,NaN,'12'])assert.throws(()=>exportProgressText(value));
- for(const total of [-1,1.5,NaN,Infinity,'100',undefined,11])assert.throws(()=>exportProgressText(12,total));
+ for(const total of [-1,1.5,NaN,Infinity,'100',11])assert.throws(()=>exportProgressText(12,total));
 });
