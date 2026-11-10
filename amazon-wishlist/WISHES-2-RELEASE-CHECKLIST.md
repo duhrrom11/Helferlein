@@ -1012,3 +1012,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Browser-Job des Playwright-Containers abschließen und verifizieren; bislang kein erfolgreiches Browser-Gate bestätigt.
 - [ ] Zusätzlich ist Workflow `Vault Sync Queue Tests` (42825448865) mit `Run isolated queue tests` fehlgeschlagen. Vor Merge klären, ob der Fehler aus dem Abgleich stammt oder bereits auf main existiert.
 - [ ] Kein PR-Merge oder Deployment, solange CI-Gates fehlschlagen oder laufen; SQL-Vorschläge nicht produktiv angewendet.
+
+## Autopilot: konkrete CI-Logdiagnose und Produktionsintegration (2026-11-10)
+
+- [x] Echte GitHub-Actions-Joblogs gelesen: Browser-Job 42825492054 hatte 18 Fehlschläge mit `TypeError: Invalid URL` in `isolated-browser-fixture.mjs:12`. Ursache: Playwright `Request.url` ist eine Methode, kein Property.
+- [x] Browser-Fixture auf `route.request().url()` korrigiert; isolierten Request-Mock entsprechend aktualisiert (Commits `0d7d539d`, `ae9a730e`).
+- [x] Echte Node-Gesamttest-Logs gelesen: zwei Fehlschläge `document is not defined` in Share-Link-Tests. `copyShareLink` verwendet jetzt sichere optionale `globalThis`-Zugriffe und meldet fehlende DOM-Fallbacks kontrolliert (Commit `b44f8226`).
+- [x] Vault-Sync-Fehler anhand echter Logs auf `crypto is not defined` in VM-Testkontexten eingegrenzt; die zwei Test-Fixtures erhalten `node:crypto.webcrypto` (Commit `aae52c39`).
+- [x] Produktive `app.mjs` und `index.html` geprüft: keine Imports oder Verweise auf `lists-dashboard.mjs`, `list-features.mjs`, `bulk-helpers.mjs`; die neuen Module sind **nicht** in die Live-App eingebunden. Vor Aktivierung sind Schema, RLS, Nutzerführung und E2E-Tests erforderlich.
+- [x] Aktueller Release-Smoke-Workflow 42826238090 auf `b44f8226` war erfolgreich; Node-Job 42826228226 war ebenfalls erfolgreich.
+- [ ] Aktuelle Browser- und Vault-Sync-CI nach den Korrekturen abschließend prüfen; bei verbleibenden Fehlern weiter nachbessern.
+- [ ] Keine ungetestete Listen-Dashboard-Integration oder produktive SQL-Migration; PR-Merge/Deployment erst nach vollständiger Freigabe.
