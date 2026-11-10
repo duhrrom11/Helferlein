@@ -6,6 +6,8 @@ on:
       - 'tools/digitaler-nachlass/index.html'
       - 'tools/digitaler-nachlass/erben.html'
       - 'tests/b3-nachlass*'
+      - 'tests/nachlass-release-policy-v2.test.cjs'
+      - 'tools/digitaler-nachlass/release-policy-v2.cjs'
       - '.github/workflows/b3-nachlass.yml'
   push:
     branches: ['main', 'design-b3-rollout-nachlass']
@@ -14,6 +16,8 @@ on:
       - 'tools/digitaler-nachlass/index.html'
       - 'tools/digitaler-nachlass/erben.html'
       - 'tests/b3-nachlass*'
+      - 'tests/nachlass-release-policy-v2.test.cjs'
+      - 'tools/digitaler-nachlass/release-policy-v2.cjs'
       - '.github/workflows/b3-nachlass.yml'
 permissions:
   contents: read
@@ -27,7 +31,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify preserved security notice and vault contract
-        run: node --test tests/b3-nachlass.test.cjs
+        run: node --test tests/b3-nachlass.test.cjs tests/nachlass-release-policy-v2.test.cjs
       - name: Install Chromium
         run: |
           npm install --no-save --no-package-lock @playwright/test@1.56.1
