@@ -77,3 +77,11 @@ Produktive Daten, Auth-Konten und Firebase-/Supabase-Projekte wurden beim lokale
 - Die Browserprüfung darf keine produktiven Nachlassdatensätze erzeugen; für echte Zugriffs-Negativtests ist weiterhin ein isolierter Emulator erforderlich.
 
 **Freigabe bleibt gesperrt**, bis der aktuelle GitHub-Stand vollständig grün ist und die Firebase-PROD-Regeln separat auditiert wurden.
+
+## Bestands-Härtung ohne Datenmigration (2026-11-10)
+
+- Neue Tresor-IDs (`v_` plus 16 kryptografisch zufällige Bytes) und neue Vertrauenspersonen-IDs (`p_` plus 16 Bytes) verwenden `crypto.getRandomValues` statt `Math.random`. Vorhandene IDs werden unverändert eingelesen.
+- Die Personenliste schreibt keine vollständigen Erben-Links mehr in `data-link`-Attribute. Kopier- und E-Mail-Aktionen erzeugen den Link erst nach Benutzerinteraktion aus der lokal vorhandenen Konfiguration.
+- Die Notfall-Kit-Vorschau zeigt keinen vollständigen Link als Klartext. **QR-Codes und explizit erstellte PDFs enthalten weiterhin den vollständigen Schlüssel** und müssen vertraulich behandelt werden. Die neue Link-Behandlung ist keine serverseitige Freigabe.
+- Die bestehende Speicherung des Tresor-Masterschlüssels im lokalen Browser und bestehende Legacy-Erben-Links bleiben unverändert. Keine bestehende Sicherheitslücke wird rückwirkend durch eine zufälligere Kennung behoben.
+- Zwei zusätzliche B3-Regressionstests prüfen die ID-Erzeugung und das Fehlen geheimer Links in DOM-Attributen. CI-Lauf zum letzten Commit: https://github.com/duhrrom11/Helferlein/actions/runs/42775887101. Ein grünes Ergebnis muss vor Freigabe bestätigt werden.
