@@ -116,3 +116,30 @@ test('CFRG JSON encryption[1] verifies sequence-one nonce and ciphertext indepen
  const pt=Buffer.concat([decipher.update(ct.subarray(0,-16)),decipher.final()]);
  assert.equal(pt.toString('hex'),'4265617574792069732074727574682c20747275746820626561757479');
 });
+
+test('tampered AES-GCM authentication tag fails closed',()=>{
+ const receiver=keyPair(),env=seal(receiver.publicKey,randomBytes(32),{info,aad});
+ const tampered=Buffer.from(env.ciphertext);tampered[tampered.length-1]^=0x01;
+ assert.throws(()=>open(receiver.privateKey,env.enc,tampered,{info,aad}),/hpke_open_failed/);
+});
+test('low-order X25519 public keys cannot be used for seal or open',()=>{
+ const receiver=keyPair(),dek=randomBytes(32);
+ const zero=Buffer.alloc(32);
+ assert.throws(()=>seal(zero,dek,{info,aad}));
+ const env=seal(receiver.publicKey,dek,{info,aad});
+ assert.throws(()=>open(receiver.privateKey,zero,env.ciphertext,{info,aad}));
+ assert.throws(()=>seal(Buffer.alloc(31),dek,{info,aad}),/invalid_public_key/);
+});
+test('HPKE accepts maximum 1024-byte info and AAD and rejects 1025',()=>{
+ const receiver=keyPair(),dek=randomBytes(32);
+ const maxInfo=Buffer.alloc(1024,0x49),maxAad=Buffer.alloc(1024,0x41);
+ const env=seal(receiver.publicKey,dek,{info:maxInfo,aad:maxAad});
+ assert.deepEqual(open(receiver.privateKey,env.enc,env.ciphertext,{info:maxInfo,aad:maxAad}),dek);
+ assert.throws(()=>seal(receiver.publicKey,dek,{info:Buffer.alloc(1025),aad:maxAad}),/invalid_hpke_input/);
+ assert.throws(()=>open(receiver.privateKey,env.enc,env.ciphertext,{info:maxInfo,aad:Buffer.alloc(1025)}),/invalid_hpke_input/);
+});
+test('HPKE ciphertext lower and upper length boundaries fail safely',()=>{
+ const receiver=keyPair(),env=seal(receiver.publicKey,randomBytes(32),{info,aad});
+ for(const n of [16,4113]) assert.throws(()=>open(receiver.privateKey,env.enc,Buffer.alloc(n),{info,aad}),/invalid_hpke_input/);
+ for(const n of [17,4112]) assert.throws(()=>open(receiver.privateKey,env.enc,Buffer.alloc(n),{info,aad}),/hpke_open_failed/);
+});
