@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Cloud-Filteransichten verwalten)
+
+- **Neu umgesetzt:** Bestehende Cloud-Filteransichten lassen sich mit einem neuen Namen atomar umbenennen oder unter einem freien Namen duplizieren. Ausgewählte Ansichten zeigen das letzte Änderungsdatum und die Anzahl der gespeicherten Kategorien.
+- **Sicherheit:** Umbenennen über `wishlist_rename_checkpoint_filter_view` als SECURITY INVOKER mit `auth.uid()`-Eigentümerprüfung; Cloud-Tabelle bleibt owner-RLS-geschützt. Kein anonymer Zugriff. Duplizieren erzeugt nur eine neue eigene Ansicht, niemals eine Sicherungspunktkopie.
+- **Produktivdaten:** Keine bestehenden Ansichten oder Sicherungspunkte migriert, gelöscht oder verändert. Keine Testdaten. RLS und Berechtigungen der vier relevanten Tabellen erneut geprüft.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Geräteübergreifende private Filteransichten)
 
 - **Neu umgesetzt:** Private Supabase-Tabelle `wishlist_gift_checkpoint_filter_views` mit owner-gebundenen Namen, Filter-JSON und Kategorien; RLS-Policies für ausschließlich eigene Lese-/Schreibzugriffe, kein anonymer Zugriff.
