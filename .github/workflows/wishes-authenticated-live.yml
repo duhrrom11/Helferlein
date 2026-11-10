@@ -1,0 +1,33 @@
+name: Wishes authenticated live read-only smoke
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  existing-account-browser:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: amazon-wishlist
+    env:
+      WISHES_EXISTING_USER_EMAIL: ${{ secrets.WISHES_EXISTING_USER_EMAIL }}
+      WISHES_EXISTING_USER_PASSWORD: ${{ secrets.WISHES_EXISTING_USER_PASSWORD }}
+      WISHES_LIVE_BASE: https://duhrrom11.github.io/Helferlein
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check existing-account credentials are configured
+        run: |
+          if [ -z "$WISHES_EXISTING_USER_EMAIL" ] || [ -z "$WISHES_EXISTING_USER_PASSWORD" ]; then
+            echo "::error::Existing-account credentials are not configured. Authenticated release gate remains OPEN."
+            exit 1
+          fi
+      - name: Install browser dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Read-only authenticated browser sign-in and logout
+        run: node authenticated-live-smoke.mjs
