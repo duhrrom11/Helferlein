@@ -822,3 +822,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: vollständige mobile Sperren und Sammelaktions-Bestätigungen (2026-11-10)
+
+- [x] Weitere mobile Kartenaktionen und Auswahlsteuerungen (Einzelverschiebung, Zielauswahl, Details, Mehr laden und Auswahlfilter) zeigen die exklusive Listen-Schreibsperre unmittelbar an.
+- [x] Eine bereits vorbereitete Sammelaktion kann während einer Listenänderung nicht mehr über den Bestätigungsdialog gestartet werden; Wiederholen aus der Ergebnisübersicht prüft zusätzlich Benutzer und Listenkontext.
+- [x] Detaildialog-Auswahl und Sprungaktionen lehnen konkurrierende Listenänderungen ab.
+- [x] Verlauf-Löschen und „Ohne Liste“-Schnellzugriffe berücksichtigen Schreibsperren und den geladenen Benutzerkontext.
+- [x] Listen-Suche, Listenansicht und Sortierung sind während laufender Änderungen sichtbar deaktiviert und werden nach der mobilen Aktualisierung wieder freigegeben.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
