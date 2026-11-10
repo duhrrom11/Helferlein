@@ -69,3 +69,30 @@ test('real dashboard: pending membership reload locks bulk selection until finis
  await expect(page.locator('#listWishCards .list-wish-card')).toHaveCount(1);
  expect(await page.evaluate(()=>window.__dashboardTest.writes)).toBe(0);
 });
+
+test('real dashboard: retry recovers from membership error without stale bulk selection',async({page})=>{
+ await page.evaluate(()=>window.__dashboard.refresh());
+ await page.locator('#listWishCards input[type=checkbox]').first().check();
+ await page.evaluate(()=>{window.__dashboardTest.fail=true});
+ await page.evaluate(()=>window.__dashboard.refresh());
+ await expect(page.locator('#bulkSelectedCount')).toContainText('0 ausgewählt');
+ await page.evaluate(()=>{window.__dashboardTest.fail=false});
+ await page.locator('#listItemsRetry').click();
+ await expect(page.locator('#listWishCards .list-wish-card')).toHaveCount(1);
+ await expect(page.locator('#bulkSelectedCount')).toContainText('0 ausgewählt');
+ await expect(page.locator('#listItemsFeedback')).toBeHidden();
+ expect(await page.evaluate(()=>window.__dashboardTest.writes)).toBe(0);
+});
+test('real dashboard: account switch invalidates pending membership response',async({page})=>{
+ await page.evaluate(()=>window.__dashboard.refresh());
+ await page.evaluate(()=>{
+  window.__dashboardTest.hold=new Promise(resolve=>window.__releaseMembership=resolve);
+  window.__pendingRefresh=window.__dashboard.refresh();
+ });
+ await expect(page.locator('#listWishCards .list-wish-card')).toHaveCount(0);
+ await page.evaluate(()=>{window.__dashboardTest.user={id:'user-b'};window.__releaseMembership()});
+ await page.evaluate(()=>window.__pendingRefresh);
+ await expect(page.locator('#listWishCards .list-wish-card')).toHaveCount(0);
+ await expect(page.locator('#bulkAdd')).toBeDisabled();
+ expect(await page.evaluate(()=>window.__dashboardTest.writes)).toBe(0);
+});
