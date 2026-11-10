@@ -35,3 +35,11 @@ Interne Release-Verarbeitung: nur über nicht öffentlich aufrufbare, privilegie
 Produktives Firebase-Projekt `nachlass-app-99df8`: der aktuelle veröffentlichte Firestore-Regeltext liegt weiterhin **nicht** vor. Der Staging-Stand `helferlein-test` (`allow read, write: if false`) darf nicht als Produktionsbeleg verwendet werden. Insbesondere ist zu klären, ob `vaults/{vaultId}` öffentlich gelesen oder `emergencyTriggers` ohne Identitätsprüfung aktualisiert werden kann.
 
 **Stop-Gate:** Kein Umschalten bestehender Links, kein Produktiv-Deployment, keine Schlüsselrotation und keine Datenmigration ohne geprüfte Firestore-Regeln, festgelegten Identity Provider, überprüftes Schlüsselhüllenverfahren, Emulator-Negativtests, Recovery-Probe und Rollback-Plan.
+
+## Isolierte API-Vorbereitung (2026-11-10)
+
+Der CommonJS-Baustein `tools/digitaler-nachlass/server-api-v2.cjs` enthält eine bewusst **nicht angebundene** HTTP-Schnittstelle `handleNachlassV2(Request)`. Er akzeptiert die geplanten Pfadformen `/v2/vaults/{vaultId}/{alarm|check-in|revoke|heir-envelope}`, führt aber **keine** Aktion aus und liefert für jeden formal gültigen Aufruf ausschließlich `503 not_configured`. Unbekannte Pfade liefern `404`, andere Methoden `405`. Der Baustein enthält keine Datenbank-Credentials, keinen Firebase-/Supabase-Client, keine Schlüssel und keinen aktivierbaren Feature-Schalter.
+
+`tests/nachlass-server-api-v2.test.cjs` prüft alle vier deaktivierten Aktionen, gefälschte Identitäts- und Release-Felder, unbekannte Routen, Methoden und Antwort-Header. Die CI wurde um diese Tests ergänzt.
+
+**Wichtig:** Dies ist kein produktiver Edge-Function-Endpunkt. Er wird nicht automatisch deployed, nicht von der bestehenden Erben-Seite verwendet und kann keine echten Zugriffe schützen. Vor Anbindung müssen Firestore-Regeln, Identity Provider, Zustandsmodell und Krypto geprüft werden. Ein künftiger produktiver Handler muss außerdem Streaming-Body-Limits, echte Authentisierung, Datenbanktransaktionen und Auditprotokolle implementieren.
