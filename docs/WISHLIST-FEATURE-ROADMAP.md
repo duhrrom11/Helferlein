@@ -137,6 +137,14 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Monetarisierung:** Bereits vorhandene Amazon-Partnerlinks werden für Empfehlungen wiederverwendet.
 - **Noch offen:** Vollständige serverseitige Community-Suche, valide Produktpreisquelle, präzisere Interessenklassifikation, mehr Anlässe und Empfehlungen aus mehreren Seiten des Feeds.
 
+## Entwicklungsfortschritt – 10.11.2026 (Wunschwelten)
+
+- **Neu umgesetzt:** Öffentlicher, Pinterest-inspirierter Entdecken-Bereich mit responsivem Kartenlayout und sechs Themenwelten (Gaming & Technik, Wohnen & Küche, Bücher & Kreativität, Beauty & Wellness, Sport & Abenteuer, Familie & Spielen).
+- **Neu umgesetzt:** Themenfilter, Stichwortsuche, alphabetische Sortierung und „Neu mischen“ für zufällige Inspiration.
+- **Datenquelle:** Nur bereits geladene öffentliche Wünsche aus dem bestehenden Community-Feed. Keine zusätzlichen Supabase-Abfragen, keine neuen Tabellen und keine Änderungen an Produktivdaten.
+- **Abgrenzung:** Noch keine eigenständig von Nutzern erstellbaren/gespeicherten Themenwelten, keine vollständige serverseitige Suche, keine automatisch abgerufenen Produktbilder. Themenzuordnung basiert auf Stichwörtern.
+- **Offen:** Persistente kuratierte Sammlungen, Profilintegration, Community-Ranglisten, bessere Produktbilder und eine eigenständige öffentliche Entdecken-Suche.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
