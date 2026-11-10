@@ -32,5 +32,5 @@ test('CSV export normalizes surrounding whitespace and preserves formula protect
     wishlist_products: { asin: 'B012345678', marketplace: 'amazon.de', title: '  =SUM(1,2)  ' },
     note: '  +danger  ',
   })]);
-  assert.match(csv, /"'=SUM\(1,2\)";"'+danger"/);
+  assert.ok(csv.includes(`"'=SUM(1,2)";"'+danger"`));
 });
