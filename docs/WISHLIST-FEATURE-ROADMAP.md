@@ -176,6 +176,15 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Sicherheit:** Die Profilgalerie fragt ausschließlich `visibility='public'` und `archived=false` ab. Bestehende Supabase-RLS-Policies bleiben aktiv; keine neuen Tabellen, keine produktiven Datensätze geändert.
 - **Noch offen:** Eigene Bild-Uploads und Bildmoderation, Follower-Statistiken auf der Profilseite, personalisierte Profil-Themes, End-to-End-Browserprüfung.
 
+## Entwicklungsfortschritt – 10.11.2026 (Social-Entdecken und Profilstatistiken)
+
+- **Neu umgesetzt:** Öffentliche Profilseiten zeigen Follower-Zahlen, gefolgte Profile und Anzahl öffentlicher Sammlungen (maximal 48 angezeigte Sammlungen, danach `48+`).
+- **Neu umgesetzt:** Eigenständige responsive Social-Entdecken-Seite `amazon-wishlist/discover.html` mit öffentlichen Sammlungskarten, Profilverlinkung, Suche, Themenfiltern und Sortierung nach Aktualität, Namen oder Follower-Zahl des Erstellers.
+- **Neu umgesetzt:** Hauptnavigation verlinkt auf Social-Entdecken; mobile Karten und horizontal scrollbare Themenfilter.
+- **Datenquelle und Sicherheit:** Bestehende `wishlist_follows`, `wishlist_profiles` und `wishlist_lists`; vorhandene RLS-Policies für öffentlich sichtbare Sammlungen und Follower geprüft. Keine Migration, keine Änderungen an Produktivdatensätzen.
+- **Abgrenzung:** Entdecken zeigt maximal 60 neueste öffentliche Sammlungen. Follower-basierte Reihenfolge ist keine echte Like- oder Aufrufrangliste; die aggregierten Follower-Daten werden clientseitig aus maximal 10.000 geladenen Beziehungen berechnet. Für große Datenmengen sind serverseitige Aggregation und Pagination erforderlich.
+- **Noch offen:** Browser-End-to-End-Test, vollständige Rankings, Likes/Favoriten, Profil-Badges und datensparsame skalierbare Statistiken.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
