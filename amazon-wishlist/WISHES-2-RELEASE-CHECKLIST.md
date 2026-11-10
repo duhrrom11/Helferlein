@@ -1089,3 +1089,11 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] GitHub Pages als Veröffentlichungsziel aus `.github/workflows/live-site-http.yml` identifiziert: `https://duhrrom11.github.io/Helferlein`. Der bestehende Live-HTTP-Check prüft noch nicht die Wishes-Route.
 - [ ] Authentifizierte End-to-End-Prüfung gegen echte RLS-Rollen (ohne Testdaten in Produktion), einschließlich Benutzerwechsel, Neuanlage und Zuordnung, steht noch aus. Isolierte Browser-Tests sind keine vollständige Produktionsabnahme.
 - [ ] Keine Freigabe des PR-Merges und kein GitHub-Pages-Deployment, bis alle neuen Checks grün und die Auth-/Deployment-Gates bestätigt sind.
+
+### Kritische Berechtigungsprüfung und Korrektur (2026-11-10)
+
+- [x] Zusätzliche **Live-Grant-Inventur** zeigte nach Schemaerstellung über geerbte Standardberechtigungen überraschend `anon`-Zugriffe einschließlich `TRUNCATE` auf beiden neuen Tabellen. `TRUNCATE` wird **nicht** durch RLS geschützt und musste vor Freigabe entzogen werden.
+- [x] Produktive Sicherheitsmigration `wishes_lists_restrict_table_grants` erfolgreich ausgeführt: `REVOKE ALL` für `PUBLIC`, `anon`, `authenticated`, anschließend nur benötigte `authenticated`-Berechtigungen gezielt vergeben.
+- [x] Verifiziert: `anon` hat auf beiden Tabellen **keine** Rechte mehr; `authenticated` hat auf `wishlist_lists` ausschließlich `SELECT,INSERT,UPDATE,DELETE` und auf `wishlist_list_items` ausschließlich `SELECT,INSERT,DELETE`. Insbesondere kein `TRUNCATE`, `REFERENCES` oder `TRIGGER`.
+- [x] SQL-Vorschlag und Regressionstest entsprechend gehärtet (Commits `2be756f0`, `9e02c900`).
+- [ ] Nach allen Sicherheitsänderungen erneut vollständige CI-Prüfung; kein Merge/Deployment bei offenen Checks.
