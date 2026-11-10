@@ -19,16 +19,15 @@ jobs:
     defaults:
       run:
         working-directory: amazon-wishlist
-    env:
-      WISHES_EXISTING_USER_EMAIL: ${{ secrets.WISHES_EXISTING_USER_EMAIL }}
-      WISHES_EXISTING_USER_PASSWORD: ${{ secrets.WISHES_EXISTING_USER_PASSWORD }}
-      WISHES_LIVE_BASE: http://127.0.0.1:8765
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Check existing-account credentials are configured
+        env:
+          WISHES_EXISTING_USER_EMAIL: ${{ secrets.WISHES_EXISTING_USER_EMAIL }}
+          WISHES_EXISTING_USER_PASSWORD: ${{ secrets.WISHES_EXISTING_USER_PASSWORD }}
         run: |
           if [ -z "$WISHES_EXISTING_USER_EMAIL" ] || [ -z "$WISHES_EXISTING_USER_PASSWORD" ]; then
             echo "::error::Existing-account credentials are not configured. Authenticated release gate remains OPEN."
@@ -42,4 +41,8 @@ jobs:
           python3 -m http.server 8765 --bind 127.0.0.1 > /dev/null 2>&1 &
           sleep 2
       - name: Read-only authenticated browser sign-in and logout
+        env:
+          WISHES_EXISTING_USER_EMAIL: ${{ secrets.WISHES_EXISTING_USER_EMAIL }}
+          WISHES_EXISTING_USER_PASSWORD: ${{ secrets.WISHES_EXISTING_USER_PASSWORD }}
+          WISHES_LIVE_BASE: http://127.0.0.1:8765
         run: node authenticated-live-smoke.mjs
