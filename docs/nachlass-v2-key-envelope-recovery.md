@@ -41,3 +41,13 @@ Der Eigentümer besitzt die Entschlüsselungsberechtigung seines Tresors. Jede E
 - Wie wird der Eigentümer bei einem echten Todesfall verifiziert, statt lediglich eine 24-Stunden-Frist als Todesnachweis zu behandeln?
 
 **Keine Produktionsfreigabe, bis diese Fragen überprüfbar beantwortet sind.**
+
+## Isolierter Eigentümer-Recovery-Prototyp (2026-11-10)
+
+`tools/digitaler-nachlass/recovery-offline-v2.cjs` enthält jetzt zwei **ausschließlich lokal aufrufbare** Funktionen: `wrapRecoveryKey` und `unwrapRecoveryKey`. Sie ver- bzw. entschlüsseln **einen bereits vorhandenen 32-Byte-DEK** mit AES-256-GCM. Der Wrapping-Key wird per Node.js-`scrypt` aus einer vom Eigentümer bereitgestellten Passphrase und einem zufälligen 32-Byte-Salt abgeleitet (N=16384, r=8, p=1, maxmem=32 MiB). Jede Hülle erhält eine neue zufällige 12-Byte-Nonce; das AEAD-AAD bindet Schema-Version, Vault-ID und Schlüsselgeneration. Der AEAD-Tag ist 16 Byte. Der abgeleitete Wrapping-Key wird nach Verwendung aus dem Buffer gelöscht.
+
+**Grenzen:** Die Mindestlänge von 16 Zeichen garantiert keine hohe Passphrasen-Entropie. Die KDF-Parameter sind ein prototypischer, nicht kalibrierter Ausgangspunkt und müssen vor Freigabe einem Offline-Angriffs- und Performance-Review unterzogen werden (ggf. Argon2id). JavaScript/Node.js können Kopien von Passphrasen und Schlüsseln im Speicher nicht zuverlässig vollständig löschen. Die Hülle ist **kein** Backup der Tresordaten und kein Beweis, dass ein bestehender Legacy-Tresor migriert werden kann. Die Funktionen werden von der produktiven Webseite und den APIs **nicht** aufgerufen. Es gibt keinen Passwort-Reset ohne Recovery-Material.
+
+`tests/nachlass-recovery-offline-v2.test.cjs` prüft mit ausschließlich synthetischen Zufalls-DEKs: Verschlüsselungs-Roundtrip, unterschiedliche Salts/Nonces, falsche Passphrase, Vault-/Schlüsselgenerations-Bindung, Manipulation und Ablehnung ungültiger Parameter.
+
+**HPKE ist weiterhin nicht implementiert.** Das oben beschriebene AES-GCM-Recovery-Verfahren ist unabhängig von der geplanten HPKE-Erbenhülle. Die bisherige `key-envelope-contract-v2.cjs` ist ein vorläufiger Metadatenvalidator; insbesondere sind HPKE-`enc`, `info`, `aad`, Serialisierung und die Rolle einer zusätzlichen Nonce noch nicht RFC-9180-konform spezifiziert. Keine produktive Freigabe oder Migration.
