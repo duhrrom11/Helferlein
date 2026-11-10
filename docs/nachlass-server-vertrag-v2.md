@@ -65,3 +65,15 @@ Die GitHub-Workflow-Datei `.github/workflows/b3-nachlass.yml` führt dieselben T
 **Tatsächlich lokal durchgeführt:** Die 9 API- und Authentifizierungs-Tests wurden unter Node.js v22.16.0 mit lokal anhand des GitHub-Quelltexts rekonstruierten Kopien ausgeführt: 9 bestanden, 0 fehlgeschlagen. Dies ist kein kryptografischer Audit, kein Test des produktiven Deployments und kein vollständiger Checkout des GitHub-Standes. Die Release-Policy-Tests, B3-Tests und Browser-Tests sind in diesem lokalen Lauf nicht enthalten.
 
 Produktive Daten, Auth-Konten und Firebase-/Supabase-Projekte wurden beim lokalen Lauf nicht angesprochen.
+
+## Prüfstand 2026-11-10: Vollständiger Testlauf
+
+- Lokales ZIP `Helferlein-main.zip` ist ein **älterer Snapshot vom 2026-11-08**. Mit Node.js 22.16.0 wurden daraus die vier enthaltenen B3-Tests ausgeführt: **4 bestanden, 0 fehlgeschlagen**. Das ist **kein** Nachweis für den aktuellen `main`-Stand.
+- Die aktuellen GitHub-Quelltexte der neuen Tests und Module wurden über den GitHub-Connector eingesehen. Ein vollständiger aktueller Git-Checkout war in der Ausführungsumgebung nicht möglich (DNS-/Netzwerkzugriff auf github.com nicht verfügbar).
+- Playwright-Browsertests konnten hier nicht ausgeführt werden: die Chromium-Binärdatei ist lokal nicht installiert; der GitHub-Workflow installiert sie dagegen bei Ausführung.
+- Die GitHub-Actions-Abfrage `fetch_commit_workflow_runs` filtert nur PR-Läufe und ist **kein verlässlicher Beleg**, dass es keinen Push-Lauf gibt.
+- `.github/workflows/b3-nachlass.yml` hat nun `workflow_dispatch` für einen manuellen Lauf, `pipefail` für korrekte Fehlerweitergabe und ein `nachlass-test-evidence`-Artefakt mit TAP- und Browserprotokollen (14 Tage Aufbewahrung). **Es wurde kein Workflow-Lauf ausgelöst oder als bestanden bestätigt.**
+- Zum Nachweis im GitHub-Repository unter **Actions → B3 Nachlass pilot → Run workflow** den Branch `main` wählen. Anschließend den Status aller Jobs prüfen und das Artefakt `nachlass-test-evidence` auswerten. Fehlgeschlagene Tests vor einer Freigabe korrigieren.
+- Die Browserprüfung darf keine produktiven Nachlassdatensätze erzeugen; für echte Zugriffs-Negativtests ist weiterhin ein isolierter Emulator erforderlich.
+
+**Freigabe bleibt gesperrt**, bis der aktuelle GitHub-Stand vollständig grün ist und die Firebase-PROD-Regeln separat auditiert wurden.
