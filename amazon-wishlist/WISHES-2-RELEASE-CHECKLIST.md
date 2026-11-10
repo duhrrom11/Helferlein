@@ -463,3 +463,15 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Noch keine verifizierte lokale Node-/Browser-Abnahme für den neuen Branch-Stand; gezielte Regressionstests mit kontrollierten Mock-Daten und realem Browser vor Freigabe erforderlich.
 - [ ] Zweistufiges Verschieben bleibt bei Netzwerkfehlern nicht atomar; doppelte Mitgliedschaften sind weiterhin möglich. Serverseitige Transaktion benötigt gesonderte Architektur-/Produktiv-DB-Freigabe.
 - [ ] Freigabe bleibt gesperrt; kein Merge, kein Deployment, keine Vercel-Nutzung, keine produktiven Supabase-Eingriffe.
+
+## Autopilot: Wunschkarten, sichere Listenbearbeitung und Kontextwechsel (2026-11-10)
+
+- [x] Doppelte, funktionsgleiche Detailschaltflächen auf Wunschkarten zusammengeführt: ein direkter Zugang zu Details, Notiz und Kategorie.
+- [x] Wunschdetail-Sprung überspringt archivierte Listen und zeigt einen verständlichen Hinweis, falls keine aktive Ziel-Liste vorhanden ist.
+- [x] Veraltete Fehler- und Fortschrittsmeldungen bei Einzelzuordnung und Mehrfachverschiebung auf den gültigen Konto-/Listen-/Ladekontext begrenzt.
+- [x] „Ohne Liste“, Filter-Zurücksetzen, Listenfilter, Kompaktansicht und Favoritenwechsel gegen parallele Sammelaktionen abgesichert; Auswahlansicht wird bei Filter-Reset verlassen.
+- [x] Bearbeiten und Erstellen von Listen gegen parallele Sammelaktionen und verspätete Ergebnisse nach Kontowechsel abgesichert; archivierte Listen müssen vor Gestaltung reaktiviert werden.
+- [x] Einzel- und Mehrfachverschieben prüfen nach dem Bestätigungsdialog erneut den aktuellen Bedienkontext.
+- [ ] Gezielte Syntax-, Browser- und Regressionstests des aktuellen HEAD stehen weiterhin aus; Implementierungsänderungen sind committet, aber nicht als erfolgreich browsergetestet gekennzeichnet.
+- [ ] Sammelverschieben bleibt ohne Datenbanktransaktion bei Netzwerkfehlern nicht atomar; die zwei Listen müssen bei Teilfehlern kontrolliert werden.
+- [ ] Produktfreigabe bleibt gesperrt: keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
