@@ -9,6 +9,8 @@ on:
       - 'tests/nachlass-release-policy-v2.test.cjs'
       - 'tools/digitaler-nachlass/release-policy-v2.cjs'
       - 'tools/digitaler-nachlass/server-api-v2.cjs'
+      - 'tools/digitaler-nachlass/server-auth-v2.cjs'
+      - 'tests/nachlass-server-auth-v2.test.cjs'
       - 'tests/nachlass-server-api-v2.test.cjs'
       - 'docs/nachlass-cloud-freigabe-v2.md'
       - 'docs/nachlass-server-vertrag-v2.md'
@@ -23,6 +25,8 @@ on:
       - 'tests/nachlass-release-policy-v2.test.cjs'
       - 'tools/digitaler-nachlass/release-policy-v2.cjs'
       - 'tools/digitaler-nachlass/server-api-v2.cjs'
+      - 'tools/digitaler-nachlass/server-auth-v2.cjs'
+      - 'tests/nachlass-server-auth-v2.test.cjs'
       - 'tests/nachlass-server-api-v2.test.cjs'
       - 'docs/nachlass-cloud-freigabe-v2.md'
       - 'docs/nachlass-server-vertrag-v2.md'
@@ -39,7 +43,7 @@ jobs:
         with:
           node-version: '22'
       - name: Verify preserved security notice and vault contract
-        run: node --test tests/b3-nachlass.test.cjs tests/nachlass-release-policy-v2.test.cjs tests/nachlass-server-api-v2.test.cjs
+        run: node --test tests/b3-nachlass.test.cjs tests/nachlass-release-policy-v2.test.cjs tests/nachlass-server-api-v2.test.cjs tests/nachlass-server-auth-v2.test.cjs
       - name: Install Chromium
         run: |
           npm install --no-save --no-package-lock @playwright/test@1.56.1
