@@ -331,3 +331,16 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Freigabe weiterhin gesperrt.
 
 **Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Produktentwicklung: Kompaktansicht und sichere Sammelaktion (2026-11-10)
+
+- [x] Wunschkarten können zwischen Standard- und Kompaktansicht umgeschaltet werden; bestehende Filter und Auswahl bleiben erhalten.
+- [x] Kompaktansicht zeigt Wünsche platzsparend; auf kleinen Bildschirmen einspaltige Bedienung mit großen Schaltflächen.
+- [x] Mehrfachverschieben weist schon vor der Bestätigung auf ausgewählte, aber nicht zur Ausgangsliste zugeordnete Wünsche hin.
+- [x] Nach Kontowechsel verhindert der Abschluss einer alten Mehrfachverschiebung die nachträgliche Aktualisierung der neuen Kontooberfläche.
+- [x] Unumgängliche Minimalprüfung: Dashboard-JavaScript syntaktisch geprüft, neue Ansichtsschalter und Zustandslogik statisch geprüft.
+- [ ] Browserabnahme der Kompaktansicht und Mehrfachverschiebung vor Freigabe.
+- [ ] Mehrfachverschieben bleibt nicht atomar; bei Teilfehlern doppelte Zuordnungen prüfen.
+- [ ] Freigabe weiterhin gesperrt.
+
+**Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
