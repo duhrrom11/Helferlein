@@ -39,3 +39,11 @@ References:
 - https://github.com/cfrg/draft-irtf-cfrg-hpke/blob/5f503c564da00b0687b3de75f1dfbdfc4079ad31/test-vectors.json
 - https://github.com/duhrrom11/Helferlein/actions/runs/42782126785
 - https://github.com/duhrrom11/Helferlein/actions/runs/42782127083
+
+## Follow-up verification after `a0d9515c` (2026-11-10)
+
+- GitHub run [42783604085](https://github.com/duhrrom11/Helferlein/actions/runs/42783604085), Release smoke checks: completed, success.
+- GitHub run [42783604208](https://github.com/duhrrom11/Helferlein/actions/runs/42783604208), B3 Nachlass pilot: `nachlass-ui` job completed, success; all returned step summaries successful.
+- Both current branch files `tests/nachlass-hpke-offline-v2.test.cjs` (blob `44d2598d`) and `tools/digitaler-nachlass/hpke-offline-v2.cjs` (blob `5910923c`) were fetched via GitHub connector. Local network access to raw GitHub was unavailable, so the exact branch files could not be mounted and the full ten-test suite was **not** executed locally.
+- Independent local Node.js v22.16.0 crypto verification using the two published AES-256-GCM ciphertexts, AAD values, published derived key and sequence-derived nonces: `encryptions[0]` PASS, `encryptions[1]` PASS. This is a focused reproduced crypto check, **not** execution of the repository's `node --test tests/nachlass-hpke-offline-v2.test.cjs` and **not** a second independent KEM vector.
+- No deployment, Vercel operation, merge, or production data mutation.
