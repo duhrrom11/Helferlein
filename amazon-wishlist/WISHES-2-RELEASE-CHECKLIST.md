@@ -772,3 +772,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Kopiervorgänge bleiben nicht transaktional.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: mobile Doppelaktionen und dauerhafte Verschiebungsrückmeldungen (2026-11-10)
+
+- [x] Wiederverwendbare Karten-Schaltflächen ignorieren erneute Aktivierung, solange ihre Aktion läuft; abgetrennte Schaltflächen werden nach asynchronen Vorgängen nicht erneut aktiviert.
+- [x] Vor bestätigtem Löschen einer Liste werden geladener Benutzerkontext und unveränderter Archivstatus erneut geprüft.
+- [x] Warnungen über eine teilweise abgeschlossene Einzelverschiebung bleiben auch nach einem anschließenden Neuladen sichtbar.
+- [x] Die Ergebniszusammenfassung einer Sammelverschiebung bleibt bei fehlgeschlagenem Dashboard-Reload im ursprünglichen Benutzer- und Listenkontext sichtbar.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Zweistufige Verschiebungen und Kopien sind weiterhin nicht transaktional.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
