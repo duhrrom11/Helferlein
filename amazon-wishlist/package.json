@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:node": "node --test bulk-helpers.test.mjs bulk-workflows.test.mjs isolated-browser-fixture.test.mjs",
+    "test:node": "node --test *.test.mjs",
     "test:browser": "playwright test --config playwright.config.mjs",
     "test:all": "npm run test:node && npm run test:browser"
   },
