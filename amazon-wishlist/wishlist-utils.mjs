@@ -188,6 +188,7 @@ export function previewWishlistBackup(raw) {
  let profile=null;
  if(data.profile!==null&&data.profile!==undefined){
   if(!data.profile||Array.isArray(data.profile))throw Error('Ungültiges Profil in der Sicherung.');
+  if(typeof data.profile.handle!=='string'||typeof data.profile.display_name!=='string'||typeof data.profile.bio!=='string')throw Error('Ungültiges Profil in der Sicherung.');
   const handle=validateHandle(data.profile.handle);
   const fields=validateProfileFields(data.profile.display_name,data.profile.bio);
   profile={handle,...fields};
