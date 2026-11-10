@@ -227,3 +227,54 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+
+test('clipboard validates URLs and works without browser globals',async()=>{
+ const copied=[];
+ assert.equal(await copyShareLink('https://example.org/a',{writeText:async value=>copied.push(value)},undefined),'clipboard');
+ assert.deepEqual(copied,['https://example.org/a']);
+ await assert.rejects(()=>copyShareLink('https://example.org/a',null,undefined),/Kopieren nicht möglich/);
+ await assert.rejects(()=>copyShareLink('https://user:secret@example.org/',null,undefined),/Ungültiger Link/);
+});
+
+test('CSV and JSON exports validate wish text without mutating source rows',()=>{
+ const make=(title,note)=>[{wishlist_products:{asin:'B012345678',marketplace:'amazon.de',title},note,priority:2,created_at:'2026-11-10T00:00:00Z'}];
+ const rows=make('  Buch  ','  Geschenk  ');
+ assert.match(exportWishlistCsv(rows),/"Buch";"Geschenk"/);
+ const parsed=JSON.parse(exportWishlistJson(rows));
+ assert.equal(parsed.wishes[0].title,'Buch');
+ assert.equal(parsed.wishes[0].note,'Geschenk');
+ assert.equal(rows[0].wishlist_products.title,'  Buch  ');
+ assert.equal(rows[0].note,'  Geschenk  ');
+ for(const [title,note] of [['',''],['   ',''],['x'.repeat(251),''],['Buch','x'.repeat(501)],[null,''],[42,''],['Buch',{}]]){
+  assert.throws(()=>exportWishlistCsv(make(title,note)));
+  assert.throws(()=>exportWishlistJson(make(title,note)));
+ }
+ assert.equal(JSON.parse(exportWishlistJson(make('Buch',null))).wishes[0].note,'');
+});
+
+test('backup preview checks typed fields and canonical Amazon links',()=>{
+ const wish={asin:'B012345678',title:'Buch',note:'',priority:2};
+ const preview=wishes=>previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes}));
+ assert.equal(preview([wish]).count,1);
+ assert.equal(preview([{...wish,amazon_url:'https://www.amazon.de/dp/B012345678'}]).count,1);
+ for(const patch of [{title:42},{title:null},{note:12},{note:null},{amazon_url:'https://evil.example/dp/B012345678'},{amazon_url:'https://www.amazon.de/dp/B000000000'},{amazon_url:42}]){
+  assert.throws(()=>preview([{...wish,...patch}]));
+ }
+});
+
+test('backup preview enforces 2 MB of actual UTF-8 bytes',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[]};
+ assert.equal(previewWishlistBackup(JSON.stringify(base)).count,0);
+ const oversized=JSON.stringify({...base,ignored:'ä'.repeat(1_000_001)});
+ assert.ok(oversized.length<2_000_000);
+ assert.ok(new TextEncoder().encode(oversized).byteLength>2_000_000);
+ assert.throws(()=>previewWishlistBackup(oversized),/maximal 2 MB/);
+});
+
+test('export progress rejects invalid totals and counters beyond total',()=>{
+ assert.equal(exportProgressText(0,0),'0 von 0 Wünschen geladen …');
+ assert.equal(exportProgressText(3,3),'3 von 3 Wünschen geladen …');
+ for(const total of [-1,1.5,NaN,Infinity,'5'])assert.throws(()=>exportProgressText(1,total));
+ assert.throws(()=>exportProgressText(4,3));
+});
