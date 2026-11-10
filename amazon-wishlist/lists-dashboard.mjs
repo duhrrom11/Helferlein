@@ -3,7 +3,7 @@ import {LIST_TEMPLATES,WISH_CATEGORIES,filterListWishes} from './list-features.m
 export function mountListsDashboard(db, getUser) {
  const $=id=>document.getElementById(id);
  const root=$('listsDashboard');
- let lists=[],wishes=[],selected=null,loadedOwner=null,loadGeneration=0,itemsGeneration=0,assignedIds=new Set(),favoriteIds=new Set(),recentIds=[],listCounts=new Map(),assignedTotal=0,wishCategories={},wishMarkers={},detailWishId=null,bulkIds=new Set(),allAssignedIds=new Set(),bulkBusy=false,pendingBulk=null,visibleLimit=100;
+ let lists=[],wishes=[],selected=null,loadedOwner=null,loadGeneration=0,itemsGeneration=0,assignedIds=new Set(),favoriteIds=new Set(),recentIds=[],listCounts=new Map(),assignedTotal=0,wishCategories={},wishMarkers={},detailWishId=null,bulkIds=new Set(),allAssignedIds=new Set(),bulkBusy=false,pendingBulk=null,visibleLimit=100,bulkStopRequested=false,bulkRunId=0;
  const markerKey=id=>'helferlein-wish-markers:'+id;
  function readMarkers(id){try{const value=JSON.parse(localStorage.getItem(markerKey(id))||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?Object.fromEntries(Object.entries(value).filter(([k,v])=>typeof k==='string'&&['star','later'].includes(v))):{}}catch{return {}}}
  function setMarker(wishId,marker){if(!wishes.some(w=>w.id===wishId))return;const uid=owner(),next={...wishMarkers};if(next[wishId]===marker)delete next[wishId];else next[wishId]=marker;try{localStorage.setItem(markerKey(uid),JSON.stringify(next));wishMarkers=next;renderWishCards();if(detailWishId===wishId)syncDetailMarkers();msg('Markierung in diesem Browser gespeichert.')}catch{msg('Markierung konnte nicht gespeichert werden.')}}
@@ -20,12 +20,12 @@ export function mountListsDashboard(db, getUser) {
  const favoriteKey=id=>'helferlein-wishlist-favorites:'+id;
  function readFavorites(id){try{const raw=JSON.parse(localStorage.getItem(favoriteKey(id))||'[]');return new Set(Array.isArray(raw)?raw.filter(x=>typeof x==='string'):[])}catch{return new Set()}}
  function writeFavorites(id){try{localStorage.setItem(favoriteKey(id),JSON.stringify([...favoriteIds]))}catch{msg('Favoriten können in diesem Browser nicht dauerhaft gespeichert werden.')}}
- function openList(id){bulkIds.clear();selected=id;recordRecent(id);render();$('listItems').scrollIntoView({behavior:'smooth',block:'start'})}
+ function openList(id){if(bulkBusy){msg('Die Sammelaktion läuft noch. Bitte zuerst stoppen oder abschließen.');return}bulkIds.clear();selected=id;recordRecent(id);render();$('listItems').scrollIntoView({behavior:'smooth',block:'start'})}
  function renderFavorites(){const target=$('homeFavoritesContent');target.replaceChildren();const favorites=lists.filter(l=>favoriteIds.has(l.id)&&!l.archived);if(!favorites.length){const p=document.createElement('p');p.textContent='Markiere deine Lieblingslisten mit ★, um sie hier schnell zu öffnen. Favoriten werden nur in diesem Browser gespeichert.';target.append(p);return}for(const list of favorites){const b=button(list.icon+' '+list.title,async()=>openList(list.id));target.append(b)}}
  const editorSelect=$('wishListSelect');
  function syncEditor(){const previous=editorSelect.value;editorSelect.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Ohne Liste speichern';editorSelect.append(empty);for(const list of lists.filter(x=>!x.archived)){const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title;editorSelect.append(option)}editorSelect.value=lists.some(x=>x.id===previous&&!x.archived)?previous:(lists.find(x=>x.title==='Meine Wünsche'&&!x.archived)?.id||'');editorSelect.disabled=!lists.length;}
  async function assignWish(wishId,listId,uid){if(!listId)return;const {error}=await db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid});if(error)throw error;}
- function reset(){++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;favoriteIds=new Set();recentIds=[];listCounts=new Map();assignedTotal=0;wishCategories={};wishMarkers={};detailWishId=null;$('wishDetailDialog').close();assignedIds=new Set();bulkIds.clear();allAssignedIds=new Set();bulkBusy=false;pendingBulk=null;visibleLimit=100;$('bulkConfirmDialog').close();++itemsGeneration;root.hidden=true;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';$('homeFavoritesContent').replaceChildren();$('homeRecentContent').replaceChildren();renderProgress();syncEditor();}
+ function reset(){++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;favoriteIds=new Set();recentIds=[];listCounts=new Map();assignedTotal=0;wishCategories={};wishMarkers={};detailWishId=null;$('wishDetailDialog').close();assignedIds=new Set();bulkIds.clear();allAssignedIds=new Set();bulkBusy=false;pendingBulk=null;bulkStopRequested=true;++bulkRunId;visibleLimit=100;$('bulkConfirmDialog').close();++itemsGeneration;root.hidden=true;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';$('homeFavoritesContent').replaceChildren();$('homeRecentContent').replaceChildren();renderProgress();syncEditor();}
 
  const msg=t=>{$('listsStatus').textContent=t};
  const button=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{await fn()}catch(e){msg(e.message||'Aktion fehlgeschlagen')}finally{b.disabled=false}};return b};
@@ -74,7 +74,7 @@ export function mountListsDashboard(db, getUser) {
  }
  function renderUnassigned(){const n=wishes.filter(w=>!allAssignedIds.has(w.id)).length;$('unassignedCount').textContent=String(n);$('showUnassigned').disabled=!n}
  function visibleWishes(){const globallyUnassigned=$('listWishAssignment').value==='global-unassigned';return filterListWishes(globallyUnassigned?wishes.filter(w=>!allAssignedIds.has(w.id)):wishes,{search:$('listWishSearch').value,priority:$('listWishPriority').value,assignment:globallyUnassigned?'all':$('listWishAssignment').value,assignedIds,sort:$('listWishSort').value,category:$('listWishCategory').value,categories:wishCategories,marker:$('listWishMarker').value,markers:wishMarkers})}
- function updateBulkToolbar(results=visibleWishes()){const ids=results.map(w=>w.id),selectedVisible=ids.filter(id=>bulkIds.has(id)).length;$('bulkSelectedCount').textContent=bulkIds.size+' ausgewählt'+(bulkIds.size!==selectedVisible?' ('+selectedVisible+' sichtbar)':'');$('bulkSelectVisible').checked=ids.length>0&&selectedVisible===ids.length;$('bulkSelectVisible').indeterminate=selectedVisible>0&&selectedVisible<ids.length;$('bulkSelectVisible').disabled=bulkBusy||!ids.length;$('bulkAdd').disabled=bulkBusy||!bulkIds.size||!selected;$('bulkRemove').disabled=bulkBusy||!bulkIds.size||!selected;$('bulkClear').disabled=bulkBusy||!bulkIds.size}
+ function updateBulkToolbar(results=visibleWishes()){const ids=results.map(w=>w.id),selectedVisible=ids.filter(id=>bulkIds.has(id)).length;$('bulkSelectedCount').textContent=bulkIds.size+' ausgewählt'+(bulkIds.size!==selectedVisible?' ('+selectedVisible+' sichtbar)':'');$('bulkSelectVisible').checked=ids.length>0&&selectedVisible===ids.length;$('bulkSelectVisible').indeterminate=selectedVisible>0&&selectedVisible<ids.length;$('bulkSelectVisible').disabled=bulkBusy||!ids.length;$('bulkAdd').disabled=bulkBusy||!bulkIds.size||!selected;$('bulkRemove').disabled=bulkBusy||!bulkIds.size||!selected;$('bulkClear').disabled=bulkBusy||!bulkIds.size;$('bulkSelectCategory').disabled=bulkBusy;$('listWishAssignment').disabled=bulkBusy}
  async function bulkAssign(add){
   if(bulkBusy||!selected||!bulkIds.size)return;
   const uid=owner(),listId=selected,targets=[...bulkIds].filter(id=>wishes.some(w=>w.id===id)&&(add?!assignedIds.has(id):assignedIds.has(id)));
@@ -82,16 +82,32 @@ export function mountListsDashboard(db, getUser) {
   const list=lists.find(l=>l.id===listId);if(!list||list.archived){$('bulkStatus').textContent='Bitte eine aktive Liste wählen.';return}
   pendingBulk={uid,listId,add,targets};$('bulkConfirmTitle').textContent=add?'Wünsche zur Liste hinzufügen':'Wünsche aus der Liste entfernen';$('bulkConfirmDescription').textContent=targets.length+' Wünsche '+(add?'zu „'+list.title+'“ hinzufügen?':'aus „'+list.title+'“ entfernen?')+' Die Wünsche selbst bleiben erhalten.';$('bulkConfirmSample').textContent=targets.slice(0,5).map(id=>'• '+(wishes.find(w=>w.id===id)?.wishlist_products?.title||'Wunsch')).join('\n')+(targets.length>5?'\n… und '+(targets.length-5)+' weitere':'');$('bulkConfirmDialog').showModal();
  }
- async function applyBulk(){const job=pendingBulk;if(!job||bulkBusy)return;pendingBulk=null;$('bulkConfirmDialog').close();const {uid,listId,add,targets}=job;if(getUser()?.id!==uid||selected!==listId)return;
-  bulkBusy=true;updateBulkToolbar();let success=0,failed=0;
+ function reportBulk(done,total,success,failed){$('bulkProgressBar').max=Math.max(1,total);$('bulkProgressBar').value=done;$('bulkProgressText').textContent=done+' von '+total+' verarbeitet';$('bulkProgressDetails').textContent=success+' erfolgreich · '+failed+' fehlgeschlagen'+(bulkStopRequested?' · Stopp angefordert':'')}
+ async function applyBulk(){
+  const job=pendingBulk;if(!job||bulkBusy)return;
+  pendingBulk=null;$('bulkConfirmDialog').close();
+  const {uid,listId,add,targets}=job;
+  if(getUser()?.id!==uid||selected!==listId||!lists.some(l=>l.id===listId&&!l.archived))return;
+  const run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;
+  $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
+  updateBulkToolbar();let success=0,failed=0,done=0,interrupted=false;
+  reportBulk(0,targets.length,0,0);
   try{
    for(const wishId of targets){
-    if(getUser()?.id!==uid||selected!==listId){$('bulkStatus').textContent='Vorgang wegen Kontowechsel oder Listenwechsel abgebrochen.';break}
-    const q=add?db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',listId).eq('wish_id',wishId).eq('user_id',uid);
-    try{const {error}=await q;if(error)throw error;success++;bulkIds.delete(wishId)}catch{failed++}
+    if(bulkStopRequested||run!==bulkRunId||getUser()?.id!==uid||selected!==listId){interrupted=true;break}
+    try{
+     const q=add?db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',listId).eq('wish_id',wishId).eq('user_id',uid);
+     const {error}=await q;if(error)throw error;success++;bulkIds.delete(wishId);
+    }catch(e){failed++}
+    done++;reportBulk(done,targets.length,success,failed);
    }
-   if(getUser()?.id===uid&&selected===listId){$('bulkStatus').textContent=success+' erfolgreich, '+failed+' fehlgeschlagen. Fehlgeschlagene Wünsche bleiben ausgewählt.';await load()}
-  }finally{bulkBusy=false;updateBulkToolbar()}
+   if(getUser()?.id===uid&&run===bulkRunId){
+    $('bulkStatus').textContent=(interrupted?'Vorgang gestoppt. ':'Vorgang abgeschlossen. ')+success+' erfolgreich, '+failed+' fehlgeschlagen'+(targets.length-done?' und '+(targets.length-done)+' nicht bearbeitet':'')+'. Fehlgeschlagene und nicht bearbeitete Wünsche bleiben ausgewählt.';
+    try{await load()}catch(e){msg('Zuordnungen aktualisiert, aber das Neuladen ist fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
+   }
+  }finally{
+   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkStop').disabled=true;updateBulkToolbar();renderWishCards()}
+  }
  }
  function renderWishCards(){
   const cards=$('listWishCards');cards.replaceChildren();
@@ -102,7 +118,7 @@ export function mountListsDashboard(db, getUser) {
   if(!results.length){const empty=document.createElement('p');empty.textContent='Keine passenden Wünsche gefunden. Passe deine Filter an oder füge einen Wunsch hinzu.';cards.append(empty)}
   for(const wish of results.slice(0,visibleLimit)){
    const card=document.createElement('article');card.className='list-wish-card';
-   const selectRow=document.createElement('label');selectRow.className='wish-card-select';const selectCheck=document.createElement('input');selectCheck.type='checkbox';selectCheck.checked=bulkIds.has(wish.id);selectCheck.disabled=bulkBusy;selectCheck.onchange=()=>{if(selectCheck.checked)bulkIds.add(wish.id);else bulkIds.delete(wish.id);updateBulkToolbar()};const selectText=document.createElement('span');selectText.textContent='Für Mehrfachaktion auswählen';selectRow.append(selectCheck,selectText);card.append(selectRow);
+   const selectRow=document.createElement('label');selectRow.className='wish-card-select';const selectCheck=document.createElement('input');selectCheck.type='checkbox';selectCheck.checked=bulkIds.has(wish.id);selectCheck.disabled=bulkBusy;selectCheck.onchange=()=>{if(bulkBusy)return;if(selectCheck.checked)bulkIds.add(wish.id);else bulkIds.delete(wish.id);updateBulkToolbar()};const selectText=document.createElement('span');selectText.textContent='Für Mehrfachaktion auswählen';selectRow.append(selectCheck,selectText);card.append(selectRow);
    const title=document.createElement('h4');title.textContent=wish.wishlist_products?.title||'Wunsch';
    const priority=document.createElement('p');priority.className='wish-priority';priority.textContent=['','Sehr wichtig','Normal','Irgendwann'][wish.priority]||'Priorität '+wish.priority;
    card.append(title,priority);const category=WISH_CATEGORIES.find(c=>c.id===wishCategories[wish.id]);if(category){const chip=document.createElement('span');chip.className='wish-category-chip';chip.textContent=category.label;card.append(chip)}
@@ -126,10 +142,11 @@ export function mountListsDashboard(db, getUser) {
   const uid=owner(),rows=[];for(let offset=0;;offset+=1000){const {data,error}=await db.from('wishlist_list_items').select('wish_id').eq('list_id',list.id).eq('user_id',uid).range(offset,offset+999);if(error)throw error;if(getUser()?.id!==uid||selected!==list.id||generation!==itemsGeneration)return;rows.push(...(data||[]));if((data||[]).length<1000)break}assignedIds=new Set(rows.map(x=>x.wish_id));renderWishCards();
  }
  $('wishLoadMore').onclick=()=>{visibleLimit+=100;renderWishCards()};
- $('bulkSelectVisible').onchange=()=>{for(const w of visibleWishes()){if($('bulkSelectVisible').checked)bulkIds.add(w.id);else bulkIds.delete(w.id)}renderWishCards()};
+ $('bulkSelectVisible').onchange=()=>{if(bulkBusy)return;for(const w of visibleWishes()){if($('bulkSelectVisible').checked)bulkIds.add(w.id);else bulkIds.delete(w.id)}renderWishCards()};
+ $('bulkStop').onclick=()=>{bulkStopRequested=true;$('bulkStop').disabled=true;$('bulkProgressDetails').textContent='Stoppe nach der laufenden Änderung …'};
  $('bulkSelectCategory').onclick=()=>{if($('listWishCategory').value==='all'){$('bulkStatus').textContent='Bitte zuerst eine Kategorie auswählen.';return}for(const wish of visibleWishes())bulkIds.add(wish.id);renderWishCards();$('bulkStatus').textContent='Sichtbare Wünsche dieser Kategorie ausgewählt.'};
  $('bulkConfirmCancel').onclick=()=>{$('bulkConfirmDialog').close();pendingBulk=null};$('bulkConfirmDialog').addEventListener('close',()=>{pendingBulk=null});$('bulkConfirmApply').onclick=()=>applyBulk().catch(e=>{$('bulkStatus').textContent=e.message});
- $('bulkClear').onclick=()=>{bulkIds.clear();renderWishCards()};$('bulkAdd').onclick=()=>bulkAssign(true).catch(e=>{$('bulkStatus').textContent=e.message});$('bulkRemove').onclick=()=>bulkAssign(false).catch(e=>{$('bulkStatus').textContent=e.message});
+ $('bulkClear').onclick=()=>{if(bulkBusy)return;bulkIds.clear();renderWishCards()};$('bulkAdd').onclick=()=>bulkAssign(true).catch(e=>{$('bulkStatus').textContent=e.message});$('bulkRemove').onclick=()=>bulkAssign(false).catch(e=>{$('bulkStatus').textContent=e.message});
  const globalOption=document.createElement('option');globalOption.value='global-unassigned';globalOption.textContent='In keiner Liste';$('listWishAssignment').append(globalOption);
  $('showUnassigned').onclick=()=>{$('listWishAssignment').value='global-unassigned';$('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';$('listWishMarker').value='all';$('listWishSort').value='newest';bulkIds.clear();renderWishCards();$('listWishCards').scrollIntoView({behavior:'smooth',block:'start'});};
  for(const id of ['listsSearch','listsView','listsSort'])$(id).addEventListener('input',render);
