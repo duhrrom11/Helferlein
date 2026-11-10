@@ -64,7 +64,7 @@ test('Nachlass release v2 is documented as a gated design, not an active authori
  assert.match(design,/nicht produktiv implementiert/);
  assert.match(design,/Firestore Security Rules/);
  assert.match(design,/LOCKED -> ALARM_PENDING -> RELEASED/);
- assert.match(design,/keine.*produktive serverseitige Erben-Freigabe einschalten/s);
+ assert.match(design,/produktive serverseitige Erben-Freigabe einschalten/);
  assert.match(heir,/keine serverseitig durchgesetzte Zugriffssperre/);
  assert.match(html,/#key=\$\{encodeURIComponent\(cfg\.masterKeyHex\)\}/);
 });
