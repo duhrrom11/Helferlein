@@ -223,6 +223,15 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Einstellungen:** Individuelle, dauerhaft gespeicherte Aktivierung/Deaktivierung der drei Hinweisarten.
 - **Abgrenzung:** Keine E-Mail-, Push- oder Hintergrundbenachrichtigungen; Ereignisse werden beim Abruf aus dem aktuellen Datenbestand berechnet. Entfernte Likes, aufgehobene Follows oder später privatisierte Sammlungen erscheinen ggf. nicht mehr. Ungelesen-Zahl bezieht sich auf die geladenen Einträge, nicht auf alle möglichen Aktivitäten. Gelesen-Markierungen bleiben bei erneuter Erzeugung derselben Ereigniskennung erhalten. Vollständiger Browser-End-to-End-Test mit realen Konten steht noch aus.
 
+## Entwicklungsfortschritt – 10.11.2026 (Geschenk- und Anlasszentrale)
+
+- **Neu umgesetzt:** Responsive private Geschenk- und Anlasszentrale `amazon-wishlist/occasions.html` und `occasions.mjs` mit Geburtstagen, Jahrestagen und frei benannten Geschenkterminen.
+- **Produktivmigration (additiv):** Neue Tabelle `wishlist_occasions` mit Titel, optionalem Personennamen, Datum, jährlicher Wiederholung, Vorwarnzeit in Tagen und privaten Notizen. Keine bestehenden Produktivdatensätze verändert.
+- **Sicherheit:** RLS aktiviert; `SELECT`, `INSERT`, `UPDATE` und `DELETE` ausschließlich für den jeweiligen authentifizierten Eigentümer. Serverseitige Datenvalidierung durch Check-Constraints und Feldlängen.
+- **Kalenderfunktionen:** Wiederkehrende Jahrestermine, Countdown in Tagen, Erinnerungshinweise im konfigurierten Zeitfenster, Filter „Alle“, „Nächste 30 Tage“ und „Erinnerungen“, Hinzufügen/Bearbeiten/Löschen.
+- **Mobile Bedienung:** Responsive Layouts, große Touch-Ziele und Hauptnavigation mit direktem Link.
+- **Grenzen:** Erinnerungshinweise erscheinen nur beim Öffnen der Seite; keine automatischen Push-Mitteilungen oder E-Mails. Einmalige Termine in der Vergangenheit werden nicht in der kommenden Terminliste angezeigt. Für den 29. Februar wird in Nicht-Schaltjahren der 28. Februar verwendet. Es werden höchstens 1000 Termine geladen. Browser-End-to-End-Test mit echtem Nutzerkonto steht aus.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
