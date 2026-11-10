@@ -82,3 +82,9 @@ export async function fetchDashboardBase(db,userId) {
 export function fetchDashboardMembership(db,userId,{pageSize=1000,isCurrent=()=>true}={}) {
  return fetchAllPages((from,to)=>db.from('wishlist_list_items').select('list_id,wish_id').eq('user_id',userId).order('list_id',{ascending:true}).order('wish_id',{ascending:true}).range(from,to),{pageSize,isCurrent});
 }
+
+/** Derive list-specific membership only from a completed, ready snapshot. */
+export function membershipForSelectedList({membershipReady,membershipByList,listId}) {
+ if(!membershipReady||!listId)return new Set();
+ return new Set(membershipByList.get(listId)||[]);
+}
