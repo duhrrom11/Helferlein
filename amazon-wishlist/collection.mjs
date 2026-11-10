@@ -1,3 +1,4 @@
+import {currentUser,likeCounts,myReactions,reactionButtons} from './collection-social.mjs';
 import {affiliateUrl} from './amazon-links.mjs';
 const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
 const $=id=>document.getElementById(id);
@@ -38,6 +39,9 @@ async function main(){
   card.append(cover,body);grid.append(card);
  }
  if(!wishes.length){const empty=document.createElement('p');empty.className='empty';empty.textContent='Diese Sammlung enthält noch keine sichtbaren Wünsche.';grid.append(empty)}
+ const viewer=await currentUser(db);
+ const [counts,reactions]=await Promise.all([likeCounts(db,[id]),myReactions(db,viewer,[id])]);
+ $('reactions').append(reactionButtons({db,listId:id,user:viewer,likes:reactions.likes,bookmarks:reactions.bookmarks,counts,notify:message=>{$('reactionStatus').textContent=message}}));
  $('collection').hidden=false;notice.hidden=true;document.title=list.title+' · Helferlein Wishes';
  $('share').addEventListener('click',async()=>{
   const data={title:list.title,text:'Entdecke diese öffentliche Wunschsammlung:',url:location.href};
