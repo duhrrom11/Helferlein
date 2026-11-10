@@ -873,3 +873,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: veraltete Sammelaktionsfortschritte und mobile Navigation (2026-11-10)
+
+- [x] Sammelaktions-Fortschrittsmeldungen werden nur bei passendem angemeldetem und geladenem Besitzer aktualisiert; der direkte Sammelaktionsstart prüft den geladenen Besitzer.
+- [x] Vorbereitete Sammelaufträge ohne gültige Zielauswahl werden nicht geöffnet.
+- [x] Abgehängte Verlaufseinträge können keine Wiederholung auslösen, wenn sie nicht mehr Teil des aktuellen Sammelaktionsverlaufs sind.
+- [x] Mobile Zurück-Navigation und Karten-/Kompaktansicht erfordern einen geladenen, aktuellen Besitzerarbeitsbereich.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
