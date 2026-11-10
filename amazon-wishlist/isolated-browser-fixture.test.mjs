@@ -13,7 +13,7 @@ function mockPage(){
   async request(url){
    const calls=[];
    await handler({
-    request:()=>({url}),
+    request:()=>({url:()=>url}),
     fulfill:async opts=>{calls.push({type:'fulfill',opts})},
     abort:async()=>{calls.push({type:'abort'})}
    });
