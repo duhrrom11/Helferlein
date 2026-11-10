@@ -124,3 +124,17 @@
 - [ ] Neue Fehlerbehebungen in einem vollständigen isolierten Dashboard-Integrationstest gegen einen Mock-Client bestätigen
 
 **Freigabe:** Weiterhin **gesperrt**. In dieser Runde wurde **kein vollständiger Node- oder Playwright-Branch-Testlauf** behauptet. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Isolierte Regressionen für Dashboard-Reloads (2026-11-10)
+
+- [x] Reine Guards `bulkControlsEnabled` und `currentDashboardLoad` in `bulk-helpers.mjs` extrahiert und in `lists-dashboard.mjs` eingebunden
+- [x] Regressionstest: Bulk-Aktionen bei fehlendem Mitgliedschaftssnapshot oder laufender Aktion gesperrt
+- [x] Regressionstest: Fehler einer veralteten Generation oder eines anderen Benutzerkontos dürfen keinen aktuellen Ladefehler veröffentlichen
+- [x] Regressionstest: Ablehnung des aktuellen initialen Ladevorgangs veröffentlicht einen Fehler; Ablehnung eines veralteten Ladevorgangs nicht
+- [x] **30/30 aktuelle Branch-Logiktests** in isoliertem JavaScript-Runner tatsächlich ausgeführt und bestanden; keine Node-`--test`-Behauptung
+- [x] Lokalen GitHub-Checkout erneut versucht; `git ls-remote` weiterhin durch DNS (`Could not resolve host: github.com`) blockiert
+- [ ] Vollständige Branch-Node-Tests mit `node --test` ausführen
+- [ ] Neun Playwright-Browserfälle mit installiertem `@playwright/test` ausführen
+- [ ] Verifiziertes npm-Lockfile nach verfügbarer Registry erzeugen und prüfen
+
+**Freigabestatus:** Nicht freigegeben. Die drei neuen Tests prüfen isolierte Guards und simulierte Fehlerbehandlung; die Integration der Guards in der echten Dashboard-Oberfläche muss zusätzlich im Browser getestet werden. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
