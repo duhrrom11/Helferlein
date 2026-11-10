@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Orientierung und reduzierte Navigationslast)
+
+- **Neu umgesetzt:** Kontextabhängiger, auf Smartphones erst nach weiterem Scrollen sichtbarer „Nach oben“-Button. Berücksichtigt sichere Bildschirmränder und die Einstellung für reduzierte Bewegung.
+- **Nutzerführung:** Die mobile Schnellnavigation markiert den aktuell im Blickfeld befindlichen Bereich. Aufklappbare Hauptmenügruppen schließen nach Auswahl eines enthaltenen Links.
+- **Darstellung:** Ruhigere Navigationsflächen, konsistente Karten und Schaltflächen sowie bessere Umbrüche und horizontale Themen-Navigation auf kleinen Displays.
+- **Produktivdaten:** Nur HTML, CSS und rein clientseitige Navigationslogik. Keine Supabase-Migration, keine Testdaten und keine Änderungen an Konten, Wunschlisten oder Geschenken.
+- **Qualität:** Vorhandensein des neuen Bedienelements und eindeutige IDs der zentralen Bereiche geprüft. Authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Mobile Designverfeinerung: Karten und Navigation)
 
 - **Navigation:** Mobile Hauptnavigation verdichtet; aufklappbare Featuregruppen schließen einander beim Öffnen, damit die Seite nicht durch mehrere offene Menüs unnötig lang wird. Aktiver Sprunglink wird über `aria-current=location` hervorgehoben.
