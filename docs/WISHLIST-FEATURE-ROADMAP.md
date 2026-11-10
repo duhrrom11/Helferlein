@@ -153,6 +153,14 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Wichtige Abgrenzung:** Es gibt **noch keine öffentlichen, dauerhaft abrufbaren Sammlungsseiten** und keine echte per Link freigegebene Privatlistenansicht. Die Aktion übermittelt nur eine bewusst erstellte Textkopie. Die Vorlage „unter 50 €“ ist eine thematische Bezeichnung, **keine automatische Preisprüfung**.
 - **Offen:** Sichere öffentlich teilbare Sammlungsseiten mit RLS, individuelle Titelbilder, Profilintegration und interaktive soziale Funktionen.
 
+## Entwicklungsfortschritt – 10.11.2026 (Öffentliche Sammlungsseiten)
+
+- **Neu umgesetzt:** Eigenständige responsive Sammlungsseite `amazon-wishlist/collection.html?id=<uuid>` mit Titel, Beschreibung, Icon, Wunschkarten und Amazon-Partnerlinks.
+- **Neu umgesetzt:** Besitzer können die Sichtbarkeit bestehender Listen im Bearbeitungsformular zwischen `private` und `public` umschalten; erstmalige Veröffentlichung erfordert eine ausdrückliche Bestätigung. Öffentliche Links lassen sich aus dem Dashboard öffnen und kopieren.
+- **Produktive Supabase-RLS erweitert:** Zwei additive `SELECT`-Policies auf `wishlist_lists` und `wishlist_list_items` geben ausschließlich nicht archivierte Listen mit `visibility='public'` und deren Zuordnungen für `anon`/`authenticated` frei. Eigentümerregeln bleiben unverändert; keine Daten gelöscht.
+- **Wichtige bestehende Einschränkung:** `wishlist_wishes` und `wishlist_products` waren bereits unabhängig von der Listenfreigabe öffentlich lesbar. „Private Liste“ schützt derzeit die Listenmetadaten und Mitgliedschaften, **nicht** die grundsätzliche Sichtbarkeit einzelner Wünsche.
+- **Noch offen:** End-to-End-Browserprüfung, echte Titelbilder, personalisierte Slugs statt UUID-Links, Social-Interaktionen und eine umfassende Überarbeitung der Wunsch-Privatsphäre.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
