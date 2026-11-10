@@ -678,3 +678,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung ohne Imports und gezielte Quelltextkontrolle erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; die Laufzeitverbesserung ist nicht per Benchmark gemessen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Autopilot: exklusive Listen-Duplizierung und mobile Leerzustände (2026-11-10)
+
+- [x] Mobile Zahlen und Leerzustände für Wünsche ohne Liste verwenden die validierte eindeutige Zuordnungsmenge; Filter-Zurücksetzen ist während laufender Einzeländerungen gesperrt.
+- [x] Listen-Duplizierung setzt eine exklusive Sperre vor dem ersten Schreibvorgang und löst sie in finally; gewöhnliches Neuladen, Einzelverschiebungen, Sammelzuordnungen und Sammelverschiebungen werden während des Kopierens abgefangen.
+- [x] Kopieren der Listenzuordnungen erfolgt weiterhin in begrenzten 100er-Paketen. Teilfehler unterscheiden zwischen einer nicht erstellten Liste und einer bereits angelegten, möglicherweise unvollständigen Kopie.
+- [x] Listengestaltung, Neuanlage, Archivierung und Löschung werden während laufender Duplizierung nicht gestartet.
+- [x] Minimale JavaScript-Parserprüfung ohne Imports und gezielte Quelltextkontrolle erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen. Duplizieren ist nicht transaktional; bei Teilfehlern Kopie manuell prüfen. Ein Konto-/Sitzungswechsel während eines Netzwerkaufrufs kann einen bereits gestarteten Schreibvorgang nicht zurücknehmen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
