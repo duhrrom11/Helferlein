@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-Tagesplanung)
+
+- **Neu umgesetzt:** Privater Tagesfokus in `gift-assistant.html`/`gift-assistant.mjs` mit heute fälligen und überfälligen Aufgaben, Dringlichkeitsbegründung und mobiler Darstellung.
+- **Bestätigte Schnellaktionen:** Einzeln „Erledigen“ oder „Auf morgen verschieben“ mit Bestätigungsdialog, bestehender owner-only UPDATE-RLS und optimistischer Konfliktprüfung anhand des bisherigen Feldwerts. Kein automatisches Umschreiben von Aufgaben.
+- **Fortschritt:** Tagesquote der aktuell erledigten heute fälligen Aufgaben, Liste bereits erledigter Aufgaben und Vierwochenübersicht nach Fälligkeitswoche. **Methodische Grenze:** Ohne Änderungsverlauf sind dies aktuelle Statusquoten, keine historischen Erledigungszeitpunkte; ausdrücklich in der Oberfläche gekennzeichnet.
+- **Produktivschutz:** Keine Datenbankmigration, keine Testdaten, keine Veränderung historischer Jahresabschlüsse. Bestehende Produktivdaten bleiben erhalten; ausschließlich ausdrücklich bestätigte Einzelaktionen ändern Status oder Fälligkeit. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Interaktive private Geschenk-Wochenplanung)
 
 - **Neu umgesetzt:** Interaktive Aufgabenaktionen in der privaten Geschenk-Planungsassistenz: einzelne offene Aufgaben nach Bestätigungsdialog als erledigt markieren und Fälligkeitsdatum nach Bestätigungsdialog verschieben. Mobile Eingabefelder und Aktionsstatusmeldungen.
