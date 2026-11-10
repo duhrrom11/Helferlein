@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Privater Geschenk-Jahresrückblick)
+
+- **Neu umgesetzt:** Mobiler Jahresrückblick für abgeschlossene Jahre auf Basis unveränderlicher `wishlist_gift_year_closings`-Snapshots. Kennzahlen für Geschenke, Ausgaben, Budgets und Aufgaben, nachweisbare Meilensteine (vollständige Geschenk- bzw. Aufgabenabschlüsse), abgeschlossene Anlassgruppen und fehlende historische Aufgaben-Snapshots werden transparent dargestellt.
+- **Privater Export:** JSON-Export der eigenen historischen Abschlussdaten inklusive einzelner gespeicherter Geschenke, Aufgaben und Budgets mittels lokalem Browser-Blob; Druckansicht für Browser-Print/PDF. Keine neue externe Export-API und keine Datenübertragung an einen zusätzlichen Dienst.
+- **Sicherheit und Datenbestand:** Bestehende owner-only SELECT-RLS auf `wishlist_gift_year_closings` wird weiterverwendet; kein Datenbankschema geändert, keine bestehenden Abschlüsse umgeschrieben und keine Testdaten erstellt. Exportdateien enthalten private Inhalte und sollten vertraulich aufbewahrt werden.
+- **Grenzen:** Anlassnamen sind nur für Anlässe mit gespeicherten Budget-Snapshot-Titeln verfügbar; andernfalls wird ein neutraler Platzhalter angezeigt. Meilensteine basieren auf Abschlussstatus, nicht auf echten Ereigniszeitpunkten. Keine nachträgliche Rekonstruktion historischer Aufgaben für ältere Abschlüsse. Vollständiger Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Jahreschronik mit Aufgaben-Snapshots)
 
 - **Neu umgesetzt:** Zukünftige historische Jahresabschlüsse speichern zusätzlich unveränderliche Aufgaben-Momentaufnahmen (`tasks_snapshot`, `task_count`, `task_done_count`) aus privaten, jahreszugeordneten Geschenk-Checklisten. Gespeichert werden Aufgaben-ID, Anlass-ID, Titel, Status, Fälligkeit, Priorität, Vorlagenschlüssel und Archivierungszeitpunkt.
