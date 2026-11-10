@@ -571,3 +571,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls (ohne Imports) und gezielte GitHub-Inhaltskontrolle erfolgreich.
 - [ ] Browser-, Mobilgeräte- und End-to-End-Tests bleiben offen. Die Duplizierung bleibt eine nicht-atomare Mehrschrittoperation.
 - [ ] Freigabe bleibt gesperrt. Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Autopilot: mobile Wunschkarten während laufender Einzeländerungen (2026-11-10)
+
+- [x] Navigation zwischen Listen und Sprung aus Wunschdetails warten, bis laufende Einzeländerungen abgeschlossen sind. Dadurch wird eine mehrstufige Verschiebung nicht durch einen vorzeitigen Listenwechsel unterbrochen.
+- [x] Direkte Wunschzuordnung unterscheidet einen erfolgreichen Datenbankschreibvorgang von einem anschließenden Reload-Fehler und zeigt die nötige Aktualisierung an.
+- [x] Auswahl-, Zuordnungs- und Markierungsfelder betroffener Wunschkarten werden während der Einzeländerung sichtbar deaktiviert; andere Karten bleiben bedienbar.
+- [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls (ohne Imports) und gezielte Inhaltsprüfung erfolgreich.
+- [ ] Browser-, Mobilgeräte- und End-to-End-Tests weiterhin offen; keine produktiven Supabase-Tests.
+- [ ] Freigabe gesperrt. Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
