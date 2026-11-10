@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Kartenübersicht privater Cloud-Filteransichten)
+
+- **Neu umgesetzt:** Responsive Kartenübersicht für alle privaten Cloud-Filteransichten der Dashboard-Sicherungspunkt-Zeitachse, mit Namen, gespeicherter Filterkombination und letztem Änderungsdatum.
+- **Interaktion:** Jede Karte bietet eine lesende Vorschau mit Anzahl der Unterschiede zu aktuellen Filtern sowie die direkte Anwendung der gespeicherten Filter. Keine Änderungen an Sicherungspunkten oder deren Wiederherstellungsablauf.
+- **Sicherheit:** Keine Datenbankmigration und keine Testdaten. RLS und Berechtigungen für Cloud-Ansichten, Dashboard-Präferenzen, Historie und Sicherungspunkte geprüft. Kein anonymer Lesezugriff; Sicherungspunkte und Historie weiterhin nicht direkt beschreibbar.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Cloud-Filteransichten verwalten)
 
 - **Neu umgesetzt:** Bestehende Cloud-Filteransichten lassen sich mit einem neuen Namen atomar umbenennen oder unter einem freien Namen duplizieren. Ausgewählte Ansichten zeigen das letzte Änderungsdatum und die Anzahl der gespeicherten Kategorien.
