@@ -58,3 +58,49 @@ test('workflow: filtering assigned wishes after simulated changes',async()=>{
  await db.write(true,'b');
  assert.deepEqual(filterListWishes(items,{assignment:'assigned',assignedIds:db.membership}).map(w=>w.id),['b','a']);
 });
+
+test('concurrent bulk attempts are serialized by the UI busy guard',async()=>{
+ const db=mockDatabase({assigned:[]});
+ let busy=false,release;const gate=new Promise(resolve=>{release=resolve});
+ async function confirmedAction(ids){
+  if(busy)return false;
+  busy=true;
+  try{await executeBulkJob({targets:ids,write:async id=>{await gate;return db.write(true,id)}});return true}
+  finally{busy=false}
+ }
+ const first=confirmedAction(['a']);
+ assert.equal(await confirmedAction(['b']),false);
+ release();assert.equal(await first,true);
+ assert.deepEqual(db.writes.map(w=>w.id),['a']);
+});
+test('stop request during an in-flight write waits for it, then leaves later targets untouched',async()=>{
+ let release;const gate=new Promise(resolve=>{release=resolve});
+ let stop=false;const calls=[];
+ const running=executeBulkJob({targets:['a','b'],shouldStop:()=>stop,write:async id=>{calls.push(id);await gate;return {error:null}}});
+ stop=true;release();
+ const result=await running;
+ assert.deepEqual(calls,['a']);assert.deepEqual(result.completed,['a']);assert.deepEqual(result.remaining,['b']);
+});
+test('server error on one wish does not abort other writes',async()=>{
+ const db=mockDatabase({assigned:[],fail:['b']});
+ const result=await executeBulkJob({targets:['a','b','c'],write:id=>db.write(true,id)});
+ assert.deepEqual(result.completed,['a','c']);assert.deepEqual(result.failed,['b']);
+ assert.equal(result.errors.length,1);assert.match(result.errors[0].reason,/Berechtigung/);
+});
+test('a thrown network exception is recorded and later wishes continue',async()=>{
+ const calls=[];
+ const result=await executeBulkJob({targets:['a','b','c'],write:async id=>{calls.push(id);if(id==='b')throw new Error('Failed to fetch');return {error:null}}});
+ assert.deepEqual(calls,['a','b','c']);assert.deepEqual(result.failed,['b']);
+ assert.match(result.errors[0].reason,/Verbindungsproblem/);
+});
+test('progress callback reports monotonically increasing completed items',async()=>{
+ const progress=[];
+ await executeBulkJob({targets:['a','b','c'],write:async()=>({error:null}),onProgress:x=>progress.push(x.done)});
+ assert.deepEqual(progress,[1,2,3]);
+});
+test('duplicate selections cannot generate duplicate server writes',async()=>{
+ const db=mockDatabase({assigned:[]});
+ const targets=eligibleBulkTargets(['a','a','b','b'],['a','b'],db.membership,true);
+ await executeBulkJob({targets,write:id=>db.write(true,id)});
+ assert.deepEqual(db.writes.map(w=>w.id),['a','b']);
+});
