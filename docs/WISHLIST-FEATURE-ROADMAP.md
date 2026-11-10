@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Privater Dashboard-Einstellungsverlauf)
+
+- **Neu umgesetzt:** Eigentümergefilterter Einstellungsverlauf mit Zeitstempel, tatsächlich geänderten Konfigurationsfeldern und explizit bestätigter Wiederherstellung früherer vollständiger Konfigurationen.
+- **Produktivmigration:** `wishlist_private_immutable_dashboard_settings_history` legt `wishlist_gift_home_history` an. Ein geschützter AFTER INSERT/UPDATE-Trigger protokolliert neue bzw. tatsächlich veränderte Einstellungen mit vorherigem und neuem JSON-Snapshot. Keine rückwirkende Rekonstruktion historischer Änderungen.
+- **Sicherheit:** Historientabelle: RLS aktiviert, owner-only SELECT, kein anonymes Lesen und keine direkten INSERT/UPDATE/DELETE-Rechte für authentifizierte Nutzer. Die Wiederherstellung schreibt nur in die bereits owner-geschützte Präferenztabelle und erzeugt dadurch einen neuen Historieneintrag. Alle Geschenkaufgaben, Anlässe und historischen Produktivdaten bleiben erhalten.
+- **Frontend:** Auf `amazon-wishlist/index.html` ein privater Verlauf mit maximal 30 neuesten Einträgen; `gift-start.mjs` zeigt nachvollziehbare Feldänderungen und erlaubt eine bestätigte Wiederherstellung, soweit der gespeicherte Snapshot gültig ist.
+- **Prüfung:** RLS und Rechte beider Tabellen geprüft, JavaScript-Syntax geprüft. Keine Testdaten. Authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Layout-Vorschau, Rückgängig und Standardansicht)
 
 - **Neu umgesetzt:** Nicht persistente Vorschau der drei Dashboard-Vorlagen und individueller Formulareinstellungen; aktive Layouts werden erst nach ausdrücklicher Bestätigung gespeichert.
