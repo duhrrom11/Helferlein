@@ -883,3 +883,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: abgehängte mobile Kartensteuerungen (2026-11-10)
+
+- [x] Verspätete Erfolgsmeldungen einzelner Wunschzuordnungen prüfen angemeldeten und geladenen Besitzer.
+- [x] Abgehängte Mitgliedschafts-Checkboxen werden nicht verarbeitet oder nach asynchronen Änderungen wieder aktiviert.
+- [x] Abgehängte Sammelauswahl-Checkboxen und Wunschmarkierungen können den aktuellen Zustand nicht verändern.
+- [x] Listenfavoriten und einzelne mobile Verschiebeaktionen prüfen, ob ihre ursprünglichen Bedienelemente noch mit dem aktuellen Dokument verbunden sind.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
