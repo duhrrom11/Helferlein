@@ -19,6 +19,13 @@ Pinned CFRG JSON `mode=0, kem_id=32, kdf_id=1, aead_id=2`, `encryptions[1]`: AAD
 - GitHub Actions run [42782314241](https://github.com/duhrrom11/Helferlein/actions/runs/42782314241): `nachlass-ui` job completed successfully, including Chromium browser verification and evidence preservation. This does **not** establish that the later HPKE test commit `1e5af0cd` passed CI.
 - GitHub commit `2f8d9f9d` records this second case; its CI is not independently confirmed.
 
+## Verified CI follow-up (2026-11-10)
+
+- Commit `2f8d9f9dcb2905bc638b44ee33651ce0925f768e`: [B3 Nachlass 42782729693](https://github.com/duhrrom11/Helferlein/actions/runs/42782729693) and [release smoke 42782729760](https://github.com/duhrrom11/Helferlein/actions/runs/42782729760) both completed successfully.
+- Audit correction commit `10fd5b52261a24b52af1084d5aa785323d6aef2e`: [B3 Nachlass 42783367200](https://github.com/duhrrom11/Helferlein/actions/runs/42783367200) and [release smoke 42783367165](https://github.com/duhrrom11/Helferlein/actions/runs/42783367165) both completed successfully. B3 `nachlass-ui` and release `smoke` jobs have successful step summaries.
+- No direct workflow run was returned for abbreviated test commit `1e5af0cd`. Its test is present in the branch's `tests/nachlass-hpke-offline-v2.test.cjs`, but do not claim a commit-specific CI run.
+- A fresh local execution of `node --test tests/nachlass-hpke-offline-v2.test.cjs` against the current feature branch is **not verified** in this follow-up: the available local ZIP is not a checkout of this branch and the environment cannot clone GitHub. Green workflow status must not be misreported as a local execution.
+
 ## Limits / follow-up
 
 - The intermediate checkpoints are **not a second independent published vector**; all derive from the same pinned CFRG case.
