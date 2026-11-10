@@ -425,3 +425,15 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Produktfreigabe weiterhin gesperrt.
 
 **Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Produktentwicklung: schnellere Wunschkarten und sichere Navigation (2026-11-10)
+
+- [x] Listenmitgliedschaften für Wunschkarten pro Renderdurchlauf vorab zählen, statt jede Liste für jede Karte erneut zu prüfen.
+- [x] Beim vollständigen Abwählen sichtbarer Karten die Ansicht „Nur Auswahl“ automatisch verlassen (Schnellaktion und Sammel-Checkbox).
+- [x] Neue mobil erreichbare Schnellaktion „Nur Listenwünsche zeigen“ stellt die Ansicht der zugeordneten Wünsche wieder her, ohne Sammelmarkierungen zu löschen.
+- [x] Einzelverschiebung zeigt nach einem Kontowechsel oder Listenwechsel keine veraltete Erfolgsmeldung und springt nicht mehr unerwartet in eine andere Liste.
+- [x] Minimalprüfung: JavaScript-Syntax und relevante Funktionsanker erfolgreich.
+- [ ] Browserabnahme für große Wunschlisten, Auswahlansicht und Einzelverschiebung offen.
+- [ ] Produktfreigabe weiterhin gesperrt.
+
+**Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
