@@ -28,3 +28,20 @@ test('production Wishes HTML retains export tools and mounts dashboard without w
  });
  expect(result).toEqual({writes:0,visible:true,lists:'0'});
 });
+
+test('production dashboard toolbar stays inside a 320px viewport',async({page})=>{
+ await page.setViewportSize({width:320,height:700});
+ const html=await readFile(new URL('./index.html',import.meta.url),'utf8');
+ await loadIsolatedWishesPage(page,{htmlOverride:html});
+ await page.evaluate(()=>{
+  const root=document.getElementById('listsDashboard');
+  for(let node=root;node&&node!==document.body;node=node.parentElement)node.hidden=false;
+ });
+ const bar=page.getByRole('group',{name:'Sammelaktionen für Wünsche'});
+ await expect(bar).toBeVisible();
+ const overflowing=await bar.locator('button').evaluateAll(buttons=>buttons.filter(b=>{
+  const r=b.getBoundingClientRect();
+  return r.width>0&&r.height>0&&(r.left<0||r.right>innerWidth+1);
+ }).map(b=>b.id));
+ expect(overflowing).toEqual([]);
+});
