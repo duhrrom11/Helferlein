@@ -48,7 +48,7 @@ export function mountListsDashboard(db, getUser) {
  function openList(id){if(bulkBusy){msg('Die Sammelaktion läuft noch. Bitte zuerst stoppen oder abschließen.');return}if(!lists.some(l=>l.id===id&&!l.archived)){msg('Bitte eine aktive Liste auswählen.');return}bulkIds.clear();selectedOnlyView=false;lastBulkResult=null;$('bulkResultPanel').hidden=true;selected=id;visibleLimit=100;for(const [field,value] of [['listWishSearch',''],['listWishPriority','all'],['listWishCategory','all'],['listWishMarker','all'],['listWishAssignment','assigned'],['listWishSort','newest']])$(field).value=value;syncBulkMoveTargets();recordRecent(id);render();$('listItems').scrollIntoView({behavior:'smooth',block:'start'})}
  function renderFavorites(){const target=$('homeFavoritesContent');target.replaceChildren();const favorites=lists.filter(l=>favoriteIds.has(l.id)&&!l.archived);if(!favorites.length){const p=document.createElement('p');p.textContent='Markiere deine Lieblingslisten mit ★, um sie hier schnell zu öffnen. Favoriten werden nur in diesem Browser gespeichert.';target.append(p);return}for(const list of favorites){const b=button(list.icon+' '+list.title,async()=>openList(list.id));target.append(b)}}
  const editorSelect=$('wishListSelect');
- function syncEditor(){const previous=editorSelect.value;editorSelect.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Ohne Liste speichern';editorSelect.append(empty);for(const list of lists.filter(x=>!x.archived)){const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title;editorSelect.append(option)}editorSelect.value=lists.some(x=>x.id===previous&&!x.archived)?previous:(lists.find(x=>x.title==='Meine Wünsche'&&!x.archived)?.id||'');editorSelect.disabled=!lists.length;}
+ function syncEditor(){const previous=editorSelect.value;editorSelect.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Ohne Liste speichern';editorSelect.append(empty);for(const list of lists.filter(x=>!x.archived)){const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title;editorSelect.append(option)}editorSelect.value=lists.some(x=>x.id===previous&&!x.archived)?previous:(lists.find(x=>x.title==='Meine Wünsche'&&!x.archived)?.id||'');editorSelect.disabled=!lists.some(x=>!x.archived);}
  async function assignWish(wishId,listId,uid){if(!listId)return;const {error}=await db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid});if(error)throw error;}
  function reset(){selectedOnlyView=false;setWishView(false);++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;favoriteIds=new Set();recentIds=[];listCounts=new Map();assignedTotal=0;wishCategories={};wishMarkers={};detailWishId=null;$('wishDetailDialog').close();assignedIds=new Set();membershipByList=new Map();membershipReady=false;bulkIds.clear();allAssignedIds=new Set();bulkBusy=false;pendingBulk=null;lastBulkResult=null;bulkHistory=[];$('bulkResultPanel').hidden=true;$('bulkProgressPanel').hidden=true;renderBulkHistory();bulkStopRequested=true;++bulkRunId;visibleLimit=100;$('bulkConfirmDialog').close();++itemsGeneration;root.hidden=true;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';$('homeFavoritesContent').replaceChildren();$('homeRecentContent').replaceChildren();renderProgress();syncEditor();}
 
@@ -63,7 +63,7 @@ export function mountListsDashboard(db, getUser) {
   if(!getUser()){reset();return}
   if(bulkBusy&&!afterBulk){msg('Sammelaktion läuft. Bitte stoppen oder abschließen, bevor du Listen aktualisierst.');return}
   const generation=++loadGeneration;
-  invalidateMembershipState();root.hidden=false;setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
+  invalidateMembershipState();$('wishLoadMore').hidden=true;root.hidden=false;setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
   const id=owner();
   let lr,wr;
   try{({lists:lr,wishes:wr}=await fetchDashboardBase(db,id));
@@ -238,7 +238,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||!membershipReady)retu
   updateActiveListContext();
   const cards=$('listWishCards');cards.replaceChildren();
   const list=lists.find(l=>l.id===selected&&!l.archived);
-  if(!list||!membershipReady){$('wishShowAssigned').disabled=true;$('wishSelectShown').disabled=true;$('wishSelectUnassigned').disabled=true;$('wishSelectAssigned').disabled=true;$('wishClearSelection').disabled=true;updateBulkToolbar([]);return}
+  if(!list||!membershipReady){$('wishLoadMore').hidden=true;$('wishShowAssigned').disabled=true;$('wishSelectShown').disabled=true;$('wishSelectUnassigned').disabled=true;$('wishSelectAssigned').disabled=true;$('wishClearSelection').disabled=true;updateBulkToolbar([]);return}
   $('wishClearSelection').disabled=bulkBusy||!bulkIds.size;
   $('wishShowAssigned').disabled=bulkBusy||!membershipReady;
   $('wishSelectAssigned').disabled=bulkBusy||list.archived||!wishes.some(w=>assignedIds.has(w.id));
@@ -315,8 +315,8 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||!membershipReady)retu
  function showItems(){
   updateActiveListContext();
   const list=lists.find(x=>x.id===selected&&!x.archived);const generation=++itemsGeneration;
-  if(!list){$('listWishCards').replaceChildren();$('listWishCount').textContent='Wähle eine aktive Liste aus.';updateBulkToolbar([]);return}
-  if(!membershipReady){assignedIds=new Set();$('listWishCards').replaceChildren();$('listWishCount').textContent='';updateBulkToolbar([]);setItemsFeedback('loading','Zuordnungen werden geladen …');return}
+  if(!list){$('listWishCards').replaceChildren();$('listWishCount').textContent='Wähle eine aktive Liste aus.';$('wishLoadMore').hidden=true;updateBulkToolbar([]);return}
+  if(!membershipReady){assignedIds=new Set();$('wishLoadMore').hidden=true;$('listWishCards').replaceChildren();$('listWishCount').textContent='';updateBulkToolbar([]);setItemsFeedback('loading','Zuordnungen werden geladen …');return}
   assignedIds=membershipForSelectedList({membershipReady,membershipByList,listId:list.id});syncBulkMoveTargets();
   if(generation!==itemsGeneration)return;
   setItemsFeedback('ready','');renderWishCards();
