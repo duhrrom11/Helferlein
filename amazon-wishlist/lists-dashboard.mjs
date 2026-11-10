@@ -117,10 +117,10 @@ actions.append(button('Duplizieren',async()=>{
     if(!window.confirm('Liste „'+list.title+'“ mit '+originalIds.length+' Zuordnungen duplizieren? Die Wünsche selbst werden nicht kopiert.'))return;
     if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==uid||generation!==loadGeneration||!lists.some(l=>l.id===list.id))return;
     listCopyBusy=true;
-    if(getUser()?.id===uid&&membershipReady)renderWishCards();
     const current=()=>getUser()?.id===uid&&generation===loadGeneration;
     let copied=0,created=false;
     try{
+     if(getUser()?.id===uid&&membershipReady)renderWishCards();
      const {data:copy,error}=await db.from('wishlist_lists').insert({user_id:uid,title:(list.title+' Kopie').slice(0,80),description:list.description,icon:list.icon,color:list.color,visibility:'private'}).select('id').single();
      if(error)throw error;
      created=true;
