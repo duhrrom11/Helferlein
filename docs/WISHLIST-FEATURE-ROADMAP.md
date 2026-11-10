@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Privater Geschenk-Planungskalender)
+
+- **Neu umgesetzt:** Mobile Wochenübersicht mit vorheriger/aktueller/nächster Woche, empfohlenem Planungsstart und Anlassdatum. Vorlauf von 21 Tagen für Standard, 28 Tagen bei historisch belegten Versandaufgaben. Historische Jahresabschlüsse liefern die Grundlage der Empfehlung; aktuelle private Anlässe liefern zukünftige Termine.
+- **Sichere Checklistenübernahme:** Auswahl zwischen Standard-, Versand- und Kurzfristig-Vorlage pro Anlass. Explizite Checkbox und zusätzlicher Bestätigungsdialog vor dem einzigen Schreibzugriff `wishlist_create_occasion_checklist_year`. Bestehender SECURITY INVOKER RPC prüft Anlass-Eigentümerschaft, Checklistenjahr und Vorlagentyp und erstellt fehlende Aufgaben idempotent. Bereits vorhandene Aufgaben werden nicht überschrieben oder gelöscht.
+- **Produktivschutz:** Keine Migration, keine Testdaten, keine automatischen Schreibvorgänge, keine Änderung an historischen Jahresabschlüssen. Bestehende owner-only RLS für Anlässe, Jahresabschlüsse und Aufgaben wird verwendet.
+- **Grenzen:** Wochenkalender zeigt zukünftige Anlässe der ersten 40 Einträge und empfohlene Planungsstarts; keine automatische Synchronisierung externer Kalender. Browser-End-to-End-Test mit authentifiziertem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-Planungsassistenz)
 
 - **Neu umgesetzt:** `amazon-wishlist/gift-assistant.html` und `gift-assistant.mjs` als mobil nutzbare, vollständig lesende Geschenk-Planungsassistenz. Links von Startseite und Geschenk-Jahresstatistik.
