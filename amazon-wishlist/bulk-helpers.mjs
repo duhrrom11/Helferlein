@@ -18,3 +18,16 @@ export function bulkErrorHint(error) {
  if(message.includes('network')||message.includes('fetch')||message.includes('timeout'))return 'Verbindungsproblem – bitte Verbindung prüfen.';
  return 'Änderung fehlgeschlagen – bitte später erneut versuchen.';
 }
+
+export async function fetchAllPages(fetchPage,{pageSize=1000,isCurrent=()=>true}={}) {
+ const rows=[];
+ for(let offset=0;;offset+=pageSize){
+  if(!isCurrent())return null;
+  const response=await fetchPage(offset,offset+pageSize-1);
+  if(!isCurrent())return null;
+  if(response.error)throw response.error;
+  const batch=response.data||[];
+  rows.push(...batch);
+  if(batch.length<pageSize)return rows;
+ }
+}
