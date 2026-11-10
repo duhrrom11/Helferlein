@@ -357,3 +357,16 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Produktfreigabe weiterhin gesperrt.
 
 **Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Produktentwicklung: Schnellaktionen und Listenwechsel (2026-11-10)
+
+- [x] Oberhalb der Wunschkarten dauerhaft erreichbare Schaltfläche zum Zurücksetzen aller Wunschfilter auf die Ansicht der aktuellen Liste.
+- [x] Sichtbare Wünsche (maximal aktuell geladene/angezeigte Karten) per Klick gesammelt auswählen oder abwählen; deaktiviert bei archivierter Liste, laufender Sammelaktion oder leerer Ansicht.
+- [x] Direkter Listenwechsel sortiert Favoriten voran, zeigt Wunschanzahl und Archivstatus.
+- [x] Listenwechsel während laufender Sammelaktionen gesperrt, damit keine Kontextänderung durch den neuen Auswahlbereich erfolgt.
+- [x] Responsive Schnellaktionen für mobile Geräte.
+- [x] Minimalprüfung: JavaScript-Syntax, Bedienelemente und neue Aktionsanker geprüft.
+- [ ] Browserabnahme und Prüfung der Sammelauswahl in echten Sitzungen offen.
+- [ ] Produktfreigabe weiterhin gesperrt.
+
+**Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
