@@ -69,7 +69,7 @@ test('simulated bulk selection updates selection count and can be cleared',async
  });
  await page.getByRole('checkbox',{name:/Angezeigte Wünsche auswählen/}).check();
  await expect(page.locator('#bulkSelectedCount')).toHaveText('2 ausgewählt');
- await page.getByRole('button',{name:'Auswahl aufheben'}).click();
+ await page.locator('#bulkClear').click();
  await expect(page.locator('#bulkSelectedCount')).toHaveText('0 ausgewählt');
 });
 test('simulated loading failure exposes a keyboard-accessible retry control',async({page})=>{
