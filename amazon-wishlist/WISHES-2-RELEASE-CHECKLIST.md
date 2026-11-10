@@ -629,3 +629,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls ohne Imports und gezielte GitHub-Inhaltsprüfung erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; mehrstufige Verschiebungen sind weiterhin nicht atomar.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Autopilot: Listenkontext, Karten-Navigation und bestätigte Listenänderungen (2026-11-10)
+
+- [x] Neue Listen lassen sich nur anlegen, wenn der angemeldete Benutzer mit dem vollständig geladenen Arbeitsbereich übereinstimmt und alle Zuordnungen bereitstehen.
+- [x] Der Editor nimmt keine verborgenen oder bereits geschlossenen Listenbearbeitungsformulare mehr an.
+- [x] Favoriten und Listen-Schnellaktionen aus alten Listenkarten prüfen die Lade-Generation und verwerfen veraltete Aktionen nach einem Reload.
+- [x] Archivieren/Reaktivieren und Löschen unterscheiden erfolgreich gespeicherte Datenbankänderungen von nachgelagerten Ladefehlern und fordern bei Bedarf eine erneute Aktualisierung an.
+- [x] Minimale JavaScript-Parserprüfung ohne Imports und gezielte Quelltextkontrolle erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Supabase-Tests.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
