@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Kostenlose intelligente Aufgabenplanung)
+
+- **Neu umgesetzt:** Sechs lokale Geschenk-Aufgabenvorlagen (Bestellen, Abholen, Verpacken, Karte, Versand, Überreichen) mit vordefinierten Prioritäten und Erinnerungsfristen. Vorlagen füllen nur das Formular vor; Speichern erfolgt ausschließlich nach Nutzerbestätigung.
+- **Regelbasierte Fälligkeit:** Terminempfehlung anhand des ausgewählten Anlasses; Vorlauf je Vorlage 0–14 Tage. Jährlich wiederkehrende Anlässe werden auf die nächste Fälligkeit abgebildet; der 29. Februar wird in Nicht-Schaltjahren auf den 28. Februar gelegt. Die vorgeschlagene Fälligkeit bleibt manuell änderbar.
+- **Mobiler Wochenplan:** Siebentägige Kalenderansicht mit Vor-/Zurücknavigation, Sprung zur aktuellen Woche, fälligen offenen Aufgaben und separatem Hinweis auf überfällige Aufgaben.
+- **Sicherheit:** Bestehende owner-only RLS auf `wishlist_gift_tasks` bleibt unverändert; keine neue Datenbankmigration, keine Produktivdatenänderung und keine zusätzlichen Drittanbieter. Bestehende Erinnerungen im Dashboard bleiben verfügbar.
+- **Grenzen:** Terminempfehlungen berücksichtigen keine Versandlaufzeiten, Feiertage oder Ladenöffnungszeiten. Keine automatischen Push-Mitteilungen. Vollständiger Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-To-dos und Erinnerungen)
 
 - **Neu umgesetzt:** `amazon-wishlist/gift-tasks.html` und `gift-tasks.mjs` als mobile Aufgabenverwaltung mit CRUD, Fälligkeitsdatum, Status (offen, in Arbeit, erledigt), Priorität (hoch, mittel, niedrig), Erinnerungs-Vorlauf (0–30 Tage), Notizen sowie optionaler Anlass- und Geschenkverknüpfung.
