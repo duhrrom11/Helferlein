@@ -893,3 +893,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: mobile Kartenansicht und Favoriten-Navigation (2026-11-10)
+
+- [x] Favoriten-Schnellzugriffe validieren die aktuelle Listengeneration, aktive Liste, Favoritenstatus, geladenen Besitzer und bestehende Mutationssperren.
+- [x] Abgehängte Listenkarten können nicht mehr die aktuelle Liste öffnen.
+- [x] Mobile Notizen werden nur auf verbundenen Wunschkarten des aktuellen Arbeitsbereichs ein- und ausgeklappt.
+- [x] Wunschdetails und Titelkopieren prüfen den aktuellen geladenen Benutzer und die verbundene Karte.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
