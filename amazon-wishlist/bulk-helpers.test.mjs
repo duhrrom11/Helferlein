@@ -204,3 +204,40 @@ test('dashboard membership integration: account invalidation stops pagination wi
  assert.equal(rows,null);
  assert.equal(db.reads.length,1);
 });
+
+test('dashboard consistency: overlapping reloads only publish the newest membership snapshot',async()=>{
+ let resolveFirst;
+ const firstPage=new Promise(resolve=>{resolveFirst=resolve});
+ const first={from(){return {select(){return this},eq(){return this},order(){return this},range(){return firstPage}}}};
+ const second=membershipMock([[{list_id:'new',wish_id:'new-wish'}]]);
+ let generation=1,currentUser='user-a',published='none';
+ const old=fetchDashboardMembership(first,'user-a').then(rows=>{
+  if(rows!==null&&currentDashboardLoad({requestedUserId:'user-a',currentUserId:currentUser,requestedGeneration:1,currentGeneration:generation}))published=rows[0].wish_id;
+ });
+ generation=2;
+ const rows=await fetchDashboardMembership(second.client,'user-a');
+ if(currentDashboardLoad({requestedUserId:'user-a',currentUserId:currentUser,requestedGeneration:2,currentGeneration:generation}))published=rows[0].wish_id;
+ resolveFirst({data:[{list_id:'old',wish_id:'old-wish'}],error:null});
+ await old;
+ assert.equal(published,'new-wish');
+});
+test('dashboard consistency: account switch after last membership page blocks final commit',async()=>{
+ const db=membershipMock([[{list_id:'old',wish_id:'a'}]]);
+ let user='user-a',generation=3,published=false;
+ const rows=await fetchDashboardMembership(db.client,'user-a');
+ user='user-b';generation=4;
+ if(rows!==null&&currentDashboardLoad({requestedUserId:'user-a',currentUserId:user,requestedGeneration:3,currentGeneration:generation}))published=true;
+ assert.equal(published,false);
+});
+test('dashboard consistency: failed membership page followed by fresh retry cannot enable controls early',async()=>{
+ const failed=membershipMock([[{wish_id:'a'},{wish_id:'b'}]],{failAt:1});
+ let membershipReady=false;
+ await assert.rejects(()=>fetchDashboardMembership(failed.client,'user-a',{pageSize:2}),/partial membership failure/);
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy:false}),false);
+ const fresh=membershipMock([[{wish_id:'a'},{wish_id:'b'}],[{wish_id:'c'}]]);
+ const rows=await fetchDashboardMembership(fresh.client,'user-a',{pageSize:2});
+ assert.equal(rows.length,3);
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy:false}),false);
+ membershipReady=true;
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy:false}),true);
+});
