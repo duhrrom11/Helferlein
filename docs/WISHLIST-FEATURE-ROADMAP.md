@@ -256,6 +256,14 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Verbesserung:** Unicode-Stichworttrennung für die vorhandenen regelbasierten Geschenkempfehlungen korrigiert.
 - **Grenzen:** Suche derzeit nach Produkttitel, maximal 40 Produkte und bis zu 200 öffentliche Wunschzuordnungen je Suchlauf. Keine automatischen Preisabfragen und keine Push-Mitteilungen. Bei einer später privatisierten Wunschquelle kann eine Bearbeitung des verknüpften Geschenks die RLS-Prüfung nicht mehr erfüllen, bis die Quelle gelöst wird. Browser-End-to-End-Test mit echtem Nutzerkonto steht aus.
 
+## Entwicklungsfortschritt – 10.11.2026 (Sichere Geschenkreservierungen)
+
+- **Neu umgesetzt:** Reservierung einzelner öffentlicher Wünsche in öffentlichen, nicht archivierten Sammlungen. Mobile Schaltflächen für Reservieren und Aufheben auf `collection.html`; Reservierungsstatus für angemeldete Besucher, ohne die reservierende Person offenzulegen.
+- **Additive Produktivmigration:** Neue `wishlist_gift_reservations`-Tabelle mit `wish_id` als Primärschlüssel und `reserver_id` als privatem Eigentümer. Der Primärschlüssel verhindert parallele Doppelreservierungen atomar. Bestehende Daten bleiben erhalten.
+- **Überraschungsschutz:** RLS aktiv, sämtliche direkten Tabellenrechte für `anon` und `authenticated` entzogen. Drei eingeschränkte `SECURITY DEFINER`-RPCs: `wishlist_reserve_wish`, `wishlist_cancel_wish_reservation` und `wishlist_reservation_status`. Aufruf nur authentifiziert; die Statusfunktion schließt den Wunscheigentümer explizit aus und gibt nur die Zustände `available`, `reserved_by_you` oder `already_reserved` zurück. Keine fremden Reserver-IDs werden ausgegeben.
+- **Sicherheitsprüfung:** RLS aktiv, direkte SELECT-Rechte für `anon` und `authenticated` fehlen, alle drei Funktionen sind SECURITY DEFINER; unauthentifizierter Statusabruf liefert keine Zeilen.
+- **Grenzen:** Nur Wünsche, die aktuell öffentlich sind und in mindestens einer öffentlichen, nicht archivierten Sammlung ihres Eigentümers stehen, können reserviert werden. Reservierungen sind nicht an einen konkreten Anlass gekoppelt und werden nicht automatisch zu Käufen. Bei einer späteren Privatisierung wird kein Status mehr ausgegeben; der ursprüngliche Reservierer kann die eigene Reservierung weiterhin aufheben. Vollständiger Browser-End-to-End-Test mit zwei angemeldeten Konten steht aus.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
