@@ -1148,3 +1148,6 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] **Kritische Lücke entdeckt:** `production-dashboard.integration.spec.mjs` war zwar committed, wurde aber wegen der expliziten `testMatch`-Liste in `playwright.config.mjs` **nie von Playwright ausgeführt**. Frühere grüne Browserläufe sind daher kein Nachweis dieser Produktions-HTML-Tests.
 - [x] `production-dashboard.integration.spec.mjs` in `testMatch` aufgenommen (Commit `9febd2b7`). Erst ein danach vollständig grüner Chromium-Lauf bestätigt die neuen Tests einschließlich Logout und 320px-Layout.
 - [ ] Auf reale Chromium-Testergebnisse nach der Änderung warten; bei Fehlern tatsächliche Joblogs auswerten und beheben.
+
+- [x] Dauerhafte Node-Regression ergänzt, die eine versehentliche Entfernung der produktiven Chromium-Suite aus `playwright.config.mjs` verhindert (Commit `1e047e57`).
+- [ ] Letzte CI auf diesem Commit einschließlich **tatsächlich ausgeführter** Produktions-HTML-Chromium-Tests bestätigen; keine Freigabe aus früheren unvollständigen Browserläufen ableiten.
