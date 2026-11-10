@@ -1193,3 +1193,11 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] **GitHub-Actions-Secrets konnten über den verfügbaren GitHub-Connector nicht auf Vorhandensein geprüft werden:** `GET /actions/secrets` wird durch den Connector nicht unterstützt. Keine Zugangsdaten gelesen, erzeugt oder ausgegeben.
 - [ ] **Manueller `workflow_dispatch`-Gate ist noch nicht ausgeführt.** GitHub stellt manuelle Workflow-Auslösung regulär erst bereit, wenn die Workflow-Datei auf dem Default-Branch existiert; diese Datei liegt aktuell nur auf dem Feature-Branch. Vor Merge muss eine autorisierte Pre-Merge-Ausführung über einen dafür freigegebenen Runner/Workflow erfolgen, sonst bleibt der echte Auth-Gate offen.
 - [ ] Neue CI auf aktuellem Head und echter Auth-Smoke müssen beide nachweislich grün sein, bevor Merge/Deployment erfolgen dürfen. GitHub Pages bleibt einziges Hostingziel.
+
+## Autopilot: PR-Auth-Gate vor Merge aktiv (2026-11-10)
+
+- [x] Alle fünf regulären Workflow-Läufe auf `4775af6f` grün. CodeQL `Analyze (actions)` grün, `Analyze (javascript-typescript)` bei letzter Einzelabfrage noch laufend; übergeordneter CodeQL-Check `neutral` und **nicht** als erfolgreich ausgeführte JS-Analyse werten.
+- [x] **Pre-Merge-Blocker technisch gelöst:** `.github/workflows/wishes-authenticated-live.yml` läuft jetzt auch auf `pull_request` gegen `main`, nur für PRs aus demselben Repository; Forks werden ausgeschlossen (Commit `ff47b03a`). Der erste echte Auth-Workflow wurde auf PR #166 als Lauf `42832708112` tatsächlich gestartet.
+- [x] Secrets weiter gehärtet: E-Mail und Passwort sind nur bei der Prüfung der Secret-Verfügbarkeit und im eigentlichen Browser-Login-Schritt verfügbar, **nicht** bei Checkout, `npm install` oder HTTP-Server-Start (Commit `622f5c12`).
+- [ ] Der erste Auth-Workflow war bei dieser Prüfung noch in der Containerinitialisierung; **keine bestätigte erfolgreiche Authentifizierung** und kein Beleg für vorhandene Secrets. Bei Fehlern Joblogs prüfen, niemals Geheimnisse ausgeben.
+- [ ] Auth-Workflow, Node/Chromium, CodeQL und GitHub-Pages-Gates auf dem **finalen** Commit vollständig grün bestätigen; erst dann Merge und Veröffentlichung.
