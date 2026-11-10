@@ -62,3 +62,11 @@ References:
 - Remaining proposed **offline** negative-test coverage: X25519 low-order/invalid public-key behavior (including Node crypto exceptions); explicit AES-GCM authentication-tag corruption; exact 1024/1025-byte `info` and `aad` boundaries; 17/4112/4113-byte ciphertext boundaries; and consistency of application-level error categories. These are test-coverage gaps, not confirmed vulnerabilities.
 - This follow-up did **not** add or execute new tests. Direct download of branch source into the local runtime failed due DNS resolution (`Could not resolve host: raw.githubusercontent.com`), and the available local ZIP does not contain these HPKE files. Prior 10/10 execution evidence remains documented above, but is not a fresh run of any newly proposed tests. No new test results are claimed.
 - No production data writes, Vercel, deployment, or merge.
+
+## Additional offline HPKE negative tests (2026-11-10)
+
+- Added four regression tests in `tests/nachlass-hpke-offline-v2.test.cjs` at commit [`197522f8`](https://github.com/duhrrom11/Helferlein/commit/197522f870671a0b16f0d20940b0b619152fb504): GCM tag corruption; X25519 all-zero low-order key and malformed 31-byte public key; 1024/1025-byte `info` and `aad` limits; and 16/17/4112/4113-byte ciphertext limits.
+- Independently executed a local Node.js v22.16.0 test file containing these four cases against a manually reconstructed offline HPKE implementation: TAP `tests 4`, `pass 4`, `fail 0`, `skipped 0`. This local reconstruction is not byte-identical evidence for the entire GitHub test suite.
+- GitHub [release smoke 42784627358](https://github.com/duhrrom11/Helferlein/actions/runs/42784627358) completed successfully for commit `197522f8`.
+- GitHub [B3 Nachlass pilot 42784627431](https://github.com/duhrrom11/Helferlein/actions/runs/42784627431) was still in progress at the latest check, but the `Verify preserved security notice and vault contract` step (which runs `node --test` including `tests/nachlass-hpke-offline-v2.test.cjs`) completed successfully. Full workflow success remains pending.
+- These tests assert rejection rather than a uniform application-level error category for low-order keys; exception normalization remains a separate possible hardening task. No production integration or deployment.
