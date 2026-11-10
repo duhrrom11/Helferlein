@@ -245,13 +245,13 @@ actions.append(button('Duplizieren',async()=>{
   }
  }
  async function moveWishToList(wishId,sourceListId,targetListId,control){
-  if(listMutationBusy||listCopyBusy||bulkBusy||!membershipReady||!getUser()||sourceListId===targetListId||activeWishMutations.size)return;
+  if(listMutationBusy||listCopyBusy||bulkBusy||!membershipReady||!getUser()||getUser()?.id!==loadedOwner||sourceListId===targetListId||activeWishMutations.size)return;
   const uid=owner(),generation=loadGeneration;
   const source=lists.find(l=>l.id===sourceListId&&!l.archived);
   const target=lists.find(l=>l.id===targetListId&&!l.archived);
   if(!source||!target||selected!==sourceListId||!assignedIds.has(wishId))return msg('Bitte einen zugeordneten Wunsch aus einer aktiven Liste auswählen.');
-  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(listMutationBusy||listCopyBusy||bulkBusy||!membershipReady||activeWishMutations.size||selected!==sourceListId||getUser()?.id!==uid||generation!==loadGeneration||!assignedIds.has(wishId)||!lists.some(l=>l.id===sourceListId&&!l.archived)||!lists.some(l=>l.id===targetListId&&!l.archived)||!wishes.some(w=>w.id===wishId))return;
-  const current=()=>getUser()?.id===uid&&generation===loadGeneration&&selected===sourceListId;
+  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(listMutationBusy||listCopyBusy||bulkBusy||!membershipReady||activeWishMutations.size||selected!==sourceListId||getUser()?.id!==uid||loadedOwner!==uid||generation!==loadGeneration||!assignedIds.has(wishId)||!lists.some(l=>l.id===sourceListId&&!l.archived)||!lists.some(l=>l.id===targetListId&&!l.archived)||!wishes.some(w=>w.id===wishId))return;
+  const current=()=>getUser()?.id===uid&&loadedOwner===uid&&generation===loadGeneration&&selected===sourceListId;
   activeWishMutations.add(uid+':'+wishId);control.disabled=true;
   try{
    const alreadyThere=membershipByList.get(targetListId)?.has(wishId);
