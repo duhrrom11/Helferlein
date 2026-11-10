@@ -1124,3 +1124,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Authentifizierter Browser-E2E mit echten Konten und tatsächlichen Listenmutationen wurde **nicht** ausgeführt: Die vorhandenen Chromium-Tests verwenden Mock-/Fixture-DB und prüfen kein reales Benutzer-JWT. Ohne Testdaten oder Zugriff auf ein vorhandenes geeignetes Konto ist dieser Gate nicht nachgewiesen.
 - [ ] Hosting: GitHub Pages `https://duhrrom11.github.io/Helferlein` und als Repository-Homepage angegebenes Vercel `https://helferlein-ochre.vercel.app` konnten bei dieser Prüfung **nicht live über HTTPS abgerufen** werden. Das bestehende `Live GitHub Pages HTTP check`-Workflow ist zeitgesteuert bzw. deployment-getriggert und war kein Beleg einer frischen Veröffentlichung.
 - [ ] Merge/Deployment **bewusst zurückgestellt**: Es fehlen authentifizierte Live-E2E- und Hosting-Nachweise. Grüne CI allein rechtfertigt keine Behauptung einer produktiven Freigabe.
+
+## Autopilot: Live-Hosting-Gates und read-only JWT-Rollenprüfung (2026-11-10)
+
+- [x] Auf `533136a1`: Release-Smoke `42830372286`, Vault-Sync `42830372540`, Wishlist `42830361541` und `42830372185` **success**; beide Wishlist-Läufe einschließlich Chromium-Browser.
+- [x] PR #166 ist bei GitHub wieder `mergeable=true`; `mergeable_state=unstable` erfordert weiterhin Prüfung der neuen CI.
+- [x] Neuer **separater Vercel-HTTPS-Gate** in `.github/workflows/live-site-http.yml`: prüft bei `workflow_dispatch` und wöchentlich vier Wishes-Routen samt HTML-/Modul-Merkmalen, unabhängig vom GitHub-Pages-Gate (Commit `7cb7844f`). Ein grüner GitHub-Pages-Check ersetzt keinen Vercel-Nachweis.
+- [x] Read-only Supabase-SQL mit einer **bereits vorhandenen** `auth.users`-Identität: `SET LOCAL ROLE authenticated` und `request.jwt.claim.sub`; `auth.uid()` ist gesetzt, SELECT-Berechtigung aktiv, kein TRUNCATE, beide Listen-Tabellen weiterhin leer. `BEGIN READ ONLY` / `ROLLBACK`, keine Daten verändert.
+- [ ] Diese Rollenprüfung simuliert den JWT-Claim in SQL; sie ist **kein** tatsächlicher Login mit Passwort/Session im Browser und beweist keine realen Listen-Mutationen.
+- [ ] Vercel- und GitHub-Pages-Live-HTTPS-Gates erst nach echter Ausführung als bestanden deklarieren; bei aktueller Ausführung vor Deployment kann der erwartete neue Dashboard-Code fehlen.
+- [ ] Merge und Deployment bleiben bis zur Bestätigung dieser Freigabevoraussetzungen gesperrt; keine Testdaten erzeugen.
