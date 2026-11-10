@@ -177,7 +177,7 @@ actions.append(button('Duplizieren',async()=>{
   const job=pendingBulk;if(!job||bulkBusy||listCopyBusy||listMutationBusy)return;if(activeWishMutations.size){$('bulkStatus').textContent='Ein ausgewählter Wunsch wird gerade bearbeitet. Bitte danach erneut bestätigen.';return}
   pendingBulk=null;$('bulkConfirmDialog').close();
   const {uid,listId,add,targets}=job;
-  if(job.generation!==loadGeneration||loadedOwner!==uid){$('bulkStatus').textContent='Die Daten oder das Benutzerkonto wurden zwischen Auswahl und Bestätigung gewechselt. Bitte Sammelaktion erneut prüfen.';return}if(!bulkContextValid(job,{userId:getUser()?.id,listId:selected,ready:membershipReady,activeListIds:new Set(lists.filter(l=>!l.archived).map(l=>l.id))}))return;
+  if(job.generation!==loadGeneration||loadedOwner!==uid||getUser()?.id!==uid){$('bulkStatus').textContent='Die Daten oder das Benutzerkonto wurden zwischen Auswahl und Bestätigung gewechselt. Bitte Sammelaktion erneut prüfen.';return}if(!bulkContextValid(job,{userId:getUser()?.id,listId:selected,ready:membershipReady,activeListIds:new Set(lists.filter(l=>!l.archived).map(l=>l.id))}))return;
    const currentTargets=new Set(eligibleBulkTargets(targets,wishes.map(w=>w.id),assignedIds,add));if(currentTargets.size!==targets.length||targets.some(id=>!currentTargets.has(id))){$('bulkStatus').textContent='Die Listenzuordnung hat sich geändert. Bitte Auswahl und Aktion erneut prüfen.';return}
   const generation=loadGeneration,run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;lastBulkResult=null;$('bulkResultPanel').hidden=true;
   $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
@@ -185,7 +185,7 @@ actions.append(button('Duplizieren',async()=>{
   try{
    const result=await executeBulkJob({
     targets,
-    isCurrent:()=>run===bulkRunId&&generation===loadGeneration&&getUser()?.id===uid&&selected===listId,
+    isCurrent:()=>run===bulkRunId&&generation===loadGeneration&&getUser()?.id===uid&&loadedOwner===uid&&selected===listId,
     shouldStop:()=>bulkStopRequested,
     write:async wishId=>{
      const q=add?db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',listId).eq('wish_id',wishId).eq('user_id',uid);
@@ -193,12 +193,12 @@ actions.append(button('Duplizieren',async()=>{
     },
     onProgress:({done,total,success,failed})=>{if(run===bulkRunId&&generation===loadGeneration&&getUser()?.id===uid&&selected===listId)reportBulk(done,total,success,failed)}
    });
-   if(result.invalidated||run!==bulkRunId||generation!==loadGeneration||getUser()?.id!==uid||selected!==listId)return;
+   if(result.invalidated||run!==bulkRunId||generation!==loadGeneration||getUser()?.id!==uid||loadedOwner!==uid||selected!==listId)return;
    for(const id of result.completed)bulkIds.delete(id);
    const summary={uid,listId,add,total:result.total,success:result.success,failed:result.failed,remaining:result.remaining,interrupted:result.interrupted,errors:result.errors};
    $('bulkStatus').textContent='Sammelaktion beendet. Details stehen in der Ergebnisübersicht.';
    try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&run===bulkRunId)msg('Zuordnungen aktualisiert, aber das Neuladen ist fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
-   if(getUser()?.id===uid&&run===bulkRunId&&selected===listId){bulkHistory.unshift({...summary,time:new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),listTitle:lists.find(l=>l.id===listId)?.title||'Liste'});bulkHistory=bulkHistory.slice(0,10);renderBulkHistory();showBulkResult(summary)}
+   if(getUser()?.id===uid&&loadedOwner===uid&&run===bulkRunId&&selected===listId){bulkHistory.unshift({...summary,time:new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),listTitle:lists.find(l=>l.id===listId)?.title||'Liste'});bulkHistory=bulkHistory.slice(0,10);renderBulkHistory();showBulkResult(summary)}
   }finally{
    if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkStop').disabled=true;$('bulkProgressPanel').hidden=true;if(getUser()?.id===uid&&selected===listId){updateBulkToolbar();renderWishCards()}}
   }
