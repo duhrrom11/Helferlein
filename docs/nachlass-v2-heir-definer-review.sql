@@ -3,7 +3,7 @@
 -- execution role, reviewed ownership/RLS, and transactional revocation tests.
 -- This SQL is intentionally NOT a migration.
 BEGIN;
-CREATE OR REPLACE FUNCTION nachlass_v2.read_heir_envelope_trusted(
+CREATE FUNCTION nachlass_v2.read_heir_envelope_trusted(
   p_vault_id text, p_verified_user_id uuid
 ) RETURNS jsonb
 LANGUAGE sql VOLATILE SECURITY DEFINER
@@ -23,6 +23,7 @@ AS $function$
     AND m.identity_verified IS TRUE
   FOR SHARE OF v, m, e
 $function$;
+-- CREATE (not OR REPLACE): existing function privileges must never be inherited.
 -- Default PUBLIC EXECUTE must be removed in the same transaction as CREATE.
 REVOKE ALL ON FUNCTION nachlass_v2.read_heir_envelope_trusted(text, uuid)
   FROM PUBLIC, anon, authenticated, service_role;
