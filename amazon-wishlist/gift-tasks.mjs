@@ -14,11 +14,11 @@ function refreshGifts(){const selected=$('gift').value;const el=$('gift');el.rep
 function reset(){editing=null;$('form').reset();$('formTitle').textContent='➕ Aufgabe hinzufügen';$('save').textContent='Aufgabe speichern';$('cancel').hidden=true;choices()}
 function render(){renderWeek();renderChecklistProgress();
  const reminders=$('reminders');reminders.replaceChildren();
- const due=tasks.filter(t=>t.status!=='done'&&t.due_date&&days(t.due_date)<=t.reminder_days).sort((a,b)=>days(a.due_date)-days(b.due_date)||a.priority-b.priority);
+ const due=tasks.filter(t=>!t.archived_at&&t.status!=='done'&&t.due_date&&days(t.due_date)<=t.reminder_days).sort((a,b)=>days(a.due_date)-days(b.due_date)||a.priority-b.priority);
  if(!due.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine fälligen Erinnerungen.';reminders.append(p)}
  for(const t of due.slice(0,15)){const p=document.createElement('p');p.className='warn';p.textContent=(days(t.due_date)<0?'⚠️ '+(-days(t.due_date))+' Tage überfällig':days(t.due_date)===0?'🔔 Heute fällig':'🔔 In '+days(t.due_date)+' Tagen')+' · '+t.title;reminders.append(p)}
  const root=$('tasks');root.replaceChildren();const filter=$('filter').value;
- const visible=tasks.filter(t=>filter==='all'||(filter==='done'?t.status==='done':t.status!=='done')).sort((a,b)=>Number(a.status==='done')-Number(b.status==='done')||((a.due_date?days(a.due_date):99999)-(b.due_date?days(b.due_date):99999))||a.priority-b.priority);
+ const visible=tasks.filter(t=>!t.archived_at&&(filter==='all'||(filter==='done'?t.status==='done':t.status!=='done'))).sort((a,b)=>Number(a.status==='done')-Number(b.status==='done')||((a.due_date?days(a.due_date):99999)-(b.due_date?days(b.due_date):99999))||a.priority-b.priority);
  if(!visible.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine Aufgaben in dieser Ansicht.';root.append(p)}
  for(const t of visible){
   const item=document.createElement('article');item.className='item',h=document.createElement('h3');h.textContent=t.title;
@@ -88,31 +88,53 @@ function renderWeek(){
  for(let i=0;i<7;i++){
   const utc=start+i*dayMs,iso=localDate(utc),card=document.createElement('article');card.className='week-day'+(utc===today()?' today':'');
   const heading=document.createElement('strong');heading.textContent=daysShort[i]+' '+new Date(utc).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});card.append(heading);
-  const matching=tasks.filter(t=>t.status!=='done'&&t.due_date===iso).sort((a,b)=>a.priority-b.priority);
+  const matching=tasks.filter(t=>!t.archived_at&&t.status!=='done'&&t.due_date===iso).sort((a,b)=>a.priority-b.priority);
   if(!matching.length){const p=document.createElement('p');p.textContent='–';card.append(p)}
   for(const task of matching){const chip=document.createElement('span');chip.className='task-chip';chip.textContent=(task.priority===1?'🔴 ':'')+task.title;card.append(chip)}
   root.append(card);
  }
- const overdue=tasks.filter(t=>t.status!=='done'&&t.due_date&&days(t.due_date)<0);
+ const overdue=tasks.filter(t=>!t.archived_at&&t.status!=='done'&&t.due_date&&days(t.due_date)<0);
  if(overdue.length){const p=document.createElement('p');p.className='warn';p.textContent='⚠️ '+overdue.length+' überfällige Aufgaben – Details unter Erinnerungen.';root.append(p)}
 }
 $('weekPrev').addEventListener('click',()=>{weekOffset--;renderWeek()});
 $('weekNext').addEventListener('click',()=>{weekOffset++;renderWeek()});
 $('weekToday').addEventListener('click',()=>{weekOffset=0;renderWeek()});
 
+
 function renderChecklistProgress(){
- const root=$('checklistProgress');root.replaceChildren();
- const grouped=new Map();
- for(const task of tasks){if(!task.checklist_key||!task.occasion_id)continue;const key=task.occasion_id;const bucket=grouped.get(key)||{total:0,done:0};bucket.total++;if(task.status==='done')bucket.done++;grouped.set(key,bucket)}
+ const root=$('checklistProgress');root.replaceChildren();const grouped=new Map();
+ for(const task of tasks){if(!task.checklist_key||!task.occasion_id)continue;const year=task.checklist_year===null||task.checklist_year===undefined?'legacy':String(task.checklist_year),key=task.occasion_id+'|'+year;
+ const bucket=grouped.get(key)||{occasionId:task.occasion_id,year,total:0,done:0,archived:0};bucket.total++;if(task.status==='done')bucket.done++;if(task.archived_at)bucket.archived++;grouped.set(key,bucket)}
  if(!grouped.size){const p=document.createElement('p');p.className='empty';p.textContent='Noch keine Aufgabenpakete erstellt.';root.append(p);return}
- for(const [id,progress] of grouped){const occasion=occasions.find(o=>o.id===id);if(!occasion)continue;const row=document.createElement('div');row.className='checklist-row';const heading=document.createElement('strong');heading.textContent=occasion.title;const meter=document.createElement('progress');meter.className='checklist-meter';meter.max=progress.total;meter.value=progress.done;meter.setAttribute('aria-label','Checklistenfortschritt '+occasion.title);const text=document.createElement('p');text.textContent=progress.done+' von '+progress.total+' Aufgaben erledigt · '+Math.round(progress.done/progress.total*100)+' %';row.append(heading,meter,text);root.append(row)}
+ for(const group of [...grouped.values()].sort((a,b)=>b.year.localeCompare(a.year))){const occasion=occasions.find(o=>o.id===group.occasionId);if(!occasion)continue;
+ const row=document.createElement('div');row.className='checklist-row';const heading=document.createElement('strong');heading.textContent=occasion.title+' · '+(group.year==='legacy'?'Bisherige Checkliste (ohne Jahr)':group.year)+(group.archived===group.total?' · 📦 Archiviert':group.archived?' · teilweise archiviert':'');
+ const meter=document.createElement('progress');meter.className='checklist-meter';meter.max=group.total;meter.value=group.done;meter.setAttribute('aria-label','Checklistenfortschritt '+occasion.title+' '+group.year);
+ const summary=document.createElement('p');summary.textContent=group.done+' von '+group.total+' erledigt · '+Math.round(group.done/group.total*100)+' %';row.append(heading,meter,summary);root.append(row)}
 }
+function setupYears(){
+ const now=new Date().getFullYear(),select=$('checklistYear');
+ for(let y=now-3;y<=now+5;y++)option(select,String(y),String(y));
+ select.value=String(now);
+}
+setupYears();
+async function refreshTasks(){
+ const {data,error}=await db.from('wishlist_gift_tasks').select('id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,checklist_year,archived_at,created_at').eq('user_id',user.id).limit(1000);
+ if(error)throw error;tasks=data||[];render();
+}
+for(const [id,archive] of [['archiveYear',true],['restoreYear',false]])$(id).addEventListener('click',async()=>{
+ const occasionId=$('checklistOccasion').value,year=Number($('checklistYear').value);
+ if(!occasionId){$('checklistStatus').textContent='Bitte zuerst einen Anlass wählen.';return}
+ if(!confirm((archive?'Alle Checklistenaufgaben dieses Jahres archivieren?':'Archivierung dieses Jahres aufheben?')+' Die Aufgaben bleiben gespeichert.'))return;
+ $(id).disabled=true;
+ try{const {data,error}=await db.rpc('wishlist_archive_occasion_checklist_year',{p_occasion_id:occasionId,p_year:year,p_archive:archive});if(error)throw error;await refreshTasks();$('checklistStatus').textContent=data+' Aufgaben '+(archive?'archiviert.':'wiederhergestellt.')}
+ catch{$('checklistStatus').textContent='Jahresarchiv konnte nicht geändert werden.'}finally{$(id).disabled=false}
+});
 for(const button of document.querySelectorAll('[data-checklist]'))button.addEventListener('click',async()=>{
  const occasionId=$('checklistOccasion').value;if(!occasionId){$('checklistStatus').textContent='Bitte zuerst einen Anlass auswählen.';return}
  const template=button.dataset.checklist;if(!['standard','last_minute','shipping'].includes(template))return;
  if(!confirm('Aufgabenpaket für den gewählten Anlass erstellen? Vorhandene Aufgaben desselben Pakets bleiben erhalten.'))return;
  button.disabled=true;
- try{const {data,error}=await db.rpc('wishlist_create_occasion_checklist',{p_occasion_id:occasionId,p_template:template});if(error)throw error;
+ try{const {data,error}=await db.rpc('wishlist_create_occasion_checklist_year',{p_occasion_id:occasionId,p_template:template,p_year:Number($('checklistYear').value)});if(error)throw error;
   const result=await db.from('wishlist_gift_tasks').select('id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,created_at').eq('user_id',user.id).limit(1000);if(result.error)throw result.error;
   tasks=result.data||[];render();$('checklistStatus').textContent=data+' neue Aufgaben angelegt. '+(data===0?'Das Paket ist bereits vorhanden.':'Die Aufgaben können einzeln bearbeitet werden.');
  }catch{$('checklistStatus').textContent='Aufgabenpaket konnte nicht erstellt werden.'}finally{button.disabled=false}
