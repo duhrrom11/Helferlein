@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Privater Aufgaben-Erfolgsbericht)
+
+- **Neu umgesetzt:** Monatsübersichten für Erledigungs-, Terminverschiebungs- und Wiedereröffnungsereignisse; Anlassvergleiche und transparente, regelbasierte persönliche Empfehlungen im privaten `gift-task-report.html`/`gift-task-report.mjs`.
+- **Sicherer Export:** Nach explizitem Bestätigungsdialog wird ausschließlich der owner-gefilterte, vollständig geladene Ereignisbestand als lokale JSON-Datei heruntergeladen. Keine serverseitige Veröffentlichung und keine Datenbankänderung.
+- **Produktivmigration:** `wishlist_task_events_occasion_snapshot_for_future_history` ergänzt nullable `occasion_id`/`occasion_title` am Ereignis und speichert sie im vorhandenen Trigger bei künftigen Status- und Terminänderungen. Keine Rückbefüllung, keine Veränderung bestehender Aufgaben, historischer Ereignisse oder Jahresabschlüsse.
+- **Methodik:** Ausschließlich protokollierte Ereignisse; ältere Ereignisse ohne Anlass-Snapshot werden als historisch nicht zugeordnet ausgewiesen. Monatsvergleiche messen Ereignisaktivität, nicht den Anteil aller abgeschlossenen Aufgaben. Empfehlungen werden aus gezählten Ereignissen begründet.
+- **RLS:** `wishlist_gift_task_events` owner-only SELECT; anon keine Leserechte, authenticated kein direktes INSERT/UPDATE/DELETE. Kein Browser-End-to-End-Test mit angemeldetem Konto durchgeführt.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Privater Aufgaben-Fortschrittsbericht)
 
 - **Neu umgesetzt:** Druckfertiger, mobiler Aufgaben-Fortschrittsbericht in `amazon-wishlist/gift-task-report.html` und `gift-task-report.mjs`, verlinkt aus der Geschenk-Planungsassistenz.
