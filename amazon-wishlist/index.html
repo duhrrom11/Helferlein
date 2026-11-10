@@ -641,7 +641,7 @@ main{padding-inline:12px}
   const summary=document.createElement('summary');summary.textContent='＋ Neue Liste anlegen – Einstellungen öffnen';heading.append(summary);
   template.closest('label').before(heading);
   heading.append(template.closest('label'),hint,create);
-  const open=()=>{heading.open=true};
+  const open=()=>{heading.dataset.mobileOpen='true';heading.open=true};
   for(const id of ['homeNewList','quickNewList','createList'])document.getElementById(id)?.addEventListener('click',open,true);
  }
  const recent=document.getElementById('homeRecentContent');
@@ -660,11 +660,10 @@ main{padding-inline:12px}
  /* Desktop zeigt alle Inhalte; Smartphones behalten ihre selbstgewählten Klappzustände. */
  const media=matchMedia('(min-width:760px)');
  for(const details of document.querySelectorAll('#mobileListCreation,#mobileRecentLists,#mobileGiftExtra')){
-  let mobileOpen=false;
   details.querySelector('summary')?.addEventListener('click',()=>{
-   if(!media.matches)mobileOpen=!details.open;
+   if(!media.matches)details.dataset.mobileOpen=String(!details.open);
   });
-  const adapt=()=>{details.open=media.matches||mobileOpen};
+  const adapt=()=>{details.open=media.matches||details.dataset.mobileOpen==='true'};
   media.addEventListener?.('change',adapt);
   adapt();
  }
@@ -724,9 +723,8 @@ main{padding-inline:12px}
   panel.append(box);
  }
  const media=matchMedia('(min-width:760px)');
- let userOpenedOnMobile=false;
- summary.addEventListener('click',()=>{if(!media.matches)userOpenedOnMobile=!panel.open});
- function adapt(event){panel.open=event.matches||userOpenedOnMobile}
+ summary.addEventListener('click',()=>{if(!media.matches)panel.dataset.mobileOpen=String(!panel.open)});
+ function adapt(event){panel.open=event.matches||panel.dataset.mobileOpen==='true'}
  media.addEventListener?.('change',adapt);
  adapt(media);
 })();
@@ -743,7 +741,10 @@ main{padding-inline:12px}
   if(!target)return;
   let changed=false;
   for(let parent=target.parentElement;parent;parent=parent.parentElement){
-   if(parent.tagName==='DETAILS'&&!parent.open){parent.open=true;changed=true}
+   if(parent.tagName==='DETAILS'&&!parent.open){
+    if(parent.matches('.wishlist-mobile-optional,.home-dashboard-tools'))parent.dataset.mobileOpen='true';
+    parent.open=true;changed=true
+   }
   }
   if(changed)requestAnimationFrame(()=>target.scrollIntoView({block:'start',behavior:'auto'}));
  }
@@ -753,10 +754,8 @@ main{padding-inline:12px}
  if(!navigation)return;
  navigation.addEventListener('keydown',event=>{
   if(event.key!=='Escape')return;
-  const open=[...navigation.querySelectorAll('details[open]')];
-  if(!open.length)return;
-  const active=document.activeElement;
-  const current=open.find(group=>group.contains(active))||open[open.length-1];
+  const current=document.activeElement?.closest?.('.wishlist-hub-group[open]');
+  if(!current||!navigation.contains(current))return;
   current.open=false;
   current.querySelector('summary')?.focus();
   event.preventDefault();
