@@ -43,3 +43,11 @@
 - Listen- und Vorlagenfunktionen setzen die bisher nur vorbereiteten SQL-Tabellen voraus.
 - Syntaxprüfung der beiden betroffenen JavaScript-Module erfolgreich; kein Browser-Test.
 - Keine Produktivdatenbankänderungen, kein Merge und kein Deployment.
+
+## Persönliche Wunschwelt und Favoriten
+- Neue Dashboard-Startseite mit Schnellaktionen und Lieblingslisten.
+- Favoriten werden ausschließlich im Browser gespeichert (localStorage), pro Benutzer-ID getrennt; keine geräteübergreifende Synchronisierung.
+- Listenübersicht mit Suche, Ansichten für aktive, archivierte und favorisierte Listen sowie Sortierung.
+- Kontowechsel lässt Filterelemente im DOM bestehen; Favoriten werden bei Wechsel neu eingelesen.
+- Kurze Syntax- und HTML-ID-Prüfung erfolgreich; keine Browser- oder Produktivdatenbanktests.
+- Kein Merge, kein Deployment und keine Änderung an der produktiven Supabase-Datenbank.
