@@ -227,3 +227,28 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('clipboard validation works without browser globals',async()=>{
+ const copied=[];
+ assert.equal(await copyShareLink('https://example.org/a',{writeText:async text=>copied.push(text)},undefined),'clipboard');
+ assert.deepEqual(copied,['https://example.org/a']);
+ await assert.rejects(()=>copyShareLink('https://example.org/a',null,undefined),/Kopieren nicht möglich/);
+ await assert.rejects(()=>copyShareLink('https://user:secret@example.org/',null,undefined),/Ungültiger Link/);
+});
+
+test('backup preview validates typed wish fields and canonical Amazon links',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:2}]};
+ const preview=wishes=>previewWishlistBackup(JSON.stringify({...base,wishes}));
+ assert.equal(preview(base.wishes).count,1); // legacy backups without amazon_url
+ assert.equal(preview([{...base.wishes[0],amazon_url:'https://www.amazon.de/dp/B012345678'}]).count,1);
+ for(const patch of [{title:42},{title:null},{note:12},{note:null},{amazon_url:'https://evil.example/dp/B012345678'},{amazon_url:'https://www.amazon.de/dp/B000000000'},{amazon_url:42}]){
+  assert.throws(()=>preview([{...base.wishes[0],...patch}]));
+ }
+});
+
+test('export progress rejects invalid totals and counters beyond total',()=>{
+ assert.equal(exportProgressText(0,0),'0 von 0 Wünschen geladen …');
+ assert.equal(exportProgressText(3,3),'3 von 3 Wünschen geladen …');
+ for(const total of [-1,1.5,NaN,Infinity,'5'])assert.throws(()=>exportProgressText(1,total));
+ assert.throws(()=>exportProgressText(4,3));
+});
