@@ -52,3 +52,60 @@ test('bulk results and history are structured and screenreader-readable',async({
  await expect(page.locator('#bulkResultSummary')).toHaveAttribute('role','status');
  await expect(page.locator('#bulkHistoryList')).toHaveJSProperty('tagName','OL');
 });
+
+test('simulated bulk selection updates selection count and can be cleared',async({page})=>{
+ await mount(page);
+ await page.evaluate(()=>{
+  const list=document.getElementById('listWishCards');
+  for(const id of ['a','b']){
+   const label=document.createElement('label');
+   const check=document.createElement('input');check.type='checkbox';check.dataset.wishId=id;
+   label.append(check,document.createTextNode('Wunsch '+id));list.append(label);
+  }
+  const checks=[...list.querySelectorAll('input')];
+  const all=document.getElementById('bulkSelectVisible');
+  const count=document.getElementById('bulkSelectedCount');
+  const update=()=>{const n=checks.filter(c=>c.checked).length;count.textContent=n+' ausgewählt';all.checked=n===checks.length;all.indeterminate=n>0&&n<checks.length};
+  all.addEventListener('change',()=>{checks.forEach(c=>c.checked=all.checked);update()});
+  checks.forEach(c=>c.addEventListener('change',update));
+  document.getElementById('bulkClear').addEventListener('click',()=>{checks.forEach(c=>c.checked=false);update()});
+ });
+ await page.getByRole('checkbox',{name:/Alle gefilterten Wünsche auswählen/}).check();
+ await expect(page.locator('#bulkSelectedCount')).toHaveText('2 ausgewählt');
+ await page.getByRole('button',{name:'Auswahl aufheben'}).click();
+ await expect(page.locator('#bulkSelectedCount')).toHaveText('0 ausgewählt');
+});
+test('simulated loading failure exposes a keyboard-accessible retry control',async({page})=>{
+ await mount(page);
+ await page.evaluate(()=>{
+  const panel=document.getElementById('listItemsFeedback'),retry=document.getElementById('listItemsRetry');
+  panel.hidden=false;retry.hidden=false;
+  document.getElementById('listItemsFeedbackText').textContent='Laden fehlgeschlagen';
+  retry.addEventListener('click',()=>{retry.hidden=true;document.getElementById('listItemsFeedbackText').textContent='Wird erneut geladen'});
+ });
+ await expect(page.getByRole('status').filter({hasText:'Laden fehlgeschlagen'})).toBeVisible();
+ await page.locator('#listItemsRetry').focus();
+ await page.keyboard.press('Enter');
+ await expect(page.locator('#listItemsFeedbackText')).toHaveText('Wird erneut geladen');
+});
+test('confirmation cancel does not trigger an action in isolated UI simulation',async({page})=>{
+ await mount(page);
+ await page.evaluate(()=>{
+  window.__testWrites=0;
+  const dialog=document.getElementById('bulkConfirmDialog');
+  document.getElementById('bulkConfirmCancel').addEventListener('click',()=>dialog.close());
+  document.getElementById('bulkConfirmApply').addEventListener('click',()=>{window.__testWrites++;dialog.close()});
+  dialog.showModal();
+ });
+ await page.getByRole('button',{name:'Abbrechen'}).click();
+ await expect(page.getByRole('dialog',{name:'Mehrfachaktion prüfen'})).not.toBeVisible();
+ expect(await page.evaluate(()=>window.__testWrites)).toBe(0);
+});
+test('mobile layout at 320 and 375 pixels keeps bulk action buttons inside viewport',async({page})=>{
+ for(const width of [320,375]){
+  await page.setViewportSize({width,height:700});
+  await mount(page);
+  const outside=await page.locator('.wish-bulk-toolbar button').evaluateAll(buttons=>buttons.filter(el=>{const rect=el.getBoundingClientRect();return rect.left<0||rect.right>window.innerWidth+1}).map(el=>el.id));
+  expect(outside).toEqual([]);
+ }
+});
