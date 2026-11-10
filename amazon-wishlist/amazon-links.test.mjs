@@ -61,7 +61,7 @@ test('requires product routes at the root and rejects nested or spoofed paths', 
   '/dp/'+asin+'EXTRA',
   '/dp/'+asin+'.html',
   '/dp/'+asin+'%2fother',
-  '/gp/aw/d/'+asin+'/extra/dp/B0OTHER123'
+  '/prefix/gp/aw/d/'+asin
  ]) assert.equal(parseAmazonUrl('https://www.amazon.de'+path),null,path);
  for (const path of ['/dp/'+asin,'/dp/'+asin+'/','/gp/product/'+asin,'/gp/aw/d/'+asin]) {
   assert.deepEqual(parseAmazonUrl('https://www.amazon.de'+path),{asin,marketplace:'amazon.de'},path);
