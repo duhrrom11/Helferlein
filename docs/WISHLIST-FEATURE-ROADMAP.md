@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Geschenk-Checklisten pro Anlass)
+
+- **Neu umgesetzt:** Drei kostenlose Aufgabenpakete pro Anlass: Standard (5 Aufgaben), Kurzfristig (4 Aufgaben) und Versand (4 Aufgaben). Aufgaben erhalten vorgeschlagene Fälligkeiten relativ zum nächsten Anlass, Priorität und Erinnerungsfrist.
+- **Additive Produktivmigration:** Optionale Spalte `wishlist_gift_tasks.checklist_key` und eindeutiger partieller Index auf `(user_id,occasion_id,checklist_key)`. Bestehende Aufgaben bleiben unverändert. `wishlist_create_occasion_checklist(occasion_id,template)` ist `SECURITY INVOKER`, prüft Anlass-Eigentümerschaft und erstellt das Paket transaktional mit `ON CONFLICT DO NOTHING`. Erneutes Erstellen desselben Pakets erzeugt keine Duplikate.
+- **Mobile Oberfläche:** Aufgabenpakete mit Bestätigung, unmittelbarer Aufgabenaktualisierung und Fortschritt pro Anlass in `gift-tasks.html`. Aggregierte Checklistenfortschritte auch in `gift-dashboard.html`.
+- **Grenzen:** Pakete sind pro Anlass und Pakettyp einmalig; jährliche Wiederholung erzeugt nicht automatisch neue Aufgaben für Folgejahre. Es gibt keine automatische Löschung bestehender Aufgaben. Erinnerungen bleiben in der App. Vollständiger Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Kostenlose intelligente Aufgabenplanung)
 
 - **Neu umgesetzt:** Sechs lokale Geschenk-Aufgabenvorlagen (Bestellen, Abholen, Verpacken, Karte, Versand, Überreichen) mit vordefinierten Prioritäten und Erinnerungsfristen. Vorlagen füllen nur das Formular vor; Speichern erfolgt ausschließlich nach Nutzerbestätigung.
