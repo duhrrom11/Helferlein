@@ -1042,3 +1042,10 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Security Advisor meldet weiterhin `auth_leaked_password_protection` (Leaked Password Protection Disabled): https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
 - [ ] Vollständigen Chromium- und Node-Status nach `c28e9fef` bestätigen, bevor Merge freigegeben wird.
 - [ ] Produktive Listen-Schema-Migration mit detaillierter RLS- und Rollback-Prüfung separat planen; keine Testdaten, keine DDL ausgeführt.
+
+### Weitere Browser-CI-Regressionen (2026-11-10)
+
+- [x] Chromium-Lauf 42827134198: Node-Gate grün; Browser 16/18 Tests bestanden. Fehler 1: zwei gleich benannte `Auswahl aufheben`-Buttons verursachen Playwright-Strict-Mode-Fehler. Der Test verwendet jetzt den eindeutigen `#bulkClear`-Selektor (Commit `2a65b2d2`).
+- [x] Fehler 2: fünf Bulk-Toolbar-Buttons überschreiten auf 320px den Viewport. CSS der **isolierten** Dashboard-Testoberfläche mit `min-width:0`, `max-width:100%` und `overflow-wrap:anywhere` korrigiert (Commit `79480d8b`). Die produktive Oberfläche bleibt unverändert.
+- [ ] Chromium-Lauf nach beiden Änderungen abschließen und verifizieren.
+- [ ] Die getestete mobile CSS-Korrektur bei späterer produktiver Dashboard-Integration übernehmen, nicht stillschweigend als bereits produktiv deklarieren.
