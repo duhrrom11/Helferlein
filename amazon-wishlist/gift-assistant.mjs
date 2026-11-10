@@ -7,6 +7,25 @@ function nextDate(o,now){const [y,m,d]=o.occasion_date.split('-').map(Number);le
 function median(values){const a=[...values].sort((x,y)=>x-y);return a.length?(a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2):null}
 function addCard(root,title,lines){const box=el('article','','card');box.append(el('h3',title));for(const line of lines)box.append(el('p',line));root.append(box);return box}
 async function allRows(table,columns,userId,order){let rows=[];for(let start=0;start<20000;start+=500){let q=db.from(table).select(columns).eq('user_id',userId).order(order,{ascending:true}).range(start,start+499);const {data,error}=await q;if(error)throw error;rows.push(...(data||[]));if((data||[]).length<500)return rows}throw new Error('Zu viele Datensätze für eine vollständige Auswertung')}
+let taskBusy=false,taskUserId=null;
+async function changeTask(task,field,newValue,button){
+ if(taskBusy)return;
+ const oldValue=task[field];if(oldValue===newValue)return;
+ const action=field==='status'?'als erledigt markieren':'auf '+newValue+' verschieben';
+ if(!window.confirm('Aufgabe „'+task.title+'“ wirklich '+action+'?'))return;
+ taskBusy=true;button.disabled=true;$('taskActionStatus').textContent='Änderung wird gespeichert …';
+ try{
+  let query=db.from('wishlist_gift_tasks').update({[field]:newValue,updated_at:new Date().toISOString()}).eq('id',task.id).eq('user_id',taskUserId);
+  query=oldValue===null?query.is(field,null):query.eq(field,oldValue);
+  const {data,error}=await query.select('id,'+field);
+  if(error)throw error;
+  if(!data||data.length!==1)throw new Error('Aufgabe wurde zwischenzeitlich verändert. Bitte Seite neu laden.');
+  task[field]=data[0][field];
+  $('taskActionStatus').textContent='Änderung gespeichert: '+task.title+'.';
+  renderWeeklyTasks();renderWeek();
+ }catch(e){$('taskActionStatus').textContent='Speichern fehlgeschlagen: '+(e.message||'Unbekannter Fehler')}
+ finally{taskBusy=false;button.disabled=false}
+}
 function utcDate(value){if(!value)return null;const [y,m,d]=value.split('-').map(Number);return Date.UTC(y,m-1,d)}
 function taskRank(task,today){
  const due=utcDate(task.due_date),days=due===null?null:Math.round((due-today)/day);
@@ -20,6 +39,7 @@ function renderWeeklyTasks(){
  const ordered=active.map(t=>({task:t,...taskRank(t,today)})).filter(x=>x.days!==null&&x.days<=Math.round((end-today)/day)).sort((a,b)=>a.score-b.score||(a.days??999)-(b.days??999)||String(a.task.title).localeCompare(String(b.task.title)));
  const top=ordered.slice(0,5),rest=ordered.slice(5);
  const summary=$('weeklySummary');summary.replaceChildren();
+ const weekTasks=weeklyTasks.filter(t=>!t.archived_at&&t.due_date&&utcDate(t.due_date)>=start&&utcDate(t.due_date)<=end);const completed=weekTasks.filter(t=>t.status==='done').length;const progress=$('weeklyProgress');progress.max=weekTasks.length||1;progress.value=completed;$('weeklyProgressText').textContent=completed+' von '+weekTasks.length+' für diese Kalenderwoche fälligen Aufgaben erledigt ('+(weekTasks.length?Math.round(completed/weekTasks.length*100):0)+' %). Überfällige Aufgaben werden gesondert priorisiert.';
  const metrics=[['Überfällig',ordered.filter(x=>x.days<0).length],['Bis Sonntag fällig',ordered.filter(x=>x.days>=0).length],['Hohe Priorität',ordered.filter(x=>x.priority===1).length],['Empfohlen zuerst',top.length]];
  for(const [label,value] of metrics){const card=el('div','','review-kpi');card.append(el('strong',String(value)),el('span',label));summary.append(card)}
  const render=(root,entries)=>{root.replaceChildren();if(!entries.length){root.append(el('p','Keine offenen Aufgaben in dieser Gruppe.'));return}
@@ -27,6 +47,9 @@ function renderWeeklyTasks(){
  box.append(el('h3',t.title),el('p','⏰ '+label+' · '+(t.due_date||'ohne Datum')),el('p','Priorität: '+({1:'hoch',2:'mittel',3:'niedrig'}[x.priority]||'mittel')+' · Status: '+(t.status==='in_progress'?'in Arbeit':'offen')));
  if(t.occasion_id&&occasionNames.has(t.occasion_id))box.append(el('p','🎁 '+occasionNames.get(t.occasion_id)));
  box.append(el('p','Empfehlung: '+(x.days<0?'Zuerst nachholen, da die Fälligkeit überschritten ist.':x.days<=1?'Zeitnah bearbeiten, da die Fälligkeit unmittelbar bevorsteht.':'In dieser Woche einplanen.')+(x.priority===1?' Zusätzlich als hohe Priorität markiert.':''),'hint'));
+ const actions=el('div','','task-actions');const done=el('button','✓ Erledigt markieren');done.type='button';done.addEventListener('click',()=>changeTask(t,'status','done',done));actions.append(done);
+ const labelDate=el('label','Neues Fälligkeitsdatum'),dateInput=document.createElement('input');dateInput.type='date';dateInput.value=t.due_date||'';dateInput.min='1900-01-01';dateInput.max='2200-12-31';labelDate.append(dateInput);actions.append(labelDate);
+ const move=el('button','Datum bestätigt verschieben');move.type='button';move.addEventListener('click',()=>{if(!dateInput.value||!/^\\d{4}-\\d{2}-\\d{2}$/.test(dateInput.value)){ $('taskActionStatus').textContent='Bitte gültiges Datum auswählen.';return}changeTask(t,'due_date',dateInput.value,move)});actions.append(move);box.append(actions);
  const link=el('a','Aufgabenverwaltung öffnen');link.href='./gift-tasks.html';box.append(link);root.append(box)}};
  render($('weeklyPriority'),top);render($('weeklyRemaining'),rest);
 }
@@ -48,7 +71,7 @@ async function main(){
  allRows('wishlist_occasions','id,title,occasion_date,repeats_yearly,reminder_days,budget_amount',user.id,'occasion_date'),
  allRows('wishlist_gift_tasks','id,title,occasion_id,due_date,status,priority,archived_at,checklist_year',user.id,'created_at')
  ]);
- weeklyTasks=tasks;occasionNames=new Map(occasions.map(o=>[o.id,o.title]));renderWeeklyTasks();
+ taskUserId=user.id;weeklyTasks=tasks;occasionNames=new Map(occasions.map(o=>[o.id,o.title]));renderWeeklyTasks();
  const nowDate=new Date(),today=Date.UTC(nowDate.getFullYear(),nowDate.getMonth(),nowDate.getDate());
  $('evidence').textContent=closings.length+' gespeicherte historische Jahresabschlüsse. Die Empfehlungen verwenden ausschließlich deren unveränderliche Geschenk-, Budget- und Aufgaben-Snapshots. Aktuelle Anlässe liefern nur Namen und zukünftige Termine.';
  const root=$('occasionCards'),upcoming=occasions.map(o=>({...o,next:nextDate(o,today)})).filter(o=>o.next!==null).sort((a,b)=>a.next-b.next).slice(0,40);
