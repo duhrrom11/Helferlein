@@ -234,7 +234,8 @@ export function mountListsDashboard(db, getUser) {
   updateActiveListContext();
   const cards=$('listWishCards');cards.replaceChildren();
   const list=lists.find(l=>l.id===selected);
-  if(!list||!membershipReady){$('wishSelectShown').disabled=true;updateBulkToolbar([]);return}
+  if(!list||!membershipReady){$('wishSelectShown').disabled=true;$('wishClearSelection').disabled=true;updateBulkToolbar([]);return}
+  $('wishClearSelection').disabled=bulkBusy||!bulkIds.size;
   $('wishSelectedOnly').setAttribute('aria-pressed',String(selectedOnlyView));$('wishSelectedOnly').textContent=selectedOnlyView?'Alle passenden zeigen':'Nur Auswahl ('+bulkIds.size+')';
   const results=visibleWishes();updateBulkToolbar(results);$('wishSelectShown').disabled=bulkBusy||list.archived||!results.length;$('wishSelectShown').textContent=results.slice(0,visibleLimit).every(w=>bulkIds.has(w.id))&&results.length?'Sichtbare abwählen':'Sichtbare auswählen';
   $('listWishCount').textContent=Math.min(results.length,visibleLimit)+' von '+results.length+' passenden Wünschen sichtbar ('+wishes.length+' geladen).';$('wishLoadMore').hidden=results.length<=visibleLimit;
@@ -321,6 +322,7 @@ export function mountListsDashboard(db, getUser) {
  $('quickFavoriteWishes').onclick=()=>setQuickWishFilter('favorite');
  $('wishViewCards').onclick=()=>setWishView(false);
  $('wishViewCompact').onclick=()=>setWishView(true);
+ $('wishClearSelection').onclick=()=>{if(bulkBusy)return;bulkIds.clear();selectedOnlyView=false;renderWishCards()};
  $('wishSelectedOnly').onclick=()=>{selectedOnlyView=!selectedOnlyView;visibleLimit=100;renderWishCards()};
  $('wishClearFilters').onclick=()=>{for(const [id,value] of [['listWishSearch',''],['listWishPriority','all'],['listWishCategory','all'],['listWishMarker','all'],['listWishAssignment','assigned'],['listWishSort','newest']])$(id).value=value;visibleLimit=100;renderWishCards()};
  $('wishSelectShown').onclick=()=>{if(bulkBusy||!membershipReady||!lists.some(l=>l.id===selected&&!l.archived))return;const ids=visibleWishes().slice(0,visibleLimit).map(w=>w.id);if(!ids.length)return;const all=ids.every(id=>bulkIds.has(id));for(const id of ids){if(all)bulkIds.delete(id);else bulkIds.add(id)}renderWishCards()};
