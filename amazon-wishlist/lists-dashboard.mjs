@@ -134,11 +134,11 @@ actions.append(button('Duplizieren',async()=>{
       if(current())msg('Listen-Kopie: '+copied+' von '+originalIds.length+' Zuordnungen übernommen …');
      }
      if(!current())return;
-     try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid)msg('Liste mit '+copied+' Zuordnungen dupliziert, aber Aktualisierung fehlgeschlagen. Bitte neu laden.');return}
+     try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&loadedOwner===uid)msg('Liste mit '+copied+' Zuordnungen dupliziert, aber Aktualisierung fehlgeschlagen. Bitte neu laden.');return}
      if(getUser()?.id===uid&&loadedOwner===uid)msg('Liste mit '+copied+' Zuordnungen dupliziert.');
     }catch(e){
-     if(!current())return;
-     try{await load({afterBulk:true})}catch{}
+     if(getUser()?.id!==uid||loadedOwner!==uid)return;
+     if(current())try{await load({afterBulk:true})}catch{}
      if(getUser()?.id===uid&&loadedOwner===uid)msg(created?'Kopie angelegt, aber nur '+copied+' von '+originalIds.length+' Zuordnungen übernommen: '+(e.message||'Fehler')+'. Bitte Kopie prüfen.':'Liste konnte nicht dupliziert werden: '+(e.message||'Fehler'));
     }finally{listCopyBusy=false;if(getUser()?.id===uid&&loadedOwner===uid&&membershipReady)renderWishCards()}
    }));
