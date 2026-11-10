@@ -1110,3 +1110,8 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Neueste Node-/Chromium-/Vault-/Smoke-CI **nach diesen Commits** vollständig grün bestätigen; dann Merge-Gate erneut prüfen.
 - [ ] Echtes Auth-/Wunsch-Anlegen-/Listen-Zuordnen-End-to-End mit vorhandenen berechtigten Konten noch nicht ausgeführt. Die SQL-Rollentests sind read-only und ersetzen keine reale Benutzeraktion.
 - [ ] Deployment erst nach Merge und bestandenem GitHub-Pages-Live-HTTP-Check als erfolgreich melden. Vorher keine Veröffentlichung behaupten.
+
+### Zusätzlicher Hosting-Befund
+
+- [x] Repository-Metadaten `GET /repos/duhrrom11/Helferlein`: `has_pages=true`, **aber** offizielles `homepage`-Feld verweist auf `https://helferlein-ochre.vercel.app`. GitHub Pages ist damit nicht zweifelsfrei das einzige oder primäre Produktionsziel.
+- [ ] **Vor Deployment** Vercel-Projekt/Build/Branch/Domain prüfen und Live-Routen auf **beiden** Hostingzielen validieren; aus `has_pages=true` folgt nicht, dass Vercel dieselben Dateien veröffentlicht. Eine Vercel-Bereitstellung wurde hier nicht ausgelöst oder verifiziert.
