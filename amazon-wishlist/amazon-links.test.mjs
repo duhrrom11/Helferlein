@@ -30,3 +30,14 @@ test('canonicalizes imported Amazon.de URLs without preserving tracking tags', (
  assert.equal(sharedAmazonProductUrl('http://amazon.de/dp/B0ABC12345?utm_source=external'),'https://www.amazon.de/dp/B0ABC12345');
  for(const url of [null,'https://amazon.com/dp/B0ABC12345','https://amazon.de.evil.test/dp/B0ABC12345','https://amazon.de/dp/INVALID'])assert.equal(sharedAmazonProductUrl(url),null);
 });
+
+test('mobile Amazon hosts canonicalize to the same marketplace without tracking', () => {
+ for (const host of ['m.amazon.de','www.amazon.de','smile.amazon.de','amazon.de']) {
+  const input='https://'+host+'/dp/B0ABC12345?tag=other-21#details';
+  assert.deepEqual(parseAmazonUrl(input),{asin:'B0ABC12345',marketplace:'amazon.de'});
+  assert.equal(sharedAmazonProductUrl(input),'https://www.amazon.de/dp/B0ABC12345');
+ }
+ for (const host of ['m.amazon.de.evil.test','m.evil.test','mobile.amazon.de','www.m.amazon.de']) {
+  assert.equal(parseAmazonUrl('https://'+host+'/dp/B0ABC12345'),null);
+ }
+});
