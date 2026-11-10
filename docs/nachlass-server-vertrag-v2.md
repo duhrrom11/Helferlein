@@ -43,3 +43,11 @@ Der CommonJS-Baustein `tools/digitaler-nachlass/server-api-v2.cjs` enthält eine
 `tests/nachlass-server-api-v2.test.cjs` prüft alle vier deaktivierten Aktionen, gefälschte Identitäts- und Release-Felder, unbekannte Routen, Methoden und Antwort-Header. Die CI wurde um diese Tests ergänzt.
 
 **Wichtig:** Dies ist kein produktiver Edge-Function-Endpunkt. Er wird nicht automatisch deployed, nicht von der bestehenden Erben-Seite verwendet und kann keine echten Zugriffe schützen. Vor Anbindung müssen Firestore-Regeln, Identity Provider, Zustandsmodell und Krypto geprüft werden. Ein künftiger produktiver Handler muss außerdem Streaming-Body-Limits, echte Authentisierung, Datenbanktransaktionen und Auditprotokolle implementieren.
+
+## Isolierte Authentifizierungsvorbereitung (2026-11-10)
+
+`tools/digitaler-nachlass/server-auth-v2.cjs` exportiert `parseBearer` und `authenticate(Request, verifyToken)`. Das Modul akzeptiert ausschließlich ein syntaktisch gültiges Bearer-Token, verlangt einen **serverseitig bereitgestellten** Verifizierer und gibt nur eine verifizierte UUID-Nutzeridentität zurück. Vom Verifizierer gelieferte `isAdmin`-, `role`- oder `ownerId`-Felder werden verworfen. Fehler werden einheitlich als `unauthorized` behandelt.
+
+**Sicherheitsgrenze:** Der übergebene `verifyToken`-Callback ist ein Vertrauensanker. Er darf niemals aus einem HTTP-Request oder aus Browsercode stammen. Er muss künftig Token-Signatur, Issuer, Audience, Ablauf, Sperrstatus und die Identität über den festgelegten Identity Provider prüfen. Die Rückgabe `verified: true` ist nur sicher, wenn sie ausschließlich vom echten Server-Verifizierer stammt. Es gibt noch keine solche produktive Implementierung. Der neue Authentifizierungsbaustein ist absichtlich **nicht** mit `server-api-v2.cjs` verbunden; die API bleibt uneingeschränkt fail-closed.
+
+`tests/nachlass-server-auth-v2.test.cjs` enthält isolierte Negativfälle für fehlende/ungültige Tokens, fehlenden Verifizierer, Verifiziererfehler und unzulässige Identitätsfelder. Keine produktiven Daten oder Konten werden benötigt.
