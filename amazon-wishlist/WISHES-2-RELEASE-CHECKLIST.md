@@ -153,3 +153,17 @@
 - [ ] Echtes npm-Lockfile nach Registry-Zugriff mit überprüfbaren Integrity-Hashes erzeugen
 
 **Abgrenzung:** Dies ist ein echter Integrationstest des injizierten Dashboard-Leseadapters mit Mock-Supabase-Client, **kein** DOM-/Browser-End-to-End-Test von `mountListsDashboard`. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Paginierte Mitgliedschaften, Teilfehler und Retry (2026-11-10)
+
+- [x] Paginierte, rein lesende Mitgliedschaftsabfrage als `fetchDashboardMembership(db,userId,{pageSize,isCurrent})` extrahiert und in das Dashboard eingebunden
+- [x] Mock-Supabase-Integrationstest: zwei Seiten mit korrekten `range`-Grenzen, `user_id`-Filter und **null Schreibvorgängen**
+- [x] Integrationstest: Fehlerobjekt auf Seite zwei bricht ab, ohne unvollständige Mitgliedschaftsdaten zu veröffentlichen
+- [x] Integrationstest: Promise-Rejection auf Seite zwei; danach erfolgreicher **expliziter** Retry mit vollständigen Seiten
+- [x] Integrationstest: Kontowechsel/ungültiger Ladevorgang stoppt Pagination und liefert `null` statt veralteter Daten
+- [x] **38/38 aktuelle Branch-Testfälle** im isolierten JavaScript-Runner tatsächlich ausgeführt und bestanden (34 bestehende + 4 neue)
+- [ ] Vollständiger nativer Node-`--test`-Lauf auf Branch-Checkout
+- [ ] Neun Playwright-Browserfälle mit installiertem `@playwright/test`
+- [ ] Verifiziertes `package-lock.json` nach erfolgreichem npm-Registry-Zugriff
+
+**Abgrenzung:** Getestet wurde der produktiv verwendete, injizierte Leseadapter mit einem Mock-Supabase-Client; nicht die vollständige Dashboard-DOM-Integration. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
