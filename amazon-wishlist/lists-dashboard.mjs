@@ -18,18 +18,18 @@ export function mountListsDashboard(db, getUser) {
   card.tabIndex=-1;card.focus({preventScroll:true});card.scrollIntoView({behavior:'smooth',block:'center'});
  }
  function jumpToWishInList(wishId,listId){
-  if(!membershipReady||!lists.some(l=>l.id===listId&&membershipByList.get(l.id)?.has(wishId)))return;
+  if(!membershipReady||!lists.some(l=>l.id===listId&&!l.archived&&membershipByList.get(l.id)?.has(wishId)))return;
   const wish=wishes.find(w=>w.id===wishId);if(!wish)return;
   $('wishDetailDialog').close();openList(listId);
   $('listWishSearch').value='';
-  $('listWishAssignment').value='assigned';
+  $('listWishAssignment').value='assigned';$('listWishPriority').value='all';$('listWishCategory').value='all';$('listWishMarker').value='all';$('listWishSort').value='newest';selectedOnlyView=false;
   const index=visibleWishes().findIndex(w=>w.id===wishId);
   if(index<0){msg('Wunsch konnte in dieser Liste nicht gefunden werden.');return}
   visibleLimit=Math.max(visibleLimit,index+1);renderWishCards();focusWishCard(wishId);
  }
  function openWishDetail(wish){detailWishId=wish.id;
   const membership=$('wishDetailLists');membership.replaceChildren();
-  const matching=membershipReady?lists.filter(l=>membershipByList.get(l.id)?.has(wish.id)):[];
+  const matching=membershipReady?lists.filter(l=>!l.archived&&membershipByList.get(l.id)?.has(wish.id)):[];
   if(matching.length){const heading=document.createElement('strong');heading.textContent='In diesen Listen:';membership.append(heading);
    for(const list of matching){const go=button(list.icon+' '+list.title,async()=>jumpToWishInList(wish.id,list.id));membership.append(go)}
   }else{const hint=document.createElement('span');hint.textContent=membershipReady?'Noch keiner Liste zugeordnet':'Listenzuordnungen werden geladen';membership.append(hint)}
@@ -61,6 +61,7 @@ export function mountListsDashboard(db, getUser) {
  const owner=()=>{const u=getUser();if(!u)throw Error('Bitte anmelden');return u.id};
  async function load(){
   if(!getUser()){reset();return}
+  if(bulkBusy){msg('Sammelaktion läuft. Bitte stoppen oder abschließen, bevor du Listen aktualisierst.');return}
   const generation=++loadGeneration;
   invalidateMembershipState();root.hidden=false;setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
   const id=owner();
@@ -105,9 +106,9 @@ export function mountListsDashboard(db, getUser) {
    actions.append(button('Öffnen',async()=>{openList(list.id)}));
    if(!list.archived&&count>0)actions.append(button('Zugeordnete Wünsche',async()=>{openList(list.id);$('listWishAssignment').value='assigned';renderWishCards()}));
    actions.append(button('Gestalten',async()=>{selected=list.id;render();openEditor(list)}));
-   actions.append(button(list.archived?'Reaktivieren':'Archivieren',async()=>{if(!list.archived&&!window.confirm('Liste „'+list.title+'“ archivieren? Die Wünsche bleiben erhalten.'))return;const res=await db.from('wishlist_lists').update({archived:!list.archived}).eq('id',list.id).eq('user_id',owner());if(res.error)throw res.error;await load()}));
-   actions.append(button('Duplizieren',async()=>{const uid=owner();const {data:copy,error}=await db.from('wishlist_lists').insert({user_id:uid,title:(list.title+' Kopie').slice(0,80),description:list.description,icon:list.icon,color:list.color,visibility:'private'}).select('id').single();if(error)throw error;const {data:originalItems,error:itemsError}=await db.from('wishlist_list_items').select('wish_id').eq('list_id',list.id).eq('user_id',uid);if(itemsError)throw itemsError;if(originalItems.length){const {error:copyError}=await db.from('wishlist_list_items').insert(originalItems.map(item=>({list_id:copy.id,wish_id:item.wish_id,user_id:uid})));if(copyError)throw copyError}await load()}));
-   actions.append(button('Löschen',async()=>{if(!confirm('Liste löschen? Die Wünsche selbst bleiben erhalten.'))return;const {error}=await db.from('wishlist_lists').delete().eq('id',list.id).eq('user_id',owner());if(error)throw error;await load()}));
+   actions.append(button(list.archived?'Reaktivieren':'Archivieren',async()=>{if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');if(!list.archived&&!window.confirm('Liste „'+list.title+'“ archivieren? Die Wünsche bleiben erhalten.'))return;const uid=owner(),generation=loadGeneration;const res=await db.from('wishlist_lists').update({archived:!list.archived}).eq('id',list.id).eq('user_id',uid);if(res.error)throw res.error;if(getUser()?.id!==uid||generation!==loadGeneration)return;await load()}));
+   actions.append(button('Duplizieren',async()=>{if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');const uid=owner(),generation=loadGeneration;const {data:copy,error}=await db.from('wishlist_lists').insert({user_id:uid,title:(list.title+' Kopie').slice(0,80),description:list.description,icon:list.icon,color:list.color,visibility:'private'}).select('id').single();if(error)throw error;if(getUser()?.id!==uid||generation!==loadGeneration)return;const {data:originalItems,error:itemsError}=await db.from('wishlist_list_items').select('wish_id').eq('list_id',list.id).eq('user_id',uid);if(itemsError)throw itemsError;if(getUser()?.id!==uid||generation!==loadGeneration)return;if(originalItems.length){const {error:copyError}=await db.from('wishlist_list_items').insert(originalItems.map(item=>({list_id:copy.id,wish_id:item.wish_id,user_id:uid})));if(copyError)throw copyError}if(getUser()?.id!==uid||generation!==loadGeneration)return;await load()}));
+   actions.append(button('Löschen',async()=>{if(bulkBusy)return msg('Sammelaktion zuerst abschließen.');if(!confirm('Liste „'+list.title+'“ löschen? Die Wünsche selbst bleiben erhalten.'))return;const uid=owner(),generation=loadGeneration;const {error}=await db.from('wishlist_lists').delete().eq('id',list.id).eq('user_id',uid);if(error)throw error;if(getUser()?.id!==uid||generation!==loadGeneration)return;await load()}));
    grid.append(card);
   }
   showItems().catch(e=>{setItemsFeedback('error','Listenzuordnungen konnten nicht geladen werden.');msg(e.message||'Ladefehler')});
@@ -191,8 +192,9 @@ export function mountListsDashboard(db, getUser) {
       if(error)throw error;
      }
      if(!current()){stopped=true;partial++;break}
+      if(bulkStopRequested){stopped=true;partial++;break}
      const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceId).eq('wish_id',wishId).eq('user_id',uid);
-     if(error){partial++;failed++;msg('Zielzuordnung gespeichert, aber Entfernen aus der Ursprungsliste fehlgeschlagen. Bitte beide Listen prüfen.');continue}
+     if(error){partial++;failed++;if(current())msg('Zielzuordnung gespeichert, aber Entfernen aus der Ursprungsliste fehlgeschlagen. Bitte beide Listen prüfen.');continue}
      moved++;bulkIds.delete(wishId);
     }catch(e){failed++;msg('Ein Wunsch konnte nicht verschoben werden: '+(e.message||'Unbekannter Fehler'))}
     finally{reportBulk(moved+failed,targets.length,moved,failed)}
@@ -200,10 +202,10 @@ export function mountListsDashboard(db, getUser) {
    if(current()){
     const summary=moved+' verschoben, '+failed+' fehlgeschlagen'+(skipped?', '+skipped+' nicht in dieser Liste – übersprungen':'')+(stopped?', Vorgang gestoppt':'')+(partial?', '+partial+' möglicherweise in beiden Listen – bitte prüfen':'')+'.';
     try{await load();if(getUser()?.id===uid)$('bulkStatus').textContent=summary}
-    catch(e){if(getUser()?.id===uid){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent=summary}}
+    catch(e){if(current()){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent=summary}}
    }
   }finally{
-   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkProgressPanel').hidden=true;$('bulkStop').disabled=true;if(getUser()?.id===uid){updateBulkToolbar();renderWishCards()}}
+   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkProgressPanel').hidden=true;$('bulkStop').disabled=true;if(getUser()?.id===uid&&selected===sourceId){updateBulkToolbar();renderWishCards()}}
   }
  }
  async function moveWishToList(wishId,sourceListId,targetListId,control){
@@ -225,7 +227,7 @@ export function mountListsDashboard(db, getUser) {
    const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid);
    if(error){if(current())msg('Wunsch wurde zur Zielliste hinzugefügt, konnte aber nicht aus der Ursprungsliste entfernt werden: '+error.message+'. Bitte erneut prüfen.');if(current())await load();return}
    await load();
-   if(getUser()?.id===uid&&selected===sourceListId){openList(targetListId);msg('Wunsch nach „'+target.title+'“ verschoben.')}
+   if(current())msg('Wunsch nach „'+target.title+'“ verschoben. Die Ausgangsliste bleibt geöffnet.')
   }catch(e){if(getUser()?.id===uid&&selected===sourceListId)msg('Verschieben fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
   finally{control.disabled=false}
  }
@@ -259,12 +261,12 @@ export function mountListsDashboard(db, getUser) {
    }
    const row=document.createElement('label');const check=document.createElement('input');check.type='checkbox';check.checked=assignedIds.has(wish.id);check.disabled=!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived;
    const caption=document.createElement('span');caption.textContent='In dieser Liste';
-   check.onchange=async()=>{if(!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived){check.checked=!check.checked;return}check.disabled=true;const uid=owner(),wanted=check.checked;try{
+   check.onchange=async()=>{if(!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived){check.checked=!check.checked;return}check.disabled=true;const uid=owner(),generation=loadGeneration,wanted=check.checked;try{
     const query=wanted?db.from('wishlist_list_items').insert({list_id:list.id,wish_id:wish.id,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',list.id).eq('wish_id',wish.id).eq('user_id',uid);
-    const {error}=await query;if(error)throw error;if(getUser()?.id!==uid||selected!==list.id)return;
+    const {error}=await query;if(error)throw error;if(getUser()?.id!==uid||selected!==list.id||generation!==loadGeneration)return;
     if(wanted){assignedIds.add(wish.id);membershipByList.get(list.id)?.add(wish.id)}else{assignedIds.delete(wish.id);membershipByList.get(list.id)?.delete(wish.id)}
-    await load();msg('Wunschzuordnung gespeichert');
-   }catch(e){check.checked=!wanted;msg(e.message||'Zuordnung fehlgeschlagen')}finally{check.disabled=false}};
+    await load();if(getUser()?.id===uid&&selected===list.id)msg('Wunschzuordnung gespeichert');
+   }catch(e){check.checked=!wanted;if(getUser()?.id===uid&&selected===list.id)msg(e.message||'Zuordnung fehlgeschlagen')}finally{check.disabled=false}};
    row.append(check,caption);card.append(row);
    if(assignedIds.has(wish.id)&&!list.archived){
     const destinations=lists.filter(l=>!l.archived&&l.id!==list.id);
