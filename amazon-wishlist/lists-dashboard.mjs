@@ -172,14 +172,14 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
  }
  async function moveSelectedWishes(){
   if(!bulkControlsEnabled({membershipReady,bulkBusy})||!getUser())return;
-  const uid=owner(),sourceId=selected,targetId=$('bulkMoveTarget').value;
+  const uid=owner(),sourceId=selected,targetId=$('bulkMoveTarget').value,confirmationGeneration=loadGeneration;
   const source=lists.find(l=>l.id===sourceId&&!l.archived),target=lists.find(l=>l.id===targetId&&!l.archived);
   if(!source||!target||sourceId===targetId)return msg('Bitte zwei verschiedene aktive Listen auswählen.');
   const loadedWishIds=new Set(wishes.map(w=>w.id));
   const targets=[...bulkIds].filter(id=>assignedIds.has(id)&&loadedWishIds.has(id));
   const skipped=bulkIds.size-targets.length;
   if(!targets.length)return msg('Nur Wünsche, die bereits in dieser Liste liegen, können verschoben werden.');
-  if(activeWishMutations.size)return msg('Ein Wunsch wird gerade bearbeitet. Bitte danach erneut versuchen.');if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten. Ein Stopp wirkt vor dem nächsten Wunsch; bei Fehlern kann ein Wunsch in beiden Listen stehen.'))return;if(!bulkControlsEnabled({membershipReady,bulkBusy})||getUser()?.id!==uid||selected!==sourceId||!lists.some(l=>l.id===targetId&&!l.archived)||activeWishMutations.size||targets.some(id=>!assignedIds.has(id)||!wishes.some(w=>w.id===id)))return;
+  if(activeWishMutations.size)return msg('Ein Wunsch wird gerade bearbeitet. Bitte danach erneut versuchen.');if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten. Ein Stopp wirkt vor dem nächsten Wunsch; bei Fehlern kann ein Wunsch in beiden Listen stehen.'))return;if(!bulkControlsEnabled({membershipReady,bulkBusy})||getUser()?.id!==uid||selected!==sourceId||confirmationGeneration!==loadGeneration||!lists.some(l=>l.id===sourceId&&!l.archived)||!lists.some(l=>l.id===targetId&&!l.archived)||activeWishMutations.size||targets.some(id=>!assignedIds.has(id)||!wishes.some(w=>w.id===id))){$('bulkStatus').textContent='Listendaten oder Auswahl haben sich geändert. Bitte Verschieben erneut prüfen.';return}
   const generation=loadGeneration,run=++bulkRunId;
   const current=()=>getUser()?.id===uid&&selected===sourceId&&generation===loadGeneration&&run===bulkRunId;
   let moved=0,failed=0,partial=0,stopped=false;
