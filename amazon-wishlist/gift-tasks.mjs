@@ -12,7 +12,7 @@ function choices(){for(const id of ['occasion','gift'])$(id).replaceChildren();o
  for(const g of gifts)if(!$('occasion').value||g.occasion_id===$('occasion').value)option($('gift'),g.id,g.title)}
 function refreshGifts(){const selected=$('gift').value;const el=$('gift');el.replaceChildren();option(el,'','Ohne Geschenk');for(const g of gifts)if(!$('occasion').value||g.occasion_id===$('occasion').value)option(el,g.id,g.title);if([...el.options].some(x=>x.value===selected))el.value=selected}
 function reset(){editing=null;$('form').reset();$('formTitle').textContent='➕ Aufgabe hinzufügen';$('save').textContent='Aufgabe speichern';$('cancel').hidden=true;choices()}
-function render(){renderWeek();
+function render(){renderWeek();renderChecklistProgress();
  const reminders=$('reminders');reminders.replaceChildren();
  const due=tasks.filter(t=>t.status!=='done'&&t.due_date&&days(t.due_date)<=t.reminder_days).sort((a,b)=>days(a.due_date)-days(b.due_date)||a.priority-b.priority);
  if(!due.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine fälligen Erinnerungen.';reminders.append(p)}
@@ -38,12 +38,12 @@ $('form').addEventListener('submit',async event=>{event.preventDefault();if(!use
  const title=$('title').value.trim();if(!title){$('status').textContent='Bitte Aufgabe eingeben.';return}
  const giftId=$('gift').value||null,linked=gifts.find(g=>g.id===giftId);
  const payload={title,occasion_id:$('occasion').value||linked?.occasion_id||null,gift_plan_id:giftId,due_date:$('due').value||null,reminder_days:Number($('reminder').value),priority:Number($('priority').value),status:$('taskStatus').value,notes:$('notes').value.trim()||null,updated_at:new Date().toISOString()};
- $('save').disabled=true;try{const fields='id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,created_at';const r=editing?await db.from('wishlist_gift_tasks').update(payload).eq('id',editing).eq('user_id',user.id).select(fields).single():await db.from('wishlist_gift_tasks').insert({...payload,user_id:user.id}).select(fields).single();if(r.error)throw r.error;tasks=tasks.filter(x=>x.id!==r.data.id);tasks.push(r.data);reset();render();$('status').textContent='Aufgabe gespeichert.'}catch{$('status').textContent='Aufgabe konnte nicht gespeichert werden.'}finally{$('save').disabled=false}
+ $('save').disabled=true;try{const fields='id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,created_at';const r=editing?await db.from('wishlist_gift_tasks').update(payload).eq('id',editing).eq('user_id',user.id).select(fields).single():await db.from('wishlist_gift_tasks').insert({...payload,user_id:user.id}).select(fields).single();if(r.error)throw r.error;tasks=tasks.filter(x=>x.id!==r.data.id);tasks.push(r.data);reset();render();$('status').textContent='Aufgabe gespeichert.'}catch{$('status').textContent='Aufgabe konnte nicht gespeichert werden.'}finally{$('save').disabled=false}
 });
 async function main(){
  const {data,error}=await db.auth.getUser();user=data?.user;if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
  const [t,o,g]=await Promise.all([db.from('wishlist_gift_tasks').select('id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,created_at').eq('user_id',user.id).limit(1000),db.from('wishlist_occasions').select('id,title,occasion_date,repeats_yearly').eq('user_id',user.id).limit(1000),db.from('wishlist_gift_plans').select('id,title,occasion_id').eq('user_id',user.id).limit(1000)]);
- if(t.error||o.error||g.error)throw t.error||o.error||g.error;tasks=t.data||[];occasions=o.data||[];gifts=g.data||[];choices();$('content').hidden=false;render();$('status').textContent='Deine Geschenk-To-dos sind aktuell.';
+ if(t.error||o.error||g.error)throw t.error||o.error||g.error;tasks=t.data||[];occasions=o.data||[];gifts=g.data||[];choices();for(const occasion of occasions)option($('checklistOccasion'),occasion.id,occasion.title);$('content').hidden=false;render();$('status').textContent='Deine Geschenk-To-dos sind aktuell.';
 }
 
 const templates=[
@@ -99,4 +99,22 @@ function renderWeek(){
 $('weekPrev').addEventListener('click',()=>{weekOffset--;renderWeek()});
 $('weekNext').addEventListener('click',()=>{weekOffset++;renderWeek()});
 $('weekToday').addEventListener('click',()=>{weekOffset=0;renderWeek()});
+
+function renderChecklistProgress(){
+ const root=$('checklistProgress');root.replaceChildren();
+ const grouped=new Map();
+ for(const task of tasks){if(!task.checklist_key||!task.occasion_id)continue;const key=task.occasion_id;const bucket=grouped.get(key)||{total:0,done:0};bucket.total++;if(task.status==='done')bucket.done++;grouped.set(key,bucket)}
+ if(!grouped.size){const p=document.createElement('p');p.className='empty';p.textContent='Noch keine Aufgabenpakete erstellt.';root.append(p);return}
+ for(const [id,progress] of grouped){const occasion=occasions.find(o=>o.id===id);if(!occasion)continue;const row=document.createElement('div');row.className='checklist-row';const heading=document.createElement('strong');heading.textContent=occasion.title;const meter=document.createElement('progress');meter.className='checklist-meter';meter.max=progress.total;meter.value=progress.done;meter.setAttribute('aria-label','Checklistenfortschritt '+occasion.title);const text=document.createElement('p');text.textContent=progress.done+' von '+progress.total+' Aufgaben erledigt · '+Math.round(progress.done/progress.total*100)+' %';row.append(heading,meter,text);root.append(row)}
+}
+for(const button of document.querySelectorAll('[data-checklist]'))button.addEventListener('click',async()=>{
+ const occasionId=$('checklistOccasion').value;if(!occasionId){$('checklistStatus').textContent='Bitte zuerst einen Anlass auswählen.';return}
+ const template=button.dataset.checklist;if(!['standard','last_minute','shipping'].includes(template))return;
+ if(!confirm('Aufgabenpaket für den gewählten Anlass erstellen? Vorhandene Aufgaben desselben Pakets bleiben erhalten.'))return;
+ button.disabled=true;
+ try{const {data,error}=await db.rpc('wishlist_create_occasion_checklist',{p_occasion_id:occasionId,p_template:template});if(error)throw error;
+  const result=await db.from('wishlist_gift_tasks').select('id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,created_at').eq('user_id',user.id).limit(1000);if(result.error)throw result.error;
+  tasks=result.data||[];render();$('checklistStatus').textContent=data+' neue Aufgaben angelegt. '+(data===0?'Das Paket ist bereits vorhanden.':'Die Aufgaben können einzeln bearbeitet werden.');
+ }catch{$('checklistStatus').textContent='Aufgabenpaket konnte nicht erstellt werden.'}finally{button.disabled=false}
+});
 main().catch(()=>{$('status').textContent='Aufgaben konnten nicht geladen werden.'});
