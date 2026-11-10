@@ -452,3 +452,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] RLS-Negativtests, echte Browserabnahme, rechtliche Pflichtangaben und Abuse-Schutz weiterhin offen. Keine Freigabe, kein Merge, kein Deployment.
 
 **Keine Vercel-Nutzung, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Autopilot-Paket: Sammelaktionen konsistent abschließen (2026-11-10)
+
+- [x] Kritischen Ablauf korrigiert: Der allgemeine Lade-Schutz gegen parallele Sammelaktionen verhinderte auch das notwendige interne Neuladen **nach** der Sammelaktion. Interne Abschluss-Ladevorgänge dürfen jetzt mit `load({afterBulk:true})` stattfinden; normale manuelle Aktualisierungen bleiben während der Aktion gesperrt.
+- [x] Beide Abschlusswege (Hinzufügen/Entfernen und Mehrfachverschieben) nutzen den internen Neuladepfad, sodass die Mitgliedschaftsansicht nach Änderungen nicht absichtlich veraltet bleibt.
+- [x] Späte Abschlussmeldungen und Ergebnisdarstellungen zusätzlich auf Benutzer-, Listen- und Laufkontext begrenzt.
+- [x] Wird eine Liste archiviert, wechselt der Ladevorgang zur nächsten aktiven Liste statt die archivierte Liste als aktive Arbeitsliste zu behandeln.
+- [x] Stopp beim Mehrfachverschieben greift vor dem nächsten Wunsch; der bereits begonnene zweistufige Verschiebevorgang wird nach erfolgreicher Zielzuordnung nicht mehr absichtlich zwischen Einfügen und Entfernen unterbrochen.
+- [ ] Noch keine verifizierte lokale Node-/Browser-Abnahme für den neuen Branch-Stand; gezielte Regressionstests mit kontrollierten Mock-Daten und realem Browser vor Freigabe erforderlich.
+- [ ] Zweistufiges Verschieben bleibt bei Netzwerkfehlern nicht atomar; doppelte Mitgliedschaften sind weiterhin möglich. Serverseitige Transaktion benötigt gesonderte Architektur-/Produktiv-DB-Freigabe.
+- [ ] Freigabe bleibt gesperrt; kein Merge, kein Deployment, keine Vercel-Nutzung, keine produktiven Supabase-Eingriffe.
