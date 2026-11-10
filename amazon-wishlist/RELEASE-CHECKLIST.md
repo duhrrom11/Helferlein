@@ -28,7 +28,7 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Veröffentlichung nur nach Review und bestätigtem CI-/Browser-Test; kein automatischer Merge.
 
 ## Übergabe für weitere Entwicklungsläufe
-- Feature-Branch: `feature/amazon-wishlist-foundation`; PR #166 bleibt Draft. Aktuelle Änderungen über GitHub-Commit-Historie prüfen, nicht nur über Chatverläufe.
+- **Neue Wishlist-Arbeiten ausschließlich auf einem separaten Branch vom aktuellen `main` vorbereiten.** PR #166 (`feature/amazon-wishlist-foundation`) ist ein historischer Draft und darf nicht als Entwicklungsbasis dienen. Vorab neueste Wishlist-Commits und offene PRs (u. a. #227 und #229) auf Überschneidungen prüfen; aktuelle Änderungen anhand GitHub-Commits statt Chatverläufen verifizieren.
 - Neu: Öffentliche Profil-Wunschansicht mit `?profile=<handle>`, Suchergebnis-Aktion »Wünsche ansehen«, Profil-Link kopieren; nur bestehende RLS-lesbare Daten.
 - Wichtig: GitHub Actions `Amazon wishlist checks`, `Browser launch smoke` und weitere Workflows nach jedem Commit auf Abschluss und Erfolg prüfen; ein laufender Workflow ist kein bestandener Test.
 - Vor Launch zusätzlich Profile-Link-Fehlerfälle, Browser- und RLS-Tests prüfen. Keine Testdatensätze in Produktiv-Supabase erstellen.
@@ -326,3 +326,8 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Nach dem Ausblenden der letzten sichtbaren Wunschkarte wird ein erklärender Leerzustand gezeigt, einschließlich Hinweis auf die Wiederherstellung.
 - Beim Ausblenden eines fremden Profils erhält die bereits sichtbare Wiederherstellen-Schaltfläche den Fokus vor dem asynchronen Feed-Refresh.
 - Manuell zu prüfen: letzter sichtbarer Wunsch, Profil-Ausblendung bei langsamem Netzwerk, Tastaturfokus, Feed-Pagination sowie Wiederherstellen nach Fehlern. Kein Freigabenachweis durch diesen Commit.
+
+## Übergabe 10.11.2026 – Branch- und Freigabehygiene
+- Die jüngsten `main`-Commits enthalten Wishlist-Fehlerbehandlung (u. a. `619ae4d`); ältere CI-Befunde in dieser Datei gelten **nur** für ihre jeweils genannten Commit-SHAs, nicht automatisch für `main` oder neue Draft-PRs.
+- Offene PRs [#227](https://github.com/duhrrom11/Helferlein/pull/227) und [#229](https://github.com/duhrrom11/Helferlein/pull/229) vor weiterer Arbeit prüfen, um Doppelimplementierungen zu vermeiden. Keine Freigabe allein aufgrund von Vercel-Status oder leerer Check-Liste.
+- Nach jedem neuen Code-Head Syntax-/Unit-Tests und zugehörige CI für genau diesen Commit nachweisen. Browser-/RLS-Negativtests und rechtliche/Abuse-Gates bleiben offen; keine produktiven Testdatensätze, kein ungeprüfter Merge oder Deployment.
