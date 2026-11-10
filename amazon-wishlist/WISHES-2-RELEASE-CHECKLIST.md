@@ -668,3 +668,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Syntaxprüfung ohne Imports und gezielte Quelltextkontrolle erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; Detaildialog-Verhalten nach Neuladung praktisch prüfen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Autopilot: skalierbare mobile Auswahl und konsistente Navigation (2026-11-10)
+
+- [x] Auswahlzahlen und Aktivierungszustände für zugeordnete und listenlose Wünsche verwenden die bereits validierten Mitgliedschafts-Sets statt zusätzliche vollständige Wunschlisten-Scans beim Kartenrendern.
+- [x] Navigation aus Wunschdetails und der Schnellzugang „Neuer Wunsch in dieser Liste“ prüfen Benutzer, aktuelle Daten und laufende Einzel- oder Sammeländerungen erneut vor dem Wechsel.
+- [x] Listenfilter, Favoriten-Schaltflächen und Listenübersichts-Schnellaktionen ändern während laufender Einzelzuordnungen keinen UI-Zustand.
+- [x] Ergebnisübersicht und Verlauf von Sammelaktionen lassen sich während laufender Einzeländerungen nicht versehentlich verwerfen.
+- [x] Minimale JavaScript-Parserprüfung ohne Imports und gezielte Quelltextkontrolle erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; die Laufzeitverbesserung ist nicht per Benchmark gemessen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
