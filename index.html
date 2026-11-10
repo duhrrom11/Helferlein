@@ -76,8 +76,8 @@
   <a class="b3-hub-logo" href="index.html" aria-label="Helferlein Startseite"><span class="b3-hub-logo-mark" aria-hidden="true">✳</span> Helferlein</a>
   <nav class="b3-hub-nav" aria-label="Hauptnavigation">
    <a href="#toolsGrid">Alle Tools</a>
-   <a href="amazon-wishlist/index.html">♡ Wunschlisten</a>
    <a href="#favoritesSection">⭐ Favoriten</a>
+   <a href="amazon-wishlist/index.html">♡ Wunschlisten</a>
    <span id="userInfo" class="b3-hub-account" role="status" aria-live="polite">Nicht angemeldet</span>
    <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Einstellungen öffnen">⚙ Einstellungen</button>
   </nav>
@@ -444,8 +444,8 @@
                 <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
                 <p class="text-xs text-amber-800 mb-2">⚠️ Daten werden lokal in diesem Browser gespeichert, nicht automatisch mit dem Cloud-Konto synchronisiert. Für Gerätewechsel bitte ein Backup exportieren und auf dem anderen Gerät wiederherstellen. Nutze bevorzugt „🔐 Verschlüsselt“. Die einfache Backup-Datei ist unverschlüsselt und darf nicht geteilt werden. Auch verschlüsselte Backups enthalten nur ausgewählte lokale Browserdaten, keine Cloud-Daten.</p>
                 <div class="flex gap-2">
-                    <button type="button" title="Empfohlen: Lokale Browserdaten als passwortgeschützte, verschlüsselte JSON-Datei exportieren" onclick="exportGlobalBackup(true)" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">🔐 Verschlüsselt</button>
-                    <button type="button" title="Nur für nicht vertrauliche Daten. Nachlass-Tresordaten können damit nicht unverschlüsselt exportiert werden." onclick="exportGlobalBackup(false)" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Ohne Schutz</button>
+                    <button type="button" title="Empfohlen: Lokale Browserdaten als passwortgeschützte, verschlüsselte JSON-Datei exportieren" onclick="exportGlobalBackup(true)" aria-label="Backup verschlüsselt exportieren" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">🔐 Verschlüsselt</button>
+                    <button type="button" title="Nur für nicht vertrauliche Daten. Nachlass-Tresordaten können damit nicht unverschlüsselt exportiert werden." onclick="exportGlobalBackup(false)" aria-label="Backup ohne Schutz exportieren" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Ohne Schutz</button>
                     <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
                         📤 Restore <input type="file" title="Bestehende lokale Daten können überschrieben werden" accept=".json,application/json" aria-label="Helferlein-Backup auswählen" onchange="importGlobalBackup(event)" class="hidden">
                     </label>
@@ -654,19 +654,23 @@
 
         function filterTools() {
             const searchBox = document.getElementById('searchBox');
-            if(!searchBox) return;
-            const query = searchBox.value.toLocaleLowerCase("de").trim();
+            if (!searchBox) return;
+            const normalize = value => String(value || '').normalize('NFKD')
+                .replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('de')
+                .replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, ' ').trim();
+            const words = normalize(searchBox.value).split(' ').filter(Boolean);
+            const category = document.querySelector('[data-b3-category-filter][aria-pressed="true"]')?.getAttribute('data-b3-category-filter') || 'alle';
             let matches = 0;
             document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
-                const name = card.getAttribute('data-name') || '', text = card.innerText.toLocaleLowerCase("de");
-                // Search only tool metadata, never private browser storage.
-                const category = document.querySelector('[data-b3-category-filter][aria-pressed="true"]')?.getAttribute('data-b3-category-filter') || 'alle';
+                const searchable = normalize((card.getAttribute('data-name') || '') + ' ' + card.innerText);
                 const categoryMatches = category === 'alle' || card.getAttribute('data-category') === category;
-                const visible = categoryMatches && (name.toLocaleLowerCase("de").includes(query) || text.includes(query));
-                card.style.display = visible ? "flex" : "none";
+                const visible = categoryMatches && words.every(word => searchable.includes(word));
+                card.style.display = visible ? 'flex' : 'none';
                 if (visible) matches++;
             });
             document.getElementById('searchEmptyState')?.classList.toggle('hidden', matches !== 0);
+            const counter = document.getElementById('b3-result-count');
+            if (counter) counter.textContent = matches + ' von ' + document.querySelectorAll('#toolsGrid .tool-card').length + ' Tools';
         }
 
         function loadStats() {
