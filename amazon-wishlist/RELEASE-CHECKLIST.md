@@ -1,6 +1,8 @@
 # Freigabe- und Funktionstestplan
 
-Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-End-Tests sind noch nicht als erfolgreich nachgewiesen.
+**Aktueller Betriebsstatus (10. November 2026):** Die Wunschlisten-Anwendung ist auf `main` über GitHub Pages veröffentlicht. Für Commit `760566b1` waren Deployment, Live-HTTP-Check, Release-Smoke und CodeQL erfolgreich. Die Veröffentlichung ist **kein** Nachweis, dass sämtliche unten aufgeführten Sicherheits-, Rechts- und manuellen Freigabeanforderungen erfüllt sind. Offene Punkte bleiben offen; insbesondere sind keine produktiven RLS-Negativtests oder Supabase-Schreibzugriffe durch diese Dokumentationskorrektur erfolgt.
+
+**Historischer Kontext:** Die folgenden Abschnitte dokumentieren frühere Planungs-, Draft-PR- und Freigabestände. Aussagen wie „nicht freigegeben“, „kein Merge“ oder „kein Deployment“ beziehen sich auf den jeweiligen damaligen Stand und dürfen nicht als aktueller Veröffentlichungsstatus verstanden werden. Die offenen Prüfaufgaben behalten ihre Bedeutung.
 
 ## Automatische Tests
 - `node --check amazon-wishlist/app.mjs`
