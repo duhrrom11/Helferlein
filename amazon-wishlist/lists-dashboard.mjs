@@ -11,14 +11,14 @@ export function mountListsDashboard(db, getUser) {
  function syncDetailMarkers(){for(const [id,marker,off,on] of [['wishDetailStar','star','☆ Favorit','★ Favorit'],['wishDetailLater','later','⏳ Später ansehen','✓ Für später markiert']]){const b=$(id),active=wishMarkers[detailWishId]===marker;b.setAttribute('aria-pressed',String(active));b.textContent=active?on:off}}
  const categoryKey=id=>'helferlein-wish-categories:'+id;
  function readCategories(id){try{const value=JSON.parse(localStorage.getItem(categoryKey(id))||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?Object.fromEntries(Object.entries(value).filter(([k,v])=>typeof k==='string'&&WISH_CATEGORIES.some(c=>c.id===v))):{}}catch{return {}}}
- function saveCategory(){if(bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==loadedOwner)return;const uid=owner(),wishId=detailWishId;if(!wishId||!wishes.some(w=>w.id===wishId))return;const category=$('wishDetailCategory').value;if(category&&!WISH_CATEGORIES.some(c=>c.id===category))return;const next={...wishCategories};if(category)next[wishId]=category;else delete next[wishId];try{localStorage.setItem(categoryKey(uid),JSON.stringify(next));wishCategories=next;$('wishDetailDialog').close();renderWishCards();msg('Kategorie in diesem Browser gespeichert.')}catch{msg('Kategorie konnte in diesem Browser nicht gespeichert werden.')}}
+ function saveCategory(){if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==loadedOwner)return;const uid=owner(),wishId=detailWishId;if(!wishId||!wishes.some(w=>w.id===wishId))return;const category=$('wishDetailCategory').value;if(category&&!WISH_CATEGORIES.some(c=>c.id===category))return;const next={...wishCategories};if(category)next[wishId]=category;else delete next[wishId];try{localStorage.setItem(categoryKey(uid),JSON.stringify(next));wishCategories=next;$('wishDetailDialog').close();renderWishCards();msg('Kategorie in diesem Browser gespeichert.')}catch{msg('Kategorie konnte in diesem Browser nicht gespeichert werden.')}}
  function focusWishCard(wishId){
   const card=[...$('listWishCards').children].find(el=>el.dataset.wishId===wishId);
   if(!card)return;
   card.tabIndex=-1;card.focus({preventScroll:true});card.scrollIntoView({behavior:'smooth',block:'center'});
  }
  function jumpToWishInList(wishId,listId){
-  if(getUser()?.id!==loadedOwner||!membershipReady||bulkBusy||activeWishMutations.size||!lists.some(l=>l.id===listId&&!l.archived&&membershipByList.get(l.id)?.has(wishId)))return;
+  if(getUser()?.id!==loadedOwner||!membershipReady||listCopyBusy||bulkBusy||activeWishMutations.size||!lists.some(l=>l.id===listId&&!l.archived&&membershipByList.get(l.id)?.has(wishId)))return;
   const wish=wishes.find(w=>w.id===wishId);if(!wish)return;
   $('wishDetailDialog').close();openList(listId);
   $('listWishSearch').value='';
@@ -337,7 +337,7 @@ actions.append(button('Duplizieren',async()=>{
   for(const [id,pressed] of Object.entries(quick))$(id).setAttribute('aria-pressed',String(pressed));
  }
  function setQuickWishFilter(mode){
-  if(bulkBusy||activeWishMutations.size)return;
+  if(listCopyBusy||bulkBusy||activeWishMutations.size)return;
   $('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';selectedOnlyView=false;
   if(mode==='all'){$('listWishAssignment').value='all';$('listWishMarker').value='all'}
   if(mode==='assigned'){$('listWishAssignment').value='assigned';$('listWishMarker').value='all'}
