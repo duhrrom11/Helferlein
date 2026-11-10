@@ -112,10 +112,13 @@ export function wishlistErrorMessage(error) {
 }
 
 /** Copy links without requiring a secure-context Clipboard API. */
-export async function copyShareLink(text,clipboard=navigator.clipboard,doc=document) {
+export async function copyShareLink(text,clipboard=globalThis.navigator?.clipboard,doc=globalThis.document) {
  if(typeof text!=='string'||!/^https:\/\//.test(text))throw Error('Ungültiger Link.');
  try{const url=new URL(text);if(url.protocol!=='https:'||!url.hostname||url.username||url.password)throw Error('Ungültiger Link.');}catch{throw Error('Ungültiger Link.');}
- if(clipboard?.writeText){try{await clipboard.writeText(text);return 'clipboard'}catch{}}
+ if(typeof clipboard?.writeText==='function'){try{await clipboard.writeText(text);return 'clipboard'}catch{}}
+ if(typeof doc?.createElement!=='function'||typeof doc?.body?.append!=='function'||typeof doc?.execCommand!=='function'){
+  throw Error('Kopieren nicht möglich. Bitte den Link aus der Adresszeile kopieren.');
+ }
  const input=doc.createElement('textarea');
  input.value=text;input.setAttribute('readonly','');input.style.position='fixed';input.style.left='-9999px';
  doc.body.append(input);
