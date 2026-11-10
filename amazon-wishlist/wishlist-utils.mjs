@@ -112,10 +112,11 @@ export function wishlistErrorMessage(error) {
 }
 
 /** Copy links without requiring a secure-context Clipboard API. */
-export async function copyShareLink(text,clipboard=navigator.clipboard,doc=document) {
+export async function copyShareLink(text,clipboard=globalThis.navigator?.clipboard,doc=globalThis.document) {
  if(typeof text!=='string'||!/^https:\/\//.test(text))throw Error('Ungültiger Link.');
  try{const url=new URL(text);if(url.protocol!=='https:'||!url.hostname||url.username||url.password)throw Error('Ungültiger Link.');}catch{throw Error('Ungültiger Link.');}
  if(clipboard?.writeText){try{await clipboard.writeText(text);return 'clipboard'}catch{}}
+ if(!doc?.body||typeof doc.createElement!=='function')throw Error('Kopieren nicht möglich. Bitte den Link aus der Adresszeile kopieren.');
  const input=doc.createElement('textarea');
  input.value=text;input.setAttribute('readonly','');input.style.position='fixed';input.style.left='-9999px';
  doc.body.append(input);
@@ -172,6 +173,7 @@ export function exportWishlistJson(rows, publicProfile=null) {
 /** A failed export must not retain stale progress text. */
 export function exportProgressText(count,total=null) {
  if(!Number.isSafeInteger(count)||count<0)throw Error('Ungültiger Exportfortschritt');
+ if(total!==null&&(!Number.isSafeInteger(total)||total<0||count>total))throw Error('Ungültiger Exportfortschritt');
  return total===null?count+' Wünsche geladen …':count+' von '+total+' Wünschen geladen …';
 }
 
@@ -196,8 +198,12 @@ export function previewWishlistBackup(raw) {
  const wishes=data.wishes.map((row,index)=>{
   if(!row||Array.isArray(row)||typeof row!=='object')throw Error('Ungültiger Wunsch in Zeile '+(index+1)+'.');
   if(typeof row.asin!=='string'||!/^[A-Z0-9]{10}$/.test(row.asin))throw Error('Ungültige ASIN in Zeile '+(index+1)+'.');
+  if(typeof row.title!=='string'||typeof row.note!=='string')throw Error('Ungültige Wunschtexte in Zeile '+(index+1)+'.');
   const {title,note}=validateWishFields(row.title,row.note);
   const priority=validatePriority(row.priority);
+  if(row.amazon_url!==undefined){
+   if(typeof row.amazon_url!=='string'||row.amazon_url!=='https://www.amazon.de/dp/'+row.asin)throw Error('Ungültiger Amazon-Link in Zeile '+(index+1)+'.');
+  }
   if(seen.has(row.asin))throw Error('Doppelte ASIN in der Sicherung: '+row.asin);
   seen.add(row.asin);
   return {asin:row.asin,title,note,priority};
