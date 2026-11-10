@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Geräteübergreifende private Filteransichten)
+
+- **Neu umgesetzt:** Private Supabase-Tabelle `wishlist_gift_checkpoint_filter_views` mit owner-gebundenen Namen, Filter-JSON und Kategorien; RLS-Policies für ausschließlich eigene Lese-/Schreibzugriffe, kein anonymer Zugriff.
+- **Cloud-Synchronisierung:** Persönliche Filteransichten lassen sich geräteübergreifend laden, speichern, anwenden und nach Bestätigung löschen. Oberfläche für maximal fünf Ansichten je Konto.
+- **Lokaler Bestand:** Bisherige browserlokale Ansichten werden nicht gelöscht oder automatisch überschrieben. Ausdrücklich bestätigter Import kopiert freie, noch nicht gleichnamig vorhandene Ansichten in die Cloud und lässt lokale Originale unverändert.
+- **Sicherheit:** Keine bestehenden Tabellen oder Produktivdatensätze migriert oder gelöscht; keine Testdaten. RLS und Privilegien für Cloud-Ansichten, Dashboard-Präferenzen, Historie und Sicherungspunkte überprüft.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private gespeicherte Filteransichten)
 
 - **Neu umgesetzt:** Bis zu fünf benannte Filterkombinationen pro angemeldetem Konto für die private Dashboard-Sicherungspunkt-Zeitachse speichern, anwenden, nach Bestätigung überschreiben und löschen.
