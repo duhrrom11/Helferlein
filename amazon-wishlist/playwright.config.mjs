@@ -1,7 +1,7 @@
 import {defineConfig,devices} from '@playwright/test';
 export default defineConfig({
  testDir:'.',
- testMatch:'wishes-ui.spec.mjs',
+ testMatch:['wishes-ui.spec.mjs','dashboard-browser.integration.spec.mjs'],
  fullyParallel:false,
  workers:1,
  retries:0,
