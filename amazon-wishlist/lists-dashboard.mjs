@@ -18,7 +18,7 @@ export function mountListsDashboard(db, getUser) {
   card.tabIndex=-1;card.focus({preventScroll:true});card.scrollIntoView({behavior:'smooth',block:'center'});
  }
  function jumpToWishInList(wishId,listId){
-  if(!membershipReady||!lists.some(l=>l.id===listId&&!l.archived&&membershipByList.get(l.id)?.has(wishId)))return;
+  if(!membershipReady||bulkBusy||!lists.some(l=>l.id===listId&&!l.archived&&membershipByList.get(l.id)?.has(wishId)))return;
   const wish=wishes.find(w=>w.id===wishId);if(!wish)return;
   $('wishDetailDialog').close();openList(listId);
   $('listWishSearch').value='';
@@ -143,6 +143,7 @@ export function mountListsDashboard(db, getUser) {
   pendingBulk=null;$('bulkConfirmDialog').close();
   const {uid,listId,add,targets}=job;
   if(!bulkContextValid(job,{userId:getUser()?.id,listId:selected,ready:membershipReady,activeListIds:new Set(lists.filter(l=>!l.archived).map(l=>l.id))}))return;
+   const currentTargets=new Set(eligibleBulkTargets(targets,wishes.map(w=>w.id),assignedIds,add));if(currentTargets.size!==targets.length||targets.some(id=>!currentTargets.has(id))){$('bulkStatus').textContent='Die Listenzuordnung hat sich geändert. Bitte Auswahl und Aktion erneut prüfen.';return}
   const run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;lastBulkResult=null;$('bulkResultPanel').hidden=true;
   $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
   updateBulkToolbar();reportBulk(0,targets.length,0,0);
