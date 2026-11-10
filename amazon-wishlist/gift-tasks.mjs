@@ -12,7 +12,7 @@ function choices(){for(const id of ['occasion','gift'])$(id).replaceChildren();o
  for(const g of gifts)if(!$('occasion').value||g.occasion_id===$('occasion').value)option($('gift'),g.id,g.title)}
 function refreshGifts(){const selected=$('gift').value;const el=$('gift');el.replaceChildren();option(el,'','Ohne Geschenk');for(const g of gifts)if(!$('occasion').value||g.occasion_id===$('occasion').value)option(el,g.id,g.title);if([...el.options].some(x=>x.value===selected))el.value=selected}
 function reset(){editing=null;$('form').reset();$('formTitle').textContent='➕ Aufgabe hinzufügen';$('save').textContent='Aufgabe speichern';$('cancel').hidden=true;choices()}
-function render(){renderWeek();renderChecklistProgress();
+function render(){renderWeek();renderChecklistProgress();renderYearBalance();
  const reminders=$('reminders');reminders.replaceChildren();
  const due=tasks.filter(t=>!t.archived_at&&t.status!=='done'&&t.due_date&&days(t.due_date)<=t.reminder_days).sort((a,b)=>days(a.due_date)-days(b.due_date)||a.priority-b.priority);
  if(!due.length){const p=document.createElement('p');p.className='empty';p.textContent='Keine fälligen Erinnerungen.';reminders.append(p)}
@@ -43,7 +43,7 @@ $('form').addEventListener('submit',async event=>{event.preventDefault();if(!use
 async function main(){
  const {data,error}=await db.auth.getUser();user=data?.user;if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
  const [t,o,g]=await Promise.all([db.from('wishlist_gift_tasks').select('id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,checklist_year,archived_at,created_at').eq('user_id',user.id).limit(1000),db.from('wishlist_occasions').select('id,title,occasion_date,repeats_yearly').eq('user_id',user.id).limit(1000),db.from('wishlist_gift_plans').select('id,title,occasion_id').eq('user_id',user.id).limit(1000)]);
- if(t.error||o.error||g.error)throw t.error||o.error||g.error;tasks=t.data||[];occasions=o.data||[];gifts=g.data||[];choices();for(const occasion of occasions)option($('checklistOccasion'),occasion.id,occasion.title);$('content').hidden=false;render();$('status').textContent='Deine Geschenk-To-dos sind aktuell.';
+ if(t.error||o.error||g.error)throw t.error||o.error||g.error;tasks=t.data||[];occasions=o.data||[];gifts=g.data||[];choices();for(const occasion of occasions)option($('checklistOccasion'),occasion.id,occasion.title);renderRolloverSelection();$('content').hidden=false;render();$('status').textContent='Deine Geschenk-To-dos sind aktuell.';
 }
 
 const templates=[
@@ -119,7 +119,7 @@ function setupYears(){
 setupYears();
 async function refreshTasks(){
  const {data,error}=await db.from('wishlist_gift_tasks').select('id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,checklist_year,archived_at,created_at').eq('user_id',user.id).limit(1000);
- if(error)throw error;tasks=data||[];render();
+ if(error)throw error;tasks=data||[];render();renderRolloverSelection();
 }
 for(const [id,archive] of [['archiveYear',true],['restoreYear',false]])$(id).addEventListener('click',async()=>{
  const occasionId=$('checklistOccasion').value,year=Number($('checklistYear').value);
@@ -137,5 +137,37 @@ for(const button of document.querySelectorAll('[data-checklist]'))button.addEven
  try{const {data,error}=await db.rpc('wishlist_create_occasion_checklist_year',{p_occasion_id:occasionId,p_template:template,p_year:Number($('checklistYear').value)});if(error)throw error;
   await refreshTasks();$('checklistStatus').textContent=data+' neue Aufgaben angelegt. '+(data===0?'Das Paket ist bereits vorhanden.':'Die Aufgaben können einzeln bearbeitet werden.');
  }catch{$('checklistStatus').textContent='Aufgabenpaket konnte nicht erstellt werden.'}finally{button.disabled=false}
+});
+
+function renderYearBalance(){
+ const balance=$('yearBalance');balance.replaceChildren();const grouped=new Map();
+ for(const t of tasks){if(!t.checklist_key||!t.occasion_id)continue;const key=t.occasion_id+'|'+(t.checklist_year??'legacy'),b=grouped.get(key)||{occasionId:t.occasion_id,year:t.checklist_year,total:0,done:0,archived:0,overdue:0};
+ b.total++;if(t.status==='done')b.done++;if(t.archived_at)b.archived++;if(!t.archived_at&&t.status!=='done'&&t.due_date&&days(t.due_date)<0)b.overdue++;grouped.set(key,b)}
+ for(const b of [...grouped.values()].sort((a,b)=>String(b.year??'').localeCompare(String(a.year??'')))){
+ const occasion=occasions.find(o=>o.id===b.occasionId);if(!occasion)continue;
+ const box=document.createElement('div');box.className='year-summary';
+ const heading=document.createElement('strong');heading.textContent=occasion.title+' · '+(b.year??'Altbestand');
+ const info=document.createElement('p');info.textContent='Erledigt: '+b.done+'/'+b.total+' · Offen: '+(b.total-b.done)+' · Überfällig: '+b.overdue+' · Archiviert: '+b.archived;
+ box.append(heading,info);balance.append(box)}
+ if(!grouped.size){const p=document.createElement('p');p.className='empty';p.textContent='Noch keine Jahresbilanzen vorhanden.';balance.append(p)}
+}
+function renderRolloverSelection(){
+ const root=$('rolloverSelection');root.replaceChildren();const id=$('checklistOccasion').value,year=Number($('checklistYear').value)-1;
+ const occasion=occasions.find(o=>o.id===id);
+ if(!occasion?.repeats_yearly){const p=document.createElement('p');p.textContent='Bitte einen jährlich wiederkehrenden Anlass wählen.';root.append(p);return}
+ const candidates=tasks.filter(t=>t.occasion_id===id&&t.checklist_year===year&&t.checklist_key);
+ if(!candidates.length){const p=document.createElement('p');p.textContent='Keine Checklistenaufgaben aus '+year+' vorhanden.';root.append(p);return}
+ for(const t of candidates){const label=document.createElement('label'),checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.value=t.id;checkbox.checked=true;const text=document.createElement('span');text.textContent=t.title+' · '+(t.due_date||'ohne Fälligkeit')+' · '+(t.status==='done'?'erledigt':'offen');label.append(checkbox,text);root.append(label)}
+}
+$('checklistOccasion').addEventListener('change',renderRolloverSelection);
+$('checklistYear').addEventListener('change',renderRolloverSelection);
+$('rolloverCreate').addEventListener('click',async()=>{
+ const occasionId=$('checklistOccasion').value,year=Number($('checklistYear').value),ids=[...$('rolloverSelection').querySelectorAll('input:checked')].map(el=>el.value);
+ if(!occasionId||!ids.length){$('rolloverStatus').textContent='Bitte Anlass und mindestens eine Aufgabe auswählen.';return}
+ if(ids.length>100){$('rolloverStatus').textContent='Maximal 100 Aufgaben gleichzeitig.';return}
+ if(!confirm(ids.length+' ausgewählte Aufgaben aus '+(year-1)+' nach '+year+' übernehmen? Bestehende Aufgaben bleiben unverändert.'))return;
+ $('rolloverCreate').disabled=true;
+ try{const {data,error}=await db.rpc('wishlist_rollover_gift_tasks',{p_occasion_id:occasionId,p_from_year:year-1,p_to_year:year,p_task_ids:ids});if(error)throw error;await refreshTasks();$('rolloverStatus').textContent=data+' Aufgaben übernommen. Bestehende Aufgaben wurden nicht überschrieben.'}
+ catch{$('rolloverStatus').textContent='Übernahme fehlgeschlagen. Bitte Auswahl und Jahr prüfen.'}finally{$('rolloverCreate').disabled=false}
 });
 main().catch(()=>{$('status').textContent='Aufgaben konnten nicht geladen werden.'});
