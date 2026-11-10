@@ -1,5 +1,5 @@
 import {LIST_TEMPLATES,WISH_CATEGORIES,filterListWishes} from './list-features.mjs';
-import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,executeBulkJob,bulkControlsEnabled,currentDashboardLoad,fetchDashboardBase} from './bulk-helpers.mjs';
+import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,executeBulkJob,bulkControlsEnabled,currentDashboardLoad,fetchDashboardBase,fetchDashboardMembership} from './bulk-helpers.mjs';
 // Multi-list dashboard. Requires LISTS-SCHEMA-PROPOSAL.sql to be reviewed and applied separately.
 export function mountListsDashboard(db, getUser) {
  const $=id=>document.getElementById(id);
@@ -51,7 +51,7 @@ export function mountListsDashboard(db, getUser) {
 
   if(loadedOwner!==id){bulkIds.clear();bulkHistory=[];renderBulkHistory();lastBulkResult=null;$('bulkResultPanel').hidden=true;visibleLimit=100;favoriteIds=readFavorites(id);recentIds=readRecent(id);wishCategories=readCategories(id);wishMarkers=readMarkers(id)}loadedOwner=id;lists=lr.data||[];wishes=allWishes;favoriteIds=new Set([...favoriteIds].filter(x=>lists.some(l=>l.id===x)));recentIds=recentIds.filter(x=>lists.some(l=>l.id===x));syncEditor();if(!lists.some(x=>x.id===selected)){selected=lists[0]?.id||null;lastBulkResult=null;$('bulkResultPanel').hidden=true;}
   let membershipRows;
-  try{membershipRows=await fetchAllPages((from,to)=>db.from('wishlist_list_items').select('list_id,wish_id').eq('user_id',id).order('list_id',{ascending:true}).order('wish_id',{ascending:true}).range(from,to),{isCurrent:()=>getUser()?.id===id&&generation===loadGeneration})}
+  try{membershipRows=await fetchDashboardMembership(db,id,{isCurrent:()=>getUser()?.id===id&&generation===loadGeneration})}
   catch(e){if(!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;membershipReady=false;setItemsFeedback('error','Listenzuordnungen konnten nicht vollständig geladen werden. Bitte erneut versuchen.');throw e}
   if(membershipRows===null)return;
   membershipByList=new Map();for(const item of membershipRows){if(!membershipByList.has(item.list_id))membershipByList.set(item.list_id,new Set());membershipByList.get(item.list_id).add(item.wish_id)}membershipReady=true;listCounts=new Map();const unique=new Set();const known=new Set(wishes.map(w=>w.id));for(const item of membershipRows){listCounts.set(item.list_id,(listCounts.get(item.list_id)||0)+1);if(known.has(item.wish_id))unique.add(item.wish_id)}assignedTotal=unique.size;allAssignedIds=unique;renderUnassigned();renderProgress();renderRecent();setItemsFeedback('ready','');msg(lists.length+' Listen · '+wishes.length+' geladene Wünsche');$('listsTotal').textContent=String(lists.length);$('wishesTotal').textContent=String(wishes.length);render();
