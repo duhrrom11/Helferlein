@@ -3,8 +3,8 @@ import {readFile} from 'node:fs/promises';
 
 // Real dashboard module, isolated in a browser. No network requests or production database.
 const fixture=(await readFile(new URL('./index.html',import.meta.url),'utf8'))
- .replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi,'')
- .replace(/<link\\b[^>]*>/gi,'');
+ .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')
+ .replace(/<link\b[^>]*>/gi,'');
 const modules=['lists-dashboard.mjs','bulk-helpers.mjs','list-features.mjs'];
 test.beforeEach(async({page})=>{
  await page.route('https://wishes.test/**',async route=>{
@@ -55,7 +55,7 @@ test('real dashboard: list switch after reload does not retain selection',async(
  await page.evaluate(()=>window.__dashboard.refresh());
  await page.locator('#listWishCards input[type=checkbox]').first().check();
  await expect(page.locator('#bulkSelectedCount')).toContainText('1 ausgewählt');
- await page.getByText('Liste B',{exact:true}).first().click();
+ await page.locator('#listsContent .list-card').filter({hasText:'Liste B'}).getByRole('button',{name:/öffnen|anzeigen|auswählen/i}).first().click();
  await expect(page.locator('#bulkSelectedCount')).toContainText('0 ausgewählt');
  expect(await page.evaluate(()=>window.__dashboardTest.writes)).toBe(0);
 });
