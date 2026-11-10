@@ -13,17 +13,19 @@ function createTransactionalHeirRepository(pool){
     throw new TypeError('invalid_client');
   }
   let begun=false;
+  let discardError=null;
   try{
-   await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
+   try { await client.query('BEGIN ISOLATION LEVEL READ COMMITTED'); }
+   catch(error) { discardError=error; throw error; }
    begun=true;
    const snapshot=await createHeirRepository(client).readAuthorizedEnvelopeSnapshot(identity);
    await client.query('COMMIT');
    begun=false;
    return snapshot;
   }catch(error){
-   if(begun){try{await client.query('ROLLBACK');}catch{/* do not hide original failure */}}
+   if(begun){try{await client.query('ROLLBACK');}catch(rollbackError){discardError=rollbackError; /* preserve original error */}} 
    throw error;
-  }finally{client.release();}
+  }finally{client.release(discardError || undefined);}
  }});
 }
 module.exports={createTransactionalHeirRepository};
