@@ -1,14 +1,40 @@
 const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
 const $=id=>document.getElementById(id);
-const day=86400000;
+const day=86400000;let exportRows=null;
 function el(tag,value,cls){const node=document.createElement(tag);node.textContent=String(value);if(cls)node.className=cls;return node}
 function dateOnly(value){if(!value)return null;const [y,m,d]=value.slice(0,10).split('-').map(Number);return Date.UTC(y,m-1,d)}
 function number(n,digits=0){return new Intl.NumberFormat('de-DE',{maximumFractionDigits:digits,minimumFractionDigits:digits}).format(n)}
 function card(root,label,value,detail){const box=el('article','','card');box.append(el('strong',value),el('span',label));if(detail)box.append(el('p',detail,'muted'));root.append(box)}
-async function load(userId){const rows=[];for(let start=0;start<20000;start+=500){const {data,error}=await db.from('wishlist_gift_task_events').select('id,task_title,event_type,old_status,new_status,old_due_date,new_due_date,occurred_at').eq('user_id',userId).order('id',{ascending:true}).range(start,start+499);if(error)throw error;rows.push(...(data||[]));if((data||[]).length<500)return rows}throw new Error('Bericht nicht vollständig: Ereignislimit erreicht')}
+async function load(userId){const rows=[];for(let start=0;start<20000;start+=500){const {data,error}=await db.from('wishlist_gift_task_events').select('id,task_title,event_type,old_status,new_status,old_due_date,new_due_date,occurred_at,occasion_id,occasion_title').eq('user_id',userId).order('id',{ascending:true}).range(start,start+499);if(error)throw error;rows.push(...(data||[]));if((data||[]).length<500)return rows}throw new Error('Bericht nicht vollständig: Ereignislimit erreicht')}
 function weekStart(ms){const date=new Date(ms);return ms-((date.getUTCDay()+6)%7)*day}
 function formatDate(ms){return new Date(ms).toLocaleDateString('de-DE',{timeZone:'UTC'})}
+function renderSuccess(rows){
+ const months=$('months'),occasions=$('occasions'),recommendations=$('recommendations');months.replaceChildren();occasions.replaceChildren();recommendations.replaceChildren();
+ const byMonth=new Map(),byOccasion=new Map();
+ for(const e of rows){
+  const month=e.occurred_at.slice(0,7),m=byMonth.get(month)||{done:0,moved:0,reopened:0};if(e.event_type==='completed')m.done++;if(e.event_type==='due_date_changed')m.moved++;if(e.event_type==='reopened')m.reopened++;byMonth.set(month,m);
+  const key=e.occasion_id||'unassigned',o=byOccasion.get(key)||{title:e.occasion_title||'Historisch nicht zugeordnet',done:0,moved:0,reopened:0};if(e.event_type==='completed')o.done++;if(e.event_type==='due_date_changed')o.moved++;if(e.event_type==='reopened')o.reopened++;byOccasion.set(key,o);
+ }
+ if(!byMonth.size)months.append(el('p','Noch keine protokollierten Monate.'));
+ for(const [month,m] of [...byMonth].sort((a,b)=>b[0].localeCompare(a[0])).slice(0,18)){const box=el('article','','card');box.append(el('h3',month),el('p',m.done+' Erledigungen · '+m.moved+' Terminverschiebungen · '+m.reopened+' Wiedereröffnungen'));months.append(box)}
+ if(!byOccasion.size)occasions.append(el('p','Noch keine protokollierten Anlassdaten.'));
+ for(const [key,o] of [...byOccasion].sort((a,b)=>b[1].done-a[1].done).slice(0,25)){const box=el('article','','card');box.append(el('h3',o.title),el('p',o.done+' Erledigungen · '+o.moved+' Terminverschiebungen · '+o.reopened+' Wiedereröffnungen'));if(key==='unassigned')box.append(el('p','Ohne im Ereignis gespeicherte Anlasszuordnung.','muted'));occasions.append(box)}
+ const totalDone=rows.filter(e=>e.event_type==='completed').length,totalMoved=rows.filter(e=>e.event_type==='due_date_changed').length;
+ if(!rows.length){recommendations.append(el('p','Sobald echte Ereignisse vorliegen, erscheinen hier datengestützte Hinweise.'));return}
+ if(totalMoved>totalDone)addRecommendation('Planungsfenster prüfen','Es wurden '+totalMoved+' Terminverschiebungen und '+totalDone+' Erledigungen protokolliert. Frühere Starttermine können helfen.');
+ else addRecommendation('Erledigungen sichtbar machen','Es wurden '+totalDone+' Erledigungsereignisse dokumentiert. Nutze die Monatsübersicht, um deine tatsächliche Aktivität zu vergleichen.');
+ if(byMonth.size<2)addRecommendation('Mehr Verlauf sammeln','Für belastbare Monatstrends sind bislang weniger als zwei Monate mit protokollierten Ereignissen vorhanden.');
+ else{const series=[...byMonth].sort((a,b)=>a[0].localeCompare(b[0]));const latest=series.at(-1),prior=series.at(-2);addRecommendation('Monate vergleichen',latest[0]+': '+latest[1].done+' Erledigungen; '+prior[0]+': '+prior[1].done+'. Der Vergleich beschreibt Aktivität, keine Erfolgsquote aller Aufgaben.')}
+ function addRecommendation(title,body){const box=el('article','','card');box.append(el('h3',title),el('p',body));recommendations.append(box)}
+}
+$('exportEvents').addEventListener('click',()=>{
+ if(!exportRows)return;
+ if(!window.confirm('Eigene protokollierte Aufgabenereignisse als JSON-Datei auf diesem Gerät speichern? Die Datei enthält private Aufgabentitel und Zeitpunkte.'))return;
+ const payload={format:'helferlein-wishes-task-events-v1',exported_at:new Date().toISOString(),event_count:exportRows.length,events:exportRows};
+ const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='helferlein-private-aufgabenereignisse-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
 function render(rows){
+ exportRows=rows.map(e=>({...e}));$('exportEvents').disabled=false;renderSuccess(rows);
  const completed=rows.filter(e=>e.event_type==='completed'),moves=rows.filter(e=>e.event_type==='due_date_changed'),reopened=rows.filter(e=>e.event_type==='reopened');
  const first=rows.length?new Date(rows[0].occurred_at):null,last=rows.length?new Date(rows[rows.length-1].occurred_at):null;
  $('scope').textContent=rows.length?'Ereignisse vom '+first.toLocaleString('de-DE')+' bis '+last.toLocaleString('de-DE')+'. Bericht erstellt am '+new Date().toLocaleString('de-DE')+'.':'Noch keine Ereignisse seit Aktivierung des Protokolls. Es werden keine früheren Änderungen geschätzt.';
