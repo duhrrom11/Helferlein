@@ -132,12 +132,14 @@
         let ownerNameGlobal = "";
         let ownerEmailGlobal = "";
         let personNameGlobal = "Vertrauensperson";
+        let isListedAlarmPerson = false;
 
         document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             urlVaultId = urlParams.get('vaultId');
             urlMasterKey = heirMasterKey;
             personKey = urlParams.get('person') || "vertrauensperson";
+            if (!/^[a-zA-Z0-9_-]{1,128}$/.test(personKey)) personKey = "unbekannt";
 
             if (!urlVaultId || !/^[a-zA-Z0-9_-]{8,128}$/.test(urlVaultId)) {
                 document.getElementById('loadingStatus').innerHTML = `
@@ -165,11 +167,18 @@
                 
                 if (data.alarmPersons) {
                     const foundP = data.alarmPersons.find(p => p.id === personKey);
-                    if (foundP) personNameGlobal = foundP.name;
+                    if (foundP) {
+                        isListedAlarmPerson = true;
+                        personNameGlobal = typeof foundP.name === "string" ? foundP.name : "Vertrauensperson";
+                    }
                 }
 
                 document.getElementById('ownerNameDisplay').innerText = `Inhaber: ${ownerNameGlobal}`;
                 document.getElementById('loadingStatus').classList.add('hidden');
+                if (!isListedAlarmPerson) {
+                    document.getElementById("alarmBtn").disabled = true;
+                    document.getElementById("alarmBtn").title = "Dieser Link ist keiner hinterlegten Alarmkontaktperson zugeordnet.";
+                }
 
                 // 1. Prüfen auf normale Inaktivität
                 const lastCheckIn = new Date(data.lastCheckIn || data.updatedAt);
@@ -248,6 +257,11 @@
         }
 
         async function triggerEmergencyAlarm() {
+            if (!isListedAlarmPerson || !urlVaultId) {
+                document.getElementById("alarmFeedbackText").textContent = "Der Notfallalarm ist für diesen Link nicht verfügbar.";
+                document.getElementById("alarmFeedbackText").classList.remove("hidden");
+                return;
+            }
             if (!confirm(`Möchtest du den 24-Stunden-Notfall-Alarm für ${ownerNameGlobal} auslösen?`)) return;
 
             const btn = document.getElementById('alarmBtn');
