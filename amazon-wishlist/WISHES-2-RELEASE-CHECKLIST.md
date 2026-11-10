@@ -1151,3 +1151,11 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 
 - [x] Dauerhafte Node-Regression ergänzt, die eine versehentliche Entfernung der produktiven Chromium-Suite aus `playwright.config.mjs` verhindert (Commit `1e047e57`).
 - [ ] Letzte CI auf diesem Commit einschließlich **tatsächlich ausgeführter** Produktions-HTML-Chromium-Tests bestätigen; keine Freigabe aus früheren unvollständigen Browserläufen ableiten.
+
+## Hosting-Entscheidung: ausschließlich GitHub Pages (2026-11-10)
+
+- [x] **Explizite Betreiberentscheidung:** Vercel wird nicht mehr verwendet. Ein Vercel-404 ist deshalb **kein Release-Blocker** mehr; es wird kein Vercel-Deployment angestrebt.
+- [x] Pre-Release-HTTPS-Workflow `.github/workflows/live-host-reachability.yml` auf **GitHub Pages als einziges Hostingziel** umgestellt (Commit `ab1da67c`). Bestehende Start- und Wishes-Route müssen weiterhin real über HTTPS erreichbar sein.
+- [x] Veralteten `vercel-wishes`-Job aus `.github/workflows/live-site-http.yml` entfernt (Commit `bb1d2ba3`). Der GitHub-Pages-Live-Check prüft weiterhin nach Deployment die produktiven Wishes-HTML- und JavaScript-Dateien.
+- [ ] GitHub-Repository-Homepage-Metadaten zeigen möglicherweise noch die veraltete Vercel-Adresse. Bei nächster administrativer Repository-Einstellung auf `https://duhrrom11.github.io/Helferlein/` aktualisieren.
+- [ ] Freigabe erfordert weiterhin vollständige CI auf dem aktuellen Commit, tatsächlich ausgeführte Chromium-Produktions-HTML-Tests, Sicherheitsprüfung und nach Merge erfolgreiche GitHub-Pages-Veröffentlichungsprüfung. Die Hostingentscheidung ersetzt diese Nachweise nicht.
