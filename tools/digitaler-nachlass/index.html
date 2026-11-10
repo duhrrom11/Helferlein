@@ -601,7 +601,8 @@
             if (storedVault === null) {
                 const randomBytes = crypto.getRandomValues(new Uint8Array(32));
                 currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
-                const vaultId = "v_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+                // Generate non-guessable IDs without changing any existing vault or heir identifiers.
+                const vaultId = "v_" + Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
 
                 currentDecryptedVault = { entries: [] };
                 cfg = {
@@ -1578,7 +1579,8 @@
             const name = nameInput.value.trim();
             if (!name) { alert("Bitte Namen eingeben!"); return; }
 
-            const personId = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.random().toString(36).substring(2, 6);
+            // Names must not leak into identifiers; legacy person IDs remain readable.
+            const personId = "p_" + Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
             const contact = contactInput.value.trim();
             let locallySaved = false;
             try {
