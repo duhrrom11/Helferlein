@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-Erfolgsgeschichte)
+
+- **Neu umgesetzt:** Mehrjährige Erfolgsgeschichte mit historisch gespeicherter Gesamtzahl verschenkter Geschenke, Gesamtausgaben und abgeschlossenen Jahren; visuelle Geschenk- und Aufgaben-Abschlussquoten je Jahr; Anlassvergleiche mit Geschenken, Aufgaben, Ausgaben und Jahresbudgets über mindestens zwei abgeschlossene Jahre.
+- **Datenbasis:** Ausschließlich unveränderliche `wishlist_gift_year_closings`-Snapshots (`gifts_snapshot`, `budgets_snapshot`, `tasks_snapshot` und Abschlusskennzahlen). Keine Live-Daten in den historischen Diagrammen; ältere Abschlüsse ohne Aufgaben-Snapshot werden ausdrücklich gekennzeichnet. Anlassvergleiche verwenden gespeicherte `occasion_id`; fehlende historische Namen bleiben neutral.
+- **Mobile Darstellung und Druck:** Responsive historische Balkendiagramme, horizontal scrollbarere Anlassvergleichstabellen, visuelle Zusammenfassung und gemeinsame Druckansicht mit dem privaten Jahresrückblick. Die Druckfunktion des Browsers ermöglicht PDF-Ausgabe; der bestehende lokale JSON-Export bleibt erhalten.
+- **Datenschutz:** Keine Datenbankmigration oder Änderung bestehender Produktivdaten. Zugriff über vorhandene owner-only SELECT-RLS auf Jahresabschlüsse. Kein Browser-End-to-End-Test mit angemeldetem Konto durchgeführt.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Privater Geschenk-Jahresrückblick)
 
 - **Neu umgesetzt:** Mobiler Jahresrückblick für abgeschlossene Jahre auf Basis unveränderlicher `wishlist_gift_year_closings`-Snapshots. Kennzahlen für Geschenke, Ausgaben, Budgets und Aufgaben, nachweisbare Meilensteine (vollständige Geschenk- bzw. Aufgabenabschlüsse), abgeschlossene Anlassgruppen und fehlende historische Aufgaben-Snapshots werden transparent dargestellt.
