@@ -33,3 +33,13 @@ test('Theme, editable navigation and Ko-fi are isolated UI preferences',()=>{
  assert.ok(html.includes('https://ko-fi.com/duhrrom'));
  assert.ok(css.includes('body.b3-nachlass.b3-dark')&&css.includes('body.b3-nachlass.b3-light'));
 });
+
+test('heir portal discloses client-only access and does not render raw cloud errors',()=>{
+ const heir=fs.readFileSync(path.join(root,'tools/digitaler-nachlass/erben.html'),'utf8');
+ assert.match(heir,/keine serverseitig durchgesetzte Zugriffssperre/);
+ assert.match(heir,/Schlüssel/);
+ assert.match(heir,/\^\[a-fA-F0-9\]\{64\}\$/);
+ assert.match(heir,/Ungültiges Schlüsselformat/);
+ assert.doesNotMatch(heir,/Fehler beim Laden: \$\{e\.message\}/);
+ assert.doesNotMatch(heir,/feedback\.innerText = `Fehler: \$\{e\.message\}/);
+});
