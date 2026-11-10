@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { STATES, MIN_DELAY_MS, decide } = require('../tools/digitaler-nachlass/release-policy-v2.cjs');
+const { STATES, MIN_DELAY_MS, decide, releaseDue } = require('../tools/digitaler-nachlass/release-policy-v2.cjs');
 
 const NOW = 1800000000000;
 const context = (changes = {}) => ({
@@ -20,11 +20,15 @@ test('only owner may cancel or revoke', () => {
   assert.equal(decide(context({ actorId: 'owner' }), 'REVOKE').nextState, STATES.REVOKED);
   assert.equal(decide(context(), 'REVOKE').allowed, false);
 });
-test('release is denied until full delay and requires trusted server actor', () => {
+test('release timing is a non-authorizing predicate; RELEASE is never a public action', () => {
   const pending = { state: STATES.ALARM_PENDING, alarmStartedAtMs: NOW - MIN_DELAY_MS };
-  assert.equal(decide(context({ ...pending, actorId: 'heir-a' }), 'RELEASE').allowed, false);
-  assert.equal(decide(context({ ...pending, actorId: 'trusted-server', serverNowMs: NOW - 1 }), 'RELEASE').allowed, false);
-  assert.equal(decide(context({ ...pending, actorId: 'trusted-server' }), 'RELEASE').nextState, STATES.RELEASED);
+  assert.equal(releaseDue(context({ ...pending, serverNowMs: NOW - 1 })), false);
+  assert.equal(releaseDue(context(pending)), true);
+  assert.equal(releaseDue(context({ ...pending, actorId: 'stranger' })), true);
+  for (const actorId of ['trusted-server', 'owner', 'heir-a', 'stranger']) {
+    assert.equal(decide(context({ ...pending, actorId }), 'RELEASE').allowed, false);
+  }
+  assert.equal(releaseDue(context({ state: STATES.REVOKED })), false);
 });
 test('key envelope is denied until released and only invited heir can read', () => {
   assert.equal(decide(context(), 'READ_HEIR_ENVELOPE').allowed, false);
