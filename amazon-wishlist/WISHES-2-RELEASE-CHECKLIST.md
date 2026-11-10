@@ -167,3 +167,17 @@
 - [ ] Verifiziertes `package-lock.json` nach erfolgreichem npm-Registry-Zugriff
 
 **Abgrenzung:** Getestet wurde der produktiv verwendete, injizierte Leseadapter mit einem Mock-Supabase-Client; nicht die vollständige Dashboard-DOM-Integration. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
+
+## Konsistenz bei überlappenden Reloads und Kontowechseln (2026-11-10)
+
+- [x] Konkrete Dashboard-Schwachstelle behoben: `retryItemsLoad` überschreibt nach fehlgeschlagenem alten Reload nicht mehr den durch `load` verwalteten Fehlerstatus
+- [x] Konkrete Dashboard-Schwachstelle behoben: Vor dem Commit der vollständig paginierten Mitgliedschaftsdaten wird die aktuelle Benutzer-/Generationskennung erneut geprüft
+- [x] Regressionstest: älterer verzögerter Reload kann neueren Mitgliedschaftsstand nicht überschreiben
+- [x] Regressionstest: Kontowechsel nach dem letzten Mitgliedschaftsabruf verhindert Veröffentlichung eines veralteten Snapshots
+- [x] Regressionstest: Teilfehler und anschließender expliziter Retry geben Bulk-Aktionen erst nach vollständiger erfolgreicher Mitgliedschaft frei
+- [x] **41/41 aktuelle Branch-Logiktests** im isolierten JavaScript-Runner tatsächlich ausgeführt, 0 Fehler
+- [ ] Vollständige native Node-`--test`-Suite im Feature-Checkout ausführen
+- [ ] Neun Playwright-Browsertests mit installierten npm-Abhängigkeiten ausführen
+- [ ] Verifiziertes npm-Lockfile mit echten Registry-Integritätsdaten erstellen
+
+**Grenzen:** Die Tests verwenden Mock-Clients und einen isolierten JavaScript-Runner, keinen vollständigen DOM-/Browser-Test des Dashboards. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
