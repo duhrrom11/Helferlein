@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Mobile-Feinschliff: schmale Displays und Dashboard-Bedienung)
+
+- **Konkreter Layoutfehler behoben:** Der zuletzt ergänzte Mobile-Stylesheet-Block hat bei Bildschirmbreiten unter 390 px versehentlich die bestehende Einspaltenregel des privaten Geschenk-Dashboards mit zwei Spalten überschrieben. Die spätere Regel stellt jetzt bis einschließlich 390 px ausdrücklich eine Spalte her; andere Karten und Eingaben bleiben unverändert.
+- **Dashboard-Verwaltung stabilisiert:** Der manuell gewählte Öffnungszustand des Verwaltungsbereichs wird jetzt nur durch eine echte Aktivierung der Zusammenfassung erfasst, nicht durch `toggle`-Ereignisse automatischer Viewport-Anpassungen. Desktop zeigt den Bereich weiterhin offen; Mobilgeräte standardmäßig geschlossen, außer nach manueller Öffnung.
+- **Robustheit:** Die Gruppierung des Dashboards hängt nicht mehr von einer ungenutzten, fragilen Abfrage benachbarter Überschriftselemente ab.
+- **Prüfung:** Veröffentlichte `amazon-wishlist/index.html` erneut aus GitHub gelesen: neun Inline-Skripte ohne JavaScript-Syntaxfehler, 21 Stylesheets mit ausgeglichenen Klammern und Style-Tags, keine doppelten statischen HTML-IDs; Einspaltenregel und neue Bedienlogik vorhanden.
+- **Produktionsschutz:** Nur Frontend-CSS und DOM-Bedienlogik; keine Supabase-Schreiboperation, Migration oder Testdaten. Browser-Visual-Review und angemeldeter End-to-End-Test sind weiterhin offen.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Kompakter mobiler Arbeitsbereich und einheitliche Formulare)
 
 - **Mobile Startseite:** Geschenk-Dashboard, eigene Listen, Budgetplaner, Wunschwelten und Geschenkfinder verwenden auf Smartphones ein engeres gemeinsames Abstands- und Überschriftensystem; Verwaltungsdetails bleiben separat aufklappbar.
