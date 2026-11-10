@@ -843,3 +843,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Besitzerprüfungen ersetzen keine serverseitigen Berechtigungen oder Transaktionen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: mobile Restlücken und Besitzerwechsel bei Verschiebungen (2026-11-10)
+
+- [x] Mobile Sammelauswahl-Checkboxen und lokale Markierungsschaltflächen sind während exklusiver Listenänderungen sichtbar gesperrt.
+- [x] Schnellwechsel und Neuer-Wunsch-Zugriff aus der Listenansicht berücksichtigen Listen-Schreibsperre und geladenen Besitzer.
+- [x] Sammelverschiebungen prüfen den geladenen Besitzer nach Bestätigung und vor dem Entfernen aus der Ursprungsliste; bei Kontextwechsel bleibt die mögliche Zielzuordnung bestehen und wird als Teilzustand behandelt.
+- [x] Einzelne Wunschzuordnungen übernehmen keine verspäteten Antworten aus einem anderen geladenen Benutzerarbeitsbereich; veraltete Kartenverschiebungen werden abgewiesen.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Mehrgeräte-Konkurrenz und nicht transaktionale Verschiebungen bleiben Freigaberisiken.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
