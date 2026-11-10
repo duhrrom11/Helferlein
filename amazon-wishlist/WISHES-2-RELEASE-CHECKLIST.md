@@ -903,3 +903,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: Sammelbestätigung, mobile Sperranzeige und Listenkarten (2026-11-10)
+
+- [x] Blockierte und ungültige Sammelbestätigungen zeigen verständliche Hinweise, statt ohne Rückmeldung abzubrechen.
+- [x] Die Anzeige für Wünsche ohne Liste und die Sammelaktionshistorie werden beim Rendern mobiler Wunschkarten mit den aktuellen Mutationssperren synchronisiert.
+- [x] Warnungen nach erfolgreicher Archivierung oder Löschung mit anschließend fehlgeschlagenem Neuladen erscheinen nur im geladenen Besitzerarbeitsbereich.
+- [x] Abgehängte Listenkarten können weder den Gestaltungseditor noch die Ansicht zugeordneter Wünsche öffnen.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
