@@ -140,6 +140,7 @@ export function exportWishlistCsv(rows) {
  for(const row of rows){
   const product=row?.wishlist_products;
   if(!product||!/^([A-Z0-9]{10})$/.test(product.asin)||product.marketplace!=='amazon.de')throw Error('Ungültiger Exportdatensatz');
+  if(typeof product.title!=='string'||(row.note!=null&&typeof row.note!=='string'))throw Error('Ungültiger Exportdatensatz');
   const fields=validateWishFields(product.title,row.note);
   lines.push([product.asin,fields.title,fields.note,validatePriority(row.priority),row.created_at,'https://www.amazon.de/dp/'+product.asin].map(safe).join(';'));
  }
