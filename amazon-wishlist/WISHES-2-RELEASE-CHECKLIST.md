@@ -397,3 +397,17 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Produktfreigabe weiterhin gesperrt.
 
 **Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Produktentwicklung: zugeordnete Wünsche gesammelt auswählen (2026-11-10)
+
+- [x] Neue Schnellaktion „Zugeordnete auswählen“ markiert alle geladenen, tatsächlich der aktuellen Liste zugeordneten Wünsche für Sammelaktionen.
+- [x] Neue Aktion ersetzt eine möglicherweise alte Auswahl vollständig und öffnet die Ansicht „Nur Auswahl“ zur Kontrolle.
+- [x] Anzahl der zugeordneten Wünsche im Aktionslabel sichtbar.
+- [x] Aktion bei archivierten Listen, fehlenden Zuordnungsdaten oder laufender Sammelaktion gesperrt.
+- [x] Abgewählte Wunschkarten verschwinden in „Nur Auswahl“ sofort aus der Darstellung.
+- [x] Responsive Bedienelemente mit größeren Touch-Zielen und Tastaturfokus.
+- [x] Minimalprüfung: JavaScript-Syntax und Funktionsanker erfolgreich geprüft.
+- [ ] Browserabnahme bei großen Listen und realen Sammelaktionen offen.
+- [ ] Produktfreigabe weiterhin gesperrt.
+
+**Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
