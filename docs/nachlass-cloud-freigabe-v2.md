@@ -40,3 +40,24 @@ Produktive Supabase-Instanz `avapuibsidubuzxjtyld`: `public.vault_cloud_snapshot
 ## Freigabe-Gate
 
 Ohne produktive Firebase-Regeln, geklärte Authentisierung, überprüfte Kryptokonstruktion und bestandene isolierte Negativtests **keine** produktive serverseitige Erben-Freigabe einschalten. Diese Datei ist ein Plan, kein Sicherheitsnachweis.
+
+## Vorbereitung 2026-11-10: Offline-Entscheidungsmodul
+
+- `tools/digitaler-nachlass/release-policy-v2.cjs`: reiner, zustandsloser Entscheidungsbaustein für künftige serverseitige Aufrufe. Er liest und schreibt **keine** Datenbank, liefert **keine** Schlüssel und ist **nicht** in die bestehende Webseite eingebunden.
+- `tests/nachlass-release-policy-v2.test.cjs`: Negativfälle für unberechtigte Kontaktpersonen, Wartefrist, Widerruf, falsche Zustände und ungültige Zeitstempel.
+- Der symbolische Akteur `trusted-server` ist **keine** Authentisierung: Nur ein tatsächlich vertrauenswürdiger Server darf diese interne Aktion ausführen. Niemals `actorId`, `ownerId`, `activeHeirIds`, `state`, `serverNowMs` oder `version` aus ungeprüften Clientdaten übernehmen.
+- Ein späterer Endpunkt muss Nutzeridentitäten serverseitig prüfen, Zustand und Einladungen aus geschützten Tabellen lesen, die Serverzeit ermitteln und Änderungen transaktional mit Versionsprüfung durchführen. Den Status `RELEASED` niemals aus einem vom Client gelieferten Status ableiten.
+- Das Modul ist ein **nicht deployter Prototyp**, kein Sicherheitsnachweis. Es gibt keinen neuen Datenbankzugriff und keinen neuen produktiven Freigabeweg.
+
+## Firebase-Regel-Audit: benötigter Zugriff
+
+Die produktiven Firestore-Regeln des Firebase-Projekts `nachlass-app-99df8` sind weder im bekannten Repository noch über die verfügbaren Firebase-Werkzeuge abrufbar. Das separate Dokument `docs/firebase-staging-connection-plan.md` beschreibt ausschließlich das TEST-Projekt `helferlein-test` mit `allow read, write: if false;`; diese Angabe ist **nicht** auf PROD übertragbar.
+
+Für ein echtes Audit den **reinen Regeltext** aus Firebase Console → Firestore Database → Rules bereitstellen (ohne Dienstkontoschlüssel, Tokens oder Tresordaten). Zusätzlich die aktuell aktivierte Regelversion bzw. Veröffentlichungszeit notieren. Erst danach prüfen:
+- Lesezugriff auf `vaults/{vaultId}` für `anon` und angemeldete Nutzer.
+- Updates an `emergencyTriggers` einschließlich Feldmaskierung, Personenzuordnung, Zeitstempel und Rate-Limits.
+- Besitzerprüfung und Verbot von Änderungen an `encryptedData`, `ownerEmail`, `alarmPersons` durch Erben.
+- Server-SDK/IAM-Bypass: Firestore Rules gelten nicht als Zugriffsschranke für Admin-SDK-Dienstkonten.
+- Regeltests ausschließlich im Emulator mit synthetischen Identitäten und Dokumenten, nicht in PROD.
+
+**Sicherheitsentscheidung:** Ohne diese Regeldatei kann die produktive Firebase-Berechtigung weder bestätigt noch seriös repariert werden.
