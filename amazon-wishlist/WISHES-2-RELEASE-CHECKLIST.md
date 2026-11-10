@@ -740,3 +740,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Kopien sind nicht atomar.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: mobile Eingabesperren und Kopierkontext (2026-11-10)
+
+- [x] Der mobile Listen-Schnellwechsel stellt bei gesperrter Änderung den tatsächlich aktiven Listeneintrag wieder her.
+- [x] Filter-Eingaben, das Leeren der Sammelauswahl und die Neuwunsch-Aktion aus dem Listenbereich prüfen die exklusive Kopiersperre auch in ihren Ereignis-Handlern.
+- [x] Die Sammelauswahl aus dem Wunschdetail sowie Detail-Sprung und Markierungsaktionen respektieren laufende Kopier- und Schreibvorgänge.
+- [x] Listen-Duplizierung prüft nach Bestätigung den aktuellen Archivstatus der Quellliste; während der Kopie wird der ursprüngliche geladene Benutzerkontext geprüft.
+- [x] Nach erfolgreichem Neuladen bleibt die Erfolgsmeldung erhalten, obwohl die Dashboard-Generation erwartungsgemäß weitergezählt wurde.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Kopiervorgänge bleiben nicht transaktional.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
