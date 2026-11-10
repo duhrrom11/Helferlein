@@ -8,7 +8,7 @@ const fixture=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<s
 async function mount(page){
  await page.setContent(fixture,{waitUntil:'domcontentloaded'});
  await page.evaluate(()=>{
-  for(const el of document.querySelectorAll('#listsDashboard, #listWishCards, .wish-bulk-toolbar'))el.hidden=false;
+  for(const selector of ['#listsDashboard','#listWishCards','.wish-bulk-toolbar']){const el=document.querySelector(selector);if(!el)throw new Error('Missing UI fixture: '+selector);for(let node=el;node&&node!==document.body;node=node.parentElement)node.hidden=false;}
  });
 }
 test('bulk controls have descriptive accessible names and correct selection scope',async({page})=>{
@@ -83,7 +83,8 @@ test('simulated loading failure exposes a keyboard-accessible retry control',asy
   document.getElementById('listItemsFeedbackText').textContent='Laden fehlgeschlagen';
   retry.addEventListener('click',()=>{retry.hidden=true;document.getElementById('listItemsFeedbackText').textContent='Wird erneut geladen'});
  });
- await expect(page.getByRole('status').filter({hasText:'Laden fehlgeschlagen'})).toBeVisible();
+ await expect(page.locator('#listItemsFeedback')).toBeVisible();
+ await expect(page.locator('#listItemsFeedbackText')).toHaveText('Laden fehlgeschlagen');
  await page.locator('#listItemsRetry').focus();
  await page.keyboard.press('Enter');
  await expect(page.locator('#listItemsFeedbackText')).toHaveText('Wird erneut geladen');
@@ -105,7 +106,8 @@ test('mobile layout at 320 and 375 pixels keeps bulk action buttons inside viewp
  for(const width of [320,375]){
   await page.setViewportSize({width,height:700});
   await mount(page);
-  const outside=await page.locator('.wish-bulk-toolbar button').evaluateAll(buttons=>buttons.filter(el=>{const rect=el.getBoundingClientRect();return rect.left<0||rect.right>window.innerWidth+1}).map(el=>el.id));
+  await expect(page.locator('.wish-bulk-toolbar')).toBeVisible();
+  const outside=await page.locator('.wish-bulk-toolbar button').evaluateAll(buttons=>buttons.filter(el=>{const rect=el.getBoundingClientRect();return rect.width===0||rect.height===0||rect.left<0||rect.right>window.innerWidth+1}).map(el=>el.id));
   expect(outside).toEqual([]);
  }
 });
