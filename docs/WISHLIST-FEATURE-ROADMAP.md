@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Intelligente private Geschenk-Wochenplanung)
+
+- **Neu umgesetzt:** In `gift-assistant.html` und `gift-assistant.mjs` erscheinen bestehende private Geschenkaufgaben mit Fälligkeit bis zum Ende der aktuellen Kalenderwoche, einschließlich überfälliger Aufgaben. Mobile Kennzahlen für überfällige, diese Woche fällige und hoch priorisierte Aufgaben.
+- **Nachvollziehbare Priorisierung:** Überfällig vor unmittelbar fällig vor später fällig; innerhalb der Dringlichkeitsgruppen hohe vor mittlerer vor niedriger Priorität. Fünf vorrangige Aufgaben und weitere Wochenaufgaben in separaten Karten. Anlasszuordnung, Fälligkeitsdatum und Begründung werden angezeigt.
+- **Datenschutz und Bestand:** Owner-gefilterte, paginierte Leseabfragen auf `wishlist_gift_tasks`, `wishlist_occasions` und `wishlist_gift_year_closings`; vorhandene RLS unverändert. Keine Migration, keine Testdaten, keine automatische Statusänderung, keine Veränderung bestehender Produktivdaten.
+- **Grenzen:** Aufgaben ohne Fälligkeitsdatum werden nicht in die aktuelle Wochenpriorisierung aufgenommen. Historische Jahresabschlüsse bleiben Grundlage für Budget-/Checklistenempfehlungen, während die Wochenplanung bewusst den aktuellen privaten Aufgabenstand verwendet. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Privater Geschenk-Planungskalender)
 
 - **Neu umgesetzt:** Mobile Wochenübersicht mit vorheriger/aktueller/nächster Woche, empfohlenem Planungsstart und Anlassdatum. Vorlauf von 21 Tagen für Standard, 28 Tagen bei historisch belegten Versandaufgaben. Historische Jahresabschlüsse liefern die Grundlage der Empfehlung; aktuelle private Anlässe liefern zukünftige Termine.
