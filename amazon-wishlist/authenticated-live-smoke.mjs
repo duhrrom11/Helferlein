@@ -27,11 +27,15 @@ try{
    listReads.push({table:url.includes('/wishlist_list_items')?'wishlist_list_items':'wishlist_lists',status:response.status()});
   }
  });
+ // Register before sign-in: the dashboard becomes visible before its REST fetch completes.
+ const listsResponse=page.waitForResponse(response=>response.url().startsWith('https://avapuibsidubuzxjtyld.supabase.co/rest/v1/wishlist_lists?'),{timeout:30000});
  await page.locator('#email').fill(email);
  await page.locator('#password').fill(password);
  await page.locator('#signin').click();
  await page.locator('#logout').waitFor({state:'visible',timeout:30000});
  await page.locator('#listsDashboard').waitFor({state:'visible',timeout:30000});
+ // Await the actual network response, not merely the early dashboard visibility toggle.
+ await listsResponse;
  const readOnly=await page.evaluate(async()=>{
   const client=window.supabase;
   if(!client||typeof client.createClient!=='function')throw Error('Supabase client unavailable');
