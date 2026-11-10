@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-Jahresstatistik)
+
+- **Neu umgesetzt:** `amazon-wishlist/gift-analytics.html` und `gift-analytics.mjs` mit mobiler Jahresauswahl, Jahresvergleich, Geschenk-Abschlussquote, erfassten tatsächlichen Ausgaben, geplanten Beträgen, Anlassbudget-Vergleich und abgeschlossenen Anlass-Checklisten bzw. Geschenkgruppen.
+- **Privatsphäre:** Daten werden ausschließlich aus den bestehenden owner-only-RLS-Tabellen `wishlist_gift_plans`, `wishlist_gift_tasks` und `wishlist_occasions` mit zusätzlichem `user_id`-Filter gelesen. Keine Daten fremder Nutzer und keine Reservierungsdaten werden abgefragt.
+- **Integration:** Navigation in `index.html` und `gift-dashboard.html` ergänzt. Keine Datenbankmigration, keine Testdaten und keine Änderungen an bestehenden Produktivdatensätzen.
+- **Methodische Grenzen:** Geschenkpläne besitzen noch kein separates Jahr; sie werden nach `created_at` gruppiert. Der aktuelle Status und aktuelle tatsächliche Ausgaben wirken damit rückwirkend. Anlassbudgets sind aktuelle Werte, keine historischen Snapshots; bei jährlich wiederkehrenden Anlässen wird das aktuelle Budget in den Jahresansichten angezeigt. Die abgeschlossenen Anlässe basieren auf vollständig erledigten Checklisten des jeweiligen Jahres oder vollständig verschenkten Geschenkgruppen mit Erstellungsjahr. Bis zu 5000 Geschenkpläne, 5000 Aufgaben und 2000 Anlässe pro Aufruf; bei größeren Datenbeständen sind paginierte Aggregationen erforderlich.
+- **Prüfung:** JavaScript-Syntax und RLS-Schema geprüft; vollständiger Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Sichere Jahresübernahme und private Jahresbilanz)
 
 - **Neu umgesetzt:** Selektive Übernahme von bis zu 100 Aufgaben eines jährlichen Anlasses aus dem Vorjahr. Nutzer wählen die Aufgaben einzeln aus und bestätigen die Übernahme. Neue Aufgaben erhalten Status `open`, kopierte Priorität, Notizen und Erinnerungsfrist; Fälligkeiten werden anhand der relativen Tagesdifferenz zum Anlassdatum in das Zieljahr übertragen. Bestehende Aufgaben werden durch eindeutigen Jahresindex und `ON CONFLICT DO NOTHING` nicht überschrieben.
