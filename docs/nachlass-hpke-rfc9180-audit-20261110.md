@@ -78,3 +78,11 @@ References:
 - For audit commit `9510f238`, [release smoke run 42784691490](https://github.com/duhrrom11/Helferlein/actions/runs/42784691490) is `completed/success`.
 - These successful GitHub Node steps provide execution evidence for the checked-in suite including the four newly added tests, but step summaries alone do not report individual test counts. The separate reconstructed local run had 4/4 passing, not a byte-identical full 14-test run.
 - No production data changes, Vercel, deployment, or merge.
+
+## Final B3 CI and exact HPKE TAP proof (2026-11-10)
+
+- [B3 run 42784627431](https://github.com/duhrrom11/Helferlein/actions/runs/42784627431) for `197522f8` and [B3 run 42784691674](https://github.com/duhrrom11/Helferlein/actions/runs/42784691674) for `9510f238` are both `completed/success`, including Chromium browser verification and evidence upload.
+- The actual GitHub Actions job logs were retrieved for jobs `129722662677` and `129722883320`. In both logs, HPKE test cases appear individually as `ok 11` through `ok 24` (14 successful cases), including `ok 21` GCM tag corruption, `ok 22` low-order X25519, `ok 23` 1024/1025-byte context limits and `ok 24` ciphertext boundary checks. The combined Node TAP summary in each run is `# tests 52`, `# pass 52`, `# fail 0`. This is a **direct GitHub CI log proof** of 14/14 HPKE tests, not an inference from a green status alone.
+- GitHub confirms preserved `nachlass-test-evidence` artifacts for both B3 runs: artifact IDs `13747881924` and `13749245314` (not expired at verification). The job logs themselves provided sufficient TAP evidence; ZIP contents were not separately inspected.
+- For prior audit commit `d82bff7af1b7220f63a7b91e00e9433594f7230b`, [B3 run 42784782054](https://github.com/duhrrom11/Helferlein/actions/runs/42784782054) and [release smoke run 42784782040](https://github.com/duhrrom11/Helferlein/actions/runs/42784782040) both completed with `success`.
+- Scope: offline HPKE implementation and tests only. No deployment, production mutation, Vercel, or merge.
