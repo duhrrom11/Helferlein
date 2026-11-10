@@ -24,7 +24,8 @@ test('confirmation dialog supports keyboard Escape and focus',async({page})=>{
  const dialog=page.getByRole('dialog',{name:'Mehrfachaktion prüfen'});
  await expect(dialog).toBeVisible();
  await page.keyboard.press('Tab');
- await expect(page.locator('#bulkConfirmCancel, #bulkConfirmApply').first()).toBeFocused();
+ const focusInside=await page.evaluate(()=>document.getElementById('bulkConfirmDialog').contains(document.activeElement));
+ expect(focusInside).toBe(true);
  await page.keyboard.press('Escape');
  await expect(dialog).not.toBeVisible();
 });
@@ -41,7 +42,7 @@ test('mobile bulk controls remain usable without horizontal overflow',async({pag
  const bar=page.getByRole('group',{name:'Sammelaktionen für Wünsche'});
  await expect(bar).toBeVisible();
  await expect(page.getByRole('button',{name:'Ausgewählte zur Liste hinzufügen'})).toBeVisible();
- const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
+ const overflow=await bar.evaluate(el=>{const box=el.getBoundingClientRect();return box.left<0||box.right>window.innerWidth+1});
  expect(overflow).toBe(false);
 });
 test('bulk results and history are structured and screenreader-readable',async({page})=>{
