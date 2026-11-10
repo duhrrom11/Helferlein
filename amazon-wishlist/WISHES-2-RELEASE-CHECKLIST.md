@@ -609,3 +609,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Syntaxprüfung des Dashboard-Moduls ohne Imports und gezielte Quelltextprüfung erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; keine produktiven Supabase-Tests durchgeführt.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Autopilot: Einzeländerungen serialisieren und mobile Kartenaktionen absichern (2026-11-10)
+
+- [x] Einzelverschieben und direkte Zuordnungsänderungen starten nicht mehr parallel zu irgendeiner anderen laufenden Einzeländerung. Damit kann das interne Neuladen einer Änderung nicht die noch offene zweite Schreibphase einer anderen Änderung ungültig machen.
+- [x] Detail- und Markierungsaktionen auf alten Wunschkarten prüfen die beim Rendern gültige Lade-Generation und den Listenkontext, bevor sie lokale Daten verändern.
+- [x] Sammelauswahl aus Wunschdetails, Kategorieauswahl und verbleibenden Ergebnissen wird während laufender Einzeländerungen erneut blockiert.
+- [x] Die mobile Notiz-Aufklappschaltfläche aktualisiert neben dem sichtbaren Text auch ihren zugänglichen Namen und aria-expanded.
+- [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls ohne Imports und gezielte Quelltextkontrolle erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; keine produktiven Supabase-Tests ausgeführt.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
