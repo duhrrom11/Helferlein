@@ -221,12 +221,12 @@ export function mountListsDashboard(db, getUser) {
     const {error}=await db.from('wishlist_list_items').insert({list_id:targetListId,wish_id:wishId,user_id:uid});
     if(error)throw error;
    }
-   if(!current()){msg('Zielzuordnung gespeichert. Bitte Listen neu laden, bevor du fortfährst.');return}
+   if(!current()){if(getUser()?.id===uid)msg('Zielzuordnung gespeichert. Bitte Listen neu laden, bevor du fortfährst.');return}
    const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid);
-   if(error){msg('Wunsch wurde zur Zielliste hinzugefügt, konnte aber nicht aus der Ursprungsliste entfernt werden: '+error.message+'. Bitte erneut prüfen.');await load();return}
+   if(error){if(current())msg('Wunsch wurde zur Zielliste hinzugefügt, konnte aber nicht aus der Ursprungsliste entfernt werden: '+error.message+'. Bitte erneut prüfen.');if(current())await load();return}
    await load();
-   if(getUser()?.id===uid){openList(targetListId);msg('Wunsch nach „'+target.title+'“ verschoben.')}
-  }catch(e){msg('Verschieben fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
+   if(getUser()?.id===uid&&selected===sourceListId){openList(targetListId);msg('Wunsch nach „'+target.title+'“ verschoben.')}
+  }catch(e){if(getUser()?.id===uid&&selected===sourceListId)msg('Verschieben fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
   finally{control.disabled=false}
  }
  let compactWishView=false;
