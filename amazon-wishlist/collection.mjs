@@ -33,7 +33,7 @@ async function main(){
   if(wish.note){const note=document.createElement('p');note.textContent=wish.note;body.append(note)}
   const asin=wish.wishlist_products?.asin;
   if(typeof asin==='string'&&/^[A-Z0-9]{10}$/.test(asin)){
-   const link=document.createElement('a');link.href=affiliateUrl(asin);link.target='_blank';link.rel='noopener noreferrer sponsored';link.textContent='Bei Amazon ansehen ↗';body.append(link);
+   const link=document.createElement('a');link.href=affiliateUrl({asin,marketplace:'amazon.de'},{'amazon.de':'duhrrom-21'});link.target='_blank';link.rel='noopener noreferrer sponsored';link.textContent='Bei Amazon ansehen ↗';body.append(link);
   }
   card.append(cover,body);grid.append(card);
  }
