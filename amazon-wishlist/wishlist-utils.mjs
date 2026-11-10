@@ -116,12 +116,13 @@ export async function copyShareLink(text,clipboard=navigator.clipboard,doc=docum
  if(typeof text!=='string'||!/^https:\/\//.test(text))throw Error('Ungültiger Link.');
  try{const url=new URL(text);if(url.protocol!=='https:'||!url.hostname||url.username||url.password)throw Error('Ungültiger Link.');}catch{throw Error('Ungültiger Link.');}
  if(clipboard?.writeText){try{await clipboard.writeText(text);return 'clipboard'}catch{}}
+ const previousFocus=doc.activeElement;
  const input=doc.createElement('textarea');
  input.value=text;input.setAttribute('readonly','');input.style.position='fixed';input.style.left='-9999px';
  doc.body.append(input);
  try{
-  input.select();
+  input.focus();input.select();
   if(typeof doc.execCommand!=='function'||!doc.execCommand('copy'))throw Error('Kopieren nicht möglich. Bitte den Link aus der Adresszeile kopieren.');
   return 'fallback';
- }finally{input.remove()}
+ }finally{input.remove();if(previousFocus?.isConnected&&typeof previousFocus.focus==='function')previousFocus.focus()}
 }
