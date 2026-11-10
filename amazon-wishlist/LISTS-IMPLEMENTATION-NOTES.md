@@ -123,3 +123,11 @@
 - Mitgliedschafts-Pagination hat eine deterministische Sortierung nach Listen- und Wunsch-ID. Ergebnisbildung bei Sammelaktionen verwendet `Set` statt wiederholter linearer `includes`-Suche.
 - In dieser Entwicklungsrunde wurden 15 direkte Kurzprüfungen über die extrahierten Funktionen, JavaScript-Syntax und HTML-IDs erfolgreich ausgeführt. Der vollständige `node --test`-Lauf sowie echte Browser- und Supabase-Integrationstests wurden nicht ausgeführt.
 - Keine produktive Datenbankänderung, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Simulierte Workflows und parallele Abläufe
+- `bulk-workflows.test.mjs` enthält simulierte In-Memory-Datenbankabläufe für mehrseitiges Laden, Filtern, Zuordnen, gezieltes Retry, Stoppen/Fortsetzen, Kontowechsel während eines Writes und konkurrierende Ladeantworten.
+- `executeBulkJob` in `bulk-helpers.mjs` ist die gemeinsame, injizierbare Ausführungslogik von Dashboard und Tests; kein automatisches Retry. Nach jeder Netzwerkanfrage wird der aktuelle Benutzer-/Laufkontext geprüft, bevor UI-Fortschritt fortgeschrieben wird.
+- Ein bereits beim Server angekommenes Schreiben kann durch einen Kontowechsel nicht rückgängig gemacht werden. Das Ergebnis wird dann bewusst nicht im anderen Konto angezeigt; bei Bedarf ist ein erneutes Laden erforderlich.
+- Testbefehle (ohne externe Pakete): `node --test amazon-wishlist/bulk-helpers.test.mjs amazon-wishlist/bulk-workflows.test.mjs`.
+- Sieben zusätzliche Szenario-Kurzprüfungen (inkl. Syntax und DOM-ID-Abgleich) erfolgreich. Vollständiger Node-Testlauf und Browser-/Supabase-Integrationstests nicht ausgeführt.
+- Ausschließlich Feature-Branch-Code, keine produktiven Supabase-Datenbankänderungen, kein Merge, Deployment oder kostenpflichtige Dienste.
