@@ -109,6 +109,27 @@ export function mountListsDashboard(db, getUser) {
    const fav=button(favoriteIds.has(list.id)?'★ Favorit':'☆ Merken',async()=>{if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!fav.isConnected||!membershipReady||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===list.id))return;const uid=owner();if(favoriteIds.has(list.id))favoriteIds.delete(list.id);else favoriteIds.add(list.id);writeFavorites(uid);render()});fav.className='favorite-toggle';fav.setAttribute('aria-pressed',String(favoriteIds.has(list.id)));fav.setAttribute('aria-label',(favoriteIds.has(list.id)?'Favorit entfernen: ':'Als Favorit markieren: ')+list.title);card.append(fav);
    const actions=document.createElement('div');actions.className='list-card-actions';card.append(actions);
    actions.append(button(list.archived?'Archiviert – reaktivieren':'Öffnen',async()=>{if(!card.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||!membershipReady||listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!lists.some(l=>l.id===list.id&&!l.archived))return msg('Bitte die aktuelle Listenkarte verwenden.');if(list.archived)return msg('Bitte die Liste zuerst reaktivieren.');openList(list.id)}));
+   // Sharing exports a static text snapshot only; it never makes a private list public.
+   const shareCollection=button('↗ Sammlung teilen',async()=>{
+    if(!card.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||!membershipReady||listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size)return msg('Bitte zuerst die aktuelle Sammlung vollständig laden.');
+    const assigned=membershipByList.get(list.id)||new Set();
+    const entries=wishes.filter(w=>assigned.has(w.id));
+    if(!entries.length)return msg('Füge zuerst Wünsche zu dieser Sammlung hinzu.');
+    const promptText='Eine Textkopie dieser Sammlung mit Produkttiteln und Amazon-Produktlinks wird zum Teilen vorbereitet. Auch bei privaten Listen können Empfänger die kopierten Informationen lesen. Fortfahren?';
+    if(!window.confirm(promptText))return;
+    const lines=[list.icon+' '+list.title,list.description||'', '',...entries.map((wish,index)=>{
+     const asin=wish.wishlist_products?.asin;
+     const title=wish.wishlist_products?.title||'Wunsch';
+     return (index+1)+'. '+title+(asin?'\\nhttps://www.amazon.de/dp/'+encodeURIComponent(asin):'');
+    }), '', 'Geteilt als Textkopie aus Helferlein Wishes. Preise und Verfügbarkeit nicht geprüft.'];
+    const snapshot=lines.join('\\n');
+    try{
+     if(navigator.share)await navigator.share({title:list.title,text:snapshot});
+     else if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(snapshot);msg('Sammlung als Text kopiert. Du kannst sie jetzt teilen.')}
+     else msg('Automatisches Teilen nicht verfügbar. Nutze einen Browser mit sicherer Zwischenablage.');
+    }catch(error){if(error?.name!=='AbortError')msg('Sammlung konnte nicht geteilt werden.')}
+   });
+   shareCollection.className='collection-share-action';actions.append(shareCollection);
    if(!list.archived&&count>0)actions.append(button('Zugeordnete Wünsche',async()=>{if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!card.isConnected||!membershipReady||getUser()?.id!==loadedOwner||cardGeneration!==loadGeneration)return;openList(list.id);if(selected!==list.id)return;$('listWishAssignment').value='assigned';selectedOnlyView=false;renderWishCards()}));
    actions.append(button('Gestalten',async()=>{if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!card.isConnected||!membershipReady||cardGeneration!==loadGeneration)return msg('Bitte zuerst laufende Änderungen abschließen und die aktuelle Listenkarte verwenden.');if(list.archived)return msg('Archivierte Liste zuerst reaktivieren.');if(getUser()?.id!==loadedOwner)return;openEditor(list)}));
    actions.append(button(list.archived?'Reaktivieren':'Archivieren',async()=>{if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==loadedOwner||cardGeneration!==loadGeneration)return msg('Bitte die aktuelle Listenkarte verwenden und laufende Änderungen abschließen.');const beforeConfirm=loadGeneration;if(!list.archived&&!window.confirm('Liste „'+list.title+'“ archivieren? Die Wünsche bleiben erhalten.'))return;if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||beforeConfirm!==loadGeneration||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===list.id&&l.archived===list.archived))return;const uid=owner(),generation=loadGeneration;listMutationBusy=true;try{if(getUser()?.id===uid&&membershipReady)renderWishCards();const res=await db.from('wishlist_lists').update({archived:!list.archived}).eq('id',list.id).eq('user_id',uid);if(res.error)throw res.error;if(getUser()?.id!==uid||generation!==loadGeneration)return;try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&loadedOwner===uid)msg('Archivstatus gespeichert, aber Aktualisierung fehlgeschlagen. Bitte neu laden.')}}finally{listMutationBusy=false;if(getUser()?.id===uid&&loadedOwner===uid&&membershipReady)renderWishCards()}}));
