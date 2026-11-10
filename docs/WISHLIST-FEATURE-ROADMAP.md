@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Layout-Vorschau, Rückgängig und Standardansicht)
+
+- **Neu umgesetzt:** Nicht persistente Vorschau der drei Dashboard-Vorlagen und individueller Formulareinstellungen; aktive Layouts werden erst nach ausdrücklicher Bestätigung gespeichert.
+- **Rückgängig:** Eine laufende Vorschau kann verworfen werden; die vorherige Ansicht wird aus dem gespeicherten lokalen Zustand wiederhergestellt.
+- **Zurücksetzen:** Standardeinstellungen können nach Rückfrage als Vorschau angezeigt und anschließend ausdrücklich dauerhaft übernommen werden. Persönlich gespeicherte Vorlagen bleiben erhalten.
+- **Datenschutz:** Keine neue Migration und keine Testdaten. Nur bestätigte Einstellungen werden in der vorhandenen owner-geschützten Präferenztabelle gespeichert. RLS erneut überprüft (aktiv, kein anon-SELECT). Aufgaben, Anlässe und historische Produktivdaten bleiben unverändert.
+- **Prüfung:** JavaScript-Syntax geprüft; Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Gespeicherte private Dashboard-Layouts)
 
 - **Neu umgesetzt:** Schnellwechsel zwischen den vordefinierten Layouts „Kompakt“, „Tagesplanung“, „Geschenküberblick“ und dem aktuellen individuellen Layout. Drei Vorlagenplätze können mit einer persönlichen Momentaufnahme der aktuellen Dashboard-Einstellungen überschrieben werden (nach ausdrücklicher Bestätigung).
