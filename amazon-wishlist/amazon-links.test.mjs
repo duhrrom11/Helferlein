@@ -41,3 +41,13 @@ test('mobile Amazon hosts canonicalize to the same marketplace without tracking'
   assert.equal(parseAmazonUrl('https://'+host+'/dp/B0ABC12345'),null);
  }
 });
+
+test('rejects embedded whitespace, controls and ambiguous product segments', () => {
+ const base='https://amazon.de/dp/B0ABC12345';
+ for (const suffix of ['?x=hello world','?x=1\\n','?x=1\\t','?x=1\\u0000','?x=1\\u007f']) {
+  const value=suffix.replace('\\n','\n').replace('\\t','\t').replace('\\u0000','\u0000').replace('\\u007f','\u007f');
+  assert.equal(parseAmazonUrl(base+value),null);
+ }
+ assert.deepEqual(parseAmazonUrl(base+'?th=1'),{asin:'B0ABC12345',marketplace:'amazon.de'});
+ assert.deepEqual(parseAmazonUrl(base+'#details'),{asin:'B0ABC12345',marketplace:'amazon.de'});
+});
