@@ -101,3 +101,10 @@
 - Ergebnisse werden beim Listen-/Kontowechsel invalidiert; asynchrone Ergebnisse prüfen Run-ID und Benutzerkonto, um veraltete UI-Aktualisierungen zu verhindern.
 - Bereits erfolgreiche Datenbankänderungen werden nicht rückgängig gemacht. Keine automatischen Wiederholungen oder zusätzlichen Produktivdatenbankänderungen.
 - JavaScript-Syntax und DOM-IDs kurz geprüft; vollständige Browser-/Integrationstests stehen aus. Kein Merge und kein Deployment.
+
+## Aktionshistorie und Wiederaufnahme (Feature-Branch)
+- Maximal zehn Sammelaktionen im Arbeitsspeicher der laufenden Sitzung, ohne Datenbank- oder Browserpersistenz; Kontoreset löscht den Verlauf.
+- Ergebnis zeigt erfolgreiche, fehlgeschlagene und nicht bearbeitete Änderungen; verständliche Kategorien für Berechtigungs-, Duplikat-, Rate-Limit- und Netzwerkfehler.
+- Fehlgeschlagene und offene Aktionen können aus der Ergebnisübersicht bzw. Historie erneut zur Bestätigung vorbereitet werden. Der aktuelle Zuordnungszustand wird berücksichtigt; nach Listenwechsel ist zunächst ein erneuter Aufruf nach dem Laden erforderlich.
+- Bereits erfolgreich ausgeführte Zuordnungen bleiben bestehen. Es gibt kein automatisches Retry, keinen Rollback und keine Transaktion über alle Wünsche.
+- Nur kurze JavaScript-Syntax- und HTML-ID-Prüfung, kein vollständiger Browser-/Integrationstest. Keine Produktivdatenbankänderung, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
