@@ -11,7 +11,7 @@ async function mount(page){
 test('bulk controls have descriptive accessible names and correct selection scope',async({page})=>{
  await mount(page);
  await expect(page.getByRole('group',{name:'Sammelaktionen für Wünsche'})).toBeVisible();
- await expect(page.getByRole('checkbox',{name:/Alle gefilterten Wünsche auswählen/})).toBeVisible();
+ await expect(page.getByRole('checkbox',{name:/Angezeigte Wünsche auswählen/})).toBeVisible();
  await expect(page.getByRole('button',{name:'Ausgewählte zur Liste hinzufügen'})).toBeVisible();
  await expect(page.getByRole('button',{name:'Ausgewählte aus Liste entfernen'})).toBeVisible();
 });
@@ -67,7 +67,7 @@ test('simulated bulk selection updates selection count and can be cleared',async
   checks.forEach(c=>c.addEventListener('change',update));
   document.getElementById('bulkClear').addEventListener('click',()=>{checks.forEach(c=>c.checked=false);update()});
  });
- await page.getByRole('checkbox',{name:/Alle gefilterten Wünsche auswählen/}).check();
+ await page.getByRole('checkbox',{name:/Angezeigte Wünsche auswählen/}).check();
  await expect(page.locator('#bulkSelectedCount')).toHaveText('2 ausgewählt');
  await page.getByRole('button',{name:'Auswahl aufheben'}).click();
  await expect(page.locator('#bulkSelectedCount')).toHaveText('0 ausgewählt');
@@ -104,7 +104,7 @@ test('mobile layout at 320 and 375 pixels keeps bulk action buttons inside viewp
   await page.setViewportSize({width,height:700});
   await mount(page);
   await expect(page.locator('.wish-bulk-toolbar')).toBeVisible();
-  const outside=await page.locator('.wish-bulk-toolbar button').evaluateAll(buttons=>buttons.filter(el=>{const rect=el.getBoundingClientRect();return rect.width===0||rect.height===0||rect.left<0||rect.right>window.innerWidth+1}).map(el=>el.id));
+  const outside=await page.locator('.wish-bulk-toolbar button').evaluateAll(buttons=>buttons.filter(el=>{const rect=el.getBoundingClientRect();return rect.width>0&&rect.height>0&&(rect.left<0||rect.right>window.innerWidth+1)}).map(el=>el.id));
   expect(outside).toEqual([]);
  }
 });
