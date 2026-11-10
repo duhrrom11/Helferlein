@@ -267,7 +267,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
     const query=wanted?db.from('wishlist_list_items').insert({list_id:list.id,wish_id:wish.id,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',list.id).eq('wish_id',wish.id).eq('user_id',uid);
     const {error}=await query;if(error)throw error;if(getUser()?.id!==uid||selected!==list.id||generation!==loadGeneration)return;
     if(wanted){assignedIds.add(wish.id);membershipByList.get(list.id)?.add(wish.id)}else{assignedIds.delete(wish.id);membershipByList.get(list.id)?.delete(wish.id)}
-    await load();if(getUser()?.id===uid&&selected===list.id)msg('Wunschzuordnung gespeichert');
+    try{await load()}catch(e){if(getUser()?.id===uid&&selected===list.id)msg('Wunschzuordnung gespeichert, aber Listen konnten nicht neu geladen werden. Bitte aktualisieren.');return}if(getUser()?.id===uid&&selected===list.id)msg('Wunschzuordnung gespeichert');
    }catch(e){if(getUser()?.id===uid&&selected===list.id&&generation===loadGeneration){check.checked=!wanted;msg(e.message||'Zuordnung fehlgeschlagen')}}finally{activeWishMutations.delete(uid+':'+wish.id);if(getUser()?.id===uid&&selected===list.id&&generation===loadGeneration)check.disabled=false}};
    row.append(check,caption);card.append(row);
    if(assignedIds.has(wish.id)&&!list.archived){
