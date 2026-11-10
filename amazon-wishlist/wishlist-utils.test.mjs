@@ -227,3 +227,25 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('clipboard helper works without browser globals',async()=>{
+ const copied=[];
+ assert.equal(await copyShareLink('https://example.org/',{writeText:async value=>copied.push(value)},undefined),'clipboard');
+ assert.deepEqual(copied,['https://example.org/']);
+ await assert.rejects(()=>copyShareLink('https://example.org/',null,undefined),/Kopieren nicht möglich/);
+ await assert.rejects(()=>copyShareLink('javascript:alert(1)',null,undefined),/Ungültiger Link/);
+});
+
+test('backup preview rejects missing or non-string texts and mismatched Amazon links',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:2}]};
+ const check=patch=>previewWishlistBackup(JSON.stringify({...base,wishes:[{...base.wishes[0],...patch}]}));
+ for(const patch of [{title:123},{title:null},{note:42},{note:null},{amazon_url:'https://www.amazon.de/dp/B099999999'},{amazon_url:'https://evil.example/dp/B012345678'},{amazon_url:null}])assert.throws(()=>check(patch));
+ assert.equal(check({amazon_url:'https://www.amazon.de/dp/B012345678'}).count,1);
+ assert.equal(check({}).count,1);
+});
+
+test('export progress rejects invalid totals and counts above total',()=>{
+ for(const total of [-1,1.5,NaN,'12',Infinity])assert.throws(()=>exportProgressText(1,total));
+ assert.throws(()=>exportProgressText(3,2));
+ assert.equal(exportProgressText(2,2),'2 von 2 Wünschen geladen …');
+});
