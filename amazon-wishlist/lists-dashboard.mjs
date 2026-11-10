@@ -33,7 +33,7 @@ export function mountListsDashboard(db, getUser) {
   if(matching.length){const heading=document.createElement('strong');heading.textContent='In diesen Listen:';membership.append(heading);
    for(const list of matching){const go=button(list.icon+' '+list.title,async()=>jumpToWishInList(wish.id,list.id));membership.append(go)}
   }else{const hint=document.createElement('span');hint.textContent=membershipReady?'Noch keiner Liste zugeordnet':'Listenzuordnungen werden geladen';membership.append(hint)}
-  $('wishDetailSelect').disabled=!membershipReady||bulkBusy||activeWishMutations.size>0||!lists.some(l=>l.id===selected&&!l.archived)||!visibleWishes().slice(0,visibleLimit).some(w=>w.id===wish.id);
+  $('wishDetailSelect').disabled=!membershipReady||listCopyBusy||bulkBusy||activeWishMutations.size>0||!lists.some(l=>l.id===selected&&!l.archived)||!visibleWishes().slice(0,visibleLimit).some(w=>w.id===wish.id);
   $('wishDetailSelect').textContent=bulkIds.has(wish.id)?'Aus Sammelauswahl entfernen':'Für Sammelaktion auswählen';$('wishDetailSelect').title=$('wishDetailSelect').disabled?'Nur sichtbare Wünsche der aktuellen aktiven Liste auswählbar':'';
   $('wishDetailJump').disabled=!matching.length;
   $('wishDetailHeading').textContent=wish.wishlist_products?.title||'Wunsch';$('wishDetailPriority').textContent='Priorität: '+(['','Sehr wichtig','Normal','Irgendwann'][wish.priority]||'Nicht angegeben');$('wishDetailNote').textContent=wish.note||'Keine Notiz vorhanden.';$('wishDetailDate').textContent=wish.created_at?'Hinzugefügt: '+new Date(wish.created_at).toLocaleDateString('de-DE'):'';$('wishDetailCategory').value=wishCategories[wish.id]||'';syncDetailMarkers();$('wishDetailDialog').showModal()}
@@ -359,9 +359,9 @@ actions.append(button('Duplizieren',async()=>{
  async function retryItemsLoad(){if(bulkBusy)return;const id=getUser()?.id;try{await load()}catch(e){if(getUser()?.id!==id)return;msg(e.message||'Ladefehler')}}
  $('listItemsRetry').onclick=retryItemsLoad;
 
- $('listItemsNewWish').onclick=()=>{const list=lists.find(l=>l.id===selected&&!l.archived);if(!list||!membershipReady||bulkBusy||activeWishMutations.size||getUser()?.id!==loadedOwner)return;
+ $('listItemsNewWish').onclick=()=>{const list=lists.find(l=>l.id===selected&&!l.archived);if(!list||!membershipReady||listCopyBusy||bulkBusy||activeWishMutations.size||getUser()?.id!==loadedOwner)return;
   $('wishListSelect').value=list.id;$('editor').scrollIntoView({behavior:'smooth',block:'start'});$('url').focus()};
- $('listQuickSwitch').onchange=()=>{const id=$('listQuickSwitch').value;if(!bulkBusy&&!activeWishMutations.size&&membershipReady&&lists.some(l=>l.id===id&&!l.archived))openList(id)};
+ $('listQuickSwitch').onchange=()=>{const id=$('listQuickSwitch').value;if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||!lists.some(l=>l.id===id&&!l.archived)){syncListQuickSwitch();return}openList(id)};
  $('listItemsBack').onclick=()=>{$('listsContent').scrollIntoView({behavior:'smooth',block:'start'})};
  $('quickAllWishes').onclick=()=>setQuickWishFilter('all');
  $('quickAssignedWishes').onclick=()=>setQuickWishFilter('assigned');
@@ -390,7 +390,7 @@ actions.append(button('Duplizieren',async()=>{
  $('listsResetFilters').onclick=()=>{if(listCopyBusy||bulkBusy||activeWishMutations.size)return;$('listsSearch').value='';$('listsView').value='all';$('listsSort').value='favorites';render()};
  $('bulkMoveTarget').onchange=()=>{if(!listCopyBusy&&!bulkBusy)updateBulkToolbar()};
  $('bulkMove').onclick=()=>moveSelectedWishes().catch(e=>{$('bulkStatus').textContent=e.message||'Verschieben fehlgeschlagen'});
- $('bulkClear').onclick=()=>{if(bulkBusy||activeWishMutations.size)return;bulkIds.clear();selectedOnlyView=false;renderWishCards()};$('bulkAdd').onclick=()=>bulkAssign(true).catch(e=>{$('bulkStatus').textContent=e.message});$('bulkRemove').onclick=()=>bulkAssign(false).catch(e=>{$('bulkStatus').textContent=e.message});
+ $('bulkClear').onclick=()=>{if(listCopyBusy||bulkBusy||activeWishMutations.size)return;bulkIds.clear();selectedOnlyView=false;renderWishCards()};$('bulkAdd').onclick=()=>bulkAssign(true).catch(e=>{$('bulkStatus').textContent=e.message});$('bulkRemove').onclick=()=>bulkAssign(false).catch(e=>{$('bulkStatus').textContent=e.message});
  const globalOption=document.createElement('option');globalOption.value='global-unassigned';globalOption.textContent='In keiner Liste';$('listWishAssignment').append(globalOption);
  $('showUnassigned').onclick=()=>{if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady)return;selectedOnlyView=false;$('listWishAssignment').value='global-unassigned';$('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';$('listWishMarker').value='all';$('listWishSort').value='newest';bulkIds.clear();renderWishCards();$('listWishCards').scrollIntoView({behavior:'smooth',block:'start'});};
  for(const id of ['listsSearch','listsView','listsSort'])$(id).addEventListener('input',()=>{if(!listCopyBusy&&!bulkBusy&&!activeWishMutations.size)render()});
@@ -401,7 +401,7 @@ actions.append(button('Duplizieren',async()=>{
  $('wishDetailStar').onclick=()=>{if(detailWishId)setMarker(detailWishId,'star')};$('wishDetailLater').onclick=()=>{if(detailWishId)setMarker(detailWishId,'later')};
  $('listWishClearFilters').onclick=()=>{if(listCopyBusy||bulkBusy||activeWishMutations.size)return;selectedOnlyView=false;for(const [id,value] of [['listWishSearch',''],['listWishPriority','all'],['listWishCategory','all'],['listWishMarker','all'],['listWishAssignment','assigned'],['listWishSort','newest']])$(id).value=value;renderWishCards()};
  $('wishDetailSaveCategory').onclick=saveCategory;$('wishDetailClose').onclick=()=>$('wishDetailDialog').close();$('wishDetailDone').onclick=()=>$('wishDetailDialog').close();$('wishDetailDialog').addEventListener('close',()=>{detailWishId=null});
- for(const id of ['listWishSearch','listWishPriority','listWishCategory','listWishMarker','listWishAssignment','listWishSort'])$(id).addEventListener('input',()=>{if(bulkBusy||activeWishMutations.size)return;selectedOnlyView=false;visibleLimit=100;renderWishCards()});
+ for(const id of ['listWishSearch','listWishPriority','listWishCategory','listWishMarker','listWishAssignment','listWishSort'])$(id).addEventListener('input',()=>{if(listCopyBusy||bulkBusy||activeWishMutations.size)return;selectedOnlyView=false;visibleLimit=100;renderWishCards()});
  $('listTemplate').onchange=()=>{
   const template=LIST_TEMPLATES.find(t=>t.id===$('listTemplate').value)||LIST_TEMPLATES.at(-1);
   $('listTitle').value=template.title;$('listDescription').value=template.description;$('listIcon').value=template.icon;$('listColor').value=template.color;
