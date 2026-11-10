@@ -36,11 +36,22 @@ function renderGiftYearEditor(year){
  button.addEventListener('click',async()=>{const y=Number(input.value);if(!Number.isInteger(y)||y<1900||y>2200){$('status').textContent='Ungültiges Geschenkjahr.';return}button.disabled=true;const {data,error}=await db.rpc('wishlist_set_gift_year',{p_plan_id:g.id,p_year:y});button.disabled=false;if(error||!data){$('status').textContent='Geschenkjahr konnte nicht gespeichert werden.';return}g.gift_year=y;g.gift_year_source='manual';if(![...$('year').options].some(o=>Number(o.value)===y)){const option=document.createElement('option');option.value=y;option.textContent=y;$('year').append(option)}$('year').value=String(y);render();$('status').textContent='Geschenkjahr gespeichert.'});controls.append(input,button);row.append(controls);root.append(row)}
  if(relevant.length>80)root.append(el('p','Es werden nur die ersten 80 Geschenke angezeigt. Weitere Geschenke sind über die Jahreszuordnung in der Datenbank vorhanden.','note'));
 }
-function renderClosings(){
+function renderChronicle(){
+ const root=$('yearChronicle');root.replaceChildren();const ordered=[...closings].sort((a,b)=>a.closing_year-b.closing_year);
+ if(!ordered.length){root.append(el('p','Noch keine gespeicherten Jahresabschlüsse. Erstelle einen Abschluss, um die Chronik zu beginnen.','empty'));return}
+ let previous=null;
+ for(const c of ordered){const box=el('article','','chronicle-card'),giftRate=c.gift_count?Math.round(c.gifted_count/c.gift_count*100):0;
+ box.append(el('strong','🔒 '+c.closing_year),el('p','Geschenke: '+c.gifted_count+'/'+c.gift_count+' verschenkt ('+giftRate+' %) · Ausgaben: '+money(c.actual_total)));
+ if(c.task_count===null){box.append(el('p','Aufgaben-Snapshot für diesen älteren Abschluss nicht vorhanden.','note'))}
+ else{const taskRate=c.task_count?Math.round(c.task_done_count/c.task_count*100):0;box.append(el('p','Aufgaben: '+c.task_done_count+'/'+c.task_count+' erledigt ('+taskRate+' %)'));const progress=document.createElement('progress');progress.max=c.task_count||1;progress.value=c.task_done_count||0;progress.setAttribute('aria-label','Aufgabenfortschritt '+c.closing_year);box.append(progress)}
+ if(previous){const delta=Number(c.actual_total)-Number(previous.actual_total);box.append(el('p','Gegenüber dem vorherigen Abschluss '+previous.closing_year+': '+(delta>=0?'+':'')+money(delta)+' Ausgaben'+(previous.task_count!==null&&c.task_count!==null?' · Aufgabenquote '+((c.task_count?Math.round(c.task_done_count/c.task_count*100):0)-(previous.task_count?Math.round(previous.task_done_count/previous.task_count*100):0))+' Prozentpunkte':'')))}
+ root.append(box);previous=c}
+}
+function renderClosings(){renderChronicle();
  const root=$('closedYears');root.replaceChildren();const year=Number($('year').value),closed=closings.find(c=>c.closing_year===year);
  $('closeYear').disabled=Boolean(closed);$('closingConfirm').disabled=Boolean(closed);
- for(const c of closings){const box=el('div','','year-summary row');box.append(el('strong','🔒 '+c.closing_year+' · abgeschlossen am '+new Date(c.closed_at).toLocaleDateString('de-DE')),el('p',c.gift_count+' Geschenke · '+c.gifted_count+' verschenkt · Ausgaben: '+money(c.actual_total)+' · Geplant: '+money(c.planned_total)+' · Jahresbudgets: '+money(c.budget_total)));
- const details=document.createElement('details'),summary=el('summary','Gespeicherte Abschlussdetails anzeigen');details.append(summary);const giftList=el('div');for(const g of c.gifts_snapshot||[])giftList.append(el('p',g.title+' · '+g.status+' · '+money(g.actual_amount)+' erfasst'));details.append(giftList);const budgetList=el('div');for(const b of c.budgets_snapshot||[])budgetList.append(el('p',b.occasion_title+' · '+money(b.budget_amount)));details.append(budgetList);box.append(details);root.append(box)}
+ for(const c of closings){const box=el('div','','year-summary row');box.append(el('strong','🔒 '+c.closing_year+' · abgeschlossen am '+new Date(c.closed_at).toLocaleDateString('de-DE')),el('p',c.gift_count+' Geschenke · '+c.gifted_count+' verschenkt · Ausgaben: '+money(c.actual_total)+' · Geplant: '+money(c.planned_total)+' · Jahresbudgets: '+money(c.budget_total)+(c.task_count===null?' · Aufgabenhistorie nicht vorhanden':' · Aufgaben: '+c.task_done_count+'/'+c.task_count)));
+ const details=document.createElement('details'),summary=el('summary','Gespeicherte Abschlussdetails anzeigen');details.append(summary);const giftList=el('div');for(const g of c.gifts_snapshot||[])giftList.append(el('p',g.title+' · '+g.status+' · '+money(g.actual_amount)+' erfasst'));details.append(giftList);const budgetList=el('div');for(const b of c.budgets_snapshot||[])budgetList.append(el('p',b.occasion_title+' · '+money(b.budget_amount)));details.append(budgetList);if(Array.isArray(c.tasks_snapshot)){const taskList=el('div');taskList.append(el('strong','Historische Aufgaben'));for(const t of c.tasks_snapshot)taskList.append(el('p',t.title+' · '+t.status+' · '+(t.due_date||'ohne Termin')));details.append(taskList)}box.append(details);root.append(box)}
  if(!closings.length)root.append(el('p','Noch keine historischen Jahresabschlüsse gespeichert.','empty'));
 }
 $('closeYear').addEventListener('click',async()=>{
@@ -49,7 +60,7 @@ $('closeYear').addEventListener('click',async()=>{
  if(!confirm('Jahr '+year+' jetzt endgültig abschließen? Der gespeicherte Abschluss kann nicht geändert oder gelöscht werden.'))return;
  $('closeYear').disabled=true;
  try{const {data,error}=await db.rpc('wishlist_close_gift_year',{p_year:year,p_confirm:true});if(error)throw error;
- const {data:rows,error:readError}=await db.from('wishlist_gift_year_closings').select('id,closing_year,closed_at,gift_count,gifted_count,planned_total,actual_total,budget_total,gifts_snapshot,budgets_snapshot').eq('id',data).single();if(readError)throw readError;
+ const {data:rows,error:readError}=await db.from('wishlist_gift_year_closings').select('id,closing_year,closed_at,gift_count,gifted_count,planned_total,actual_total,budget_total,gifts_snapshot,budgets_snapshot,tasks_snapshot,task_count,task_done_count').eq('id',data).single();if(readError)throw readError;
  closings.push(rows);$('closingConfirm').checked=false;render();$('closingStatus').textContent='Jahr '+year+' unveränderlich abgeschlossen.';
  }catch{$('closingStatus').textContent='Jahresabschluss konnte nicht gespeichert oder geladen werden.'}finally{$('closeYear').disabled=closings.some(c=>c.closing_year===year)}
 });
