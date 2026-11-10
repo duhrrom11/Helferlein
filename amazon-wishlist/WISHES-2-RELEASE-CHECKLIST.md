@@ -1142,3 +1142,9 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] **Vercel-Hosting-Blocker**: Die im GitHub-Repository hinterlegte Homepage `https://helferlein-ochre.vercel.app` liefert tatsächlich 404. Vor Merge/Deployment Vercel-Ziel klären bzw. einen nachweislich funktionierenden Veröffentlichungsweg bestimmen. Bestehende GitHub-Pages-Erreichbarkeit beweist noch nicht, dass der neue Dashboard-Stand aus dem Feature-Branch veröffentlicht ist.
 - [ ] Authentifizierte SQL-Rollenprüfung mit vorhandenem `auth.users`-Konto ohne Datenerzeugung bestanden; vollständiger echter Browser-Login mit JWT und produktiven Listenaktionen bleibt offen.
 - [ ] PR #166 nicht mergen, solange der Pre-Release-Live-Hosting-Gate fehlschlägt und die authentifizierte Browserabnahme fehlt.
+
+### CI-Testabdeckung korrigiert (2026-11-10)
+
+- [x] **Kritische Lücke entdeckt:** `production-dashboard.integration.spec.mjs` war zwar committed, wurde aber wegen der expliziten `testMatch`-Liste in `playwright.config.mjs` **nie von Playwright ausgeführt**. Frühere grüne Browserläufe sind daher kein Nachweis dieser Produktions-HTML-Tests.
+- [x] `production-dashboard.integration.spec.mjs` in `testMatch` aufgenommen (Commit `9febd2b7`). Erst ein danach vollständig grüner Chromium-Lauf bestätigt die neuen Tests einschließlich Logout und 320px-Layout.
+- [ ] Auf reale Chromium-Testergebnisse nach der Änderung warten; bei Fehlern tatsächliche Joblogs auswerten und beheben.
