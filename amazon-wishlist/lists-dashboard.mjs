@@ -103,12 +103,23 @@ export function mountListsDashboard(db, getUser) {
    const cover=document.createElement('div');cover.className='list-card-cover';cover.style.background='linear-gradient(120deg,'+list.color+'33,'+list.color+'77)';cover.textContent=list.icon;card.append(cover);
    const heading=document.createElement('h3');heading.textContent=list.title;card.append(heading);
    const desc=document.createElement('p');desc.textContent=list.description||'Deine persönliche Wunschsammlung';card.append(desc);
-   const meta=document.createElement('p');meta.className='list-card-meta';meta.textContent=(list.visibility==='public'?'Öffentlich (Freigabe folgt)':'Privat')+(list.archived?' · Archiviert':'');card.append(meta);
+   const meta=document.createElement('p');meta.className='list-card-meta';meta.textContent=(list.visibility==='public'?'🌍 Öffentlich teilbar':'Privat')+(list.archived?' · Archiviert':'');card.append(meta);
    const count=listCounts.get(list.id)||0;card.setAttribute('aria-label',list.title+', '+count+' Wünsche'+(list.archived?', archiviert':''));const countLabel=document.createElement('p');countLabel.className='list-card-count';countLabel.textContent=count+' Wünsche in dieser Liste';card.append(countLabel);
    const progress=document.createElement('div');progress.className='list-card-progress';progress.setAttribute('role','progressbar');progress.setAttribute('aria-label','Wünsche in dieser Liste, Anteil an geladenen Wünschen');progress.setAttribute('aria-valuemin','0');progress.setAttribute('aria-valuemax','100');const percent=wishes.length?Math.min(100,Math.round(count/wishes.length*100)):0;progress.setAttribute('aria-valuenow',String(percent));const fill=document.createElement('span');fill.style.width=percent+'%';progress.append(fill);card.append(progress);
    const fav=button(favoriteIds.has(list.id)?'★ Favorit':'☆ Merken',async()=>{if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!fav.isConnected||!membershipReady||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===list.id))return;const uid=owner();if(favoriteIds.has(list.id))favoriteIds.delete(list.id);else favoriteIds.add(list.id);writeFavorites(uid);render()});fav.className='favorite-toggle';fav.setAttribute('aria-pressed',String(favoriteIds.has(list.id)));fav.setAttribute('aria-label',(favoriteIds.has(list.id)?'Favorit entfernen: ':'Als Favorit markieren: ')+list.title);card.append(fav);
    const actions=document.createElement('div');actions.className='list-card-actions';card.append(actions);
    actions.append(button(list.archived?'Archiviert – reaktivieren':'Öffnen',async()=>{if(!card.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||!membershipReady||listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!lists.some(l=>l.id===list.id&&!l.archived))return msg('Bitte die aktuelle Listenkarte verwenden.');if(list.archived)return msg('Bitte die Liste zuerst reaktivieren.');openList(list.id)}));
+   if(list.visibility==='public'&&!list.archived){
+    const openPublic=button('🌍 Öffentliche Seite',()=>{
+     if(!card.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner)return;
+     window.open(new URL('./collection.html?id='+encodeURIComponent(list.id),location.href).href,'_blank','noopener,noreferrer');
+    });actions.append(openPublic);
+    const copyPublic=button('🔗 Link kopieren',async()=>{
+     if(!card.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner)return;
+     const url=new URL('./collection.html?id='+encodeURIComponent(list.id),location.href).href;
+     try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(url);msg('Öffentlicher Sammlungslink kopiert.')}else if(navigator.share){await navigator.share({title:list.title,url})}else msg('Link: '+url)}catch(error){if(error?.name!=='AbortError')msg('Link konnte nicht kopiert werden.')}
+    });copyPublic.className='collection-share-action';actions.append(copyPublic);
+   }
    // Sharing exports a static text snapshot only; it never makes a private list public.
    const shareCollection=button('↗ Sammlung teilen',async()=>{
     if(!card.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||!membershipReady||listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size)return msg('Bitte zuerst die aktuelle Sammlung vollständig laden.');
@@ -456,7 +467,7 @@ actions.append(button('Duplizieren',async()=>{
  function openEditor(list){
   if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===list.id&&!l.archived))return;
   $('editListId').value=list.id;$('editListTitle').value=list.title;$('editListDescription').value=list.description||'';
-  $('editListIcon').value=list.icon;$('editListColor').value=list.color;
+  $('editListIcon').value=list.icon;$('editListColor').value=list.color;$('editListVisibility').value=list.visibility;
   $('editListForm').hidden=false;$('editListTitle').focus();$('editListForm').scrollIntoView({behavior:'smooth',block:'nearest'});
  }
  $('cancelListEdit').onclick=()=>{$('editListForm').hidden=true;$('editListId').value='';};
@@ -465,8 +476,8 @@ actions.append(button('Duplizieren',async()=>{
   if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size)return msg('Bitte laufende Wunschänderungen zuerst abschließen.');if(!membershipReady||id!==loadedOwner||!listId||$('editListForm').hidden)return;if(!lists.some(l=>l.id===listId&&!l.archived))return msg('Bitte eine aktive Liste bearbeiten.');
   const title=$('editListTitle').value.trim(),description=$('editListDescription').value.trim();
   if(!title||title.length>80||description.length>500)return msg('Bitte gültigen Namen und Beschreibung eingeben.');
-  const save=$('saveListChanges');save.disabled=true;listMutationBusy=true;try{if(getUser()?.id===id&&membershipReady)renderWishCards();
-   const {error}=await db.from('wishlist_lists').update({title,description,icon:$('editListIcon').value,color:$('editListColor').value}).eq('id',listId).eq('user_id',id);
+  const visibility=$('editListVisibility').value;if(!['private','public'].includes(visibility))return msg('Ungültige Sichtbarkeit.');if(visibility==='public'&&!lists.some(l=>l.id===listId&&l.visibility==='public')&&!window.confirm('Sammlung öffentlich freigeben? Jeder mit dem Link kann Titel, Beschreibung und alle zugeordneten Wünsche einschließlich Notizen sehen.'))return;const save=$('saveListChanges');save.disabled=true;listMutationBusy=true;try{if(getUser()?.id===id&&membershipReady)renderWishCards();
+   const {error}=await db.from('wishlist_lists').update({title,description,icon:$('editListIcon').value,color:$('editListColor').value,visibility}).eq('id',listId).eq('user_id',id);
    if(error)throw error;if(getUser()?.id!==id||generation!==loadGeneration)return;
    $('editListForm').hidden=true;$('editListId').value='';try{await load({afterBulk:true})}catch(e){if(getUser()?.id===id)msg('Listendesign gespeichert, aber Aktualisierung fehlgeschlagen. Bitte neu laden.');return}if(getUser()?.id===id)msg('Listendesign gespeichert.');
   }catch(e){if(getUser()?.id===id&&generation===loadGeneration)msg(e.message||'Liste konnte nicht gespeichert werden')}finally{listMutationBusy=false;save.disabled=false;if(getUser()?.id===id&&loadedOwner===id&&membershipReady)renderWishCards()}
