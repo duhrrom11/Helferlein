@@ -7,7 +7,7 @@ function nextDate(o,now){const [y,m,d]=o.occasion_date.split('-').map(Number);le
 function median(values){const a=[...values].sort((x,y)=>x-y);return a.length?(a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2):null}
 function addCard(root,title,lines){const box=el('article','','card');box.append(el('h3',title));for(const line of lines)box.append(el('p',line));root.append(box);return box}
 async function allRows(table,columns,userId,order){let rows=[];for(let start=0;start<20000;start+=500){let q=db.from(table).select(columns).eq('user_id',userId).order(order,{ascending:true}).range(start,start+499);const {data,error}=await q;if(error)throw error;rows.push(...(data||[]));if((data||[]).length<500)return rows}throw new Error('Zu viele Datensätze für eine vollständige Auswertung')}
-let taskBusy=false,taskUserId=null;
+let taskBusy=false,taskUserId=null,taskEvents=[];
 async function changeTask(task,field,newValue,button){
  if(taskBusy)return;
  const oldValue=task[field];if(oldValue===newValue)return;
@@ -22,7 +22,7 @@ async function changeTask(task,field,newValue,button){
   if(!data||data.length!==1)throw new Error('Aufgabe wurde zwischenzeitlich verändert. Bitte Seite neu laden.');
   task[field]=data[0][field];
   $('taskActionStatus').textContent='Änderung gespeichert: '+task.title+'.';
-  renderWeeklyTasks();renderDaily();renderWeek();
+  await loadTaskEvents();renderWeeklyTasks();renderDaily();renderWeek();
  }catch(e){$('taskActionStatus').textContent='Speichern fehlgeschlagen: '+(e.message||'Unbekannter Fehler')}
  finally{taskBusy=false;button.disabled=false}
 }
@@ -33,6 +33,21 @@ function taskRank(task,today){
  const urgency=days===null?4:days<0?0:days<=1?1:days<=3?2:days<=7?3:5;
  return{days,urgency,priority,score:urgency*10+priority};
 }
+function renderTaskEvents(){
+ const summary=$('activitySummary'),trend=$('activityTrend'),list=$('activityList');summary.replaceChildren();trend.replaceChildren();list.replaceChildren();
+ const completed=taskEvents.filter(e=>e.event_type==='completed'),rescheduled=taskEvents.filter(e=>e.event_type==='due_date_changed'),reopened=taskEvents.filter(e=>e.event_type==='reopened');
+ for(const [label,count] of [['Erledigungen protokolliert',completed.length],['Terminverschiebungen',rescheduled.length],['Wieder geöffnet',reopened.length]]){const card=el('div','','review-kpi');card.append(el('strong',String(count)),el('span',label));summary.append(card)}
+ const now=new Date(),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),start=today-((now.getDay()+6)%7)*day;
+ for(let w=5;w>=0;w--){const weekStart=start-w*7*day,weekEnd=weekStart+7*day,count=completed.filter(e=>{const at=Date.parse(e.occurred_at);return at>=weekStart&&at<weekEnd}).length;
+ const card=el('article','','card');card.append(el('h3',new Date(weekStart).toLocaleDateString('de-DE',{timeZone:'UTC'})+' – '+new Date(weekEnd-day).toLocaleDateString('de-DE',{timeZone:'UTC'})),el('p',count+' tatsächlich protokollierte Erledigungen'));trend.append(card)}
+ if(!taskEvents.length){list.append(el('p','Noch keine protokollierten Aufgabenänderungen seit Aktivierung.'));return}
+ for(const e of taskEvents.slice(0,35)){const card=el('article','','card'),label=e.event_type==='completed'?'✓ Erledigt':e.event_type==='reopened'?'↩ Wieder geöffnet':e.event_type==='due_date_changed'?'📅 Fälligkeit verschoben':'🔄 Status geändert';
+ card.append(el('h3',label+' · '+e.task_title),el('p',new Date(e.occurred_at).toLocaleString('de-DE')));
+ if(e.event_type==='due_date_changed')card.append(el('p',(e.old_due_date||'Ohne Datum')+' → '+(e.new_due_date||'Ohne Datum')));
+ else card.append(el('p',(e.old_status||'—')+' → '+(e.new_status||'—')));
+ list.append(card)}
+}
+async function loadTaskEvents(){taskEvents=await allRows('wishlist_gift_task_events','id,task_id,task_title,event_type,old_status,new_status,old_due_date,new_due_date,occurred_at',taskUserId,'id');taskEvents.reverse();renderTaskEvents()}
 function renderDaily(){
  const now=new Date(),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),todayTasks=weeklyTasks.filter(t=>!t.archived_at&&utcDate(t.due_date)===today),done=todayTasks.filter(t=>t.status==='done').length;
  const active=weeklyTasks.filter(t=>!t.archived_at&&t.status!=='done'&&t.due_date&&utcDate(t.due_date)<=today).map(t=>({task:t,...taskRank(t,today)})).sort((a,b)=>a.score-b.score||a.days-b.days);
@@ -90,7 +105,7 @@ async function main(){
  allRows('wishlist_occasions','id,title,occasion_date,repeats_yearly,reminder_days,budget_amount',user.id,'occasion_date'),
  allRows('wishlist_gift_tasks','id,title,occasion_id,due_date,status,priority,archived_at,checklist_year',user.id,'created_at')
  ]);
- taskUserId=user.id;weeklyTasks=tasks;occasionNames=new Map(occasions.map(o=>[o.id,o.title]));renderWeeklyTasks();renderDaily();
+ taskUserId=user.id;await loadTaskEvents();weeklyTasks=tasks;occasionNames=new Map(occasions.map(o=>[o.id,o.title]));renderWeeklyTasks();renderDaily();
  const nowDate=new Date(),today=Date.UTC(nowDate.getFullYear(),nowDate.getMonth(),nowDate.getDate());
  $('evidence').textContent=closings.length+' gespeicherte historische Jahresabschlüsse. Die Empfehlungen verwenden ausschließlich deren unveränderliche Geschenk-, Budget- und Aufgaben-Snapshots. Aktuelle Anlässe liefern nur Namen und zukünftige Termine.';
  const root=$('occasionCards'),upcoming=occasions.map(o=>({...o,next:nextDate(o,today)})).filter(o=>o.next!==null).sort((a,b)=>a.next-b.next).slice(0,40);
