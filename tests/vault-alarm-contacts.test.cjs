@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const {webcrypto} = require('node:crypto');
 
 const html = fs.readFileSync(path.join(__dirname, '../tools/digitaler-nachlass/index.html'), 'utf8');
 function extract(startMarker, endMarker) {
@@ -38,7 +39,8 @@ function setup(initial = []) {
     syncVaultToFirebase: async () => false,
     renderAlarmPersons: () => {},
     alert: message => alerts.push(message),
-    Math
+    Math,
+    crypto: webcrypto
   });
   vm.runInContext(source + '\nthis.add = addAlarmPerson; this.remove = deleteAlarmPerson;', context);
   return { add: context.add, remove: context.remove, inputs, alerts, read: () => stored };
@@ -101,7 +103,8 @@ function setupAddFailure(mode) {
     renderAlarmPersons: () => { renderCalls++; },
     alert: message => alerts.push(message),
     console: { error: (...args) => errors.push(args) },
-    Math
+    Math,
+    crypto: webcrypto
   });
   const addSource = extract('        async function addAlarmPerson()', '        async function deleteAlarmPerson(');
   vm.runInContext(addSource + '\nthis.add = addAlarmPerson;', context);
