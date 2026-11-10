@@ -12,11 +12,16 @@ export function mountListsDashboard(db, getUser) {
  const categoryKey=id=>'helferlein-wish-categories:'+id;
  function readCategories(id){try{const value=JSON.parse(localStorage.getItem(categoryKey(id))||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?Object.fromEntries(Object.entries(value).filter(([k,v])=>typeof k==='string'&&WISH_CATEGORIES.some(c=>c.id===v))):{}}catch{return {}}}
  function saveCategory(){const uid=owner(),wishId=detailWishId;if(!wishId||!wishes.some(w=>w.id===wishId))return;const category=$('wishDetailCategory').value;if(category&&!WISH_CATEGORIES.some(c=>c.id===category))return;const next={...wishCategories};if(category)next[wishId]=category;else delete next[wishId];try{localStorage.setItem(categoryKey(uid),JSON.stringify(next));wishCategories=next;$('wishDetailDialog').close();renderWishCards();msg('Kategorie in diesem Browser gespeichert.')}catch{msg('Kategorie konnte in diesem Browser nicht gespeichert werden.')}}
+ function focusWishCard(wishId){
+  const card=[...$('listWishCards').children].find(el=>el.dataset.wishId===wishId);
+  if(!card)return;
+  card.tabIndex=-1;card.focus({preventScroll:true});card.scrollIntoView({behavior:'smooth',block:'center'});
+ }
  function openWishDetail(wish){detailWishId=wish.id;
   const membership=$('wishDetailLists');membership.replaceChildren();
   const matching=lists.filter(l=>membershipByList.get(l.id)?.has(wish.id));
   if(matching.length){const heading=document.createElement('strong');heading.textContent='In diesen Listen:';membership.append(heading);
-   for(const list of matching){const go=button(list.icon+' '+list.title,async()=>{$('wishDetailDialog').close();openList(list.id);$('listWishSearch').value=wish.wishlist_products?.title||'';renderWishCards()});membership.append(go)}
+   for(const list of matching){const go=button(list.icon+' '+list.title,async()=>{$('wishDetailDialog').close();openList(list.id);$('listWishSearch').value=wish.wishlist_products?.title||'';renderWishCards();focusWishCard(wish.id)});membership.append(go)}
   }else{const hint=document.createElement('span');hint.textContent=membershipReady?'Noch keiner Liste zugeordnet':'Listenzuordnungen werden geladen';membership.append(hint)}
   $('wishDetailSelect').disabled=!membershipReady||bulkBusy||!lists.some(l=>l.id===selected&&!l.archived);
   $('wishDetailSelect').textContent=bulkIds.has(wish.id)?'Aus Sammelauswahl entfernen':'Für Sammelaktion auswählen';
@@ -295,7 +300,7 @@ export function mountListsDashboard(db, getUser) {
  $('wishDetailSelect').onclick=()=>{if(!detailWishId||!membershipReady||bulkBusy||!lists.some(l=>l.id===selected&&!l.archived))return;
   if(bulkIds.has(detailWishId))bulkIds.delete(detailWishId);else bulkIds.add(detailWishId);
   $('wishDetailSelect').textContent=bulkIds.has(detailWishId)?'Aus Sammelauswahl entfernen':'Für Sammelaktion auswählen';renderWishCards()};
- $('wishDetailJump').onclick=()=>{const id=detailWishId;if(!id)return;const list=lists.find(l=>membershipByList.get(l.id)?.has(id));if(!list)return;$('wishDetailDialog').close();openList(list.id);const wish=wishes.find(w=>w.id===id);$('listWishSearch').value=wish?.wishlist_products?.title||'';renderWishCards()};
+ $('wishDetailJump').onclick=()=>{const id=detailWishId;if(!id)return;const list=lists.find(l=>membershipByList.get(l.id)?.has(id));if(!list)return;$('wishDetailDialog').close();openList(list.id);const wish=wishes.find(w=>w.id===id);$('listWishSearch').value=wish?.wishlist_products?.title||'';renderWishCards();focusWishCard(id)};
  $('listsResetFilters').onclick=()=>{$('listsSearch').value='';$('listsView').value='all';$('listsSort').value='favorites';render()};
  $('bulkMoveTarget').onchange=()=>updateBulkToolbar();
  $('bulkMove').onclick=()=>moveSelectedWishes().catch(e=>{$('bulkStatus').textContent=e.message||'Verschieben fehlgeschlagen'});
