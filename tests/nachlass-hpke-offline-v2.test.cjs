@@ -68,3 +68,33 @@ test('offline HPKE rejects malformed ciphertext and oversized context',()=>{
  assert.throws(()=>open(receiver.privateKey,env.enc,env.ciphertext,{info:Buffer.alloc(1025),aad}),/invalid_hpke_input/);
  assert.throws(()=>seal(receiver.publicKey,randomBytes(32),{info,aad:Buffer.alloc(1025)}),/invalid_hpke_input/);
 });
+
+test('CFRG base vector: independently derived KEM and key-schedule checkpoints',()=>{
+ // Inputs from pinned CFRG test-vectors.json; checkpoint values independently
+ // calculated with Python cryptography (X25519 + HMAC-SHA256), not a second vector.
+ const {createPrivateKey,createPublicKey,diffieHellman,createHmac}=require('node:crypto');
+ const hex=s=>Buffer.from(s,'hex'), H=(salt,data)=>createHmac('sha256',salt.length?salt:Buffer.alloc(32)).update(data).digest();
+ const expand=(prk,info,n)=>{let t=Buffer.alloc(0),out=Buffer.alloc(0);for(let i=1;out.length<n;i++){t=H(prk,Buffer.concat([t,info,Buffer.from([i])]));out=Buffer.concat([out,t]);}return out.subarray(0,n);};
+ const labeledExtract=(suite,salt,label,ikm)=>H(salt,Buffer.concat([Buffer.from('HPKE-v1'),suite,Buffer.from(label),ikm]));
+ const labeledExpand=(suite,prk,label,info,n)=>expand(prk,Buffer.concat([Buffer.from([n>>8,n&255]),Buffer.from('HPKE-v1'),suite,Buffer.from(label),info]),n);
+ const sk=hex('497b4502664cfea5d5af0b39934dac72242a74f8480451e1aee7d6a53320333d');
+ const enc=hex('6c93e09869df3402d7bf231bf540fadd35cd56be14f97178f0954db94b7fc256');
+ const pk=hex('430f4b9859665145a6b1ba274024487bd66f03a2dd577d7753c68d7d7d00c00c');
+ const info=hex('4f6465206f6e2061204772656369616e2055726e');
+ const priv=createPrivateKey({key:Buffer.concat([hex('302e020100300506032b656e04220420'),sk]),format:'der',type:'pkcs8'});
+ const pub=createPublicKey({key:Buffer.concat([hex('302a300506032b656e032100'),enc]),format:'der',type:'spki'});
+ const dh=diffieHellman({privateKey:priv,publicKey:pub});
+ assert.equal(dh.toString('hex'),'98fdfbcb860bc6c218a3fd783062ae1f37af6e3581619eea9591818d746aa50b');
+ const kem=Buffer.from('4b454d0020','hex'),suite=Buffer.from('48504b45002000010002','hex');
+ const eae=labeledExtract(kem,Buffer.alloc(0),'eae_prk',dh);
+ assert.equal(eae.toString('hex'),'16dddf8760ee2a311348f351b675edddfb857a1c47858ecef9ca9cbe87cbfa52');
+ const shared=labeledExpand(kem,eae,'shared_secret',Buffer.concat([enc,pk]),32);
+ assert.equal(shared.toString('hex'),'3101c54c3a4f87439eaac080699ed9bbcc726ffe44e860c0424ccb7e3e2ead7b');
+ const psk=labeledExtract(suite,Buffer.alloc(0),'psk_id_hash',Buffer.alloc(0));
+ const ih=labeledExtract(suite,Buffer.alloc(0),'info_hash',info);
+ const ks=Buffer.concat([Buffer.from([0]),psk,ih]);
+ const secret=labeledExtract(suite,shared,'secret',Buffer.alloc(0));
+ assert.equal(secret.toString('hex'),'2058ac9b02c1f52c1aaf08bedbec9198219751a94ef67b7d5f0c8b6e2b54ebfb');
+ assert.equal(labeledExpand(suite,secret,'key',ks,32).toString('hex'),'f50b0609186798729ed0564b36ef2ef8044f1f9d05636874d1f46c819c7a669f');
+ assert.equal(labeledExpand(suite,secret,'base_nonce',ks,12).toString('hex'),'151d9929e2449747889bc923');
+});
