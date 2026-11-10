@@ -8,6 +8,8 @@ on:
       - 'tests/b3-nachlass*'
       - 'tests/nachlass-release-policy-v2.test.cjs'
       - 'tools/digitaler-nachlass/release-policy-v2.cjs'
+      - 'docs/nachlass-cloud-freigabe-v2.md'
+      - 'docs/nachlass-server-vertrag-v2.md'
       - '.github/workflows/b3-nachlass.yml'
   push:
     branches: ['main', 'design-b3-rollout-nachlass']
@@ -18,6 +20,8 @@ on:
       - 'tests/b3-nachlass*'
       - 'tests/nachlass-release-policy-v2.test.cjs'
       - 'tools/digitaler-nachlass/release-policy-v2.cjs'
+      - 'docs/nachlass-cloud-freigabe-v2.md'
+      - 'docs/nachlass-server-vertrag-v2.md'
       - '.github/workflows/b3-nachlass.yml'
 permissions:
   contents: read
