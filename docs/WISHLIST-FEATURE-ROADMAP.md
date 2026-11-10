@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Visuelle private Sicherungspunkt-Änderungsübersicht)
+
+- **Neu umgesetzt:** Responsives Statistik-Dashboard innerhalb der privaten Sicherungspunkt-Zeitachse: Anzahl gefilterter Sicherungspunkte, Monatsanzahl und Anzahl der Sicherungspunkte mit Abweichungen zur aktuellen Konfiguration.
+- **Änderungskategorien:** Farblich unterschiedene Kategorien für Layouts, Sichtbarkeit, Kennzahlen, Schnellzugriffe/Favoriten und Sortierung. Kategorien erscheinen als aggregierte Badges und direkt an einzelnen Sicherungspunkten.
+- **Monatsstatistik:** Mobil lesbare Balken pro Monat zeigen die relative Anzahl der Sicherungspunkte. Auswertungen aktualisieren sich mit den bestehenden Datums-, Layout- und Änderungsfiltern.
+- **Sicherheit:** Keine Migration, keine Testdaten. RLS und Rechte für Einstellungen, Historie und Sicherungspunkte erneut geprüft; keine anonymen Leserechte, keine direkten Schreibrechte für Sicherungspunkte und Historie. Produktive Geschenkaufgaben, Anlässe und historische Planungsdaten unverändert.
+- **Qualität:** JavaScript-Syntax geprüft; ein authentifizierter Browser-End-to-End-Test steht aus. Alle Kategorieangaben sind Unterschiede zur aktuellen Konfiguration, keine Rekonstruktion des damaligen Änderungsgrundes.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Mobile Monatsnavigation für Sicherungspunkt-Zeitachse)
 
 - **Neu umgesetzt:** Monatlich gruppierte private Dashboard-Sicherungspunkt-Zeitachse mit horizontal scrollbar angeordneten, mobil nutzbaren Monats-Sprungmarken und Links zurück zur Monatsnavigation.
