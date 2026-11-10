@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Privater Favoritenvergleich für Sicherungspunkte)
+
+- **Neu umgesetzt:** Zwei angeheftete Cloud-Filteransichten in einem responsiven, lesenden Vergleich gegenüberstellen. Auswahl A/B, Trefferzahl, Schnittmenge, exklusive Treffer und Anzahl der Treffer mit Abweichungen zur aktuellen Dashboard-Konfiguration.
+- **Privatsphäre:** Vergleich nur über bereits privat geladene Sicherungspunkte und eigene Cloud-Ansichten; keine neue Datenbankabfrage oder Migration, keine Testdaten. Bei Kontoabmeldung wird die Vergleichsoberfläche verborgen.
+- **Sicherheit:** RLS und Tabellenprivilegien für Cloud-Filteransichten, Dashboard-Präferenzen, Historie und Sicherungspunkte geprüft; kein anonymer Lesezugriff, keine direkten Schreibrechte auf Sicherungspunkte/Historie.
+- **Qualität:** JavaScript-Syntax geprüft. Authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Gebündelte Favoriten-Navigation)
 
 - **Neu umgesetzt:** Private Monatsvorschau angehefteter Sicherungspunkt-Filteransichten mit Zurück/Weiter-Navigation, gezieltem Öffnen je Favorit und Schließen der Vorschau. Alle Vorschauaktionen verändern die aktiven Filter nicht; die gesonderte Anwenden-Schaltfläche bleibt erhalten.
