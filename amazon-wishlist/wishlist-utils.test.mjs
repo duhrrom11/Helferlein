@@ -227,3 +227,47 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+
+test('exports reject invalid public text and preserve source rows',()=>{
+ const make=(title,note)=>[{wishlist_products:{asin:'B012345678',marketplace:'amazon.de',title},note,priority:2,created_at:'2026-11-10T00:00:00Z'}];
+ const rows=make('  Buch  ','  Geschenk  ');
+ assert.match(exportWishlistCsv(rows),/"Buch";"Geschenk"/);
+ assert.equal(JSON.parse(exportWishlistJson(rows)).wishes[0].title,'Buch');
+ assert.equal(rows[0].wishlist_products.title,'  Buch  ');
+ for(const [title,note] of [['   ',''],['x'.repeat(251),''],['Buch','x'.repeat(501)],[null,''],[42,''],['Buch',{}]]){
+  assert.throws(()=>exportWishlistCsv(make(title,note)));
+  assert.throws(()=>exportWishlistJson(make(title,note)));
+ }
+ assert.equal(JSON.parse(exportWishlistJson(make('Buch',null))).wishes[0].note,'');
+});
+
+test('export progress rejects invalid totals',()=>{
+ assert.equal(exportProgressText(0,0),'0 von 0 Wünschen geladen …');
+ assert.equal(exportProgressText(3,3),'3 von 3 Wünschen geladen …');
+ for(const total of [-1,1.5,NaN,Infinity,'5',undefined])assert.throws(()=>exportProgressText(1,total));
+ assert.throws(()=>exportProgressText(4,3));
+});
+
+test('backup preview validates field types and matching Amazon links',()=>{
+ const wish={asin:'B012345678',title:'Buch',note:'',priority:2};
+ const profile={handle:'anna_123',display_name:'Anna',bio:''};
+ const preview=(wishes,p=profile)=>previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:p,wishes}));
+ assert.equal(preview([wish]).count,1);
+ assert.equal(preview([{...wish,amazon_url:'https://www.amazon.de/dp/B012345678'}]).count,1);
+ for(const key of ['handle','display_name','bio']){
+  for(const bad of [null,42,{},[]])assert.throws(()=>preview([wish],{...profile,[key]:bad}),/Profil/);
+  const invalid={...profile};delete invalid[key];assert.throws(()=>preview([wish],invalid),/Profil/);
+ }
+ for(const patch of [{title:42},{title:null},{note:12},{note:null},{amazon_url:'https://evil.example/dp/B012345678'},{amazon_url:'https://www.amazon.de/dp/B000000000'},{amazon_url:42}]){
+  assert.throws(()=>preview([{...wish,...patch}]));
+ }
+});
+
+test('backup preview limits actual UTF-8 bytes to 2 MB',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[]};
+ assert.equal(previewWishlistBackup(JSON.stringify(base)).count,0);
+ const oversized=JSON.stringify({...base,ignored:'ä'.repeat(1_000_001)});
+ assert.ok(oversized.length<2_000_000);
+ assert.throws(()=>previewWishlistBackup(oversized),/2 MB/);
+});
