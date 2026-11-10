@@ -17,5 +17,7 @@ test('all exposed list tables enable RLS and owner-scoped write policies',()=>{
  }
  assert.match(schema,/create policy "lists owner update"[\s\S]*?using \(\(select auth\.uid\(\)\)=user_id\) with check \(\(select auth\.uid\(\)\)=user_id\)/);
  assert.match(schema,/create policy "list items owner insert"[\s\S]*?exists \(select 1 from public\.wishlist_wishes w where w\.id=wish_id and w\.user_id=\(select auth\.uid\(\)\)\)/);
- assert.doesNotMatch(schema,/to anon/);
+ assert.match(schema,/revoke all privileges on table public\.wishlist_lists, public\.wishlist_list_items from public, anon, authenticated/);
+ assert.match(schema,/grant select,insert,delete on public\.wishlist_list_items to authenticated/);
+ assert.doesNotMatch(schema,/grant[^;]*to anon/i);
 });
