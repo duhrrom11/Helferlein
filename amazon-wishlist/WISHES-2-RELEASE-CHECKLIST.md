@@ -1168,3 +1168,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] GitHub Pages ist das **einzige** freigegebene Hostingziel. Erreichbarkeitstest auf `b6e4936b` erfolgreich; Vercel wird nicht mehr verwendet.
 - [ ] **Echter authentifizierter Browser-End-to-End-Test mit bestehendem Konto und vollständigem Listen-Lebenszyklus ist weiterhin nicht nachgewiesen.** Ohne Benutzerzugriff/Session und ohne neue Testdaten ist er nicht ersetzbar. Dieser Gate darf nicht als bestanden markiert werden.
 - [ ] Neue CI auf dem aktuellen Commit vollständig abwarten. Merge und GitHub-Pages-Deployment bleiben bis zur nachgewiesenen authentifizierten Integration gesperrt; grüner CI-Status allein genügt nicht.
+
+## Autopilot: sichere Auth-Integration und echtes Session-Smoke-Gate (2026-11-10)
+
+- [x] Auf `1e1ec277` waren Node/Chromium, Vault-Sync, Release-Smoke und GitHub-Pages-Reachability erfolgreich. CodeQL wurde beim Erstcheck noch ausgeführt und separat abgefragt.
+- [x] **Auth-Lifecycle-Fehler korrigiert:** `auth()` aktualisiert das private Listen-Dashboard nun direkt vor dem optionalen Profilabruf, auch bei Login, Logout und Benutzerwechsel; Auth-Listener und Initialisierung vermeiden doppelte Refreshs (Commit `b70a60bd`). Statischer Regressionstest (Commit `1a3867dc`).
+- [x] **Opt-in echter Live-Browsertest** `authenticated-live-smoke.mjs` erstellt (Commit `4abb4663`): Playwright meldet ein **bereits existierendes Konto** über die produktive GitHub-Pages-Oberfläche an, prüft das private Dashboard und meldet sich ab. Keine Listen- oder Wunsch-Mutationen, keine Screenshots, keine gespeicherten Sessions.
+- [x] Manuell auslösbarer GitHub-Actions-Workflow `.github/workflows/wishes-authenticated-live.yml` eingerichtet (Commit `85e24d5c`): benötigt zwei als GitHub Actions Secrets bereitgestellte Werte `WISHES_EXISTING_USER_EMAIL` und `WISHES_EXISTING_USER_PASSWORD`; bei fehlenden Secrets **FAIL**, niemals stilles SKIP oder falsche Freigabe. Die Zugangsdaten werden nicht in Logs ausgegeben.
+- [x] Node-Quelltext-Regression stellt sicher, dass der Live-Smoke keine schreibenden Listenaktionen ausführt (Commits `aaf2216c`, `2683795d`).
+- [ ] **Manueller Live-Smoke noch nicht ausgeführt**: Vor Merge fehlt ein tatsächlich veröffentlichtes Dashboard und ein autorisiertes vorhandenes Konto mit bereitgestellten Secrets. Ohne diese Bedingungen kann kein echter Session-Erfolg behauptet werden.
+- [ ] Vollständige CI/CodeQL auf dem letzten Commit abwarten. GitHub Pages bleibt das einzige Hostingziel. Kein Merge/Deployment bei offenen Auth- oder Sicherheits-Gates.
