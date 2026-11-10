@@ -61,7 +61,8 @@ export function mountListsDashboard(db, getUser) {
   field.setAttribute('aria-invalid','true');
   const statusId=field.closest('#editListForm')?'editListFeedback':'listsStatus';
   field.setAttribute('aria-describedby',statusId);
-  field.closest('details')?.setAttribute('open','');
+  const disclosure=field.closest('details');
+  if(disclosure){disclosure.dataset.mobileOpen='true';disclosure.open=true;}
   msg(message);field.focus();
  };
  for(const fieldId of ['listTitle','editListTitle','editListCoverUrl']){
