@@ -59,3 +59,10 @@
 - Zuletzt geöffnete Listen werden kontogetrennt im lokalen Browser gespeichert (maximal fünf), ohne Server-Synchronisierung.
 - Mobile Schnellaktionsleiste und responsive Statistiken/Karten; keine Produktivdatenbankänderungen.
 - Kurze JavaScript-Syntax- und DOM-ID-Prüfung erfolgreich; keine vollständigen Browser- oder CI-Tests.
+
+## Persönliche Kategorien und Wunschdetails
+- Kategorien Technik, Gaming, Bücher, Wohnen, Mode, Reisen und Sonstiges, pro Benutzerkonto im lokalen Browser gespeichert; keine Synchronisierung zwischen Geräten.
+- Kategorie-Schnellfilter inklusive ohne Kategorie, zusätzlich Sortierung nach ältesten Wünschen sowie Titel A–Z/Z–A.
+- Detaildialog zeigt Titel, Priorität, Notiz und Hinzufügedatum; Kategorien lassen sich dort lokal setzen oder entfernen.
+- Kein zusätzliches Supabase-Schema, keine Änderung der produktiven Datenbank. Wunschtexte bleiben öffentlich; Kategorien sind lokale Metadaten.
+- Kurze Syntax- und DOM-ID-Prüfung erfolgreich, kein vollständiger Browser-Test. Kein Merge und kein Deployment.
