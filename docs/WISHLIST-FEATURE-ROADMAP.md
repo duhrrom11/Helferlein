@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-Erkenntniszentrale)
+
+- **Neu umgesetzt:** Private Erkenntniszentrale in `gift-analytics.html`/`gift-analytics.mjs` mit langfristigen Geschenk- und Aufgabenquoten, Ausgabenentwicklung, historischer Budgettreue, Anlasszuverlässigkeit und erklärbaren regelbasierten Hinweisen.
+- **Historische Datenbasis:** Ausschließlich gespeicherte `wishlist_gift_year_closings`-Snapshots und deren Geschenk-, Aufgaben- und Budget-Momentaufnahmen. Keine Live-Geschenke oder Live-Budgets fließen in die Erkenntnisse ein. Historische Anlassvergleiche erfordern mindestens zwei Abschlüsse je Anlass.
+- **Methodische Grenzen:** Budgetvergleiche verwenden die Summe der ausdrücklich gespeicherten Anlassbudgets und können bei unvollständiger Erfassung nur Teilbudgetvergleiche sein; fehlende Budgets werden nicht als Nullbudget interpretiert. Abschlüsse ohne Aufgaben-Snapshots sind gekennzeichnet. Empfehlungen sind nachvollziehbare Regeln und keine Vorhersagen.
+- **Sicherheit und Bestand:** Bestehende owner-only SELECT-RLS auf Jahresabschlüssen; keine neue Datenbankmigration, keine Testdaten, keine Veränderung bestehender Produktivdaten. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-Erfolgsgeschichte)
 
 - **Neu umgesetzt:** Mehrjährige Erfolgsgeschichte mit historisch gespeicherter Gesamtzahl verschenkter Geschenke, Gesamtausgaben und abgeschlossenen Jahren; visuelle Geschenk- und Aufgaben-Abschlussquoten je Jahr; Anlassvergleiche mit Geschenken, Aufgaben, Ausgaben und Jahresbudgets über mindestens zwei abgeschlossene Jahre.
