@@ -227,3 +227,14 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('backup preview enforces 2 MB of UTF-8 bytes, not only characters',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[]};
+ const valid=JSON.stringify(base);
+ assert.equal(previewWishlistBackup(valid).count,0);
+ // Under two million UTF-16 code units but over two million UTF-8 bytes.
+ const oversized=JSON.stringify({...base,ignored:'ä'.repeat(1_000_001)});
+ assert.ok(oversized.length<2_000_000);
+ assert.ok(new TextEncoder().encode(oversized).byteLength>2_000_000);
+ assert.throws(()=>previewWishlistBackup(oversized),/maximal 2 MB/);
+});
