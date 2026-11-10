@@ -522,3 +522,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale Syntaxprüfung des aktuellen Dashboard-Moduls mittels JavaScript-Parser (ohne Importzeilen) erfolgreich; GitHub-Inhaltsabgleich für Sperren und Beschriftungen erfolgreich.
 - [ ] Keine Browser-/End-to-End- oder produktive Datenbankprüfung ausgeführt. Mehrstufige Operationen bleiben ohne serverseitige Transaktion potenziell partiell.
 - [ ] Release bleibt gesperrt. Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Autopilot: konsistente Einzel-/Sammeländerungen und Kontowechsel (2026-11-10)
+
+- [x] Sammelzuordnung und Mehrfachverschieben warten jetzt auf **alle** laufenden Einzeländerungen (auch an nicht ausgewählten Wünschen), damit deren spätere Reloads die Sammelaktion nicht ungültig machen.
+- [x] Ein Wechsel des angemeldeten Kontos leert den alten Listenarbeitsbereich bereits **vor** dem Laden neuer Kontodaten, statt alte Karten bis zur ersten Antwort sichtbar zu lassen.
+- [x] Auf schmalen Wunschkarten ist die Ziellistenauswahl während einer Sammelaktion deaktiviert; der Filter-Reset im Leerzustand hat einen eindeutigeren zugänglichen Namen.
+- [x] Minimale JavaScript-Parserprüfung des Dashboard-Quelltexts (Imports ausgeklammert) erfolgreich; GitHub-Inhaltsprüfung der neuen Sperren und Kontolöschung erfolgreich.
+- [ ] Kein echter Browser-/End-to-End-Test und kein produktiver Supabase-Test. Vor Freigabe besonders Kontowechsel während einer laufenden Anfrage, Abbruch und nicht-atomare Verschiebungen manuell prüfen.
+- [ ] Freigabe bleibt gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
