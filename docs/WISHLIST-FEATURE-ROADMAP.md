@@ -264,6 +264,14 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Sicherheitsprüfung:** RLS aktiv, direkte SELECT-Rechte für `anon` und `authenticated` fehlen, alle drei Funktionen sind SECURITY DEFINER; unauthentifizierter Statusabruf liefert keine Zeilen.
 - **Grenzen:** Nur Wünsche, die aktuell öffentlich sind und in mindestens einer öffentlichen, nicht archivierten Sammlung ihres Eigentümers stehen, können reserviert werden. Reservierungen sind nicht an einen konkreten Anlass gekoppelt und werden nicht automatisch zu Käufen. Bei einer späteren Privatisierung wird kein Status mehr ausgegeben; der ursprüngliche Reservierer kann die eigene Reservierung weiterhin aufheben. Vollständiger Browser-End-to-End-Test mit zwei angemeldeten Konten steht aus.
 
+## Entwicklungsfortschritt – 10.11.2026 (Meine Geschenkreservierungen)
+
+- **Neu umgesetzt:** `amazon-wishlist/my-reservations.html` und `my-reservations.mjs` als mobile, private Übersicht eigener Reservierungen mit stabiler Keyset-Paginierung (20 Einträge pro Seite), Aufheben über vorhandene eigentümergebundene RPC und Verknüpfung zur Geschenkplanung.
+- **Additive Supabase-Migrationen:** `wishlist_my_gift_reservations(p_limit,p_before,p_before_wish_id)` liefert ausschließlich Reservierungen des authentifizierten Reservierers. Produktdaten werden nur angezeigt, wenn Wunsch und mindestens eine Sammlung noch öffentlich sind; andernfalls wird ein neutraler Platzhalter geliefert. `wishlist_my_reservation_for_plan(p_wish_id)` prüft die eigene Reservierung und die öffentliche Sichtbarkeit erneut, bevor ein Geschenkentwurf übernommen wird. Beide Funktionen sind `SECURITY DEFINER`, mit leerem `search_path`, ohne PUBLIC-EXECUTE und ausschließlich für `authenticated` freigegeben.
+- **Geschenkplanung:** `gift-planner.html?reserved_wish=<id>` lädt die geprüfte Reservierung serverseitig, füllt Produkt und Wunschtitel als Entwurf vor und verlangt eine bewusste Speicherung. Eine Reservierung wird dadurch nicht aufgehoben; die Übernahme löst keinen Kauf aus.
+- **Navigation:** Neue Links in Hauptnavigation, Sammlung und Geschenkplaner. Alle bisherigen Produktivdaten erhalten.
+- **Grenzen:** Keine automatische Synchronisierung zwischen Geschenkstatus und Reservierungsstatus. Nach Privatisierung des Wunsches keine Übernahme in die Geschenkplanung. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
