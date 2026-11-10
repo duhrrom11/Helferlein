@@ -1070,3 +1070,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Finale Node-/Chromium-CI auf dem neuesten Commit vollständig abwarten. Vorher keine produktive Migration oder Freigabe.
 - [ ] Schema-Migration erst nach grünen Tests mit RLS-/FK-Nachprüfung ausführen. Default-List-Backfill **nicht** automatisch anwenden; bestehende Daten sollen nicht ungeprüft verändert werden.
 - [ ] Anschließend PR #166 auf Konflikte, Schutzregeln und tatsächliche Deployment-Zielkonfiguration prüfen. Erst nach bestandenem Produktionsgate mergen/deployen.
+
+### Produktive Listenmigration ausgeführt und geprüft (2026-11-10)
+
+- [x] Neue Chromium- und Node-Integrationsprüfungen auf Commit `391371a1`: Actions-Läufe **42828716110** und **42828725354** vollständig **success**. Release-Smoke und Vault-Sync ebenfalls **success**.
+- [x] Erster Migrationsversuch wurde **atomar zurückgerollt**, weil die bestehende Spalte `wishlist_wishes.id` tatsächlich `bigint` und nicht `uuid` ist. Prüfung danach bestätigte, dass beide neuen Tabellen fehlten; keine Teildaten oder Testdaten angelegt.
+- [x] `wishlist_list_items.wish_id` auf `bigint` korrigiert (Commit `fd613625`).
+- [x] **Produktive Supabase-Migration `wishes_lists_owner_scoped_rls` erfolgreich angewendet** auf Projekt `avapuibsidubuzxjtyld`. Beide neuen Tabellen existieren, RLS ist aktiv (`wishlist_lists`: 4 Policies; `wishlist_list_items`: 3 Policies).
+- [x] Zusammengesetzte Fremdschlüssel `(list_id,user_id)` und `(wish_id,user_id)` gegen tatsächliche Produktionsdatenbank verifiziert. Beide Tabellen sind leer (0/0), keine Testdaten oder Backfill-Daten erzeugt.
+- [x] Supabase Security Advisor nach Migration geprüft: nur bestehende Warnung zur deaktivierten Leaked-Password-Protection; keine neue RLS-Warnung.
+- [ ] Finale GitHub-Actions-Läufe nach dem SQL-Fix und der Dokumentation bestätigen, PR-Mergefähigkeit prüfen, tatsächliche Deployment-Konfiguration verifizieren.
+- [ ] Default-List-Backfill nicht automatisch ausführen. Für das leere Listen-Schema besteht kein Bedarf, bestehende Wünsche ungeprüft umzuverteilen.
