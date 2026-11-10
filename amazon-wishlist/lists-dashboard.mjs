@@ -27,7 +27,7 @@ export function mountListsDashboard(db, getUser) {
   if(index<0){msg('Wunsch konnte in dieser Liste nicht gefunden werden.');return}
   visibleLimit=Math.max(visibleLimit,index+1);renderWishCards();focusWishCard(wishId);
  }
- function openWishDetail(wish){if(!membershipReady||getUser()?.id!==loadedOwner||!wishes.some(w=>w.id===wish.id))return;detailWishId=wish.id;
+ function openWishDetail(wish){if(bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==loadedOwner||!wishes.some(w=>w.id===wish.id))return;detailWishId=wish.id;
   const membership=$('wishDetailLists');membership.replaceChildren();
   const matching=membershipReady?lists.filter(l=>!l.archived&&membershipByList.get(l.id)?.has(wish.id)):[];
   if(matching.length){const heading=document.createElement('strong');heading.textContent='In diesen Listen:';membership.append(heading);
@@ -53,7 +53,7 @@ export function mountListsDashboard(db, getUser) {
  function reset(){selectedOnlyView=false;setWishView(false);++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;favoriteIds=new Set();recentIds=[];listCounts=new Map();assignedTotal=0;wishCategories={};wishMarkers={};detailWishId=null;$('wishDetailDialog').close();assignedIds=new Set();membershipByList=new Map();membershipReady=false;bulkIds.clear();allAssignedIds=new Set();bulkBusy=false;pendingBulk=null;lastBulkResult=null;bulkHistory=[];$('bulkResultPanel').hidden=true;$('bulkProgressPanel').hidden=true;renderBulkHistory();bulkStopRequested=true;++bulkRunId;visibleLimit=100;$('bulkConfirmDialog').close();++itemsGeneration;root.hidden=true;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';$('homeFavoritesContent').replaceChildren();$('homeRecentContent').replaceChildren();renderProgress();syncEditor();}
 
  function invalidateMembershipState(){
-  membershipReady=false;membershipByList=new Map();assignedIds=new Set();allAssignedIds=new Set();listCounts=new Map();assignedTotal=0;bulkIds.clear();pendingBulk=null;lastBulkResult=null;
+  membershipReady=false;membershipByList=new Map();assignedIds=new Set();allAssignedIds=new Set();listCounts=new Map();assignedTotal=0;bulkIds.clear();pendingBulk=null;lastBulkResult=null;detailWishId=null;$('wishDetailDialog').close();
   $('bulkResultPanel').hidden=true;$('bulkConfirmDialog').close();$('listWishCards').replaceChildren();$('listWishCount').textContent='';updateBulkToolbar([]);renderProgress();
  }
  const msg=t=>{$('listsStatus').textContent=t};
@@ -286,7 +286,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
    }
    const toolsRow=document.createElement('div');toolsRow.className='wish-card-tools';
    
-    const quickDetail=button('Details · Notiz & Kategorie',async()=>{if(cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||selected!==list.id)return msg('Bitte die aktuelle Wunschkarte verwenden.');openWishDetail(wish)});quickDetail.setAttribute('aria-label','Details und persönliche Kategorie für '+(wish.wishlist_products?.title||'Wunsch')+' öffnen');toolsRow.append(quickDetail);
+    const quickDetail=button('Details · Notiz & Kategorie',async()=>{if(bulkBusy||activeWishMutations.size||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||selected!==list.id)return msg('Bitte die aktuelle Wunschkarte verwenden.');openWishDetail(wish)});quickDetail.disabled=bulkBusy||activeWishMutations.size>0;quickDetail.setAttribute('aria-label','Details und persönliche Kategorie für '+(wish.wishlist_products?.title||'Wunsch')+' öffnen');toolsRow.append(quickDetail);
    toolsRow.append(button('Titel kopieren',async()=>{const title=wish.wishlist_products?.title||'Wunsch';if(!navigator.clipboard?.writeText){msg('Kopieren ist in diesem Browser nicht verfügbar.');return}try{await navigator.clipboard.writeText(title);msg('Wunschtitel kopiert.')}catch{msg('Kopieren nicht erlaubt. Bitte den Titel manuell markieren.')}}));
    card.append(toolsRow);cards.append(card);
   }
