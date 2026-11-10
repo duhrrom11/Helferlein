@@ -57,3 +57,14 @@ test('owner and heir validate exactly 256-bit hexadecimal AES keys',()=>{
   assert.match(source,/\^\[a-fA-F0-9\]\{64\}\$/);
  }
 });
+
+test('Nachlass release v2 is documented as a gated design, not an active authorization path',()=>{
+ const design=fs.readFileSync(path.join(root,'docs/nachlass-cloud-freigabe-v2.md'),'utf8');
+ const heir=fs.readFileSync(path.join(root,'tools/digitaler-nachlass/erben.html'),'utf8');
+ assert.match(design,/nicht produktiv implementiert/);
+ assert.match(design,/Firestore Security Rules/);
+ assert.match(design,/LOCKED -> ALARM_PENDING -> RELEASED/);
+ assert.match(design,/keine.*produktive serverseitige Erben-Freigabe einschalten/s);
+ assert.match(heir,/keine serverseitig durchgesetzte Zugriffssperre/);
+ assert.match(html,/#key=\$\{encodeURIComponent\(cfg\.masterKeyHex\)\}/);
+});
