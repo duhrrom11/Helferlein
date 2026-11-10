@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Sichere Jahresübernahme und private Jahresbilanz)
+
+- **Neu umgesetzt:** Selektive Übernahme von bis zu 100 Aufgaben eines jährlichen Anlasses aus dem Vorjahr. Nutzer wählen die Aufgaben einzeln aus und bestätigen die Übernahme. Neue Aufgaben erhalten Status `open`, kopierte Priorität, Notizen und Erinnerungsfrist; Fälligkeiten werden anhand der relativen Tagesdifferenz zum Anlassdatum in das Zieljahr übertragen. Bestehende Aufgaben werden durch eindeutigen Jahresindex und `ON CONFLICT DO NOTHING` nicht überschrieben.
+- **Additive Produktivmigration:** `wishlist_rollover_gift_tasks(occasion_id,from_year,to_year,task_ids)` als `SECURITY INVOKER`, leerer `search_path`, EXECUTE ausschließlich `authenticated`. Prüft Eigentümerschaft des wiederkehrenden Anlasses und aller ausgewählten Aufgaben, genau ein Jahr Abstand, begrenzten Jahreshorizont und maximal 100 ausgewählte IDs.
+- **Mobile Oberfläche:** Aufgaben-Auswahl im Vorjahresbereich und private Jahresbilanz je Anlass/Jahr (erledigt, offen, überfällig, archiviert) in `gift-tasks.html`. Geschenkzentrale zeigt überfällige Aufgaben je Checklistenjahr.
+- **Datenbestand:** Keine Löschungen, kein Rücksetzen bestehender Aufgaben und keine Testdatensätze. Die bisherige Jahresarchivierung bleibt unverändert.
+- **Grenzen:** Nur jährlich wiederkehrende Anlässe und bereits jahreszugeordnete Checklistenaufgaben können übernommen werden. Alte Aufgaben ohne `checklist_year` werden nicht automatisch zugeordnet. Vollständiger Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Jährliche Geschenk-Checklisten und Archiv)
 
 - **Neu umgesetzt:** Jährlich getrennte Geschenk-Checklisten, manuelle Jahresauswahl (aktuell −3 bis +5 Jahre), Fortschrittsanzeige pro Anlass und Jahr sowie Archivieren/Wiederherstellen vollständiger Checklistenjahre.
