@@ -43,3 +43,10 @@ test('invalid pool is rejected and no write SQL is issued',async()=>{
  await createTransactionalHeirRepository(f.pool).readAuthorizedEnvelopeSnapshot({vaultId:id,userId});
  assert.equal(f.calls.some(x=>/\b(insert|update|delete)\b/i.test(x.sql)),false);
 });
+
+test('malformed pooled client is released and rejected before any SQL',async()=>{
+ let released=0;
+ const pool={connect:async()=>({release:()=>{released++;}})};
+ await assert.rejects(createTransactionalHeirRepository(pool).readAuthorizedEnvelopeSnapshot({vaultId:id,userId}),/invalid_client/);
+ assert.equal(released,1);
+});
