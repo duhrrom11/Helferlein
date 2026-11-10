@@ -47,3 +47,10 @@ References:
 - Both current branch files `tests/nachlass-hpke-offline-v2.test.cjs` (blob `44d2598d`) and `tools/digitaler-nachlass/hpke-offline-v2.cjs` (blob `5910923c`) were fetched via GitHub connector. Local network access to raw GitHub was unavailable, so the exact branch files could not be mounted and the full ten-test suite was **not** executed locally.
 - Independent local Node.js v22.16.0 crypto verification using the two published AES-256-GCM ciphertexts, AAD values, published derived key and sequence-derived nonces: `encryptions[0]` PASS, `encryptions[1]` PASS. This is a focused reproduced crypto check, **not** execution of the repository's `node --test tests/nachlass-hpke-offline-v2.test.cjs` and **not** a second independent KEM vector.
 - No deployment, Vercel operation, merge, or production data mutation.
+
+## Verified original local Node test suite (2026-11-10)
+
+- Both original source files were retrieved from GitHub branch `audit/hpke-negative-tests-clean-20261110` and reconstructed byte-for-byte locally. `git hash-object` matched GitHub blob SHA for `tests/nachlass-hpke-offline-v2.test.cjs`: `44d2598d68f2b88bca6f5bff7dabaf29f62fa4c0`; for `tools/digitaler-nachlass/hpke-offline-v2.cjs`: `5910923c26b06c41d6931a4dbe66a8947c3ad571`.
+- Executed locally using Node.js `v22.16.0`: `node --test tests/nachlass-hpke-offline-v2.test.cjs`. Actual TAP output: `tests 10`, `pass 10`, `fail 0`, `cancelled 0`, `skipped 0`, `todo 0`; duration `1382.975665 ms`. This supersedes the earlier statement that the original branch test suite could not be run locally.
+- For preceding audit commit `cc11fb2033fad8fefd3ead49d6779bf740342a23`, GitHub [B3 Nachlass run 42783796286](https://github.com/duhrrom11/Helferlein/actions/runs/42783796286) and [release smoke run 42783796243](https://github.com/duhrrom11/Helferlein/actions/runs/42783796243) both completed successfully.
+- These are offline tests of the original two HPKE files, not production integration tests, a second independent KEM setup, a deployment, or a merge authorization.
