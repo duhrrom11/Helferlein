@@ -119,3 +119,17 @@ Keine zusätzlichen Regex-/Mutations-Tests ohne konkrete bisher ungesicherte Sch
 - **Deployment:** In diesem Arbeitsschritt **nicht deployed** und **nicht aktiviert**. Kein produktives Schema oder Nutzerdatum geändert.
 
 **Nächste gebündelte Etappe:** Schlüssel- und Freigabeprotokoll sowie Besitzer-/Erben-Datenflüsse verbindlich abschließen; bestehende Alt-Firebase-Lesepfade vor aktivierter Erbenfreigabe ersetzen oder sicher sperren; anschließend Backend und UI integriert vervollständigen. Eine produktive Erbenfreigabe bleibt bis zum Sicherheits-Gate von Paket D aus.
+
+## 8. Erben-Portal im fail-closed Übergangsbetrieb (10. November 2026)
+
+**GitHub-Befund:** Das bisherige Erben-Portal las Ciphertext direkt aus Firebase und erlaubte eine Freigabe nach ausschließlich browserseitig berechneten Zeitbedingungen. Ältere URLs konnten Master-Keys transportieren. Eine nachträgliche UI-Frist kann bereits verteilte Schlüssel nicht zurückholen.
+
+**Umsetzung auf main:** Der Portal-Einstieg `tools/digitaler-nachlass/erben.html` wurde auf eine eigenständige gesperrte Statusseite ohne Firebase, Netzwerkabfragen, Alarm, Schlüsselannahme und Entschlüsselung umgestellt. URL-Query und Fragment werden sofort per History-API entfernt; bereits erfolgte Übertragung von Query-Parametern an Webserver und alte Links bleiben ein Restrisiko.
+
+**Sicherheitsvertrag:** `docs/NACHLASS_ERBEN_SICHERHEITSVERTRAG.md` spezifiziert serverseitige Identitäts-/Freigabeprüfung, personengebundene Schlüsselhüllen, Zustandsübergänge, Widerruf und notwendige echte PG17-Nebenläufigkeitstests. Er ist **noch keine Implementierung**.
+
+**Gezielte Tests:** Drei offline ausgeführte Node.js-Prüfungen bestanden: keine Alt-Firebase-/Netzwerkpfade im neuen Portal, Query-/Fragment-Bereinigung unter simulierten URL-Zuständen sowie Prüfung der frühen Ausführung. Keine echte Browser-/Hosting- oder Ende-zu-Ende-Integration geprüft.
+
+**Commits:** Portal `33e4944293ae8953470af17817596db5fd52cc76`; Tests `bc2950caed3df1a7dadac62b03172202adc86a90`; Sicherheitsvertrag `356b16925961320029a88c9fe83576e1c15d9b24`.
+
+**Verbleibende P0-Blocker:** Besitzeroberfläche mit Firebase-/Master-Key-Link-Erzeugung, sichere Bestandsdatenmigration, reale serverseitige atomare Einladung/Widerruf, Schlüsselhüllen und der gesamte Freigabe-Gate. Kein Supabase-Deployment oder Datenbankschema-Eingriff in dieser Runde. GitHub-main-Datei ist geändert; der tatsächliche GitHub-Pages-Veröffentlichungszustand wurde nicht bestätigt.
