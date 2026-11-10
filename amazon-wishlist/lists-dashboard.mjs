@@ -35,7 +35,7 @@ export function mountListsDashboard(db, getUser) {
  const favoriteKey=id=>'helferlein-wishlist-favorites:'+id;
  function readFavorites(id){try{const raw=JSON.parse(localStorage.getItem(favoriteKey(id))||'[]');return new Set(Array.isArray(raw)?raw.filter(x=>typeof x==='string'):[])}catch{return new Set()}}
  function writeFavorites(id){try{localStorage.setItem(favoriteKey(id),JSON.stringify([...favoriteIds]))}catch{msg('Favoriten können in diesem Browser nicht dauerhaft gespeichert werden.')}}
- function openList(id){if(bulkBusy){msg('Die Sammelaktion läuft noch. Bitte zuerst stoppen oder abschließen.');return}bulkIds.clear();lastBulkResult=null;$('bulkResultPanel').hidden=true;selected=id;visibleLimit=100;for(const [field,value] of [['listWishSearch',''],['listWishPriority','all'],['listWishCategory','all'],['listWishMarker','all'],['listWishAssignment','all'],['listWishSort','newest']])$(field).value=value;syncBulkMoveTargets();recordRecent(id);render();$('listItems').scrollIntoView({behavior:'smooth',block:'start'})}
+ function openList(id){if(bulkBusy){msg('Die Sammelaktion läuft noch. Bitte zuerst stoppen oder abschließen.');return}bulkIds.clear();lastBulkResult=null;$('bulkResultPanel').hidden=true;selected=id;visibleLimit=100;for(const [field,value] of [['listWishSearch',''],['listWishPriority','all'],['listWishCategory','all'],['listWishMarker','all'],['listWishAssignment','assigned'],['listWishSort','newest']])$(field).value=value;syncBulkMoveTargets();recordRecent(id);render();$('listItems').scrollIntoView({behavior:'smooth',block:'start'})}
  function renderFavorites(){const target=$('homeFavoritesContent');target.replaceChildren();const favorites=lists.filter(l=>favoriteIds.has(l.id)&&!l.archived);if(!favorites.length){const p=document.createElement('p');p.textContent='Markiere deine Lieblingslisten mit ★, um sie hier schnell zu öffnen. Favoriten werden nur in diesem Browser gespeichert.';target.append(p);return}for(const list of favorites){const b=button(list.icon+' '+list.title,async()=>openList(list.id));target.append(b)}}
  const editorSelect=$('wishListSelect');
  function syncEditor(){const previous=editorSelect.value;editorSelect.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Ohne Liste speichern';editorSelect.append(empty);for(const list of lists.filter(x=>!x.archived)){const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title;editorSelect.append(option)}editorSelect.value=lists.some(x=>x.id===previous&&!x.archived)?previous:(lists.find(x=>x.title==='Meine Wünsche'&&!x.archived)?.id||'');editorSelect.disabled=!lists.length;}
@@ -75,7 +75,7 @@ export function mountListsDashboard(db, getUser) {
   membershipByList=new Map();for(const item of membershipRows){if(!membershipByList.has(item.list_id))membershipByList.set(item.list_id,new Set());membershipByList.get(item.list_id).add(item.wish_id)}membershipReady=true;listCounts=new Map();const unique=new Set();const known=new Set(wishes.map(w=>w.id));for(const item of membershipRows){listCounts.set(item.list_id,(listCounts.get(item.list_id)||0)+1);if(known.has(item.wish_id))unique.add(item.wish_id)}assignedTotal=unique.size;allAssignedIds=unique;renderUnassigned();renderProgress();renderRecent();setItemsFeedback('ready','');msg(lists.length+' Listen · '+wishes.length+' geladene Wünsche');$('listsTotal').textContent=String(lists.length);$('wishesTotal').textContent=String(wishes.length);render();
  }
  function render(){
-  syncBulkMoveTargets();
+  syncBulkMoveTargets();syncListQuickSwitch();
   const grid=$('listsContent');grid.replaceChildren();renderFavorites();renderRecent();renderProgress();
   const term=$('listsSearch').value.trim().toLocaleLowerCase('de'),view=$('listsView').value,sort=$('listsSort').value;
   const visible=lists.filter(l=>(view==='all'||(view==='active'&&!l.archived)||(view==='archived'&&l.archived)||(view==='favorites'&&favoriteIds.has(l.id)))&&(!term||(l.title+' '+l.description).toLocaleLowerCase('de').includes(term))).sort((a,b)=>sort==='name'?a.title.localeCompare(b.title,'de'):sort==='newest'?b.created_at.localeCompare(a.created_at):sort==='recent'?(recentIds.indexOf(a.id)===-1?999:recentIds.indexOf(a.id))-(recentIds.indexOf(b.id)===-1?999:recentIds.indexOf(b.id)):sort==='most'?(listCounts.get(b.id)||0)-(listCounts.get(a.id)||0):sort==='least'?(listCounts.get(a.id)||0)-(listCounts.get(b.id)||0):(Number(favoriteIds.has(b.id))-Number(favoriteIds.has(a.id)))||b.created_at.localeCompare(a.created_at));
@@ -262,7 +262,15 @@ export function mountListsDashboard(db, getUser) {
   }
  }
  function setItemsFeedback(state,message){const panel=$('listItemsFeedback');panel.hidden=state==='ready';$('listItemsFeedbackText').textContent=message;$('listItemsRetry').hidden=state!=='error';$('listItemsRetry').disabled=state==='loading'}
- async function updateActiveListContext(){
+ async function syncListQuickSwitch(){
+  const select=$('listQuickSwitch'),previous=selected;
+  select.replaceChildren();
+  const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Liste wählen';select.append(placeholder);
+  for(const list of lists){const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title+(list.archived?' (archiviert)':'');select.append(option)}
+  select.value=lists.some(l=>l.id===previous)?previous:'';
+  select.disabled=bulkBusy||!lists.length;
+ }
+ function updateActiveListContext(){
   const list=lists.find(l=>l.id===selected);
   $('activeListHeading').textContent=list?list.icon+' '+list.title:'Wünsche dieser Liste';
   $('activeListSummary').textContent=list?(listCounts.get(list.id)||0)+' zugeordnet · '+(list.archived?'Archiviert – nur ansehen':'Aktive Liste'):'Wähle eine Liste aus.';$('listItemsNewWish').disabled=!list||list.archived||!membershipReady;
@@ -290,6 +298,7 @@ export function mountListsDashboard(db, getUser) {
 
  $('listItemsNewWish').onclick=()=>{const list=lists.find(l=>l.id===selected&&!l.archived);if(!list||!membershipReady)return;
   $('wishListSelect').value=list.id;$('editor').scrollIntoView({behavior:'smooth',block:'start'});$('url').focus()};
+ $('listQuickSwitch').onchange=()=>{const id=$('listQuickSwitch').value;if(lists.some(l=>l.id===id))openList(id)};
  $('listItemsBack').onclick=()=>{$('listsContent').scrollIntoView({behavior:'smooth',block:'start'})};
  $('quickAllWishes').onclick=()=>setQuickWishFilter('all');
  $('quickAssignedWishes').onclick=()=>setQuickWishFilter('assigned');
