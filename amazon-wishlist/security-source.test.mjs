@@ -62,3 +62,8 @@ test('production app mounts dashboard and retains backup/export controls',()=>{
  }
  assert.match(dashboard,/return \{refresh:/);
 });
+
+test('Playwright discovers the real production HTML dashboard integration suite',()=>{
+ const config=readFileSync(new URL('./playwright.config.mjs',import.meta.url),'utf8');
+ assert.match(config,/production-dashboard\.integration\.spec\.mjs/);
+});
