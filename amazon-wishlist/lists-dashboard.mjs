@@ -53,7 +53,7 @@ export function mountListsDashboard(db, getUser) {
   let membershipRows;
   try{membershipRows=await fetchDashboardMembership(db,id,{isCurrent:()=>getUser()?.id===id&&generation===loadGeneration})}
   catch(e){if(!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;membershipReady=false;setItemsFeedback('error','Listenzuordnungen konnten nicht vollständig geladen werden. Bitte erneut versuchen.');throw e}
-  if(membershipRows===null)return;
+  if(membershipRows===null||!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;
   membershipByList=new Map();for(const item of membershipRows){if(!membershipByList.has(item.list_id))membershipByList.set(item.list_id,new Set());membershipByList.get(item.list_id).add(item.wish_id)}membershipReady=true;listCounts=new Map();const unique=new Set();const known=new Set(wishes.map(w=>w.id));for(const item of membershipRows){listCounts.set(item.list_id,(listCounts.get(item.list_id)||0)+1);if(known.has(item.wish_id))unique.add(item.wish_id)}assignedTotal=unique.size;allAssignedIds=unique;renderUnassigned();renderProgress();renderRecent();setItemsFeedback('ready','');msg(lists.length+' Listen · '+wishes.length+' geladene Wünsche');$('listsTotal').textContent=String(lists.length);$('wishesTotal').textContent=String(wishes.length);render();
  }
  function render(){
@@ -161,7 +161,7 @@ export function mountListsDashboard(db, getUser) {
   if(generation!==itemsGeneration)return;
   setItemsFeedback('ready','');renderWishCards();
  }
- async function retryItemsLoad(){if(bulkBusy)return;try{await load()}catch(e){setItemsFeedback('error','Laden fehlgeschlagen. Bitte Verbindung prüfen und erneut versuchen.');msg(e.message||'Ladefehler')}}
+ async function retryItemsLoad(){if(bulkBusy)return;const id=getUser()?.id;try{await load()}catch(e){if(getUser()?.id!==id)return;msg(e.message||'Ladefehler')}}
  $('listItemsRetry').onclick=retryItemsLoad;
 
  $('wishLoadMore').onclick=()=>{visibleLimit+=100;renderWishCards()};
