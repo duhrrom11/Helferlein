@@ -133,3 +133,17 @@ Keine zusätzlichen Regex-/Mutations-Tests ohne konkrete bisher ungesicherte Sch
 **Commits:** Portal `33e4944293ae8953470af17817596db5fd52cc76`; Tests `bc2950caed3df1a7dadac62b03172202adc86a90`; Sicherheitsvertrag `356b16925961320029a88c9fe83576e1c15d9b24`.
 
 **Verbleibende P0-Blocker:** Besitzeroberfläche mit Firebase-/Master-Key-Link-Erzeugung, sichere Bestandsdatenmigration, reale serverseitige atomare Einladung/Widerruf, Schlüsselhüllen und der gesamte Freigabe-Gate. Kein Supabase-Deployment oder Datenbankschema-Eingriff in dieser Runde. GitHub-main-Datei ist geändert; der tatsächliche GitHub-Pages-Veröffentlichungszustand wurde nicht bestätigt.
+
+## 9. Besitzeroberfläche: Schlüssel-Link-Ausgabe gesperrt / Datenflüsse inventarisiert (10. November 2026)
+
+**Audit:** Im Besitzer-Frontend wurden vier Stellen mit potentieller Ausgabe von `#key=` gefunden (Kopieren/Versand, QR-Vorschau, PDF-Erzeugung, zugehörige Linkvalidierung). Der vollständige lokale Tresorschlüssel war damit trotz eines gesperrten Erben-Portals weiterhin als Notfall-Link teilbar. Firestore synchronisiert weiterhin verschlüsselte Tresor-Inhalte mit **unverschlüsselten** Kontakt-/Check-in-Metadaten; die Supabase-Tabelle enthält separat verschlüsselte Owner-Backups. Diese Alt-Datenflüsse wurden nicht gelöscht.
+
+**Änderung auf `main`:** Die Besitzeroberfläche erstellt keine Master-Key-Erben-URLs mehr, kopiert/versendet diese nicht und erzeugt keine Schlüssel-QRs oder -PDFs. Kontaktverwaltung und lokale Tresorverschlüsselung bleiben bestehen. Die nicht mehr benötigten PDF-/QR-/E-Mail-Bibliotheken wurden aus der Seite entfernt. Notfall-Kit und Schlüsselversand erscheinen ausdrücklich als gesperrt. Die Legacy-Firebase-Synchronisierung existiert weiterhin (ohne Erbenfreigabe); die Besitzeroberfläche ist deshalb noch **nicht vollständig migriert**.
+
+**Bestandskompatibles Backend-Design:** `docs/NACHLASS_ERBEN_IMPLEMENTIERUNGSPLAN.md` dokumentiert Datenflüsse, genaue Endpunktverträge, benötigte private Tabellen, serverseitige JWT-Bindung, Lock-Reihenfolge, Verschlüsselungs-Hüllen, Widerruf, Freigabe-Gates und Migrationsrisiken. Beachten: Primärschlüssel der bestehenden `vault_cloud_snapshots` ist `owner_user_id`, `vault_id` hat bislang keine nachgewiesene UNIQUE-Constraint; alte `vault_ownership`-Drafts nicht unverändert verwenden.
+
+**Prüfung:** Der originale GitHub-Blob wurde vor Änderungen abgerufen. Nach der Änderung wurden elf gezielte Schutzbedingungen gegen den tatsächlichen HTML-Stand geprüft (kein Key-Link/Clipboard/E-Mail/QR/PDF-Code; lokale Kryptografie und Recovery erhalten); das gesamte Inline-JavaScript bestand eine Syntaxkompilierung. Nach Entfernen ungenutzter Bibliotheken erneut vollständige Inline-Syntaxprüfung. **Keine End-to-End-/Browser-/Supabase-Migrationstests.**
+
+**Commits:** Hardening `c05fb355749b6e39f2823c116097bca8b935e048`, ungenutzte Bibliotheken `45d052c1d71e2fc9ca32060c9612233735c73fc8`, Implementierungsplan `211378b9d9e4ef1aa9175a525142b6ba410fb6dc`.
+
+**Nächster Blocker:** Aktive serverseitige Einladung/Widerruf/Schlüsselhüllen erfordern die isolierte PG17-Nebenläufigkeitsprüfung und eine geprüfte Endgeräte-Kryptografie. Die Erben-Freigabe ist nicht aktiv. Alte, bereits geteilte Geheimschlüssel können nicht rückwirkend gesperrt werden.
