@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Sicherungspunktfilter)
+
+- **Neu umgesetzt:** Suche in den maximal 20 privaten Dashboard-Sicherungspunkten nach Datum (Von/Bis), aktiver Layout-Ansicht und abweichendem Einstellungsbereich (Layouts/Vorlagen, Sichtbarkeit, Kennzahlen, Schnellzugriffe/Favoriten, Sortierung/Reihenfolge).
+- **Transparenz:** Der Änderungsbereich beschreibt Unterschiede des Sicherungspunkts zur aktuell geladenen Dashboard-Konfiguration, nicht die Ursache seiner damaligen Erstellung. Filter arbeiten lokal auf owner-gefilterten Datensätzen; Rücksetzen und Aktualisieren sind möglich.
+- **Wiederherstellung:** Vorher-Nachher-Vergleich und ausdrückliche Bestätigung bleiben erhalten.
+- **Datenschutz:** Keine Migration, keine Testdaten. RLS und Rechte für Präferenzen, Verlauf und Sicherungspunkte erneut überprüft; anonyme Zugriffe ausgeschlossen, Sicherungspunkte und Verlauf ohne direkte Schreibrechte. Geschenkaufgaben, Anlässe und historische Produktivdaten unverändert.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Vergleich automatischer Dashboard-Sicherungspunkte)
 
 - **Neu umgesetzt:** Vorher-Nachher-Vergleich eines automatischen Sicherungspunkts mit der aktuellen Dashboard-Konfiguration in einer mobil horizontal scrollbar dargestellten Tabelle.
