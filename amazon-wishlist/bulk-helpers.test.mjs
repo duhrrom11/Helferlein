@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,bulkControlsEnabled,currentDashboardLoad,fetchDashboardBase,fetchDashboardMembership} from './bulk-helpers.mjs';
+import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,bulkControlsEnabled,currentDashboardLoad,fetchDashboardBase,fetchDashboardMembership,membershipForSelectedList} from './bulk-helpers.mjs';
 import {filterListWishes} from './list-features.mjs';
 
 const items=[
@@ -240,4 +240,26 @@ test('dashboard consistency: failed membership page followed by fresh retry cann
  assert.equal(bulkControlsEnabled({membershipReady,bulkBusy:false}),false);
  membershipReady=true;
  assert.equal(bulkControlsEnabled({membershipReady,bulkBusy:false}),true);
+});
+
+test('dashboard state: list switch never exposes membership from an unfinished reload',()=>{
+ const membershipByList=new Map([['list-a',new Set(['wish-a'])],['list-b',new Set(['wish-b'])]]);
+ assert.deepEqual([...membershipForSelectedList({membershipReady:false,membershipByList,listId:'list-b'})],[]);
+ assert.deepEqual([...membershipForSelectedList({membershipReady:true,membershipByList,listId:'list-b'})],['wish-b']);
+ assert.deepEqual([...membershipForSelectedList({membershipReady:true,membershipByList,listId:'list-a'})],['wish-a']);
+});
+test('dashboard state: failed membership pagination cannot retain old list selection',async()=>{
+ const old=new Map([['list-a',new Set(['old-wish'])]]);
+ const db=membershipMock([[{list_id:'list-b',wish_id:'new-a'},{list_id:'list-b',wish_id:'new-b'}]],{failAt:1});
+ let membershipReady=false;
+ await assert.rejects(()=>fetchDashboardMembership(db.client,'user-a',{pageSize:2}),/partial membership failure/);
+ assert.deepEqual([...membershipForSelectedList({membershipReady,membershipByList:old,listId:'list-a'})],[]);
+ assert.deepEqual([...membershipForSelectedList({membershipReady,membershipByList:old,listId:'list-b'})],[]);
+});
+test('dashboard state: completed reload exposes only the newly selected list',async()=>{
+ const db=membershipMock([[{list_id:'list-b',wish_id:'new-wish'}]]);
+ const rows=await fetchDashboardMembership(db.client,'user-a');
+ const map=new Map();for(const row of rows){if(!map.has(row.list_id))map.set(row.list_id,new Set());map.get(row.list_id).add(row.wish_id)}
+ assert.deepEqual([...membershipForSelectedList({membershipReady:true,membershipByList:map,listId:'list-a'})],[]);
+ assert.deepEqual([...membershipForSelectedList({membershipReady:true,membershipByList:map,listId:'list-b'})],['new-wish']);
 });
