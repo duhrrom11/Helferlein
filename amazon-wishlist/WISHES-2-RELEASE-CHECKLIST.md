@@ -411,3 +411,17 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Produktfreigabe weiterhin gesperrt.
 
 **Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Produktentwicklung: Auswahl ohne Liste und Fehlerrückmeldung (2026-11-10)
+
+- [x] Neue Schnellaktion „Ohne Liste auswählen“ für alle geladenen, global nicht zugeordneten Wünsche; bereitet Zuordnung zur geöffneten Liste per Sammelaktion vor.
+- [x] Anzahl der Wünsche ohne Liste im Aktionslabel; deaktiviert, wenn keine geeigneten Wünsche vorhanden sind, Liste archiviert ist oder eine Sammelaktion läuft.
+- [x] Auswahlaktionen für zugeordnete und nicht zugeordnete Wünsche setzen widersprüchliche Filter zurück und zeigen die Auswahl vollständig an.
+- [x] Sammelverschiebung meldet ausdrücklich, wenn eine Zielzuordnung gespeichert wurde, die Quellzuordnung aber nicht entfernt werden konnte.
+- [x] Fehlerrückmeldung bei veraltetem Benutzerkontext zusätzlich geschützt.
+- [x] Mobile Touch-Ziele der Schnellaktionen verbessert.
+- [x] Minimalprüfung: JavaScript-Syntax und zentrale Funktionsanker geprüft.
+- [ ] Browserabnahme für „Ohne Liste auswählen“, Sammelzuordnung und Teilfehler beim Verschieben offen.
+- [ ] Produktfreigabe weiterhin gesperrt.
+
+**Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
