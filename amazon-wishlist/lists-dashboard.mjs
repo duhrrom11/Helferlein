@@ -255,7 +255,7 @@ export function mountListsDashboard(db, getUser) {
  async function updateActiveListContext(){
   const list=lists.find(l=>l.id===selected);
   $('activeListHeading').textContent=list?list.icon+' '+list.title:'Wünsche dieser Liste';
-  $('activeListSummary').textContent=list?(listCounts.get(list.id)||0)+' zugeordnet · '+(list.archived?'Archiviert – nur ansehen':'Aktive Liste'):'Wähle eine Liste aus.';
+  $('activeListSummary').textContent=list?(listCounts.get(list.id)||0)+' zugeordnet · '+(list.archived?'Archiviert – nur ansehen':'Aktive Liste'):'Wähle eine Liste aus.';$('listItemsNewWish').disabled=!list||list.archived||!membershipReady;
   const quick={quickAllWishes:$('listWishAssignment').value==='all'&&$('listWishMarker').value==='all',quickAssignedWishes:$('listWishAssignment').value==='assigned',quickUnassignedWishes:$('listWishAssignment').value==='global-unassigned',quickFavoriteWishes:$('listWishMarker').value==='star'};
   for(const [id,pressed] of Object.entries(quick))$(id).setAttribute('aria-pressed',String(pressed));
  }
@@ -278,6 +278,8 @@ export function mountListsDashboard(db, getUser) {
  async function retryItemsLoad(){if(bulkBusy)return;const id=getUser()?.id;try{await load()}catch(e){if(getUser()?.id!==id)return;msg(e.message||'Ladefehler')}}
  $('listItemsRetry').onclick=retryItemsLoad;
 
+ $('listItemsNewWish').onclick=()=>{const list=lists.find(l=>l.id===selected&&!l.archived);if(!list||!membershipReady)return;
+  $('wishListSelect').value=list.id;$('editor').scrollIntoView({behavior:'smooth',block:'start'});$('url').focus()};
  $('listItemsBack').onclick=()=>{$('listsContent').scrollIntoView({behavior:'smooth',block:'start'})};
  $('quickAllWishes').onclick=()=>setQuickWishFilter('all');
  $('quickAssignedWishes').onclick=()=>setQuickWishFilter('assigned');
