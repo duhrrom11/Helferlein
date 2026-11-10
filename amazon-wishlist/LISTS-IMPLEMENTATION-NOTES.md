@@ -27,3 +27,11 @@
 - Die Standardliste wird erst nach ausdrücklicher Freigabe des Schemas und der Übernahme tatsächlich erstellt; für neue Konten gibt es noch keine automatische Anlage.
 - Bestehende öffentliche Wünsche bleiben weiterhin öffentlich, auch wenn ihre Sammlung privat heißt.
 - Keine Live-DB-Änderung, kein Merge, kein Deployment. Browser- und CI-Prüfungen nicht bestätigt.
+
+## Listen-Editor und Dashboard-Schnellaktionen
+- Bearbeitungsformular für Titel, Beschreibung, Symbol und Farbe mit Speichern/Abbrechen.
+- Farbig gestaltete Karten, ausgewählte Karte hervorgehoben, kompakte Kartenaktionen.
+- Schnellaktionen für neue Liste, Wunsch hinzufügen und ausgewählte Liste öffnen.
+- Zurücksetzen des Editors und der Dashboard-Zähler bei Kontowechsel.
+- JavaScript-Syntax des Listen-Dashboard-Moduls geprüft; keine Browser- oder Live-Datenbankprüfung durchgeführt.
+- SQL-Entwürfe unverändert und nicht ausgeführt; kein Merge, kein Deployment.
