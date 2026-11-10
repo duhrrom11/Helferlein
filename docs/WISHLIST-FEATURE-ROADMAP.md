@@ -161,6 +161,13 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Wichtige bestehende Einschränkung:** `wishlist_wishes` und `wishlist_products` waren bereits unabhängig von der Listenfreigabe öffentlich lesbar. „Private Liste“ schützt derzeit die Listenmetadaten und Mitgliedschaften, **nicht** die grundsätzliche Sichtbarkeit einzelner Wünsche.
 - **Noch offen:** End-to-End-Browserprüfung, echte Titelbilder, personalisierte Slugs statt UUID-Links, Social-Interaktionen und eine umfassende Überarbeitung der Wunsch-Privatsphäre.
 
+## Entwicklungsfortschritt – 10.11.2026 (Privatsphäre und Titelbilder)
+
+- **Produktive Supabase-Migrationen, additiv und datenbewahrend:** `wishlist_wishes.visibility` mit Standardwert `public`, `wishlist_lists.cover_url` (optionale HTTPS-Titelbild-URL), neue RLS-SELECT-Policy für öffentliche oder eigene Wünsche; öffentliche Sammlungszuordnungen nur bei öffentlichen Wünschen lesbar.
+- **Neu umgesetzt:** Wunsch-Editor mit Auswahl `Öffentlich`/`Nur für mich` (auch beim Bearbeiten), Listen-Editor mit Titelbild-URL und responsive öffentliche Sammlungsseite mit Titelbild.
+- **Bestandskompatibilität:** Bereits vorhandene Wünsche bleiben durch den Standardwert `public` sichtbar; neue private Wünsche sind nur für Eigentümer lesbar. Private Wünsche werden auf öffentlichen Sammlungsseiten herausgefiltert.
+- **Einschränkungen:** Titelbilder sind externe HTTPS-URLs (kein Upload/Hosting), keine Bildmoderation oder automatische Bildsuche. Bestehende öffentliche Wünsche müssen bei Bedarf vom Besitzer ausdrücklich auf privat umgestellt werden. Vollständige Browser- und rollenbasierte Integrationstests stehen noch aus.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
