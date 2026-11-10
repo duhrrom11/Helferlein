@@ -213,6 +213,16 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Privatsphäre:** RLS und Filter für öffentliche, nicht archivierte Sammlungen bleiben aktiv. Likes werden nur für eigene öffentliche Listen geladen. Keine Änderungen an bestehenden Supabase-Datensätzen.
 - **Grenzen:** Höchstens 200 Follower, 200 gefolgte Profile, 200 eigene Listen, 100 öffentliche Sammlungen gefolgter Profile und 200 Likes werden pro Aufruf berücksichtigt. Statistiken können bei größeren Mengen deshalb mit `200+` angezeigt werden; Benachrichtigungen sind berechnete Momentaufnahmen und keine persistierten Ereignisse. Vollständiger Browser-End-to-End-Test steht aus.
 
+## Entwicklungsfortschritt – 10.11.2026 (Dauerhafte Benachrichtigungszentrale)
+
+- **Neu umgesetzt:** Mobile-first Benachrichtigungszentrale `amazon-wishlist/notifications.html` und `notifications.mjs`, verlinkt von Startseite und Social-Dashboard.
+- **Additive Supabase-Migration:** `wishlist_notification_preferences` (Einstellungen für neue öffentliche Sammlungen, Follower, Likes) und `wishlist_notification_reads` (dauerhafte Gelesen-Markierungen je Nutzer und Ereignis). Bestehende Produktivdaten bleiben unverändert.
+- **Sicherheit:** Beide Tabellen mit aktivierter RLS und ausschließlich eigentümergebundenen Policies. Die Benachrichtigungsfunktion `wishlist_notification_feed(p_before,p_limit,p_before_key)` läuft als `SECURITY INVOKER`, greift auf vorhandene Tabellen mit deren RLS zurück und gibt nur Ereignisse für den authentifizierten Nutzer zurück. Sammlungsereignisse erfordern eine vor der Veröffentlichung bestehende Follow-Beziehung und aktuell öffentliche, nicht archivierte Sammlung.
+- **Paginierung:** Serverseitige Keyset-Paginierung nach `created_at` und `event_key`, bis zu 20 Aktivitäten pro Seite. „Weitere laden“ ergänzt die Liste.
+- **Gelesen-Status:** Einzelne Ereignisse oder alle aktuell geladenen ungelesenen Ereignisse als gelesen markieren; persistente, insert-only Markierung ohne unnötige Rechte für spätere Änderungen.
+- **Einstellungen:** Individuelle, dauerhaft gespeicherte Aktivierung/Deaktivierung der drei Hinweisarten.
+- **Abgrenzung:** Keine E-Mail-, Push- oder Hintergrundbenachrichtigungen; Ereignisse werden beim Abruf aus dem aktuellen Datenbestand berechnet. Entfernte Likes, aufgehobene Follows oder später privatisierte Sammlungen erscheinen ggf. nicht mehr. Ungelesen-Zahl bezieht sich auf die geladenen Einträge, nicht auf alle möglichen Aktivitäten. Gelesen-Markierungen bleiben bei erneuter Erzeugung derselben Ereigniskennung erhalten. Vollständiger Browser-End-to-End-Test mit realen Konten steht noch aus.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
