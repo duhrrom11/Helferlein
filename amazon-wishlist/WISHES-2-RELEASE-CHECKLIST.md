@@ -561,3 +561,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung des aktuellen Dashboard-Quelltexts (Imports ausgenommen) und gezielte GitHub-Inhaltsprüfung erfolgreich.
 - [ ] Browser-, Mobilgeräte- und Regressionstests bleiben offen. Mehrschrittoperationen sind nicht atomar und können teilweise abgeschlossene Zuordnungen hinterlassen.
 - [ ] Freigabe bleibt gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Autopilot: Navigation bei Ladezuständen und verlässliche Listenaktionen (2026-11-10)
+
+- [x] Listenöffnung aus Übersicht, Favoriten und zuletzt verwendeten Listen wird bei nicht vollständig geladenen Zuordnungen oder falschem Kontokontext abgewiesen; veraltete Karten können den Arbeitsbereich nicht umschalten.
+- [x] Der Wiederaufnahme-Einstieg aus der Sammelaktionshistorie erkennt archivierte oder nicht mehr vorhandene Ziellisten und fordert zur Prüfung auf.
+- [x] Listendesign und Listenanlage starten nicht, während noch Einzeländerungen an Wünschen laufen; die Designbearbeitung benötigt einen vollständig geladenen Listenarbeitsbereich.
+- [x] Duplizierung meldet eine erfolgreich gespeicherte Kopie auch dann als erfolgreich, wenn erst das anschließende Neuladen fehlschlägt. Bei Teilfehlern bleibt die Anzahl bereits kopierter Zuordnungen sichtbar.
+- [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls (ohne Imports) und gezielte GitHub-Inhaltskontrolle erfolgreich.
+- [ ] Browser-, Mobilgeräte- und End-to-End-Tests bleiben offen. Die Duplizierung bleibt eine nicht-atomare Mehrschrittoperation.
+- [ ] Freigabe bleibt gesperrt. Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
