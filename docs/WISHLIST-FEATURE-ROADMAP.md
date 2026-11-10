@@ -185,6 +185,15 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Abgrenzung:** Entdecken zeigt maximal 60 neueste öffentliche Sammlungen. Follower-basierte Reihenfolge ist keine echte Like- oder Aufrufrangliste; die aggregierten Follower-Daten werden clientseitig aus maximal 10.000 geladenen Beziehungen berechnet. Für große Datenmengen sind serverseitige Aggregation und Pagination erforderlich.
 - **Noch offen:** Browser-End-to-End-Test, vollständige Rankings, Likes/Favoriten, Profil-Badges und datensparsame skalierbare Statistiken.
 
+## Entwicklungsfortschritt – 10.11.2026 (Sammlungs-Likes und private Merkliste)
+
+- **Produktiv umgesetzt:** Zwei neue additive Supabase-Tabellen `wishlist_collection_likes` (öffentliche Likes, eine Stimme je angemeldetem Nutzer und Sammlung) und `wishlist_collection_bookmarks` (private Merkliste je Nutzer). Bestehende Produktivdaten und Tabellen bleiben unverändert.
+- **Sichere RLS:** Likes sind nur für öffentliche, nicht archivierte Sammlungen lesbar; angemeldete Nutzer dürfen ausschließlich ihre eigenen Likes anlegen oder entfernen. Bookmarks sind ausschließlich für ihren Eigentümer lesbar, erstellbar und löschbar. Das Anlegen setzt eine öffentlich sichtbare Sammlung voraus. Bei später privatisierten Sammlungen bleibt der Bookmark intern gespeichert, die Oberfläche zeigt sie nicht mehr an.
+- **Like-Zahlen:** SQL-Funktion `wishlist_collection_like_counts(uuid[])` mit `SECURITY INVOKER` und expliziter Freigabe für `anon`/`authenticated` berechnet tatsächliche Likes pro öffentlicher Sammlung. Keine simulierten Popularitätswerte.
+- **Neu umgesetzt:** Likes und Merken auf öffentlichen Sammlungsseiten und in Social-Entdecken, Sortierung nach tatsächlichen Likes, Filter „Nur meine gemerkten Sammlungen“, eigenständige private Merkliste unter `amazon-wishlist/bookmarks.html`, mobile Schaltflächen und Navigation.
+- **Grenzen:** Entdecken lädt maximal 60 neueste öffentliche Sammlungen; die Likes-Rangliste sortiert **innerhalb dieser Auswahl**. Die private Merkliste lädt maximal 200 Einträge. Likes sind öffentlich sichtbar und deren Datensätze enthalten Nutzer-UUIDs; die private Merkliste ist davon getrennt. Eine vollständige browserbasierte Prüfung mit realen Nutzerkonten steht noch aus.
+- **Weitere Roadmap:** Serverbasierte Pagination für globale Rankings, bessere Login-Rückkehr, Profil-Favoriten und performante Social-Statistiken.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
