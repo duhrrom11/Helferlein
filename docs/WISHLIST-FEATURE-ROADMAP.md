@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Favoriten-Schnellleiste für private Sicherungspunkte)
+
+- **Neu umgesetzt:** Horizontale, mobil scrollbar angelegte Schnellleiste direkt über der privaten Dashboard-Sicherungspunkt-Zeitachse. Angeheftete Cloud-Filteransichten können mit einem Klick angewendet werden; der aktuelle Filterzustand wird per `aria-pressed` kenntlich gemacht.
+- **Synchronisierung:** Schnellleiste verwendet ausschließlich die bereits privat geladenen, owner-gebundenen Cloud-Ansichten; reagiert auf Favoritenänderungen und auf das Anwenden von Filteransichten. Bei Kontoabmeldung wird sie geleert.
+- **Sicherheit:** Keine Datenbankmigration, keine Testdaten, keine Änderungen an Sicherungspunkten oder Produktivdaten. RLS und Privilegien der Cloud-Filteransichten, Präferenzen, Historie und Sicherungspunkte geprüft.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Favoriten für private Cloud-Filteransichten)
 
 - **Neu umgesetzt:** Persönliche Cloud-Filteransichten können per Schaltfläche als Favorit angeheftet oder wieder gelöst werden. Angeheftete Ansichten erscheinen in der responsiven Kartenübersicht zuerst, danach alphabetisch.
