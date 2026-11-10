@@ -165,7 +165,7 @@ export function mountListsDashboard(db, getUser) {
    try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&run===bulkRunId)msg('Zuordnungen aktualisiert, aber das Neuladen ist fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
    if(getUser()?.id===uid&&run===bulkRunId&&selected===listId){bulkHistory.unshift({...summary,time:new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),listTitle:lists.find(l=>l.id===listId)?.title||'Liste'});bulkHistory=bulkHistory.slice(0,10);renderBulkHistory();showBulkResult(summary)}
   }finally{
-   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkStop').disabled=true;if(getUser()?.id===uid&&selected===listId){updateBulkToolbar();renderWishCards()}}
+   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkStop').disabled=true;$('bulkProgressPanel').hidden=true;if(getUser()?.id===uid&&selected===listId){updateBulkToolbar();renderWishCards()}}
   }
  }
  async function moveSelectedWishes(){
@@ -247,7 +247,7 @@ export function mountListsDashboard(db, getUser) {
   $('wishSelectedOnly').setAttribute('aria-pressed',String(selectedOnlyView));$('wishSelectedOnly').textContent=selectedOnlyView?'Alle passenden zeigen':'Nur Auswahl ('+bulkIds.size+')';
   const results=visibleWishes();updateBulkToolbar(results);$('wishSelectedOnly').disabled=bulkBusy||(!selectedOnlyView&&!bulkIds.size);$('wishSelectAssigned').textContent='Zugeordnete auswählen ('+wishes.filter(w=>assignedIds.has(w.id)).length+')';$('wishSelectUnassigned').textContent='Ohne Liste auswählen ('+wishes.filter(w=>!allAssignedIds.has(w.id)).length+')';$('wishSelectShown').disabled=bulkBusy||list.archived||!results.length;$('wishSelectShown').textContent=results.slice(0,visibleLimit).every(w=>bulkIds.has(w.id))&&results.length?'Sichtbare abwählen':'Sichtbare auswählen';
   $('listWishCount').textContent=Math.min(results.length,visibleLimit)+' von '+results.length+' passenden Wünschen sichtbar ('+wishes.length+' geladen).';$('wishLoadMore').hidden=results.length<=visibleLimit;
-  if(!results.length){const empty=document.createElement('p');empty.textContent=selectedOnlyView?'Keine Wünsche mehr ausgewählt. Zeige alle passenden Wünsche oder wähle neue aus.':'Keine passenden Wünsche gefunden. Passe deine Filter an oder füge einen Wunsch hinzu.';cards.append(empty);
+  if(!results.length){const empty=document.createElement('p');empty.textContent=selectedOnlyView?'Keine Wünsche mehr ausgewählt. Zeige alle passenden Wünsche oder wähle neue aus.':$('listWishAssignment').value==='global-unassigned'?'Alle Wünsche sind bereits mindestens einer Liste zugeordnet.':'Keine passenden Wünsche gefunden. Passe deine Filter an oder füge einen Wunsch hinzu.';cards.append(empty);
    const resetFilters=button(selectedOnlyView?'Alle Wünsche wieder anzeigen':'Filter zurücksetzen',async()=>{selectedOnlyView=false;$('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';$('listWishMarker').value='all';$('listWishAssignment').value='all';$('listWishSort').value='newest';visibleLimit=100;renderWishCards()});cards.append(resetFilters)}
   const membershipCounts=new Map();for(const ids of membershipByList.values())for(const id of ids)membershipCounts.set(id,(membershipCounts.get(id)||0)+1);
   for(const wish of results.slice(0,visibleLimit)){
