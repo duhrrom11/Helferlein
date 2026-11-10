@@ -78,3 +78,12 @@ test('auth lifecycle refreshes private dashboard before profile requests and on 
  assert.match(app,/\$\('logout'\)\.onclick=run\(async\(\)=>[\s\S]*?await auth\(\)/);
  assert.match(app,/db\.auth\.onAuthStateChange\(/);
 });
+
+test('optional authenticated live browser smoke never writes production data',()=>{
+ const smoke=readFileSync(new URL('./authenticated-live-smoke.mjs',import.meta.url),'utf8');
+ assert.match(smoke,/WISHES_EXISTING_USER_EMAIL/);
+ assert.match(smoke,/WISHES_EXISTING_USER_PASSWORD/);
+ assert.match(smoke,/\\.locator\\('#signin'\\)\\.click\\(\\)/);
+ assert.match(smoke,/\\.locator\\('#logout'\\)\\.click\\(\\)/);
+ assert.doesNotMatch(smoke,/\\.from\\(|\\.insert\\(|\\.update\\(|\\.delete\\(|\\.upsert\\(|#signup|#saveWish|#createList/);
+});
