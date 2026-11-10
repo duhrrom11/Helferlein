@@ -1,13 +1,12 @@
 'use strict';
 // Offline RFC 9180 HPKE Base mode, DHKEM(X25519, HKDF-SHA256), HKDF-SHA256,
 // AES-256-GCM. Single-message seal/open; not wired into production.
-const { generateKeyPairSync, createPublicKey, diffieHellman, hkdfSync, createCipheriv, createDecipheriv, createHash } = require('node:crypto');
+const { generateKeyPairSync, createPublicKey, diffieHellman, createCipheriv, createDecipheriv } = require('node:crypto');
 const KEM_ID = Buffer.from('0020','hex'), KDF_ID = Buffer.from('0001','hex'), AEAD_ID = Buffer.from('0002','hex');
 const SUITE = Buffer.concat([Buffer.from('HPKE'), KEM_ID, KDF_ID, AEAD_ID]);
 const KEM_SUITE = Buffer.concat([Buffer.from('KEM'), KEM_ID]);
 const ZERO = Buffer.alloc(0);
 const i2osp = (n, size) => { const b = Buffer.alloc(size); b.writeUIntBE(n,0,size); return b; };
-const extract = (salt, ikm) => Buffer.from(hkdfSync('sha256', ikm, salt, ZERO, 32)); // NOT HKDF-Extract; see below
 const { createHmac } = require('node:crypto');
 function hkdfExtract(salt, ikm) { return createHmac('sha256', salt.length ? salt : Buffer.alloc(32)).update(ikm).digest(); }
 function hkdfExpand(prk, info, length) {
