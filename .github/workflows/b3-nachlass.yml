@@ -17,6 +17,8 @@ on:
       - 'tests/nachlass-rls-draft-contract-v2.test.cjs'
       - 'tests/nachlass-heir-read-api-v2.test.cjs'
       - 'tests/nachlass-heir-repository-v2.test.cjs'
+      - 'tests/nachlass-heir-transaction-v2.test.cjs'
+      - 'tools/digitaler-nachlass/heir-transaction-v2.cjs'
       - 'tools/digitaler-nachlass/heir-repository-v2.cjs'
       - 'tools/digitaler-nachlass/heir-read-api-v2.cjs'
       - 'docs/nachlass-v2-rls-policy-draft.sql'
@@ -53,6 +55,8 @@ on:
       - 'tests/nachlass-rls-draft-contract-v2.test.cjs'
       - 'tests/nachlass-heir-read-api-v2.test.cjs'
       - 'tests/nachlass-heir-repository-v2.test.cjs'
+      - 'tests/nachlass-heir-transaction-v2.test.cjs'
+      - 'tools/digitaler-nachlass/heir-transaction-v2.cjs'
       - 'tools/digitaler-nachlass/heir-repository-v2.cjs'
       - 'tools/digitaler-nachlass/heir-read-api-v2.cjs'
       - 'docs/nachlass-v2-rls-policy-draft.sql'
@@ -86,7 +90,7 @@ jobs:
       - name: Verify preserved security notice and vault contract
         run: |
           set -o pipefail
-          node --test tests/b3-nachlass.test.cjs tests/nachlass-release-policy-v2.test.cjs tests/nachlass-server-api-v2.test.cjs tests/nachlass-server-auth-v2.test.cjs tests/nachlass-migration-preflight-v2.test.cjs tests/nachlass-key-envelope-contract-v2.test.cjs tests/nachlass-recovery-offline-v2.test.cjs tests/nachlass-hpke-offline-v2.test.cjs tests/nachlass-supabase-heir-access-v2.test.cjs tests/nachlass-supabase-auth-adapter-v2.test.cjs tests/nachlass-rls-draft-contract-v2.test.cjs tests/nachlass-heir-read-api-v2.test.cjs tests/nachlass-heir-repository-v2.test.cjs | tee /tmp/nachlass-node-tests.tap
+          node --test tests/b3-nachlass.test.cjs tests/nachlass-release-policy-v2.test.cjs tests/nachlass-server-api-v2.test.cjs tests/nachlass-server-auth-v2.test.cjs tests/nachlass-migration-preflight-v2.test.cjs tests/nachlass-key-envelope-contract-v2.test.cjs tests/nachlass-recovery-offline-v2.test.cjs tests/nachlass-hpke-offline-v2.test.cjs tests/nachlass-supabase-heir-access-v2.test.cjs tests/nachlass-supabase-auth-adapter-v2.test.cjs tests/nachlass-rls-draft-contract-v2.test.cjs tests/nachlass-heir-read-api-v2.test.cjs tests/nachlass-heir-repository-v2.test.cjs tests/nachlass-heir-transaction-v2.test.cjs | tee /tmp/nachlass-node-tests.tap
       - name: Install Chromium
         run: |
           npm install --no-save --no-package-lock @playwright/test@1.56.1
