@@ -120,7 +120,7 @@ actions.append(button('Duplizieren',async()=>{
     const current=()=>getUser()?.id===uid&&loadedOwner===uid&&generation===loadGeneration;
     let copied=0,created=false;
     try{
-     if(getUser()?.id===uid&&membershipReady){renderWishCards();msg('Listen-Kopie wird vorbereitet: '+originalIds.length+' Zuordnungen. Bitte warten.')}
+     if(getUser()?.id===uid&&membershipReady){detailWishId=null;$('wishDetailDialog').close();renderWishCards();msg('Listen-Kopie wird vorbereitet: '+originalIds.length+' Zuordnungen. Bitte warten.')}
      const {data:copy,error}=await db.from('wishlist_lists').insert({user_id:uid,title:(list.title+' Kopie').slice(0,80),description:list.description,icon:list.icon,color:list.color,visibility:'private'}).select('id').single();
      if(error)throw error;
      created=true;
