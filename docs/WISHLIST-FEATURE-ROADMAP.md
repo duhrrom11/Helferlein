@@ -232,6 +232,15 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Mobile Bedienung:** Responsive Layouts, große Touch-Ziele und Hauptnavigation mit direktem Link.
 - **Grenzen:** Erinnerungshinweise erscheinen nur beim Öffnen der Seite; keine automatischen Push-Mitteilungen oder E-Mails. Einmalige Termine in der Vergangenheit werden nicht in der kommenden Terminliste angezeigt. Für den 29. Februar wird in Nicht-Schaltjahren der 28. Februar verwendet. Es werden höchstens 1000 Termine geladen. Browser-End-to-End-Test mit echtem Nutzerkonto steht aus.
 
+## Entwicklungsfortschritt – 10.11.2026 (Private Geschenkplanung und Budget)
+
+- **Neu umgesetzt:** Responsive Geschenkplanung `amazon-wishlist/gift-planner.html` und `gift-planner.mjs` mit Geschenkzuordnung zu eigenen Anlässen, Empfänger, Notizen, geplantem und tatsächlichem Euro-Betrag.
+- **Status-Workflow:** `idea`, `planned`, `purchased`, `wrapped`, `gifted`; Geschenkstatus editierbar, filterbar und mit Fortschrittsanzeige (verschenkt/gesamt).
+- **Budget:** Additives `budget_amount`-Feld auf `wishlist_occasions`, standardmäßig 0 €, je Anlass einstellbar. Dashboard aggregiert Anlassbudgets, geplante Beträge und tatsächlich hinterlegte Ausgaben; Budget-Fortschrittsbalken für gewählten Anlass.
+- **Produktivmigration:** Neue `wishlist_gift_plans`-Tabelle mit RLS, Eigentümer-Policies für SELECT/INSERT/UPDATE/DELETE und zusätzlicher Eigentumsprüfung für den zugeordneten Anlass bei INSERT/UPDATE. Keine bestehenden Produktivdaten gelöscht.
+- **Navigation:** Verlinkung in mobiler Hauptnavigation und Anlasszentrale.
+- **Grenzen:** Aktuell keine gesonderte Budgettabelle pro Empfänger; der Empfängername ist ein optionales Freitextfeld je Geschenk, Budgets werden pro Anlass gespeichert. Beträge werden in EUR dargestellt. Höchstens 1000 Anlässe und 1000 Geschenke pro Seitenaufruf geladen. Browser-End-to-End-Test mit echtem Nutzerkonto steht aus.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
