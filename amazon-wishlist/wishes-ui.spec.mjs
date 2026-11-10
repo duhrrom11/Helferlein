@@ -105,6 +105,7 @@ test('mobile layout at 320 and 375 pixels keeps bulk action buttons inside viewp
   await mount(page);
   await expect(page.locator('.wish-bulk-toolbar')).toBeVisible();
   const outside=await page.locator('.wish-bulk-toolbar button').evaluateAll(buttons=>buttons.filter(el=>{const rect=el.getBoundingClientRect();return rect.width>0&&rect.height>0&&(rect.left<0||rect.right>window.innerWidth+1)}).map(el=>el.id));
+  if(outside.length)console.log('mobile bulk overflow',width,JSON.stringify(await page.locator('.wish-bulk-toolbar').evaluate(el=>({viewport:innerWidth,toolbar:el.getBoundingClientRect().toJSON(),parent:el.parentElement.getBoundingClientRect().toJSON(),buttons:[...el.querySelectorAll('button')].map(b=>({id:b.id,rect:b.getBoundingClientRect().toJSON()}))}))));
   expect(outside).toEqual([]);
  }
 });
