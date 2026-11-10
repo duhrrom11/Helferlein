@@ -520,8 +520,13 @@
 
                 if (target.classList.contains('copy-link-btn')) {
                     const link = target.getAttribute('data-link');
-                    navigator.clipboard.writeText(link);
-                    alert('🔗 Link in die Zwischenablage kopiert!');
+                    if (!link || !navigator.clipboard?.writeText) {
+                        alert('Kopieren ist in diesem Browser nicht verfügbar.');
+                        return;
+                    }
+                    navigator.clipboard.writeText(link)
+                        .then(() => alert('🔗 Vertraulichen Erben-Link kopiert. Nur an die vorgesehene Person weitergeben.'))
+                        .catch(() => alert('Kopieren fehlgeschlagen. Bitte Browserberechtigung prüfen.'));
                 }
 
                 if (target.classList.contains('email-btn')) {
@@ -551,7 +556,8 @@
         }
 
         async function getCryptoKeyFromHex(hexKey) {
-            const bytes = new Uint8Array(hexKey.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            if (typeof hexKey !== "string" || !/^[a-fA-F0-9]{64}$/.test(hexKey)) throw new Error("Ungültiges Schlüsselformat");
+            const bytes = new Uint8Array(hexKey.match(/.{2}/g).map(byte => parseInt(byte, 16)));
             return crypto.subtle.importKey("raw", bytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
         }
 
@@ -1526,7 +1532,7 @@
                         <div>
                             <span class="font-bold text-slate-100">${escapeHtml(p.name)}</span>
                             ${p.contact ? `<span class="text-slate-400 text-[11px] ml-2">(${escapeHtml(p.contact)})</span>` : ''}
-                            <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">${escapeHtml(personLink)}</p>
+                            <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">Erben-Link mit geheimem Schlüssel – nur über „Link kopieren“ weitergeben.</p>
                         </div>
                         <div class="flex gap-2 flex-wrap mt-2 md:mt-0">
                             <button data-link="${escapeHtml(personLink)}" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px] copy-link-btn">Link kopieren</button>
