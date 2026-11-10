@@ -833,3 +833,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: Besitzerkontext bei laufenden Sammelaktionen und mobiler Auswahl (2026-11-10)
+
+- [x] Bestätigte Sammelaktionen prüfen zusätzlich den tatsächlich geladenen Besitzer beim Start, während jeder Schreibiteration und vor der Übernahme von Ergebnissen in Verlauf und Ergebnisübersicht.
+- [x] Mobile Schnellaktionen für zugeordnete und unzugeordnete Wünsche prüfen den aktuellen Benutzer gegen den geladenen Arbeitsbereich.
+- [x] „Mehr laden“, sichtbare Auswahl und Kategorieauswahl werden nach Kontowechsel oder bei fehlender aktiver Liste nicht mehr auf alten Daten ausgeführt.
+- [x] Mobile Filter- und Auswahlrücksetzungen sind an einen geladenen, gültigen Listenarbeitsbereich gebunden.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Besitzerprüfungen ersetzen keine serverseitigen Berechtigungen oder Transaktionen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
