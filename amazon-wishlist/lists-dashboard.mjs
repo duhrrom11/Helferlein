@@ -323,7 +323,7 @@ actions.append(button('Duplizieren',async()=>{
    const toolsRow=document.createElement('div');toolsRow.className='wish-card-tools';
    
     const quickDetail=button('Details · Notiz & Kategorie',async()=>{if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!quickDetail.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||selected!==list.id||!membershipReady)return msg('Bitte die aktuelle Wunschkarte verwenden.');openWishDetail(wish)});quickDetail.disabled=listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size>0;quickDetail.setAttribute('aria-label','Details und persönliche Kategorie für '+(wish.wishlist_products?.title||'Wunsch')+' öffnen');toolsRow.append(quickDetail);
-   toolsRow.append(button('Titel kopieren',async()=>{const title=wish.wishlist_products?.title||'Wunsch';if(!navigator.clipboard?.writeText){msg('Kopieren ist in diesem Browser nicht verfügbar.');return}try{await navigator.clipboard.writeText(title);msg('Wunschtitel kopiert.')}catch{msg('Kopieren nicht erlaubt. Bitte den Titel manuell markieren.')}}));
+   const copyTitle=button('Titel kopieren',async()=>{if(!copyTitle.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||selected!==list.id||!membershipReady)return;const title=wish.wishlist_products?.title||'Wunsch';if(!navigator.clipboard?.writeText){msg('Kopieren ist in diesem Browser nicht verfügbar.');return}try{await navigator.clipboard.writeText(title);msg('Wunschtitel kopiert.')}catch{msg('Kopieren nicht erlaubt. Bitte den Titel manuell markieren.')}});toolsRow.append(copyTitle);
    card.append(toolsRow);cards.append(card);
   }
  }
