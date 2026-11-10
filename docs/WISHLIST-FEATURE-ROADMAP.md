@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Frei anordenbares privates Startdashboard)
+
+- **Neu umgesetzt:** Individuelle Reihenfolge der vier Startdashboard-Bereiche (Kennzahlen, Tagesaufgaben, kommende Anlässe, Aufgabenfortschritt) mit mobil bedienbaren, tastaturzugänglichen Aufwärts-/Abwärts-Schaltflächen.
+- **Produktivmigration:** `wishlist_private_home_section_order` ergänzt `wishlist_gift_home_preferences.section_order` als validiertes Text-Array mit allen vier Bereichskennungen; bestehende Einstellungszeilen erhalten die bisherige Standardreihenfolge. Keine Änderung an Aufgaben, Anlässen oder historischen Produktivdaten.
+- **Speichern:** Reihenfolge wird zunächst nur lokal im Formular verändert; erst nach ausdrücklichem Klick auf „Einstellungen sicher speichern“ mit den bestehenden Anzeige- und Sortiereinstellungen owner-gefiltert gespeichert. Die Datenbank prüft Vollständigkeit und gültige Werte.
+- **Sicherheit:** Owner-only RLS der Präferenztabelle erneut überprüft, anon keine Leserechte; kein Testdatensatz erstellt. JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Personalisierbares privates Geschenk-Startdashboard)
 
 - **Neu umgesetzt:** Einstellbare Sichtbarkeit für Kennzahlen, Tagesaufgaben, kommende Anlässe und Aufgabenfortschritt sowie bevorzugte Aufgabensortierung (Dringlichkeit/Priorität/Fälligkeit) und Anlasssortierung (Termin/Titel).
