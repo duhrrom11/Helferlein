@@ -45,7 +45,7 @@ async function load(){
  if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
  const [o,g,publicLists,bookmarks]=await Promise.all([db.from('wishlist_occasions').select('id,title,person_name,budget_amount').eq('user_id',user.id).order('occasion_date').limit(1000),db.from('wishlist_gift_plans').select('id,occasion_id,title,recipient_name,planned_amount,actual_amount,status,notes,source_list_id,source_wish_id,source_product_id,created_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(1000),db.from('wishlist_lists').select('id,title,description,user_id').eq('visibility','public').eq('archived',false).order('created_at',{ascending:false}).limit(100),db.from('wishlist_collection_bookmarks').select('list_id').eq('user_id',user.id).limit(200)]);
  if(o.error||g.error)throw o.error||g.error;if(publicLists.error||bookmarks.error)throw publicLists.error||bookmarks.error;
- occasions=o.data||[];gifts=g.data||[];const saved=new Set((bookmarks.data||[]).map(x=>x.list_id));collections=(publicLists.data||[]).filter(x=>x.user_id===user.id||saved.has(x.id));const select=$('sourceList');for(const c of collections)option(select,c.id,c.title);suggestions=collections.slice();$('content').hidden=false;choices();render();$('status').textContent=occasions.length?'Deine Geschenkplanung ist aktuell.':'Lege zuerst einen Anlass in der Anlasszentrale an.';
+ occasions=o.data||[];gifts=g.data||[];const saved=new Set((bookmarks.data||[]).map(x=>x.list_id));collections=(publicLists.data||[]).filter(x=>x.user_id===user.id||saved.has(x.id));const select=$('sourceList');for(const c of collections)option(select,c.id,c.title);suggestions=collections.slice();$('content').hidden=false;choices();render();await importReservedWish();$('status').textContent=occasions.length?'Deine Geschenkplanung ist aktuell.':'Lege zuerst einen Anlass in der Anlasszentrale an.';
 }
 $('budgetOccasion').addEventListener('change',()=>{$('budgetAmount').value=String(byId($('budgetOccasion').value)?.budget_amount||0);render()});
 $('filterOccasion').addEventListener('change',render);$('filterStatus').addEventListener('change',render);
@@ -74,6 +74,20 @@ function renderRecommendations(){
 }
 $('occasion').addEventListener('change',renderRecommendations);
 
+
+async function importReservedWish(){
+ const raw=new URLSearchParams(location.search).get('reserved_wish');
+ if(!raw||!/^[0-9]{1,18}$/.test(raw))return;
+ const {data,error}=await db.rpc('wishlist_my_reservation_for_plan',{p_wish_id:raw});
+ if(error||!data?.length||!occasions.length){$('status').textContent='Reservierter Wunsch konnte nicht übernommen werden. Bitte prüfe Anmeldung, Öffentlichkeit und Anlässe.';return}
+ const item=data[0];
+ selectedProduct={wish_id:item.wish_id,product_id:item.product_id,title:item.product_title};showProductSource();
+ $('title').value=item.product_title.slice(0,150);$('giftStatus').value='idea';
+ if(item.collection_id&&collections.some(c=>c.id===item.collection_id))$('sourceList').value=item.collection_id;
+ $('form').scrollIntoView({behavior:'smooth',block:'start'});
+ history.replaceState(null,'',location.pathname);
+ $('status').textContent='Reservierten Wunsch als Geschenkentwurf übernommen. Bitte Anlass auswählen und speichern.';
+}
 function showProductSource(){
  $('productSourceLabel').textContent=selectedProduct?'📦 Verknüpftes Produkt: '+selectedProduct.title:'Keine Produktverknüpfung ausgewählt.';
  $('clearProduct').hidden=!selectedProduct;
