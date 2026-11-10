@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Designverfeinerung: Karten und Navigation)
+
+- **Navigation:** Mobile Hauptnavigation verdichtet; aufklappbare Featuregruppen schließen einander beim Öffnen, damit die Seite nicht durch mehrere offene Menüs unnötig lang wird. Aktiver Sprunglink wird über `aria-current=location` hervorgehoben.
+- **Karten:** Einheitliche Touch-Ziele, ruhige Abstände, verbesserte Fokusmarkierungen und flexible Textumbrüche für Wunschlisten, Geschenkbudget, Wunschwelten und Geschenkfinder. Sehr schmale Smartphones erhalten einspaltige Untermenüs.
+- **Barrierefreiheit:** Tastaturbedienbare native Details-Elemente, mindestens 44px große Eingaben und Links, Fokusdarstellung und reduzierte Bewegung berücksichtigt.
+- **Produktivdaten:** Nur HTML/CSS und clientseitige Navigationslogik; keine Supabase-Migration, keine Testdaten, keine Änderung bestehender Wunschlisten, Konten oder Geschenke.
+- **Qualität:** Vorhandensein der neuen Styles und einmalige IDs der vier Kernbereiche geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Einheitliches mobiles Kartendesign)
 
 - **Neu umgesetzt:** Gemeinsame Kartensprache für persönliche Wunschlisten, Geschenkbudget, Wunschwelten und Geschenkfinder: konsistente Oberflächen, Rahmen, Radien, Schatten, Typografie und Abstände mit bestehenden Theme-Variablen.
