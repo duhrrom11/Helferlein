@@ -240,7 +240,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
   updateActiveListContext();
   const cards=$('listWishCards');cards.replaceChildren();
   const list=lists.find(l=>l.id===selected&&!l.archived);
-  if(!list||!membershipReady){$('wishLoadMore').hidden=true;$('wishShowAssigned').disabled=true;$('wishSelectShown').disabled=true;$('wishSelectUnassigned').disabled=true;$('wishSelectAssigned').disabled=true;$('wishClearSelection').disabled=true;updateBulkToolbar([]);return}
+  if(!list||!membershipReady||getUser()?.id!==loadedOwner){$('wishLoadMore').hidden=true;$('wishShowAssigned').disabled=true;$('wishSelectShown').disabled=true;$('wishSelectUnassigned').disabled=true;$('wishSelectAssigned').disabled=true;$('wishClearSelection').disabled=true;updateBulkToolbar([]);return}
   $('wishClearSelection').disabled=bulkBusy||!bulkIds.size;
   $('wishShowAssigned').disabled=bulkBusy||!membershipReady;
   $('wishSelectAssigned').disabled=bulkBusy||list.archived||!wishes.some(w=>assignedIds.has(w.id));
@@ -254,7 +254,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
   const membershipCounts=new Map();for(const ids of membershipByList.values())for(const id of ids)membershipCounts.set(id,(membershipCounts.get(id)||0)+1);
   for(const wish of results.slice(0,visibleLimit)){
    const card=document.createElement('article');card.className='list-wish-card';card.dataset.wishId=wish.id;
-   const selectRow=document.createElement('label');selectRow.className='wish-card-select';const selectCheck=document.createElement('input');selectCheck.type='checkbox';selectCheck.setAttribute('aria-label','Für Sammelaktion auswählen: '+(wish.wishlist_products?.title||'Wunsch'));selectCheck.checked=bulkIds.has(wish.id);selectCheck.disabled=!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived||activeWishMutations.has(loadedOwner+':'+wish.id);selectCheck.onchange=()=>{if(getUser()?.id!==loadedOwner||selected!==list.id||!wishes.some(w=>w.id===wish.id)||!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived){selectCheck.checked=!selectCheck.checked;return}if(selectCheck.checked)bulkIds.add(wish.id);else bulkIds.delete(wish.id);if(selectedOnlyView)renderWishCards();else updateBulkToolbar()};const selectText=document.createElement('span');selectText.textContent='Für Mehrfachaktion auswählen';selectRow.append(selectCheck,selectText);card.append(selectRow);
+   const selectRow=document.createElement('label');selectRow.className='wish-card-select';const selectCheck=document.createElement('input');selectCheck.type='checkbox';selectCheck.setAttribute('aria-label','Für Sammelaktion auswählen: '+(wish.wishlist_products?.title||'Wunsch'));selectCheck.checked=bulkIds.has(wish.id);selectCheck.disabled=!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived||activeWishMutations.has(loadedOwner+':'+wish.id);selectCheck.onchange=()=>{if(getUser()?.id!==loadedOwner||selected!==list.id||!wishes.some(w=>w.id===wish.id)||!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived||activeWishMutations.has(loadedOwner+':'+wish.id)){selectCheck.checked=!selectCheck.checked;return}if(selectCheck.checked)bulkIds.add(wish.id);else bulkIds.delete(wish.id);if(selectedOnlyView)renderWishCards();else updateBulkToolbar()};const selectText=document.createElement('span');selectText.textContent='Für Mehrfachaktion auswählen';selectRow.append(selectCheck,selectText);card.append(selectRow);
    const title=document.createElement('h4');title.textContent=wish.wishlist_products?.title||'Wunsch';
    const priority=document.createElement('p');priority.className='wish-priority';priority.textContent=['','Sehr wichtig','Normal','Irgendwann'][wish.priority]||'Priorität '+wish.priority;
    card.append(title,priority);const membershipCount=membershipCounts.get(wish.id)||0;const membershipInfo=document.createElement('small');membershipInfo.className='wish-membership-count';membershipInfo.textContent=membershipCount+' '+(membershipCount===1?'Liste':'Listen');card.append(membershipInfo);const category=WISH_CATEGORIES.find(c=>c.id===wishCategories[wish.id]);if(category){const chip=document.createElement('span');chip.className='wish-category-chip';chip.textContent=category.label;card.append(chip)}
@@ -296,7 +296,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
   const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Liste wählen';select.append(placeholder);
   for(const list of [...lists].filter(l=>!l.archived).sort((a,b)=>Number(favoriteIds.has(b.id))-Number(favoriteIds.has(a.id))||a.title.localeCompare(b.title,'de'))){const option=document.createElement('option');option.value=list.id;option.textContent=(favoriteIds.has(list.id)?'★ ':'')+list.icon+' '+list.title+' · '+(listCounts.get(list.id)||0)+' Wünsche'+(list.archived?' (archiviert)':'');select.append(option)}
   select.value=lists.some(l=>l.id===previous&&!l.archived)?previous:'';
-  select.disabled=bulkBusy||!lists.some(l=>!l.archived);
+  select.disabled=bulkBusy||activeWishMutations.size>0||!membershipReady||!lists.some(l=>!l.archived);
  }
  function updateActiveListContext(){
   const list=lists.find(l=>l.id===selected&&!l.archived);
