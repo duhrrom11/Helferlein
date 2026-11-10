@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Privates Aufgaben-Aktivitätsprotokoll)
+
+- **Produktivmigration:** `wishlist_private_immutable_task_activity_events` erstellt `wishlist_gift_task_events` mit Eigentümer-ID, Aufgaben-ID und gespeichertem Titel, Ereignistyp, altem/neuem Status und Fälligkeitsdatum sowie serverseitigem `occurred_at`. Ein AFTER UPDATE Trigger auf `wishlist_gift_tasks` schreibt Status- und Terminänderungen automatisch und transaktionsgebunden. Bestehende Aufgaben und Jahresabschlüsse werden nicht verändert, historische Ereignisse nicht erfunden.
+- **Sicherheit:** RLS für Ereignisse aktiviert, ausschließlich owner-only SELECT für `authenticated`; kein anonymes Lesen und kein direktes INSERT/UPDATE/DELETE für Webrollen. Triggerfunktion SECURITY DEFINER mit leerem `search_path`, ohne öffentliche EXECUTE-Rechte. Auslöser läuft bei echten Änderungen der Felder `status` oder `due_date`.
+- **Frontend:** Privates Aktivitätsprotokoll in der Planungsassistenz, letzte Aktivitäten mit altem/neuem Wert und tatsächlichem Ereigniszeitpunkt, Sechswochenübersicht der protokollierten Erledigungen. Nach bestätigten Schnellaktionen wird das Protokoll neu geladen.
+- **Grenzen:** Vor Einführung des Triggers liegende Änderungen können nicht rückwirkend rekonstruiert werden. Historische Fortschrittsansicht zeigt Anzahl der Erledigungsereignisse, nicht eindeutig erledigte Aufgaben (erneute Erledigung nach Wiederöffnung kann erneut zählen). Keine Testdaten erzeugt; kein authentifizierter Browser-End-to-End-Test durchgeführt.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-Tagesplanung)
 
 - **Neu umgesetzt:** Privater Tagesfokus in `gift-assistant.html`/`gift-assistant.mjs` mit heute fälligen und überfälligen Aufgaben, Dringlichkeitsbegründung und mobiler Darstellung.
