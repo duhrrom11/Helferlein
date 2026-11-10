@@ -31,3 +31,28 @@ export async function fetchAllPages(fetchPage,{pageSize=1000,isCurrent=()=>true}
   if(batch.length<pageSize)return rows;
  }
 }
+
+/** Runs one confirmed bulk job against an injected adapter. Never retries automatically. */
+export async function executeBulkJob({targets,write,isCurrent=()=>true,shouldStop=()=>false,onProgress=()=>{}}) {
+ const completed=[],failed=[],errors=new Map();
+ let interrupted=false,invalidated=false;
+ for(const wishId of targets){
+  if(!isCurrent()){invalidated=true;interrupted=true;break}
+  if(shouldStop()){interrupted=true;break}
+  try{
+   const response=await write(wishId);
+   // The write may have reached the server, but must not update another account's UI.
+   if(!isCurrent()){invalidated=true;interrupted=true;break}
+   if(response?.error)throw response.error;
+   completed.push(wishId);
+  }catch(error){
+   if(!isCurrent()){invalidated=true;interrupted=true;break}
+   failed.push(wishId);
+   const reason=bulkErrorHint(error);
+   errors.set(reason,(errors.get(reason)||0)+1);
+  }
+  onProgress({done:completed.length+failed.length,total:targets.length,success:completed.length,failed:failed.length});
+ }
+ const summary=summarizeBulk({targets,completed,failed,stopped:interrupted});
+ return {...summary,completed,errors:[...errors].map(([reason,count])=>({reason,count})),invalidated};
+}
