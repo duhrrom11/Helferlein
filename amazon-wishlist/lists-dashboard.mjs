@@ -120,9 +120,9 @@ export function mountListsDashboard(db, getUser) {
     const lines=[list.icon+' '+list.title,list.description||'', '',...entries.map((wish,index)=>{
      const asin=wish.wishlist_products?.asin;
      const title=wish.wishlist_products?.title||'Wunsch';
-     return (index+1)+'. '+title+(asin?'\\nhttps://www.amazon.de/dp/'+encodeURIComponent(asin):'');
+     return (index+1)+'. '+title+(asin?'\nhttps://www.amazon.de/dp/'+encodeURIComponent(asin):'');
     }), '', 'Geteilt als Textkopie aus Helferlein Wishes. Preise und Verfügbarkeit nicht geprüft.'];
-    const snapshot=lines.join('\\n');
+    const snapshot=lines.join('\n');
     try{
      if(navigator.share)await navigator.share({title:list.title,text:snapshot});
      else if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(snapshot);msg('Sammlung als Text kopiert. Du kannst sie jetzt teilen.')}
