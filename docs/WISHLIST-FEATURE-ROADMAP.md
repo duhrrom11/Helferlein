@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Formularvalidierung und Feldfokus)
+
+- **Listen anlegen/bearbeiten:** Ungültige oder fehlende Listennamen führen nun zu einer direkt mit `aria-invalid="true"` markierten und fokussierten Eingabe; bei der bestehenden Listenbearbeitung gilt dasselbe für ungültige HTTPS-Titelbildadressen. Die vorhandene globale bzw. formularnahe Statusmeldung bleibt erhalten.
+- **Wünsche speichern:** Ungültige Amazon.de-Produktlinks, Produkttitel und zu lange Wunsch-Notizen werden dem tatsächlich betroffenen Eingabefeld zugeordnet. Der bestehende Fehlertext wird weiter über die vorhandene Speicherfehlerbehandlung ausgegeben; zusätzlich wandert der Fokus zum Feld und `aria-invalid` kennzeichnet den Fehler für assistive Technologien.
+- **Mobiles Design:** Deutliche rote Fokus-/Fehlerumrandung für ungültige Eingaben im Wunsch- und Listen-Editor bei Bildschirmbreiten bis 759 px. Bei Eingabe oder Auswahlwechsel wird die Markierung entfernt; beim erneuten Öffnen/Zurücksetzen des Editors werden alte Markierungen bereinigt.
+- **Prüfung:** Die veröffentlichten Dateien `index.html`, `app.mjs`, `lists-dashboard.mjs` aus GitHub neu geladen; alle zehn Inline-JavaScript-Blöcke und beide Module isoliert ohne Syntaxfehler geprüft; 21 öffnende und 21 schließende Style-Tags sowie keine doppelten statischen HTML-IDs. Kein produktiver Browser-End-to-End-Test durchgeführt.
+- **Produktionsschutz:** Nur Frontend-Validierungsdarstellung und Fokusführung verändert. Keine neuen oder geänderten Supabase-Abfragen, Migrationen oder Testdaten; keine Produktivdatensätze angefasst.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Fokusführung nach Speichern und Abbrechen)
 
 - **Listenbearbeitung:** Vor dem Öffnen des vorhandenen Listen-Editors wird das fokussierte Auslöseelement gemerkt. Beim Abbrechen und nach erfolgreichem Speichern führt die Oberfläche den Tastaturfokus wieder zu diesem Button, sofern er nach der Aktualisierung noch existiert und sichtbar ist. Falls der Button beim Neuzeichnen der Liste entfernt wurde, wird die Listenübersicht programmatisch fokussierbar und als sicherer Rücksprungpunkt genutzt. Auch bei bereits gespeichertem Listendesign mit nachfolgendem Ladefehler wird der Fokus zurückgeführt.
