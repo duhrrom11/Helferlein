@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Geschenkjahr und historische Anlassbudgets)
+
+- **Additive Produktivmigration:** `wishlist_gift_plans.gift_year` und `gift_year_source` ergänzt. Bestehende Geschenke erhalten ihr Erstellungsjahr als ausdrücklich gekennzeichnete Schätzung (`inferred_created`), ohne ihre übrigen Daten zu verändern. Neue Geschenke erhalten das aktuelle Kalenderjahr als Standard. Über `wishlist_set_gift_year(plan_id,year)` können Eigentümer das Jahr korrigieren.
+- **Historische Budgets:** Neue private Tabelle `wishlist_occasion_budget_years` mit eindeutigem Schlüssel `(user_id,occasion_id,budget_year)`, explizit gespeicherten Budgetwerten und vier owner-only RLS-Richtlinien. Keine historischen Budgets erfunden oder automatisch rückwirkend befüllt.
+- **Mobile Jahresstatistik:** Geschenkjahr korrigieren, Jahresbudgets pro Anlass erfassen und Budgetabweichungen für das ausgewählte Jahr auswerten. Jahresvergleich und Geschenk-Abschlussquote verwenden `gift_year` statt `created_at`.
+- **Sicherheit:** Budgethistorie nur für authentifizierte Eigentümer; RPC `SECURITY INVOKER`, eingeschränkte EXECUTE-Berechtigung und Eigentümerprüfung. Bestehende Geschenk-/Anlass-/Aufgaben-RLS unverändert.
+- **Grenzen:** Historische Geschenkstatus und tatsächliche Ausgaben sind weiterhin veränderlich und nicht als unveränderliche Jahres-Snapshots archiviert. Bestehende Geschenk-Jahreszuordnungen sind Schätzungen, bis Nutzer sie bestätigen. Kein Browser-End-to-End-Test mit authentifiziertem Konto durchgeführt.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-Jahresstatistik)
 
 - **Neu umgesetzt:** `amazon-wishlist/gift-analytics.html` und `gift-analytics.mjs` mit mobiler Jahresauswahl, Jahresvergleich, Geschenk-Abschlussquote, erfassten tatsächlichen Ausgaben, geplanten Beträgen, Anlassbudget-Vergleich und abgeschlossenen Anlass-Checklisten bzw. Geschenkgruppen.
