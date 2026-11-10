@@ -205,3 +205,14 @@
 - [ ] Vollständige native Node-Suite und verifiziertes npm-Lockfile nach Wiederherstellung der Infrastruktur
 
 **Freigabe weiterhin gesperrt.** Kein produktiver Supabase-Zugriff, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Echter Dashboard-Browser-Integrationstest mit Mock-Supabase (2026-11-10)
+
+- [x] Neue Playwright-Spezifikation `dashboard-browser.integration.spec.mjs` im Feature-Branch angelegt. Sie lädt das echte `index.html` und die echten ES-Module `lists-dashboard.mjs`, `bulk-helpers.mjs`, `list-features.mjs` über lokal abgefangene Browser-Requests.
+- [x] Der Test ruft **`mountListsDashboard` tatsächlich im Browser-Testcode** auf und injiziert einen rein lesenden Supabase-Query-Mock mit kontrollierten Listen, Wünschen und Mitgliedschaften. Jeder Schreibaufruf ist verboten und wird gezählt.
+- [x] Drei Szenarien als ausführbare Tests implementiert: fehlgeschlagener Mitgliedschafts-Reload nach Bulk-Auswahl; Wechsel von Liste A zu Liste B; angehaltener Mitgliedschafts-Reload mit gesperrter Bulk-Auswahl bis zur Freigabe.
+- [ ] **Diese drei neuen Playwright-Tests wurden noch nicht ausgeführt.** Das lokale Container-Checkout enthält den Feature-Branch nicht; GitHub-DNS ist nicht erreichbar, und Node-`@playwright/test` ist nicht installiert. Ein erfolgreicher Browserlauf darf nicht behauptet werden.
+- [ ] Browserlauf auf Feature-Branch-Checkout nach `npm ci` ausführen; eventuelle Fixture- und DOM-Selektorprobleme anhand tatsächlicher Fehlermeldungen beheben.
+- [ ] Vollständige native Node-Suite und verifiziertes npm-Lockfile nach Wiederherstellung der Infrastruktur.
+
+**Grenzen:** Kein produktiver Supabase-Zugriff, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
