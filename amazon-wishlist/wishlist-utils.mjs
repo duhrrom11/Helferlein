@@ -107,7 +107,25 @@ export function wishlistErrorMessage(error) {
  if(error?.code==='PGRST116')return 'Eintrag nicht gefunden. Bitte neu laden.';
  if(typeof error?.status==='number'&&error.status>=500)return 'Der Dienst ist vorübergehend nicht erreichbar. Bitte später erneut versuchen.';
  if(typeof error?.status==='number'&&error.status>=400)return 'Anfrage fehlgeschlagen. Bitte Eingaben und Anmeldung prüfen.';
- if(error instanceof Error&&!('code' in error)&&!('status' in error))return error.message||'Unbekannter Fehler. Bitte erneut versuchen.';
+ if(error instanceof Error&&!('code' in error)&&!('status' in error)){
+  // Browser/network exceptions may include internal URLs or diagnostic details.
+  const safeMessages=new Set([
+   'Bitte zuerst anmelden','Sitzung hat sich geändert','Zuerst Profil speichern',
+   'Nur gültige Amazon.de-Produktlinks','Wunsch nicht gefunden',
+   'Wunsch konnte nicht entfernt werden.','Dieser Wunsch gehört nicht zu deinem Konto',
+   'Abonnement konnte nicht entfernt werden','Suchergebnis ist veraltet. Bitte erneut suchen.',
+   'Dieser Benutzername ist bereits vergeben. Bitte einen anderen wählen.',
+   'Dieses Produkt steht bereits auf deiner Wunschliste. Bitte den bestehenden Wunsch bearbeiten.',
+   'Ungültige Priorität','Ungültige Feed-Seite','Ungültiger Link.',
+   'Kopieren nicht möglich. Bitte den Link aus der Adresszeile kopieren.',
+   'Produkttitel muss 1 bis 250 Zeichen enthalten','Notiz darf maximal 500 Zeichen enthalten',
+   'Benutzername: 3–30 Zeichen, nur a–z, 0–9 und _',
+   'Profilname muss 1 bis 80 Zeichen enthalten','Profilbeschreibung darf maximal 500 Zeichen enthalten',
+   'Bitte eine gültige E-Mail-Adresse eingeben','Passwort muss mindestens 8 Zeichen enthalten',
+   'Bitte mindestens zwei gültige Suchzeichen eingeben'
+  ]);
+  return safeMessages.has(error.message)?error.message:'Die Anfrage konnte nicht abgeschlossen werden. Bitte erneut versuchen.';
+ }
  return 'Die Anfrage konnte nicht abgeschlossen werden. Bitte erneut versuchen.';
 }
 
