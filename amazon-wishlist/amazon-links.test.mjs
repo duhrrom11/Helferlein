@@ -51,3 +51,19 @@ test('rejects embedded whitespace, controls and ambiguous product segments', () 
  assert.deepEqual(parseAmazonUrl(base+'?th=1'),{asin:'B0ABC12345',marketplace:'amazon.de'});
  assert.deepEqual(parseAmazonUrl(base+'#details'),{asin:'B0ABC12345',marketplace:'amazon.de'});
 });
+
+test('requires product routes at the root and rejects nested or spoofed paths', () => {
+ const asin='B0ABC12345';
+ for (const path of [
+  '/redirect/dp/'+asin,
+  '/other/gp/product/'+asin,
+  '//dp/'+asin,
+  '/dp/'+asin+'EXTRA',
+  '/dp/'+asin+'.html',
+  '/dp/'+asin+'%2fother',
+  '/gp/aw/d/'+asin+'/extra/dp/B0OTHER123'
+ ]) assert.equal(parseAmazonUrl('https://www.amazon.de'+path),null,path);
+ for (const path of ['/dp/'+asin,'/dp/'+asin+'/','/gp/product/'+asin,'/gp/aw/d/'+asin]) {
+  assert.deepEqual(parseAmazonUrl('https://www.amazon.de'+path),{asin,marketplace:'amazon.de'},path);
+ }
+});
