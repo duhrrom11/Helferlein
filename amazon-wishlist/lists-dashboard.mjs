@@ -171,7 +171,8 @@ export function mountListsDashboard(db, getUser) {
   const uid=owner(),sourceId=selected,targetId=$('bulkMoveTarget').value;
   const source=lists.find(l=>l.id===sourceId&&!l.archived),target=lists.find(l=>l.id===targetId&&!l.archived);
   if(!source||!target||sourceId===targetId)return msg('Bitte zwei verschiedene aktive Listen auswählen.');
-  const targets=[...bulkIds].filter(id=>assignedIds.has(id)&&wishes.some(w=>w.id===id));
+  const loadedWishIds=new Set(wishes.map(w=>w.id));
+  const targets=[...bulkIds].filter(id=>assignedIds.has(id)&&loadedWishIds.has(id));
   const skipped=bulkIds.size-targets.length;
   if(!targets.length)return msg('Nur Wünsche, die bereits in dieser Liste liegen, können verschoben werden.');
   if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten.'))return;
@@ -191,7 +192,7 @@ export function mountListsDashboard(db, getUser) {
      }
      if(!current()){stopped=true;partial++;break}
      const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceId).eq('wish_id',wishId).eq('user_id',uid);
-     if(error){partial++;failed++;continue}
+     if(error){partial++;failed++;msg('Zielzuordnung gespeichert, aber Entfernen aus der Ursprungsliste fehlgeschlagen. Bitte beide Listen prüfen.');continue}
      moved++;bulkIds.delete(wishId);
     }catch(e){failed++;msg('Ein Wunsch konnte nicht verschoben werden: '+(e.message||'Unbekannter Fehler'))}
     finally{reportBulk(moved+failed,targets.length,moved,failed)}
@@ -199,7 +200,7 @@ export function mountListsDashboard(db, getUser) {
    if(current()){
     const summary=moved+' verschoben, '+failed+' fehlgeschlagen'+(skipped?', '+skipped+' nicht in dieser Liste – übersprungen':'')+(stopped?', Vorgang gestoppt':'')+(partial?', '+partial+' möglicherweise in beiden Listen – bitte prüfen':'')+'.';
     try{await load();if(getUser()?.id===uid)$('bulkStatus').textContent=summary}
-    catch(e){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent=summary}
+    catch(e){if(getUser()?.id===uid){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent=summary}}
    }
   }finally{
    if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkProgressPanel').hidden=true;$('bulkStop').disabled=true;if(getUser()?.id===uid){updateBulkToolbar();renderWishCards()}}
