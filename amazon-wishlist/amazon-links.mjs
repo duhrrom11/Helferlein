@@ -1,7 +1,7 @@
 /** Amazon-only URL parsing. No scraping, pricing, or product metadata claims. */
 const MARKETS = new Set(['amazon.de','amazon.com','amazon.co.uk','amazon.fr','amazon.it','amazon.es','amazon.nl','amazon.pl','amazon.se','amazon.com.be','amazon.co.jp','amazon.ca','amazon.com.au']);
 export function parseAmazonUrl(input) {
-  if (typeof input !== 'string' || input.length > 4096 || /[\u0000-\u0020\u007f]/.test(input.trim())) return null;
+  if (typeof input !== 'string' || input.length > 4096 || /[\u0000-\u001f\u007f]/.test(input) || / /.test(input.trim())) return null;
   let url;
   try { url = new URL(input.trim()); } catch { return null; }
   if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
