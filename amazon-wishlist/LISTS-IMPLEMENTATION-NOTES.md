@@ -115,3 +115,11 @@
 - Zugängliche Statusanzeige für Laden/Fehler mit erneutem Ladeversuch; Fehler beim Laden weiterer Wünsche oder Zuordnungen werden nicht als vollständiger Erfolg angezeigt.
 - Auf Mobilgeräten bleibt die Sammelwerkzeugleiste am unteren Bildschirmrand erreichbar; Touch-Flächen sind vergrößert.
 - Nur Syntax- und DOM-ID-Kurzprüfung. Noch kein vollständiger Browser-/Integrationstest; kein Merge, Deployment oder Änderung der produktiven Supabase-Datenbank.
+
+## Automatisierte Regressionstests und Performance
+- Neue rein funktionale Hilfen in `bulk-helpers.mjs`: deduplizierte Zielauswahl, Ergebniszusammenfassung, Kontokontextprüfung, Fehlerklassifikation und paginiertes Laden mit Generation-Guard.
+- `bulk-helpers.test.mjs` verwendet `node:test` ohne externe Pakete. Lokal ausführbar mit `node --test amazon-wishlist/bulk-helpers.test.mjs`.
+- Tests prüfen Filter und Sortierung, Sammelaktionen und Unterbrechungen, Berechtigungen/Kontowechsel, Fehlermeldungen, mehrseitiges Laden, Netzwerkfehler und veraltete Antworten.
+- Mitgliedschafts-Pagination hat eine deterministische Sortierung nach Listen- und Wunsch-ID. Ergebnisbildung bei Sammelaktionen verwendet `Set` statt wiederholter linearer `includes`-Suche.
+- In dieser Entwicklungsrunde wurden 15 direkte Kurzprüfungen über die extrahierten Funktionen, JavaScript-Syntax und HTML-IDs erfolgreich ausgeführt. Der vollständige `node --test`-Lauf sowie echte Browser- und Supabase-Integrationstests wurden nicht ausgeführt.
+- Keine produktive Datenbankänderung, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
