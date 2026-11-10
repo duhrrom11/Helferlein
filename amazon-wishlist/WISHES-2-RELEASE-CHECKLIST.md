@@ -697,3 +697,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Prüfung der beiden Bestätigungswege erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen. Weitere UI-Einstiegspunkte und Kontowechsel während Netzwerkoperationen müssen vor Freigabe geprüft werden.
 - [ ] Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment; Freigabe bleibt gesperrt.
+
+## Autopilot: Listenkopie sperrt direkte Wunschänderungen und mobile Karten (2026-11-10)
+
+- [x] Direkte Zuordnungs-Checkboxen prüfen die aktive Listenkopie vor dem Datenbankschreibvorgang; Einzelverschiebungen prüfen sie nach Bestätigung erneut.
+- [x] Sammelzuordnungen und Sammelverschiebungen prüfen die Kopiersperre auch vor Vorbereitung beziehungsweise nach der Bestätigung.
+- [x] Wunschmarker und das Öffnen von Detaildialogen respektieren die Kopiersperre; Kategorie-Speichern war bereits gesperrt.
+- [x] Mobile Karten zeigen für Auswahl-, Zuordnungs- und Verschiebeelemente während einer Listenkopie einen deaktivierten Zustand, sobald die Karten neu gerendert werden.
+- [x] Minimale JavaScript-Syntaxprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen. Bestehende Karten werden bei Beginn einer Kopie nicht zwangsläufig neu gerendert; Ereignis-Guards verhindern die betroffenen Schreibvorgänge dennoch.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
