@@ -212,12 +212,12 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
   }
  }
  async function moveWishToList(wishId,sourceListId,targetListId,control){
-  if(bulkBusy||!membershipReady||!getUser()||sourceListId===targetListId||activeWishMutations.has(getUser().id+':'+wishId))return;
+  if(bulkBusy||!membershipReady||!getUser()||sourceListId===targetListId||activeWishMutations.size)return;
   const uid=owner(),generation=loadGeneration;
   const source=lists.find(l=>l.id===sourceListId&&!l.archived);
   const target=lists.find(l=>l.id===targetListId&&!l.archived);
   if(!source||!target||selected!==sourceListId||!assignedIds.has(wishId))return msg('Bitte einen zugeordneten Wunsch aus einer aktiven Liste auswählen.');
-  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(bulkBusy||!membershipReady||activeWishMutations.has(uid+':'+wishId)||selected!==sourceListId||getUser()?.id!==uid||generation!==loadGeneration||!assignedIds.has(wishId)||!lists.some(l=>l.id===targetListId&&!l.archived))return;
+  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(bulkBusy||!membershipReady||activeWishMutations.size||selected!==sourceListId||getUser()?.id!==uid||generation!==loadGeneration||!assignedIds.has(wishId)||!lists.some(l=>l.id===targetListId&&!l.archived))return;
   const current=()=>getUser()?.id===uid&&generation===loadGeneration&&selected===sourceListId;
   activeWishMutations.add(uid+':'+wishId);control.disabled=true;
   try{
@@ -265,7 +265,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
    }
    const row=document.createElement('label');const check=document.createElement('input');check.type='checkbox';check.setAttribute('aria-label','In dieser Liste: '+(wish.wishlist_products?.title||'Wunsch'));check.checked=assignedIds.has(wish.id);check.disabled=!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived||activeWishMutations.has(loadedOwner+':'+wish.id);
    const caption=document.createElement('span');caption.textContent='In dieser Liste';
-   check.onchange=async()=>{if(cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||selected!==list.id||!wishes.some(w=>w.id===wish.id)||!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived||activeWishMutations.has(owner()+':'+wish.id)){check.checked=!check.checked;return}activeWishMutations.add(owner()+':'+wish.id);check.disabled=true;const uid=owner(),generation=loadGeneration,wanted=check.checked;try{
+   check.onchange=async()=>{if(cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||selected!==list.id||!wishes.some(w=>w.id===wish.id)||!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived||activeWishMutations.size){check.checked=!check.checked;return}activeWishMutations.add(owner()+':'+wish.id);check.disabled=true;const uid=owner(),generation=loadGeneration,wanted=check.checked;try{
     const query=wanted?db.from('wishlist_list_items').insert({list_id:list.id,wish_id:wish.id,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',list.id).eq('wish_id',wish.id).eq('user_id',uid);
     const {error}=await query;if(error)throw error;if(getUser()?.id!==uid||selected!==list.id||generation!==loadGeneration)return;
     if(wanted){assignedIds.add(wish.id);membershipByList.get(list.id)?.add(wish.id)}else{assignedIds.delete(wish.id);membershipByList.get(list.id)?.delete(wish.id)}
