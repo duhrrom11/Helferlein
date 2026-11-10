@@ -73,3 +73,10 @@
 - Detaildialog auf kleinen Bildschirmen als unteres Panel mit größeren Touch-Zielen und Rücksicht auf Safe-Area.
 - Kein neues Schema und keine Änderung der produktiven Supabase-Datenbank; keine Änderungen an öffentlichen Wunschdaten.
 - Kurze Syntax- und DOM-ID-Prüfungen erfolgreich, kein vollständiger Browser-Test, kein Merge und kein Deployment.
+
+## Sammelauswahl und Mehrfachzuordnung
+- Mehrfachauswahl einzelner Wünsche und aller sichtbaren Wünsche; Auswahl bleibt beim Filtern erhalten, kann explizit geleert werden.
+- Bestätigte Mehrfachaktionen fügen Zuordnungen zu der aktuell gewählten Liste hinzu oder entfernen sie, ohne Wünsche zu löschen. Eigentümer- und Listenprüfung vor jedem Eintrag, Fehlerzählung und Rest-Auswahl bei Fehlschlägen.
+- Übersicht und Filter für Wünsche, die keiner Liste zugeordnet sind. Der Zähler bezieht sich auf maximal 200 geladene Wünsche; keine Vollständigkeitsgarantie für größere Sammlungen.
+- Das Listen-Schema bleibt ein nicht angewendeter Vorschlag. Keine Produktivdatenbankänderungen, kein Merge, kein Deployment.
+- Kurze JavaScript-Syntax- und DOM-ID-Prüfung erfolgreich; keine vollständigen Browser- oder Integrationstests.
