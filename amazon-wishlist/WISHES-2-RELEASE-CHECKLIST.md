@@ -57,3 +57,15 @@
 **Testgrenzen:** In der Laufzeit war kein Netzwerkzugriff auf GitHub verfügbar; die lokal bereitgestellte ZIP-Datei enthält den Main-Branch und nicht den aktuellen Feature-Branch. Daher wurden keine vollständigen Branch-Testläufe als erfolgreich ausgewiesen. Die vorhandenen lokalen Node-/Chromium-Prüfungen sind lediglich zusätzliche Evidenz.
 
 **Sicherheitsgrenzen:** Keine produktiven Supabase-Zugriffe oder -Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Dependency-Lockfile und erneute lokale Prüfungen (2026-11-10)
+
+- [x] Playwright-Version im `package.json` exakt auf `1.56.1` gesetzt
+- [x] Browser-Konfiguration mit festen Timeouts, einem Worker, reduzierter Bewegung sowie Trace/Screenshot nur bei Fehlschlag stabilisiert
+- [x] Lokale isolierte Node-Tests **erneut tatsächlich ausgeführt:** 13 bestanden, 0 fehlgeschlagen (`node --test real-node.test.mjs`, 130,7 ms)
+- [x] Lokale isolierte Chromium-Prüfungen **erneut tatsächlich ausgeführt:** 6 bestanden, darunter 320/375/768 px, Auswahl, Escape und Retry (`python browser-check.py`)
+- [ ] **Verifiziertes `package-lock.json` fehlt.** `npm install --package-lock-only --offline --ignore-scripts --no-audit --no-fund` wurde lokal versucht und scheiterte mit `ENOTCACHED` für `@playwright/test`; GitHub-Checkout/Registry sind in dieser Laufzeit nicht über DNS erreichbar. **Kein Lockfile mit erfundenen Integritäts-Hashes erstellen.**
+- [ ] Auf einem Rechner mit Registry-Zugang im vollständigen Feature-Checkout: `cd amazon-wishlist && npm install --package-lock-only --ignore-scripts --no-audit --no-fund`, danach `npm ci --ignore-scripts --no-audit --no-fund`, `npx playwright install chromium` und `bash run-wishes-tests.sh --browser`. Das generierte Lockfile prüfen und committen.
+- [ ] Die **echten** Branch-Dateien (`bulk-helpers.test.mjs`, `bulk-workflows.test.mjs`, `wishes-ui.spec.mjs`) in einem vollständigen Checkout mit Node und Playwright ausführen. Bis dahin keine Freigabe behaupten.
+
+**Wichtige Abgrenzung:** Der erfolgreiche lokale Lauf verwendet weiterhin die isolierten Testdateien aus `/mnt/data/helferlein-test-run` und ist kein vollständiger Branch-Testlauf. Der Lockfile-Schritt ist technisch blockiert, nicht erledigt.
