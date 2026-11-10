@@ -227,3 +227,38 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('backup preview validates profile and wish field types without coercion',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:{handle:'alice',display_name:'Alice',bio:''},wishes:[{asin:'B0ABC12345',title:'Buch',note:'',priority:2}]};
+ const preview=value=>previewWishlistBackup(JSON.stringify(value));
+ assert.equal(preview(base).count,1);
+ for(const key of ['handle','display_name','bio']){
+  for(const bad of [undefined,null,12,{},[]]){
+   const profile={...base.profile,[key]:bad};
+   assert.throws(()=>preview({...base,profile}),/Profil|Benutzername/);
+  }
+ }
+ for(const key of ['title','note']){
+  for(const bad of [undefined,null,12,{},[]]){
+   assert.throws(()=>preview({...base,wishes:[{...base.wishes[0],[key]:bad}]}),/Wunschtext/);
+  }
+ }
+});
+
+test('backup preview only accepts matching canonical Amazon.de URLs when provided',()=>{
+ const wish={asin:'B0ABC12345',title:'Buch',note:'',priority:2};
+ const backup=wishes=>JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes});
+ assert.equal(previewWishlistBackup(backup([wish])).count,1);
+ assert.equal(previewWishlistBackup(backup([{...wish,amazon_url:'https://www.amazon.de/dp/B0ABC12345'}])).count,1);
+ for(const amazon_url of ['https://www.amazon.de/dp/B0OTHER123','https://www.amazon.com/dp/B0ABC12345','https://amazon.de.evil.example/dp/B0ABC12345',null,42]){
+  assert.throws(()=>previewWishlistBackup(backup([{...wish,amazon_url}])),/Amazon-Link/);
+ }
+});
+
+test('backup preview enforces the two-megabyte UTF-8 byte limit',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[]};
+ assert.equal(previewWishlistBackup(JSON.stringify(base)).count,0);
+ const oversized=JSON.stringify({...base,ignored:'ä'.repeat(1_000_000)});
+ assert.ok(oversized.length<2_000_000);
+ assert.throws(()=>previewWishlistBackup(oversized),/2 MB/);
+});
