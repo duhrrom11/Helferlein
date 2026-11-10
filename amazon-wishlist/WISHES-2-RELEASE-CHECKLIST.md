@@ -938,3 +938,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Gezielte Regressionstests für fehlerhafte Eingaben und gültige Produktlinks ergänzt.
 - [ ] GitHub-Actions-Ergebnis und Browser-/Mobilgeräteabnahme dieser Änderung noch nicht bestätigt; keine Behauptung eines erfolgreichen CI-Laufs.
 - [ ] Freigabe gesperrt: kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment. Clientseitige Maßnahmen ersetzen keine serverseitige Zugriffskontrolle.
+
+## Autopilot: Produktpfad-Verankerung (2026-11-10)
+
+- [x] Amazon-Produktpfade müssen am Anfang des URL-Pfads stehen; verschachtelte `/redirect/dp/ASIN`-ähnliche Pfade werden nicht mehr als Produkt akzeptiert.
+- [x] Gültige Root-Pfade `/dp/ASIN`, `/gp/product/ASIN` und `/gp/aw/d/ASIN` bleiben kompatibel.
+- [x] Regressionstests für verschachtelte Pfade, falsche ASIN-Suffixe und erlaubte Root-Pfade ergänzt.
+- [x] Isolierte Node.js-RegEx-Prüfung der relevanten gültigen und ungültigen Pfadfälle erfolgreich.
+- [ ] Vollständiger Node-Testlauf, Browser-/Mobilgeräte-Tests und CI-Status dieser Commits noch nicht bestätigt.
+- [ ] Freigabe gesperrt: kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
