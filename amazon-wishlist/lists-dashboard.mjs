@@ -272,7 +272,7 @@ actions.append(button('Duplizieren',async()=>{
   updateActiveListContext();
   const cards=$('listWishCards');cards.replaceChildren();
   const list=lists.find(l=>l.id===selected&&!l.archived);
-  if(!list||!membershipReady||getUser()?.id!==loadedOwner){$('wishLoadMore').hidden=true;$('wishShowAssigned').disabled=true;$('wishSelectShown').disabled=true;$('wishSelectUnassigned').disabled=true;$('wishSelectAssigned').disabled=true;$('wishClearSelection').disabled=true;updateBulkToolbar([]);return}
+  if(!list||!membershipReady||getUser()?.id!==loadedOwner){$('wishLoadMore').hidden=true;for(const id of ['wishShowAssigned','wishSelectShown','wishSelectUnassigned','wishSelectAssigned','wishClearSelection','wishSelectedOnly','wishLoadMore','listItemsNewWish'])$(id).disabled=true;updateBulkToolbar([]);return}
   $('wishClearSelection').disabled=listCopyBusy||bulkBusy||activeWishMutations.size>0||!bulkIds.size;
   $('wishShowAssigned').disabled=listCopyBusy||bulkBusy||activeWishMutations.size>0||!membershipReady;
   $('wishSelectAssigned').disabled=listCopyBusy||bulkBusy||activeWishMutations.size>0||list.archived||!assignedIds.size;
