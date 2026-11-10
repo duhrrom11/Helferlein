@@ -145,6 +145,14 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Abgrenzung:** Noch keine eigenständig von Nutzern erstellbaren/gespeicherten Themenwelten, keine vollständige serverseitige Suche, keine automatisch abgerufenen Produktbilder. Themenzuordnung basiert auf Stichwörtern.
 - **Offen:** Persistente kuratierte Sammlungen, Profilintegration, Community-Ranglisten, bessere Produktbilder und eine eigenständige öffentliche Entdecken-Suche.
 
+## Entwicklungsfortschritt – 10.11.2026 (Persönliche Sammlungen)
+
+- **Neu umgesetzt:** Vier zusätzliche Pinterest-artige Vorlagen für persönliche Sammlungen: Cozy-Wunschwelt, Geschenkideen unter 50 €, Kreativwelt und Wellness-Welt. Sie nutzen die bestehenden `wishlist_lists`-Felder für Titel, Beschreibung, Icon und Farbe; keine neue Tabelle.
+- **Neu umgesetzt:** „Sammlung teilen“ als statische Textkopie mit Titeln und Amazon-Produktlinks, über native Teilen-Funktion oder Zwischenablage. Vor dem Teilen wird auf die Weitergabe auch privater Inhalte hingewiesen.
+- **Neu umgesetzt:** Mobile Anpassungen für Listenkarten und Aktionsflächen.
+- **Wichtige Abgrenzung:** Es gibt **noch keine öffentlichen, dauerhaft abrufbaren Sammlungsseiten** und keine echte per Link freigegebene Privatlistenansicht. Die Aktion übermittelt nur eine bewusst erstellte Textkopie. Die Vorlage „unter 50 €“ ist eine thematische Bezeichnung, **keine automatische Preisprüfung**.
+- **Offen:** Sichere öffentlich teilbare Sammlungsseiten mit RLS, individuelle Titelbilder, Profilintegration und interaktive soziale Funktionen.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
