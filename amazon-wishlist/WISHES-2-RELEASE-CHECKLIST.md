@@ -543,3 +543,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung des Dashboard-Quelltexts ohne Importzeilen erfolgreich; gezielte GitHub-Inhaltsprüfung der Änderungen erfolgreich.
 - [ ] Browser-/Mobilgeräte-/End-to-End-Tests bleiben offen. Kein produktiver Supabase-Test ausgeführt.
 - [ ] Freigabe weiterhin gesperrt. Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Autopilot: Detailkontext, eindeutige Zuordnungen und Listenmutationen (2026-11-10)
+
+- [x] Wunschdetails, lokale Markierungen und Kategorien reagieren nicht mehr auf veraltete Karten oder Benutzerkonten; Sprung in andere Listen prüft ebenfalls den geladenen Benutzerkontext.
+- [x] Die Dashboard-Zuordnungsübersicht übernimmt nur bekannte Wünsche und Listen; Listen-Zähler basieren auf eindeutigen Wunsch-IDs statt möglicherweise mehrfach gelieferten Zuordnungszeilen.
+- [x] Duplizieren, Archivieren und Löschen starten nicht parallel zu noch laufenden Einzeländerungen an Wünschen; nach Bestätigung werden Benutzer- und Listenstatus erneut geprüft.
+- [x] JavaScript-Syntaxprüfung des aktuellen Dashboard-Moduls (ohne Imports) erfolgreich und GitHub-Inhaltsprüfung der neuen Schutzbedingungen erfolgreich.
+- [ ] Keine Browser-/Mobilgeräte-/End-to-End- oder produktiven Supabase-Tests durchgeführt. Nicht-atomare Mehrschrittoperationen bleiben als Risiko offen.
+- [ ] Freigabe weiterhin gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
