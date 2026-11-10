@@ -7,6 +7,14 @@ if(!email||!password)throw Error('Existing-user auth credentials not configured;
 const browser=await chromium.launch({headless:true});
 try{
  const page=await browser.newPage();
+ // Fail closed: this acceptance run must never mutate production REST tables.
+ await page.route('https://avapuibsidubuzxjtyld.supabase.co/rest/v1/**',async route=>{
+  const method=route.request().method();
+  if(method!=='GET'&&method!=='HEAD'&&method!=='OPTIONS'){
+   throw Error('Production REST write blocked by read-only browser smoke');
+  }
+  await route.continue();
+ });
  // No screenshots, tracing, storage-state exports or console capture: do not leak credentials.
  await page.goto(base.replace(/\/$/,'')+'/amazon-wishlist/index.html',{waitUntil:'domcontentloaded'});
  const listReads=[];
