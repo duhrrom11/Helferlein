@@ -317,3 +317,17 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Freigabe weiterhin gesperrt.
 
 **Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Produktentwicklung: Listenorganisation, Mobilbedienung, Sammelaktion (2026-11-10)
+
+- [x] Listenübersicht um „Zuletzt geöffnet“ erweitert; zuletzt geöffnete Listen erscheinen zuerst, nicht besuchte dahinter.
+- [x] Bei leerem Such-/Filterergebnis direkte Wiederherstellung der Listenansicht; Listen-Karten mit aussagekräftiger Zugänglichkeitsbeschriftung.
+- [x] Aktive Listenkarte visuell deutlicher; mobile Listenaktionen als zweispaltiges Raster mit großen Touchflächen.
+- [x] Mehrfachverschieben nur aktiv, wenn tatsächlich mindestens ein ausgewählter Wunsch der aktuellen Liste zugeordnet ist. Nicht zugeordnete ausgewählte Wünsche werden übersprungen und in der Ergebniszusammenfassung genannt.
+- [x] Wunschdetail-Zuordnungen nur anzeigen, wenn die Mitgliedschaftsdaten vollständig geladen sind.
+- [x] Minimalprüfung: Dashboard-JavaScript-Syntax und vier konkrete Implementierungsbedingungen erfolgreich geprüft; keine neuen Test-Suites.
+- [ ] Browserabnahme der Listenansicht und Sammelaktionen bleibt vor Produktfreigabe offen.
+- [ ] Mehrfachverschieben ist weiterhin nicht atomar; bei Teilfehlern müssen doppelte Zuordnungen überprüft werden.
+- [ ] Freigabe weiterhin gesperrt.
+
+**Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
