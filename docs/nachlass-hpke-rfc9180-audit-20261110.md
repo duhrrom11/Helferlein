@@ -54,3 +54,11 @@ References:
 - Executed locally using Node.js `v22.16.0`: `node --test tests/nachlass-hpke-offline-v2.test.cjs`. Actual TAP output: `tests 10`, `pass 10`, `fail 0`, `cancelled 0`, `skipped 0`, `todo 0`; duration `1382.975665 ms`. This supersedes the earlier statement that the original branch test suite could not be run locally.
 - For preceding audit commit `cc11fb2033fad8fefd3ead49d6779bf740342a23`, GitHub [B3 Nachlass run 42783796286](https://github.com/duhrrom11/Helferlein/actions/runs/42783796286) and [release smoke run 42783796243](https://github.com/duhrrom11/Helferlein/actions/runs/42783796243) both completed successfully.
 - These are offline tests of the original two HPKE files, not production integration tests, a second independent KEM setup, a deployment, or a merge authorization.
+
+## Follow-up CI and security coverage review (2026-11-10)
+
+- Audit commit `1d059b355cb6f9992b3809399c6d5fcb2ac66c4f`: [B3 Nachlass pilot 42784120055](https://github.com/duhrrom11/Helferlein/actions/runs/42784120055) and [Release smoke checks 42784120078](https://github.com/duhrrom11/Helferlein/actions/runs/42784120078) both completed with `success` per GitHub workflow-run records.
+- Reviewed current branch implementation blob `5910923c26b06c41d6931a4dbe66a8947c3ad571` and test blob `44d2598d68f2b88bca6f5bff7dabaf29f62fa4c0` through GitHub file access.
+- Remaining proposed **offline** negative-test coverage: X25519 low-order/invalid public-key behavior (including Node crypto exceptions); explicit AES-GCM authentication-tag corruption; exact 1024/1025-byte `info` and `aad` boundaries; 17/4112/4113-byte ciphertext boundaries; and consistency of application-level error categories. These are test-coverage gaps, not confirmed vulnerabilities.
+- This follow-up did **not** add or execute new tests. Direct download of branch source into the local runtime failed due DNS resolution (`Could not resolve host: raw.githubusercontent.com`), and the available local ZIP does not contain these HPKE files. Prior 10/10 execution evidence remains documented above, but is not a fresh run of any newly proposed tests. No new test results are claimed.
+- No production data writes, Vercel, deployment, or merge.
