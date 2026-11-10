@@ -1115,3 +1115,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 
 - [x] Repository-Metadaten `GET /repos/duhrrom11/Helferlein`: `has_pages=true`, **aber** offizielles `homepage`-Feld verweist auf `https://helferlein-ochre.vercel.app`. GitHub Pages ist damit nicht zweifelsfrei das einzige oder primäre Produktionsziel.
 - [ ] **Vor Deployment** Vercel-Projekt/Build/Branch/Domain prüfen und Live-Routen auf **beiden** Hostingzielen validieren; aus `has_pages=true` folgt nicht, dass Vercel dieselben Dateien veröffentlicht. Eine Vercel-Bereitstellung wurde hier nicht ausgelöst oder verifiziert.
+
+## Autopilot-Freigabestand nach Commit 75308c61 (2026-11-10)
+
+- [x] **Alle 4 Workflows auf genau `75308c61` erfolgreich:** Wishlist `42829637634` und `42829646420` mit jeweils **checks + browser success**, Vault-Sync `42829646624`, Release-Smoke `42829646368`.
+- [x] Produktions-Supabase erneut **read-only** unter `authenticated` geprüft: SELECT auf Listen erlaubt, TRUNCATE nicht erlaubt, ohne JWT keine sichtbaren Listen. Security Advisor: nur bekannte Warnung zur deaktivierten Leaked-Password-Protection, keine neue RLS-Warnung.
+- [x] PR #166 war bei erneuter API-Prüfung noch offen, ohne Draft und mit Head `75308c61`; GitHub berechnete Mergeability temporär als `unknown`. Frühere Abfrage zeigte `mergeable=true`.
+- [ ] Authentifizierter Browser-E2E mit echten Konten und tatsächlichen Listenmutationen wurde **nicht** ausgeführt: Die vorhandenen Chromium-Tests verwenden Mock-/Fixture-DB und prüfen kein reales Benutzer-JWT. Ohne Testdaten oder Zugriff auf ein vorhandenes geeignetes Konto ist dieser Gate nicht nachgewiesen.
+- [ ] Hosting: GitHub Pages `https://duhrrom11.github.io/Helferlein` und als Repository-Homepage angegebenes Vercel `https://helferlein-ochre.vercel.app` konnten bei dieser Prüfung **nicht live über HTTPS abgerufen** werden. Das bestehende `Live GitHub Pages HTTP check`-Workflow ist zeitgesteuert bzw. deployment-getriggert und war kein Beleg einer frischen Veröffentlichung.
+- [ ] Merge/Deployment **bewusst zurückgestellt**: Es fehlen authentifizierte Live-E2E- und Hosting-Nachweise. Grüne CI allein rechtfertigt keine Behauptung einer produktiven Freigabe.
