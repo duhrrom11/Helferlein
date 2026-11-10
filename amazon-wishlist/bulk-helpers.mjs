@@ -77,3 +77,8 @@ export async function fetchDashboardBase(db,userId) {
  ]);
  return {lists,wishes};
 }
+
+/** Read all membership pages with a read-only injected Supabase-like client. */
+export function fetchDashboardMembership(db,userId,{pageSize=1000,isCurrent=()=>true}={}) {
+ return fetchAllPages((from,to)=>db.from('wishlist_list_items').select('list_id,wish_id').eq('user_id',userId).order('list_id',{ascending:true}).order('wish_id',{ascending:true}).range(from,to),{pageSize,isCurrent});
+}
