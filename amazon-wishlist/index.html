@@ -499,6 +499,11 @@ main{padding-inline:12px}
  #giftPlanner .gift-planner-fields>label:last-child{grid-column:auto}
  #listsDashboard .list-card-actions button{flex-basis:100%}
 }
+@media(max-width:440px){
+ /* Volle Zeilen für längere Hauptziele statt enger zweispaltiger Touch-Flächen. */
+ .wishlist-hub-primary{grid-template-columns:1fr}
+ .wishlist-hub-primary a{justify-content:flex-start;text-align:left;padding-inline:14px;min-height:46px;overflow-wrap:normal;word-break:normal}
+}
 @media(max-width:390px){
  #homeGiftStart .home-gift-grid{grid-template-columns:1fr}
 }
