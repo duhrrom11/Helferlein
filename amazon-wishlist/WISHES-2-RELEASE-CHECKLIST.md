@@ -812,3 +812,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Die clientseitige Sperre ersetzt keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktprüfung.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: mobile Sperr- und Freigabezustände bei Listenänderungen (2026-11-10)
+
+- [x] Direkte Zuordnungs-Checkboxen auf mobilen Wunschkarten sind während einer exklusiven Listenmutation sichtbar deaktiviert.
+- [x] Beginnende Archivierungs-, Lösch-, Erstellungs- und Designänderungen aktualisieren die mobilen Wunschkarten und Sammelaktions-Bedienelemente unmittelbar nach Erwerb der Schreibsperre.
+- [x] Die anfängliche Kartenaktualisierung findet innerhalb des `try/finally`-Bereichs statt, damit eine Ausnahme die exklusive Schreibsperre nicht dauerhaft bestehen lässt.
+- [x] Bereits angezeigte Sammelaktionsergebnisse synchronisieren die Verfügbarkeit von Wiederholen/Fortsetzen nach dem Freigeben der Schreibsperre erneut.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
