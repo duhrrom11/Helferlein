@@ -922,3 +922,11 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: mobile Amazon-Produktlinks (2026-11-10)
+
+- [x] Mobile Amazon-Produktlinks von `m.amazon.de` werden als offizieller Marketplace erkannt und auf den bestehenden kanonischen Produktpfad abgebildet.
+- [x] Fremde Trackingparameter werden bei geteilten Amazon.de-Links nicht übernommen.
+- [x] Regressionstests für mobile, klassische und Smile-Hosts sowie ähnlich aussehende Fremddomains ergänzt.
+- [ ] CI-/Node-Testlauf für die neuen Änderungen noch nicht bestätigt; Browser- und Mobilgeräteabnahme weiterhin offen.
+- [ ] Freigabe weiterhin gesperrt: kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment. Mehrgeräte-Konflikte und nicht transaktionale Verschiebungen bleiben gesonderte Risiken.
