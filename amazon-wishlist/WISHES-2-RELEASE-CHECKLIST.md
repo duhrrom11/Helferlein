@@ -229,3 +229,15 @@
 - [ ] Vollständige native Node-Test-Suite und verifiziertes Lockfile.
 
 **Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.**
+
+## CodeQL-Sicherheitsbefunde und Browser-Isolation (2026-11-10)
+
+- [x] CodeQL 94/95 in `dashboard-browser.integration.spec.mjs` und dieselbe Ursache in `wishes-ui.spec.mjs` behoben: Regex-basierte Script-/Link-Entfernung vollständig entfernt.
+- [x] Gemeinsame `isolated-browser-fixture.mjs` mit restriktiver Content Security Policy, verweigerten Netzwerkzugriffen und expliziter ES-Modul-Allowlist eingerichtet; keine produktiven Supabase-Anfragen.
+- [x] Browser-Sicherheitstests für ungewöhnliche Script-End-Tags, gemischte Groß-/Kleinschreibung, Eventhandler, `javascript:`-Links und unerlaubte externe Skripte hinzugefügt.
+- [x] **Zwei CSP-Ausführungsvarianten tatsächlich mit lokalem Chromium geprüft** (CSP über äquivalentes Meta-Tag in `page.set_content`, jeweils vier blockierte Skript-/Event-Vektoren). Beide bestanden.
+- [ ] Die neuen GitHub-Branch-Playwright-Spezifikationen selbst sind noch **nicht** erfolgreich gelaufen: Lokale Browsernavigation zu synthetischen Hosts wird durch `ERR_BLOCKED_BY_ADMINISTRATOR` blockiert. Der lokale CSP-Meta-Test ist **kein** Ersatz für den CSP-HTTP-Header-Integrationstest.
+- [ ] CodeQL-Reanalyse abwarten; die Warnungen sind erst nach erfolgreicher Analyse als geschlossen zu betrachten.
+- [ ] Vollständige Playwright-/Node-Suite auf geeignetem Checkout ausführen; Lockfile verifizieren.
+
+**Freigabe gesperrt.** Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste; Vercel bleibt getrennt.
