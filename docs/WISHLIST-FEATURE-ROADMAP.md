@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Gebündelte Favoriten-Monatsvorschau und Weiter-Button)
+
+- **Neu umgesetzt:** Favoriten-Schnellleiste um einen ausdrücklich beschrifteten „▶️ Weiter – nächsten Favoriten ansehen“-Button ergänzt. Er durchläuft angeheftete Filteransichten zyklisch, ohne die aktiven Filter zu verändern.
+- **Monatsvorschau:** Passende Sicherungspunkte pro Monat werden vor Anwendung anhand bereits geladener privater Daten berechnet und als mobile, barrierearm beschriftete Balken dargestellt. Ein gesonderter Button aktiviert die Vorschau-Filter auf Wunsch.
+- **Sicherheit:** Keine Datenbankmigration, keine Testdaten und keine Änderung an Sicherungspunkten oder Produktivdaten. RLS und anonyme Leserechte für Cloud-Filteransichten, Präferenzen, Historie und Sicherungspunkte überprüft.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Ergebnisvorschau in der Favoriten-Schnellleiste)
 
 - **Neu umgesetzt:** Angeheftete Cloud-Filteransichten zeigen direkt in der mobilen Schnellleiste die Anzahl passender, bereits geladener privater Dashboard-Sicherungspunkte vor dem Anwenden.
