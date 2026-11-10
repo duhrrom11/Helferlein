@@ -272,6 +272,8 @@ actions.append(button('Duplizieren',async()=>{
   updateActiveListContext();
   const cards=$('listWishCards');cards.replaceChildren();
   const list=lists.find(l=>l.id===selected&&!l.archived);
+  const filtersLocked=!list||!membershipReady||getUser()?.id!==loadedOwner||listCopyBusy||bulkBusy||activeWishMutations.size>0;
+  for(const id of ['listWishSearch','listWishPriority','listWishCategory','listWishMarker','listWishAssignment','listWishSort'])$(id).disabled=filtersLocked;
   if(!list||!membershipReady||getUser()?.id!==loadedOwner){$('wishLoadMore').hidden=true;for(const id of ['wishShowAssigned','wishSelectShown','wishSelectUnassigned','wishSelectAssigned','wishClearSelection','wishSelectedOnly','wishLoadMore','listItemsNewWish'])$(id).disabled=true;updateBulkToolbar([]);return}
   $('wishClearSelection').disabled=listCopyBusy||bulkBusy||activeWishMutations.size>0||!bulkIds.size;
   $('wishShowAssigned').disabled=listCopyBusy||bulkBusy||activeWishMutations.size>0||!membershipReady;
