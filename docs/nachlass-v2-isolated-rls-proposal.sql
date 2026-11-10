@@ -1,5 +1,12 @@
 -- Nachlass v2: REVIEW-ONLY RLS proposal. DO NOT execute on production.
 -- Separate from existing public.vault_cloud_snapshots. No migration or grants.
+-- SECURITY REVIEW: This schema has no owner/heir SELECT policies by design.
+-- It is NOT a functioning heir portal and MUST NOT be applied as a migration.
+-- Before any deployment: use an isolated DB, confirm schema exposure settings,
+-- review role grants/default privileges and service_role/BYPASSRLS paths,
+-- test authenticated/anon cross-user access and release/revocation races.
+-- CREATE SCHEMA IF NOT EXISTS is not safe as a general-purpose migration on
+-- an existing schema; review ownership and pre-existing objects first.
 begin;
 create schema if not exists nachlass_v2;
 create table if not exists nachlass_v2.vaults (
