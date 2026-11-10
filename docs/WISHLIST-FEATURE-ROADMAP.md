@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Chromium-Viewport-Prüfung und lesbarere mobile Hauptnavigation)
+
+- **Browserprüfung:** Headless Chromium wurde lokal mit einem ausdrücklich **nachgebildeten, reduzierten HTML/CSS-Testaufbau** der mobilen Hauptnavigation, Dashboard-Kennzahlen, Wunschlisten und Geschenkbudget-Flächen verwendet. Prüfformen: 320, 340, 360, 375, 390, 391, 420, 430, 759 und 760 px. In diesen Testansichten trat kein horizontaler Seitenüberlauf auf; die Einspalten- und Zweispaltenwechsel wurden kontrolliert.
+- **Sichtbarer Verbesserungsbedarf:** Im nachgebildeten 420-px-Layout beanspruchten längere Hauptnavigations-Bezeichnungen in zwei Spalten mehrere Zeilen. Die tatsächlichen CSS-Regeln im GitHub-Code wurden deshalb um eine gezielte Regel erweitert: bis 440 px erhält die Hauptnavigation eine Spalte mit linksbündigen, gut lesbaren, mindestens 46 px hohen Links.
+- **Nachprüfung:** Browser-Testaufbau mit der neuen Regel bei denselben zehn Breiten erneut geprüft; kein horizontaler Seitenüberlauf. Die produktive HTML-Datei enthält ausschließlich zusätzliche CSS-Regeln, keine geänderten IDs, Handler oder Datenzugriffe.
+- **Einschränkung:** Die lokale Repository-ZIP enthält den aktuellen `amazon-wishlist/`-Ordner nicht. Ein Abruf der vollständigen GitHub-Live-Seite im Chromium-Container war nicht möglich. Es handelt sich **nicht** um einen vollständigen Live-Screenshot-Test oder authentifizierten End-to-End-Test; die Browser-Fixtures bilden relevante Layoutregeln nach, nicht die gesamte Produktivseite.
+- **Produktionsschutz:** Keine Supabase-Migration oder -Schreiboperation, keine Testdaten, keine Änderung bestehender Produktivdatensätze.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Mobile-Feinschliff: schmale Displays und Dashboard-Bedienung)
 
 - **Konkreter Layoutfehler behoben:** Der zuletzt ergänzte Mobile-Stylesheet-Block hat bei Bildschirmbreiten unter 390 px versehentlich die bestehende Einspaltenregel des privaten Geschenk-Dashboards mit zwei Spalten überschrieben. Die spätere Regel stellt jetzt bis einschließlich 390 px ausdrücklich eine Spalte her; andere Karten und Eingaben bleiben unverändert.
