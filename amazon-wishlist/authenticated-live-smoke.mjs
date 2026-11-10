@@ -7,11 +7,14 @@ if(!email||!password)throw Error('Existing-user auth credentials not configured;
 const browser=await chromium.launch({headless:true});
 try{
  const page=await browser.newPage();
+ const blockedWrites=[];
  // Fail closed: this acceptance run must never mutate production REST tables.
  await page.route('https://avapuibsidubuzxjtyld.supabase.co/rest/v1/**',async route=>{
   const method=route.request().method();
   if(method!=='GET'&&method!=='HEAD'&&method!=='OPTIONS'){
-   throw Error('Production REST write blocked by read-only browser smoke');
+   blockedWrites.push(method);
+   await route.abort('blockedbyclient');
+   return;
   }
   await route.continue();
  });
@@ -38,11 +41,13 @@ try{
   return {visible:!dashboard.hidden,hasListSelect:!!listSelect,loginHidden:document.getElementById('login').hidden};
  });
  if(!readOnly.visible||!readOnly.hasListSelect||!readOnly.loginHidden)throw Error('Authenticated dashboard is not ready');
+ if(blockedWrites.length)throw Error('Production REST write attempted during read-only smoke');
  if(!listReads.some(r=>r.table==='wishlist_lists'&&r.status===200))throw Error('No successful authenticated wishlist_lists REST SELECT observed');
  if(listReads.some(r=>r.status>=400))throw Error('Authenticated list REST request failed');
  await page.locator('#logout').click();
  await page.locator('#login').waitFor({state:'visible',timeout:30000});
  await page.locator('#listsDashboard').waitFor({state:'hidden',timeout:30000});
+ if(blockedWrites.length)throw Error('Production REST write attempted during logout');
  if(await page.locator('#wishListSelect option').count()!==1)throw Error('Private list selection survived logout');
  console.log('Existing-account read-only browser sign-in, dashboard and logout verified');
 }finally{await browser.close()}
