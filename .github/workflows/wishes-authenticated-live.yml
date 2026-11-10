@@ -1,0 +1,48 @@
+name: Wishes authenticated live read-only smoke
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'amazon-wishlist/**'
+      - '.github/workflows/wishes-authenticated-live.yml'
+permissions:
+  contents: read
+jobs:
+  existing-account-browser:
+    # Only same-repository PRs; never expose credentials to forked code.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: amazon-wishlist
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check existing-account credentials are configured
+        env:
+          WISHES_EXISTING_USER_EMAIL: ${{ secrets.WISHES_EXISTING_USER_EMAIL }}
+          WISHES_EXISTING_USER_PASSWORD: ${{ secrets.WISHES_EXISTING_USER_PASSWORD }}
+        run: |
+          if [ -z "$WISHES_EXISTING_USER_EMAIL" ] || [ -z "$WISHES_EXISTING_USER_PASSWORD" ]; then
+            echo "::error::Existing-account credentials are not configured. Authenticated release gate remains OPEN."
+            exit 1
+          fi
+      - name: Install browser dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Serve exact candidate commit locally without deploying
+        run: |
+          cd ..
+          python3 -m http.server 8765 --bind 127.0.0.1 > /dev/null 2>&1 &
+          sleep 2
+      - name: Read-only authenticated browser sign-in and logout
+        env:
+          WISHES_EXISTING_USER_EMAIL: ${{ secrets.WISHES_EXISTING_USER_EMAIL }}
+          WISHES_EXISTING_USER_PASSWORD: ${{ secrets.WISHES_EXISTING_USER_PASSWORD }}
+          WISHES_LIVE_BASE: http://127.0.0.1:8765
+        run: node authenticated-live-smoke.mjs

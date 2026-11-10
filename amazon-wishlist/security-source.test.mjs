@@ -49,3 +49,45 @@ test('backup preview is read-only and never posts selected file content to Supab
  assert.doesNotMatch(handler,/db\.from\(|\.insert\(|\.upsert\(|\.update\(|\.delete\(/);
  assert.match(html,/Es wird nichts importiert, überschrieben oder in Supabase gespeichert/);
 });
+
+
+test('production app mounts dashboard and retains backup/export controls',()=>{
+ const dashboard=readFileSync(new URL('./lists-dashboard.mjs',import.meta.url),'utf8');
+ assert.match(app,/import \{mountListsDashboard\} from '\.\/lists-dashboard\.mjs'/);
+ assert.match(app,/mountListsDashboard\(db,\(\)=>user\)/);
+ assert.match(app,/dashboard\.refresh\(\)/);
+ assert.match(app,/dashboard\.assignWish\(/);
+ for(const id of ['listsDashboard','wishListSelect','listWishCards','bulkConfirmDialog','exportWishes','exportWishesJson','backupFile','previewBackup']){
+  assert.match(html,new RegExp('id="'+id+'"'));
+ }
+ assert.match(dashboard,/return \{refresh:/);
+});
+
+test('Playwright discovers the real production HTML dashboard integration suite',()=>{
+ const config=readFileSync(new URL('./playwright.config.mjs',import.meta.url),'utf8');
+ assert.match(config,/production-dashboard\.integration\.spec\.mjs/);
+});
+
+test('auth lifecycle refreshes private dashboard before profile requests and on logout',()=>{
+ const authStart=app.indexOf('async function auth()');
+ const signinStart=app.indexOf("$('signin').onclick",authStart);
+ const authBody=app.slice(authStart,signinStart);
+ assert.ok(authStart>=0&&signinStart>authStart);
+ assert.match(authBody,/await dashboard\.refresh\(\)/);
+ assert.ok(authBody.indexOf('await dashboard.refresh()')<authBody.indexOf("db.from('wishlist_profiles')"));
+ assert.match(app,/\$\('logout'\)\.onclick=run\(async\(\)=>[\s\S]*?await auth\(\)/);
+ assert.match(app,/db\.auth\.onAuthStateChange\(/);
+});
+
+test('optional authenticated live browser smoke never writes production data',()=>{
+ const smoke=readFileSync(new URL('./authenticated-live-smoke.mjs',import.meta.url),'utf8');
+ assert.ok(smoke.includes('WISHES_EXISTING_USER_EMAIL'));
+ assert.ok(smoke.includes('WISHES_EXISTING_USER_PASSWORD'));
+ assert.ok(smoke.includes("locator('#signin').click()"));
+ assert.ok(smoke.includes("locator('#logout').click()"));
+ assert.ok(smoke.includes("route.abort('blockedbyclient')"));
+ assert.ok(smoke.includes("if(blockedWrites.length)throw Error"));
+ for(const forbidden of ['.from(','.insert(','.update(','.delete(','.upsert(','#signup','#saveWish','#createList']){
+  assert.ok(!smoke.includes(forbidden),'Unexpected production write control: '+forbidden);
+ }
+});

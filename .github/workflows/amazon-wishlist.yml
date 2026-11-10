@@ -5,7 +5,7 @@ on:
       - 'amazon-wishlist/**'
       - '.github/workflows/amazon-wishlist.yml'
   push:
-    branches: ['main', 'feature/amazon-wishlist-foundation']
+    branches: ['feature/amazon-wishlist-foundation']
     paths:
       - 'amazon-wishlist/**'
       - '.github/workflows/amazon-wishlist.yml'
@@ -22,4 +22,43 @@ jobs:
       - run: node --check amazon-wishlist/app.mjs
       - run: node --check amazon-wishlist/amazon-links.mjs
       - run: node --check amazon-wishlist/wishlist-utils.mjs
-      - run: node --test amazon-wishlist/*.test.mjs
+      - run: node --check amazon-wishlist/lists-dashboard.mjs
+      - run: node --check amazon-wishlist/list-features.mjs
+      - run: node --check amazon-wishlist/bulk-helpers.mjs
+      - name: Node tests — amazon-links
+        continue-on-error: true
+        run: node --test amazon-wishlist/amazon-links.test.mjs
+      - name: Node tests — bulk-helpers
+        continue-on-error: true
+        run: node --test amazon-wishlist/bulk-helpers.test.mjs
+      - name: Node tests — bulk-workflows
+        continue-on-error: true
+        run: node --test amazon-wishlist/bulk-workflows.test.mjs
+      - name: Node tests — isolated-browser-fixture
+        continue-on-error: true
+        run: node --test amazon-wishlist/isolated-browser-fixture.test.mjs
+      - name: Node tests — security-source
+        continue-on-error: true
+        run: node --test amazon-wishlist/security-source.test.mjs
+      - name: Node tests — wishlist-utils
+        continue-on-error: true
+        run: node --test amazon-wishlist/wishlist-utils.test.mjs
+      - name: Full Node test gate
+        run: node --test --test-concurrency=1 amazon-wishlist/*.test.mjs
+  browser:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: amazon-wishlist
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser test dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run isolated browser tests
+        run: npm run test:browser

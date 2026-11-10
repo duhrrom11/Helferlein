@@ -21,6 +21,7 @@ jobs:
           import os, urllib.request, urllib.error, sys, re, pathlib, html
           base = os.environ['SITE'].rstrip('/')
           routes = ['/', '/index.html', '/datenschutz.html', '/impressum.html',
+                    '/amazon-wishlist/index.html', '/amazon-wishlist/app.mjs', '/amazon-wishlist/lists-dashboard.mjs',
                     '/tools/notizen/index.html', '/tools/verleih/index.html',
                     '/tools/wg-kasse/index.html']
           homepage = pathlib.Path('index.html').read_text(encoding='utf-8')
@@ -38,7 +39,7 @@ jobs:
                   with urllib.request.urlopen(req, timeout=15) as response:
                       body = response.read(300000).decode('utf-8', errors='replace')
                       status = response.status
-                      ok = status == 200 and '<html' in body.lower() and '<title' in body.lower()
+                      ok = status == 200 and (('<html' in body.lower() and '<title' in body.lower()) if route.endswith('.html') or route == '/' else ('mountListsDashboard' in body if route.endswith('lists-dashboard.mjs') else "from './lists-dashboard.mjs'" in body))
                       print(f"{'OK' if ok else 'FAIL'} {status} {url}")
                       if not ok: failed.append(url)
               except (urllib.error.URLError, TimeoutError) as exc:
@@ -49,3 +50,4 @@ jobs:
               sys.exit(1)
           print(f"All {len(routes)} public routes are accessible")
           PY
+
