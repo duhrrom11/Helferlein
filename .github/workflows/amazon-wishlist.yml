@@ -22,4 +22,7 @@ jobs:
       - run: node --check amazon-wishlist/app.mjs
       - run: node --check amazon-wishlist/amazon-links.mjs
       - run: node --check amazon-wishlist/wishlist-utils.mjs
+      - run: node --check amazon-wishlist/lists-dashboard.mjs
+      - run: node --check amazon-wishlist/bulk-helpers.mjs
+      - run: node --check amazon-wishlist/bulk-workflows.mjs
       - run: node --test amazon-wishlist/*.test.mjs
