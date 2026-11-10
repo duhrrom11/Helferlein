@@ -55,7 +55,7 @@ test('real dashboard: list switch after reload does not retain selection',async(
  await page.evaluate(()=>window.__dashboard.refresh());
  await page.locator('#listWishCards input[type=checkbox]').first().check();
  await expect(page.locator('#bulkSelectedCount')).toContainText('1 ausgewählt');
- await page.locator('#listsContent .list-card').filter({hasText:'Liste B'}).getByRole('button',{name:/öffnen|anzeigen|auswählen/i}).first().click();
+ await page.locator('#listsContent .list-card').filter({hasText:'Liste B'}).getByRole('button',{name:'Öffnen'}).click();
  await expect(page.locator('#bulkSelectedCount')).toContainText('0 ausgewählt');
  expect(await page.evaluate(()=>window.__dashboardTest.writes)).toBe(0);
 });
