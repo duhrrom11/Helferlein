@@ -94,3 +94,10 @@
 - Auswahlaktionen werden während des Vorgangs gesperrt; Konto- und Listenwechsel brechen weitere Verarbeitung ab. Kontoreset invalidiert den Lauf.
 - Wunsch-Pagination nutzt zusätzlich zur Zeitstempelsortierung eine ID-Sortierung für deterministische Reihenfolge.
 - Nur kurze Syntax- und DOM-ID-Prüfungen, keine vollständigen Browser-/Integrationstests; kein Merge, Deployment oder produktive Supabase-Schemaänderung.
+
+## Gezielt fehlgeschlagene Sammelaktionen wiederholen
+- Ergebnisübersicht unterscheidet geplante, erfolgreiche, fehlgeschlagene und wegen Unterbrechung nicht bearbeitete Zuordnungen.
+- Wiederholung verwendet ausschließlich IDs fehlgeschlagener Wünsche, prüft den aktuellen Zuordnungszustand und verlangt erneut eine Bestätigung. Nicht bearbeitete Wünsche können separat ausgewählt werden.
+- Ergebnisse werden beim Listen-/Kontowechsel invalidiert; asynchrone Ergebnisse prüfen Run-ID und Benutzerkonto, um veraltete UI-Aktualisierungen zu verhindern.
+- Bereits erfolgreiche Datenbankänderungen werden nicht rückgängig gemacht. Keine automatischen Wiederholungen oder zusätzlichen Produktivdatenbankänderungen.
+- JavaScript-Syntax und DOM-IDs kurz geprüft; vollständige Browser-/Integrationstests stehen aus. Kein Merge und kein Deployment.
