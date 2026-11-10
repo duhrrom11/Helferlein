@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Vergleich automatischer Dashboard-Sicherungspunkte)
+
+- **Neu umgesetzt:** Vorher-Nachher-Vergleich eines automatischen Sicherungspunkts mit der aktuellen Dashboard-Konfiguration in einer mobil horizontal scrollbar dargestellten Tabelle.
+- **Transparenz:** Alle zwölf Einstellungsfelder werden angezeigt, Unterschiede hervorgehoben und gezählt; persönliche Layout-Vorlagen werden einschließlich ihrer Werte verglichen.
+- **Sicheres Wiederherstellen:** Eine frühere Konfiguration kann erst nach Vergleich und ausdrücklicher Bestätigung übernommen werden. Hat sich die lokale aktuelle Konfiguration zwischen Vergleich und Bestätigung geändert, wird eine erneute Prüfung verlangt.
+- **Datenschutz:** Keine neue Migration und keine Testdaten. RLS für Präferenzen, Auditverlauf und Sicherungspunkte überprüft; anon ohne SELECT, Auditverlauf und Sicherungspunkte ohne direkte Schreibrechte. Geschenkaufgaben, Anlässe und Jahresabschlüsse bleiben unverändert.
+- **Qualität:** JavaScript-Syntax geprüft; Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Automatische private Dashboard-Sicherungspunkte)
 
 - **Neu umgesetzt:** Vor jeder tatsächlich veränderten bestehenden Dashboard-Konfiguration legt ein Datenbank-Trigger automatisch einen vollständigen Snapshot des vorherigen Zustands an. Es werden maximal 20 Sicherungspunkte je Konto vorgehalten; ältere Sicherungspunkte werden durch den Trigger automatisch bereinigt.
