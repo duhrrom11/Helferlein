@@ -248,6 +248,14 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Budgetwarnungen:** Für jeden Anlass mit positivem Budget erscheint eine Warnung, wenn geplante oder tatsächlich erfasste Ausgaben das Budget übersteigen. Mobile Darstellung ergänzt um Empfehlungskarten und direkten Quelllink.
 - **Grenzen:** Empfehlungen decken nicht alle älteren gemerkten Sammlungen ab, da nur die neuesten 100 öffentlichen Sammlungen betrachtet werden. Derzeit erfolgt keine automatische Einzelartikel-Übernahme aus Wunschlisten und keine Echtzeitpreisermittlung. Quellen, die später privat oder archiviert werden, sind über den öffentlichen Link nicht mehr verfügbar. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
 
+## Entwicklungsfortschritt – 10.11.2026 (Öffentliche Wünsche und Produkte als Geschenke übernehmen)
+
+- **Neu umgesetzt:** Geschenkplaner mit mobiler Suche nach Produkten aus `wishlist_products` und Anzeige passender öffentlicher Wünsche aus `wishlist_wishes`. Suchtreffer werden als Entwurf in das Geschenkformular übernommen; der Nutzer bestätigt den Speichervorgang.
+- **Additive Datenbankmigration:** Optionale Fremdschlüssel `wishlist_gift_plans.source_wish_id` und `source_product_id`. RLS für INSERT/UPDATE erweitert: eigener Anlass, ggf. öffentliche nicht archivierte Quellsammlung, ggf. öffentlicher Wunsch und gültiges Produkt; bei gleichzeitig gesetztem Wunsch und Produkt müssen beide zusammenpassen. Keine bestehenden Produktivdaten verändert.
+- **Mobile Bedienung:** Responsive Produktkarten mit Quelle, Amazon-Produktlink (falls gültige ASIN vorhanden), Übernehmen-Schaltfläche und Möglichkeit, eine Produktverknüpfung zu lösen. Der bestehende Status- und Budgetbereich bleibt erhalten.
+- **Verbesserung:** Unicode-Stichworttrennung für die vorhandenen regelbasierten Geschenkempfehlungen korrigiert.
+- **Grenzen:** Suche derzeit nach Produkttitel, maximal 40 Produkte und bis zu 200 öffentliche Wunschzuordnungen je Suchlauf. Keine automatischen Preisabfragen und keine Push-Mitteilungen. Bei einer später privatisierten Wunschquelle kann eine Bearbeitung des verknüpften Geschenks die RLS-Prüfung nicht mehr erfüllen, bis die Quelle gelöst wird. Browser-End-to-End-Test mit echtem Nutzerkonto steht aus.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
