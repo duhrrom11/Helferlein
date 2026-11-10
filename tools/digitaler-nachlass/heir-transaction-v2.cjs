@@ -12,7 +12,7 @@ function createTransactionalHeirRepository(pool){
     throw new TypeError('invalid_client');
   let begun=false;
   try{
-   await client.query('BEGIN ISOLATION LEVEL READ COMMITTED READ ONLY');
+   await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
    begun=true;
    const snapshot=await createHeirRepository(client).readAuthorizedEnvelopeSnapshot(identity);
    await client.query('COMMIT');
