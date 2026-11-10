@@ -25,4 +25,15 @@ jobs:
       - run: node --check amazon-wishlist/lists-dashboard.mjs
       - run: node --check amazon-wishlist/list-features.mjs
       - run: node --check amazon-wishlist/bulk-helpers.mjs
-      - run: node --test amazon-wishlist/*.test.mjs
+      - name: Node tests — amazon-links
+        run: node --test amazon-wishlist/amazon-links.test.mjs
+      - name: Node tests — bulk-helpers
+        run: node --test amazon-wishlist/bulk-helpers.test.mjs
+      - name: Node tests — bulk-workflows
+        run: node --test amazon-wishlist/bulk-workflows.test.mjs
+      - name: Node tests — isolated-browser-fixture
+        run: node --test amazon-wishlist/isolated-browser-fixture.test.mjs
+      - name: Node tests — security-source
+        run: node --test amazon-wishlist/security-source.test.mjs
+      - name: Node tests — wishlist-utils
+        run: node --test amazon-wishlist/wishlist-utils.test.mjs
