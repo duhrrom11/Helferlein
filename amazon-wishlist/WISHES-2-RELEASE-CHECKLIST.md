@@ -1097,3 +1097,16 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Verifiziert: `anon` hat auf beiden Tabellen **keine** Rechte mehr; `authenticated` hat auf `wishlist_lists` ausschließlich `SELECT,INSERT,UPDATE,DELETE` und auf `wishlist_list_items` ausschließlich `SELECT,INSERT,DELETE`. Insbesondere kein `TRUNCATE`, `REFERENCES` oder `TRIGGER`.
 - [x] SQL-Vorschlag und Regressionstest entsprechend gehärtet (Commits `2be756f0`, `9e02c900`).
 - [ ] Nach allen Sicherheitsänderungen erneut vollständige CI-Prüfung; kein Merge/Deployment bei offenen Checks.
+
+## Autopilot: Freigabeprüfung nach ce034387 (2026-11-10)
+
+- [x] **Alle vier** CI-Läufe für `ce034387` grün: Wishlist `42829155988` und `42829165759` (Node + Chromium), Vault-Sync `42829165784`, Release-Smoke `42829165761`. Keine CI-Fehler.
+- [x] Produktive RLS-Policies live abgefragt: `wishlist_lists` hat 4 Owner-Policies, `wishlist_list_items` 3 Owner-Policies; INSERT-Membership verlangt Besitz **beider** Objekte; Listen-UPDATE erzwingt `USING` und `WITH CHECK`.
+- [x] Produktions-Rollen mit `BEGIN READ ONLY; SET LOCAL ROLE` **ohne Testdaten** geprüft: `anon` darf weder Listen lesen noch Memberships anlegen oder truncaten; `authenticated` darf Listen lesen, aber weder truncaten noch Memberships updaten. Bestehende Listen-/Membership-Tabellen sind leer.
+- [x] Supabase Security Advisor erneut ausgeführt: keine RLS-Warnung; **bestehende** Warnung `auth_leaked_password_protection` weiterhin offen (https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
+- [x] Echter Produktions-HTML-Chromiumtest prüft jetzt auch, dass Logout private Listen und Listenauswahl entfernt (Commit `a5e9c4be`).
+- [x] GitHub-Pages-Live-HTTP-Workflow um Wishlist-HTML und die beiden produktiven JavaScript-Modulrouten ergänzt (Commit `b9d6fd68`). Veröffentlichung ist dadurch nach Merge beobachtbar.
+- [x] PR #166 per GitHub API geprüft: `mergeable=true`, kein Draft. Zuletzt `mergeable_state=unstable` während neuer CI-Läufe.
+- [ ] Neueste Node-/Chromium-/Vault-/Smoke-CI **nach diesen Commits** vollständig grün bestätigen; dann Merge-Gate erneut prüfen.
+- [ ] Echtes Auth-/Wunsch-Anlegen-/Listen-Zuordnen-End-to-End mit vorhandenen berechtigten Konten noch nicht ausgeführt. Die SQL-Rollentests sind read-only und ersetzen keine reale Benutzeraktion.
+- [ ] Deployment erst nach Merge und bestandenem GitHub-Pages-Live-HTTP-Check als erfolgreich melden. Vorher keine Veröffentlichung behaupten.
