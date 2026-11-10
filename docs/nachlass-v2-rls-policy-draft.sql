@@ -1,5 +1,10 @@
 -- REVIEW-ONLY: intended RLS policies for isolated nachlass_v2 schema.
 -- Not executed, not deployed, and no browser grants are added here.
+-- BLOCKER: Cross-table EXISTS subqueries are subject to RLS on referenced
+-- tables. The vault_owner_select policy hides vault rows from heirs, so the
+-- released_envelope_select predicate cannot authorize a normal heir as written.
+-- Do NOT apply this draft. Resolve with a separately reviewed authorization
+-- boundary (and test RLS with real authenticated roles) before any rollout.
 -- Requires an isolated PostgreSQL integration test with authenticated JWT claims
 -- and an audited deployment plan before applying.
 --
