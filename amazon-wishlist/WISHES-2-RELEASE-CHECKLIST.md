@@ -305,3 +305,15 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Produktfreigabe weiterhin gesperrt.
 
 Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Produktentwicklung: übersichtliche Wunschkarten und zuverlässige Navigation (2026-11-10)
+
+- [x] Beim Wechsel der geöffneten Liste alte Such-/Prioritäts-/Kategorie-/Markierungs-/Zuordnungsfilter und Sortierung zurücksetzen; so werden Wünsche nicht durch Filter einer vorherigen Liste scheinbar versteckt.
+- [x] Wunschkarten besitzen eine stabile `data-wish-id`-Kennung. Der Sprung aus der Wunschdetailansicht fokussiert und scrollt zur **konkreten** Wunschkarte, nicht nur zu einem möglicherweise mehrfach vorkommenden Titel.
+- [x] Lange Wunsch-Notizen standardmäßig auf drei Zeilen begrenzen, mit zugänglicher Schaltfläche zum vollständigen Anzeigen und Einklappen.
+- [x] Mobile Wunschkarten: bessere Wortumbrüche, große Touchflächen für Notizen und Markierungen; sichtbarer Tastaturfokus beim Sprung.
+- [x] Unumgängliche Minimalprüfung: Dashboard-JavaScript syntaktisch kompiliert; sieben referenzierte HTML-IDs vorhanden; die zentralen Implementierungsanker statisch geprüft.
+- [ ] Endabnahme im echten Browser weiterhin offen; kein produktiver Datenbankzugriff.
+- [ ] Freigabe weiterhin gesperrt.
+
+**Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
