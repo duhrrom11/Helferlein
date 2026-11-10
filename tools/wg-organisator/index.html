@@ -1315,12 +1315,19 @@
             if (!wgBinId || !/^[a-zA-Z0-9_-]{4,128}$/.test(wgBinId)) return false;
             try {
                 if (isSecureWgId(wgBinId)) {
+                    // Do not hydrate a remote snapshot over local edits made while
+                    // authentication or the network request was in flight.
+                    const loadingWgId = wgBinId;
+                    const loadingChangeVersion = secureWgChangeVersion;
+                    if (secureWgDirty) throw new Error('Ungespeicherte WG-Änderungen: Cloud-Laden abgebrochen.');
                     await getAuthenticatedWgUser();
                     const { data, error } = await supabaseClient.from('wg_spaces')
-                        .select('payload, updated_at').eq('id', wgBinId.slice(SECURE_WG_PREFIX.length)).single();
+                        .select('payload, updated_at').eq('id', loadingWgId.slice(SECURE_WG_PREFIX.length)).single();
                     if (error || !data) throw new Error(error?.message || 'Kein Lesezugriff auf diese WG.');
                     const payload = data.payload;
                     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('Ungültige WG-Daten');
+                    if (wgBinId !== loadingWgId || secureWgDirty || secureWgChangeVersion !== loadingChangeVersion)
+                        throw new Error('WG wurde während des Ladens lokal geändert. Cloud-Daten nicht übernommen.');
                     // Use the same field validation and local-cache hydration as legacy data.
                     const loaded = await ladeWGObjekt(payload);
                     if (loaded) {
