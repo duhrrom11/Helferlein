@@ -227,3 +227,23 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('export rejects malformed text fields consistently',()=>{
+ const row={wishlist_products:{asin:'B012345678',marketplace:'amazon.de',title:'Buch'},note:'',priority:1};
+ for(const patch of [{note:12},{note:null},{wishlist_products:{...row.wishlist_products,title:42}},{wishlist_products:{...row.wishlist_products,title:' '}}]){
+  assert.throws(()=>exportWishlistCsv([{...row,...patch}]));
+  assert.throws(()=>exportWishlistJson([{...row,...patch}]));
+ }
+});
+test('backup preview enforces UTF-8 bytes, field types and exact optional Amazon links',()=>{
+ const good={format:'helferlein-wishlist-backup',version:1,profile:{handle:'anna_123',display_name:'Anna',bio:''},wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1}]};
+ const parse=patch=>previewWishlistBackup(JSON.stringify({...good,...patch}));
+ for(const profile of [{...good.profile,bio:12},{...good.profile,display_name:null},{...good.profile,handle:42},[]])assert.throws(()=>parse({profile}));
+ for(const row of [{...good.wishes[0],note:12},{...good.wishes[0],title:null},{...good.wishes[0],amazon_url:'https://www.amazon.de/dp/B000000000'},{...good.wishes[0],amazon_url:null}])assert.throws(()=>parse({wishes:[row]}));
+ assert.equal(parse({wishes:[{...good.wishes[0],amazon_url:'https://www.amazon.de/dp/B012345678'}]}).count,1);
+ assert.throws(()=>previewWishlistBackup(JSON.stringify({...good,wishes:[{...good.wishes[0],note:'ü'.repeat(1_100_000)}]})),/zu groß/);
+});
+test('export progress rejects impossible totals',()=>{
+ for(const total of [-1,0,1.5,NaN,'3',Number.MAX_SAFE_INTEGER+1])assert.throws(()=>exportProgressText(2,total));
+ assert.equal(exportProgressText(0,0),'0 von 0 Wünschen geladen …');
+});
