@@ -171,8 +171,9 @@ export function mountListsDashboard(db, getUser) {
     finally{reportBulk(moved+failed,targets.length,moved,failed)}
    }
    if(current()){
-    try{await load()}catch(e){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'))}
-    $('bulkStatus').textContent=moved+' verschoben, '+failed+' fehlgeschlagen'+(stopped?', Vorgang gestoppt':'')+(partial?', '+partial+' möglicherweise in beiden Listen – bitte prüfen':'')+'.';
+    const summary=moved+' verschoben, '+failed+' fehlgeschlagen'+(stopped?', Vorgang gestoppt':'')+(partial?', '+partial+' möglicherweise in beiden Listen – bitte prüfen':'')+'.';
+    try{await load();if(getUser()?.id===uid)$('bulkStatus').textContent=summary}
+    catch(e){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent=summary}
    }
   }finally{
    if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkProgressPanel').hidden=true;$('bulkStop').disabled=true;updateBulkToolbar();renderWishCards()}
