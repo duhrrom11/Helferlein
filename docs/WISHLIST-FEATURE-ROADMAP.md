@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Deep-Links und Tastaturzugang)
+
+- **Direkte Navigation:** Hash-Links auf vorhandene Elemente öffnen deren geschlossene übergeordnete `details`-Bereiche automatisch. Das gilt auch für die mobile Dashboard-Verwaltung; bestehende Elemente und IDs bleiben erhalten.
+- **Tastatur:** Escape schließt die aktuell fokussierte offene Navigationsgruppe und setzt den Fokus auf deren Zusammenfassung zurück. Die Bedienung bleibt mit nativen `details`-Elementen kompatibel.
+- **Produktivdaten:** Ausschließlich clientseitiges JavaScript in `amazon-wishlist/index.html`; keine Supabase-Migration, keine Testdaten, keine Änderung an Konten, Wunschlisten oder Geschenken.
+- **Prüfung:** Statischer Abgleich des Skript-Einfügepunkts und einmaliges Vorhandensein des neuen Blocks; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Dashboard-Verwaltung für Smartphones gruppiert)
 
 - **Nutzerführung:** Die Geschenkübersicht wird vor den umfangreichen Verwaltungsoptionen gezeigt. Ein neuer aufklappbarer Bereich „Dashboard verwalten“ gruppiert Layout/Vorschau, Anzeige/Einstellungen und Sicherungen/Verlauf/Datenübernahme.
