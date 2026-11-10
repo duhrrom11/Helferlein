@@ -83,3 +83,16 @@
 - [ ] Verifiziertes `package-lock.json` nach erfolgreicher npm-Auflösung erstellen, prüfen und committen
 
 **Ergebnis:** Keine neu nachgewiesenen Funktionsfehler in den 27 isoliert ausgeführten Logiktests. Die vollständige Node-/Browser-Freigabe bleibt ausstehend; fehlende Netzwerk- und Paketverfügbarkeit sind die konkreten Blocker. Es wurden keine produktiven Datenbankänderungen, Merges oder Deployments durchgeführt.
+
+## Wiederholter Ausführungs- und Abhängigkeitscheck (2026-11-10)
+
+- [x] Tatsächlicher isolierter Node-Testlauf mit `node --test real-node.test.mjs`: **13 bestanden, 0 fehlgeschlagen, 126,7645 ms**
+- [x] Tatsächlicher isolierter Chromium-Testlauf mit `python browser-check.py`: **6 bestanden** (320/375/768 px, Auswahl und Zurücksetzen, Escape, Tastatur-Retry)
+- [x] Lokale Versionen geprüft: Node `v22.16.0`, npm `10.9.2`
+- [x] GitHub-Checkout erneut versucht: `git ls-remote https://github.com/duhrrom11/Helferlein.git HEAD` → `Could not resolve host: github.com`
+- [x] npm-Registry erneut geprüft: `npm view @playwright/test@1.56.1 dist.integrity --fetch-retries=0 --fetch-timeout=8000` → `EAI_AGAIN registry.npmjs.org`
+- [ ] Vollständige Node-Branch-Suite ausführen; lokaler Checkout ist nicht verfügbar
+- [ ] Neun originale Branch-Playwright-Tests ausführen; Node-Paket `@playwright/test` ist nicht installiert
+- [ ] Verifiziertes `package-lock.json` erzeugen; keine geprüften Registry-Metadaten/Integritäts-Hashes verfügbar
+
+**Freigabeentscheidung:** Weiterhin **nicht freigegeben**. Kein nachgewiesener Fehler in den erneut ausgeführten isolierten Tests, deshalb keine unbegründete Produktivcodeänderung. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
