@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,exportWishlistCsv,priorityLabel,validateWishlistExportPage,exportWishlistJson,exportProgressText} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,exportWishlistCsv,priorityLabel,validateWishlistExportPage,exportWishlistJson,exportProgressText,previewWishlistBackup} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -208,4 +208,22 @@ test('export progress only accepts nonnegative integers',()=>{
  assert.equal(exportProgressText(0),'0 Wünsche geladen …');
  assert.equal(exportProgressText(12,100),'12 von 100 Wünschen geladen …');
  for(const value of [-1,1.5,NaN,'12'])assert.throws(()=>exportProgressText(value));
+});
+
+test('read-only JSON backup preview validates exported backups',()=>{
+ const rows=[{wishlist_products:{asin:'B012345678',marketplace:'amazon.de',title:'Buch'},note:'Geschenk',priority:2,created_at:'2026-11-10T00:00:00Z'}];
+ const json=exportWishlistJson(rows,{handle:'anna_123',display_name:'Anna',bio:'Hallo'});
+ assert.deepEqual(previewWishlistBackup(json),{profile:{handle:'anna_123',display_name:'Anna',bio:'Hallo'},count:1,wishes:[{asin:'B012345678',title:'Buch',note:'Geschenk',priority:2}]});
+ assert.deepEqual(previewWishlistBackup(exportWishlistJson([])),{profile:null,count:0,wishes:[]});
+});
+test('backup preview rejects unsupported, malformed and duplicated content',()=>{
+ const good={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1}]};
+ for(const value of ['', '{', 'x'.repeat(2_000_001)])assert.throws(()=>previewWishlistBackup(value));
+ for(const patch of [{version:2},{format:'other'},{wishes:null},{wishes:[good.wishes[0],good.wishes[0]]},{wishes:[{...good.wishes[0],asin:'INVALID'}]},{wishes:[{...good.wishes[0],title:''}]},{wishes:[{...good.wishes[0],priority:9}]},{profile:{handle:'bad name',display_name:'Name',bio:''}}]){
+  assert.throws(()=>previewWishlistBackup(JSON.stringify({...good,...patch})));
+ }
+});
+test('backup preview drops unexpected IDs and private fields',()=>{
+ const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
+ assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
