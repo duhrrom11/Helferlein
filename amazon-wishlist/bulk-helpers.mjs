@@ -20,6 +20,7 @@ export function bulkErrorHint(error) {
 }
 
 export async function fetchAllPages(fetchPage,{pageSize=1000,isCurrent=()=>true}={}) {
+ if(!Number.isSafeInteger(pageSize)||pageSize<1)throw new RangeError('pageSize must be a positive integer');
  const rows=[];
  for(let offset=0;;offset+=pageSize){
   if(!isCurrent())return null;
@@ -27,6 +28,7 @@ export async function fetchAllPages(fetchPage,{pageSize=1000,isCurrent=()=>true}
   if(!isCurrent())return null;
   if(response.error)throw response.error;
   const batch=response.data||[];
+  if(!Array.isArray(batch))throw new TypeError('Paginated response must contain an array');
   rows.push(...batch);
   if(batch.length<pageSize)return rows;
  }
