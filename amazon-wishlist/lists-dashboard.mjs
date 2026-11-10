@@ -1,5 +1,5 @@
 import {LIST_TEMPLATES,WISH_CATEGORIES,filterListWishes} from './list-features.mjs';
-import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages} from './bulk-helpers.mjs';
+import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,executeBulkJob} from './bulk-helpers.mjs';
 // Multi-list dashboard. Requires LISTS-SCHEMA-PROPOSAL.sql to be reviewed and applied separately.
 export function mountListsDashboard(db, getUser) {
  const $=id=>document.getElementById(id);
@@ -105,23 +105,24 @@ export function mountListsDashboard(db, getUser) {
   if(!bulkContextValid(job,{userId:getUser()?.id,listId:selected,ready:membershipReady,activeListIds:new Set(lists.filter(l=>!l.archived).map(l=>l.id))}))return;
   const run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;lastBulkResult=null;$('bulkResultPanel').hidden=true;
   $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
-  updateBulkToolbar();let success=0,failed=[],errors=new Map(),done=0,interrupted=false;
-  reportBulk(0,targets.length,0,0);
+  updateBulkToolbar();reportBulk(0,targets.length,0,0);
   try{
-   for(const wishId of targets){
-    if(bulkStopRequested||run!==bulkRunId||getUser()?.id!==uid||selected!==listId){interrupted=true;break}
-    try{
+   const result=await executeBulkJob({
+    targets,
+    isCurrent:()=>run===bulkRunId&&getUser()?.id===uid&&selected===listId,
+    shouldStop:()=>bulkStopRequested,
+    write:async wishId=>{
      const q=add?db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',listId).eq('wish_id',wishId).eq('user_id',uid);
-     const {error}=await q;if(error)throw error;if(run!==bulkRunId||getUser()?.id!==uid)return;success++;bulkIds.delete(wishId);
-    }catch(e){failed.push(wishId);const reason=bulkErrorHint(e),old=errors.get(reason)||0;errors.set(reason,old+1)}
-    if(run!==bulkRunId||getUser()?.id!==uid)return;
-    done++;reportBulk(done,targets.length,success,failed.length);
-   }
-   if(getUser()?.id===uid&&run===bulkRunId){
-    const failedSet=new Set(failed);const summary=summarizeBulk({targets,completed:targets.slice(0,done).filter(id=>!failedSet.has(id)),failed,stopped:interrupted});const result={uid,listId,add,...summary,errors:[...errors].map(([reason,count])=>({reason,count}))};$('bulkStatus').textContent='Sammelaktion beendet. Details stehen in der Ergebnisübersicht.';
-    try{await load()}catch(e){msg('Zuordnungen aktualisiert, aber das Neuladen ist fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
-    if(getUser()?.id===uid&&run===bulkRunId){bulkHistory.unshift({...result,time:new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),listTitle:lists.find(l=>l.id===listId)?.title||'Liste'});bulkHistory=bulkHistory.slice(0,10);renderBulkHistory();showBulkResult(result)}
-   }
+     return q;
+    },
+    onProgress:({done,total,success,failed})=>reportBulk(done,total,success,failed)
+   });
+   if(result.invalidated||run!==bulkRunId||getUser()?.id!==uid||selected!==listId)return;
+   for(const id of result.completed)bulkIds.delete(id);
+   const summary={uid,listId,add,total:result.total,success:result.success,failed:result.failed,remaining:result.remaining,interrupted:result.interrupted,errors:result.errors};
+   $('bulkStatus').textContent='Sammelaktion beendet. Details stehen in der Ergebnisübersicht.';
+   try{await load()}catch(e){msg('Zuordnungen aktualisiert, aber das Neuladen ist fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
+   if(getUser()?.id===uid&&run===bulkRunId){bulkHistory.unshift({...summary,time:new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),listTitle:lists.find(l=>l.id===listId)?.title||'Liste'});bulkHistory=bulkHistory.slice(0,10);renderBulkHistory();showBulkResult(summary)}
   }finally{
    if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkStop').disabled=true;updateBulkToolbar();renderWishCards()}
   }
