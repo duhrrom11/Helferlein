@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Ergebnisvorschau in der Favoriten-Schnellleiste)
+
+- **Neu umgesetzt:** Angeheftete Cloud-Filteransichten zeigen direkt in der mobilen Schnellleiste die Anzahl passender, bereits geladener privater Dashboard-Sicherungspunkte vor dem Anwenden.
+- **Filterparität:** Trefferzählung berücksichtigt Datumsgrenzen, gespeichertes aktives Layout, abweichenden Einstellungsbereich sowie die UND-Verknüpfung aller ausgewählten Änderungskategorien. Die Vorschau verändert keine aktiven Filter.
+- **Sicherheit:** Rein lokale Berechnung über bereits eigentümergebunden geladene Daten; keine neuen Datenbankabfragen, keine Migration, keine Testdaten. RLS und Rechte für Cloud-Ansichten, Präferenzen, Historie und Sicherungspunkte erneut geprüft.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Favoriten-Schnellleiste für private Sicherungspunkte)
 
 - **Neu umgesetzt:** Horizontale, mobil scrollbar angelegte Schnellleiste direkt über der privaten Dashboard-Sicherungspunkt-Zeitachse. Angeheftete Cloud-Filteransichten können mit einem Klick angewendet werden; der aktuelle Filterzustand wird per `aria-pressed` kenntlich gemacht.
