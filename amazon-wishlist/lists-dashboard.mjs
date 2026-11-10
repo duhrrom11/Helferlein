@@ -34,12 +34,14 @@ export function mountListsDashboard(db, getUser) {
  async function load(){
   if(!getUser()){reset();return}
   const generation=++loadGeneration;
-  membershipReady=false;root.hidden=false;setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
+  membershipReady=false;root.hidden=false;updateBulkToolbar([]);setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
   const id=owner();
-  const [lr,wr]=await Promise.all([
+  let lr,wr;
+  try{[lr,wr]=await Promise.all([
    db.from('wishlist_lists').select('id,title,description,icon,color,visibility,archived,created_at').eq('user_id',id).order('created_at',{ascending:false}),
    db.from('wishlist_wishes').select('id,note,priority,created_at,wishlist_products(title)').eq('user_id',id).order('created_at',{ascending:false}).order('id',{ascending:false}).range(0,999)
   ]);
+  }catch(e){if(getUser()?.id!==id||generation!==loadGeneration)return;setItemsFeedback('error','Listen oder Wünsche konnten nicht geladen werden. Bitte erneut versuchen.');throw e}
   if(getUser()?.id!==id||generation!==loadGeneration)return;
   if(lr.error){membershipReady=false;membershipByList=new Map();setItemsFeedback('error','Listen konnten nicht geladen werden. Das erforderliche Listen-Schema ist möglicherweise noch nicht aktiviert.');allAssignedIds=new Set();bulkIds.clear();renderUnassigned();listCounts=new Map();assignedTotal=0;renderProgress();$('listsTotal').textContent='0';$('wishesTotal').textContent='0';lists=[];wishes=[];syncEditor();$('listsContent').replaceChildren();msg('Listenverwaltung vorbereitet. Das Datenbankschema wurde noch nicht freigeschaltet.');return}
   if(wr.error){setItemsFeedback('error','Wünsche konnten nicht geladen werden. Bitte erneut versuchen.');throw wr.error}
