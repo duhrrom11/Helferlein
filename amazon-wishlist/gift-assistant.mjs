@@ -1,12 +1,35 @@
 const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co','sb_publishable_95Vz26YwSFFWukFbqTBjMw_pv10kOFC');
 const $=id=>document.getElementById(id);
 const euro=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(n)||0);
-const day=86400000;let weekOffset=0,calendarEvents=[];
+const day=86400000;let weekOffset=0,calendarEvents=[],weeklyTasks=[],occasionNames=new Map();
 function el(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e}
 function nextDate(o,now){const [y,m,d]=o.occasion_date.split('-').map(Number);let date=Date.UTC(y,m-1,d);if(!o.repeats_yearly)return date>=now?date:null;let year=new Date(now).getUTCFullYear();for(let i=0;i<3;i++,year++){const last=new Date(Date.UTC(year,m,0)).getUTCDate();date=Date.UTC(year,m-1,Math.min(d,last));if(date>=now)return date}return null}
 function median(values){const a=[...values].sort((x,y)=>x-y);return a.length?(a.length%2?a[(a.length-1)/2]:(a[a.length/2-1]+a[a.length/2])/2):null}
 function addCard(root,title,lines){const box=el('article','','card');box.append(el('h3',title));for(const line of lines)box.append(el('p',line));root.append(box);return box}
 async function allRows(table,columns,userId,order){let rows=[];for(let start=0;start<20000;start+=500){let q=db.from(table).select(columns).eq('user_id',userId).order(order,{ascending:true}).range(start,start+499);const {data,error}=await q;if(error)throw error;rows.push(...(data||[]));if((data||[]).length<500)return rows}throw new Error('Zu viele Datensätze für eine vollständige Auswertung')}
+function utcDate(value){if(!value)return null;const [y,m,d]=value.split('-').map(Number);return Date.UTC(y,m-1,d)}
+function taskRank(task,today){
+ const due=utcDate(task.due_date),days=due===null?null:Math.round((due-today)/day);
+ const priority=Number(task.priority)||2;
+ const urgency=days===null?4:days<0?0:days<=1?1:days<=3?2:days<=7?3:5;
+ return{days,urgency,priority,score:urgency*10+priority};
+}
+function renderWeeklyTasks(){
+ const now=new Date(),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),start=today-((now.getDay()+6)%7)*day,end=start+6*day;
+ const active=weeklyTasks.filter(t=>t.status!=='done'&&!t.archived_at);
+ const ordered=active.map(t=>({task:t,...taskRank(t,today)})).filter(x=>x.days!==null&&x.days<=Math.round((end-today)/day)).sort((a,b)=>a.score-b.score||(a.days??999)-(b.days??999)||String(a.task.title).localeCompare(String(b.task.title)));
+ const top=ordered.slice(0,5),rest=ordered.slice(5);
+ const summary=$('weeklySummary');summary.replaceChildren();
+ const metrics=[['Überfällig',ordered.filter(x=>x.days<0).length],['Bis Sonntag fällig',ordered.filter(x=>x.days>=0).length],['Hohe Priorität',ordered.filter(x=>x.priority===1).length],['Empfohlen zuerst',top.length]];
+ for(const [label,value] of metrics){const card=el('div','','review-kpi');card.append(el('strong',String(value)),el('span',label));summary.append(card)}
+ const render=(root,entries)=>{root.replaceChildren();if(!entries.length){root.append(el('p','Keine offenen Aufgaben in dieser Gruppe.'));return}
+ for(const x of entries){const t=x.task,box=el('article','','card '+(x.days<0?'priority-critical':x.days<=1?'priority-high':'priority-normal')),label=x.days<0?'Seit '+Math.abs(x.days)+' Tagen überfällig':x.days===0?'Heute fällig':x.days===1?'Morgen fällig':'In '+x.days+' Tagen fällig';
+ box.append(el('h3',t.title),el('p','⏰ '+label+' · '+(t.due_date||'ohne Datum')),el('p','Priorität: '+({1:'hoch',2:'mittel',3:'niedrig'}[x.priority]||'mittel')+' · Status: '+(t.status==='in_progress'?'in Arbeit':'offen')));
+ if(t.occasion_id&&occasionNames.has(t.occasion_id))box.append(el('p','🎁 '+occasionNames.get(t.occasion_id)));
+ box.append(el('p','Empfehlung: '+(x.days<0?'Zuerst nachholen, da die Fälligkeit überschritten ist.':x.days<=1?'Zeitnah bearbeiten, da die Fälligkeit unmittelbar bevorsteht.':'In dieser Woche einplanen.')+(x.priority===1?' Zusätzlich als hohe Priorität markiert.':''),'hint'));
+ const link=el('a','Aufgabenverwaltung öffnen');link.href='./gift-tasks.html';box.append(link);root.append(box)}};
+ render($('weeklyPriority'),top);render($('weeklyRemaining'),rest);
+}
 function dateLabel(ms){return new Date(ms).toLocaleDateString('de-DE',{timeZone:'UTC',day:'2-digit',month:'2-digit'})}
 function renderWeek(){
  const now=new Date(),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),dow=(new Date(today).getUTCDay()+6)%7,start=today-dow*day+weekOffset*7*day,end=start+6*day;
@@ -20,10 +43,12 @@ $('weekNext').addEventListener('click',()=>{weekOffset++;renderWeek()});
 $('weekToday').addEventListener('click',()=>{weekOffset=0;renderWeek()});
 async function main(){
  const {data,error}=await db.auth.getUser(),user=data?.user;if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
- const [closings,occasions]=await Promise.all([
+ const [closings,occasions,tasks]=await Promise.all([
  allRows('wishlist_gift_year_closings','closing_year,gift_count,gifted_count,actual_total,budget_total,gifts_snapshot,budgets_snapshot,tasks_snapshot,task_count,task_done_count',user.id,'closing_year'),
- allRows('wishlist_occasions','id,title,occasion_date,repeats_yearly,reminder_days,budget_amount',user.id,'occasion_date')
+ allRows('wishlist_occasions','id,title,occasion_date,repeats_yearly,reminder_days,budget_amount',user.id,'occasion_date'),
+ allRows('wishlist_gift_tasks','id,title,occasion_id,due_date,status,priority,archived_at,checklist_year',user.id,'created_at')
  ]);
+ weeklyTasks=tasks;occasionNames=new Map(occasions.map(o=>[o.id,o.title]));renderWeeklyTasks();
  const nowDate=new Date(),today=Date.UTC(nowDate.getFullYear(),nowDate.getMonth(),nowDate.getDate());
  $('evidence').textContent=closings.length+' gespeicherte historische Jahresabschlüsse. Die Empfehlungen verwenden ausschließlich deren unveränderliche Geschenk-, Budget- und Aufgaben-Snapshots. Aktuelle Anlässe liefern nur Namen und zukünftige Termine.';
  const root=$('occasionCards'),upcoming=occasions.map(o=>({...o,next:nextDate(o,today)})).filter(o=>o.next!==null).sort((a,b)=>a.next-b.next).slice(0,40);
