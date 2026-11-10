@@ -51,3 +51,17 @@ Der CommonJS-Baustein `tools/digitaler-nachlass/server-api-v2.cjs` enthält eine
 **Sicherheitsgrenze:** Der übergebene `verifyToken`-Callback ist ein Vertrauensanker. Er darf niemals aus einem HTTP-Request oder aus Browsercode stammen. Er muss künftig Token-Signatur, Issuer, Audience, Ablauf, Sperrstatus und die Identität über den festgelegten Identity Provider prüfen. Die Rückgabe `verified: true` ist nur sicher, wenn sie ausschließlich vom echten Server-Verifizierer stammt. Es gibt noch keine solche produktive Implementierung. Der neue Authentifizierungsbaustein ist absichtlich **nicht** mit `server-api-v2.cjs` verbunden; die API bleibt uneingeschränkt fail-closed.
 
 `tests/nachlass-server-auth-v2.test.cjs` enthält isolierte Negativfälle für fehlende/ungültige Tokens, fehlenden Verifizierer, Verifiziererfehler und unzulässige Identitätsfelder. Keine produktiven Daten oder Konten werden benötigt.
+
+## Reproduzierbare lokale Tests (2026-11-10)
+
+Im Repository-Root mit Node.js 22 ausführen:
+
+```sh
+node --test tests/nachlass-server-api-v2.test.cjs tests/nachlass-server-auth-v2.test.cjs tests/nachlass-release-policy-v2.test.cjs
+```
+
+Die GitHub-Workflow-Datei `.github/workflows/b3-nachlass.yml` führt dieselben Tests zusammen mit den B3-Regressionstests aus. Ein grüner GitHub-Actions-Lauf ist bislang **nicht nachgewiesen**; die verfügbare Commit-Workflow-Abfrage zeigt nur PR-bezogene Läufe und kann Push-Läufe übersehen.
+
+**Tatsächlich lokal durchgeführt:** Die 9 API- und Authentifizierungs-Tests wurden unter Node.js v22.16.0 mit lokal anhand des GitHub-Quelltexts rekonstruierten Kopien ausgeführt: 9 bestanden, 0 fehlgeschlagen. Dies ist kein kryptografischer Audit, kein Test des produktiven Deployments und kein vollständiger Checkout des GitHub-Standes. Die Release-Policy-Tests, B3-Tests und Browser-Tests sind in diesem lokalen Lauf nicht enthalten.
+
+Produktive Daten, Auth-Konten und Firebase-/Supabase-Projekte wurden beim lokalen Lauf nicht angesprochen.
