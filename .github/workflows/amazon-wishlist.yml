@@ -26,14 +26,22 @@ jobs:
       - run: node --check amazon-wishlist/list-features.mjs
       - run: node --check amazon-wishlist/bulk-helpers.mjs
       - name: Node tests — amazon-links
+        continue-on-error: true
         run: node --test amazon-wishlist/amazon-links.test.mjs
       - name: Node tests — bulk-helpers
+        continue-on-error: true
         run: node --test amazon-wishlist/bulk-helpers.test.mjs
       - name: Node tests — bulk-workflows
+        continue-on-error: true
         run: node --test amazon-wishlist/bulk-workflows.test.mjs
       - name: Node tests — isolated-browser-fixture
+        continue-on-error: true
         run: node --test amazon-wishlist/isolated-browser-fixture.test.mjs
       - name: Node tests — security-source
+        continue-on-error: true
         run: node --test amazon-wishlist/security-source.test.mjs
       - name: Node tests — wishlist-utils
+        continue-on-error: true
         run: node --test amazon-wishlist/wishlist-utils.test.mjs
+      - name: Full Node test gate
+        run: node --test amazon-wishlist/*.test.mjs
