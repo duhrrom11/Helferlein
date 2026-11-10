@@ -43,6 +43,57 @@ function compareValue(key,value){if(value===undefined||value===null)return 'Nich
 function fillHistorySelectors(rows){historyVersions=rows;historyOwner=currentUser;for(const id of ['homeCompareA','homeCompareB']){const select=$(id),previous=select.value;select.replaceChildren(new Option('Bitte auswählen',''));for(const row of rows){const label=new Date(row.changed_at).toLocaleString('de-DE')+' · #'+row.id;select.add(new Option(label,String(row.id)))}if(rows.some(r=>String(r.id)===previous))select.value=previous}if(rows.length>=2){if(!$('homeCompareA').value)$('homeCompareA').value=String(rows[1].id);if(!$('homeCompareB').value)$('homeCompareB').value=String(rows[0].id)}$('homeCompareResult').replaceChildren();$('homeCompareStatus').textContent=rows.length<2?'Für den Vergleich werden mindestens zwei gespeicherte Versionen benötigt.':'Zwei Versionen auswählen und vergleichen.'}
 async function restoreHistoryVersion(row){if(!currentUser||currentUser!==historyOwner||layoutBusy)return;const saved=safeHistorySettings(row);if(!saved){$('homeCompareStatus').textContent='Diese Konfiguration ist nicht vollständig wiederherstellbar.';return}const stamp=new Date(row.changed_at).toLocaleString('de-DE');if(!window.confirm('Historische Version #'+row.id+' vom '+stamp+' dauerhaft wiederherstellen? Alle aktuellen Dashboard-Einstellungen und gespeicherten Vorlagen werden ersetzt. Ein neuer Verlaufseintrag wird angelegt.'))return;endPreview(true);await saveLayoutChange(saved,'Historische Version #'+row.id+' wiederhergestellt.');await loadHistory()}
 $('homeCompareShow').addEventListener('click',()=>{const root=$('homeCompareResult');root.replaceChildren();if(!currentUser||historyOwner!==currentUser)return;const a=historyVersions.find(r=>String(r.id)===$('homeCompareA').value),b=historyVersions.find(r=>String(r.id)===$('homeCompareB').value);if(!a||!b||a.id===b.id){$('homeCompareStatus').textContent='Bitte zwei unterschiedliche historische Versionen auswählen.';return}const table=el('table','');table.className='home-compare-table';const head=document.createElement('thead'),header=document.createElement('tr');for(const title of ['Einstellung','Version A (#'+a.id+')','Version B (#'+b.id+')'])header.append(el('th',title));head.append(header);table.append(head);const body=document.createElement('tbody');let changes=0;for(const [key,label] of Object.entries(compareFields)){const va=a.new_settings?.[key],vb=b.new_settings?.[key],changed=JSON.stringify(va)!==JSON.stringify(vb);if(changed)changes++;const tr=document.createElement('tr');tr.dataset.changed=String(changed);tr.append(el('th',label),el('td',compareValue(key,va)),el('td',compareValue(key,vb)));body.append(tr)}table.append(body);const scroll=el('div','');scroll.className='home-compare-scroll';scroll.append(table);root.append(scroll);for(const [label,row] of [['Version A wiederherstellen',a],['Version B wiederherstellen',b]]){const button=el('button',label);button.type='button';button.disabled=!safeHistorySettings(row);button.addEventListener('click',()=>restoreHistoryVersion(row));root.append(button)}$('homeCompareStatus').textContent=changes+' von '+Object.keys(compareFields).length+' Einstellungsfeldern unterscheiden sich. Markierte Zeilen zeigen Unterschiede.'});
+
+const backupKeys=[...layoutKeys,'saved_layouts','active_layout'];
+let pendingBackup=null,backupOwner=null,backupBusy=false;
+function validateBackupObject(obj){
+ if(!obj||typeof obj!=='object'||Array.isArray(obj)||Object.keys(obj).length!==backupKeys.length||!backupKeys.every(k=>Object.prototype.hasOwnProperty.call(obj,k)))return false;
+ if(!validSnapshot(obj)||!['custom','compact','daily','overview'].includes(obj.active_layout))return false;
+ const layouts=obj.saved_layouts;
+ if(!layouts||typeof layouts!=='object'||Array.isArray(layouts)||Object.keys(layouts).some(k=>!['compact','daily','overview'].includes(k)||!validSnapshot(layouts[k])||Object.keys(layouts[k]).length!==layoutKeys.length))return false;
+ return JSON.stringify(obj).length<=16000;
+}
+function clearPendingBackup(message=''){pendingBackup=null;backupOwner=null;$('homeBackupDiff').replaceChildren();$('homeBackupApply').disabled=true;$('homeBackupCancel').disabled=true;$('homeBackupStatus').textContent=message}
+function backupSettings(){return Object.fromEntries(backupKeys.map(k=>[k,JSON.parse(JSON.stringify(preferences[k]))]))}
+$('homeBackupFile').addEventListener('change',()=>clearPendingBackup('Neue Datei ausgewählt. Bitte erneut prüfen.'));
+$('homeBackupCancel').addEventListener('click',()=>clearPendingBackup('Import verworfen. Keine Änderungen gespeichert.'));
+$('homeBackupExport').addEventListener('click',()=>{
+ if(!currentUser)return;
+ const settings=backupSettings();
+ if(!validateBackupObject(settings)){$('homeBackupStatus').textContent='Aktuelle Einstellungen konnten nicht sicher exportiert werden.';return}
+ const blob=new Blob([JSON.stringify({format:'helferlein-wishes-dashboard',version:1,exported_at:new Date().toISOString(),settings},null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='helferlein-dashboard-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);$('homeBackupStatus').textContent='JSON-Sicherung lokal heruntergeladen. Keine Daten hochgeladen.';
+});
+$('homeBackupPreview').addEventListener('click',async()=>{
+ clearPendingBackup();if(!currentUser||backupBusy)return;const file=$('homeBackupFile').files?.[0];if(!file){$('homeBackupStatus').textContent='Bitte zuerst eine JSON-Datei auswählen.';return}
+ if(file.size>65536||file.size===0){$('homeBackupStatus').textContent='Datei muss zwischen 1 Byte und 64 KB groß sein.';return}
+ backupBusy=true;const owner=currentUser;$('homeBackupStatus').textContent='Import wird lokal geprüft …';
+ try{
+  const raw=await file.text();if(owner!==currentUser)return;
+  const envelope=JSON.parse(raw);
+  if(!envelope||Object.keys(envelope).sort().join(',')!=='exported_at,format,settings,version'||envelope.format!=='helferlein-wishes-dashboard'||envelope.version!==1||typeof envelope.exported_at!=='string'||!validateBackupObject(envelope.settings))throw new Error('invalid backup');
+  const candidate=envelope.settings;const table=document.createElement('table');table.className='home-compare-table';const thead=document.createElement('thead'),tr=document.createElement('tr');
+  for(const label of ['Einstellung','Aktuell','Import'])tr.append(el('th',label));thead.append(tr);table.append(thead);
+  const tbody=document.createElement('tbody');let changed=0;
+  for(const [key,label] of Object.entries(compareFields)){const a=preferences[key],b=candidate[key],diff=JSON.stringify(a)!==JSON.stringify(b);if(diff)changed++;const row=document.createElement('tr');row.dataset.changed=String(diff);row.append(el('th',label),el('td',compareValue(key,a)),el('td',compareValue(key,b)));tbody.append(row)}
+  table.append(tbody);$('homeBackupDiff').append(table);
+  pendingBackup=JSON.parse(JSON.stringify(candidate));backupOwner=owner;$('homeBackupApply').disabled=false;$('homeBackupCancel').disabled=false;
+  $('homeBackupStatus').textContent='Import gültig: '+changed+' von '+Object.keys(compareFields).length+' Feldern unterscheiden sich. Noch nichts gespeichert.';
+ }catch(e){clearPendingBackup('Ungültige oder nicht unterstützte Sicherung. Keine Daten verändert.')}finally{backupBusy=false}
+});
+$('homeBackupApply').addEventListener('click',async()=>{
+ if(!pendingBackup||!currentUser||currentUser!==backupOwner||backupBusy||layoutBusy)return;
+ const candidate=pendingBackup;if(!validateBackupObject(candidate)){clearPendingBackup('Sicherung ungültig.');return}
+ if(!window.confirm('Geprüfte Dashboard-Sicherung dauerhaft wiederherstellen? Aktuelle Anzeigeeinstellungen und alle gespeicherten Layout-Vorlagen werden ersetzt. Ein neuer Verlaufseintrag dokumentiert die Änderung.'))return;
+ backupBusy=true;$('homeBackupApply').disabled=true;endPreview(true);
+ const uid=currentUser;
+ try{
+  const {data,error}=await db.from('wishlist_gift_home_preferences').upsert({user_id:uid,...candidate,updated_at:new Date().toISOString()},{onConflict:'user_id'}).select('user_id').single();
+  if(error||data?.user_id!==uid||currentUser!==uid)throw error||new Error('Speichern nicht bestätigt');
+  preferences={...preferences,...candidate};draftOrder=[...preferences.section_order];applyPreferences();redraw();clearPendingBackup('Import bestätigt und sicher gespeichert. Die Änderung ist im privaten Verlauf protokolliert.');$('homeBackupFile').value='';
+ }catch(e){$('homeBackupStatus').textContent='Import konnte nicht gespeichert werden. Bitte Einstellungen erneut laden.';$('homeBackupApply').disabled=false}
+ finally{backupBusy=false}
+});
 let historyLoading=false;
 function settingsDiff(before,after){if(!before)return 'Erste gespeicherte Konfiguration';const names={show_metrics:'Kennzahlen sichtbar',show_tasks:'Tagesaufgaben sichtbar',show_occasions:'Anlässe sichtbar',show_progress:'Fortschritt sichtbar',task_sort:'Aufgabensortierung',occasion_sort:'Anlasssortierung',section_order:'Bereichsreihenfolge',metric_keys:'Kennzahlenauswahl',quick_links:'Schnellzugriffe',favorite_links:'Favoriten',saved_layouts:'Gespeicherte Vorlagen',active_layout:'Aktive Ansicht'};return Object.entries(names).filter(([key])=>JSON.stringify(before[key])!==JSON.stringify(after[key])).map(([,label])=>label).join(' · ')||'Keine sichtbare Änderung'}
 function safeHistorySettings(row){const state=row?.new_settings;if(!state||!validSnapshot(state)||!['custom','compact','daily','overview'].includes(state.active_layout))return null;const saved=state.saved_layouts;if(!saved||typeof saved!=='object'||Array.isArray(saved)||Object.keys(saved).some(k=>!['compact','daily','overview'].includes(k)||!validSnapshot(saved[k])))return null;return {...snapshot(state),active_layout:state.active_layout,saved_layouts:saved}}
@@ -62,6 +113,6 @@ function render(tasks,occasions){const now=new Date(),today=Date.UTC(now.getFull
  applyPreferences();$('homeGiftStatus').textContent='Privater Überblick – nur für dein angemeldetes Konto. Keine Daten verändert.';
 }
 let loading=false,loadedFor=null;
-async function refresh(){if(loading)return;loading=true;try{const {data,error}=await db.auth.getUser();const uid=data?.user?.id;if(error||!uid){$('homeGiftStart').hidden=true;loadedFor=null;currentUser=null;currentTasks=[];currentOccasions=[];preferences={...defaults};draftOrder=[...sections];previewSnapshot=null;previewTarget=null;$('homeHistoryEntries').replaceChildren();$('homeCompareResult').replaceChildren();historyVersions=[];historyOwner=null;return}if(loadedFor===uid)return;loadedFor=null;$('homeGiftStart').hidden=false;$('homeGiftStatus').textContent='Dein privater Geschenk-Überblick wird geladen …';const [tasks,occasions]=await Promise.all([rows('wishlist_gift_tasks','id,title,due_date,status,priority,archived_at',uid,'created_at'),rows('wishlist_occasions','id,title,occasion_date,repeats_yearly',uid,'occasion_date')]);await loadPreferences(uid);currentUser=uid;currentTasks=tasks;currentOccasions=occasions;for(const id of ['homeGiftMetrics','homeGiftTasks','homeGiftOccasions'])$(id).replaceChildren();render(tasks,occasions);loadedFor=uid}catch(e){$('homeGiftStatus').textContent='Privater Überblick derzeit nicht verfügbar. Öffne das Geschenk-Planungscockpit für Details.'}finally{loading=false}}
+async function refresh(){if(loading)return;loading=true;try{const {data,error}=await db.auth.getUser();const uid=data?.user?.id;if(error||!uid){$('homeGiftStart').hidden=true;loadedFor=null;currentUser=null;currentTasks=[];currentOccasions=[];preferences={...defaults};draftOrder=[...sections];previewSnapshot=null;previewTarget=null;$('homeHistoryEntries').replaceChildren();$('homeCompareResult').replaceChildren();historyVersions=[];historyOwner=null;clearPendingBackup();$('homeBackupFile').value='';return}if(loadedFor===uid)return;loadedFor=null;$('homeGiftStart').hidden=false;$('homeGiftStatus').textContent='Dein privater Geschenk-Überblick wird geladen …';const [tasks,occasions]=await Promise.all([rows('wishlist_gift_tasks','id,title,due_date,status,priority,archived_at',uid,'created_at'),rows('wishlist_occasions','id,title,occasion_date,repeats_yearly',uid,'occasion_date')]);await loadPreferences(uid);currentUser=uid;currentTasks=tasks;currentOccasions=occasions;for(const id of ['homeGiftMetrics','homeGiftTasks','homeGiftOccasions'])$(id).replaceChildren();render(tasks,occasions);loadedFor=uid}catch(e){$('homeGiftStatus').textContent='Privater Überblick derzeit nicht verfügbar. Öffne das Geschenk-Planungscockpit für Details.'}finally{loading=false}}
 db.auth.onAuthStateChange(()=>{setTimeout(refresh,0)});
 refresh();
