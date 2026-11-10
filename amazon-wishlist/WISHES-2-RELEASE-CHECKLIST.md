@@ -975,3 +975,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] CI des Workflow-Commits `c0619732` separat bestätigt: GitHub Actions Lauf 42824800184 **success**.
 - [ ] Pull Request #166 ist aktuell `mergeable=false` / `mergeable_state=dirty`: Konflikte mit `main` müssen vor einem Merge aufgelöst und erneut getestet werden.
 - [ ] Browser-/Mobilgeräteabnahme und Deployment-Ziel/Build-Konfiguration vor Produktionsfreigabe prüfen. Kein Merge, kein Deployment, keine produktive Datenbankmigration durchgeführt.
+
+## Autopilot: PR #166 Konfliktanalyse und Browser-CI (2026-11-10)
+
+- [x] Konfliktstatus per GitHub-API geprüft: PR #166 war `mergeable=false`, `mergeable_state=dirty`.
+- [x] Nicht zum Wishes-Feature gehörende Root-Änderungen in `index.html`, `tests/b3-startseite.spec.cjs` und `tests/launch-30.spec.cjs` an aktuelles `main` angeglichen (drei separate Commits).
+- [x] Ursache der verbleibenden Merge-Risiken identifiziert: `main` enthält bereits 12 `amazon-wishlist/`-Dateien; davon weichen acht von der Feature-Version ab, u. a. `app.mjs` (main 27.745 Bytes, Feature 23.656 Bytes) und `wishlist-utils.mjs` (main 11.316 Bytes, Feature 4.248 Bytes). Ein blindes Überschreiben würde aktuelle main-Funktionalität möglicherweise entfernen.
+- [x] Separate GitHub-Actions-Browser-Job für isolierte Playwright-Chromium-Tests eingerichtet; `npm run test:ci` ergänzt.
+- [ ] Browser-CI-Ergebnis bestätigen und ggf. Fehler beheben.
+- [ ] Die acht überlappenden Wishes-Dateien **inhaltlich zusammenführen**, bestehende main-Funktionen und Tests bewahren; erst danach PR-Merge erneut prüfen.
+- [ ] Produktiver Merge/Deployment weiterhin zurückgestellt, bis PR konfliktfrei, CI einschließlich Browser grün und Migrations-/Deployment-Schritte geprüft sind. Keine produktiven Supabase-Änderungen für dieses Paket.
