@@ -1159,3 +1159,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Veralteten `vercel-wishes`-Job aus `.github/workflows/live-site-http.yml` entfernt (Commit `bb1d2ba3`). Der GitHub-Pages-Live-Check prüft weiterhin nach Deployment die produktiven Wishes-HTML- und JavaScript-Dateien.
 - [ ] GitHub-Repository-Homepage-Metadaten zeigen möglicherweise noch die veraltete Vercel-Adresse. Bei nächster administrativer Repository-Einstellung auf `https://duhrrom11.github.io/Helferlein/` aktualisieren.
 - [ ] Freigabe erfordert weiterhin vollständige CI auf dem aktuellen Commit, tatsächlich ausgeführte Chromium-Produktions-HTML-Tests, Sicherheitsprüfung und nach Merge erfolgreiche GitHub-Pages-Veröffentlichungsprüfung. Die Hostingentscheidung ersetzt diese Nachweise nicht.
+
+## Autopilot: abschließende Freigabeprüfung nach b6e4936b (2026-11-10)
+
+- [x] **Alle 10 GitHub-Checks auf `b6e4936b` grün**, einschließlich zweier Chromium-Browserjobs, Node, Vault, Release-Smoke, GitHub-Pages-Reachability sowie CodeQL (JavaScript/TypeScript und Actions). PR #166 war konfliktfrei.
+- [x] Produktive Supabase-RLS erneut unter `BEGIN READ ONLY`, `SET LOCAL ROLE authenticated` und einem JWT-Claim eines **vorhandenen** Kontos geprüft: SELECT und notwendige INSERT-Grants vorhanden, TRUNCATE und Membership-UPDATE verweigert, beide Listen-Tabellen weiterhin leer. Keine Testdaten, keine Schreibzugriffe.
+- [x] Wiederverwendbare schreibgeschützte SQL-Auditvorlage `PRODUCTION-RLS-READONLY-AUDIT.sql` hinzugefügt (Commit `fbdb60b2`). **Wichtig:** JWT-Claim-Simulation ist kein echter Supabase-Login und testet keine Schreib-Policies.
+- [x] GitHub Pages ist das **einzige** freigegebene Hostingziel. Erreichbarkeitstest auf `b6e4936b` erfolgreich; Vercel wird nicht mehr verwendet.
+- [ ] **Echter authentifizierter Browser-End-to-End-Test mit bestehendem Konto und vollständigem Listen-Lebenszyklus ist weiterhin nicht nachgewiesen.** Ohne Benutzerzugriff/Session und ohne neue Testdaten ist er nicht ersetzbar. Dieser Gate darf nicht als bestanden markiert werden.
+- [ ] Neue CI auf dem aktuellen Commit vollständig abwarten. Merge und GitHub-Pages-Deployment bleiben bis zur nachgewiesenen authentifizierten Integration gesperrt; grüner CI-Status allein genügt nicht.
