@@ -1,6 +1,6 @@
 # Freigabe- und Funktionstestplan
 
-Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-End-Tests sind noch nicht als erfolgreich nachgewiesen.
+Status: **Nicht freigegeben**. Die Wunschlisten-App liegt auf `main`; offene Draft-PRs sind keine Freigabe. Die folgenden End-to-End- und RLS-Prüfungen sind weiterhin nicht als erfolgreich nachgewiesen.
 
 ## Automatische Tests
 - `node --check amazon-wishlist/app.mjs`
@@ -28,7 +28,7 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Veröffentlichung nur nach Review und bestätigtem CI-/Browser-Test; kein automatischer Merge.
 
 ## Übergabe für weitere Entwicklungsläufe
-- Feature-Branch: `feature/amazon-wishlist-foundation`; PR #166 bleibt Draft. Aktuelle Änderungen über GitHub-Commit-Historie prüfen, nicht nur über Chatverläufe.
+- Entwicklungsbasis ist der jeweils aktuelle `main`-Commit. PR #166 ist historisch und darf nicht als Branch-Basis dienen. Offene Wunschlisten-PRs auf Überschneidungen, Head-SHA, Mergefähigkeit und CI prüfen; aktuelle Änderungen über GitHub-Commit-Historie statt nur über Chatverläufe nachvollziehen.
 - Neu: Öffentliche Profil-Wunschansicht mit `?profile=<handle>`, Suchergebnis-Aktion »Wünsche ansehen«, Profil-Link kopieren; nur bestehende RLS-lesbare Daten.
 - Wichtig: GitHub Actions `Amazon wishlist checks`, `Browser launch smoke` und weitere Workflows nach jedem Commit auf Abschluss und Erfolg prüfen; ein laufender Workflow ist kein bestandener Test.
 - Vor Launch zusätzlich Profile-Link-Fehlerfälle, Browser- und RLS-Tests prüfen. Keine Testdatensätze in Produktiv-Supabase erstellen.
@@ -326,3 +326,9 @@ Status: **Nicht freigegeben**. Der Code liegt im Draft-PR; die folgenden End-to-
 - Nach dem Ausblenden der letzten sichtbaren Wunschkarte wird ein erklärender Leerzustand gezeigt, einschließlich Hinweis auf die Wiederherstellung.
 - Beim Ausblenden eines fremden Profils erhält die bereits sichtbare Wiederherstellen-Schaltfläche den Fokus vor dem asynchronen Feed-Refresh.
 - Manuell zu prüfen: letzter sichtbarer Wunsch, Profil-Ausblendung bei langsamem Netzwerk, Tastaturfokus, Feed-Pagination sowie Wiederherstellen nach Fehlern. Kein Freigabenachweis durch diesen Commit.
+
+## Aktueller Freigabestatus (10.11.2026, 12:44 MEZ)
+- `main` wurde mit `cb9174b05135d042593e20cf1b4f851e5ce7e2da` verglichen; zum Prüfzeitpunkt identisch. Dieser Vergleich ist **kein** CI-Nachweis.
+- Der Node-Clipboard-Fehler durch ungeschützte Standardparameter `navigator.clipboard` und `document` ist in `main` weiterhin sichtbar. Der konsolidierte Draft-PR #251 adressiert ihn; vor Integration aktuelle Tests und PR-Head-CI prüfen.
+- Exportvalidierung wird im Draft-PR #252 bearbeitet; vor Integration mit #251 und älteren Export-PRs auf Überschneidungen prüfen. Keine ungeprüften Cherry-Picks oder automatischen Merges.
+- Vor einer Veröffentlichung sind ein erfolgreicher Wunschlisten-Testlauf und GitHub-Actions-Checks **für den tatsächlich zu mergenden Commit**, menschliches Review sowie die offenen Browser-, RLS-, Rechts- und Missbrauchsschutz-Prüfungen erforderlich. Ohne diese Nachweise bleibt die Freigabe gesperrt.
