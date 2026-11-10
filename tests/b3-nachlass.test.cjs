@@ -81,3 +81,14 @@ test('new vault and heir IDs use CSPRNG without exposing names or timestamps',()
  assert.doesNotMatch(html,/Math\.random\(\)/);
  assert.match(html,/if \(storedVault === null\)/,'existing vault records must be loaded rather than regenerated');
 });
+
+test('heir link secrets are not embedded in rendered person list DOM attributes',()=>{
+ const start=html.indexOf('function renderAlarmPersons()');
+ const end=html.indexOf('async function saveSettings()',start);
+ assert.ok(start>=0 && end>start);
+ const list=html.slice(start,end);
+ assert.doesNotMatch(list,/data-link=/);
+ assert.doesNotMatch(list,/#key=/);
+ assert.match(list,/data-idx="\$\{idx\}"/);
+ assert.match(html,/Never persist the full decryption URL in HTML attributes or DOM/);
+});
