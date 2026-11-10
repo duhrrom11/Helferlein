@@ -237,7 +237,7 @@ export function mountListsDashboard(db, getUser) {
  function renderWishCards(){
   updateActiveListContext();
   const cards=$('listWishCards');cards.replaceChildren();
-  const list=lists.find(l=>l.id===selected);
+  const list=lists.find(l=>l.id===selected&&!l.archived);
   if(!list||!membershipReady){$('wishShowAssigned').disabled=true;$('wishSelectShown').disabled=true;$('wishSelectUnassigned').disabled=true;$('wishSelectAssigned').disabled=true;$('wishClearSelection').disabled=true;updateBulkToolbar([]);return}
   $('wishClearSelection').disabled=bulkBusy||!bulkIds.size;
   $('wishShowAssigned').disabled=bulkBusy||!membershipReady;
@@ -292,12 +292,12 @@ export function mountListsDashboard(db, getUser) {
   const select=$('listQuickSwitch'),previous=selected;
   select.replaceChildren();
   const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Liste wählen';select.append(placeholder);
-  for(const list of [...lists].sort((a,b)=>Number(favoriteIds.has(b.id))-Number(favoriteIds.has(a.id))||a.title.localeCompare(b.title,'de'))){const option=document.createElement('option');option.value=list.id;option.textContent=(favoriteIds.has(list.id)?'★ ':'')+list.icon+' '+list.title+' · '+(listCounts.get(list.id)||0)+' Wünsche'+(list.archived?' (archiviert)':'');select.append(option)}
-  select.value=lists.some(l=>l.id===previous)?previous:'';
-  select.disabled=bulkBusy||!lists.length;
+  for(const list of [...lists].filter(l=>!l.archived).sort((a,b)=>Number(favoriteIds.has(b.id))-Number(favoriteIds.has(a.id))||a.title.localeCompare(b.title,'de'))){const option=document.createElement('option');option.value=list.id;option.textContent=(favoriteIds.has(list.id)?'★ ':'')+list.icon+' '+list.title+' · '+(listCounts.get(list.id)||0)+' Wünsche'+(list.archived?' (archiviert)':'');select.append(option)}
+  select.value=lists.some(l=>l.id===previous&&!l.archived)?previous:'';
+  select.disabled=bulkBusy||!lists.some(l=>!l.archived);
  }
  function updateActiveListContext(){
-  const list=lists.find(l=>l.id===selected);
+  const list=lists.find(l=>l.id===selected&&!l.archived);
   $('activeListHeading').textContent=list?list.icon+' '+list.title:'Wünsche dieser Liste';
   $('activeListSummary').textContent=list?(listCounts.get(list.id)||0)+' zugeordnet · '+(list.archived?'Archiviert – nur ansehen':'Aktive Liste'):'Wähle eine Liste aus.';$('listItemsNewWish').disabled=!list||list.archived||!membershipReady;
   const quick={quickAllWishes:$('listWishAssignment').value==='all'&&$('listWishMarker').value==='all',quickAssignedWishes:$('listWishAssignment').value==='assigned',quickUnassignedWishes:$('listWishAssignment').value==='global-unassigned',quickFavoriteWishes:$('listWishMarker').value==='star'};
@@ -314,8 +314,8 @@ export function mountListsDashboard(db, getUser) {
  }
  function showItems(){
   updateActiveListContext();
-  const list=lists.find(x=>x.id===selected);const generation=++itemsGeneration;
-  if(!list){$('listWishCards').replaceChildren();$('listWishCount').textContent='Wähle eine Liste aus.';updateBulkToolbar([]);return}
+  const list=lists.find(x=>x.id===selected&&!x.archived);const generation=++itemsGeneration;
+  if(!list){$('listWishCards').replaceChildren();$('listWishCount').textContent='Wähle eine aktive Liste aus.';updateBulkToolbar([]);return}
   if(!membershipReady){assignedIds=new Set();$('listWishCards').replaceChildren();$('listWishCount').textContent='';updateBulkToolbar([]);setItemsFeedback('loading','Zuordnungen werden geladen …');return}
   assignedIds=membershipForSelectedList({membershipReady,membershipByList,listId:list.id});syncBulkMoveTargets();
   if(generation!==itemsGeneration)return;
