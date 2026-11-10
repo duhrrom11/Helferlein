@@ -45,3 +45,32 @@ test('production dashboard toolbar stays inside a 320px viewport',async({page})=
  }).map(b=>b.id));
  expect(overflowing).toEqual([]);
 });
+
+test('production HTML dashboard clears private list cards and editor choices on logout',async({page})=>{
+ const html=await readFile(new URL('./index.html',import.meta.url),'utf8');
+ await loadIsolatedWishesPage(page,{dashboardModules:true,htmlOverride:html});
+ const result=await page.evaluate(async()=>{
+  let currentUser={id:'owner-a'},writes=0;
+  const db={from(table){
+   const q={select(){return this},eq(){return this},order(){return this},range(){return this},
+    then(resolve,reject){
+     const data=table==='wishlist_lists'?[{id:'private-a',user_id:'owner-a',title:'Private Liste',description:'',icon:'🎁',color:'#9D78E8',visibility:'private',archived:false,created_at:'2026-01-01'}]:[];
+     return Promise.resolve({data,error:null}).then(resolve,reject);
+    },
+    insert(){writes++;throw Error('Unexpected write')},update(){writes++;throw Error('Unexpected write')},delete(){writes++;throw Error('Unexpected write')}};
+   return q;
+  }};
+  const {mountListsDashboard}=await import('/lists-dashboard.mjs');
+  const dashboard=mountListsDashboard(db,()=>currentUser);
+  await dashboard.refresh();
+  const before={visible:!document.getElementById('listsDashboard').hidden,options:document.getElementById('wishListSelect').options.length};
+  currentUser=null;
+  await dashboard.refresh();
+  const after={hidden:document.getElementById('listsDashboard').hidden,options:document.getElementById('wishListSelect').options.length,privateText:document.getElementById('listsContent').textContent};
+  return {before,after,writes};
+ });
+ expect(result.before.visible).toBe(true);
+ expect(result.before.options).toBe(2);
+ expect(result.after).toEqual({hidden:true,options:1,privateText:''});
+ expect(result.writes).toBe(0);
+});
