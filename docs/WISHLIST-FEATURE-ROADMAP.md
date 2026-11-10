@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Fokusführung nach Speichern und Abbrechen)
+
+- **Listenbearbeitung:** Vor dem Öffnen des vorhandenen Listen-Editors wird das fokussierte Auslöseelement gemerkt. Beim Abbrechen und nach erfolgreichem Speichern führt die Oberfläche den Tastaturfokus wieder zu diesem Button, sofern er nach der Aktualisierung noch existiert und sichtbar ist. Falls der Button beim Neuzeichnen der Liste entfernt wurde, wird die Listenübersicht programmatisch fokussierbar und als sicherer Rücksprungpunkt genutzt. Auch bei bereits gespeichertem Listendesign mit nachfolgendem Ladefehler wird der Fokus zurückgeführt.
+- **Wunschbearbeitung:** Der bestehende Abbruch setzt weiterhin alle Eingabewerte zurück und beendet den Bearbeitungsmodus; zusätzlich wird der Fokus auf den sichtbaren Speichern-Button zurückgeführt, und die globale Statusmeldung bestätigt den Abbruch. `prefers-reduced-motion` wird bei der Navigation berücksichtigt.
+- **Barrierefreiheit:** Diese Anpassungen verhindern nach dem Ausblenden des Listenformulars einen Fokus auf einem versteckten Eingabefeld und erhalten einen nachvollziehbaren Tastaturpfad. Keine Änderungen an Formularvalidierung oder Datenbankabfragen.
+- **Prüfung:** Nach Veröffentlichung beide JavaScript-Module und `index.html` erneut aus GitHub abgerufen; isolierte JavaScript-Syntaxprüfung der Module (einschließlich Top-Level-`await`) und Inline-Skripte ohne Syntaxfehler, keine doppelten statischen HTML-IDs. Authentifizierter Browser-End-to-End-Test bleibt ausstehend.
+- **Produktionsschutz:** Nur clientseitige Fokus-/Scroll- und Statuslogik; keine Supabase-Schreiboperation, keine Migration, keine Testdaten oder Änderungen an Produktivdatensätzen.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Formular-Navigation und lokale Fehlermeldungen)
 
 - **Wunschbearbeitung:** Die bestehende Aktion „Bearbeiten“ scrollt nun zum tatsächlichen Wunsch-Editor-Titel statt an den Anfang des davorliegenden Profilbereichs und setzt den Fokus auf die bearbeitbare Notiz. Reduzierte Animation wird berücksichtigt; die Auswahl zur Sichtbarkeit aktualisiert ihren Privatsphäre-Hinweis beim Befüllen bestehender Wünsche.
