@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_verliehene-gegenstaende-verwalten')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verliehene Gegenstände verwalten | Helferlein</title>
@@ -42,6 +47,24 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        const client = supabaseClient;
+        if (!client || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client, tool: 'verliehene-gegenstaende-verwalten', localKey: 'verleih_tracker_pro_v3', collection: 'items',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -384,7 +407,25 @@
         }
 
         function saveData(data) {
-            localStorage.setItem('verleih_tracker_pro_v3', JSON.stringify(data));
+            if (!data || typeof data !== 'object' || !Array.isArray(data.items)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_verliehene-gegenstaende-verwalten') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
+                return false;
+            }
+            const existing = localStorage.getItem('verleih_tracker_pro_v3');
+            if (existing !== null) {
+                try { if (!Array.isArray(JSON.parse(existing).items)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('verleih_tracker_pro_v3', JSON.stringify(data));
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
         }
 
         function saveContact() {
@@ -395,7 +436,7 @@
             let data = getData();
             if(!data.contacts) data.contacts = [];
             data.contacts.push({ id: Date.now(), name, phone });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('contactName').value = "";
             document.getElementById('contactPhone').value = "";
@@ -414,7 +455,7 @@
             let data = getData();
             if(!data.inventory) data.inventory = [];
             data.inventory.push({ id: Date.now(), title, category, serial, gpsLink });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('invTitle').value = "";
             document.getElementById('invSerial').value = "";
@@ -428,7 +469,7 @@
             if (!confirm("Diesen Stamm-Gegenstand wirklich löschen?")) return;
             let data = getData();
             data.inventory = data.inventory.filter(i => i.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             loadDropdowns();
             renderInventory();
         }
@@ -550,7 +591,7 @@
         function storeData(title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo) {
             let data = getData();
             data.items.push({ id: Date.now(), title, category, serial, gpsLink, person, date, returnDate, deposit, note, photo, status: 'active' });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('itemInventorySelect').value = "";
             document.getElementById('itemPersonSelect').value = "";
@@ -571,7 +612,7 @@
             let item = data.items.find(i => i.id === id);
             if (item) {
                 item.status = newStatus;
-                saveData(data);
+                if (!saveData(data)) return;
                 renderApp();
             }
         }
@@ -583,7 +624,7 @@
                 let baseDate = item.returnDate ? new Date(item.returnDate) : new Date();
                 baseDate.setDate(baseDate.getDate() + days);
                 item.returnDate = baseDate.toISOString().split('T')[0];
-                saveData(data);
+                if (!saveData(data)) return;
                 renderApp();
                 alert(`Rückgabedatum um ${days} Tage verlängert!`);
             }
@@ -593,7 +634,7 @@
             if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.items = data.items.filter(i => i.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             loadDropdowns();
             renderApp();
         }
@@ -637,7 +678,7 @@
                 item.returnDate = returnDate;
                 item.deposit = deposit;
                 item.note = note;
-                saveData(data);
+                if (!saveData(data)) return;
             }
             closeEditModal();
             loadDropdowns();
@@ -660,15 +701,29 @@
         }
 
         function downloadICS(title, dateStr, person) {
-            let d = new Date(dateStr);
-            let dateFormatted = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8);
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:Rückgabe: ${title} (${person})\nDTSTART;VALUE=DATE:${dateFormatted}\nDTEND;VALUE=DATE:${dateFormatted}\nDESCRIPTION:Verleih-Rückgabe fällig\nEND:VEVENT\nEND:VCALENDAR`;
-            let blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = `Rueckgabe_${title.replace(/\s+/g, '_')}.ics`;
-            a.click();
+            const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr));
+            if (!match) return alert("Ungültiges Rückgabedatum.");
+            const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+            if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== dateStr)
+                return alert("Ungültiges Rückgabedatum.");
+            const formatDate = value => value.toISOString().slice(0, 10).replace(/-/g, '');
+            const startDate = formatDate(date);
+            date.setUTCDate(date.getUTCDate() + 1);
+            const endDate = formatDate(date);
+            const escapeIcs = value => String(value ?? '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+            const icsContent = [
+                "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Helferlein//Verleih//DE",
+                "BEGIN:VEVENT", `SUMMARY:${escapeIcs(`Rückgabe: ${title} (${person})`)}`,
+                `DTSTART;VALUE=DATE:${startDate}`, `DTEND;VALUE=DATE:${endDate}`,
+                "DESCRIPTION:Verleih-Rückgabe fällig", "END:VEVENT", "END:VCALENDAR", ""
+            ].join("\r\n");
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Rueckgabe_${String(title).replace(/[^a-z0-9_-]+/gi, '_')}.ics`;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function escapeHtml(value) {
@@ -729,7 +784,7 @@
             let returnedCount = data.items.filter(i => i.status === 'returned').length;
             let lostCount = data.items.filter(i => i.status === 'lost').length;
             let overdueCount = 0;
-            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + (i.deposit || 0), 0);
+            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + Number(i.deposit || 0), 0);
 
             const today = new Date();
             let filteredItems = data.items;
@@ -845,7 +900,7 @@
                                         <span class="text-xs text-indigo-600 font-semibold">→ ${escapeHtml(i.person)}</span>
                                         ${badge}
                                         ${i.serial ? `<span class="text-[10px] font-mono bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border">SN: ${escapeHtml(i.serial)}</span>` : ''}
-                                        ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">Kaution: ${i.deposit.toFixed(2).replace('.', ',')} €</span>` : ''}
+                                        ${i.deposit > 0 ? `<span class="text-[10px] bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">Kaution: ${Number(i.deposit).toFixed(2).replace('.', ',')} €</span>` : ''}
                                     </div>
                                     <p class="text-xs text-gray-500 mt-1">Ausleihe: ${d.toLocaleDateString('de-DE')} ${i.returnDate ? '| Rückgabe: ' + new Date(i.returnDate).toLocaleDateString('de-DE') : ''} ${i.note ? '| Notiz: ' + escapeHtml(i.note) : ''}</p>
                                     ${i.status === 'active' ? `<div class="flex gap-1 mt-1.5 items-center"><span class="text-[10px] text-gray-400">Verlängern:</span> ${extendButtons}</div>` : ''}
@@ -885,7 +940,7 @@
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
             let y = 35;
-            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + (i.deposit || 0), 0);
+            let totalDeposit = data.items.filter(i => i.status === 'active').reduce((sum, i) => sum + Number(i.deposit || 0), 0);
 
             doc.setFont("helvetica", "bold");
             doc.text(`Offene Kaution / Wert: ${totalDeposit.toFixed(2)} EUR`, 14, y);
@@ -900,9 +955,9 @@
                 if (y > 270) { doc.addPage(); y = 20; }
                 let statusLabel = i.status === 'returned' ? "[ZURÜCK]" : (i.status === 'lost' ? "[VERLOREN/DEFEKT]" : "[AKTIV]");
                 let serialText = i.serial ? ` (SN: ${i.serial})` : "";
-                let depText = i.deposit > 0 ? ` [Kaution: ${i.deposit.toFixed(2)} EUR]` : "";
-                doc.text(`- ${statusLabel} ${i.title}${serialText} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 14, y);
-                y += 6;
+                let depText = Number(i.deposit || 0) > 0 ? ` [Kaution: ${Number(i.deposit).toFixed(2)} EUR]` : "";
+                const lines = doc.splitTextToSize(`- ${statusLabel} ${i.title}${serialText} an ${i.person} (seit ${new Date(i.date).toLocaleDateString('de-DE')})${depText}`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             doc.save("verleih-report-pro.pdf");

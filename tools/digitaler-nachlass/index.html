@@ -518,17 +518,29 @@
                     deleteVaultEntry(id);
                 }
 
-                if (target.classList.contains('copy-link-btn')) {
-                    const link = target.getAttribute('data-link');
-                    navigator.clipboard.writeText(link);
-                    alert('🔗 Link in die Zwischenablage kopiert!');
-                }
-
-                if (target.classList.contains('email-btn')) {
-                    const name = target.getAttribute('data-name');
-                    const email = target.getAttribute('data-email');
-                    const link = target.getAttribute('data-link');
-                    sendEmailToPerson(name, email, link);
+                if (target.classList.contains('copy-link-btn') || target.classList.contains('email-btn')) {
+                    // Never persist the full decryption URL in HTML attributes or DOM.
+                    const cfg = getVaultConfig();
+                    const index = Number(target.getAttribute('data-idx'));
+                    const person = Number.isSafeInteger(index) && index >= 0 && Array.isArray(cfg?.alarmPersons)
+                        ? cfg.alarmPersons[index] : null;
+                    if (!person || !/^[a-f0-9]{64}$/i.test(cfg.masterKeyHex || '') || !cfg.vaultId || !person.id) {
+                        alert('Erben-Link ist nicht verfügbar.');
+                        return;
+                    }
+                    const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
+                    const link = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(person.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
+                    if (target.classList.contains('copy-link-btn')) {
+                        if (!navigator.clipboard?.writeText) {
+                            alert('Kopieren ist in diesem Browser nicht verfügbar.');
+                            return;
+                        }
+                        navigator.clipboard.writeText(link)
+                            .then(() => alert('🔗 Vertraulichen Erben-Link kopiert. Nur an die vorgesehene Person weitergeben.'))
+                            .catch(() => alert('Kopieren fehlgeschlagen. Bitte Browserberechtigung prüfen.'));
+                    } else {
+                        sendEmailToPerson(person.name, person.contact, link);
+                    }
                 }
 
                 if (target.classList.contains('delete-person-btn')) {
@@ -551,7 +563,8 @@
         }
 
         async function getCryptoKeyFromHex(hexKey) {
-            const bytes = new Uint8Array(hexKey.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            if (typeof hexKey !== "string" || !/^[a-fA-F0-9]{64}$/.test(hexKey)) throw new Error("Ungültiges Schlüsselformat");
+            const bytes = new Uint8Array(hexKey.match(/.{2}/g).map(byte => parseInt(byte, 16)));
             return crypto.subtle.importKey("raw", bytes, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
         }
 
@@ -595,7 +608,8 @@
             if (storedVault === null) {
                 const randomBytes = crypto.getRandomValues(new Uint8Array(32));
                 currentMasterKeyHex = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
-                const vaultId = "v_" + Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
+                // Generate non-guessable IDs without changing any existing vault or heir identifiers.
+                const vaultId = "v_" + Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
 
                 currentDecryptedVault = { entries: [] };
                 cfg = {
@@ -1518,19 +1532,17 @@
                 container.innerHTML = `<p class="text-xs text-slate-500">Noch keine Personen angelegt.</p>`;
                 return;
             }
-            const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
             container.innerHTML = cfg.alarmPersons.map((p, idx) => {
-                const personLink = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(p.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
                 return `
                     <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs">
                         <div>
                             <span class="font-bold text-slate-100">${escapeHtml(p.name)}</span>
                             ${p.contact ? `<span class="text-slate-400 text-[11px] ml-2">(${escapeHtml(p.contact)})</span>` : ''}
-                            <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">${escapeHtml(personLink)}</p>
+                            <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">Erben-Link mit geheimem Schlüssel – nur über „Link kopieren“ weitergeben.</p>
                         </div>
                         <div class="flex gap-2 flex-wrap mt-2 md:mt-0">
-                            <button data-link="${escapeHtml(personLink)}" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px] copy-link-btn">Link kopieren</button>
-                            ${p.contact ? `<button data-name="${escapeHtml(p.name)}" data-email="${escapeHtml(p.contact)}" data-link="${escapeHtml(personLink)}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] email-btn">✉️ E-Mail senden</button>` : ''}
+                            <button data-idx="${idx}" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px] copy-link-btn">Link kopieren</button>
+                            ${p.contact ? `<button data-idx="${idx}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] email-btn">✉️ E-Mail senden</button>` : ''}
                             <button data-idx="${idx}" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px] delete-person-btn">Löschen</button>
                         </div>
                     </div>
@@ -1572,7 +1584,8 @@
             const name = nameInput.value.trim();
             if (!name) { alert("Bitte Namen eingeben!"); return; }
 
-            const personId = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + "_" + Math.random().toString(36).substring(2, 6);
+            // Names must not leak into identifiers; legacy person IDs remain readable.
+            const personId = "p_" + Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
             const contact = contactInput.value.trim();
             let locallySaved = false;
             try {
@@ -1816,7 +1829,7 @@
                             <p class="text-[10px] text-slate-500">${escapeHtml(p.contact || 'Notfall-Vertrauensperson')}</p>
                         </div>
                         <div id="${qrcodeContainerId}" class="qrcode-box p-1 bg-slate-100 rounded-xl border border-slate-200"></div>
-                        <p class="font-mono text-[8px] break-all text-slate-600 bg-slate-50 p-1.5 rounded w-full">${escapeHtml(personLink)}</p>
+                        <p class="text-[10px] text-amber-900 bg-amber-50 border border-amber-200 p-2 rounded w-full">Vertraulicher Zugang: Der QR-Code enthält einen geheimen Schlüssel. Nur sicher verwahren und ausschließlich an die vorgesehene Person geben.</p>
                     </div>
                 `;
             }).join('');

@@ -922,21 +922,46 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
-            const { error } = await supabaseClient.auth.signUp({ email, password });
-            if(error) alert(error.message);
-            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+            let data, error;
+            try {
+                ({ data, error } = await supabaseClient.auth.signUp({ email, password }));
+            } finally {
+                document.getElementById('auth-password').value = '';
+            }
+            if (error) return alert('Registrierung fehlgeschlagen: ' + error.message);
+            // Supabase may require email confirmation, or intentionally conceal
+            // whether an address already exists. Never promise an active account.
+            if (data?.session) {
+                alert('Angemeldet. Dein Cloud-Konto ist einsatzbereit.');
+            } else {
+                alert('Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.');
+            }
+            await checkUserSession();
         }
 
         async function supabaseLogin() {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            let error;
+            try {
+                ({ error } = await supabaseClient.auth.signInWithPassword({ email, password }));
+            } finally {
+                document.getElementById('auth-password').value = '';
+            }
             if(error) alert(error.message);
             else { alert('Erfolgreich angemeldet!'); checkUserSession(); toggleSettingsModal(); }
         }
 
         async function supabaseLogout() {
+            // Never discard unsaved shared-WG edits by signing out and clearing the cache.
+            if (isSecureWgId(wgBinId)) {
+                await secureWgSaving;
+                if (secureWgDirty) {
+                    alert('Abmeldung angehalten: WG-Änderungen sind noch nicht in der Cloud gespeichert. Bitte synchronisieren oder die Daten zuerst sichern.');
+                    return;
+                }
+            }
             const { error } = await supabaseClient.auth.signOut();
             if (error) return alert('Abmeldung fehlgeschlagen: ' + error.message);
             if (isSecureWgId(wgBinId)) {
@@ -952,7 +977,16 @@
         }
 
         async function checkUserSession() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
+            // A failed Auth request must not leave a stale "connected" indicator.
+            let user = null;
+            let sessionError = null;
+            try {
+                const result = await supabaseClient.auth.getUser();
+                sessionError = result.error;
+                user = sessionError ? null : (result.data?.user ?? null);
+            } catch (error) {
+                sessionError = error;
+            }
             const statusText = document.getElementById('cloud-status-text');
             const userDisplay = document.getElementById('cloud-user-display');
             const headerBadge = document.getElementById('header-user-badge');
@@ -973,7 +1007,7 @@
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Status: Nicht angemeldet";
+                statusText.innerText = sessionError ? "Status: Verbindung oder Sitzung nicht überprüfbar" : "Status: Nicht angemeldet";
                 statusText.className = "font-bold text-gray-700";
                 if(syncDot) {
                     syncDot.classList.remove('bg-emerald-400', 'animate-pulse');
@@ -2334,8 +2368,19 @@
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
             doc.setFontSize(16); doc.text("WG- & Haushaltsbuch Abrechnung", 14, 20);
             doc.setFontSize(10); doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
-            let y = 38;
-            getData().forEach(r => { if (y > 270) { doc.addPage(); y = 20; } doc.text(`${r.date} | ${r.title} (${r.category}): ${r.price.toFixed(2)} EUR [${r.payer || 'Privat'}]`, 14, y); y += 6; });
+            const entries = getData().filter(r => r && typeof r === 'object' && !Array.isArray(r));
+            doc.text(`Buchungen: ${entries.length}`, 14, 35);
+            let y = 43;
+            if (!entries.length) doc.text("Keine Buchungen erfasst.", 14, y);
+            entries.forEach(r => {
+                const price = Number(r.price);
+                const line = `${r.date || '-'} | ${r.title || '-'} (${r.category || '-'}): ${Number.isFinite(price) ? price.toFixed(2) : '-'} EUR [${r.payer || 'Privat'}]`;
+                doc.splitTextToSize(line, 180).forEach(textLine => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(textLine, 14, y);
+                    y += 6;
+                });
+            });
             doc.save(`haushaltsbericht-${new Date().toISOString().split('T')[0]}.pdf`);
         }
     </script>

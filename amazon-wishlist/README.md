@@ -1,33 +1,48 @@
-# Amazon-Wunschlisten – Helferlein-Modul (Entwicklungsstand)
+# Helferlein – öffentliche Amazon-Wunschlisten
 
-## Festgelegte Konfiguration
-- GitHub: `duhrrom11/Helferlein`; Entwicklung ausschließlich per Pull Request.
-- Supabase: **bestehendes Projekt `alltagshelfer`** (`avapuibsidubuzxjtyld`), keine zweite Instanz.
-- Eigene Tabellen mit Präfix `wishlist_`, keine Änderungen an `user_data`, `wg_spaces`, `wg_members` oder `vault_cloud_snapshots`.
-- Amazon.de-Partnerkennung: `duhrrom-21`. Andere Amazon-Marktplätze benötigen eigene, dort gültige Partnerkennungen und bleiben bis dahin ohne Affiliate-Weiterleitung.
-- Keine Datenbankmigration oder Aktivierung ohne geprüfte RLS-Policies und Backup-/Rollback-Plan.
+## Aktueller Stand (10. November 2026)
 
-## Architektur
-- `amazon-links.mjs` validiert Amazon-Domains und ASIN und erzeugt kanonische Produktlinks mit konfigurierbarem Affiliate-Tag.
-- Wunschlisten-Datenmodell: `wishlist_profiles`, `wishlist_products`, `wishlist_wishes` und `wishlist_follows` sind im bestehenden Supabase-Projekt als eigene Tabellen mit RLS angelegt. `wishlist_collections` und `wishlist_comments` sind noch nicht umgesetzt.
-- Öffentliche Leserechte nur für ausdrücklich veröffentlichte Daten. Schreibrechte ausschließlich für Besitzer mittels `auth.uid()`; keine Freigabe von Auth-E-Mails.
-- Keine automatischen Produktmetadaten ohne erlaubte Datenquelle. Kein Scraping, keine erfundenen Preise.
-- Öffentlicher Feed, Prioritätssortierung, Profil-Suche, Folgen/Entfolgen, eigene Wunschbearbeitung und teilbare Profil-Links sind im Draft implementiert. Ranking, Trending, Zufall, Tageswunsch, Sammlungen, Kommentare und aggregierte Statistiken folgen stufenweise.
-- Moderation, Abuse-Schutz, Pagination und Datenlöschung vor öffentlichem Start.
+Die Wunschlisten-App wird auf `main` entwickelt und über Vercel produktiv bereitgestellt:
 
-## Tests und Auslieferung
-`node --check amazon-wishlist/app.mjs && node --test amazon-wishlist/*.test.mjs`
+- https://helferlein-ochre.vercel.app/amazon-wishlist/index.html
+- GitHub: `duhrrom11/Helferlein`, Verzeichnis `amazon-wishlist/`
+- Supabase: bestehendes Produktivprojekt `alltagshelfer` (`avapuibsidubuzxjtyld`), Tabellen ausschließlich mit Präfix `wishlist_`
+- Amazon.de-Partnerkennung: `duhrrom-21`; keine anderen Amazon-Marktplätze freigeben
+- Keine Testdatensätze in der produktiven Datenbank anlegen
 
-**Status:** Browser-App im Entwicklungsbranch, nicht veröffentlicht. Die Wishlist-Tabellen existieren bereits im bestehenden Produktiv-Supabase-Projekt; keine Testdatensätze anlegen. Vor Merge: nachweislich erfolgreiche CI- und Browser-Tests, Security-Review, rechtliche Pflichtseiten und ausdrückliche Freigabe. Siehe `RELEASE-CHECKLIST.md`.
+## Funktionen
 
-## Übergabe für weitere Entwicklungsläufe
-- Draft-PR: https://github.com/duhrrom11/Helferlein/pull/166; Branch: `feature/amazon-wishlist-foundation`.
-- Immer zuerst den neuesten Branch-Stand lesen. Änderungen nur auf diesem Branch; niemals ungeprüft mergen oder deployen.
-- Öffentliche Profilansichten über `?profile=handle`; Auswahl aus der Suche aktualisiert die Browseradresse, ein anderer Feed-Filter entfernt den Profilparameter. `profilePageUrl` ist separat getestet.
-- CI-Status und GitHub-Actions-Workflow-Runs explizit prüfen; leere Statuslisten sind **kein** Testnachweis.
+- E-Mail-Registrierung und Anmeldung über Supabase Auth
+- Öffentliches Profil (Benutzername, Anzeigename, Beschreibung), Profilsuche und Profil-Link
+- Wünsche mit Amazon.de-ASIN, Titel, öffentlicher Notiz und Priorität
+- Wünsche hinzufügen, Notiz/Priorität bearbeiten, eigene Wünsche entfernen
+- Öffentlicher Feed, Filter auf eigene Wünsche, gefolgte Personen und Profile; Sortierung nach Datum oder Priorität
+- Folgen/Entfolgen, Wunsch- und Profil-Links kopieren
+- Wünsche oder ganze Profile lokal für die aktuelle Sitzung ausblenden und wieder einblenden
+- **Eigene Wünsche exportieren:** CSV für Tabellenprogramme oder JSON mit öffentlichen Profildaten und Wünschen. JSON ist ein Backup-Format. Eine **lokale, schreibgeschützte Vorschau** kann JSON-Sicherungen auf Gültigkeit prüfen und bis zu 30 Wünsche anzeigen. **Ein Import in Supabase ist nicht implementiert.**
+- Kein automatischer Abruf von Amazon-Produktdaten; keine Preise oder Verfügbarkeitsangaben
 
+## Datenschutz und Sicherheit
 
-## Letzte Sicherheitskorrektur
-- Beim gleichzeitigen Anlegen derselben Amazon-ASIN wird ausschließlich PostgreSQL-Fehler `23505` (Unique Constraint) durch erneutes Lesen aufgelöst. Andere Fehler, insbesondere RLS-/Berechtigungsfehler, werden nicht länger durch einen Retry verdeckt.
-- Die Funktion »Profil-Link kopieren« verwendet dieselbe kanonische URL-Hilfsfunktion wie die Profilnavigation und erhält unabhängige Query-Parameter.
-- Neuer Unit-Test für die Fehlerklassifizierung. Nach Commit `eb0c434` ergaben die GitHub-Abfragen weiterhin keine CI-Statuses und keine commitgebundenen PR-Workflow-Runs. Das ist kein erfolgreicher Testnachweis. Lokaler Repository-Download aus der Ausführungsumgebung scheitert derzeit an DNS-Auflösung für github.com.
+Öffentliche Profilfelder, Wunschtexte und Notizen sind für alle Besucher sichtbar. Bitte keine vertraulichen oder personenbezogenen Angaben Dritter eintragen. Der JSON-Export enthält ausschließlich öffentliche Profildaten und Wunschfelder, keine Authentifizierungs-E-Mail oder interne Konto-IDs. Der CSV-Export schützt beim Öffnen in Tabellenprogrammen vor typischen Formelinjektionen. Die Sicherungsdateien müssen vom Benutzer selbst geschützt werden.
+
+Alle schreibenden Datenbankzugriffe müssen durch RLS auf den angemeldeten Benutzer beschränkt bleiben. Die Client-App nutzt ausschließlich den Supabase-Publishable-Key, keinen Service-Role-Schlüssel.
+
+**Noch nicht fertig:** Serverseitige Rate-Limits/Spam-Schutz, Inhaltsmeldung und Moderation, rechtliche Pflichtseiten, umfassende RLS-Negativtests und echte Browser-End-to-End-Tests. Die vorhandenen Tests ersetzen keine vollständige Produktionsfreigabe.
+
+## Entwicklung und Tests
+
+```bash
+node --check amazon-wishlist/app.mjs
+node --check amazon-wishlist/amazon-links.mjs
+node --check amazon-wishlist/wishlist-utils.mjs
+node --test amazon-wishlist/*.test.mjs
+```
+
+Die GitHub-Action `.github/workflows/amazon-wishlist.yml` soll die Prüfungen ausführen. Ein erfolgreicher Vercel-Build allein beweist **keinen** erfolgreichen Unit-, RLS- oder Browser-Testlauf. GitHub-Actions-Ergebnisse müssen für den jeweiligen Commit gesondert verifiziert werden.
+
+## Weiterentwicklung
+
+Arbeiten ausschließlich am Wunschlisten-Tool. `main` ist der aktuelle Produktivstand. Die ältere PR #166 ist ein historischer Draft und **nicht** die Quelle für neue Änderungen. Keine anderen Helferlein-Tools bearbeiten. Vor riskanten Schemaänderungen einen RLS-, Backup- und Rollback-Plan prüfen.
+
+Die JSON-Vorschau akzeptiert nur das Format `helferlein-wishlist-backup` in Version 1, prüft ASIN, Priorität, Textlängen, Duplikate und eine maximale Dateigröße von 2 MB. Die ausgewählte Datei wird ausschließlich im Browser gelesen; sie löst keine Datenbankänderung aus. Für echte Wiederherstellung ist ein separates, sicherheitsgeprüftes Importkonzept nötig.\n\nWeitere Aufgaben: `50-SCHRITTE.md`, `RELEASE-CHECKLIST.md`, `SECURITY-ABUSE-PLAN.md`.

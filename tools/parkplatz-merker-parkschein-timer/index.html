@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>try { if (localStorage.getItem('helferlein_cloud_owner_parkplatz-merker-parkschein-timer')) document.documentElement.classList.add('helferlein-account-check'); } catch (_) { document.documentElement.classList.add('helferlein-account-check'); }</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parkplatz-Merker & Parkschein-Timer | Helferlein</title>
@@ -40,6 +42,22 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client: supabaseClient, tool: 'parkplatz-merker-parkschein-timer', localKey: 'park_history_pro_v3', collection: 'sessions',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -306,7 +324,24 @@
         }
 
         function saveData(data) {
-            localStorage.setItem('park_history_pro_v3', JSON.stringify(data));
+            if (!data || !Array.isArray(data.sessions)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_parkplatz-merker-parkschein-timer') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.'); return false;
+            }
+            const previous = localStorage.getItem('park_history_pro_v3');
+            if (previous !== null) {
+                try { if (!Array.isArray(JSON.parse(previous).sessions)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Parkdaten beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('park_history_pro_v3', JSON.stringify(data));
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Parkdaten konnten nicht gespeichert werden', error); return false; }
         }
 
         function requestNotificationPermission() {
@@ -355,12 +390,12 @@
 
         function runTimerLoop() {
             clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                let now = new Date().getTime();
-                let distance = activeEndTime - now;
-
-                if (distance < 0) {
+            if (activeEndTime == null || !Number.isFinite(Number(activeEndTime))) return;
+            const tick = () => {
+                const distance = Number(activeEndTime) - Date.now();
+                if (distance <= 0) {
                     clearInterval(timerInterval);
+                    timerInterval = null;
                     document.getElementById("timerDisplay").innerText = "⏰ ABGELAUFEN!";
                     document.getElementById("timerStatus").innerText = "Bitte Parkzeit verlängern oder zum Auto gehen!";
                     if ("Notification" in window && Notification.permission === "granted") {
@@ -368,15 +403,16 @@
                     }
                     return;
                 }
-
-                let h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                let m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                let s = Math.floor((distance % (1000 * 60)) / 1000);
-
-                document.getElementById("timerDisplay").innerText = 
-                    (h > 0 ? h + "h " : "") + String(m).padStart(2, '0') + "m " + String(s).padStart(2, '0') + "s";
+                const remaining = Math.ceil(distance / 1000);
+                const h = Math.floor(remaining / 3600);
+                const m = Math.floor((remaining % 3600) / 60);
+                const sec = remaining % 60;
+                document.getElementById("timerDisplay").innerText =
+                    (h > 0 ? h + "h " : "") + String(m).padStart(2, '0') + "m " + String(sec).padStart(2, '0') + "s";
                 document.getElementById("timerStatus").innerText = "Parkzeit läuft...";
-            }, 1000);
+            };
+            tick();
+            if (Number(activeEndTime) > Date.now()) timerInterval = setInterval(tick, 1000);
         }
 
         function setFavorite(name) {
@@ -428,7 +464,7 @@
                 photo,
                 date: now.toLocaleDateString('de-DE') + ' ' + now.toLocaleTimeString('de-DE', {hour: '2-digit', minute:'2-digit'})
             });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('parkDesc').value = "";
             document.getElementById('parkSector').value = "";
@@ -442,7 +478,7 @@
             if (!confirm("Möchtest du diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.sessions = data.sessions.filter(s => s.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderParkingList();
         }
 
@@ -467,7 +503,7 @@
             }
 
             document.getElementById('statCount').innerText = data.sessions.length;
-            let totalCost = filteredSessions.reduce((sum, s) => sum + (s.cost || 0), 0);
+            let totalCost = filteredSessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
             document.getElementById('statCost').innerText = totalCost.toFixed(2).replace('.', ',') + ' €';
 
             if (filteredSessions.length === 0) {
@@ -482,8 +518,8 @@
                         <div>
                             <h4 class="font-bold text-sm">📍 ${s.desc}</h4>
                             ${s.sector ? `<p class="text-xs font-semibold text-amber-700">🅿️ Sektor: ${s.sector}</p>` : ''}
-                            <p class="text-xs text-gray-500">Datum: ${s.date} | Gebühr: <span class="font-semibold text-green-600">${(s.cost || 0).toFixed(2).replace('.', ',')} €</span></p>
-                            ${s.gps ? `<p class="text-[10px] text-blue-600 mt-0.5">GPS: ${s.gps.lat.toFixed(4)}, ${s.gps.lng.toFixed(4)}</p>` : ''}
+                            <p class="text-xs text-gray-500">Datum: ${s.date} | Gebühr: <span class="font-semibold text-green-600">${Number(s.cost || 0).toFixed(2).replace('.', ',')} €</span></p>
+                            ${s.gps ? `<p class="text-[10px] text-blue-600 mt-0.5">GPS: ${Number(s.gps.lat).toFixed(4)}, ${Number(s.gps.lng).toFixed(4)}</p>` : ''}
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -514,11 +550,12 @@
             doc.setFont("helvetica", "normal");
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
+            const sessions = data.sessions.filter(s => s && typeof s === 'object' && !Array.isArray(s));
             let y = 35;
-            let totalCost = data.sessions.reduce((sum, s) => sum + (s.cost || 0), 0);
+            let totalCost = sessions.reduce((sum, s) => sum + Number(s.cost || 0), 0);
 
             doc.setFont("helvetica", "bold");
-            doc.text(`Gesamtkosten: ${totalCost.toFixed(2)} EUR`, 14, y);
+            doc.text(`Parkvorgänge: ${sessions.length} | Gesamtkosten: ${totalCost.toFixed(2)} EUR`, 14, y);
             y += 10;
 
             doc.setFont("helvetica", "underline");
@@ -526,11 +563,12 @@
             y += 7;
 
             doc.setFont("helvetica", "normal");
-            data.sessions.forEach((s, idx) => {
+            if (!sessions.length) doc.text("Keine Parkvorgänge erfasst.", 14, y);
+            sessions.forEach((s, idx) => {
                 if (y > 270) { doc.addPage(); y = 20; }
                 let sectorText = s.sector ? ` [Sektor: ${s.sector}]` : "";
-                doc.text(`${idx + 1}. Standort: ${s.desc}${sectorText} | ${s.date} | ${s.cost.toFixed(2)} EUR`, 14, y);
-                y += 6;
+                const lines = doc.splitTextToSize(`${idx + 1}. Standort: ${s.desc}${sectorText} | ${s.date} | ${Number(s.cost || 0).toFixed(2)} EUR`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             doc.save("park-report.pdf");

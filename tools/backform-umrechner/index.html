@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="de" class="h-full">
 <head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_backform-umrechner')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Backform-Umrechner & Rezeptrechner | Helferlein</title>
@@ -34,6 +39,24 @@
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3-backform.css">
     <script defer src="../../assets/helferlein-b3-backform.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore || window.helferleinCloudBridge) return;
+        if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client: supabaseClient, tool: 'backform-umrechner', localKey: 'helperly_recipes_pro',
+          collection: 'recipes', localFormat: 'array',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -879,11 +902,46 @@
             saveRecipeToStorage(name, rawText, factor);
         }
 
+        function persistRecipes(recipes) {
+            if (!Array.isArray(recipes) || recipes.some(r => !r || typeof r !== 'object' || Array.isArray(r))) {
+                alert('Ungültige Rezeptliste. Daten nicht gespeichert.');
+                return false;
+            }
+            if (localStorage.getItem('helferlein_cloud_owner_backform-umrechner') && !window.helferleinCloudBridge) {
+                alert('Cloud-Kontoschutz nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
+                return false;
+            }
+            try {
+                const existing = localStorage.getItem('helperly_recipes_pro');
+                if (existing !== null && !Array.isArray(JSON.parse(existing))) throw new Error('invalid recipes');
+                localStorage.setItem('helperly_recipes_pro', JSON.stringify(recipes));
+                if (window.helferleinCloudBridge) {
+                    void window.helferleinCloudBridge.changed({ recipes }).catch(error =>
+                        console.error('Rezept-Cloud-Synchronisierung ausstehend:', error));
+                }
+                return true;
+            } catch (error) {
+                console.error('Rezeptspeicherung fehlgeschlagen:', error);
+                alert('Rezepte konnten nicht gespeichert werden. Bestehende Daten bleiben erhalten.');
+                return false;
+            }
+        }
+
         function saveRecipeToStorage(name, text, factor) {
             let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
             recipes.push({ name, text, factor, note: '', date: new Date().toLocaleDateString() });
-            localStorage.setItem('helperly_recipes_pro', JSON.stringify(recipes));
+            if (!persistRecipes(recipes)) return;
             renderSavedRecipes();
+        }
+
+        function escapeRecipeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
         }
 
         function renderSavedRecipes() {
@@ -898,14 +956,14 @@
                 html += `<div class="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-2">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h4 class="font-bold text-sm text-slate-800">${r.name}</h4>
-                            <p class="text-[11px] text-slate-500">Faktor: ×${r.factor} | ${r.date}</p>
+                            <h4 class="font-bold text-sm text-slate-800">${escapeRecipeHtml(r.name)}</h4>
+                            <p class="text-[11px] text-slate-500">Faktor: ×${escapeRecipeHtml(r.factor)} | ${escapeRecipeHtml(r.date)}</p>
                         </div>
                         <button onclick="deleteRecipe(${idx})" class="text-red-500 hover:text-red-700 text-xs font-medium">Löschen</button>
                     </div>
                     <div>
                         <label class="block text-[10px] font-semibold text-slate-500 mb-1">Geling-Protokoll / Notiz:</label>
-                        <input type="text" value="${r.note || ''}" onchange="saveNote(${idx}, this.value)" placeholder="Z.B. Nächstes Mal 5 Min weniger backen..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
+                        <input type="text" value="${escapeRecipeHtml(r.note)}" onchange="saveNote(${idx}, this.value)" placeholder="Z.B. Nächstes Mal 5 Min weniger backen..." class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs bg-white">
                     </div>
                 </div>`;
             });
@@ -915,13 +973,13 @@
         function saveNote(idx, note) {
             let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
             recipes[idx].note = note;
-            localStorage.setItem('helperly_recipes_pro', JSON.stringify(recipes));
+            if (!persistRecipes(recipes)) return;
         }
 
         function deleteRecipe(idx) {
             let recipes = JSON.parse(localStorage.getItem('helperly_recipes_pro') || '[]');
             recipes.splice(idx, 1);
-            localStorage.setItem('helperly_recipes_pro', JSON.stringify(recipes));
+            if (!persistRecipes(recipes)) return;
             renderSavedRecipes();
         }
 
@@ -932,6 +990,7 @@
 
         // Multi-Timer Logik
         let timerInterval = null;
+        let timerDeadline = null;
         let timerPhases = [
             { title: "Phase 1: Teig gehen lassen / Kühlen", seconds: 30 * 60 },
             { title: "Phase 2: Backen im Ofen", seconds: 45 * 60 },
@@ -941,8 +1000,11 @@
         let timeLeft = 45 * 60;
 
         function openCookMode() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
             const baseTime = parseFloat(document.getElementById('res-time').innerText) || 45;
-            timerPhases[1].seconds = baseTime * 60;
+            timerPhases[1].seconds = Math.max(1, Math.round(baseTime * 60));
             currentPhaseIdx = 1;
             timeLeft = timerPhases[currentPhaseIdx].seconds;
             updateTimerDisplay();
@@ -951,26 +1013,44 @@
 
         function closeCookMode() {
             clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
             document.getElementById('cook-modal').classList.add('hidden');
         }
 
         function startTimer() {
             clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                if (timeLeft > 0) {
-                    timeLeft--;
-                    updateTimerDisplay();
-                } else {
+            if (timeLeft <= 0) return;
+            // Use elapsed wall-clock time: background tabs can throttle intervals.
+            timerDeadline = Date.now() + timeLeft * 1000;
+            const tick = () => {
+                timeLeft = Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000));
+                updateTimerDisplay();
+                if (timeLeft === 0) {
                     clearInterval(timerInterval);
+                    timerInterval = null;
+                    timerDeadline = null;
                     alert('Timer abgelaufen!');
                 }
-            }, 1000);
+            };
+            timerInterval = setInterval(tick, 1000);
+            tick();
         }
 
-        function pauseTimer() { clearInterval(timerInterval); }
+        function pauseTimer() {
+            if (timerDeadline !== null) {
+                timeLeft = Math.max(0, Math.ceil((timerDeadline - Date.now()) / 1000));
+                updateTimerDisplay();
+            }
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
+        }
 
         function nextTimerPhase() {
             clearInterval(timerInterval);
+            timerInterval = null;
+            timerDeadline = null;
             currentPhaseIdx = (currentPhaseIdx + 1) % timerPhases.length;
             timeLeft = timerPhases[currentPhaseIdx].seconds;
             updateTimerDisplay();

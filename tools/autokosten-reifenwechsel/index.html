@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_autokosten-reifenwechsel')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Autokosten-Rechner & Reifenwechsel | Helferlein</title>
@@ -41,6 +46,24 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        const client = window.supabaseClient;
+        if (!client || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client, tool: 'autokosten-reifenwechsel', localKey: 'kfz_tracker_pro_v3', collection: 'cars',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -441,7 +464,25 @@
         }
 
         function saveData(data) {
-            localStorage.setItem('kfz_tracker_pro_v3', JSON.stringify(data));
+            if (!data || typeof data !== 'object' || !Array.isArray(data.cars)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_autokosten-reifenwechsel') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
+                return false;
+            }
+            const existing = localStorage.getItem('kfz_tracker_pro_v3');
+            if (existing !== null) {
+                try { if (!Array.isArray(JSON.parse(existing).cars)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('kfz_tracker_pro_v3', JSON.stringify(data));
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
         }
 
         function updateEventFormFields() {
@@ -480,7 +521,7 @@
             const processFiles = () => {
                 let data = getData();
                 data.cars.push({ id: Date.now(), name, plate, km, insurance, emergency, photo: photoData, papers: papersData });
-                saveData(data);
+                if (!saveData(data)) return;
                 document.getElementById('carName').value = "";
                 document.getElementById('carPlate').value = "";
                 document.getElementById('carKm').value = "";
@@ -521,7 +562,7 @@
             let newKm = prompt("Aktuellen Kilometerstand aktualisieren:", car.km || "");
             if (newKm !== null) {
                 car.km = newKm.trim();
-                saveData(data);
+                if (!saveData(data)) return;
                 renderApp();
             }
         }
@@ -560,7 +601,7 @@
             data.cars = data.cars.filter(c => c.id !== id);
             data.events = data.events.filter(e => e.carId !== id);
             data.tires = data.tires.filter(t => t.carId !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             loadCarDropdowns();
             renderApp();
         }
@@ -577,7 +618,7 @@
             if (!data.tires) data.tires = [];
 
             data.tires.push({ id: Date.now(), carId: parseInt(carId), type, location, dot, tread });
-            saveData(data);
+            if (!saveData(data)) return;
             document.getElementById('tireLocation').value = "";
             document.getElementById('tireDot').value = "";
             document.getElementById('tireTread').value = "";
@@ -587,7 +628,7 @@
         function deleteTireSet(id) {
             let data = getData();
             data.tires = data.tires.filter(t => t.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderApp();
         }
 
@@ -633,7 +674,7 @@
         function storeEventData(carId, type, date, title, cost, tread, km, litres, consumption, receipt) {
             let data = getData();
             data.events.push({ id: Date.now(), carId, type, date, title, cost, tread, km, litres, consumption, receipt });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('eventDate').value = "";
             document.getElementById('eventTitle').value = "";
@@ -681,7 +722,7 @@
                 ev.date = date;
                 ev.cost = cost;
                 ev.tread = tread;
-                saveData(data);
+                if (!saveData(data)) return;
             }
             closeEditModal();
             renderApp();
@@ -691,7 +732,7 @@
             if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.events = data.events.filter(e => e.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderApp();
         }
 
@@ -727,7 +768,7 @@
             } else {
                 carsContainer.innerHTML = data.cars.map(c => {
                     const carEvents = data.events.filter(e => e.carId === c.id);
-                    const carTotalCost = carEvents.reduce((sum, e) => sum + (e.cost || 0), 0);
+                    const carTotalCost = carEvents.reduce((sum, e) => sum + Number(e.cost || 0), 0);
                     let kmNum = parseFloat(c.km) || 0;
                     let costPerKm = (kmNum > 0 && carTotalCost > 0) ? (carTotalCost / kmNum).toFixed(2) : null;
 
@@ -847,7 +888,7 @@
             }
 
             document.getElementById('statEvents').innerText = filteredEvents.length;
-            let totalCosts = filteredEvents.reduce((sum, e) => sum + (e.cost || 0), 0);
+            let totalCosts = filteredEvents.reduce((sum, e) => sum + Number(e.cost || 0), 0);
             document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (filteredEvents.length === 0) {
@@ -869,7 +910,7 @@
                     let tankBadge = "";
                     if (e.type === 'Tanken') {
                         if (e.litres) tankBadge += `<span class="text-[10px] bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded-full">⛽ ${e.litres} L</span>`;
-                        if (e.consumption) tankBadge += `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">⚡ ${e.consumption.toFixed(1).replace('.', ',')} l/100km</span>`;
+                        if (e.consumption) tankBadge += `<span class="text-[10px] bg-indigo-100 text-indigo-800 font-semibold px-2 py-0.5 rounded-full">⚡ ${Number(e.consumption).toFixed(1).replace('.', ',')} l/100km</span>`;
                         if (e.km) tankBadge += `<span class="text-[10px] bg-gray-100 text-gray-800 font-semibold px-2 py-0.5 rounded-full">📍 ${e.km} km</span>`;
                     }
 
@@ -948,8 +989,8 @@
             doc.setFont("helvetica", "normal");
             data.cars.forEach(c => {
                 if (y > 270) { doc.addPage(); y = 20; }
-                doc.text(`- ${c.name} (${c.plate || 'k.A.'}), KM: ${c.km || 'k.A.'} | Vers.: ${c.insurance || '-'}`, 14, y);
-                y += 6;
+                const lines = doc.splitTextToSize(`- ${c.name} (${c.plate || 'k.A.'}), KM: ${c.km || 'k.A.'} | Vers.: ${c.insurance || '-'}`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 4;
@@ -962,18 +1003,19 @@
             data.events.forEach(e => {
                 let car = data.cars.find(c => c.id === e.carId);
                 let cName = car ? car.name : "?";
-                totalCosts += (e.cost || 0);
+                totalCosts += Number(e.cost || 0);
 
                 if (y > 270) { doc.addPage(); y = 20; }
                 let treadText = e.tread ? ` | ${e.tread} mm` : "";
                 let tankText = e.litres ? ` | ${e.litres} L` : "";
                 let consText = e.consumption ? ` | ${e.consumption.toFixed(1)} l/100km` : "";
-                doc.text(`- [${e.type}] ${cName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 14, y);
-                y += 6;
+                const lines = doc.splitTextToSize(`- [${e.type}] ${cName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${Number(e.cost || 0).toFixed(2)} EUR${treadText}${tankText}${consText})`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 6;
             doc.setFont("helvetica", "bold");
+            if (y > 270) { doc.addPage(); y = 20; }
             doc.text(`Gesamtkosten: ${totalCosts.toFixed(2)} EUR`, 14, y);
 
             doc.save("kfz-wartungs-report.pdf");
@@ -987,26 +1029,40 @@
             a.href = url;
             a.download = `kfz-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function importBackup(event) {
-            const file = event.target.files[0];
+            const input = event.target;
+            const file = input.files[0];
             if (!file) return;
+            if (file.size > 20 * 1024 * 1024) {
+                input.value = '';
+                return alert("Backup zu groß (maximal 20 MB).");
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
+                input.value = '';
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed.cars && parsed.events) {
-                        saveData(parsed);
-                        loadCarDropdowns();
-                        renderApp();
-                        alert("Backup erfolgreich importiert!");
-                    } else {
-                        alert("Ungültiges Format.");
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) ||
+                        !Array.isArray(parsed.cars) || !Array.isArray(parsed.events) ||
+                        !parsed.cars.every(item => item && typeof item === 'object' && !Array.isArray(item)) ||
+                        !parsed.events.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
+                        return alert("Ungültiges Backup-Format.");
                     }
+                    if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
+                    saveData(parsed);
+                    loadCarDropdowns();
+                        renderApp();
+                    alert("Backup erfolgreich importiert!");
                 } catch (err) {
                     alert("Fehler beim Lesen der Datei.");
                 }
+            };
+            reader.onerror = () => {
+                input.value = '';
+                alert("Backup-Datei konnte nicht gelesen werden.");
             };
             reader.readAsText(file);
         }

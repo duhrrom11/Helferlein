@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="de" class="h-full">
 <head>
+    <!-- Fail closed before legacy scripts can paint account-owned local data. -->
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try {
+        if (localStorage.getItem('helferlein_cloud_owner_zaehlerstaende-erfassen')) {
+          document.documentElement.classList.add('helferlein-account-check');
+        }
+      } catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zählerstände erfassen: Strom, Gas & Wasser | Helferlein</title>
@@ -357,6 +366,30 @@
         </div>
     </div>
 
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) { console.warn('Cloud-Synchronisierung nicht geladen'); return; }
+        if (window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client: window.supabaseClient,
+          tool: 'zaehlerstaende-erfassen',
+          localKey: 'energie_tracker_pro_v8',
+          collection: 'readings',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        // A page restored from the back/forward cache must not keep a disposed
+        // bridge: reload it to re-establish auth guards and synchronization.
+        window.addEventListener('pageshow', event => {
+          if (event.persisted) window.location.reload();
+        });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
     <!-- Skript Logik -->
     <script>
         // Supabase Konfiguration (exakt von der Hauptseite übernommen)
@@ -492,20 +525,34 @@
 
         function getData() {
             try {
+                if (!window.localStorage) throw new Error('Lokaler Speicher nicht verfügbar');
                 const stored = JSON.parse(localStorage.getItem('energie_tracker_pro_v8'));
                 if (!stored || !Array.isArray(stored.readings)) return { readings: [], tarifs: {} };
+                if (stored.readings.some(item => !item || typeof item !== 'object' || Array.isArray(item))) { console.warn('Ungültige Zählerdatensätze'); return { readings: [], tarifs: {} }; }
                 return {
                     ...stored,
+                    readings: stored.readings.slice(),
                     tarifs: stored.tarifs && typeof stored.tarifs === 'object' && !Array.isArray(stored.tarifs)
-                        ? stored.tarifs : {}
+                        ? { ...stored.tarifs } : {}
                 };
             } catch(e) {
+                console.error('Zählerdaten konnten nicht geladen werden:', e);
                 return { readings: [], tarifs: {} };
             }
         }
 
         function saveData(data, allowCorruptOverwrite = false) {
             try {
+                if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.readings)) throw new Error('Ungültige Zählerdaten');
+                if (localStorage.getItem('helferlein_cloud_owner_zaehlerstaende-erfassen') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                    alert('Lokale Speicherung ist während eines Kontowechsels oder einer Cloud-Datenübernahme gesperrt. Bitte zuerst das ursprüngliche Konto anmelden.');
+                    return false;
+                }
+                if (data.readings.some(item => !item || typeof item !== 'object' || Array.isArray(item))) throw new Error('Ungültige Zählereinträge');
                 // Keep the original bytes available if stored readings cannot be parsed.
                 const existing = localStorage.getItem('energie_tracker_pro_v8');
                 if (existing !== null) {
@@ -519,7 +566,12 @@
                         if (!confirm('Die vorhandenen Zählerdaten sind beschädigt. Durch Wiederherstellen des geprüften Backups werden sie endgültig überschrieben. Fortfahren?')) return false;
                     }
                 }
-                localStorage.setItem('energie_tracker_pro_v8', JSON.stringify(data));
+                const serialized = JSON.stringify(data);
+                if (!serialized) throw new Error('Zählerdaten nicht serialisierbar');
+                localStorage.setItem('energie_tracker_pro_v8', serialized);
+                if (window.helferleinCloudBridge) {
+                    void window.helferleinCloudBridge.changed(data).catch(error => console.error('Cloud-Übernahme ausstehend:', error));
+                }
                 return true;
             } catch (error) {
                 console.error('Zählerstände konnten nicht gespeichert werden:', error);
@@ -1053,8 +1105,13 @@
             doc.setFontSize(10);
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 28);
 
-            let y = 38;
-            data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string').forEach((r) => {
+            const readings = data.readings.filter(r => r && typeof r === 'object' && typeof r.type === 'string');
+            doc.text(`Erfasste Ablesungen: ${readings.length}`, 14, 34);
+            let y = 44;
+            if (!readings.length) {
+                doc.text("Keine Zählerstände erfasst.", 14, y);
+            }
+            readings.forEach((r) => {
                 const unit = r.type.includes('Strom') || r.type === 'Gas' ? 'kWh' : 'm³';
                 const line = `${r.date} | ${r.type} (${r.name} - ${r.location || 'Haupt'}): ${r.value} ${unit} ${r.note ? '- ' + r.note : ''}`;
                 const lines = doc.splitTextToSize(line, 180);

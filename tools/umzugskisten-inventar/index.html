@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_umzugskisten-inventar')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Umzugskisten-App & Inventarliste | Helferlein</title>
@@ -46,6 +51,24 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        const client = window.supabaseClient;
+        if (!client || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client, tool: 'umzugskisten-inventar', localKey: 'mini_homebox_pro', collection: 'boxes',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -446,7 +469,25 @@
         }
 
         function saveData(data) {
-            localStorage.setItem('mini_homebox_pro', JSON.stringify(data));
+            if (!data || typeof data !== 'object' || !Array.isArray(data.boxes)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_umzugskisten-inventar') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
+                return false;
+            }
+            const existing = localStorage.getItem('mini_homebox_pro');
+            if (existing !== null) {
+                try { if (!Array.isArray(JSON.parse(existing).boxes)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('mini_homebox_pro', JSON.stringify(data));
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
         }
 
         function checkDeepLink() {
@@ -463,7 +504,7 @@
             if (!name) return alert("Bitte Standort eingeben!");
             let data = getData();
             data.locations.push({ id: Date.now(), name, icon });
-            saveData(data);
+            if (!saveData(data)) return;
             document.getElementById('locName').value = "";
             loadLocationsDropdown();
             renderInventory();
@@ -476,7 +517,7 @@
             let newName = prompt("Standort umbenennen:", loc.name);
             if (newName !== null && newName.trim() !== "") {
                 loc.name = newName.trim();
-                saveData(data);
+                if (!saveData(data)) return;
                 loadLocationsDropdown();
                 renderInventory();
             }
@@ -487,7 +528,7 @@
             let data = getData();
             data.locations = data.locations.filter(l => l.id !== locId);
             data.boxes = data.boxes.filter(b => b.locId !== locId);
-            saveData(data);
+            if (!saveData(data)) return;
             loadLocationsDropdown();
             renderInventory();
         }
@@ -538,7 +579,7 @@
                 subItems: subItems || [],
                 photo 
             });
-            saveData(data);
+            if (!saveData(data)) return;
             document.getElementById('boxName').value = "";
             document.getElementById('boxDesc').value = "";
             document.getElementById('boxValue').value = "";
@@ -630,7 +671,7 @@
                 box.expiry = expiry;
                 box.lentTo = lentTo;
                 box.subItems = activeSubItemsTemp;
-                saveData(data);
+                if (!saveData(data)) return;
             }
             closeEditBoxModal();
             renderInventory();
@@ -640,7 +681,7 @@
             if (!confirm("⚠️ Möchtest du diese Kiste wirklich löschen?")) return;
             let data = getData();
             data.boxes = data.boxes.filter(b => b.id !== boxId);
-            saveData(data);
+            if (!saveData(data)) return;
             renderInventory();
         }
 
@@ -653,7 +694,7 @@
 
             let totalBoxes = data.boxes.length;
             let totalLocs = data.locations.length;
-            let totalVal = data.boxes.reduce((sum, b) => sum + (b.value || 0), 0);
+            let totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
 
             document.getElementById('statBoxes').innerText = totalBoxes;
             document.getElementById('statLocs').innerText = totalLocs;
@@ -664,7 +705,7 @@
             if (totalLocs > 0 && totalVal > 0) {
                 locStatsCard.classList.remove('hidden');
                 locStatsList.innerHTML = data.locations.map(loc => {
-                    const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + (b.value || 0), 0);
+                    const locVal = data.boxes.filter(b => b.locId === loc.id).reduce((sum, b) => sum + Number(b.value || 0), 0);
                     return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">${loc.icon || '📍'} ${loc.name}</p><p class="text-sm font-bold text-amber-800">${locVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
@@ -677,7 +718,7 @@
             if (totalBoxes > 0 && totalVal > 0) {
                 tagStatsCard.classList.remove('hidden');
                 tagStatsList.innerHTML = tags.map(t => {
-                    const tagVal = data.boxes.filter(b => (b.tag || 'Standard') === t).reduce((sum, b) => sum + (b.value || 0), 0);
+                    const tagVal = data.boxes.filter(b => (b.tag || 'Standard') === t).reduce((sum, b) => sum + Number(b.value || 0), 0);
                     return `<div class="bg-gray-50 p-2.5 border rounded-xl"><p class="text-[11px] text-gray-500 truncate">🏷️ ${t}</p><p class="text-sm font-bold text-amber-800">${tagVal.toFixed(2).replace('.', ',')} €</p></div>`;
                 }).join('');
             } else {
@@ -769,54 +810,45 @@
         function exportInventoryPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            let data = getData();
-
+            const data = getData();
             doc.setFont("helvetica", "bold");
             doc.setFontSize(18);
             doc.text("Mini-HomeBox Pro - Inventar-Report", 14, 20);
-
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
             doc.text(`Erstellt am: ${new Date().toLocaleDateString('de-DE')}`, 14, 27);
 
             let y = 35;
-            data.locations.forEach(loc => {
-                if (y > 270) { doc.addPage(); y = 20; }
-                
-                const cleanLocName = loc.name.replace(/[\u{1F000}-\u{1F6FF}|[\u{1F900}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[📦🏠🚪🏡🚗🏢⛺📍]/gu, '').trim();
-
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(12);
-                doc.text(`Standort: ${cleanLocName}`, 14, y);
-                y += 7;
-
-                let locBoxes = data.boxes.filter(b => b.locId === loc.id);
-                if (locBoxes.length === 0) {
-                    doc.setFont("helvetica", "italic");
-                    doc.setFontSize(10);
-                    doc.text("  (Keine Kisten)", 14, y);
+            const writeWrapped = (value, bold = false, fontSize = 10) => {
+                doc.setFont("helvetica", bold ? "bold" : "normal");
+                doc.setFontSize(fontSize);
+                const lines = doc.splitTextToSize(String(value), 180);
+                lines.forEach(line => {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(line, 14, y);
                     y += 6;
+                });
+            };
+
+            data.locations.forEach(loc => {
+                const cleanLocName = String(loc.name || '').replace(/[\u{1F000}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+                writeWrapped(`Standort: ${cleanLocName}`, true, 12);
+                y += 1;
+                const locBoxes = data.boxes.filter(b => b.locId === loc.id);
+                if (!locBoxes.length) {
+                    writeWrapped("  (Keine Kisten)");
                 } else {
                     locBoxes.forEach(b => {
-                        if (y > 270) { doc.addPage(); y = 20; }
-                        doc.setFont("helvetica", "normal");
-                        doc.setFontSize(10);
                         const statusText = b.lentTo ? ` [Ausgeliehen an: ${b.lentTo}]` : '';
-                        const subStr = b.subItems && b.subItems.length > 0 ? ` | Artikel: ${b.subItems.map(s => s.name).join(', ')}` : '';
-                        doc.text(`  • ${b.name}${statusText}`, 14, y);
-                        doc.text(`Wert: ${(b.value || 0).toFixed(2)} EUR${subStr}`, 90, y);
-                        y += 6;
+                        const subStr = Array.isArray(b.subItems) && b.subItems.length ? ` | Artikel: ${b.subItems.map(item => item.name).join(', ')}` : '';
+                        writeWrapped(`- ${b.name}${statusText} | Wert: ${Number(b.value || 0).toFixed(2)} EUR${subStr}`);
                     });
                 }
                 y += 4;
             });
-
-            let totalVal = data.boxes.reduce((sum, b) => sum + (b.value || 0), 0);
-            if (y > 270) { doc.addPage(); y = 20; }
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(12);
-            doc.text(`Gesamtwert des Inventars: ${totalVal.toFixed(2)} EUR`, 14, y + 5);
-
+            const totalVal = data.boxes.reduce((sum, b) => sum + Number(b.value || 0), 0);
+            y += 5;
+            writeWrapped(`Gesamtwert des Inventars: ${totalVal.toFixed(2)} EUR`, true, 12);
             doc.save("kisten-inventar-report.pdf");
         }
 
@@ -932,22 +964,40 @@
             a.href = url;
             a.download = `homebox-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function importBackup(event) {
-            const file = event.target.files[0];
+            const input = event.target;
+            const file = input.files[0];
             if (!file) return;
+            if (file.size > 20 * 1024 * 1024) {
+                input.value = '';
+                return alert("Backup zu groß (maximal 20 MB).");
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
+                input.value = '';
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed.locations && parsed.boxes) {
-                        saveData(parsed);
-                        loadLocationsDropdown();
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) ||
+                        !Array.isArray(parsed.locations) || !Array.isArray(parsed.boxes) ||
+                        !parsed.locations.every(item => item && typeof item === 'object' && !Array.isArray(item)) ||
+                        !parsed.boxes.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
+                        return alert("Ungültiges Backup-Format.");
+                    }
+                    if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
+                    saveData(parsed);
+                    loadLocationsDropdown();
                         renderInventory();
-                        alert("Backup erfolgreich importiert!");
-                    } else { alert("Ungültiges Format."); }
-                } catch (err) { alert("Fehler beim Lesen der Datei."); }
+                    alert("Backup erfolgreich importiert!");
+                } catch (err) {
+                    alert("Fehler beim Lesen der Datei.");
+                }
+            };
+            reader.onerror = () => {
+                input.value = '';
+                alert("Backup-Datei konnte nicht gelesen werden.");
             };
             reader.readAsText(file);
         }
@@ -966,7 +1016,7 @@
                     resBox.classList.remove('hidden');
 
                     if (decodedText.includes('?box=')) {
-                        const boxId = decodedText.split('?box=')[1];
+                        const boxId = new URL(decodedText, window.location.href).searchParams.get('box') || '';
                         document.getElementById('searchBox').value = boxId;
                     } else {
                         document.getElementById('searchBox').value = decodedText;

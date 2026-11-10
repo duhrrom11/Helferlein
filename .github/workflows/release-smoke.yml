@@ -16,19 +16,9 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/release-smoke.cjs
-      - run: node tests/wg-cache-regression.cjs
-      - run: node tests/household-csv-regression.cjs
-      - run: node tests/household-backup-regression.cjs
-      - run: node tests/household-render-regression.cjs
-      - run: node tests/household-ics-regression.cjs
-      - run: node tests/household-storage-regression.cjs
-      - run: node tests/household-warranty-regression.cjs
-      - run: node tests/household-date-regression.cjs
-      - run: node tests/household-photo-removal-regression.cjs
-      - run: node tests/household-ocr-regression.cjs
-      - run: node tests/household-photo-validation-regression.cjs
-      - run: node tests/household-receipt-id-regression.cjs
-      - run: node tests/household-ocr-total-regression.cjs
-      - run: node tests/household-pdf-summary-regression.cjs
-      - run: node tests/household-all-csv-regression.cjs
-      - run: node tests/household-duplicate-regression.cjs
+      - name: Run all 16 regression checks and report failures together
+        run: |
+          node --check scripts/run-regressions.cjs
+          node --check tests/regression-runner-guardrails.cjs
+          node tests/regression-runner-guardrails.cjs
+          node scripts/run-regressions.cjs

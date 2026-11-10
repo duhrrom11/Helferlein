@@ -87,3 +87,120 @@ export function isFeedRequestStale(request,current) {
 export function isWishLocallyHidden(wish,hiddenWishIds,hiddenProfileIds) {
  return hiddenWishIds.has(wish.id)||hiddenProfileIds.has(wish.user_id);
 }
+
+/** A profile permalink is only built from a valid public handle. */
+export function profileDisplayLabel(displayName,handle) {
+ const name=typeof displayName==='string'?displayName.trim():'';
+ const safe=requestedProfileHandle(handle);
+ return safe?(name||'Profil')+' (@'+safe+')':(name||'Profil');
+}
+
+/** Convert database errors to actionable, non-sensitive German messages. */
+export function wishlistErrorMessage(error) {
+ if(!error)return 'Unbekannter Fehler. Bitte erneut versuchen.';
+ if(error?.code==='23505')return 'Dieser Eintrag existiert bereits.';
+ if(error?.code==='42501'||error?.code==='PGRST301')return 'Keine Berechtigung. Bitte melde dich erneut an.';
+ if(error?.code==='23503')return 'Der verknüpfte Eintrag ist nicht mehr verfügbar. Bitte neu laden.';
+ if(error?.code==='429'||error?.status===429)return 'Zu viele Anfragen. Bitte warte kurz und versuche es erneut.';
+ if(typeof error?.message==='string'&&/failed to fetch|networkerror|load failed|fetch failed/i.test(error.message))return 'Netzwerkfehler. Bitte Internetverbindung prüfen und erneut versuchen.';
+ if(error?.code==='23514'||error?.code==='22P02')return 'Ungültige Eingabe. Bitte deine Angaben prüfen.';
+ if(error?.code==='PGRST116')return 'Eintrag nicht gefunden. Bitte neu laden.';
+ if(typeof error?.status==='number'&&error.status>=500)return 'Der Dienst ist vorübergehend nicht erreichbar. Bitte später erneut versuchen.';
+ if(typeof error?.status==='number'&&error.status>=400)return 'Anfrage fehlgeschlagen. Bitte Eingaben und Anmeldung prüfen.';
+ if(error instanceof Error&&!('code' in error)&&!('status' in error))return error.message||'Unbekannter Fehler. Bitte erneut versuchen.';
+ return 'Die Anfrage konnte nicht abgeschlossen werden. Bitte erneut versuchen.';
+}
+
+/** Copy links without requiring a secure-context Clipboard API. */
+export async function copyShareLink(text,clipboard=navigator.clipboard,doc=document) {
+ if(typeof text!=='string'||!/^https:\/\//.test(text))throw Error('Ungültiger Link.');
+ try{const url=new URL(text);if(url.protocol!=='https:'||!url.hostname||url.username||url.password)throw Error('Ungültiger Link.');}catch{throw Error('Ungültiger Link.');}
+ if(clipboard?.writeText){try{await clipboard.writeText(text);return 'clipboard'}catch{}}
+ const input=doc.createElement('textarea');
+ input.value=text;input.setAttribute('readonly','');input.style.position='fixed';input.style.left='-9999px';
+ doc.body.append(input);
+ try{
+  input.select();
+  if(typeof doc.execCommand!=='function'||!doc.execCommand('copy'))throw Error('Kopieren nicht möglich. Bitte den Link aus der Adresszeile kopieren.');
+  return 'fallback';
+ }finally{input.remove()}
+}
+
+/** Produce a spreadsheet-safe, UTF-8 CSV backup from the signed-in user's own wishes. */
+export function exportWishlistCsv(rows) {
+ if(!Array.isArray(rows))throw Error('Ungültige Exportdaten');
+ const safe=value=>{
+  let s=String(value??'').replace(/\r\n?/g,'\n');
+  // Avoid spreadsheet formula execution when opening a downloaded CSV.
+  if(/^[\s\u0000-\u001f]*[=+@-]/.test(s))s="'"+s;
+  return '"'+s.replace(/"/g,'""')+'"';
+ };
+ const header=['Amazon-ASIN','Produkttitel','Notiz','Priorität','Erstellt am','Amazon-Link'];
+ const lines=[header.map(safe).join(';')];
+ for(const row of rows){
+  const product=row?.wishlist_products;
+  if(!product||!/^([A-Z0-9]{10})$/.test(product.asin)||product.marketplace!=='amazon.de')throw Error('Ungültiger Exportdatensatz');
+  lines.push([product.asin,product.title,row.note,validatePriority(row.priority),row.created_at,'https://www.amazon.de/dp/'+product.asin].map(safe).join(';'));
+ }
+ return '\uFEFF'+lines.join('\r\n')+'\r\n';
+}
+
+/** Stable, localized priority names for cards and exports. */
+export function priorityLabel(value) {
+ const priority=validatePriority(value);
+ return {1:'Sehr wichtig',2:'Normal',3:'Irgendwann'}[priority];
+}
+
+/** Reject unexpected export rows rather than silently exporting partial data. */
+export function validateWishlistExportPage(rows,pageSize=200) {
+ if(!Array.isArray(rows)||!Number.isInteger(pageSize)||pageSize<1||rows.length>pageSize)throw Error('Ungültige Exportantwort');
+ return rows;
+}
+
+/** Build a portable JSON backup without private auth fields or internal account IDs. */
+export function exportWishlistJson(rows, publicProfile=null) {
+ if(!Array.isArray(rows))throw Error('Ungültige Exportdaten');
+ const wishes=rows.map(row=>{
+  const product=row?.wishlist_products;
+  if(!product||product.marketplace!=='amazon.de'||!/^[A-Z0-9]{10}$/.test(product.asin))throw Error('Ungültiger Exportdatensatz');
+  return {asin:product.asin,amazon_url:'https://www.amazon.de/dp/'+product.asin,title:String(product.title??''),note:String(row.note??''),priority:validatePriority(row.priority),created_at:String(row.created_at??'')};
+ });
+ const handle=requestedProfileHandle(publicProfile?.handle);
+ return JSON.stringify({format:'helferlein-wishlist-backup',version:1,exported_at:new Date().toISOString(),profile:handle?{handle,display_name:String(publicProfile.display_name??''),bio:String(publicProfile.bio??'')}:null,wishes},null,2)+'\n';
+}
+
+/** A failed export must not retain stale progress text. */
+export function exportProgressText(count,total=null) {
+ if(!Number.isSafeInteger(count)||count<0)throw Error('Ungültiger Exportfortschritt');
+ return total===null?count+' Wünsche geladen …':count+' von '+total+' Wünschen geladen …';
+}
+
+/**
+ * Parse a local Helferlein backup without performing any writes.
+ * The preview deliberately ignores any unrecognized fields, including account IDs.
+ */
+export function previewWishlistBackup(raw) {
+ if(typeof raw!=='string'||raw.length>2_000_000)throw Error('Sicherungsdatei fehlt oder ist zu groß (maximal 2 MB).');
+ let data;
+ try{data=JSON.parse(raw)}catch{throw Error('Die Datei enthält kein gültiges JSON.')}
+ if(!data||Array.isArray(data)||data.format!=='helferlein-wishlist-backup'||data.version!==1||!Array.isArray(data.wishes))throw Error('Keine unterstützte Helferlein-Wunschlisten-Sicherung.');
+ if(data.wishes.length>10000)throw Error('Die Sicherung enthält zu viele Wünsche.');
+ let profile=null;
+ if(data.profile!==null&&data.profile!==undefined){
+  if(!data.profile||Array.isArray(data.profile))throw Error('Ungültiges Profil in der Sicherung.');
+  const handle=validateHandle(data.profile.handle);
+  const fields=validateProfileFields(data.profile.display_name,data.profile.bio);
+  profile={handle,...fields};
+ }
+ const seen=new Set();
+ const wishes=data.wishes.map((row,index)=>{
+  if(!row||Array.isArray(row)||typeof row!=='object')throw Error('Ungültiger Wunsch in Zeile '+(index+1)+'.');
+  if(typeof row.asin!=='string'||!/^[A-Z0-9]{10}$/.test(row.asin))throw Error('Ungültige ASIN in Zeile '+(index+1)+'.');
+  const {title,note}=validateWishFields(row.title,row.note);
+  const priority=validatePriority(row.priority);
+  if(seen.has(row.asin))throw Error('Doppelte ASIN in der Sicherung: '+row.asin);
+  seen.add(row.asin);
+  return {asin:row.asin,title,note,priority};
+ });
+ return {profile,wishes,count:wishes.length};
+}

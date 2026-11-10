@@ -1,0 +1,46 @@
+name: Cloud store unit checks
+on:
+  pull_request:
+    paths:
+      - 'shared/helferlein-cloud-store.js'
+      - 'shared/helferlein-migration-inventory.js'
+      - 'shared/helferlein-cloud-migration.js'
+      - 'tools/backform-umrechner/index.html'
+      - 'tools/haushaltsbuch-kassenbon/index.html'
+      - 'tools/pflanzenpflege-giessplan/index.html'
+      - 'tools/zaehlerstaende-erfassen/index.html'
+      - 'tests/cloud-store.test.cjs'
+      - 'tests/cloud-account-switch.test.cjs'
+      - '.github/workflows/cloud-store-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'shared/helferlein-cloud-store.js'
+      - 'shared/helferlein-migration-inventory.js'
+      - 'shared/helferlein-cloud-migration.js'
+      - 'tools/backform-umrechner/index.html'
+      - 'tools/haushaltsbuch-kassenbon/index.html'
+      - 'tools/pflanzenpflege-giessplan/index.html'
+      - 'tools/zaehlerstaende-erfassen/index.html'
+      - 'tests/cloud-store.test.cjs'
+      - 'tests/cloud-account-switch.test.cjs'
+      - '.github/workflows/cloud-store-checks.yml'
+permissions:
+  contents: read
+jobs:
+  cloud-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: |
+          node --check shared/helferlein-cloud-store.js
+          node --check shared/helferlein-migration-inventory.js
+          node --check shared/helferlein-cloud-migration.js
+      - name: Isolated unit tests (no Supabase credentials)
+        run: |
+          node tests/cloud-store.test.cjs
+          node tests/cloud-account-switch.test.cjs

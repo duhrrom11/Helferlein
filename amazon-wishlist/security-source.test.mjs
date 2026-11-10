@@ -38,3 +38,14 @@ test('wishlist UI does not load a service role key or expose user emails in publ
  assert.ok(projections.length>=5);
  for(const projection of projections)assert.doesNotMatch(projection,/(^|[,()])\s*(email|encrypted_password|raw_user_meta_data)\s*(,|$)/i);
 });
+
+test('backup preview is read-only and never posts selected file content to Supabase',()=>{
+ const start=app.indexOf("$('previewBackup').onclick=");
+ const end=app.indexOf("$('saveWish').onclick=",start);
+ assert.ok(start>=0&&end>start,'backup preview handler must be present');
+ const handler=app.slice(start,end);
+ assert.match(handler,/previewWishlistBackup\(/);
+ assert.match(handler,/file\.text\(\)/);
+ assert.doesNotMatch(handler,/db\.from\(|\.insert\(|\.upsert\(|\.update\(|\.delete\(/);
+ assert.match(html,/Es wird nichts importiert, überschrieben oder in Supabase gespeichert/);
+});

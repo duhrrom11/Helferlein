@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="de" class="h-full">
 <head>
+    <style>html.helferlein-account-check body > *{visibility:hidden!important}html.helferlein-account-check body > .helferlein-account-dialog{visibility:visible!important}</style>
+    <script>
+      try { if (localStorage.getItem('helferlein_cloud_owner_haustier-gesundheitspass')) document.documentElement.classList.add('helferlein-account-check'); }
+      catch (_) { document.documentElement.classList.add('helferlein-account-check'); }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digitaler Impfpass & Gesundheitspass für Haustiere | Helferlein</title>
@@ -42,6 +47,24 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <script src="../../shared/helferlein-cloud-store.js"></script>
+    <script src="../../shared/helferlein-cloud-migration.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) return;
+        const client = window.supabaseClient;
+        if (!client || window.helferleinCloudBridge) return;
+        window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
+          client, tool: 'haustier-gesundheitspass', localKey: 'haustier_pass_pro_v5', collection: 'pets',
+          refresh: () => { if (document.visibilityState !== 'hidden') window.location.reload(); }
+        });
+        window.addEventListener('pageshow', event => { if (event.persisted) window.location.reload(); });
+        window.addEventListener('pagehide', () => {
+          if (window.helferleinCloudBridge) window.helferleinCloudBridge.dispose();
+          window.helferleinCloudBridge = null;
+        });
+      });
+    </script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -414,7 +437,25 @@
         }
 
         function saveData(data) {
-            localStorage.setItem('haustier_pass_pro_v5', JSON.stringify(data));
+            if (!data || typeof data !== 'object' || !Array.isArray(data.pets)) return false;
+            if (localStorage.getItem('helferlein_cloud_owner_haustier-gesundheitspass') && !window.helferleinCloudBridge) {
+                alert('Kontoschutz ist noch nicht geladen. Bitte Seite neu öffnen.');
+                return false;
+            }
+            if (window.helferleinCloudBridge && !window.helferleinCloudBridge.canWriteLocal()) {
+                alert('Kontowechsel oder Cloud-Übernahme aktiv: Speichern gesperrt.');
+                return false;
+            }
+            const existing = localStorage.getItem('haustier_pass_pro_v5');
+            if (existing !== null) {
+                try { if (!Array.isArray(JSON.parse(existing).pets)) throw new Error('invalid'); }
+                catch (_) { alert('Vorhandene Daten sind beschädigt; Überschreiben gesperrt.'); return false; }
+            }
+            try {
+                localStorage.setItem('haustier_pass_pro_v5', JSON.stringify(data));
+                if (window.helferleinCloudBridge) void window.helferleinCloudBridge.changed(data).catch(console.error);
+                return true;
+            } catch (error) { console.error('Lokales Speichern fehlgeschlagen', error); return false; }
         }
 
         function updateEventFormFields() {
@@ -462,7 +503,7 @@
                     vet: { name: vetName, tel: vetTel, email: vetEmail, address: vetAddress },
                     tasso, photo: photoData, passport: passportData 
                 });
-                saveData(data);
+                if (!saveData(data)) return;
 
                 document.getElementById('petName').value = "";
                 document.getElementById('petSpecies').value = "";
@@ -536,7 +577,7 @@
             let data = getData();
             data.pets = data.pets.filter(p => p.id !== id);
             data.events = data.events.filter(e => e.petId !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             loadPetDropdowns();
             renderApp();
         }
@@ -549,7 +590,7 @@
             let data = getData();
             if (!data.meds) data.meds = [];
             data.meds.push({ id: Date.now(), name, stock: stock || '1 Packung' });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('medName').value = "";
             document.getElementById('medStock').value = "";
@@ -559,7 +600,7 @@
         function deleteMedication(id) {
             let data = getData();
             data.meds = data.meds.filter(m => m.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderApp();
         }
 
@@ -587,7 +628,7 @@
         function storeEventData(petId, type, date, title, cost, weight, expiryDate, receipt) {
             let data = getData();
             data.events.push({ id: Date.now(), petId, type, date, title, cost, weight, expiryDate, receipt });
-            saveData(data);
+            if (!saveData(data)) return;
 
             document.getElementById('eventDate').value = "";
             document.getElementById('eventTitle').value = "";
@@ -602,7 +643,7 @@
             if (!confirm("⚠️ Diesen Eintrag wirklich löschen?")) return;
             let data = getData();
             data.events = data.events.filter(e => e.id !== id);
-            saveData(data);
+            if (!saveData(data)) return;
             renderApp();
         }
 
@@ -631,7 +672,7 @@
             document.getElementById('statPets').innerText = data.pets.length;
             document.getElementById('statEvents').innerText = data.events.length;
                         
-            let totalCosts = data.events.reduce((sum, e) => sum + (e.cost || 0), 0);
+            let totalCosts = data.events.reduce((sum, e) => sum + Number(e.cost || 0), 0);
             document.getElementById('statCosts').innerText = totalCosts.toFixed(2).replace('.', ',') + ' €';
 
             if (data.pets.length === 0) {
@@ -846,8 +887,8 @@
                 if (y > 270) { doc.addPage(); y = 20; }
                 let tassoText = p.tasso ? " [TASSO]" : "";
                 let vetText = p.vet && p.vet.name ? ` | TA: ${p.vet.name} (${p.vet.tel || '-'})` : "";
-                doc.text(`- ${p.name} (${p.species || 'Haustier'}), Chip: ${p.chip || 'k.A.'}${tassoText}${vetText}`, 14, y);
-                y += 6;
+                const lines = doc.splitTextToSize(`- ${p.name} (${p.species || 'Haustier'}), Chip: ${p.chip || 'k.A.'}${tassoText}${vetText}`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 4;
@@ -860,17 +901,18 @@
             data.events.forEach(e => {
                 let pet = data.pets.find(p => p.id === e.petId);
                 let pName = pet ? pet.name : "?";
-                totalCosts += (e.cost || 0);
+                totalCosts += Number(e.cost || 0);
 
                 if (y > 270) { doc.addPage(); y = 20; }
                 let weightText = e.weight ? ` | ${e.weight} kg` : "";
                 let expText = e.expiryDate ? ` (Gültig bis: ${new Date(e.expiryDate).toLocaleDateString('de-DE')})` : "";
-                doc.text(`- [${e.type}] ${pName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 14, y);
-                y += 6;
+                const lines = doc.splitTextToSize(`- [${e.type}] ${pName}: ${e.title} am ${new Date(e.date).toLocaleDateString('de-DE')} (${Number(e.cost || 0).toFixed(2)} EUR${weightText})${expText}`, 180);
+                lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 14, y); y += 6; });
             });
 
             y += 6;
             doc.setFont("helvetica", "bold");
+            if (y > 270) { doc.addPage(); y = 20; }
             doc.text(`Gesamtkosten: ${totalCosts.toFixed(2)} EUR`, 14, y);
 
             doc.save("haustier-gesundheits-report.pdf");
@@ -884,26 +926,40 @@
             a.href = url;
             a.download = `haustier-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
         function importBackup(event) {
-            const file = event.target.files[0];
+            const input = event.target;
+            const file = input.files[0];
             if (!file) return;
+            if (file.size > 20 * 1024 * 1024) {
+                input.value = '';
+                return alert("Backup zu groß (maximal 20 MB).");
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
+                input.value = '';
                 try {
                     const parsed = JSON.parse(e.target.result);
-                    if (parsed.pets && parsed.events) {
-                        saveData(parsed);
-                        loadPetDropdowns();
-                        renderApp();
-                        alert("Backup erfolgreich importiert!");
-                    } else {
-                        alert("Ungültiges Format.");
+                    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) ||
+                        !Array.isArray(parsed.pets) || !Array.isArray(parsed.events) ||
+                        !parsed.pets.every(item => item && typeof item === 'object' && !Array.isArray(item)) ||
+                        !parsed.events.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
+                        return alert("Ungültiges Backup-Format.");
                     }
+                    if (!confirm("Backup importieren? Vorhandene Daten werden ersetzt.")) return;
+                    saveData(parsed);
+                    loadPetDropdowns();
+                        renderApp();
+                    alert("Backup erfolgreich importiert!");
                 } catch (err) {
                     alert("Fehler beim Lesen der Datei.");
                 }
+            };
+            reader.onerror = () => {
+                input.value = '';
+                alert("Backup-Datei konnte nicht gelesen werden.");
             };
             reader.readAsText(file);
         }
