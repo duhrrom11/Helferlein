@@ -45,7 +45,7 @@ async function restoreHistoryVersion(row){if(!currentUser||currentUser!==history
 $('homeCompareShow').addEventListener('click',()=>{const root=$('homeCompareResult');root.replaceChildren();if(!currentUser||historyOwner!==currentUser)return;const a=historyVersions.find(r=>String(r.id)===$('homeCompareA').value),b=historyVersions.find(r=>String(r.id)===$('homeCompareB').value);if(!a||!b||a.id===b.id){$('homeCompareStatus').textContent='Bitte zwei unterschiedliche historische Versionen auswählen.';return}const table=el('table','');table.className='home-compare-table';const head=document.createElement('thead'),header=document.createElement('tr');for(const title of ['Einstellung','Version A (#'+a.id+')','Version B (#'+b.id+')'])header.append(el('th',title));head.append(header);table.append(head);const body=document.createElement('tbody');let changes=0;for(const [key,label] of Object.entries(compareFields)){const va=a.new_settings?.[key],vb=b.new_settings?.[key],changed=JSON.stringify(va)!==JSON.stringify(vb);if(changed)changes++;const tr=document.createElement('tr');tr.dataset.changed=String(changed);tr.append(el('th',label),el('td',compareValue(key,va)),el('td',compareValue(key,vb)));body.append(tr)}table.append(body);const scroll=el('div','');scroll.className='home-compare-scroll';scroll.append(table);root.append(scroll);for(const [label,row] of [['Version A wiederherstellen',a],['Version B wiederherstellen',b]]){const button=el('button',label);button.type='button';button.disabled=!safeHistorySettings(row);button.addEventListener('click',()=>restoreHistoryVersion(row));root.append(button)}$('homeCompareStatus').textContent=changes+' von '+Object.keys(compareFields).length+' Einstellungsfeldern unterscheiden sich. Markierte Zeilen zeigen Unterschiede.'});
 
 const backupKeys=[...layoutKeys,'saved_layouts','active_layout'];
-let pendingBackup=null,backupOwner=null,backupBusy=false;
+let pendingBackup=null,backupOwner=null,backupBaseline=null,backupBusy=false;
 function validateBackupObject(obj){
  if(!obj||typeof obj!=='object'||Array.isArray(obj)||Object.keys(obj).length!==backupKeys.length||!backupKeys.every(k=>Object.prototype.hasOwnProperty.call(obj,k)))return false;
  if(!validSnapshot(obj)||!['custom','compact','daily','overview'].includes(obj.active_layout))return false;
@@ -53,7 +53,7 @@ function validateBackupObject(obj){
  if(!layouts||typeof layouts!=='object'||Array.isArray(layouts)||Object.keys(layouts).some(k=>!['compact','daily','overview'].includes(k)||!validSnapshot(layouts[k])||Object.keys(layouts[k]).length!==layoutKeys.length))return false;
  return JSON.stringify(obj).length<=16000;
 }
-function clearPendingBackup(message=''){pendingBackup=null;backupOwner=null;$('homeBackupDiff').replaceChildren();$('homeBackupApply').disabled=true;$('homeBackupCancel').disabled=true;$('homeBackupStatus').textContent=message}
+function clearPendingBackup(message=''){pendingBackup=null;backupOwner=null;backupBaseline=null;$('homeBackupDiff').replaceChildren();$('homeBackupApply').disabled=true;$('homeBackupCancel').disabled=true;$('homeBackupStatus').textContent=message}
 function backupSettings(){return Object.fromEntries(backupKeys.map(k=>[k,JSON.parse(JSON.stringify(preferences[k]))]))}
 $('homeBackupFile').addEventListener('change',()=>clearPendingBackup('Neue Datei ausgewählt. Bitte erneut prüfen.'));
 $('homeBackupCancel').addEventListener('click',()=>clearPendingBackup('Import verworfen. Keine Änderungen gespeichert.'));
@@ -77,12 +77,12 @@ $('homeBackupPreview').addEventListener('click',async()=>{
   const tbody=document.createElement('tbody');let changed=0;
   for(const [key,label] of Object.entries(compareFields)){const a=preferences[key],b=candidate[key],diff=JSON.stringify(a)!==JSON.stringify(b);if(diff)changed++;const row=document.createElement('tr');row.dataset.changed=String(diff);row.append(el('th',label),el('td',compareValue(key,a)),el('td',compareValue(key,b)));tbody.append(row)}
   table.append(tbody);$('homeBackupDiff').append(table);
-  pendingBackup=JSON.parse(JSON.stringify(candidate));backupOwner=owner;$('homeBackupApply').disabled=false;$('homeBackupCancel').disabled=false;
+  pendingBackup=JSON.parse(JSON.stringify(candidate));backupOwner=owner;backupBaseline=JSON.stringify(backupSettings());$('homeBackupApply').disabled=false;$('homeBackupCancel').disabled=false;
   $('homeBackupStatus').textContent='Import gültig: '+changed+' von '+Object.keys(compareFields).length+' Feldern unterscheiden sich. Noch nichts gespeichert.';
  }catch(e){clearPendingBackup('Ungültige oder nicht unterstützte Sicherung. Keine Daten verändert.')}finally{backupBusy=false}
 });
 $('homeBackupApply').addEventListener('click',async()=>{
- if(!pendingBackup||!currentUser||currentUser!==backupOwner||backupBusy||layoutBusy)return;
+ if(!pendingBackup||!currentUser||currentUser!==backupOwner||backupBusy||layoutBusy)return;if(JSON.stringify(backupSettings())!==backupBaseline){clearPendingBackup('Dashboard-Einstellungen haben sich seit der Vorschau geändert. Bitte Import erneut prüfen.');return;}
  const candidate=pendingBackup;if(!validateBackupObject(candidate)){clearPendingBackup('Sicherung ungültig.');return}
  if(!window.confirm('Geprüfte Dashboard-Sicherung dauerhaft wiederherstellen? Aktuelle Anzeigeeinstellungen und alle gespeicherten Layout-Vorlagen werden ersetzt. Ein neuer Verlaufseintrag dokumentiert die Änderung.'))return;
  backupBusy=true;$('homeBackupApply').disabled=true;endPreview(true);
