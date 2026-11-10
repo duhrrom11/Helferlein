@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Kompakte mobile Startseite und Navigation)
+
+- **Nutzerfeedback:** Der Social-Feed-Banner nahm oberhalb der Wunschlisten viel Platz ein und wiederholte den Benachrichtigungszugriff.
+- **Neu umgesetzt:** Banner als schmale Social-Feed-Zeile unter die gruppierte Hauptnavigation verschoben; redundanter Benachrichtigungs-Button entfernt, Hauptnavigation behält Benachrichtigungen. Auf kleinen Smartphones entfällt der zusätzliche Banner-Erklärungstext.
+- **Zugänglichkeit:** Direkter Sprunglink zu Wunschwelten, sichtbare Tastatur-Fokusmarkierungen und angepasste helle Farbdarstellung für die drei aufklappbaren Navigationsgruppen.
+- **Sicherheit und Daten:** Ausschließlich HTML/CSS-Änderungen, keine Supabase-Abfragen, keine Datenbankmigration, keine Testdaten, keine Änderung an produktiven Wunschlisten oder Konten.
+- **Qualität:** Authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Aufgeräumte mobile Hauptnavigation)
 
 - **Nutzerfeedback:** Zu viele gleichwertige Buttons im Kopfbereich auf Smartphones erschweren die Orientierung.
