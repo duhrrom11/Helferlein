@@ -104,3 +104,38 @@ test('duplicate selections cannot generate duplicate server writes',async()=>{
  await executeBulkJob({targets,write:id=>db.write(true,id)});
  assert.deepEqual(db.writes.map(w=>w.id),['a','b']);
 });
+
+test('dashboard flow: loading, filtering, confirmation, partial error and explicit retry',async()=>{
+ const db=mockDatabase({assigned:[],fail:['b']});
+ const loaded=await fetchAllPages((from,to)=>db.page(from,to),{pageSize:2});
+ const visible=filterListWishes(loaded.map(w=>({...w,priority:2,created_at:'2026-01-01',wishlist_products:{title:w.id}})),{search:'b'});
+ assert.deepEqual(visible.map(w=>w.id),['b']);
+ const selection=eligibleBulkTargets(['a','b','c'],loaded.map(w=>w.id),db.membership,true);
+ let confirmed=false;
+ const confirm=()=>{confirmed=true;return true};
+ assert.equal(db.writes.length,0);
+ if(confirm())await executeBulkJob({targets:selection,write:id=>db.write(true,id)});
+ assert.equal(confirmed,true);
+ assert.deepEqual(db.writes.map(w=>w.id),['a','b','c']);
+ assert.deepEqual([...db.membership].sort(),['a','c']);
+ db.resolve('b');
+ const retry=eligibleBulkTargets(['b'],loaded.map(w=>w.id),db.membership,true);
+ await executeBulkJob({targets:retry,write:id=>db.write(true,id)});
+ assert.deepEqual([...db.membership].sort(),['a','b','c']);
+});
+test('dashboard flow: cancel confirmation performs zero writes',async()=>{
+ const db=mockDatabase({assigned:[]});
+ const confirm=()=>false;
+ if(confirm())await executeBulkJob({targets:['a'],write:id=>db.write(true,id)});
+ assert.equal(db.writes.length,0);
+});
+test('dashboard flow: switching account invalidates pending writes and hides stale progress',async()=>{
+ let owner='user-a',progress=0;
+ let finish;const pending=new Promise(resolve=>{finish=resolve});
+ const running=executeBulkJob({targets:['a','b'],isCurrent:()=>owner==='user-a',write:()=>pending,onProgress:()=>progress++});
+ owner='user-b';finish({error:null});
+ const result=await running;
+ assert.equal(result.invalidated,true);
+ assert.equal(progress,0);
+ assert.deepEqual(result.completed,[]);
+});
