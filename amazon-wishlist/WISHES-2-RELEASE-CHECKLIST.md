@@ -1178,3 +1178,9 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Node-Quelltext-Regression stellt sicher, dass der Live-Smoke keine schreibenden Listenaktionen ausführt (Commits `aaf2216c`, `2683795d`).
 - [ ] **Manueller Live-Smoke noch nicht ausgeführt**: Vor Merge fehlt ein tatsächlich veröffentlichtes Dashboard und ein autorisiertes vorhandenes Konto mit bereitgestellten Secrets. Ohne diese Bedingungen kann kein echter Session-Erfolg behauptet werden.
 - [ ] Vollständige CI/CodeQL auf dem letzten Commit abwarten. GitHub Pages bleibt das einzige Hostingziel. Kein Merge/Deployment bei offenen Auth- oder Sicherheits-Gates.
+
+### Pre-Merge-Auth-Test ohne Deployment möglich
+
+- [x] Zirkuläre Freigabeabhängigkeit beseitigt: Der manuell gestartete Auth-Browserworkflow prüft nun **den ausgecheckten Kandidaten-Commit** über einen nur im Runner erreichbaren lokalen HTTP-Server (`127.0.0.1:8765`), verbindet sich aber mit der **echten produktiven Supabase-Auth-API**. GitHub Pages muss dafür noch nicht den neuen Code veröffentlichen (Commit `3ec27a89`).
+- [ ] Der Test benötigt weiterhin explizit hinterlegte GitHub-Actions-Secrets für ein **bereits vorhandenes, autorisiertes Konto**. Er wird nicht automatisch als grün gewertet, wenn diese fehlen. Er führt nur Login, Dashboard-SELECT und Logout aus; keine Schreibaktionen.
+- [ ] Bei einem tatsächlichen grünen Auth-Workflow und vollständig grüner CI/CodeQL kann PR #166 freigegeben werden; anschließend GitHub-Pages-Deployment und Live-HTTP-Modulprüfung bestätigen.
