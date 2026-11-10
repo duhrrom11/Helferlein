@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id);
 const euro=n=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const labels={idea:'💡 Idee',planned:'📝 Geplant',purchased:'🛍️ Gekauft',wrapped:'🎀 Verpackt',gifted:'🎁 Verschenkt'};
 const priority={1:'🔴 Hoch',2:'🟡 Mittel',3:'🟢 Niedrig'};
-let occasions=[],gifts=[],user=null,reservationCount=0,linkedCount=0;
+let occasions=[],gifts=[],tasks=[],user=null,reservationCount=0,linkedCount=0;
 function today(){const n=new Date();return Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())}
 function nextDate(o){const [y,m,d]=o.occasion_date.split('-').map(Number),now=today();if(!o.repeats_yearly)return Date.UTC(y,m-1,d);
  const current=new Date(now).getUTCFullYear();
@@ -23,6 +23,7 @@ function render(){
  $('progress').textContent=percent+' %';$('progressBar').value=percent;
  $('progressText').textContent=gifted+' von '+gifts.length+' Geschenken verschenkt.';
  $('reservationText').textContent=reservationCount+' eigene Reservierungen, davon '+linkedCount+' mit deiner Geschenkplanung verknüpft.';
+ const reminderRoot=$('taskReminders');reminderRoot.replaceChildren();const dueTasks=tasks.filter(t=>t.status!=='done'&&t.due_date&&Math.round((Date.parse(t.due_date+'T00:00:00Z')-today())/86400000)<=t.reminder_days).sort((a,b)=>a.due_date.localeCompare(b.due_date)||a.priority-b.priority);if(!dueTasks.length)empty(reminderRoot,'Keine fälligen Aufgaben-Erinnerungen.');for(const t of dueTasks.slice(0,8)){const remaining=Math.round((Date.parse(t.due_date+'T00:00:00Z')-today())/86400000);reminderRoot.append(node('p',(remaining<0?'⚠️ '+(-remaining)+' Tage überfällig':remaining===0?'🔔 Heute fällig':'🔔 In '+remaining+' Tagen')+' · '+t.title,'warning'))}
  const occ=$('occasions');occ.replaceChildren();
  if(!upcoming.length)empty(occ,'Keine Anlässe in den nächsten 30 Tagen.');
  for(const o of upcoming.slice(0,12)){const item=node('article','','item'),h=node('h3',o.title+(o.person_name?' · '+o.person_name:'')),p=node('p',days(o)===0?'Heute!':'In '+days(o)+' Tagen'),link=document.createElement('a');link.href='./gift-planner.html';link.textContent='Geschenke planen ↗';item.append(h,p,link);occ.append(item)}
@@ -48,13 +49,14 @@ function render(){
 async function main(){
  const {data,error}=await db.auth.getUser();user=data?.user;
  if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
- const [o,g,r]=await Promise.all([
+ const [o,g,r,t]=await Promise.all([
   db.from('wishlist_occasions').select('id,title,person_name,occasion_date,repeats_yearly,budget_amount').eq('user_id',user.id).limit(1000),
   db.from('wishlist_gift_plans').select('id,occasion_id,title,priority,status,planned_amount,actual_amount').eq('user_id',user.id).limit(1000),
-  db.rpc('wishlist_gift_dashboard_reservations')
+  db.rpc('wishlist_gift_dashboard_reservations'),
+  db.from('wishlist_gift_tasks').select('id,title,due_date,reminder_days,status,priority').eq('user_id',user.id).limit(1000)
  ]);
- if(o.error||g.error||r.error)throw o.error||g.error||r.error;
- occasions=o.data||[];gifts=g.data||[];
+ if(o.error||g.error||r.error||t.error)throw o.error||g.error||r.error||t.error;
+ occasions=o.data||[];gifts=g.data||[];tasks=t.data||[];
  reservationCount=Number(r.data?.[0]?.my_reservations||0);linkedCount=Number(r.data?.[0]?.linked_reservations||0);
  $('content').hidden=false;render();$('status').textContent='Deine Geschenkzentrale ist aktuell.';
 }
