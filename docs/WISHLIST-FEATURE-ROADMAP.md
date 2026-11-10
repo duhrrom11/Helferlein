@@ -241,6 +241,13 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Navigation:** Verlinkung in mobiler Hauptnavigation und Anlasszentrale.
 - **Grenzen:** Aktuell keine gesonderte Budgettabelle pro Empfänger; der Empfängername ist ein optionales Freitextfeld je Geschenk, Budgets werden pro Anlass gespeichert. Beträge werden in EUR dargestellt. Höchstens 1000 Anlässe und 1000 Geschenke pro Seitenaufruf geladen. Browser-End-to-End-Test mit echtem Nutzerkonto steht aus.
 
+## Entwicklungsfortschritt – 10.11.2026 (Wunschwelten mit Geschenkplanung verbinden)
+
+- **Neu umgesetzt:** Geschenkplanung bietet eine optionale Verknüpfung zu öffentlichen Wunschwelten über `wishlist_gift_plans.source_list_id`. Additive Migration mit Fremdschlüssel und RLS-Eigentümerprüfung sowie öffentlicher, nicht archivierter Quellsammlung. Bestehende Produktivdaten bleiben erhalten.
+- **Kostenlose Empfehlungen:** Aus den neuesten 100 öffentlichen Wunschwelten werden eigene und privat gemerkte Sammlungen berücksichtigt. Ein lokaler Stichwortabgleich mit Anlass, Empfänger und vorhandenen Geschenktiteln sortiert bis zu sechs Vorschläge. Ein Vorschlag kann als Entwurf in das Geschenkformular übernommen und nach Prüfung gespeichert werden. Kein KI-Dienst und keine automatische Preisschätzung.
+- **Budgetwarnungen:** Für jeden Anlass mit positivem Budget erscheint eine Warnung, wenn geplante oder tatsächlich erfasste Ausgaben das Budget übersteigen. Mobile Darstellung ergänzt um Empfehlungskarten und direkten Quelllink.
+- **Grenzen:** Empfehlungen decken nicht alle älteren gemerkten Sammlungen ab, da nur die neuesten 100 öffentlichen Sammlungen betrachtet werden. Derzeit erfolgt keine automatische Einzelartikel-Übernahme aus Wunschlisten und keine Echtzeitpreisermittlung. Quellen, die später privat oder archiviert werden, sind über den öffentlichen Link nicht mehr verfügbar. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
