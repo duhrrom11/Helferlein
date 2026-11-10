@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Mobile private Sicherungspunkt-Zeitachse)
+
+- **Neu umgesetzt:** Responsiv gestaltete, chronologische Zeitachse für die maximal 20 privaten Dashboard-Sicherungspunkte mit Zeitstempel, aktivem Layout und Anzahl der Unterschiede zur aktuellen Konfiguration.
+- **Änderungsdetails:** Aufklappbare Details zeigen für alle abweichenden Felder die gespeicherten Werte des Sicherungspunkts und die aktuellen Werte. Datums-, Änderungsbereichs- und Layoutfilter bleiben erhalten.
+- **Wiederherstellung:** Weiterhin nur nach Vorher-Nachher-Vergleich und ausdrücklicher Bestätigung; bestehender Sicherungspunkt-Trigger erstellt bei tatsächlichen Änderungen automatisch einen neuen Sicherungspunkt.
+- **Sicherheit:** Keine Migration, keine Testdaten. RLS und Rechte für Präferenzen, Historie und Sicherungspunkte erneut überprüft; kein anonymer Lesezugriff und keine direkten Schreibrechte auf Historie/Sicherungspunkte. Geschenkaufgaben, Anlässe und historische Produktivdaten bleiben unverändert.
+- **Qualität:** JavaScript-Syntax geprüft. Ein authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Sicherungspunktfilter)
 
 - **Neu umgesetzt:** Suche in den maximal 20 privaten Dashboard-Sicherungspunkten nach Datum (Von/Bis), aktiver Layout-Ansicht und abweichendem Einstellungsbereich (Layouts/Vorlagen, Sichtbarkeit, Kennzahlen, Schnellzugriffe/Favoriten, Sortierung/Reihenfolge).
