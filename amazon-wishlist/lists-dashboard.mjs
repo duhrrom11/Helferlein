@@ -114,7 +114,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||!membershipReady)retu
   showItems().catch(e=>{setItemsFeedback('error','Listenzuordnungen konnten nicht geladen werden.');msg(e.message||'Ladefehler')});
  }
  function renderUnassigned(){const n=wishes.filter(w=>!allAssignedIds.has(w.id)).length;$('unassignedCount').textContent=String(n);$('showUnassigned').disabled=!n}
- let selectedOnlyView=false;
+ let selectedOnlyView=false,activeWishMutations=new Set();
  function visibleWishes(){const globallyUnassigned=$('listWishAssignment').value==='global-unassigned';return filterListWishes((globallyUnassigned?wishes.filter(w=>!allAssignedIds.has(w.id)):wishes).filter(w=>!selectedOnlyView||bulkIds.has(w.id)),{search:$('listWishSearch').value,priority:$('listWishPriority').value,assignment:globallyUnassigned?'all':$('listWishAssignment').value,assignedIds,sort:$('listWishSort').value,category:$('listWishCategory').value,categories:wishCategories,marker:$('listWishMarker').value,markers:wishMarkers})}
  function syncBulkMoveTargets(){
   const target=$('bulkMoveTarget'),previous=target.value;
@@ -210,14 +210,14 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||!membershipReady)retu
   }
  }
  async function moveWishToList(wishId,sourceListId,targetListId,control){
-  if(bulkBusy||!membershipReady||!getUser()||sourceListId===targetListId)return;
+  if(bulkBusy||!membershipReady||!getUser()||sourceListId===targetListId||activeWishMutations.has(getUser().id+':'+wishId))return;
   const uid=owner(),generation=loadGeneration;
   const source=lists.find(l=>l.id===sourceListId&&!l.archived);
   const target=lists.find(l=>l.id===targetListId&&!l.archived);
   if(!source||!target||selected!==sourceListId||!assignedIds.has(wishId))return msg('Bitte einen zugeordneten Wunsch aus einer aktiven Liste auswählen.');
-  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(bulkBusy||!membershipReady||selected!==sourceListId||getUser()?.id!==uid||generation!==loadGeneration||!assignedIds.has(wishId)||!lists.some(l=>l.id===targetListId&&!l.archived))return;
+  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(bulkBusy||!membershipReady||activeWishMutations.has(uid+':'+wishId)||selected!==sourceListId||getUser()?.id!==uid||generation!==loadGeneration||!assignedIds.has(wishId)||!lists.some(l=>l.id===targetListId&&!l.archived))return;
   const current=()=>getUser()?.id===uid&&generation===loadGeneration&&selected===sourceListId;
-  control.disabled=true;
+  activeWishMutations.add(uid+':'+wishId);control.disabled=true;
   try{
    const alreadyThere=membershipByList.get(targetListId)?.has(wishId);
    if(!alreadyThere){
@@ -230,7 +230,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||!membershipReady)retu
    await load();
    if(getUser()?.id===uid&&selected===sourceListId)msg('Wunsch nach „'+target.title+'“ verschoben. Die Ausgangsliste bleibt geöffnet.')
   }catch(e){if(getUser()?.id===uid&&selected===sourceListId)msg('Verschieben fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
-  finally{control.disabled=false}
+  finally{activeWishMutations.delete(uid+':'+wishId);control.disabled=false}
  }
  let compactWishView=false;
  function setWishView(compact){compactWishView=compact;$('wishViewCards').setAttribute('aria-pressed',String(!compact));$('wishViewCompact').setAttribute('aria-pressed',String(compact));$('listWishCards').classList.toggle('is-compact',compact)}
@@ -262,12 +262,12 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||!membershipReady)retu
    }
    const row=document.createElement('label');const check=document.createElement('input');check.type='checkbox';check.checked=assignedIds.has(wish.id);check.disabled=!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived;
    const caption=document.createElement('span');caption.textContent='In dieser Liste';
-   check.onchange=async()=>{if(!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived){check.checked=!check.checked;return}check.disabled=true;const uid=owner(),generation=loadGeneration,wanted=check.checked;try{
+   check.onchange=async()=>{if(!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived||activeWishMutations.has(owner()+':'+wish.id)){check.checked=!check.checked;return}activeWishMutations.add(owner()+':'+wish.id);check.disabled=true;const uid=owner(),generation=loadGeneration,wanted=check.checked;try{
     const query=wanted?db.from('wishlist_list_items').insert({list_id:list.id,wish_id:wish.id,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',list.id).eq('wish_id',wish.id).eq('user_id',uid);
     const {error}=await query;if(error)throw error;if(getUser()?.id!==uid||selected!==list.id||generation!==loadGeneration)return;
     if(wanted){assignedIds.add(wish.id);membershipByList.get(list.id)?.add(wish.id)}else{assignedIds.delete(wish.id);membershipByList.get(list.id)?.delete(wish.id)}
     await load();if(getUser()?.id===uid&&selected===list.id)msg('Wunschzuordnung gespeichert');
-   }catch(e){if(getUser()?.id===uid&&selected===list.id&&generation===loadGeneration){check.checked=!wanted;msg(e.message||'Zuordnung fehlgeschlagen')}}finally{if(getUser()?.id===uid&&selected===list.id&&generation===loadGeneration)check.disabled=false}};
+   }catch(e){if(getUser()?.id===uid&&selected===list.id&&generation===loadGeneration){check.checked=!wanted;msg(e.message||'Zuordnung fehlgeschlagen')}}finally{activeWishMutations.delete(uid+':'+wish.id);if(getUser()?.id===uid&&selected===list.id&&generation===loadGeneration)check.disabled=false}};
    row.append(check,caption);card.append(row);
    if(assignedIds.has(wish.id)&&!list.archived){
     const destinations=lists.filter(l=>!l.archived&&l.id!==list.id);
