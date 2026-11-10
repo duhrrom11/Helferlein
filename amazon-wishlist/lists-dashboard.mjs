@@ -117,6 +117,7 @@ actions.append(button('Duplizieren',async()=>{
     if(!window.confirm('Liste „'+list.title+'“ mit '+originalIds.length+' Zuordnungen duplizieren? Die Wünsche selbst werden nicht kopiert.'))return;
     if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==uid||generation!==loadGeneration||!lists.some(l=>l.id===list.id))return;
     listCopyBusy=true;
+    if(getUser()?.id===uid&&membershipReady)renderWishCards();
     const current=()=>getUser()?.id===uid&&generation===loadGeneration;
     let copied=0,created=false;
     try{
