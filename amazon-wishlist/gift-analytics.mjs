@@ -36,6 +36,46 @@ function renderGiftYearEditor(year){
  button.addEventListener('click',async()=>{const y=Number(input.value);if(!Number.isInteger(y)||y<1900||y>2200){$('status').textContent='Ungültiges Geschenkjahr.';return}button.disabled=true;const {data,error}=await db.rpc('wishlist_set_gift_year',{p_plan_id:g.id,p_year:y});button.disabled=false;if(error||!data){$('status').textContent='Geschenkjahr konnte nicht gespeichert werden.';return}g.gift_year=y;g.gift_year_source='manual';if(![...$('year').options].some(o=>Number(o.value)===y)){const option=document.createElement('option');option.value=y;option.textContent=y;$('year').append(option)}$('year').value=String(y);render();$('status').textContent='Geschenkjahr gespeichert.'});controls.append(input,button);row.append(controls);root.append(row)}
  if(relevant.length>80)root.append(el('p','Es werden nur die ersten 80 Geschenke angezeigt. Weitere Geschenke sind über die Jahreszuordnung in der Datenbank vorhanden.','note'));
 }
+
+function reviewData(c){
+ const gifts=Array.isArray(c.gifts_snapshot)?c.gifts_snapshot:[],budgets=Array.isArray(c.budgets_snapshot)?c.budgets_snapshot:[],tasks=Array.isArray(c.tasks_snapshot)?c.tasks_snapshot:null;
+ const occasionIds=new Set([...gifts.map(g=>g.occasion_id),...(tasks||[]).map(t=>t.occasion_id),...budgets.map(b=>b.occasion_id)].filter(Boolean));
+ const occasionsSummary=[...occasionIds].map(id=>{
+  const gs=gifts.filter(g=>g.occasion_id===id),ts=(tasks||[]).filter(t=>t.occasion_id===id),b=budgets.find(x=>x.occasion_id===id);
+  const gifted=gs.filter(g=>g.status==='gifted').length,done=ts.filter(t=>t.status==='done').length;
+  return{occasion_id:id,title:b?.occasion_title||'Anlass ohne gespeicherten Namen',gift_count:gs.length,gifted_count:gifted,task_count:tasks===null?null:ts.length,task_done_count:tasks===null?null:done,budget_amount:b?.budget_amount??null,completed:(gs.length>0&&gifted===gs.length)||(ts.length>0&&done===ts.length)}
+ }).sort((a,b)=>Number(b.completed)-Number(a.completed)||b.gifted_count-a.gifted_count||a.title.localeCompare(b.title));
+ return{year:c.closing_year,closed_at:c.closed_at,gift_count:c.gift_count,gifted_count:c.gifted_count,planned_total:c.planned_total,actual_total:c.actual_total,budget_total:c.budget_total,task_count:c.task_count,task_done_count:c.task_done_count,gifts,budgets,tasks,occasions:occasionsSummary};
+}
+function renderReview(){
+ const root=$('annualReview'),select=$('reviewYear');root.replaceChildren();
+ const existing=select.value;select.replaceChildren();
+ for(const c of [...closings].sort((a,b)=>b.closing_year-a.closing_year)){const o=document.createElement('option');o.value=c.closing_year;o.textContent=String(c.closing_year);select.append(o)}
+ if([...select.options].some(o=>o.value===existing))select.value=existing;
+ const c=closings.find(c=>c.closing_year===Number(select.value));$('exportYearJson').disabled=!c;$('printYearReview').disabled=!c;
+ if(!c){root.append(el('p','Erstelle zuerst einen Jahresabschluss, um einen unveränderlichen Rückblick zu erhalten.','empty'));return}
+ const d=reviewData(c),title=el('h3','Mein Geschenk-Jahr '+d.year),stamp=el('p','Abschluss vom '+new Date(d.closed_at).toLocaleDateString('de-DE'),'note');root.append(title,stamp);
+ const grid=el('div','','review-grid');
+ for(const [label,value] of [['Geschenke verschenkt',d.gifted_count+'/'+d.gift_count],['Ausgaben',money(d.actual_total)],['Gespeicherte Budgets',money(d.budget_total)],['Geplante Beträge',money(d.planned_total)],['Aufgaben erledigt',d.task_count===null?'Nicht erfasst':d.task_done_count+'/'+d.task_count],['Abgeschlossene Anlässe',d.occasions.filter(o=>o.completed).length]]){const card=el('div','','review-kpi');card.append(el('strong',String(value)),el('span',label));grid.append(card)}root.append(grid);
+ root.append(el('h3','🏅 Meilensteine'));const milestones=el('ul','','review-milestones');
+ if(d.gift_count>0&&d.gifted_count===d.gift_count)milestones.append(el('li','Alle '+d.gift_count+' Geschenke als verschenkt abgeschlossen.'));
+ if(d.task_count>0&&d.task_done_count===d.task_count)milestones.append(el('li','Alle '+d.task_count+' Jahres-Checklistenaufgaben erledigt.'));
+ if(d.occasions.some(o=>o.completed))milestones.append(el('li',d.occasions.filter(o=>o.completed).length+' Anlässe mit vollständig abgeschlossenen Geschenkgruppen oder Checklisten.'));
+ if(d.budgets.length)milestones.append(el('li',d.budgets.length+' Anlassbudgets historisch gesichert.'));
+ if(!milestones.children.length)milestones.append(el('li','Jahresabschluss gespeichert. Noch keine weiteren messbaren Meilensteine.'));
+ root.append(milestones,el('h3','🎂 Erfolgreich abgeschlossene Anlässe'));
+ const completed=d.occasions.filter(o=>o.completed);
+ if(!completed.length)root.append(el('p','Keine vollständig abgeschlossenen Anlassgruppen im gespeicherten Stand.','empty'));
+ for(const o of completed){const card=el('article','','review-occasion');card.append(el('strong',o.title),el('p','Geschenke: '+o.gifted_count+'/'+o.gift_count+' · Aufgaben: '+(o.task_count===null?'nicht historisch erfasst':o.task_done_count+'/'+o.task_count)+(o.budget_amount===null?'':' · Jahresbudget: '+money(o.budget_amount))));root.append(card)}
+ if(d.tasks===null)root.append(el('p','Dieser ältere Jahresabschluss enthält keinen historischen Aufgaben-Snapshot.','note'));
+}
+$('reviewYear').addEventListener('change',renderReview);
+$('exportYearJson').addEventListener('click',()=>{
+ const c=closings.find(c=>c.closing_year===Number($('reviewYear').value));if(!c)return;
+ const payload={schema_version:1,exported_at:new Date().toISOString(),report:reviewData(c)};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='helferlein-geschenk-jahresrueckblick-'+c.closing_year+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);$('reviewStatus').textContent='Privater JSON-Bericht lokal erstellt. Bewahre die Datei sicher auf.';
+});
+$('printYearReview').addEventListener('click',()=>{if(closings.some(c=>c.closing_year===Number($('reviewYear').value)))window.print()});
 function renderChronicle(){
  const root=$('yearChronicle');root.replaceChildren();const ordered=[...closings].sort((a,b)=>a.closing_year-b.closing_year);
  if(!ordered.length){root.append(el('p','Noch keine gespeicherten Jahresabschlüsse. Erstelle einen Abschluss, um die Chronik zu beginnen.','empty'));return}
@@ -47,7 +87,7 @@ function renderChronicle(){
  if(previous){const delta=Number(c.actual_total)-Number(previous.actual_total);box.append(el('p','Gegenüber dem vorherigen Abschluss '+previous.closing_year+': '+(delta>=0?'+':'')+money(delta)+' Ausgaben'+(previous.task_count!==null&&c.task_count!==null?' · Aufgabenquote '+((c.task_count?Math.round(c.task_done_count/c.task_count*100):0)-(previous.task_count?Math.round(previous.task_done_count/previous.task_count*100):0))+' Prozentpunkte':'')))}
  root.append(box);previous=c}
 }
-function renderClosings(){renderChronicle();
+function renderClosings(){renderChronicle();renderReview();
  const root=$('closedYears');root.replaceChildren();const year=Number($('year').value),closed=closings.find(c=>c.closing_year===year);
  $('closeYear').disabled=Boolean(closed);$('closingConfirm').disabled=Boolean(closed);
  for(const c of closings){const box=el('div','','year-summary row');box.append(el('strong','🔒 '+c.closing_year+' · abgeschlossen am '+new Date(c.closed_at).toLocaleDateString('de-DE')),el('p',c.gift_count+' Geschenke · '+c.gifted_count+' verschenkt · Ausgaben: '+money(c.actual_total)+' · Geplant: '+money(c.planned_total)+' · Jahresbudgets: '+money(c.budget_total)+(c.task_count===null?' · Aufgabenhistorie nicht vorhanden':' · Aufgaben: '+c.task_done_count+'/'+c.task_count)));
