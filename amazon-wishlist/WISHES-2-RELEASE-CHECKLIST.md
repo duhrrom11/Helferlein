@@ -688,3 +688,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung ohne Imports und gezielte Quelltextkontrolle erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen. Duplizieren ist nicht transaktional; bei Teilfehlern Kopie manuell prüfen. Ein Konto-/Sitzungswechsel während eines Netzwerkaufrufs kann einen bereits gestarteten Schreibvorgang nicht zurücknehmen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Autopilot: Duplizierungssperre nach Bestätigungen und bei mobiler Navigation (2026-11-10)
+
+- [x] Archivieren/Reaktivieren und Löschen prüfen die exklusive Kopiersperre erneut nach dem Bestätigungsdialog; eine inzwischen gestartete Duplizierung verhindert den destruktiven Schreibvorgang.
+- [x] Favoritenänderungen aus Listenkarten werden während laufender Kopiervorgänge abgefangen.
+- [x] Sprünge aus Wunschdetails und mobile Schnellfilter respektieren die Duplizierungssperre, damit sie keinen veralteten Listen- oder Auswahlkontext erzeugen.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Prüfung der beiden Bestätigungswege erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen. Weitere UI-Einstiegspunkte und Kontowechsel während Netzwerkoperationen müssen vor Freigabe geprüft werden.
+- [ ] Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment; Freigabe bleibt gesperrt.
