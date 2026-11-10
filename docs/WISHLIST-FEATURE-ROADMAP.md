@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Wunsch- und Geschenkformulare verbessert)
+
+- **Datenschutzklarheit beim Wunsch-Speichern:** Der bisher statische Hinweis „Dein Wunsch wird öffentlich angezeigt“ wurde an die bestehende Auswahl `wishVisibility` gebunden. Bei `private` erklärt der Hinweis, dass der Wunsch selbst in öffentlichen Listen privat bleibt; bei `public` weist er auf die Sichtbarkeit von Titel und öffentlichen Notizen hin. Aktualisierung bei Eingabe/Auswahl und nach Klicks im Editor; ein `role="status"` mit `aria-live="polite"` unterstützt Screenreader. Die bestehende Speichern-/Supabase-Logik wird nicht verändert.
+- **Mobile Wunschlisten-Bearbeitung:** Responsive Begrenzungen für die vorhandenen Wunsch-, Listen- und Listenbearbeitungsfelder, flüssig umbrechende Schaltflächen, breitenbegrenzte Wunschvorschau und mobile 16-px-Eingabeschrift. Preis- und Mengenfelder erhalten passende `inputmode`-Attribute.
+- **Separate Geschenkplanungsseite:** `amazon-wishlist/gift-planner.html` bekommt mobile Karten-/Formularabstände, flexible Aktionsbuttons, Fokusmarkierung und einspaltige Kennzahlen auf sehr schmalen Bildschirmen; Budget- und Betragsfelder verwenden `inputmode="decimal"`.
+- **Prüfung:** Beide Dateien nach den GitHub-Commits erneut geladen. `index.html`: zehn Inline-Skripte ohne JavaScript-Syntaxfehler, 21 Stylesheets ohne unausgeglichene CSS-Klammern und ohne doppelte statische HTML-IDs. `gift-planner.html`: ein Stylesheet mit ausgeglichenen CSS-Klammern und keine doppelten statischen IDs. Ein authentifizierter End-to-End-Test und echter Live-Viewport-Test stehen aus.
+- **Produktionsschutz:** Nur Frontend-HTML/CSS/JS, keine Supabase-Migration oder -Schreiboperation, keine Testdaten, keine Änderung bestehender Wünsche oder Geschenke.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Chromium-Viewport-Prüfung und lesbarere mobile Hauptnavigation)
 
 - **Browserprüfung:** Headless Chromium wurde lokal mit einem ausdrücklich **nachgebildeten, reduzierten HTML/CSS-Testaufbau** der mobilen Hauptnavigation, Dashboard-Kennzahlen, Wunschlisten und Geschenkbudget-Flächen verwendet. Prüfformen: 320, 340, 360, 375, 390, 391, 420, 430, 759 und 760 px. In diesen Testansichten trat kein horizontaler Seitenüberlauf auf; die Einspalten- und Zweispaltenwechsel wurden kontrolliert.
