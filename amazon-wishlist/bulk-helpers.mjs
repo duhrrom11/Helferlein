@@ -58,3 +58,13 @@ export async function executeBulkJob({targets,write,isCurrent=()=>true,shouldSto
  const summary=summarizeBulk({targets,completed,failed,stopped:interrupted});
  return {...summary,completed,errors:[...errors].map(([reason,count])=>({reason,count})),invalidated};
 }
+
+/** A reload invalidates membership-dependent controls until a complete snapshot arrives. */
+export function bulkControlsEnabled({membershipReady,bulkBusy}) {
+ return !!membershipReady&&!bulkBusy;
+}
+
+/** Only the latest load for the signed-in account may publish a result or an error. */
+export function currentDashboardLoad({requestedUserId,currentUserId,requestedGeneration,currentGeneration}) {
+ return !!requestedUserId&&requestedUserId===currentUserId&&requestedGeneration===currentGeneration;
+}
