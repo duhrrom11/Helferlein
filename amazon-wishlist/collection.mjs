@@ -6,7 +6,7 @@ const validId=typeof id==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[
 const notice=$('notice');
 async function main(){
  if(!validId){notice.textContent='Ungültiger Sammlungslink.';return}
- const {data:list,error}=await db.from('wishlist_lists').select('id,title,description,icon,color,visibility,archived').eq('id',id).eq('visibility','public').eq('archived',false).maybeSingle();
+ const {data:list,error}=await db.from('wishlist_lists').select('id,title,description,icon,color,cover_url,visibility,archived').eq('id',id).eq('visibility','public').eq('archived',false).maybeSingle();
  if(error)throw error;
  if(!list){notice.textContent='Diese Sammlung ist nicht öffentlich verfügbar oder wurde archiviert.';return}
  const {data:items,error:itemsError}=await db.from('wishlist_list_items').select('wish_id').eq('list_id',id).order('created_at',{ascending:false}).limit(100);
@@ -14,14 +14,14 @@ async function main(){
  const ids=[...new Set((items||[]).map(item=>item.wish_id))];
  let wishes=[];
  if(ids.length){
-  const {data,error:wishesError}=await db.from('wishlist_wishes').select('id,note,priority,wishlist_products(asin,title)').in('id',ids);
+  const {data,error:wishesError}=await db.from('wishlist_wishes').select('id,note,priority,visibility,wishlist_products(asin,title)').in('id',ids);
   if(wishesError)throw wishesError;
   const lookup=new Map((data||[]).map(wish=>[String(wish.id),wish]));
-  wishes=ids.map(wishId=>lookup.get(String(wishId))).filter(Boolean);
+  wishes=ids.map(wishId=>lookup.get(String(wishId))).filter(wish=>wish?.visibility==='public');
  }
  $('title').textContent=list.title;$('description').textContent=list.description||'Eine Sammlung voller Geschenkideen.';
  $('icon').textContent=list.icon||'🎁';
- if(/^#[0-9a-f]{6}$/i.test(list.color||''))document.querySelector('.hero').style.borderTop='7px solid '+list.color;
+ if(list.cover_url){try{const cover=new URL(list.cover_url);if(cover.protocol==='https:'){const image=document.createElement('img');image.src=cover.href;image.alt='Titelbild der Sammlung';image.loading='lazy';image.style.cssText='width:min(38vw,240px);height:180px;object-fit:cover;border-radius:16px';document.querySelector('.hero').prepend(image)}}catch{}}if(/^#[0-9a-f]{6}$/i.test(list.color||''))document.querySelector('.hero').style.borderTop='7px solid '+list.color;
  $('count').textContent=wishes.length+' Wünsche'+(ids.length===100?' · maximal 100 geladen':'');
  const grid=$('grid');
  for(const wish of wishes){
