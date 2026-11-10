@@ -22,7 +22,7 @@ async function changeTask(task,field,newValue,button){
   if(!data||data.length!==1)throw new Error('Aufgabe wurde zwischenzeitlich verändert. Bitte Seite neu laden.');
   task[field]=data[0][field];
   $('taskActionStatus').textContent='Änderung gespeichert: '+task.title+'.';
-  renderWeeklyTasks();renderWeek();
+  renderWeeklyTasks();renderDaily();renderWeek();
  }catch(e){$('taskActionStatus').textContent='Speichern fehlgeschlagen: '+(e.message||'Unbekannter Fehler')}
  finally{taskBusy=false;button.disabled=false}
 }
@@ -32,6 +32,25 @@ function taskRank(task,today){
  const priority=Number(task.priority)||2;
  const urgency=days===null?4:days<0?0:days<=1?1:days<=3?2:days<=7?3:5;
  return{days,urgency,priority,score:urgency*10+priority};
+}
+function renderDaily(){
+ const now=new Date(),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),todayTasks=weeklyTasks.filter(t=>!t.archived_at&&utcDate(t.due_date)===today),done=todayTasks.filter(t=>t.status==='done').length;
+ const active=weeklyTasks.filter(t=>!t.archived_at&&t.status!=='done'&&t.due_date&&utcDate(t.due_date)<=today).map(t=>({task:t,...taskRank(t,today)})).sort((a,b)=>a.score-b.score||a.days-b.days);
+ const summary=$('dailySummary');summary.replaceChildren();
+ for(const [label,value] of [['Heute fällig',todayTasks.length],['Heute fällige erledigt',done],['Offen/überfällig',active.length]]){const card=el('div','','review-kpi');card.append(el('strong',String(value)),el('span',label));summary.append(card)}
+ $('dailyProgress').max=todayTasks.length||1;$('dailyProgress').value=done;$('dailyProgressText').textContent=done+' von '+todayTasks.length+' heute fälligen Aufgaben erledigt ('+(todayTasks.length?Math.round(100*done/todayTasks.length):0)+' %). Der Wert beschreibt den aktuellen Status, nicht den Zeitpunkt der Erledigung.';
+ const focus=$('dailyFocus');focus.replaceChildren();
+ if(!active.length)focus.append(el('p','Keine offenen Aufgaben mit Fälligkeit bis heute.'));
+ for(const x of active.slice(0,8)){const t=x.task,box=el('article','','card '+(x.days<0?'priority-critical':'priority-high'));box.append(el('h3',t.title),el('p',x.days<0?'Seit '+Math.abs(x.days)+' Tagen überfällig':'Heute fällig'),el('p','Begründung: '+(x.days<0?'Fälligkeit überschritten':'Heute zu erledigen')+'; Priorität '+({1:'hoch',2:'mittel',3:'niedrig'}[x.priority]||'mittel')+'.','hint'));
+ const actions=el('div','','task-actions'),finish=el('button','✓ Erledigen'),tomorrow=el('button','Auf morgen verschieben');finish.type=tomorrow.type='button';finish.addEventListener('click',()=>changeTask(t,'status','done',finish));tomorrow.addEventListener('click',()=>changeTask(t,'due_date',new Date(today+day).toISOString().slice(0,10),tomorrow));actions.append(finish,tomorrow);box.append(actions);focus.append(box)}
+ const doneRoot=$('dailyDone');doneRoot.replaceChildren();
+ const finished=weeklyTasks.filter(t=>!t.archived_at&&t.status==='done').sort((a,b)=>String(b.due_date||'').localeCompare(String(a.due_date||'')));
+ if(!finished.length)doneRoot.append(el('p','Noch keine erledigten Aufgaben.'));
+ for(const t of finished.slice(0,12)){const box=el('article','','card');box.append(el('h3','✓ '+t.title),el('p','Fälligkeitsdatum: '+(t.due_date||'nicht erfasst')+' · Anlass: '+(occasionNames.get(t.occasion_id)||'ohne Zuordnung')));doneRoot.append(box)}
+ const trend=$('dailyTrend');trend.replaceChildren();
+ for(let offset=3;offset>=0;offset--){const end=today-((new Date(today).getUTCDay()+6)%7)*day-offset*7*day+6*day,start=end-6*day,week=weeklyTasks.filter(t=>!t.archived_at&&t.due_date&&utcDate(t.due_date)>=start&&utcDate(t.due_date)<=end),count=week.filter(t=>t.status==='done').length;
+ const card=el('article','','card');card.append(el('h3',new Date(start).toLocaleDateString('de-DE',{timeZone:'UTC'})+' – '+new Date(end).toLocaleDateString('de-DE',{timeZone:'UTC'})),el('p',count+' von '+week.length+' Aufgaben aktuell erledigt'));const bar=document.createElement('progress');bar.max=week.length||1;bar.value=count;bar.style.width='100%';card.append(bar);trend.append(card)}
+ trend.append(el('p','Hinweis: Die Wochenwerte beruhen auf dem aktuellen Aufgabenstatus und dem Fälligkeitsdatum. Ohne historische Statusänderungs-Snapshots lässt sich nicht rekonstruieren, wann eine Aufgabe tatsächlich erledigt wurde.','hint'));
 }
 function renderWeeklyTasks(){
  const now=new Date(),today=Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()),start=today-((now.getDay()+6)%7)*day,end=start+6*day;
@@ -71,7 +90,7 @@ async function main(){
  allRows('wishlist_occasions','id,title,occasion_date,repeats_yearly,reminder_days,budget_amount',user.id,'occasion_date'),
  allRows('wishlist_gift_tasks','id,title,occasion_id,due_date,status,priority,archived_at,checklist_year',user.id,'created_at')
  ]);
- taskUserId=user.id;weeklyTasks=tasks;occasionNames=new Map(occasions.map(o=>[o.id,o.title]));renderWeeklyTasks();
+ taskUserId=user.id;weeklyTasks=tasks;occasionNames=new Map(occasions.map(o=>[o.id,o.title]));renderWeeklyTasks();renderDaily();
  const nowDate=new Date(),today=Date.UTC(nowDate.getFullYear(),nowDate.getMonth(),nowDate.getDate());
  $('evidence').textContent=closings.length+' gespeicherte historische Jahresabschlüsse. Die Empfehlungen verwenden ausschließlich deren unveränderliche Geschenk-, Budget- und Aufgaben-Snapshots. Aktuelle Anlässe liefern nur Namen und zukünftige Termine.';
  const root=$('occasionCards'),upcoming=occasions.map(o=>({...o,next:nextDate(o,today)})).filter(o=>o.next!==null).sort((a,b)=>a.next-b.next).slice(0,40);
