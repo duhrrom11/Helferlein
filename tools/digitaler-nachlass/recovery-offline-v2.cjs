@@ -1,7 +1,7 @@
 'use strict';
 // Offline recovery prototype: password-based wrapping of a random 256-bit DEK.
 // No database, network, heir release, deployment, or migration integration.
-const { randomBytes, scrypt: scryptCallback, createCipheriv, createDecipheriv, timingSafeEqual } = require('node:crypto');
+const { randomBytes, scrypt: scryptCallback, createCipheriv, createDecipheriv } = require('node:crypto');
 const { promisify } = require('node:util');
 const scrypt = promisify(scryptCallback);
 const VERSION = 2;
