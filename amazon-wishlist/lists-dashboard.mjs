@@ -464,13 +464,24 @@ actions.append(button('Duplizieren',async()=>{
   const template=LIST_TEMPLATES.find(t=>t.id===$('listTemplate').value)||LIST_TEMPLATES.at(-1);
   $('listTitle').value=template.title;$('listDescription').value=template.description;$('listIcon').value=template.icon;$('listColor').value=template.color;
  };
+ let listEditReturnFocus=null;
+ function finishListEditing(){
+  const origin=listEditReturnFocus;
+  listEditReturnFocus=null;
+  const fallback=$('listsContent');
+  const destination=origin?.isConnected&&!origin.closest('[hidden]')?origin:fallback;
+  if(destination===fallback)fallback.tabIndex=-1;
+  destination.focus({preventScroll:true});
+  destination.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'nearest'});
+ }
  function openEditor(list){
   if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===list.id&&!l.archived))return;
+  listEditReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
   $('editListId').value=list.id;$('editListTitle').value=list.title;$('editListDescription').value=list.description||'';
   $('editListIcon').value=list.icon;$('editListColor').value=list.color;$('editListVisibility').value=list.visibility;$('editListCoverUrl').value=list.cover_url||'';
   $('editListFeedback').textContent='';$('editListForm').hidden=false;$('editListForm').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});$('editListTitle').focus({preventScroll:true});
  }
- $('cancelListEdit').onclick=()=>{$('editListForm').hidden=true;$('editListId').value='';$('editListFeedback').textContent='';$('listsContent').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});};
+ $('cancelListEdit').onclick=()=>{$('editListForm').hidden=true;$('editListId').value='';$('editListFeedback').textContent='';finishListEditing();};
  $('editListForm').onsubmit=async event=>{
   event.preventDefault();const id=owner(),generation=loadGeneration,listId=$('editListId').value;
   if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size)return msg('Bitte laufende Wunschänderungen zuerst abschließen.');if(!membershipReady||id!==loadedOwner||!listId||$('editListForm').hidden)return;if(!lists.some(l=>l.id===listId&&!l.archived))return msg('Bitte eine aktive Liste bearbeiten.');
@@ -479,7 +490,7 @@ actions.append(button('Duplizieren',async()=>{
   const coverUrl=$('editListCoverUrl').value.trim();if(coverUrl&&(!/^https:\/\//i.test(coverUrl)||coverUrl.length>2048))return msg('Titelbild muss eine gültige HTTPS-Adresse sein.');const visibility=$('editListVisibility').value;if(!['private','public'].includes(visibility))return msg('Ungültige Sichtbarkeit.');if(visibility==='public'&&!lists.some(l=>l.id===listId&&l.visibility==='public')&&!window.confirm('Sammlung öffentlich freigeben? Jeder mit dem Link kann Titel, Beschreibung und alle zugeordneten Wünsche einschließlich Notizen sehen.'))return;const save=$('saveListChanges');save.disabled=true;listMutationBusy=true;try{if(getUser()?.id===id&&membershipReady)renderWishCards();
    const {error}=await db.from('wishlist_lists').update({title,description,icon:$('editListIcon').value,color:$('editListColor').value,visibility,cover_url:coverUrl||null}).eq('id',listId).eq('user_id',id);
    if(error)throw error;if(getUser()?.id!==id||generation!==loadGeneration)return;
-   $('editListForm').hidden=true;$('editListId').value='';try{await load({afterBulk:true})}catch(e){if(getUser()?.id===id)msg('Listendesign gespeichert, aber Aktualisierung fehlgeschlagen. Bitte neu laden.');return}if(getUser()?.id===id)msg('Listendesign gespeichert.');
+   $('editListForm').hidden=true;$('editListId').value='';try{await load({afterBulk:true})}catch(e){if(getUser()?.id===id){msg('Listendesign gespeichert, aber Aktualisierung fehlgeschlagen. Bitte neu laden.');finishListEditing()}return}if(getUser()?.id===id){msg('Listendesign gespeichert.');finishListEditing()}
   }catch(e){if(getUser()?.id===id&&generation===loadGeneration)msg(e.message||'Liste konnte nicht gespeichert werden')}finally{listMutationBusy=false;save.disabled=false;if(getUser()?.id===id&&loadedOwner===id&&membershipReady)renderWishCards()}
  };
  $('mobileNewWish').onclick=()=>{$('editor').scrollIntoView({behavior:'smooth',block:'start'});$('url').focus()};
