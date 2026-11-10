@@ -39,3 +39,10 @@ test('unverified principal, forged role and unknown action fail closed', () => {
   assert.equal(check(OWNER, 'RELEASE').allowed, false);
   assert.equal(authorize().allowed, false);
 });
+test('missing or malformed vault IDs fail closed for owners and heirs', () => {
+  for (const id of [undefined, null, '', '../other', 'v_short', 'v_12345678/other']) {
+    assert.equal(check(OWNER, 'READ_OWNER', { id }).allowed, false);
+    assert.equal(check(HEIR, 'TRIGGER_ALARM', { id }).allowed, false);
+    assert.equal(check(HEIR, 'READ_HEIR_ENVELOPE', { id, state: 'RELEASED' }).allowed, false);
+  }
+});
