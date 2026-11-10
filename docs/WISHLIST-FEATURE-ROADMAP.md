@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-To-dos und Erinnerungen)
+
+- **Neu umgesetzt:** `amazon-wishlist/gift-tasks.html` und `gift-tasks.mjs` als mobile Aufgabenverwaltung mit CRUD, Fälligkeitsdatum, Status (offen, in Arbeit, erledigt), Priorität (hoch, mittel, niedrig), Erinnerungs-Vorlauf (0–30 Tage), Notizen sowie optionaler Anlass- und Geschenkverknüpfung.
+- **Additive Produktivmigration:** `wishlist_gift_tasks` mit owner-only SELECT/INSERT/UPDATE/DELETE unter RLS. Bei INSERT/UPDATE werden eigene Anlässe und Geschenkpläne geprüft; wenn beides gesetzt ist, müssen Anlass und Geschenkplan übereinstimmen. Fremdschlüssel auf Anlass und Geschenkplan verwenden `ON DELETE SET NULL`; bestehende Produktivdaten bleiben unverändert.
+- **Geschenkzentrale:** Zeigt fällige und überfällige private Aufgaben als Erinnerungsübersicht und verlinkt die neue Aufgabenverwaltung. Hauptnavigation ergänzt.
+- **Grenzen:** Erinnerungen sind nur in der App sichtbar, keine E-Mails oder Push-Mitteilungen. Bis zu 1000 Aufgaben pro Ansicht, maximal 15 Erinnerungen in der Aufgabenverwaltung und 8 im Dashboard. Browser-End-to-End-Test mit authentifiziertem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Zentrale mobile Geschenkzentrale)
 
 - **Neu umgesetzt:** `amazon-wishlist/gift-dashboard.html` und `gift-dashboard.mjs` als mobile Übersicht mit Anlässen in den nächsten 30 Tagen, offenen Geschenkaufgaben, Prioritätsfilter, Budgetwarnungen und Fortschrittsanzeige. Hauptnavigation erweitert.
