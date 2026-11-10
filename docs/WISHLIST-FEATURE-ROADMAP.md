@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-Planungsassistenz)
+
+- **Neu umgesetzt:** `amazon-wishlist/gift-assistant.html` und `gift-assistant.mjs` als mobil nutzbare, vollständig lesende Geschenk-Planungsassistenz. Links von Startseite und Geschenk-Jahresstatistik.
+- **Historische Budgetrichtwerte:** Pro Anlass Median ausdrücklich gespeicherter Jahresbudgets aus `wishlist_gift_year_closings.budgets_snapshot`; falls keine Budgethistorie vorliegt, Median tatsächlich erfasster Ausgaben aus `gifts_snapshot`. Zahl und Jahre der verwendeten historischen Abschlüsse werden genannt. Keine automatische Budgetänderung.
+- **Checklisten und Fristen:** Für zukünftige private Anlässe Standard-Checkliste mit 21 Tagen oder Versand-Checkliste mit 28 Tagen Vorlauf; Versandhinweise basieren auf gespeicherten Aufgaben-Titeln, andernfalls klar gekennzeichnete allgemeine Regel. Kommende Termine stammen aus aktuellen eigenen Anlässen, nicht aus historischen Snapshots.
+- **Hinweise:** Historisch unvollständige Geschenkgruppen, Aufgabenabschlussstände und fehlende Budgethistorie führen zu nachvollziehbaren Hinweisen. Die Assistenz führt keinerlei Schreiboperationen aus; für tatsächliche Änderungen sind die bestehenden Anlass- und Aufgabenverwaltungsseiten zu verwenden.
+- **Datenschutz:** Private owner-only RLS auf `wishlist_gift_year_closings` und `wishlist_occasions`, kein neues Schema, keine Migration, keine Testdaten, keine Veränderung bestehender Produktivdaten. Historische Abfragen werden paginiert; ein Fehler bei unvollständigem Abruf verhindert irreführende Teilauswertungen. Browser-End-to-End-Test mit authentifiziertem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Geschenk-Erkenntniszentrale)
 
 - **Neu umgesetzt:** Private Erkenntniszentrale in `gift-analytics.html`/`gift-analytics.mjs` mit langfristigen Geschenk- und Aufgabenquoten, Ausgabenentwicklung, historischer Budgettreue, Anlasszuverlässigkeit und erklärbaren regelbasierten Hinweisen.
