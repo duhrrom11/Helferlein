@@ -3,7 +3,7 @@ import {LIST_TEMPLATES,WISH_CATEGORIES,filterListWishes} from './list-features.m
 export function mountListsDashboard(db, getUser) {
  const $=id=>document.getElementById(id);
  const root=$('listsDashboard');
- let lists=[],wishes=[],selected=null,loadedOwner=null,loadGeneration=0,itemsGeneration=0,assignedIds=new Set(),favoriteIds=new Set(),recentIds=[],listCounts=new Map(),assignedTotal=0,wishCategories={},wishMarkers={},detailWishId=null,bulkIds=new Set(),allAssignedIds=new Set(),bulkBusy=false;
+ let lists=[],wishes=[],selected=null,loadedOwner=null,loadGeneration=0,itemsGeneration=0,assignedIds=new Set(),favoriteIds=new Set(),recentIds=[],listCounts=new Map(),assignedTotal=0,wishCategories={},wishMarkers={},detailWishId=null,bulkIds=new Set(),allAssignedIds=new Set(),bulkBusy=false,pendingBulk=null;
  const markerKey=id=>'helferlein-wish-markers:'+id;
  function readMarkers(id){try{const value=JSON.parse(localStorage.getItem(markerKey(id))||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?Object.fromEntries(Object.entries(value).filter(([k,v])=>typeof k==='string'&&['star','later'].includes(v))):{}}catch{return {}}}
  function setMarker(wishId,marker){if(!wishes.some(w=>w.id===wishId))return;const uid=owner(),next={...wishMarkers};if(next[wishId]===marker)delete next[wishId];else next[wishId]=marker;try{localStorage.setItem(markerKey(uid),JSON.stringify(next));wishMarkers=next;renderWishCards();if(detailWishId===wishId)syncDetailMarkers();msg('Markierung in diesem Browser gespeichert.')}catch{msg('Markierung konnte nicht gespeichert werden.')}}
@@ -25,7 +25,7 @@ export function mountListsDashboard(db, getUser) {
  const editorSelect=$('wishListSelect');
  function syncEditor(){const previous=editorSelect.value;editorSelect.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Ohne Liste speichern';editorSelect.append(empty);for(const list of lists.filter(x=>!x.archived)){const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title;editorSelect.append(option)}editorSelect.value=lists.some(x=>x.id===previous&&!x.archived)?previous:(lists.find(x=>x.title==='Meine Wünsche'&&!x.archived)?.id||'');editorSelect.disabled=!lists.length;}
  async function assignWish(wishId,listId,uid){if(!listId)return;const {error}=await db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid});if(error)throw error;}
- function reset(){++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;favoriteIds=new Set();recentIds=[];listCounts=new Map();assignedTotal=0;wishCategories={};wishMarkers={};detailWishId=null;$('wishDetailDialog').close();assignedIds=new Set();bulkIds.clear();allAssignedIds=new Set();bulkBusy=false;++itemsGeneration;root.hidden=true;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';$('homeFavoritesContent').replaceChildren();$('homeRecentContent').replaceChildren();renderProgress();syncEditor();}
+ function reset(){++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;favoriteIds=new Set();recentIds=[];listCounts=new Map();assignedTotal=0;wishCategories={};wishMarkers={};detailWishId=null;$('wishDetailDialog').close();assignedIds=new Set();bulkIds.clear();allAssignedIds=new Set();bulkBusy=false;pendingBulk=null;$('bulkConfirmDialog').close();++itemsGeneration;root.hidden=true;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';$('homeFavoritesContent').replaceChildren();$('homeRecentContent').replaceChildren();renderProgress();syncEditor();}
 
  const msg=t=>{$('listsStatus').textContent=t};
  const button=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{await fn()}catch(e){msg(e.message||'Aktion fehlgeschlagen')}finally{b.disabled=false}};return b};
@@ -37,13 +37,14 @@ export function mountListsDashboard(db, getUser) {
   const id=owner();
   const [lr,wr]=await Promise.all([
    db.from('wishlist_lists').select('id,title,description,icon,color,visibility,archived,created_at').eq('user_id',id).order('created_at',{ascending:false}),
-   db.from('wishlist_wishes').select('id,note,priority,created_at,wishlist_products(title)').eq('user_id',id).order('created_at',{ascending:false}).limit(200)
+   db.from('wishlist_wishes').select('id,note,priority,created_at,wishlist_products(title)').eq('user_id',id).order('created_at',{ascending:false}).range(0,999)
   ]);
   if(getUser()?.id!==id||generation!==loadGeneration)return;
   if(lr.error){allAssignedIds=new Set();bulkIds.clear();renderUnassigned();listCounts=new Map();assignedTotal=0;renderProgress();$('listsTotal').textContent='0';$('wishesTotal').textContent='0';lists=[];wishes=[];syncEditor();$('listsContent').replaceChildren();msg('Listenverwaltung vorbereitet. Das Datenbankschema wurde noch nicht freigeschaltet.');return}
   if(wr.error)throw wr.error;
-  if(loadedOwner!==id){favoriteIds=readFavorites(id);recentIds=readRecent(id);wishCategories=readCategories(id);wishMarkers=readMarkers(id)}loadedOwner=id;lists=lr.data||[];wishes=wr.data||[];favoriteIds=new Set([...favoriteIds].filter(x=>lists.some(l=>l.id===x)));recentIds=recentIds.filter(x=>lists.some(l=>l.id===x));syncEditor();if(!lists.some(x=>x.id===selected))selected=lists[0]?.id||null;
-  const memberships=await db.from('wishlist_list_items').select('list_id,wish_id').eq('user_id',id);if(getUser()?.id!==id||generation!==loadGeneration)return;if(memberships.error)throw memberships.error;listCounts=new Map();const unique=new Set();const known=new Set(wishes.map(w=>w.id));for(const item of memberships.data||[]){listCounts.set(item.list_id,(listCounts.get(item.list_id)||0)+1);if(known.has(item.wish_id))unique.add(item.wish_id)}assignedTotal=unique.size;allAssignedIds=unique;renderUnassigned();renderProgress();renderRecent();msg(lists.length+' Listen · '+wishes.length+' geladene Wünsche');$('listsTotal').textContent=String(lists.length);$('wishesTotal').textContent=String(wishes.length);render();
+  const allWishes=[...(wr.data||[])];for(let offset=1000;allWishes.length===offset;offset+=1000){const page=await db.from('wishlist_wishes').select('id,note,priority,created_at,wishlist_products(title)').eq('user_id',id).order('created_at',{ascending:false}).range(offset,offset+999);if(getUser()?.id!==id||generation!==loadGeneration)return;if(page.error)throw page.error;allWishes.push(...(page.data||[]))}
+  if(loadedOwner!==id){favoriteIds=readFavorites(id);recentIds=readRecent(id);wishCategories=readCategories(id);wishMarkers=readMarkers(id)}loadedOwner=id;lists=lr.data||[];wishes=allWishes;favoriteIds=new Set([...favoriteIds].filter(x=>lists.some(l=>l.id===x)));recentIds=recentIds.filter(x=>lists.some(l=>l.id===x));syncEditor();if(!lists.some(x=>x.id===selected))selected=lists[0]?.id||null;
+  const membershipRows=[];for(let offset=0;;offset+=1000){const page=await db.from('wishlist_list_items').select('list_id,wish_id').eq('user_id',id).range(offset,offset+999);if(getUser()?.id!==id||generation!==loadGeneration)return;if(page.error)throw page.error;membershipRows.push(...(page.data||[]));if((page.data||[]).length<1000)break}listCounts=new Map();const unique=new Set();const known=new Set(wishes.map(w=>w.id));for(const item of membershipRows){listCounts.set(item.list_id,(listCounts.get(item.list_id)||0)+1);if(known.has(item.wish_id))unique.add(item.wish_id)}assignedTotal=unique.size;allAssignedIds=unique;renderUnassigned();renderProgress();renderRecent();msg(lists.length+' Listen · '+wishes.length+' geladene Wünsche');$('listsTotal').textContent=String(lists.length);$('wishesTotal').textContent=String(wishes.length);render();
  }
  function render(){
   const grid=$('listsContent');grid.replaceChildren();renderFavorites();renderRecent();renderProgress();
@@ -78,8 +79,10 @@ export function mountListsDashboard(db, getUser) {
   if(bulkBusy||!selected||!bulkIds.size)return;
   const uid=owner(),listId=selected,targets=[...bulkIds].filter(id=>wishes.some(w=>w.id===id)&&(add?!assignedIds.has(id):assignedIds.has(id)));
   if(!targets.length){$('bulkStatus').textContent='Alle ausgewählten Wünsche haben bereits den gewünschten Zustand.';return}
-  const action=add?'hinzufügen':'entfernen';
-  if(!confirm(targets.length+' Wünsche '+(add?'dieser Liste hinzufügen?':'aus dieser Liste entfernen?')+' Die Wünsche selbst bleiben erhalten.'))return;
+  const list=lists.find(l=>l.id===listId);if(!list||list.archived){$('bulkStatus').textContent='Bitte eine aktive Liste wählen.';return}
+  pendingBulk={uid,listId,add,targets};$('bulkConfirmTitle').textContent=add?'Wünsche zur Liste hinzufügen':'Wünsche aus der Liste entfernen';$('bulkConfirmDescription').textContent=targets.length+' Wünsche '+(add?'zu „'+list.title+'“ hinzufügen?':'aus „'+list.title+'“ entfernen?')+' Die Wünsche selbst bleiben erhalten.';$('bulkConfirmSample').textContent=targets.slice(0,5).map(id=>'• '+(wishes.find(w=>w.id===id)?.wishlist_products?.title||'Wunsch')).join('\n')+(targets.length>5?'\n… und '+(targets.length-5)+' weitere':'');$('bulkConfirmDialog').showModal();
+ }
+ async function applyBulk(){const job=pendingBulk;if(!job||bulkBusy)return;pendingBulk=null;$('bulkConfirmDialog').close();const {uid,listId,add,targets}=job;if(getUser()?.id!==uid||selected!==listId)return;
   bulkBusy=true;updateBulkToolbar();let success=0,failed=0;
   try{
    for(const wishId of targets){
@@ -120,11 +123,11 @@ export function mountListsDashboard(db, getUser) {
   const list=lists.find(x=>x.id===selected);const generation=++itemsGeneration;
   $('listWishCards').replaceChildren();
   if(!list){$('listWishCount').textContent='Wähle eine Liste aus.';updateBulkToolbar([]);return}
-  const uid=owner();const {data,error}=await db.from('wishlist_list_items').select('wish_id').eq('list_id',list.id).eq('user_id',uid);
-  if(error)throw error;if(getUser()?.id!==uid||selected!==list.id||generation!==itemsGeneration)return;
-  assignedIds=new Set((data||[]).map(x=>x.wish_id));renderWishCards();
+  const uid=owner(),rows=[];for(let offset=0;;offset+=1000){const {data,error}=await db.from('wishlist_list_items').select('wish_id').eq('list_id',list.id).eq('user_id',uid).range(offset,offset+999);if(error)throw error;if(getUser()?.id!==uid||selected!==list.id||generation!==itemsGeneration)return;rows.push(...(data||[]));if((data||[]).length<1000)break}assignedIds=new Set(rows.map(x=>x.wish_id));renderWishCards();
  }
  $('bulkSelectVisible').onchange=()=>{for(const w of visibleWishes()){if($('bulkSelectVisible').checked)bulkIds.add(w.id);else bulkIds.delete(w.id)}renderWishCards()};
+ $('bulkSelectCategory').onclick=()=>{if($('listWishCategory').value==='all'){$('bulkStatus').textContent='Bitte zuerst eine Kategorie auswählen.';return}for(const wish of visibleWishes())bulkIds.add(wish.id);renderWishCards();$('bulkStatus').textContent='Sichtbare Wünsche dieser Kategorie ausgewählt.'};
+ $('bulkConfirmCancel').onclick=()=>{$('bulkConfirmDialog').close();pendingBulk=null};$('bulkConfirmDialog').addEventListener('close',()=>{pendingBulk=null});$('bulkConfirmApply').onclick=()=>applyBulk().catch(e=>{$('bulkStatus').textContent=e.message});
  $('bulkClear').onclick=()=>{bulkIds.clear();renderWishCards()};$('bulkAdd').onclick=()=>bulkAssign(true).catch(e=>{$('bulkStatus').textContent=e.message});$('bulkRemove').onclick=()=>bulkAssign(false).catch(e=>{$('bulkStatus').textContent=e.message});
  const globalOption=document.createElement('option');globalOption.value='global-unassigned';globalOption.textContent='In keiner Liste';$('listWishAssignment').append(globalOption);
  $('showUnassigned').onclick=()=>{$('listWishAssignment').value='global-unassigned';$('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';$('listWishMarker').value='all';$('listWishSort').value='newest';bulkIds.clear();renderWishCards();$('listWishCards').scrollIntoView({behavior:'smooth',block:'start'});};
