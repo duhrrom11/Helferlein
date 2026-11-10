@@ -163,7 +163,7 @@ export function mountListsDashboard(db, getUser) {
   const targets=[...bulkIds].filter(id=>assignedIds.has(id)&&wishes.some(w=>w.id===id));
   const skipped=bulkIds.size-targets.length;
   if(!targets.length)return msg('Nur Wünsche, die bereits in dieser Liste liegen, können verschoben werden.');
-  if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben? Die Wünsche bleiben erhalten.'))return;
+  if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten.'))return;
   const generation=loadGeneration,run=++bulkRunId;
   const current=()=>getUser()?.id===uid&&selected===sourceId&&generation===loadGeneration&&run===bulkRunId;
   let moved=0,failed=0,partial=0,stopped=false;
@@ -191,7 +191,7 @@ export function mountListsDashboard(db, getUser) {
     catch(e){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent=summary}
    }
   }finally{
-   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkProgressPanel').hidden=true;$('bulkStop').disabled=true;updateBulkToolbar();renderWishCards()}
+   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkProgressPanel').hidden=true;$('bulkStop').disabled=true;if(getUser()?.id===uid){updateBulkToolbar();renderWishCards()}}
   }
  }
  async function moveWishToList(wishId,sourceListId,targetListId,control){
