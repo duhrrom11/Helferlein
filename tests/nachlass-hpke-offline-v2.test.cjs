@@ -125,9 +125,9 @@ test('tampered AES-GCM authentication tag fails closed',()=>{
 test('low-order X25519 public keys cannot be used for seal or open',()=>{
  const receiver=keyPair(),dek=randomBytes(32);
  const zero=Buffer.alloc(32);
- assert.throws(()=>seal(zero,dek,{info,aad}));
+ assert.throws(()=>seal(zero,dek,{info,aad}),e=>e && e.code==='ERR_OSSL_FAILED_DURING_DERIVATION');
  const env=seal(receiver.publicKey,dek,{info,aad});
- assert.throws(()=>open(receiver.privateKey,zero,env.ciphertext,{info,aad}));
+ assert.throws(()=>open(receiver.privateKey,zero,env.ciphertext,{info,aad}),e=>e && e.code==='ERR_OSSL_FAILED_DURING_DERIVATION');
  assert.throws(()=>seal(Buffer.alloc(31),dek,{info,aad}),/invalid_public_key/);
 });
 test('HPKE accepts maximum 1024-byte info and AAD and rejects 1025',()=>{
@@ -142,4 +142,23 @@ test('HPKE ciphertext lower and upper length boundaries fail safely',()=>{
  const receiver=keyPair(),env=seal(receiver.publicKey,randomBytes(32),{info,aad});
  for(const n of [16,4113]) assert.throws(()=>open(receiver.privateKey,env.enc,Buffer.alloc(n),{info,aad}),/invalid_hpke_input/);
  for(const n of [17,4112]) assert.throws(()=>open(receiver.privateKey,env.enc,Buffer.alloc(n),{info,aad}),/hpke_open_failed/);
+});
+
+// Independent second KEM setup. This is a locally generated RFC 9180
+// base-mode interoperability vector, NOT a second published CFRG vector.
+// Expected values independently derived with Python cryptography X25519,
+// HMAC-SHA256 labeled HKDF and AESGCM; fixed scalars are test-only.
+test('independent second X25519 KEM setup matches RFC 9180 base-mode reference',()=>{
+ const {createPrivateKey,createPublicKey,diffieHellman}=require('node:crypto');
+ const hex=s=>Buffer.from(s,'hex');
+ const sk=hex('10'.repeat(32));
+ const privateKey=createPrivateKey({key:Buffer.concat([hex('302e020100300506032b656e04220420'),sk]),format:'der',type:'pkcs8'});
+ const recipientPublic=createPublicKey(privateKey).export({format:'der',type:'spki'}).subarray(12);
+ assert.equal(recipientPublic.toString('hex'),'781faab908430150daccdd6f9d6c5086e34f73a93ebbaa271765e5036edfc519');
+ const enc=hex('06453fcd9cef5a1f53acc4f942104c0c8e9e27d5c7b37f5507cdcd1628105963');
+ const peer=createPublicKey({key:Buffer.concat([hex('302a300506032b656e032100'),enc]),format:'der',type:'spki'});
+ assert.equal(diffieHellman({privateKey,publicKey:peer}).toString('hex'),'81e580d5ab370635e8b4e97be43563fa304853cd78f4978e60fce85aa4019c07');
+ const ciphertext=hex('7db52de7654eced8a9faab49442e12c772ea09f231f5c65d49b3d37499ff49a6e850ce8c02ed38aae940ab908985d271');
+ assert.deepEqual(open(privateKey,enc,ciphertext,{info:Buffer.from('helferlein-independent-kem-case-2'),aad:Buffer.from('case-2')}),Buffer.alloc(32,0xab));
+ assert.throws(()=>open(privateKey,enc,ciphertext,{info:Buffer.from('helferlein-independent-kem-case-2'),aad:Buffer.from('case-3')}),/hpke_open_failed/);
 });
