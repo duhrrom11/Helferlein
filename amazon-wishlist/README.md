@@ -19,7 +19,7 @@ Die Wunschlisten-App wird auf `main` entwickelt und über Vercel produktiv berei
 - Öffentlicher Feed, Filter auf eigene Wünsche, gefolgte Personen und Profile; Sortierung nach Datum oder Priorität
 - Folgen/Entfolgen, Wunsch- und Profil-Links kopieren
 - Wünsche oder ganze Profile lokal für die aktuelle Sitzung ausblenden und wieder einblenden
-- **Eigene Wünsche exportieren:** CSV für Tabellenprogramme oder JSON mit öffentlichen Profildaten und Wünschen. JSON ist ein Backup-Format, **noch keine Importfunktion**.
+- **Eigene Wünsche exportieren:** CSV für Tabellenprogramme oder JSON mit öffentlichen Profildaten und Wünschen. JSON ist ein Backup-Format. Eine **lokale, schreibgeschützte Vorschau** kann JSON-Sicherungen auf Gültigkeit prüfen und bis zu 30 Wünsche anzeigen. **Ein Import in Supabase ist nicht implementiert.**
 - Kein automatischer Abruf von Amazon-Produktdaten; keine Preise oder Verfügbarkeitsangaben
 
 ## Datenschutz und Sicherheit
@@ -45,4 +45,4 @@ Die GitHub-Action `.github/workflows/amazon-wishlist.yml` soll die Prüfungen au
 
 Arbeiten ausschließlich am Wunschlisten-Tool. `main` ist der aktuelle Produktivstand. Die ältere PR #166 ist ein historischer Draft und **nicht** die Quelle für neue Änderungen. Keine anderen Helferlein-Tools bearbeiten. Vor riskanten Schemaänderungen einen RLS-, Backup- und Rollback-Plan prüfen.
 
-Weitere Aufgaben: `50-SCHRITTE.md`, `RELEASE-CHECKLIST.md`, `SECURITY-ABUSE-PLAN.md`.
+Die JSON-Vorschau akzeptiert nur das Format `helferlein-wishlist-backup` in Version 1, prüft ASIN, Priorität, Textlängen, Duplikate und eine maximale Dateigröße von 2 MB. Die ausgewählte Datei wird ausschließlich im Browser gelesen; sie löst keine Datenbankänderung aus. Für echte Wiederherstellung ist ein separates, sicherheitsgeprüftes Importkonzept nötig.\n\nWeitere Aufgaben: `50-SCHRITTE.md`, `RELEASE-CHECKLIST.md`, `SECURITY-ABUSE-PLAN.md`.
