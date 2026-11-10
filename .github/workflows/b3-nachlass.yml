@@ -12,6 +12,8 @@ on:
       - 'tools/digitaler-nachlass/server-api-v2.cjs'
       - 'tools/digitaler-nachlass/server-auth-v2.cjs'
       - 'tests/nachlass-server-auth-v2.test.cjs'
+      - 'tests/nachlass-supabase-heir-access-v2.test.cjs'
+      - 'tools/digitaler-nachlass/supabase-heir-access-v2.cjs'
       - 'tests/nachlass-server-api-v2.test.cjs'
       - 'tools/digitaler-nachlass/migration-preflight-v2.cjs'
       - 'tests/nachlass-migration-preflight-v2.test.cjs'
@@ -38,6 +40,8 @@ on:
       - 'tools/digitaler-nachlass/server-api-v2.cjs'
       - 'tools/digitaler-nachlass/server-auth-v2.cjs'
       - 'tests/nachlass-server-auth-v2.test.cjs'
+      - 'tests/nachlass-supabase-heir-access-v2.test.cjs'
+      - 'tools/digitaler-nachlass/supabase-heir-access-v2.cjs'
       - 'tests/nachlass-server-api-v2.test.cjs'
       - 'tools/digitaler-nachlass/migration-preflight-v2.cjs'
       - 'tests/nachlass-migration-preflight-v2.test.cjs'
@@ -66,7 +70,7 @@ jobs:
       - name: Verify preserved security notice and vault contract
         run: |
           set -o pipefail
-          node --test tests/b3-nachlass.test.cjs tests/nachlass-release-policy-v2.test.cjs tests/nachlass-server-api-v2.test.cjs tests/nachlass-server-auth-v2.test.cjs tests/nachlass-migration-preflight-v2.test.cjs tests/nachlass-key-envelope-contract-v2.test.cjs tests/nachlass-recovery-offline-v2.test.cjs tests/nachlass-hpke-offline-v2.test.cjs | tee /tmp/nachlass-node-tests.tap
+          node --test tests/b3-nachlass.test.cjs tests/nachlass-release-policy-v2.test.cjs tests/nachlass-server-api-v2.test.cjs tests/nachlass-server-auth-v2.test.cjs tests/nachlass-migration-preflight-v2.test.cjs tests/nachlass-key-envelope-contract-v2.test.cjs tests/nachlass-recovery-offline-v2.test.cjs tests/nachlass-hpke-offline-v2.test.cjs tests/nachlass-supabase-heir-access-v2.test.cjs | tee /tmp/nachlass-node-tests.tap
       - name: Install Chromium
         run: |
           npm install --no-save --no-package-lock @playwright/test@1.56.1
