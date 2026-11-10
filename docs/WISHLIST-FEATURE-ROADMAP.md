@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Gespeicherte private Dashboard-Layouts)
+
+- **Neu umgesetzt:** Schnellwechsel zwischen den vordefinierten Layouts „Kompakt“, „Tagesplanung“, „Geschenküberblick“ und dem aktuellen individuellen Layout. Drei Vorlagenplätze können mit einer persönlichen Momentaufnahme der aktuellen Dashboard-Einstellungen überschrieben werden (nach ausdrücklicher Bestätigung).
+- **Gespeicherter Umfang:** Sichtbarkeit und Reihenfolge der vier Bereiche, Kennzahlen, Aufgaben- und Anlasssortierung, Schnellzugriffe und Favoriten. Der aktivierte Layoutschlüssel wird nutzergebunden gespeichert und beim nächsten Besuch geladen.
+- **Produktivmigration:** `wishlist_private_home_saved_layout_presets` ergänzt `wishlist_gift_home_preferences` um `saved_layouts jsonb` und `active_layout` mit begrenzten Layoutschlüsseln und Größenbeschränkung. Bestehende Produktivdaten bleiben unverändert; Standardansicht ist „Individuell“.
+- **Sicherheit:** Owner-only RLS der Präferenztabelle bestätigt, anon kein SELECT; Speichern und Aktivieren nur nach explizitem Nutzerklick. Clientseitige Schema-/Werteprüfung für Vorlagen. Keine Testdaten oder Änderungen an Geschenkaufgaben/Anlässen/Jahresabschlüssen.
+- **Qualität:** JavaScript-Syntax geprüft; ein authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Individuelle private Dashboard-Karten und Favoriten)
 
 - **Neu umgesetzt:** Sechs einzeln auswählbare Kennzahlen (offene/überfällige/heute fällige/erledigte Aufgaben, Anlässe in 30 Tagen, aktuelle Erledigungsquote), konfigurierbare Schnellzugriffe und persönliche Favoriten zu sieben bekannten internen Helferlein-Seiten.
