@@ -233,7 +233,7 @@ export function mountListsDashboard(db, getUser) {
    const selectRow=document.createElement('label');selectRow.className='wish-card-select';const selectCheck=document.createElement('input');selectCheck.type='checkbox';selectCheck.checked=bulkIds.has(wish.id);selectCheck.disabled=!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived;selectCheck.onchange=()=>{if(!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived)return;if(selectCheck.checked)bulkIds.add(wish.id);else bulkIds.delete(wish.id);updateBulkToolbar()};const selectText=document.createElement('span');selectText.textContent='Für Mehrfachaktion auswählen';selectRow.append(selectCheck,selectText);card.append(selectRow);
    const title=document.createElement('h4');title.textContent=wish.wishlist_products?.title||'Wunsch';
    const priority=document.createElement('p');priority.className='wish-priority';priority.textContent=['','Sehr wichtig','Normal','Irgendwann'][wish.priority]||'Priorität '+wish.priority;
-   card.append(title,priority);const category=WISH_CATEGORIES.find(c=>c.id===wishCategories[wish.id]);if(category){const chip=document.createElement('span');chip.className='wish-category-chip';chip.textContent=category.label;card.append(chip)}
+   card.append(title,priority);const membershipCount=[...membershipByList.values()].filter(ids=>ids.has(wish.id)).length;const membershipInfo=document.createElement('small');membershipInfo.className='wish-membership-count';membershipInfo.textContent=membershipCount+' '+(membershipCount===1?'Liste':'Listen');card.append(membershipInfo);const category=WISH_CATEGORIES.find(c=>c.id===wishCategories[wish.id]);if(category){const chip=document.createElement('span');chip.className='wish-category-chip';chip.textContent=category.label;card.append(chip)}
    const markers=document.createElement('div');markers.className='wish-marker-actions';for(const [marker,off,on] of [['star','☆ Merken','★ Favorit'],['later','⏳ Später','✓ Für später']]){const active=wishMarkers[wish.id]===marker;const control=button(active?on:off,async()=>setMarker(wish.id,marker));control.setAttribute('aria-pressed',String(active));control.setAttribute('aria-label',(active?'Markierung entfernen: ':'Wunsch markieren: ')+(wish.wishlist_products?.title||'Wunsch'));markers.append(control)}card.append(markers);
    if(wish.note){const note=document.createElement('p');note.className='wish-card-note';note.textContent=wish.note;card.append(note);
     if(wish.note.length>180){note.classList.add('is-collapsed');const toggle=button('Notiz vollständig anzeigen',async()=>{const collapsed=note.classList.toggle('is-collapsed');toggle.textContent=collapsed?'Notiz vollständig anzeigen':'Notiz einklappen';toggle.setAttribute('aria-expanded',String(!collapsed))});toggle.className='wish-note-toggle';toggle.setAttribute('aria-expanded','false');card.append(toggle)}
@@ -258,7 +258,10 @@ export function mountListsDashboard(db, getUser) {
      move.disabled=!membershipReady||bulkBusy;moveRow.append(destination,move);card.append(moveRow);
     }
    }
-   card.append(button('Details ansehen',async()=>openWishDetail(wish)));cards.append(card);
+   const toolsRow=document.createElement('div');toolsRow.className='wish-card-tools';
+   toolsRow.append(button('Details ansehen',async()=>openWishDetail(wish)));
+   toolsRow.append(button('Titel kopieren',async()=>{const title=wish.wishlist_products?.title||'Wunsch';if(!navigator.clipboard?.writeText){msg('Kopieren ist in diesem Browser nicht verfügbar.');return}try{await navigator.clipboard.writeText(title);msg('Wunschtitel kopiert.')}catch{msg('Kopieren nicht erlaubt. Bitte den Titel manuell markieren.')}}));
+   card.append(toolsRow);cards.append(card);
   }
  }
  function setItemsFeedback(state,message){const panel=$('listItemsFeedback');panel.hidden=state==='ready';$('listItemsFeedbackText').textContent=message;$('listItemsRetry').hidden=state!=='error';$('listItemsRetry').disabled=state==='loading'}
