@@ -227,3 +227,19 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('CSV and JSON exports validate and normalize wish text consistently',()=>{
+ const make=(title,note)=>[{wishlist_products:{asin:'B012345678',marketplace:'amazon.de',title},note,priority:2,created_at:'2026-11-10T00:00:00Z'}];
+ const input=make('  Buch  ','  Geschenk  ');
+ const csv=exportWishlistCsv(input);
+ assert.match(csv,/"Buch";"Geschenk"/);
+ const json=JSON.parse(exportWishlistJson(input));
+ assert.equal(json.wishes[0].title,'Buch');
+ assert.equal(json.wishes[0].note,'Geschenk');
+ assert.equal(input[0].wishlist_products.title,'  Buch  ');
+ assert.equal(input[0].note,'  Geschenk  ');
+ for(const [title,note] of [['',''],['   ',''],['x'.repeat(251),''],['Buch','x'.repeat(501)], [null,''], [42,''], ['Buch',{}]]){
+  assert.throws(()=>exportWishlistCsv(make(title,note)));
+  assert.throws(()=>exportWishlistJson(make(title,note)));
+ }
+});
