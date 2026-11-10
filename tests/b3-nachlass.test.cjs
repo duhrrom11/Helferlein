@@ -44,10 +44,15 @@ test('heir portal discloses client-only access and does not render raw cloud err
  assert.doesNotMatch(heir,/feedback\.innerText = `Fehler: \$\{e\.message\}/);
 });
 
-test('heir links are not printed as visible plaintext and clipboard success is awaited',()=>{
+test('heir links remain hidden in the preview and copy feedback is awaited',()=>{
  assert.match(html,/Erben-Link mit geheimem Schlüssel/);
- assert.doesNotMatch(html,/\$\{escapeHtml\(personLink\)\}<\/p>/);
- assert.match(html,/Der QR-Code enthält einen geheimen Schlüssel/);
+ const kitStart=html.indexOf('function renderPrintableKit()');
+ const kitEnd=html.indexOf('async function generatePrintableKitPDF()',kitStart);
+ assert.ok(kitStart>=0 && kitEnd>kitStart,'printable kit functions exist');
+ const preview=html.slice(kitStart,kitEnd);
+ assert.doesNotMatch(preview,/\$\{escapeHtml\(personLink\)\}/,'secret heir URL must not render as plaintext in kit preview');
+ assert.match(preview,/Der QR-Code enthält einen geheimen Schlüssel/);
+ assert.match(preview,/text: personLink/,'existing QR recovery path remains intact');
  assert.match(html,/navigator\.clipboard\.writeText\(link\)\s*\.then\(/);
  assert.match(html,/Kopieren fehlgeschlagen/);
 });
