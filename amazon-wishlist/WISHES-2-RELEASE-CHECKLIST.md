@@ -992,3 +992,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Browser-Job auf offizielles versionsgebundenes Image `mcr.microsoft.com/playwright:v1.56.1-noble` umgestellt, passend zur Paketversion; fehleranfällige Host-Chromium-Installation entfernt.
 - [ ] Ergebnis des neuen Container-Browser-CI-Laufs 42825183364 bestätigen, bevor Browser-Gate als bestanden markiert wird.
 - [ ] Merge-Konflikte in den acht Wishes-Dateien weiterhin offen; kein automatisches Überschreiben der weiterentwickelten main-Dateien.
+
+## Autopilot: Konfliktfreier Abgleich mit aktuellem main (2026-11-10)
+
+- [x] Historische Konflikte in PR #166 per **echtem Zwei-Eltern-Merge-Commit** `db4ddf2d` auf dem Feature-Branch aufgelöst. Der Commit basiert auf aktuellem `main` `cd9606eb` und bewahrt die produktive main-Version aller acht abweichenden Dateien außer `amazon-links.mjs` und dessen Tests.
+- [x] Sicherheitsverbesserungen aus dem Feature-Branch in `amazon-links.mjs` und `amazon-links.test.mjs` übernommen; aktuelle produktive `app.mjs`, `index.html`, `wishlist-utils.mjs`, `security-source.test.mjs` und `README.md` bleiben unverändert.
+- [x] Nur zusätzliche Feature-Dateien, Workflow und Parser-Regressionen auf dem aktuellen main-Baum ergänzt. SQL-Dateien bleiben Vorschläge und wurden **nicht** ausgeführt.
+- [x] GitHub meldete für PR #166 nach dem Abgleich `mergeable=true`; `mergeable_state=unstable` bedeutet noch nicht freigabefertig.
+- [ ] GitHub Actions für Merge-Commit `db4ddf2d` einschließlich Chromium-Browser-Job abschließen und prüfen.
+- [ ] Übernommene zusätzliche Listen-Dashboard-Module auf Integration mit der bewahrten produktiven App prüfen; bloßes Vorhandensein der Dateien bedeutet noch keine aktivierte Funktion.
+- [ ] Vor Merge/Deployment alle erforderlichen Checks, Browserfunktion und Supabase-Schema-/RLS-Voraussetzungen verifizieren. Kein Produktiv-Deployment oder Schemaeingriff durchgeführt.
