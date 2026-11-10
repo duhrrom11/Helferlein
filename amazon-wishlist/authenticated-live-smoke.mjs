@@ -9,6 +9,13 @@ try{
  const page=await browser.newPage();
  // No screenshots, tracing, storage-state exports or console capture: do not leak credentials.
  await page.goto(base.replace(/\/$/,'')+'/amazon-wishlist/index.html',{waitUntil:'domcontentloaded'});
+ const listReads=[];
+ page.on('response',response=>{
+  const url=response.url();
+  if(url.startsWith('https://avapuibsidubuzxjtyld.supabase.co/rest/v1/')&&/\/wishlist_lists(?:\?|$)|\/wishlist_list_items(?:\?|$)/.test(url)){
+   listReads.push({table:url.includes('/wishlist_list_items')?'wishlist_list_items':'wishlist_lists',status:response.status()});
+  }
+ });
  await page.locator('#email').fill(email);
  await page.locator('#password').fill(password);
  await page.locator('#signin').click();
@@ -23,6 +30,9 @@ try{
   return {visible:!dashboard.hidden,hasListSelect:!!listSelect,loginHidden:document.getElementById('login').hidden};
  });
  if(!readOnly.visible||!readOnly.hasListSelect||!readOnly.loginHidden)throw Error('Authenticated dashboard is not ready');
+ await page.waitForFunction(()=>document.getElementById('refreshLists')?.disabled===false,{timeout:15000}).catch(()=>{});
+ if(!listReads.some(r=>r.table==='wishlist_lists'&&r.status===200))throw Error('No successful authenticated wishlist_lists REST SELECT observed');
+ if(listReads.some(r=>r.status>=400))throw Error('Authenticated list REST request failed');
  await page.locator('#logout').click();
  await page.locator('#login').waitFor({state:'visible',timeout:30000});
  await page.locator('#listsDashboard').waitFor({state:'hidden',timeout:30000});
