@@ -63,6 +63,7 @@ export function mountListsDashboard(db, getUser) {
   if(!getUser()){reset();return}
   if(loadedOwner&&loadedOwner!==getUser()?.id)reset();
   if(bulkBusy&&!afterBulk){msg('Sammelaktion läuft. Bitte stoppen oder abschließen, bevor du Listen aktualisierst.');return}
+  if(activeWishMutations.size&&!afterBulk){msg('Eine Wunschänderung läuft. Bitte anschließend aktualisieren.');return}
   const generation=++loadGeneration;
   invalidateMembershipState();$('wishLoadMore').hidden=true;root.hidden=false;setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
   const id=owner();
@@ -227,8 +228,8 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
    }
    if(!current()){if(getUser()?.id===uid&&selected===sourceListId)msg('Zielzuordnung gespeichert. Bitte Listen neu laden, bevor du fortfährst.');return}
    const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid);
-   if(error){if(current())msg('Wunsch wurde zur Zielliste hinzugefügt, konnte aber nicht aus der Ursprungsliste entfernt werden: '+error.message+'. Bitte erneut prüfen.');if(current())try{await load()}catch{}return}
-   try{await load()}catch(e){if(getUser()?.id===uid&&selected===sourceListId)msg('Wunsch verschoben, aber Listen konnten nicht neu geladen werden: '+(e.message||'Ladefehler')+'. Bitte aktualisieren.');return}
+   if(error){if(current())msg('Wunsch wurde zur Zielliste hinzugefügt, konnte aber nicht aus der Ursprungsliste entfernt werden: '+error.message+'. Bitte erneut prüfen.');if(current())try{await load({afterBulk:true})}catch{}return}
+   try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&selected===sourceListId)msg('Wunsch verschoben, aber Listen konnten nicht neu geladen werden: '+(e.message||'Ladefehler')+'. Bitte aktualisieren.');return}
    if(getUser()?.id===uid&&selected===sourceListId)msg('Wunsch nach „'+target.title+'“ verschoben. Die Ausgangsliste bleibt geöffnet.')
   }catch(e){if(getUser()?.id===uid&&selected===sourceListId)msg('Verschieben fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
   finally{activeWishMutations.delete(uid+':'+wishId);control.disabled=false}
@@ -267,7 +268,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
     const query=wanted?db.from('wishlist_list_items').insert({list_id:list.id,wish_id:wish.id,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',list.id).eq('wish_id',wish.id).eq('user_id',uid);
     const {error}=await query;if(error)throw error;if(getUser()?.id!==uid||selected!==list.id||generation!==loadGeneration)return;
     if(wanted){assignedIds.add(wish.id);membershipByList.get(list.id)?.add(wish.id)}else{assignedIds.delete(wish.id);membershipByList.get(list.id)?.delete(wish.id)}
-    try{await load()}catch(e){if(getUser()?.id===uid&&selected===list.id)msg('Wunschzuordnung gespeichert, aber Listen konnten nicht neu geladen werden. Bitte aktualisieren.');return}if(getUser()?.id===uid&&selected===list.id)msg('Wunschzuordnung gespeichert');
+    try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&selected===list.id)msg('Wunschzuordnung gespeichert, aber Listen konnten nicht neu geladen werden. Bitte aktualisieren.');return}if(getUser()?.id===uid&&selected===list.id)msg('Wunschzuordnung gespeichert');
    }catch(e){if(getUser()?.id===uid&&selected===list.id&&generation===loadGeneration){check.checked=!wanted;msg(e.message||'Zuordnung fehlgeschlagen')}}finally{activeWishMutations.delete(uid+':'+wish.id);if(getUser()?.id===uid&&selected===list.id&&generation===loadGeneration)check.disabled=false}};
    row.append(check,caption);card.append(row);
    if(assignedIds.has(wish.id)&&!list.archived){
