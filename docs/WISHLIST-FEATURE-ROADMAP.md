@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Individuelle private Dashboard-Karten und Favoriten)
+
+- **Neu umgesetzt:** Sechs einzeln auswählbare Kennzahlen (offene/überfällige/heute fällige/erledigte Aufgaben, Anlässe in 30 Tagen, aktuelle Erledigungsquote), konfigurierbare Schnellzugriffe und persönliche Favoriten zu sieben bekannten internen Helferlein-Seiten.
+- **Produktivmigration:** `wishlist_private_home_metric_links_favorites` ergänzt `wishlist_gift_home_preferences` um `metric_keys`, `quick_links`, `favorite_links` mit eingeschränkten zulässigen Schlüsseln und sinnvollen Standardwerten. Bestehende Präferenzen und alle Aufgaben-/Anlassdaten bleiben erhalten.
+- **Sicheres Speichern:** Auswahl ausschließlich nach ausdrücklichem Speichern in der owner-geschützten Einstellungstabelle. Client validiert die Schlüssel und Mindestanzahl von Kennzahlen; die Datenbank prüft zulässige Schlüssel und Arraygrößen. Keine externen Linkziele.
+- **Frontend:** `amazon-wishlist/index.html` ergänzt Einstellungsgruppen und getrennte Favoriten-/Schnellzugriffskarten; `gift-start.mjs` lädt und rendert die eigenen Präferenzen.
+- **Prüfung:** Owner-only RLS und fehlende anon-Leserechte erneut bestätigt; JavaScript-Syntax geprüft. Keine Testdaten. Authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Frei anordenbares privates Startdashboard)
 
 - **Neu umgesetzt:** Individuelle Reihenfolge der vier Startdashboard-Bereiche (Kennzahlen, Tagesaufgaben, kommende Anlässe, Aufgabenfortschritt) mit mobil bedienbaren, tastaturzugänglichen Aufwärts-/Abwärts-Schaltflächen.
