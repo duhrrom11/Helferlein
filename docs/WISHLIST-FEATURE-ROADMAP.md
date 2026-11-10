@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private Geschenkkoordination)
+
+- **Neu umgesetzt:** Geschenkstatus direkt auf mobilen Geschenkekarten ändern (Idee, Geplant, Gekauft, Verpackt, Verschenkt); Anzeige ausschließlich eigener Reservierungen für verknüpfte Wünsche.
+- **Additive Produktivmigration:** `wishlist_my_gift_coordination(p_limit)` liefert zu eigenen Geschenkplänen nur `reserved_by_you` oder `not_reserved_by_you`. `wishlist_update_gift_progress(p_plan_id,p_status,p_release_reservation)` prüft den Eigentümer und aktualisiert den Status; bei bestätigter Freigabe beim Verschenken wird die eigene Reservierung in derselben Transaktion aufgehoben.
+- **Sicherheit:** Beide RPCs sind `SECURITY DEFINER`, mit leerem `search_path` und ausschließlich für `authenticated` freigegeben. Keine Informationen über fremde Reservierer. Bestehende Produktivdaten erhalten.
+- **Private Reservierungsübersicht:** Zeigt den Status bereits verknüpfter eigener Geschenkpläne. Keine automatische Freigabe ohne Bestätigung.
+- **Grenzen:** Abgleich maximal 500 verknüpfte Geschenkpläne; Reservierungsübersicht berücksichtigt maximal 1000 eigene Geschenkpläne. Vollständiger Browser-End-to-End-Test mit mehreren Konten steht aus.
+
 # Helferlein Wishes – verbindliche Feature-Roadmap
 
 > **Projektauftrag für neue Chats und Entwicklungsrunden.** Dieses Dokument enthält die vom Nutzer am 10.11.2026 erneut bereitgestellte vollständige Produktvision, in umsetzbare Kategorien gegliedert. Es ist die zentrale Referenz für die Weiterentwicklung der Wishlist-Seite unter `amazon-wishlist/`.
