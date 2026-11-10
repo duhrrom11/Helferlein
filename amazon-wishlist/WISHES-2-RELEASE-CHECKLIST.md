@@ -639,3 +639,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung ohne Imports und gezielte Quelltextkontrolle erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Supabase-Tests.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Autopilot: einheitliche Sperren für mobile Karten und Sammelauswahl (2026-11-10)
+
+- [x] Karten-Checkboxen für Sammelauswahl und direkte Mitgliedschaft sowie mobile Ziellistenauswahl und Verschieben werden bei jeder laufenden Einzeländerung sichtbar deaktiviert; veraltete Events prüfen dieselbe globale Sperre erneut.
+- [x] Die Schnellaktionen „Zugeordnete auswählen“, „Ohne Liste auswählen“, „Sichtbare auswählen“ und der globale sichtbare Auswahl-Schalter blockieren nun auch im Event-Handler während Einzeländerungen.
+- [x] Die Sammelwerkzeugleiste sperrt „Auswahl leeren“ und Kategorieauswahl konsistent während laufender Einzeländerungen.
+- [x] Lokale Marker und Kategorien prüfen dieselbe Sperre; Marker-Kartenaktionen und Detail-Sammelauswahl zeigen den gesperrten Zustand an.
+- [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls ohne Imports und gezielte Quelltextkontrolle erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen. Laufende Operationen müssen vor Freigabe praktisch geprüft werden.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
