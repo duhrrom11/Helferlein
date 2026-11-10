@@ -853,3 +853,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Mehrgeräte-Konkurrenz und nicht transaktionale Verschiebungen bleiben Freigaberisiken.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: Besitzergebundene Verschiebungen und Listenfilter (2026-11-10)
+
+- [x] Einzelverschiebungen prüfen vor und nach Bestätigung den geladenen Besitzer und stoppen zwischen Ziel- und Quellzuordnung bei veraltetem Kontext.
+- [x] Sammelverschiebungen und Sammelzuordnungen zeigen abschließende Meldungen und aktivieren Bedienelemente nur noch im passenden geladenen Benutzerarbeitsbereich.
+- [x] Listenfilter, Favoriten-Schnellzugriffe und Sammelverschiebungs-Zielauswahl verarbeiten keine Eingaben aus einem veralteten Benutzerarbeitsbereich.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Mehrgeräte-Konkurrenz und nicht transaktionale Verschiebungen bleiben Freigaberisiken.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
