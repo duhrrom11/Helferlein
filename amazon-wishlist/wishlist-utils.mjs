@@ -171,7 +171,8 @@ export function exportWishlistJson(rows, publicProfile=null) {
 
 /** A failed export must not retain stale progress text. */
 export function exportProgressText(count,total=null) {
- if(!Number.isSafeInteger(count)||count<0)throw Error('Ungültiger Exportfortschritt');
+ if(!Number.isSafeInteger(count)||count<0||
+    (total!==null&&(!Number.isSafeInteger(total)||total<0||count>total)))throw Error('Ungültiger Exportfortschritt');
  return total===null?count+' Wünsche geladen …':count+' von '+total+' Wünschen geladen …';
 }
 
