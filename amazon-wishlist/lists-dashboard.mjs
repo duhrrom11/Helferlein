@@ -197,10 +197,10 @@ actions.append(button('Duplizieren',async()=>{
    for(const id of result.completed)bulkIds.delete(id);
    const summary={uid,listId,add,total:result.total,success:result.success,failed:result.failed,remaining:result.remaining,interrupted:result.interrupted,errors:result.errors};
    $('bulkStatus').textContent='Sammelaktion beendet. Details stehen in der Ergebnisübersicht.';
-   try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&run===bulkRunId)msg('Zuordnungen aktualisiert, aber das Neuladen ist fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
+   try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&run===bulkRunId)msg('Zuordnungen aktualisiert, aber das Neuladen ist fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
    if(getUser()?.id===uid&&loadedOwner===uid&&run===bulkRunId&&selected===listId){bulkHistory.unshift({...summary,time:new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),listTitle:lists.find(l=>l.id===listId)?.title||'Liste'});bulkHistory=bulkHistory.slice(0,10);renderBulkHistory();showBulkResult(summary)}
   }finally{
-   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkStop').disabled=true;$('bulkProgressPanel').hidden=true;if(getUser()?.id===uid&&selected===listId){updateBulkToolbar();renderWishCards()}}
+   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkStop').disabled=true;$('bulkProgressPanel').hidden=true;if(getUser()?.id===uid&&loadedOwner===uid&&selected===listId){updateBulkToolbar();renderWishCards()}}
   }
  }
  async function moveSelectedWishes(){
@@ -237,11 +237,11 @@ actions.append(button('Duplizieren',async()=>{
    }
    if(current()){
     const summary=moved+' verschoben, '+failed+' fehlgeschlagen'+(skipped?', '+skipped+' nicht in dieser Liste – übersprungen':'')+(stopped?', Vorgang gestoppt':'')+(partial?', '+partial+' möglicherweise in beiden Listen – bitte prüfen':'')+'.';
-    try{await load({afterBulk:true});if(getUser()?.id===uid&&selected===sourceId&&run===bulkRunId)$('bulkStatus').textContent=summary}
+    try{await load({afterBulk:true});if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&run===bulkRunId)$('bulkStatus').textContent=summary}
     catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&run===bulkRunId){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent=summary}}
    }
   }finally{
-   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkProgressPanel').hidden=true;$('bulkStop').disabled=true;if(getUser()?.id===uid&&selected===sourceId){updateBulkToolbar();renderWishCards()}}
+   if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkProgressPanel').hidden=true;$('bulkStop').disabled=true;if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId){updateBulkToolbar();renderWishCards()}}
   }
  }
  async function moveWishToList(wishId,sourceListId,targetListId,control){
