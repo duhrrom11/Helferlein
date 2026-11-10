@@ -965,3 +965,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Fehlerursache der vollständigen Node-Test-Suite aus CI-Logs ermitteln und beheben. Ohne grünen CI-Run keine Freigabe.
 - [ ] Browser-/Mobilgeräte-Tests und Deployment-Konfiguration weiter prüfen. Nutzer hat Merge, produktive Supabase-Änderungen und Deployment autorisiert; **nicht durchgeführt**, da Qualitäts-Gates rot sind.
 - [ ] Keine Datenbankmigration für diese reinen Frontend-/CI-Änderungen nötig.
+
+## Autopilot: CI-Fehlerbehebung und Merge-Gate (2026-11-10)
+
+- [x] Fehlgeschlagenen CI-Lauf 42824708355 bis zum Einzeltest `amazon-links.test.mjs` eingegrenzt.
+- [x] URL-Parser prüft ASCII-Steuerzeichen jetzt **vor** `trim()`, damit nachgestellte Newlines/Tabs nicht verschwinden und ungültige URLs nicht versehentlich akzeptiert werden.
+- [x] GitHub Actions Lauf 42824778203 auf Commit `355d92da` ist **success** (inklusive Node-Tests und Syntaxprüfungen).
+- [x] CI gibt individuelle Test-Suite-Ergebnisse aus und führt anschließend einen verpflichtenden vollständigen Node-Testlauf durch.
+- [ ] CI des letzten Workflow-Commits `c0619732` separat bestätigen.
+- [ ] Pull Request #166 ist aktuell `mergeable=false` / `mergeable_state=dirty`: Konflikte mit `main` müssen vor einem Merge aufgelöst und erneut getestet werden.
+- [ ] Browser-/Mobilgeräteabnahme und Deployment-Ziel/Build-Konfiguration vor Produktionsfreigabe prüfen. Kein Merge, kein Deployment, keine produktive Datenbankmigration durchgeführt.
