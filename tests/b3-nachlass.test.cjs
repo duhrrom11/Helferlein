@@ -43,3 +43,17 @@ test('heir portal discloses client-only access and does not render raw cloud err
  assert.doesNotMatch(heir,/Fehler beim Laden: \$\{e\.message\}/);
  assert.doesNotMatch(heir,/feedback\.innerText = `Fehler: \$\{e\.message\}/);
 });
+
+test('heir links are not printed as visible plaintext and clipboard success is awaited',()=>{
+ assert.match(html,/Erben-Link mit geheimem Schlüssel/);
+ assert.doesNotMatch(html,/\$\{escapeHtml\(personLink\)\}<\/p>/);
+ assert.match(html,/navigator\.clipboard\.writeText\(link\)\s*\.then\(/);
+ assert.match(html,/Kopieren fehlgeschlagen/);
+});
+test('owner and heir validate exactly 256-bit hexadecimal AES keys',()=>{
+ const heir=fs.readFileSync(path.join(root,'tools/digitaler-nachlass/erben.html'),'utf8');
+ for(const source of [html,heir]){
+  assert.match(source,/Ungültiges Schlüsselformat/);
+  assert.match(source,/\^\[a-fA-F0-9\]\{64\}\$/);
+ }
+});
