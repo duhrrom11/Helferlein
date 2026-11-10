@@ -174,10 +174,10 @@ actions.append(button('Duplizieren',async()=>{
  }
  function reportBulk(done,total,success,failed){$('bulkProgressBar').max=Math.max(1,total);$('bulkProgressBar').value=done;$('bulkProgressText').textContent=done+' von '+total+' verarbeitet';$('bulkProgressDetails').textContent=success+' erfolgreich · '+failed+' fehlgeschlagen'+(bulkStopRequested?' · Stopp angefordert':'')}
  async function applyBulk(){
-  const job=pendingBulk;if(!job||bulkBusy||listCopyBusy||listMutationBusy)return;if(activeWishMutations.size){$('bulkStatus').textContent='Ein ausgewählter Wunsch wird gerade bearbeitet. Bitte danach erneut bestätigen.';return}
+  const job=pendingBulk;if(!job)return;if(bulkBusy||listCopyBusy||listMutationBusy){$('bulkStatus').textContent='Eine andere Änderung läuft. Bitte die Sammelaktion anschließend erneut prüfen.';return}if(activeWishMutations.size){$('bulkStatus').textContent='Ein ausgewählter Wunsch wird gerade bearbeitet. Bitte danach erneut bestätigen.';return}
   pendingBulk=null;$('bulkConfirmDialog').close();
   const {uid,listId,add,targets}=job;
-  if(job.generation!==loadGeneration||loadedOwner!==uid||getUser()?.id!==uid){$('bulkStatus').textContent='Die Daten oder das Benutzerkonto wurden zwischen Auswahl und Bestätigung gewechselt. Bitte Sammelaktion erneut prüfen.';return}if(!bulkContextValid(job,{userId:getUser()?.id,listId:selected,ready:membershipReady,activeListIds:new Set(lists.filter(l=>!l.archived).map(l=>l.id))}))return;
+  if(job.generation!==loadGeneration||loadedOwner!==uid||getUser()?.id!==uid){$('bulkStatus').textContent='Die Daten oder das Benutzerkonto wurden zwischen Auswahl und Bestätigung gewechselt. Bitte Sammelaktion erneut prüfen.';return}if(!bulkContextValid(job,{userId:getUser()?.id,listId:selected,ready:membershipReady,activeListIds:new Set(lists.filter(l=>!l.archived).map(l=>l.id))})){$('bulkStatus').textContent='Die Liste ist nicht mehr aktuell. Bitte die Sammelaktion erneut vorbereiten.';return}
    const currentTargets=new Set(eligibleBulkTargets(targets,wishes.map(w=>w.id),assignedIds,add));if(currentTargets.size!==targets.length||targets.some(id=>!currentTargets.has(id))){$('bulkStatus').textContent='Die Listenzuordnung hat sich geändert. Bitte Auswahl und Aktion erneut prüfen.';return}
   const generation=loadGeneration,run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;lastBulkResult=null;$('bulkResultPanel').hidden=true;
   $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
