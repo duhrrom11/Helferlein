@@ -1023,3 +1023,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Aktueller Release-Smoke-Workflow 42826238090 auf `b44f8226` war erfolgreich; Node-Job 42826228226 war ebenfalls erfolgreich.
 - [ ] Aktuelle Browser- und Vault-Sync-CI nach den Korrekturen abschließend prüfen; bei verbleibenden Fehlern weiter nachbessern.
 - [ ] Keine ungetestete Listen-Dashboard-Integration oder produktive SQL-Migration; PR-Merge/Deployment erst nach vollständiger Freigabe.
+
+### Browser-Integration nach realen CI-Logs (2026-11-10)
+
+- [x] CI-Lauf 42826228226: alle Node-`checks` erfolgreich; Browser-Job scheiterte mit `Missing UI fixture: #listsDashboard` und `Cannot set properties of null (setting 'onclick')`. Das war eine Regression durch Bewahren der produktiven main-HTML ohne das zuvor nur auf dem Feature-Branch vorhandene Dashboard-DOM.
+- [x] Vorheriges Dashboard-HTML als **separate Test-Fixture** `dashboard-test-fixture.html` konserviert; isolierte Playwright-Tests nutzen diese Fixture, nicht die produktive `index.html`. Die Live-App bleibt unverändert.
+- [x] Vault-Sync-Queue-Workflow 42826304878 und 42826363540 nach dem VM-Crypto-Fix erfolgreich.
+- [x] Release-Smoke-Workflow 42826315582 erfolgreich.
+- [ ] Browser-CI nach Fixture-Änderung auf Commit `6a0af80f` prüfen; erst dann Browser-Gate als grün markieren.
+- [ ] Separate Dashboard-Fixture beweist nur isoliertes Verhalten; Live-Aktivierung verlangt Schema/RLS- und echte App-Integrationstests.
