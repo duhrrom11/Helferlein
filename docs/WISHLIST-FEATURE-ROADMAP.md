@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Favoriten für private Cloud-Filteransichten)
+
+- **Neu umgesetzt:** Persönliche Cloud-Filteransichten können per Schaltfläche als Favorit angeheftet oder wieder gelöst werden. Angeheftete Ansichten erscheinen in der responsiven Kartenübersicht zuerst, danach alphabetisch.
+- **Persistenz:** Neues boolesches Feld `is_favorite` (Standard `false`) in `wishlist_gift_checkpoint_filter_views`. Vorhandene Ansichten bleiben unverändert und erhalten den Standardwert. Favoriten werden owner-gebunden in Supabase synchronisiert; Duplikate und importierte Ansichten starten ohne Favoritenstatus.
+- **Sicherheit:** RLS und Tabellenprivilegien für Cloud-Ansichten, Präferenzen, Historie und Sicherungspunkte geprüft; kein anonymer Lesezugriff, Sicherungspunkte und Historie ohne direkte Schreibrechte. Keine Testdaten und keine Änderungen an Geschenk- oder Planungsdaten.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Kartenübersicht privater Cloud-Filteransichten)
 
 - **Neu umgesetzt:** Responsive Kartenübersicht für alle privaten Cloud-Filteransichten der Dashboard-Sicherungspunkt-Zeitachse, mit Namen, gespeicherter Filterkombination und letztem Änderungsdatum.
