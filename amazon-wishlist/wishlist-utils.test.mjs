@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,exportWishlistCsv} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,exportWishlistCsv,priorityLabel,validateWishlistExportPage} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -169,4 +169,20 @@ test('CSV export rejects malformed product references',()=>{
  assert.throws(()=>exportWishlistCsv(null));
  assert.throws(()=>exportWishlistCsv([{wishlist_products:{asin:'bad',marketplace:'amazon.de'},priority:1}]));
  assert.throws(()=>exportWishlistCsv([{wishlist_products:{asin:'B012345678',marketplace:'other'},priority:1}]));
+});
+
+test('priority labels match German UI and reject unsupported values',()=>{
+ assert.equal(priorityLabel(1),'Sehr wichtig');
+ assert.equal(priorityLabel('2'),'Normal');
+ assert.equal(priorityLabel(3),'Irgendwann');
+ assert.throws(()=>priorityLabel(0));
+ assert.throws(()=>priorityLabel('hoch'));
+});
+
+test('export pagination fails closed on malformed backend results',()=>{
+ assert.deepEqual(validateWishlistExportPage([{id:1}],2),[{id:1}]);
+ assert.deepEqual(validateWishlistExportPage([],200),[]);
+ assert.throws(()=>validateWishlistExportPage(null));
+ assert.throws(()=>validateWishlistExportPage([1,2],1));
+ assert.throws(()=>validateWishlistExportPage([],0));
 });
