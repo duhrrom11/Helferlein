@@ -20,7 +20,7 @@ export function mountListsDashboard(db, getUser) {
  const favoriteKey=id=>'helferlein-wishlist-favorites:'+id;
  function readFavorites(id){try{const raw=JSON.parse(localStorage.getItem(favoriteKey(id))||'[]');return new Set(Array.isArray(raw)?raw.filter(x=>typeof x==='string'):[])}catch{return new Set()}}
  function writeFavorites(id){try{localStorage.setItem(favoriteKey(id),JSON.stringify([...favoriteIds]))}catch{msg('Favoriten können in diesem Browser nicht dauerhaft gespeichert werden.')}}
- function openList(id){if(bulkBusy){msg('Die Sammelaktion läuft noch. Bitte zuerst stoppen oder abschließen.');return}bulkIds.clear();selected=id;recordRecent(id);render();$('listItems').scrollIntoView({behavior:'smooth',block:'start'})}
+ function openList(id){if(bulkBusy){msg('Die Sammelaktion läuft noch. Bitte zuerst stoppen oder abschließen.');return}bulkIds.clear();lastBulkResult=null;$('bulkResultPanel').hidden=true;selected=id;recordRecent(id);render();$('listItems').scrollIntoView({behavior:'smooth',block:'start'})}
  function renderFavorites(){const target=$('homeFavoritesContent');target.replaceChildren();const favorites=lists.filter(l=>favoriteIds.has(l.id)&&!l.archived);if(!favorites.length){const p=document.createElement('p');p.textContent='Markiere deine Lieblingslisten mit ★, um sie hier schnell zu öffnen. Favoriten werden nur in diesem Browser gespeichert.';target.append(p);return}for(const list of favorites){const b=button(list.icon+' '+list.title,async()=>openList(list.id));target.append(b)}}
  const editorSelect=$('wishListSelect');
  function syncEditor(){const previous=editorSelect.value;editorSelect.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Ohne Liste speichern';editorSelect.append(empty);for(const list of lists.filter(x=>!x.archived)){const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title;editorSelect.append(option)}editorSelect.value=lists.some(x=>x.id===previous&&!x.archived)?previous:(lists.find(x=>x.title==='Meine Wünsche'&&!x.archived)?.id||'');editorSelect.disabled=!lists.length;}
@@ -43,7 +43,7 @@ export function mountListsDashboard(db, getUser) {
   if(lr.error){allAssignedIds=new Set();bulkIds.clear();renderUnassigned();listCounts=new Map();assignedTotal=0;renderProgress();$('listsTotal').textContent='0';$('wishesTotal').textContent='0';lists=[];wishes=[];syncEditor();$('listsContent').replaceChildren();msg('Listenverwaltung vorbereitet. Das Datenbankschema wurde noch nicht freigeschaltet.');return}
   if(wr.error)throw wr.error;
   const allWishes=[...(wr.data||[])];for(let offset=1000;allWishes.length===offset;offset+=1000){const page=await db.from('wishlist_wishes').select('id,note,priority,created_at,wishlist_products(title)').eq('user_id',id).order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+999);if(getUser()?.id!==id||generation!==loadGeneration)return;if(page.error)throw page.error;allWishes.push(...(page.data||[]))}
-  if(loadedOwner!==id){bulkIds.clear();lastBulkResult=null;$('bulkResultPanel').hidden=true;visibleLimit=100;favoriteIds=readFavorites(id);recentIds=readRecent(id);wishCategories=readCategories(id);wishMarkers=readMarkers(id)}loadedOwner=id;lists=lr.data||[];wishes=allWishes;favoriteIds=new Set([...favoriteIds].filter(x=>lists.some(l=>l.id===x)));recentIds=recentIds.filter(x=>lists.some(l=>l.id===x));syncEditor();if(!lists.some(x=>x.id===selected))selected=lists[0]?.id||null;
+  if(loadedOwner!==id){bulkIds.clear();lastBulkResult=null;$('bulkResultPanel').hidden=true;visibleLimit=100;favoriteIds=readFavorites(id);recentIds=readRecent(id);wishCategories=readCategories(id);wishMarkers=readMarkers(id)}loadedOwner=id;lists=lr.data||[];wishes=allWishes;favoriteIds=new Set([...favoriteIds].filter(x=>lists.some(l=>l.id===x)));recentIds=recentIds.filter(x=>lists.some(l=>l.id===x));syncEditor();if(!lists.some(x=>x.id===selected)){selected=lists[0]?.id||null;lastBulkResult=null;$('bulkResultPanel').hidden=true;}
   const membershipRows=[];for(let offset=0;;offset+=1000){const page=await db.from('wishlist_list_items').select('list_id,wish_id').eq('user_id',id).range(offset,offset+999);if(getUser()?.id!==id||generation!==loadGeneration)return;if(page.error)throw page.error;membershipRows.push(...(page.data||[]));if((page.data||[]).length<1000)break}listCounts=new Map();const unique=new Set();const known=new Set(wishes.map(w=>w.id));for(const item of membershipRows){listCounts.set(item.list_id,(listCounts.get(item.list_id)||0)+1);if(known.has(item.wish_id))unique.add(item.wish_id)}assignedTotal=unique.size;allAssignedIds=unique;renderUnassigned();renderProgress();renderRecent();msg(lists.length+' Listen · '+wishes.length+' geladene Wünsche');$('listsTotal').textContent=String(lists.length);$('wishesTotal').textContent=String(wishes.length);render();
  }
  function render(){
@@ -90,7 +90,7 @@ export function mountListsDashboard(db, getUser) {
   pendingBulk=null;$('bulkConfirmDialog').close();
   const {uid,listId,add,targets}=job;
   if(getUser()?.id!==uid||selected!==listId||!lists.some(l=>l.id===listId&&!l.archived))return;
-  const run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;
+  const run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;lastBulkResult=null;$('bulkResultPanel').hidden=true;
   $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
   updateBulkToolbar();let success=0,failed=[],done=0,interrupted=false;
   reportBulk(0,targets.length,0,0);
@@ -99,8 +99,9 @@ export function mountListsDashboard(db, getUser) {
     if(bulkStopRequested||run!==bulkRunId||getUser()?.id!==uid||selected!==listId){interrupted=true;break}
     try{
      const q=add?db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',listId).eq('wish_id',wishId).eq('user_id',uid);
-     const {error}=await q;if(error)throw error;success++;bulkIds.delete(wishId);
+     const {error}=await q;if(error)throw error;if(run!==bulkRunId||getUser()?.id!==uid)return;success++;bulkIds.delete(wishId);
     }catch(e){failed.push(wishId)}
+    if(run!==bulkRunId||getUser()?.id!==uid)return;
     done++;reportBulk(done,targets.length,success,failed.length);
    }
    if(getUser()?.id===uid&&run===bulkRunId){
