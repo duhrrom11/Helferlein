@@ -194,3 +194,14 @@
 - [ ] Verifiziertes npm-`package-lock.json` aus erreichbarer Registry
 
 **Abgrenzung:** Die drei neuen Tests prüfen die tatsächlich verwendete reine Listenzuordnungslogik mit simulierten Mitgliedschaftsantworten. Die vollständige Dashboard-DOM-Zustandsbereinigung wurde durch Quellcodeprüfung und JavaScript-Syntaxprüfung, aber noch nicht durch Browser-End-to-End-Tests verifiziert. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
+
+## DOM-Reload-Regression und isolierter Chromium-Lauf (2026-11-10)
+
+- [x] Nachgewiesenen Fehler behoben: Ein bereits vorhandener Wunschkarten-Checkbox-Handler prüfte bei `onchange` nur `bulkBusy`, nicht `membershipReady`. Jetzt ignoriert er Auswahlereignisse während eines Reloads.
+- [x] Isolierten Playwright-DOM-Vertragstest in `wishes-ui.spec.mjs` ergänzt: veraltete Wunschkarten/Selektion/Ergebnis/Bestätigung zurücksetzen, Bulk-Aktionen sperren, Fehlermeldung anzeigen, keine Mock-Schreibvorgänge
+- [x] **8/8 DOM-Prüfungen tatsächlich mit lokalem Python-Playwright und Chromium ausgeführt**: Karten entfernt, Auswahl geleert, Ergebnis verborgen, Dialog geschlossen, Hinzufügen/Entfernen deaktiviert, Fehler sichtbar, null Schreibvorgänge
+- [ ] Den neuen Playwright-Branch-Test mit Node-`@playwright/test` tatsächlich ausführen
+- [ ] Echten Dashboard-DOM-Integrationstest mit geladenem `mountListsDashboard` und Mock-Supabase-Client durchführen (der ausgeführte Test simuliert die Zustandsbereinigung, nicht die vollständige App)
+- [ ] Vollständige native Node-Suite und verifiziertes npm-Lockfile nach Wiederherstellung der Infrastruktur
+
+**Freigabe weiterhin gesperrt.** Kein produktiver Supabase-Zugriff, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
