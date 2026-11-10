@@ -138,3 +138,18 @@
 - [ ] Verifiziertes npm-Lockfile nach verfügbarer Registry erzeugen und prüfen
 
 **Freigabestatus:** Nicht freigegeben. Die drei neuen Tests prüfen isolierte Guards und simulierte Fehlerbehandlung; die Integration der Guards in der echten Dashboard-Oberfläche muss zusätzlich im Browser getestet werden. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Mock-Supabase-Dashboard-Integration (2026-11-10)
+
+- [x] Initialen parallelen Dashboard-Datenabruf als injizierbare Funktion `fetchDashboardBase(db,userId)` aus `lists-dashboard.mjs` nach `bulk-helpers.mjs` extrahiert; unveränderte Leseabfragen
+- [x] Mock-Supabase-Client mit verkettbaren `from/select/eq/order/range`-Methoden und Promise-kompatibler Query erstellt
+- [x] Integrationstest: Listen/Wünsche werden für den richtigen `user_id` gelesen, korrekte Pagination und **null Schreibvorgänge**
+- [x] Integrationstest: abgewiesener Mock-Read propagiert Fehler, Bulk-Steuerung bleibt gesperrt
+- [x] Integrationstest: verzögerter Read nach Kontowechsel darf keinen veralteten Snapshot veröffentlichen
+- [x] Integrationstest: während Reload und bis zur expliziten Freigabe der Mitgliedschaft bleiben Bulk-Steuerungen gesperrt
+- [x] **34/34 aktuelle Branch-Testfälle** tatsächlich in einem isolierten JavaScript-Runner bestanden (30 bestehende + 4 neue)
+- [ ] Vollständigen `node --test`-Lauf auf lokalem Branch-Checkout durchführen; GitHub-DNS weiterhin blockiert
+- [ ] Alle neun Playwright-UI-Tests ausführen; Node-`@playwright/test` und vollständiger Checkout weiterhin nicht verfügbar
+- [ ] Echtes npm-Lockfile nach Registry-Zugriff mit überprüfbaren Integrity-Hashes erzeugen
+
+**Abgrenzung:** Dies ist ein echter Integrationstest des injizierten Dashboard-Leseadapters mit Mock-Supabase-Client, **kein** DOM-/Browser-End-to-End-Test von `mountListsDashboard`. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
