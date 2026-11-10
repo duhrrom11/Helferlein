@@ -7,18 +7,18 @@ export function mountListsDashboard(db, getUser) {
  let lists=[],wishes=[],selected=null,loadedOwner=null,loadGeneration=0,itemsGeneration=0,assignedIds=new Set(),favoriteIds=new Set(),recentIds=[],listCounts=new Map(),assignedTotal=0,wishCategories={},wishMarkers={},detailWishId=null,bulkIds=new Set(),allAssignedIds=new Set(),bulkBusy=false,pendingBulk=null,visibleLimit=100,bulkStopRequested=false,bulkRunId=0,lastBulkResult=null,bulkHistory=[],membershipByList=new Map(),membershipReady=false;
  const markerKey=id=>'helferlein-wish-markers:'+id;
  function readMarkers(id){try{const value=JSON.parse(localStorage.getItem(markerKey(id))||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?Object.fromEntries(Object.entries(value).filter(([k,v])=>typeof k==='string'&&['star','later'].includes(v))):{}}catch{return {}}}
- function setMarker(wishId,marker){if(!wishes.some(w=>w.id===wishId))return;const uid=owner(),next={...wishMarkers};if(next[wishId]===marker)delete next[wishId];else next[wishId]=marker;try{localStorage.setItem(markerKey(uid),JSON.stringify(next));wishMarkers=next;renderWishCards();if(detailWishId===wishId)syncDetailMarkers();msg('Markierung in diesem Browser gespeichert.')}catch{msg('Markierung konnte nicht gespeichert werden.')}}
+ function setMarker(wishId,marker){if(!membershipReady||getUser()?.id!==loadedOwner||!wishes.some(w=>w.id===wishId))return;const uid=owner(),next={...wishMarkers};if(next[wishId]===marker)delete next[wishId];else next[wishId]=marker;try{localStorage.setItem(markerKey(uid),JSON.stringify(next));wishMarkers=next;renderWishCards();if(detailWishId===wishId)syncDetailMarkers();msg('Markierung in diesem Browser gespeichert.')}catch{msg('Markierung konnte nicht gespeichert werden.')}}
  function syncDetailMarkers(){for(const [id,marker,off,on] of [['wishDetailStar','star','☆ Favorit','★ Favorit'],['wishDetailLater','later','⏳ Später ansehen','✓ Für später markiert']]){const b=$(id),active=wishMarkers[detailWishId]===marker;b.setAttribute('aria-pressed',String(active));b.textContent=active?on:off}}
  const categoryKey=id=>'helferlein-wish-categories:'+id;
  function readCategories(id){try{const value=JSON.parse(localStorage.getItem(categoryKey(id))||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?Object.fromEntries(Object.entries(value).filter(([k,v])=>typeof k==='string'&&WISH_CATEGORIES.some(c=>c.id===v))):{}}catch{return {}}}
- function saveCategory(){const uid=owner(),wishId=detailWishId;if(!wishId||!wishes.some(w=>w.id===wishId))return;const category=$('wishDetailCategory').value;if(category&&!WISH_CATEGORIES.some(c=>c.id===category))return;const next={...wishCategories};if(category)next[wishId]=category;else delete next[wishId];try{localStorage.setItem(categoryKey(uid),JSON.stringify(next));wishCategories=next;$('wishDetailDialog').close();renderWishCards();msg('Kategorie in diesem Browser gespeichert.')}catch{msg('Kategorie konnte in diesem Browser nicht gespeichert werden.')}}
+ function saveCategory(){if(!membershipReady||getUser()?.id!==loadedOwner)return;const uid=owner(),wishId=detailWishId;if(!wishId||!wishes.some(w=>w.id===wishId))return;const category=$('wishDetailCategory').value;if(category&&!WISH_CATEGORIES.some(c=>c.id===category))return;const next={...wishCategories};if(category)next[wishId]=category;else delete next[wishId];try{localStorage.setItem(categoryKey(uid),JSON.stringify(next));wishCategories=next;$('wishDetailDialog').close();renderWishCards();msg('Kategorie in diesem Browser gespeichert.')}catch{msg('Kategorie konnte in diesem Browser nicht gespeichert werden.')}}
  function focusWishCard(wishId){
   const card=[...$('listWishCards').children].find(el=>el.dataset.wishId===wishId);
   if(!card)return;
   card.tabIndex=-1;card.focus({preventScroll:true});card.scrollIntoView({behavior:'smooth',block:'center'});
  }
  function jumpToWishInList(wishId,listId){
-  if(!membershipReady||bulkBusy||!lists.some(l=>l.id===listId&&!l.archived&&membershipByList.get(l.id)?.has(wishId)))return;
+  if(getUser()?.id!==loadedOwner||!membershipReady||bulkBusy||!lists.some(l=>l.id===listId&&!l.archived&&membershipByList.get(l.id)?.has(wishId)))return;
   const wish=wishes.find(w=>w.id===wishId);if(!wish)return;
   $('wishDetailDialog').close();openList(listId);
   $('listWishSearch').value='';
@@ -27,7 +27,7 @@ export function mountListsDashboard(db, getUser) {
   if(index<0){msg('Wunsch konnte in dieser Liste nicht gefunden werden.');return}
   visibleLimit=Math.max(visibleLimit,index+1);renderWishCards();focusWishCard(wishId);
  }
- function openWishDetail(wish){detailWishId=wish.id;
+ function openWishDetail(wish){if(!membershipReady||getUser()?.id!==loadedOwner||!wishes.some(w=>w.id===wish.id))return;detailWishId=wish.id;
   const membership=$('wishDetailLists');membership.replaceChildren();
   const matching=membershipReady?lists.filter(l=>!l.archived&&membershipByList.get(l.id)?.has(wish.id)):[];
   if(matching.length){const heading=document.createElement('strong');heading.textContent='In diesen Listen:';membership.append(heading);
