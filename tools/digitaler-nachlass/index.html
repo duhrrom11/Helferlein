@@ -20,7 +20,7 @@
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- EmailJS SDK -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- Legacy email dispatch disabled: no bearer decryption keys in third-party messages. -->
 
     <style>
         .tab-btn.active {
@@ -242,10 +242,10 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h3 class="text-sm font-bold text-slate-100">📄 Papier-Notfall-Kit mit QR-Codes (Cold Storage)</h3>
-                        <p class="text-xs text-slate-400">Jede Vertrauensperson erhält einen individuellen Notfall-Link mit direkt scannbarem QR-Code.</p>
+                        <p class="text-xs text-slate-400">Notfallkontakte können verwaltet werden. Schlüssel-Links und QR-Zugänge sind bis zur sicheren serverseitigen Freigabe deaktiviert.</p>
                     </div>
-                    <button id="generatePdfBtn" class="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs shadow-lg whitespace-nowrap">
-                        📄 Notfall-Kit als PDF exportieren
+                    <button id="generatePdfBtn" disabled aria-disabled="true" title="Schlüsselhaltige Notfall-PDFs sind aus Sicherheitsgründen deaktiviert." class="px-4 py-2.5 bg-slate-700 text-slate-300 font-bold rounded-xl text-xs shadow-lg whitespace-nowrap cursor-not-allowed">
+                        🔒 Schlüssel-PDF deaktiviert
                     </button>
                 </div>
                 <div id="kitSharesPreview" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
@@ -519,28 +519,7 @@
                 }
 
                 if (target.classList.contains('copy-link-btn') || target.classList.contains('email-btn')) {
-                    // Never persist the full decryption URL in HTML attributes or DOM.
-                    const cfg = getVaultConfig();
-                    const index = Number(target.getAttribute('data-idx'));
-                    const person = Number.isSafeInteger(index) && index >= 0 && Array.isArray(cfg?.alarmPersons)
-                        ? cfg.alarmPersons[index] : null;
-                    if (!person || !/^[a-f0-9]{64}$/i.test(cfg.masterKeyHex || '') || !cfg.vaultId || !person.id) {
-                        alert('Erben-Link ist nicht verfügbar.');
-                        return;
-                    }
-                    const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
-                    const link = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(person.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
-                    if (target.classList.contains('copy-link-btn')) {
-                        if (!navigator.clipboard?.writeText) {
-                            alert('Kopieren ist in diesem Browser nicht verfügbar.');
-                            return;
-                        }
-                        navigator.clipboard.writeText(link)
-                            .then(() => alert('🔗 Vertraulichen Erben-Link kopiert. Nur an die vorgesehene Person weitergeben.'))
-                            .catch(() => alert('Kopieren fehlgeschlagen. Bitte Browserberechtigung prüfen.'));
-                    } else {
-                        sendEmailToPerson(person.name, person.contact, link);
-                    }
+                    alert('Erben-Links mit dem Tresorschlüssel sind deaktiviert. Es wird nichts kopiert oder versendet.');
                 }
 
                 if (target.classList.contains('delete-person-btn')) {
@@ -1528,26 +1507,20 @@
             const cfg = getVaultConfig();
             const container = document.getElementById('alarmPersonsList');
             if (!container) return;
-            if (!cfg.alarmPersons || cfg.alarmPersons.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500">Noch keine Personen angelegt.</p>`;
+            if (!cfg?.alarmPersons?.length) {
+                container.textContent = 'Noch keine Personen angelegt.';
                 return;
             }
-            container.innerHTML = cfg.alarmPersons.map((p, idx) => {
-                return `
-                    <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs">
-                        <div>
-                            <span class="font-bold text-slate-100">${escapeHtml(p.name)}</span>
-                            ${p.contact ? `<span class="text-slate-400 text-[11px] ml-2">(${escapeHtml(p.contact)})</span>` : ''}
-                            <p class="font-mono text-[10px] text-indigo-400 truncate max-w-xs">Erben-Link mit geheimem Schlüssel – nur über „Link kopieren“ weitergeben.</p>
-                        </div>
-                        <div class="flex gap-2 flex-wrap mt-2 md:mt-0">
-                            <button data-idx="${idx}" class="px-3 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-[11px] copy-link-btn">Link kopieren</button>
-                            ${p.contact ? `<button data-idx="${idx}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-[11px] email-btn">✉️ E-Mail senden</button>` : ''}
-                            <button data-idx="${idx}" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px] delete-person-btn">Löschen</button>
-                        </div>
+            container.innerHTML = cfg.alarmPersons.map((p, idx) => `
+                <div class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3 text-xs">
+                    <div>
+                        <span class="font-bold text-slate-100">${escapeHtml(p.name)}</span>
+                        ${p.contact ? `<span class="text-slate-400 text-[11px] ml-2">(${escapeHtml(p.contact)})</span>` : ''}
+                        <p class="text-amber-300 text-[11px]">Noch keine Erbenberechtigung: Der Versand von Tresorschlüsseln ist gesperrt.</p>
                     </div>
-                `;
-            }).join('');
+                    <button data-idx="${idx}" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px] delete-person-btn">Kontakt entfernen</button>
+                </div>
+            `).join('');
         }
 
         async function saveSettings() {
@@ -1629,47 +1602,6 @@
                 alert("⚠️ Notfallkontakt nur lokal gelöscht. Die Cloud ist nicht aktualisiert; der bisherige Zugang kann nach einer späteren Freigabe weiterhin bestehen.");
             }
             renderAlarmPersons();
-        }
-
-        function sendEmailToPerson(name, email, link) {
-            if (typeof emailjs === "undefined") {
-                alert("Der E-Mail-Dienst ist nicht verfügbar.");
-                return;
-            }
-            const recipient = String(email || '').trim();
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient) || recipient.length > 254) {
-                alert("Bitte eine gültige E-Mail-Adresse der Vertrauensperson hinterlegen.");
-                return;
-            }
-            let target;
-            try {
-                target = new URL(String(link || ''), window.location.href);
-            } catch (error) {
-                alert("Der Notfall-Link ist ungültig.");
-                return;
-            }
-            const cfg = getVaultConfig();
-            const expectedPath = new URL('erben.html', window.location.href).pathname;
-            if (target.origin !== window.location.origin || target.pathname !== expectedPath ||
-                target.searchParams.get('vaultId') !== String(cfg?.vaultId || '') ||
-                !/^#key=[a-f0-9]{64}$/i.test(target.hash)) {
-                alert("Der Notfall-Link ist nicht gültig oder gehört nicht zu diesem Tresor.");
-                return;
-            }
-            if (!confirm("ACHTUNG: Der Notfall-Link enthält den Entschlüsselungsschlüssel. Beim Versand erhält der externe E-Mail-Dienst diesen Schlüssel, und er verbleibt möglicherweise im Postfach der empfangenden Person. Nur an eine vertrauenswürdige Person senden. Fortfahren?")) return;
-
-            const templateParams = {
-                to_name: String(name || ''),
-                to_email: recipient,
-                owner_name: cfg.ownerName || "Dein Name",
-                person_link: target.href
-            };
-            emailjs.send('service_z2papfs', 'template_xmidqv9', templateParams)
-                .then(function() {
-                    alert("E-Mail an " + recipient + " wurde vom E-Mail-Dienst angenommen.");
-                }, function() {
-                    alert("Der E-Mail-Versand ist fehlgeschlagen. Bitte die Adresse prüfen und später erneut versuchen.");
-                });
         }
 
         async function saveVaultEntry() {
@@ -1793,119 +1725,14 @@
 
         // Render Notfall-Kit Vorschau mit QR-Codes (Zuverlässig für alle Personen)
         function renderPrintableKit() {
-            const cfg = getVaultConfig();
             const container = document.getElementById('kitSharesPreview');
             if (!container) return;
-
-            if (!cfg.alarmPersons || cfg.alarmPersons.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500 col-span-full">Noch keine Vertrauenspersonen im Tab "Totmannschalter" angelegt. Bitte dort Personen hinzufügen, um QR-Notfall-Kits zu generieren.</p>`;
-                return;
-            }
-
-            const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
-
-            container.innerHTML = cfg.alarmPersons.map((p, idx) => {
-                const personLink = `${baseUrl}/erben.html?vaultId=${encodeURIComponent(cfg.vaultId)}&person=${encodeURIComponent(p.id)}#key=${encodeURIComponent(cfg.masterKeyHex)}`;
-                const qrcodeContainerId = `qrcode_preview_${idx}`;
-                
-                setTimeout(() => {
-                    const el = document.getElementById(qrcodeContainerId);
-                    if (el && el.childElementCount === 0) {
-                        new QRCode(el, {
-                            text: personLink,
-                            width: 110,
-                            height: 110,
-                            colorDark: "#0f172a",
-                            colorLight: "#ffffff",
-                            correctLevel: QRCode.CorrectLevel.M
-                        });
-                    }
-                }, 50);
-
-                return `
-                    <div class="p-4 bg-white text-slate-900 rounded-2xl space-y-3 shadow-md flex flex-col items-center text-center">
-                        <div>
-                            <h4 class="font-bold text-sm">${escapeHtml(p.name)}</h4>
-                            <p class="text-[10px] text-slate-500">${escapeHtml(p.contact || 'Notfall-Vertrauensperson')}</p>
-                        </div>
-                        <div id="${qrcodeContainerId}" class="qrcode-box p-1 bg-slate-100 rounded-xl border border-slate-200"></div>
-                        <p class="text-[10px] text-amber-900 bg-amber-50 border border-amber-200 p-2 rounded w-full">Vertraulicher Zugang: Der QR-Code enthält einen geheimen Schlüssel. Nur sicher verwahren und ausschließlich an die vorgesehene Person geben.</p>
-                    </div>
-                `;
-            }).join('');
+            container.innerHTML = '<p class="text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-3 col-span-full">Die Ausgabe von Notfall-Links und QR-Codes mit dem Tresorschlüssel wurde aus Sicherheitsgründen deaktiviert. Bestehende Unterlagen bleiben vertraulich und müssen nach Einführung der neuen Schlüsselübergabe ersetzt werden.</p>';
         }
 
         async function generatePrintableKitPDF() {
-            if (!window.jspdf?.jsPDF || typeof QRCode !== 'function') {
-                alert("PDF- oder QR-Code-Bibliothek ist nicht verfügbar. Bitte die Seite neu laden.");
-                return;
-            }
-            const cfg = getVaultConfig();
-            if (!cfg || !cfg.vaultId || !cfg.masterKeyHex) {
-                alert("Das Notfall-Kit kann ohne gültige Tresordaten nicht erstellt werden.");
-                return;
-            }
-            if (!confirm("Das Notfall-Kit enthält persönliche Zugangsschlüssel. Jede Person mit Zugriff auf die PDF-Datei kann damit möglicherweise Tresordaten lesen. Nur auf einem vertrauenswürdigen Gerät erstellen und sicher aufbewahren. Fortfahren?")) return;
-
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                doc.setFontSize(16);
-                doc.text("DIGITALES NACHLASS-NOTFALL-KIT", 14, 20);
-                doc.setFontSize(10);
-                doc.text("Tresor-ID: " + cfg.vaultId, 14, 28);
-                doc.text("Erstellt am: " + new Date().toLocaleDateString('de-DE'), 14, 34);
-
-                let yPos = 45;
-                const baseUrl = new URL('.', window.location.href).href.replace(/\/$/, '');
-                const persons = Array.isArray(cfg.alarmPersons) ? cfg.alarmPersons : [];
-                if (!persons.length) doc.text("Keine Notfall-Personen definiert.", 14, yPos);
-
-                for (const person of persons) {
-                    if (yPos > 235) {
-                        doc.addPage();
-                        yPos = 20;
-                    }
-                    const personLink = baseUrl + "/erben.html?vaultId=" +
-                        encodeURIComponent(cfg.vaultId) + "&person=" +
-                        encodeURIComponent(person.id) + "#key=" +
-                        encodeURIComponent(cfg.masterKeyHex);
-                    doc.setFontSize(12);
-                    doc.setFont(undefined, 'bold');
-                    doc.text("Notfall-Zugang für: " + (person.name || "Vertrauensperson") +
-                        " (" + (person.contact || "Keine E-Mail") + ")", 14, yPos);
-                    doc.setFontSize(8);
-                    doc.setFont(undefined, 'normal');
-                    doc.text("Persönlicher Notfall-Link:", 14, yPos + 6);
-                    const lines = doc.splitTextToSize(personLink, 180);
-                    doc.text(lines, 14, yPos + 11);
-                    const qrTop = yPos + 12 + lines.length * 3.5;
-
-                    const tempDiv = document.createElement('div');
-                    tempDiv.style.position = 'fixed';
-                    tempDiv.style.left = '-10000px';
-                    document.body.appendChild(tempDiv);
-                    try {
-                        new QRCode(tempDiv, { text: personLink, width: 120, height: 120 });
-                        const qrCanvas = tempDiv.querySelector('canvas');
-                        const qrImage = tempDiv.querySelector('img');
-                        if (qrCanvas && qrCanvas.width && qrCanvas.height) {
-                            doc.addImage(qrCanvas.toDataURL('image/png'), 'PNG', 14, qrTop, 35, 35);
-                        } else if (qrImage?.complete && qrImage.naturalWidth) {
-                            doc.addImage(qrImage.src, 'PNG', 14, qrTop, 35, 35);
-                        } else {
-                            throw new Error("QR-Code konnte nicht vollständig erzeugt werden.");
-                        }
-                    } finally {
-                        tempDiv.remove();
-                    }
-                    yPos = qrTop + 43;
-                }
-                doc.save("digitales-notfall-kit-" + cfg.vaultId + ".pdf");
-            } catch (error) {
-                console.error("Notfall-Kit konnte nicht erstellt werden:", error);
-                alert("Notfall-Kit konnte nicht vollständig erstellt werden. Bitte erneut versuchen.");
-            }
+            alert('Notfall-PDFs mit Entschlüsselungsschlüsseln sind bis zur sicheren serverseitigen Erbenfreigabe deaktiviert.');
+            return false;
         }
 
     </script>
