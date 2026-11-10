@@ -255,3 +255,15 @@ Auf Nutzerwunsch künftig **primär sichtbare Funktionen, Bedienbarkeit und real
 - [ ] Endgültige Produktfreigabe weiterhin offen; keine Produktionsfreigabe ohne nötige Endabnahme.
 
 **Grenzen:** Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Produktentwicklung: Verschieben und Alltagserleichterungen (2026-11-10)
+
+- [x] Einzelne bereits zugeordnete Wünsche direkt von ihrer Wunschkarte in eine andere aktive Liste verschieben: Zielliste auswählen, bestätigen, danach Zielliste öffnen.
+- [x] Verschieben erhält den Wunsch selbst; zunächst wird die Zielzuordnung angelegt, anschließend die Quellzuordnung entfernt. Bei Fehler im zweiten Schritt bleibt die neue Zielzuordnung erhalten und eine Warnung erklärt den teilweise abgeschlossenen Vorgang. **Nicht atomar**; bei Kontowechsel oder konkurrierendem Reload nach der ersten Änderung ist manuelle Prüfung nötig.
+- [x] Direkte Schaltfläche „Zugeordnete Wünsche“ in der Listenübersicht für nicht archivierte Listen mit Zuordnungen.
+- [x] Bei leeren Suchergebnissen Wunschfilter per Schaltfläche zurücksetzen.
+- [x] Archivieren erfordert eine Bestätigung; Reaktivieren bleibt direkt möglich.
+- [x] Minimale technische Prüfung: Dashboard-ES-Modul nach Entfernen der Import-/Export-Zeilen mit JavaScript-Parser erfolgreich geprüft.
+- [ ] Produktseitige Abnahme der Verschiebefunktion mit realistischen Berechtigungen und Fehlerfällen vor Freigabe nötig; **kein** produktiver Datenbanktest durchgeführt.
+
+Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
