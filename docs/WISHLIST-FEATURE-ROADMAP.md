@@ -1,3 +1,12 @@
+## Entwicklungsfortschritt – 11.11.2026 (Geschenkplanung: mobile Fehlermeldungen und Fokusführung)
+
+- **Konkrete UX-Lücke:** In der separaten `amazon-wishlist/gift-planner.html` wurden Speicher- und Validierungshinweise bislang allein in der weit oben stehenden globalen Statuszeile angezeigt; auf Smartphones waren diese nach Scrollen zum Formular nicht unmittelbar sichtbar.
+- **Formularnahe Meldungen:** Neue Live-Regionen `budgetSaveFeedback` beim Anlassbudget und `giftFormFeedback` direkt nach den Geschenkspeicheraktionen; bestehende globale Statusmeldung bleibt erhalten. Rückmeldungen zu erfolgreichem Budget-/Geschenkspeichern und zu Fehlern erscheinen zusätzlich im relevanten Formular.
+- **Validierung und Fokus:** Fehlende Anlässe/Titel oder ungültige Beträge führen beim bestehenden clientseitigen Validierungspfad zu `aria-invalid`, `aria-describedby` mit Verweis auf den lokalen Fehlerstatus sowie zum Fokus auf dem betreffenden Feld. Fehlerkennzeichnung wird beim Korrigieren des Feldes entfernt. Keine Änderung der Supabase-Schreibbedingungen.
+- **Bearbeiten/Abbrechen:** Beim Bearbeiten eines Geschenks wird der auslösende Button erfasst; bei „Abbrechen“ kehrt der Fokus nach Möglichkeit dorthin zurück. Nach erfolgreichem Speichern wird die neue lokale Statusmeldung fokussiert. Die Meldungen sind für mobile Bildschirme und das dunkle Farbschema gestaltet.
+- **Prüfung:** Beide GitHub-Dateien erneut abgerufen; isolierte JavaScript-Syntaxprüfung des Moduls ohne Fehler, Style-Tags und CSS-Klammern ausgeglichen sowie keine doppelten statischen IDs. Ein authentifizierter Browser-End-to-End-Test mit tatsächlichen Produktivdatensätzen steht aus.
+- **Produktionsschutz:** Ausschließlich Änderungen an HTML/CSS und clientseitigen UI-Rückmeldungen sowie Fokus; keine Supabase-Migration, keine Testdaten oder Änderungen an Produktivdatensätzen.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Mobile Navigationszustände, Touch und Tastatur)
 
 - **Mobiler Klappzustand:** Die bestehende DOM-Gruppierung für `mobileListCreation`, `mobileRecentLists` und `mobileGiftExtra` speichert die über Touch-/Tastaturaktivierung gewählte Öffnung nun am jeweiligen `details`-Element (`data-mobile-open`). Beim responsiven Wechsel auf Desktop bleiben die Bereiche offen und beim Zurückwechseln zu Mobilgeräten wird die dort beabsichtigte Auswahl wiederhergestellt.
