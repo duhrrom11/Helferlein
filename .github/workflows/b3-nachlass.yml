@@ -4,13 +4,15 @@ on:
     paths:
       - 'assets/helferlein-b3*'
       - 'tools/digitaler-nachlass/index.html'
+      - 'tools/digitaler-nachlass/erben.html'
       - 'tests/b3-nachlass*'
       - '.github/workflows/b3-nachlass.yml'
   push:
-    branches: ['design-b3-rollout-nachlass']
+    branches: ['main', 'design-b3-rollout-nachlass']
     paths:
       - 'assets/helferlein-b3*'
       - 'tools/digitaler-nachlass/index.html'
+      - 'tools/digitaler-nachlass/erben.html'
       - 'tests/b3-nachlass*'
       - '.github/workflows/b3-nachlass.yml'
 permissions:
