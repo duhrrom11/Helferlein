@@ -580,3 +580,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls (ohne Imports) und gezielte Inhaltsprüfung erfolgreich.
 - [ ] Browser-, Mobilgeräte- und End-to-End-Tests weiterhin offen; keine produktiven Supabase-Tests.
 - [ ] Freigabe gesperrt. Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Autopilot: Reload-Rennen, mobile Kartenaktionen und Listenfeedback (2026-11-10)
+
+- [x] Manuelles Aktualisieren wird während laufender Einzelwunschschreibvorgänge abgefangen, damit der Lade-Generationswechsel die zweite Phase einer Verschiebung nicht unterbricht. Das interne Neuladen nach einem abgeschlossenen Einzelvorgang bleibt erlaubt.
+- [x] Die mobile Ziellistenauswahl und Verschieben-Schaltfläche sind für den gerade bearbeiteten Wunsch sichtbar deaktiviert.
+- [x] Favoritenaktionen aus alten Listenkarten prüfen Benutzer- und Listenstatus. „Zugeordnete Wünsche“ ändert die Filter nur nach tatsächlich erfolgreichem Listenwechsel.
+- [x] Erstellen und Gestalten von Listen melden nach erfolgreichem Datenbankschreiben einen separaten Reload-Fehler, statt die Speicherung fälschlich als fehlgeschlagen auszugeben.
+- [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls ohne Imports und gezielte Quelltextprüfung erfolgreich.
+- [ ] Browser-/Mobilgeräte-/End-to-End-Tests und Überprüfung der mehrstufigen Verschiebungen bleiben offen; keine produktiven Supabase-Tests.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
