@@ -70,3 +70,11 @@ References:
 - GitHub [release smoke 42784627358](https://github.com/duhrrom11/Helferlein/actions/runs/42784627358) completed successfully for commit `197522f8`.
 - GitHub [B3 Nachlass pilot 42784627431](https://github.com/duhrrom11/Helferlein/actions/runs/42784627431) was still in progress at the latest check, but the `Verify preserved security notice and vault contract` step (which runs `node --test` including `tests/nachlass-hpke-offline-v2.test.cjs`) completed successfully. Full workflow success remains pending.
 - These tests assert rejection rather than a uniform application-level error category for low-order keys; exception normalization remains a separate possible hardening task. No production integration or deployment.
+
+## CI verification of four new negative tests (2026-11-10)
+
+- For test commit `197522f870671a0b16f0d20940b0b619152fb504`, [B3 run 42784627431](https://github.com/duhrrom11/Helferlein/actions/runs/42784627431) reports the `Verify preserved security notice and vault contract` step as `completed/success`. The checked-in workflow executes `node --test` including `tests/nachlass-hpke-offline-v2.test.cjs` in that step. Its overall `nachlass-ui` job was still `in_progress` during verification (Chromium installation); **do not claim full B3 success**.
+- For audit commit `9510f2387c61d076d8ca7a67edbe1de390bcd7e2`, [B3 run 42784691674](https://github.com/duhrrom11/Helferlein/actions/runs/42784691674) likewise reports the Node test step as `completed/success`, with full job still `in_progress` at the last check.
+- For audit commit `9510f238`, [release smoke run 42784691490](https://github.com/duhrrom11/Helferlein/actions/runs/42784691490) is `completed/success`.
+- These successful GitHub Node steps provide execution evidence for the checked-in suite including the four newly added tests, but step summaries alone do not report individual test counts. The separate reconstructed local run had 4/4 passing, not a byte-identical full 14-test run.
+- No production data changes, Vercel, deployment, or merge.
