@@ -69,3 +69,17 @@
 - [ ] Die **echten** Branch-Dateien (`bulk-helpers.test.mjs`, `bulk-workflows.test.mjs`, `wishes-ui.spec.mjs`) in einem vollständigen Checkout mit Node und Playwright ausführen. Bis dahin keine Freigabe behaupten.
 
 **Wichtige Abgrenzung:** Der erfolgreiche lokale Lauf verwendet weiterhin die isolierten Testdateien aus `/mnt/data/helferlein-test-run` und ist kein vollständiger Branch-Testlauf. Der Lockfile-Schritt ist technisch blockiert, nicht erledigt.
+
+## Erneute Verfügbarkeits- und Branch-Prüfung (2026-11-10)
+
+- [x] Echte Dateien des Feature-Branches über die GitHub-Verbindung abgerufen: `bulk-helpers.mjs`, `list-features.mjs`, beide Node-Testdateien und `wishes-ui.spec.mjs`
+- [x] Alle **27 originalen Branch-Logiktestfälle** in einem isolierten JavaScript-Runner ausgeführt: **27 bestanden, 0 fehlgeschlagen**. Dies ist ausdrücklich **kein** Node-`--test`-Lauf.
+- [x] Lokale Laufzeit erneut geprüft: Node `v22.16.0`, npm `10.9.2`
+- [x] Lokalen GitHub-Checkout versucht: `git ls-remote` scheitert weiterhin mit `Could not resolve host: github.com`
+- [x] Lokale npm-Abhängigkeit geprüft: `@playwright/test` ist nicht installiert; Python-Playwright ist vorhanden, ersetzt aber das Node-Testpaket nicht
+- [x] Lockfile-Generierung erneut versucht: `npm install --package-lock-only --offline --ignore-scripts --no-audit --no-fund` scheitert mit `ENOTCACHED` für `@playwright/test`. **Kein Lockfile erstellt.**
+- [ ] Originale Branch-Dateien mit `node --test` im vollständigen Checkout ausführen
+- [ ] Alle neun Browserfälle mit dem exakt gepinnten Playwright-Paket und Chromium ausführen
+- [ ] Verifiziertes `package-lock.json` nach erfolgreicher npm-Auflösung erstellen, prüfen und committen
+
+**Ergebnis:** Keine neu nachgewiesenen Funktionsfehler in den 27 isoliert ausgeführten Logiktests. Die vollständige Node-/Browser-Freigabe bleibt ausstehend; fehlende Netzwerk- und Paketverfügbarkeit sind die konkreten Blocker. Es wurden keine produktiven Datenbankänderungen, Merges oder Deployments durchgeführt.
