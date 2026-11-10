@@ -30,7 +30,6 @@ try{
   return {visible:!dashboard.hidden,hasListSelect:!!listSelect,loginHidden:document.getElementById('login').hidden};
  });
  if(!readOnly.visible||!readOnly.hasListSelect||!readOnly.loginHidden)throw Error('Authenticated dashboard is not ready');
- await page.waitForFunction(()=>document.getElementById('refreshLists')?.disabled===false,{timeout:15000}).catch(()=>{});
  if(!listReads.some(r=>r.table==='wishlist_lists'&&r.status===200))throw Error('No successful authenticated wishlist_lists REST SELECT observed');
  if(listReads.some(r=>r.status>=400))throw Error('Authenticated list REST request failed');
  await page.locator('#logout').click();
