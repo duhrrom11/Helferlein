@@ -328,7 +328,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
  async function retryItemsLoad(){if(bulkBusy)return;const id=getUser()?.id;try{await load()}catch(e){if(getUser()?.id!==id)return;msg(e.message||'Ladefehler')}}
  $('listItemsRetry').onclick=retryItemsLoad;
 
- $('listItemsNewWish').onclick=()=>{const list=lists.find(l=>l.id===selected&&!l.archived);if(!list||!membershipReady)return;
+ $('listItemsNewWish').onclick=()=>{const list=lists.find(l=>l.id===selected&&!l.archived);if(!list||!membershipReady||bulkBusy||activeWishMutations.size||getUser()?.id!==loadedOwner)return;
   $('wishListSelect').value=list.id;$('editor').scrollIntoView({behavior:'smooth',block:'start'});$('url').focus()};
  $('listQuickSwitch').onchange=()=>{const id=$('listQuickSwitch').value;if(!bulkBusy&&!activeWishMutations.size&&membershipReady&&lists.some(l=>l.id===id&&!l.archived))openList(id)};
  $('listItemsBack').onclick=()=>{$('listsContent').scrollIntoView({behavior:'smooth',block:'start'})};
@@ -355,7 +355,7 @@ actions.append(button('Duplizieren',async()=>{if(bulkBusy||activeWishMutations.s
  $('wishDetailSelect').onclick=()=>{if(!detailWishId||!membershipReady||bulkBusy||activeWishMutations.size||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===selected&&!l.archived)||!visibleWishes().slice(0,visibleLimit).some(w=>w.id===detailWishId))return;
   if(bulkIds.has(detailWishId))bulkIds.delete(detailWishId);else bulkIds.add(detailWishId);
   $('wishDetailSelect').textContent=bulkIds.has(detailWishId)?'Aus Sammelauswahl entfernen':'Für Sammelaktion auswählen';renderWishCards()};
- $('wishDetailJump').onclick=()=>{const id=detailWishId;if(!id||!membershipReady)return;const list=lists.find(l=>!l.archived&&membershipByList.get(l.id)?.has(id));if(list)jumpToWishInList(id,list.id);else msg('Der Wunsch ist keiner aktiven Liste zugeordnet.')};
+ $('wishDetailJump').onclick=()=>{const id=detailWishId;if(!id||!membershipReady||bulkBusy||activeWishMutations.size||getUser()?.id!==loadedOwner||!wishes.some(w=>w.id===id))return;const list=lists.find(l=>!l.archived&&membershipByList.get(l.id)?.has(id));if(list)jumpToWishInList(id,list.id);else msg('Der Wunsch ist keiner aktiven Liste zugeordnet.')};
  $('listsResetFilters').onclick=()=>{if(bulkBusy)return;$('listsSearch').value='';$('listsView').value='all';$('listsSort').value='favorites';render()};
  $('bulkMoveTarget').onchange=()=>{if(!bulkBusy)updateBulkToolbar()};
  $('bulkMove').onclick=()=>moveSelectedWishes().catch(e=>{$('bulkStatus').textContent=e.message||'Verschieben fehlgeschlagen'});
