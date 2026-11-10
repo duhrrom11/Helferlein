@@ -1,4 +1,4 @@
--- PREPARED ONLY. Do not run against production without explicit approval.
+-- PREPARED ONLY. Production rollout requires validated CI and explicit release gate.
 -- Existing wishlist_wishes remain PUBLIC; a private collection does not make its linked wishes private.
 create table if not exists public.wishlist_lists (
  id uuid primary key default gen_random_uuid(),
@@ -12,6 +12,9 @@ create table if not exists public.wishlist_lists (
  created_at timestamptz not null default now(),
  unique (id,user_id)
 );
+-- Composite ownership key prevents a user from assigning another user's wish.
+-- Required by the composite foreign key below.
+alter table public.wishlist_wishes add constraint wishlist_wishes_id_owner_unique unique (id,user_id);
 create table if not exists public.wishlist_list_items (
  list_id uuid not null,
  user_id uuid not null,
@@ -19,7 +22,7 @@ create table if not exists public.wishlist_list_items (
  created_at timestamptz not null default now(),
  primary key(list_id,wish_id),
  foreign key(list_id,user_id) references public.wishlist_lists(id,user_id) on delete cascade,
- foreign key(wish_id) references public.wishlist_wishes(id) on delete cascade
+ foreign key(wish_id,user_id) references public.wishlist_wishes(id,user_id) on delete cascade
 );
 create index if not exists wishlist_lists_owner_idx on public.wishlist_lists(user_id,created_at desc);
 create index if not exists wishlist_list_items_owner_idx on public.wishlist_list_items(user_id,wish_id);
@@ -30,7 +33,7 @@ create policy "lists owner insert" on public.wishlist_lists for insert to authen
 create policy "lists owner update" on public.wishlist_lists for update to authenticated using ((select auth.uid())=user_id) with check ((select auth.uid())=user_id);
 create policy "lists owner delete" on public.wishlist_lists for delete to authenticated using ((select auth.uid())=user_id);
 create policy "list items owner read" on public.wishlist_list_items for select to authenticated using ((select auth.uid())=user_id);
-create policy "list items owner insert" on public.wishlist_list_items for insert to authenticated with check ((select auth.uid())=user_id and exists (select 1 from public.wishlist_wishes w where w.id=wish_id and w.user_id=(select auth.uid())));
+create policy "list items owner insert" on public.wishlist_list_items for insert to authenticated with check ((select auth.uid())=user_id and exists (select 1 from public.wishlist_lists l where l.id=list_id and l.user_id=(select auth.uid())) and exists (select 1 from public.wishlist_wishes w where w.id=wish_id and w.user_id=(select auth.uid())));
 create policy "list items owner delete" on public.wishlist_list_items for delete to authenticated using ((select auth.uid())=user_id);
 grant select,insert,update,delete on public.wishlist_lists to authenticated;
 grant select,insert,delete on public.wishlist_list_items to authenticated;
