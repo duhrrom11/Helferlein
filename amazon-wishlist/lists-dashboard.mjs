@@ -176,7 +176,7 @@ actions.append(button('Duplizieren',async()=>{
   const job=pendingBulk;if(!job||bulkBusy||listCopyBusy)return;if(activeWishMutations.size){$('bulkStatus').textContent='Ein ausgewählter Wunsch wird gerade bearbeitet. Bitte danach erneut bestätigen.';return}
   pendingBulk=null;$('bulkConfirmDialog').close();
   const {uid,listId,add,targets}=job;
-  if(job.generation!==loadGeneration){$('bulkStatus').textContent='Die Daten wurden zwischen Auswahl und Bestätigung neu geladen. Bitte Sammelaktion erneut prüfen.';return}if(!bulkContextValid(job,{userId:getUser()?.id,listId:selected,ready:membershipReady,activeListIds:new Set(lists.filter(l=>!l.archived).map(l=>l.id))}))return;
+  if(job.generation!==loadGeneration||loadedOwner!==uid){$('bulkStatus').textContent='Die Daten oder das Benutzerkonto wurden zwischen Auswahl und Bestätigung gewechselt. Bitte Sammelaktion erneut prüfen.';return}if(!bulkContextValid(job,{userId:getUser()?.id,listId:selected,ready:membershipReady,activeListIds:new Set(lists.filter(l=>!l.archived).map(l=>l.id))}))return;
    const currentTargets=new Set(eligibleBulkTargets(targets,wishes.map(w=>w.id),assignedIds,add));if(currentTargets.size!==targets.length||targets.some(id=>!currentTargets.has(id))){$('bulkStatus').textContent='Die Listenzuordnung hat sich geändert. Bitte Auswahl und Aktion erneut prüfen.';return}
   const generation=loadGeneration,run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;lastBulkResult=null;$('bulkResultPanel').hidden=true;
   $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
@@ -203,7 +203,7 @@ actions.append(button('Duplizieren',async()=>{
   }
  }
  async function moveSelectedWishes(){
-  if(listCopyBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||!getUser())return;
+  if(listCopyBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||!getUser()||getUser()?.id!==loadedOwner)return;
   const uid=owner(),sourceId=selected,targetId=$('bulkMoveTarget').value,confirmationGeneration=loadGeneration;
   const source=lists.find(l=>l.id===sourceId&&!l.archived),target=lists.find(l=>l.id===targetId&&!l.archived);
   if(!source||!target||sourceId===targetId)return msg('Bitte zwei verschiedene aktive Listen auswählen.');
