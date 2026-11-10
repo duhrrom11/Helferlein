@@ -168,6 +168,14 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Bestandskompatibilität:** Bereits vorhandene Wünsche bleiben durch den Standardwert `public` sichtbar; neue private Wünsche sind nur für Eigentümer lesbar. Private Wünsche werden auf öffentlichen Sammlungsseiten herausgefiltert.
 - **Einschränkungen:** Titelbilder sind externe HTTPS-URLs (kein Upload/Hosting), keine Bildmoderation oder automatische Bildsuche. Bestehende öffentliche Wünsche müssen bei Bedarf vom Besitzer ausdrücklich auf privat umgestellt werden. Vollständige Browser- und rollenbasierte Integrationstests stehen noch aus.
 
+## Entwicklungsfortschritt – 10.11.2026 (Öffentliche Profile)
+
+- **Neu umgesetzt:** Eigenständige responsive Profilseiten unter `amazon-wishlist/profile.html?handle=<handle>` mit Anzeigename, Bio, optionalem Profilbild und Übersicht der öffentlichen Sammlungen.
+- **Neu umgesetzt:** Karten mit Titelbildern, Beschreibungen und Links zu öffentlichen Sammlungen; Teilen-Funktion mit nativer Gerätefreigabe bzw. Zwischenablage.
+- **Neu umgesetzt:** Community-Feed und Personensuche verlinken auf die Profilgalerie; Profil-Editor erlaubt HTTPS-Profilbild-URL über das bereits vorhandene Feld `wishlist_profiles.avatar_url`; eigener Profil-Link verweist auf die neue Seite.
+- **Sicherheit:** Die Profilgalerie fragt ausschließlich `visibility='public'` und `archived=false` ab. Bestehende Supabase-RLS-Policies bleiben aktiv; keine neuen Tabellen, keine produktiven Datensätze geändert.
+- **Noch offen:** Eigene Bild-Uploads und Bildmoderation, Follower-Statistiken auf der Profilseite, personalisierte Profil-Themes, End-to-End-Browserprüfung.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
