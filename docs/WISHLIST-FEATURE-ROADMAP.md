@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private gespeicherte Filteransichten)
+
+- **Neu umgesetzt:** Bis zu fünf benannte Filterkombinationen pro angemeldetem Konto für die private Dashboard-Sicherungspunkt-Zeitachse speichern, anwenden, nach Bestätigung überschreiben und löschen.
+- **Umfang:** Datumsfilter, Layout, abweichender Einstellungsbereich und interaktive Mehrfachkategorien werden gemeinsam gespeichert. Die Filteransichten sind browserlokal (localStorage), nach Nutzer-ID getrennt und **nicht geräteübergreifend synchronisiert**; es werden keine Sicherungspunkt-Inhalte lokal gespeichert.
+- **Sicherheit:** Keine Datenbankmigration, keine Testdaten. RLS und Rechte für Dashboard-Einstellungen, Historie und Sicherungspunkte erneut geprüft; keine anonymen Leserechte und keine direkten Schreibrechte für Historie/Sicherungspunkte. Produktivdaten bleiben unverändert.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Interaktive private Sicherungspunkt-Änderungsanalyse)
 
 - **Neu umgesetzt:** Anklickbare, per Tastatur bedienbare Änderungskategorien in der privaten Dashboard-Zeitachse; Mehrfachauswahl verwendet UND-Verknüpfung und lässt sich mit Datums-, Layout- und bisherigen Änderungsfiltern kombinieren. Die Schaltflächen kennzeichnen ihren Zustand mit aria-pressed.
