@@ -125,3 +125,8 @@ export async function copyShareLink(text,clipboard=navigator.clipboard,doc=docum
   return 'fallback';
  }finally{input.remove()}
 }
+
+/** A successful sign-in response is not enough: the current auth check must agree. */
+export function isConfirmedSignIn(signInUser,currentUser) {
+ return typeof signInUser?.id==='string'&&signInUser.id.length>0&&signInUser.id===currentUser?.id;
+}
