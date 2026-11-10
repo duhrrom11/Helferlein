@@ -57,3 +57,11 @@ test('pagination ignores stale responses after account switch',async()=>{
  const result=await fetchAllPages(async()=>{current=false;return {data:[1]}},{isCurrent:()=>current});
  assert.equal(result,null);
 });
+
+test('invalid pagination size fails fast instead of looping forever',async()=>{
+ await assert.rejects(()=>fetchAllPages(async()=>({data:[1]}),{pageSize:0}),/pageSize/);
+ await assert.rejects(()=>fetchAllPages(async()=>({data:[1]}),{pageSize:1.5}),/pageSize/);
+});
+test('malformed paginated server response fails explicitly',async()=>{
+ await assert.rejects(()=>fetchAllPages(async()=>({data:{id:'wrong'}})),/array/);
+});
