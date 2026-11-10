@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Gebündelte Favoriten-Navigation)
+
+- **Neu umgesetzt:** Private Monatsvorschau angehefteter Sicherungspunkt-Filteransichten mit Zurück/Weiter-Navigation, gezieltem Öffnen je Favorit und Schließen der Vorschau. Alle Vorschauaktionen verändern die aktiven Filter nicht; die gesonderte Anwenden-Schaltfläche bleibt erhalten.
+- **Mobil und barrierearm:** Responsive Navigation mit großen Touch-Zielen und beschrifteten Vorschau-Schaltflächen.
+- **Sicherheit:** Keine Datenbankmigration und keine Testdaten. RLS und Berechtigungen für Cloud-Filteransichten, Präferenzen, Historie und Sicherungspunkte erneut geprüft; kein anonymer Lesezugriff und keine direkten Schreibrechte auf Historie/Sicherungspunkte.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Gebündelte Favoriten-Monatsvorschau und Weiter-Button)
 
 - **Neu umgesetzt:** Favoriten-Schnellleiste um einen ausdrücklich beschrifteten „▶️ Weiter – nächsten Favoriten ansehen“-Button ergänzt. Er durchläuft angeheftete Filteransichten zyklisch, ohne die aktiven Filter zu verändern.
