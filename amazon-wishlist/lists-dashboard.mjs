@@ -334,17 +334,17 @@ actions.append(button('Duplizieren',async()=>{
   const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Liste wählen';select.append(placeholder);
   for(const list of [...lists].filter(l=>!l.archived).sort((a,b)=>Number(favoriteIds.has(b.id))-Number(favoriteIds.has(a.id))||a.title.localeCompare(b.title,'de'))){const option=document.createElement('option');option.value=list.id;option.textContent=(favoriteIds.has(list.id)?'★ ':'')+list.icon+' '+list.title+' · '+(listCounts.get(list.id)||0)+' Wünsche'+(list.archived?' (archiviert)':'');select.append(option)}
   select.value=lists.some(l=>l.id===previous&&!l.archived)?previous:'';
-  select.disabled=listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size>0||!membershipReady||!lists.some(l=>!l.archived);
+  select.disabled=listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size>0||!membershipReady||getUser()?.id!==loadedOwner||!lists.some(l=>!l.archived);
  }
  function updateActiveListContext(){
   const list=lists.find(l=>l.id===selected&&!l.archived);
   $('activeListHeading').textContent=list?list.icon+' '+list.title:'Wünsche dieser Liste';
-  $('activeListSummary').textContent=list?(listCounts.get(list.id)||0)+' zugeordnet · '+(list.archived?'Archiviert – nur ansehen':'Aktive Liste'):'Wähle eine Liste aus.';$('listItemsNewWish').disabled=listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size>0||!list||list.archived||!membershipReady;
+  $('activeListSummary').textContent=list?(listCounts.get(list.id)||0)+' zugeordnet · '+(list.archived?'Archiviert – nur ansehen':'Aktive Liste'):'Wähle eine Liste aus.';$('listItemsNewWish').disabled=listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size>0||!list||list.archived||!membershipReady||getUser()?.id!==loadedOwner;
   const quick={quickAllWishes:$('listWishAssignment').value==='all'&&$('listWishMarker').value==='all',quickAssignedWishes:$('listWishAssignment').value==='assigned',quickUnassignedWishes:$('listWishAssignment').value==='global-unassigned',quickFavoriteWishes:$('listWishMarker').value==='star'};
   for(const [id,pressed] of Object.entries(quick))$(id).setAttribute('aria-pressed',String(pressed));
  }
  function setQuickWishFilter(mode){
-  if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size)return;
+  if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===selected&&!l.archived))return;
   $('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';selectedOnlyView=false;
   if(mode==='all'){$('listWishAssignment').value='all';$('listWishMarker').value='all'}
   if(mode==='assigned'){$('listWishAssignment').value='assigned';$('listWishMarker').value='all'}
