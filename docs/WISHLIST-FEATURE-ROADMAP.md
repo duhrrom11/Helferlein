@@ -129,6 +129,14 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Technische Abgrenzung:** Der Budgetplaner rechnet nur im Browser; keine dauerhafte Speicherung, keine gemeinsame Geschenkkasse und keine Supabase-Schemaänderung. PDF-Funktion ist der Browser-Druckdialog, kein serverseitiger PDF-Export von Wunschlisten.
 - **Offen:** Vollständige Wunschlisten-PDFs, Geburtstagskalender, Geschenkfinder, öffentliche Themenwelten und weitere Roadmap-Pakete.
 
+## Entwicklungsfortschritt – 10.11.2026 (Geschenkfinder)
+
+- **Neu umgesetzt:** Responsiver Geschenkfinder mit Anlass, Interessen und Budgetauswahl, regelbasierter Stichwortzuordnung, maximal sechs Empfehlungskarten und Zufallsinspiration.
+- **Datenquelle:** Ausschließlich aktuell im Browser geladene öffentliche Wünsche aus dem bestehenden Community-Feed; keine zusätzliche Supabase-Abfrage und keine Änderungen an Produktivdaten.
+- **Preisgrenze:** Budgetauswahl ist derzeit informativ, **kein echter Preisfilter**, da der bestehende Feed keine verlässlichen Produktpreise enthält.
+- **Monetarisierung:** Bereits vorhandene Amazon-Partnerlinks werden für Empfehlungen wiederverwendet.
+- **Noch offen:** Vollständige serverseitige Community-Suche, valide Produktpreisquelle, präzisere Interessenklassifikation, mehr Anlässe und Empfehlungen aus mehreren Seiten des Feeds.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
