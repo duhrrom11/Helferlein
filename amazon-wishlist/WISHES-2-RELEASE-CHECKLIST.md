@@ -782,3 +782,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Zweistufige Verschiebungen und Kopien sind weiterhin nicht transaktional.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: Verlauf, mobile Leerdatenzustände und Nachladen (2026-11-10)
+
+- [x] Wiederaufnahme aus dem Sammelaktions-Verlauf prüft Kopier-, Sammel- und Einzelaktionssperren sowie aktuelle Mitgliedschaftsdaten und den ursprünglichen Benutzer-Arbeitsbereich, bevor sie die Zielliste öffnet oder eine neue Bestätigung vorbereitet.
+- [x] Bei fehlender aktiver Liste, unvollständiger Mitgliedschaft oder fremdem Benutzer-Arbeitsbereich sind alle mobilen Auswahl- und Neuwunsch-Schaltflächen deaktiviert.
+- [x] Die „Mehr laden“-Schaltfläche wird nach erfolgreichem Mitgliedschafts-Reload wieder korrekt aktiviert, sofern weitere Treffer vorhanden sind; laufende Änderungen sperren sie weiterhin.
+- [x] Das Zurücksetzen von Listenfiltern im leeren Suchergebnis respektiert Kopier- und Schreibsperren sowie den geladenen Benutzerkontext.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Kopiervorgänge und Verschiebungen bleiben nicht transaktional.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
