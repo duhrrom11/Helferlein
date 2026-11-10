@@ -36,3 +36,21 @@ test('new encapsulated key per envelope',()=>{
  assert.notDeepEqual(a.enc,b.enc);
  assert.notDeepEqual(a.ciphertext,b.ciphertext);
 });
+
+test('official RFC 9180 published JSON vector: X25519 HKDF-SHA256 AES-256-GCM base mode',()=>{
+ // Source: CFRG RFC 9180 TestVectors, pinned commit 5f503c564da00b0687b3de75f1dfbdfc4079ad31
+ // https://github.com/cfrg/draft-irtf-cfrg-hpke/blob/5f503c564da00b0687b3de75f1dfbdfc4079ad31/test-vectors.json
+ const {createPrivateKey,createPublicKey}=require('node:crypto');
+ const skRm='497b4502664cfea5d5af0b39934dac72242a74f8480451e1aee7d6a53320333d';
+ const pkRm='430f4b9859665145a6b1ba274024487bd66f03a2dd577d7753c68d7d7d00c00c';
+ const enc='6c93e09869df3402d7bf231bf540fadd35cd56be14f97178f0954db94b7fc256';
+ const pt='4265617574792069732074727574682c20747275746820626561757479';
+ const ct='e5d84cd531cfb583096e7cfa9641bd3079cf3a91cda813c52deb5f512be9931980a41de125a925cdad859d5b7a';
+ const privateKey=createPrivateKey({key:Buffer.concat([Buffer.from('302e020100300506032b656e04220420','hex'),Buffer.from(skRm,'hex')]),format:'der',type:'pkcs8'});
+ const derived=createPublicKey(privateKey).export({format:'der',type:'spki'}).subarray(12);
+ assert.equal(derived.toString('hex'),pkRm);
+ assert.equal(open(privateKey,Buffer.from(enc,'hex'),Buffer.from(ct,'hex'),{
+   info:Buffer.from('4f6465206f6e2061204772656369616e2055726e','hex'),
+   aad:Buffer.from('436f756e742d30','hex')
+ }).toString('hex'),pt);
+});
