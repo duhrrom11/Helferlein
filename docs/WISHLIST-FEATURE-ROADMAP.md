@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Dashboard-Verwaltung für Smartphones gruppiert)
+
+- **Nutzerführung:** Die Geschenkübersicht wird vor den umfangreichen Verwaltungsoptionen gezeigt. Ein neuer aufklappbarer Bereich „Dashboard verwalten“ gruppiert Layout/Vorschau, Anzeige/Einstellungen und Sicherungen/Verlauf/Datenübernahme.
+- **Responsive Verhalten:** Verwaltung auf Smartphones standardmäßig geschlossen, auf größeren Bildschirmen geöffnet; kompaktere Dashboard-Karten, Abstände und Kennzahlen auf kleinen Displays.
+- **Funktionsschutz:** Vorhandene Dashboard-Elemente werden als DOM-Knoten verschoben, nicht kopiert; ursprüngliche IDs, Formulare, Aktionen, Statusmeldungen und Sicherungsfunktionen bleiben erhalten.
+- **Produktivdaten:** Nur Frontend-HTML/CSS/JS; keine Datenbankmigration, keine Testdaten, keine Änderungen an bestehenden Wunschlisten oder Geschenkdatensätzen.
+- **Qualität:** Einmaligkeit der relevanten IDs und Vorhandensein des neuen Panels geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Mobile Orientierung und reduzierte Navigationslast)
 
 - **Neu umgesetzt:** Kontextabhängiger, auf Smartphones erst nach weiterem Scrollen sichtbarer „Nach oben“-Button. Berücksichtigt sichere Bildschirmränder und die Einstellung für reduzierte Bewegung.
