@@ -1201,3 +1201,10 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Secrets weiter gehärtet: E-Mail und Passwort sind nur bei der Prüfung der Secret-Verfügbarkeit und im eigentlichen Browser-Login-Schritt verfügbar, **nicht** bei Checkout, `npm install` oder HTTP-Server-Start (Commit `622f5c12`).
 - [ ] Der erste Auth-Workflow war bei dieser Prüfung noch in der Containerinitialisierung; **keine bestätigte erfolgreiche Authentifizierung** und kein Beleg für vorhandene Secrets. Bei Fehlern Joblogs prüfen, niemals Geheimnisse ausgeben.
 - [ ] Auth-Workflow, Node/Chromium, CodeQL und GitHub-Pages-Gates auf dem **finalen** Commit vollständig grün bestätigen; erst dann Merge und Veröffentlichung.
+
+### Auth-Gate: tatsächlicher Fehlversuch mit Logs
+
+- [x] PR-Workflow `42832708112` (Commit `ff47b03a`) **ausgeführt**; Job `existing-account-browser` **failure** beim Schritt `Check existing-account credentials are configured`.
+- [x] Echte Joblogs bestätigen: `Existing-account credentials are not configured. Authenticated release gate remains OPEN.` Alle folgenden Schritte einschließlich Login wurden übersprungen. **Keine Produktivdaten verändert.**
+- [ ] **Externer Freigabeblocker:** Repository-Administrator muss `WISHES_EXISTING_USER_EMAIL` und `WISHES_EXISTING_USER_PASSWORD` für ein ausdrücklich autorisiertes, vorhandenes Konto als GitHub-Actions-Secrets konfigurieren (Repository → Settings → Secrets and variables → Actions). Keine Secrets in Code, Issues, PR-Kommentaren oder Chat einfügen.
+- [ ] Nach Secret-Einrichtung einen neuen vertrauenswürdigen PR-Lauf auslösen, tatsächliche Auth- und Supabase-REST-200-Ergebnisse bestätigen und **erst danach** Merge/Deployment in Betracht ziehen. Das fehlgeschlagene Gate darf nicht umgangen oder als optional grün deklariert werden.
