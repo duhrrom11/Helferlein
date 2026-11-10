@@ -1032,3 +1032,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Release-Smoke-Workflow 42826315582 erfolgreich.
 - [ ] Browser-CI nach Fixture-Änderung auf Commit `6a0af80f` prüfen; erst dann Browser-Gate als grün markieren.
 - [ ] Separate Dashboard-Fixture beweist nur isoliertes Verhalten; Live-Aktivierung verlangt Schema/RLS- und echte App-Integrationstests.
+
+## Autopilot: letzte drei Chromium-Fehler und produktive RLS-Inventur (2026-11-10)
+
+- [x] CI-Lauf 42826456111 auf `fb724047`: Node-`checks` **success**, Browser **15 passed / 3 failed**. Echte Joblogs identifizieren zwei veraltete Checkbox-Namen (`Alle gefilterten Wünsche auswählen` statt `Angezeigte Wünsche auswählen`) und einen Mobile-Geometry-Test, der auch bewusst unsichtbare Buttons als Layoutfehler zählte.
+- [x] Playwright-Assertions an tatsächlich sichtbare Accessible Names und Layout-Geometrie angepasst; unsichtbare Buttons werden nicht mehr als überlaufende sichtbare Controls gewertet (Commit `c28e9fef`).
+- [x] Vault-Sync 42827149875 **success**; Release-Smoke 42827149986 **success** auf `c28e9fef`.
+- [x] Produktionsprojekt `avapuibsidubuzxjtyld` **nur lesend** geprüft: vier vorhandene Tabellen `wishlist_profiles`, `wishlist_products`, `wishlist_wishes`, `wishlist_follows`, alle mit RLS; 13 Policies mit öffentlichen SELECTs und eigentümergebundenen Schreibrechten. Keine Tabellen für Listen/Mitgliedschaften vorhanden, deshalb **keine Aktivierung des neuen Listen-Dashboards**.
+- [x] Security Advisor meldet weiterhin `auth_leaked_password_protection` (Leaked Password Protection Disabled): https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+- [ ] Vollständigen Chromium- und Node-Status nach `c28e9fef` bestätigen, bevor Merge freigegeben wird.
+- [ ] Produktive Listen-Schema-Migration mit detaillierter RLS- und Rollback-Prüfung separat planen; keine Testdaten, keine DDL ausgeführt.
