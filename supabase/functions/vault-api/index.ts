@@ -1,5 +1,5 @@
-// Helferlein: geschuetzter Einstiegspunkt fuer die spaetere Tresor-API.
-// Diese Funktion gibt absichtlich KEINE Tresordaten frei.
+// Helferlein: JWT-geschuetzte Eigentuemerauskunft zum verschluesselten Tresor.
+// Keine Tresordaten, Schluessel, Erbenfreigaben oder Schreiboperationen.
 // Deployment: Supabase Edge Functions mit JWT-Pruefung aktiviert lassen.
 // Erforderliche Secrets: SUPABASE_URL, SUPABASE_ANON_KEY (Supabase-Umgebung).
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -42,6 +42,7 @@ Deno.serve(async (request) => {
   }
 
   const supabase = createClient(url, anonKey, {
+    global: { headers: { Authorization: authorization } },
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const token = authorization.replace(/^Bearer\s+/i, "");
@@ -93,35 +94,31 @@ Deno.serve(async (request) => {
     return new Response(JSON.stringify({ error: "invalid_vault_id" }), { status: 400, headers });
   }
 
-  // Service-Role-Schluessel darf ausschliesslich serverseitig hinterlegt werden.
-  // Er darf niemals in Browsercode oder API-Antworten erscheinen.
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!serviceRoleKey) {
-    return new Response(JSON.stringify({ error: "service_unavailable" }), { status: 503, headers });
-  }
-  const admin = createClient(url, serviceRoleKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { data: ownership, error: ownershipError } = await admin
-    .from("vault_ownership")
-    .select("vault_id")
+  // Ausschliesslich mit dem JWT des verifizierten Nutzers und dessen RLS-Rechten
+  // lesen. Keine service_role, kein Zugriff auf fremde Tresore.
+  const { data: snapshot, error: snapshotError } = await supabase
+    .from("vault_cloud_snapshots")
+    .select("vault_id, owner_user_id, updated_at")
     .eq("vault_id", vaultId)
     .eq("owner_user_id", data.user.id)
     .maybeSingle();
 
-  if (ownershipError) {
-    console.error("Vault ownership lookup failed", ownershipError.code);
-    return new Response(JSON.stringify({ error: "service_unavailable" }), { status: 503, headers });
+  if (snapshotError) {
+    console.error("Vault metadata lookup failed", snapshotError.code);
+    return new Response(JSON.stringify({ error: "service_unavailable" }), {
+      status: 503,
+      headers,
+    });
   }
-  if (!ownership) {
-    // Keine Auskunft, ob ein fremder Tresor existiert.
+  if (!snapshot || snapshot.owner_user_id !== data.user.id || snapshot.vault_id !== vaultId) {
+    // Identische Antwort fuer nicht vorhandene und nicht berechtigte Tresore.
     return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers });
   }
 
-  // Trotz erfolgreicher Eigentuemerkontrolle weiterhin KEIN Firestore-Zugriff.
-  // Erst nach sicherer Migration, API-Design und Tests aktivieren.
-  return new Response(JSON.stringify({ error: "vault_access_not_configured" }), {
-    status: 503,
-    headers,
-  });
+  // Nur Metadaten. Verschluesselte Inhalte und Erbenfreigabe bleiben gesperrt.
+  return new Response(JSON.stringify({
+    vaultId: snapshot.vault_id,
+    updatedAt: snapshot.updated_at,
+    access: "owner_metadata_only",
+  }), { status: 200, headers });
 });
