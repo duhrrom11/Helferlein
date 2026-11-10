@@ -295,7 +295,28 @@ actions.append(button('Duplizieren',async()=>{
    const selectRow=document.createElement('label');selectRow.className='wish-card-select';const selectCheck=document.createElement('input');selectCheck.type='checkbox';selectCheck.setAttribute('aria-label','Für Sammelaktion auswählen: '+(wish.wishlist_products?.title||'Wunsch'));selectCheck.checked=bulkIds.has(wish.id);selectCheck.disabled=listMutationBusy||listCopyBusy||activeWishMutations.size>0||!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived;selectCheck.onchange=()=>{if(listMutationBusy||listCopyBusy||!selectCheck.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||selected!==list.id||!wishes.some(w=>w.id===wish.id)||!bulkControlsEnabled({membershipReady,bulkBusy})||list.archived||activeWishMutations.size){selectCheck.checked=bulkIds.has(wish.id);return}if(selectCheck.checked)bulkIds.add(wish.id);else bulkIds.delete(wish.id);if(selectedOnlyView)renderWishCards();else updateBulkToolbar()};const selectText=document.createElement('span');selectText.textContent='Für Mehrfachaktion auswählen';selectRow.append(selectCheck,selectText);card.append(selectRow);
    const title=document.createElement('h4');title.textContent=wish.wishlist_products?.title||'Wunsch';
    const priority=document.createElement('p');priority.className='wish-priority';priority.textContent=['','Sehr wichtig','Normal','Irgendwann'][wish.priority]||'Priorität '+wish.priority;
-   card.append(title,priority);const membershipCount=membershipCounts.get(wish.id)||0;const membershipInfo=document.createElement('small');membershipInfo.className='wish-membership-count';membershipInfo.textContent=membershipCount+' '+(membershipCount===1?'Liste':'Listen');card.append(membershipInfo);const category=WISH_CATEGORIES.find(c=>c.id===wishCategories[wish.id]);if(category){const chip=document.createElement('span');chip.className='wish-category-chip';chip.textContent=category.label;card.append(chip)}
+   card.append(title,priority);
+   // Optional device-local product details, scoped to the signed-in owner.
+   try{
+    const owner=getUser()?.id;
+    if(owner&&owner===loadedOwner){
+     const extras=JSON.parse(localStorage.getItem('helferlein-wish-extras:'+owner)||'{}')?.[wish.id];
+     if(extras&&typeof extras==='object'){
+      if(typeof extras.imageUrl==='string'&&extras.imageUrl.startsWith('https://')){
+       const image=document.createElement('img');image.className='wish-product-image';image.src=extras.imageUrl;image.alt='Produktbild';image.loading='lazy';image.referrerPolicy='no-referrer';card.append(image);
+      }
+      const tags=document.createElement('div');tags.className='wish-product-extras';
+      const values=[];
+      if(Number.isFinite(extras.price)&&extras.price>=0)values.push('🎯 '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(extras.price));
+      if(Number.isInteger(extras.quantity)&&extras.quantity>1)values.push('× '+extras.quantity);
+      if(extras.status==='planned')values.push('📌 Geplant');
+      if(extras.status==='fulfilled')values.push('✓ Erfüllt');
+      for(const value of values){const badge=document.createElement('span');badge.textContent=value;tags.append(badge)}
+      if(tags.childElementCount)card.append(tags);
+     }
+    }
+   }catch(_){}
+   const membershipCount=membershipCounts.get(wish.id)||0;const membershipInfo=document.createElement('small');membershipInfo.className='wish-membership-count';membershipInfo.textContent=membershipCount+' '+(membershipCount===1?'Liste':'Listen');card.append(membershipInfo);const category=WISH_CATEGORIES.find(c=>c.id===wishCategories[wish.id]);if(category){const chip=document.createElement('span');chip.className='wish-category-chip';chip.textContent=category.label;card.append(chip)}
    const markers=document.createElement('div');markers.className='wish-marker-actions';for(const [marker,off,on] of [['star','☆ Merken','★ Favorit'],['later','⏳ Später','✓ Für später']]){const active=wishMarkers[wish.id]===marker;const control=button(active?on:off,async()=>{if(listMutationBusy||listCopyBusy||activeWishMutations.size||!control.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||selected!==list.id)return msg('Bitte die aktuelle Wunschkarte verwenden.');setMarker(wish.id,marker)});control.disabled=listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size>0;control.setAttribute('aria-pressed',String(active));control.setAttribute('aria-label',(active?'Markierung entfernen: ':'Wunsch markieren: ')+(wish.wishlist_products?.title||'Wunsch'));markers.append(control)}card.append(markers);
    if(wish.note){const note=document.createElement('p');note.className='wish-card-note';note.textContent=wish.note;card.append(note);
     if(wish.note.length>180){note.classList.add('is-collapsed');const toggle=button('Notiz vollständig anzeigen',async()=>{if(!toggle.isConnected||cardGeneration!==loadGeneration||getUser()?.id!==loadedOwner||selected!==list.id||!membershipReady)return;const collapsed=note.classList.toggle('is-collapsed');toggle.textContent=collapsed?'Notiz vollständig anzeigen':'Notiz einklappen';toggle.setAttribute('aria-label',(collapsed?'Notiz anzeigen: ':'Notiz einklappen: ')+(wish.wishlist_products?.title||'Wunsch'));toggle.setAttribute('aria-expanded',String(!collapsed))});toggle.className='wish-note-toggle';toggle.setAttribute('aria-label','Notiz anzeigen: '+(wish.wishlist_products?.title||'Wunsch'));toggle.setAttribute('aria-expanded','false');card.append(toggle)}
