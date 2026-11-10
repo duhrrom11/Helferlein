@@ -6,8 +6,21 @@ export default defineConfig({
  workers:1,
  retries:0,
  timeout:20000,
+ expect:{timeout:5000},
  reporter:[['list']],
- use:{...devices['Desktop Chrome'],browserName:'chromium',headless:true,trace:'off',screenshot:'off',video:'off'},
- projects:[{name:'chromium',use:{...devices['Desktop Chrome']}}],
+ projects:[{
+  name:'chromium',
+  use:{
+   ...devices['Desktop Chrome'],
+   browserName:'chromium',
+   headless:true,
+   reducedMotion:'reduce',
+   actionTimeout:5000,
+   navigationTimeout:10000,
+   trace:'retain-on-failure',
+   screenshot:'only-on-failure',
+   video:'off'
+  }
+ }],
  outputDir:'./.playwright-results'
 });
