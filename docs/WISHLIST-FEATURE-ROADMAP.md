@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Privates Geschenk-Startdashboard)
+
+- **Neu umgesetzt:** Mobilfreundliches, privates Geschenk-Startdashboard direkt auf `amazon-wishlist/index.html` mit eigenem Modul `gift-start.mjs`. Es erscheint nur nach erfolgreicher Supabase-Anmeldung und aktualisiert sich bei Authentifizierungsänderungen.
+- **Inhalte:** Offene und überfällige Aufgaben, heute fällige Tagesprioritäten mit Begründung und Priorität, nächste drei einmalige/wiederkehrende Anlässe mit transparentem Standard-Planungsvorlauf von 21 Tagen, persönlicher Fortschritt anhand aktuell nicht archivierter Aufgaben.
+- **Navigation:** Direkte Links zum privaten Geschenk-Planungscockpit, zur Tagesplanung und zur Aufgabenverwaltung. Keine automatischen Aufgabenaktionen.
+- **Datenschutz:** Ausschließlich owner-gefilterte paginierte SELECT-Abfragen auf `wishlist_gift_tasks` und `wishlist_occasions`. RLS und owner-only SELECT für beide Tabellen geprüft; anon keine Leserechte. Keine Migration, keine Testdaten, keine Änderung bestehender Produktivdaten. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Privates mobiles Geschenk-Planungscockpit)
 
 - **Neu umgesetzt:** `amazon-wishlist/gift-cockpit.html` und `gift-cockpit.mjs` als mobile, private Übersichtsseite. Verlinkung aus `gift-assistant.html`.
