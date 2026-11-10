@@ -35,5 +35,7 @@ create policy "lists owner delete" on public.wishlist_lists for delete to authen
 create policy "list items owner read" on public.wishlist_list_items for select to authenticated using ((select auth.uid())=user_id);
 create policy "list items owner insert" on public.wishlist_list_items for insert to authenticated with check ((select auth.uid())=user_id and exists (select 1 from public.wishlist_lists l where l.id=list_id and l.user_id=(select auth.uid())) and exists (select 1 from public.wishlist_wishes w where w.id=wish_id and w.user_id=(select auth.uid())));
 create policy "list items owner delete" on public.wishlist_list_items for delete to authenticated using ((select auth.uid())=user_id);
+-- Revoke inherited/default grants: TRUNCATE bypasses RLS, so no anon/PUBLIC privileges.
+revoke all privileges on table public.wishlist_lists, public.wishlist_list_items from public, anon, authenticated;
 grant select,insert,update,delete on public.wishlist_lists to authenticated;
 grant select,insert,delete on public.wishlist_list_items to authenticated;
