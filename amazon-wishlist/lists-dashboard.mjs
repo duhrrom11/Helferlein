@@ -135,7 +135,7 @@ actions.append(button('Duplizieren',async()=>{
      }
      if(!current())return;
      try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid)msg('Liste mit '+copied+' Zuordnungen dupliziert, aber Aktualisierung fehlgeschlagen. Bitte neu laden.');return}
-     if(current())msg('Liste mit '+copied+' Zuordnungen dupliziert.');
+     if(getUser()?.id===uid&&loadedOwner===uid)msg('Liste mit '+copied+' Zuordnungen dupliziert.');
     }catch(e){
      if(!current())return;
      try{await load({afterBulk:true})}catch{}
