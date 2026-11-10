@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Erweiterter Vergleich privater Cloud-Filterfavoriten)
+
+- **Neu umgesetzt:** Lesender Detailvergleich zweier angehefteter Cloud-Filteransichten mit nebeneinanderliegenden Datums-, Layout-, Änderungsbereichs- und Kategorieeinstellungen; abweichende Felder werden farblich markiert.
+- **Monatsanalyse:** Gemeinsame Monatsübersicht zeigt Treffer je Ansicht und Schnittmenge pro Monat; Ergebniszusammenfassung mit exklusiven und gemeinsamen Sicherungspunkten.
+- **Mobil:** Horizontal scrollbar gehaltene Tabellen und kompakte Darstellung auf Smartphones.
+- **Sicherheit:** Ausschließlich bereits eigentümergebunden geladene Daten, keine Migration, keine Testdaten. RLS und Tabellenprivilegien für Cloud-Filteransichten, Präferenzen, Historie und Sicherungspunkte geprüft; kein anonymer Lesezugriff, keine direkten Schreibrechte für Historie/Sicherungspunkte.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Privater Favoritenvergleich für Sicherungspunkte)
 
 - **Neu umgesetzt:** Zwei angeheftete Cloud-Filteransichten in einem responsiven, lesenden Vergleich gegenüberstellen. Auswahl A/B, Trefferzahl, Schnittmenge, exklusive Treffer und Anzahl der Treffer mit Abweichungen zur aktuellen Dashboard-Konfiguration.
