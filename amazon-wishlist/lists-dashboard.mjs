@@ -130,6 +130,29 @@ export function mountListsDashboard(db, getUser) {
    if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkStop').disabled=true;updateBulkToolbar();renderWishCards()}
   }
  }
+ async function moveWishToList(wishId,sourceListId,targetListId,control){
+  if(bulkBusy||!membershipReady||!getUser()||sourceListId===targetListId)return;
+  const uid=owner(),generation=loadGeneration;
+  const source=lists.find(l=>l.id===sourceListId&&!l.archived);
+  const target=lists.find(l=>l.id===targetListId&&!l.archived);
+  if(!source||!target||selected!==sourceListId||!assignedIds.has(wishId))return msg('Bitte einen zugeordneten Wunsch aus einer aktiven Liste auswählen.');
+  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben?'))return;
+  const current=()=>getUser()?.id===uid&&generation===loadGeneration&&selected===sourceListId;
+  control.disabled=true;
+  try{
+   const alreadyThere=membershipByList.get(targetListId)?.has(wishId);
+   if(!alreadyThere){
+    const {error}=await db.from('wishlist_list_items').insert({list_id:targetListId,wish_id:wishId,user_id:uid});
+    if(error)throw error;
+   }
+   if(!current()){msg('Zielzuordnung gespeichert. Bitte Listen neu laden, bevor du fortfährst.');return}
+   const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid);
+   if(error){msg('Wunsch wurde zur Zielliste hinzugefügt, konnte aber nicht aus der Ursprungsliste entfernt werden: '+error.message+'. Bitte erneut prüfen.');await load();return}
+   await load();
+   if(getUser()?.id===uid){openList(targetListId);msg('Wunsch nach „'+target.title+'“ verschoben.')}
+  }catch(e){msg('Verschieben fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
+  finally{control.disabled=false}
+ }
  function renderWishCards(){
   const cards=$('listWishCards');cards.replaceChildren();
   const list=lists.find(l=>l.id===selected);
@@ -153,7 +176,19 @@ export function mountListsDashboard(db, getUser) {
     if(wanted){assignedIds.add(wish.id);membershipByList.get(list.id)?.add(wish.id)}else{assignedIds.delete(wish.id);membershipByList.get(list.id)?.delete(wish.id)}
     await load();msg('Wunschzuordnung gespeichert');
    }catch(e){check.checked=!wanted;msg(e.message||'Zuordnung fehlgeschlagen')}finally{check.disabled=false}};
-   row.append(check,caption);card.append(row);card.append(button('Details ansehen',async()=>openWishDetail(wish)));cards.append(card);
+   row.append(check,caption);card.append(row);
+   if(assignedIds.has(wish.id)&&!list.archived){
+    const destinations=lists.filter(l=>!l.archived&&l.id!==list.id);
+    if(destinations.length){
+     const moveRow=document.createElement('div');moveRow.className='wish-move-actions';
+     const destination=document.createElement('select');destination.setAttribute('aria-label','Zielliste für '+(wish.wishlist_products?.title||'Wunsch'));
+     const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Zielliste wählen';destination.append(placeholder);
+     for(const target of destinations){const option=document.createElement('option');option.value=target.id;option.textContent=target.icon+' '+target.title;destination.append(option)}
+     const move=button('Verschieben',async()=>{if(!destination.value)return msg('Bitte zuerst eine Zielliste wählen.');await moveWishToList(wish.id,list.id,destination.value,move)});
+     move.disabled=!membershipReady||bulkBusy;moveRow.append(destination,move);card.append(moveRow);
+    }
+   }
+   card.append(button('Details ansehen',async()=>openWishDetail(wish)));cards.append(card);
   }
  }
  function setItemsFeedback(state,message){const panel=$('listItemsFeedback');panel.hidden=state==='ready';$('listItemsFeedbackText').textContent=message;$('listItemsRetry').hidden=state!=='error';$('listItemsRetry').disabled=state==='loading'}
