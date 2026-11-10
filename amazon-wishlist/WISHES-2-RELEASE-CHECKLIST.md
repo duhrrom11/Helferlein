@@ -437,3 +437,18 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Produktfreigabe weiterhin gesperrt.
 
 **Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Weitere Produktverbesserungen: sichere Listenwechsel und Sammelaktionen (2026-11-10)
+
+- [x] Bestehenden Feature-Branch und PR #166 verifiziert; Änderungen ausschließlich dort vorgenommen.
+- [x] Listenoperationen Archivieren, Löschen und Duplizieren gegen laufende Sammelaktionen und veraltete Kontokontexte abgesichert; asynchrone Folgeschritte aktualisieren kein fremdes Konto.
+- [x] Einzelverschieben zeigt nach erfolgreicher Zuordnung keine unerwartete Navigation in eine andere Liste mehr.
+- [x] Sammelverschieben stoppt nach einem Stoppwunsch vor der Quellentfernung und meldet die dadurch mögliche doppelte Zuordnung; bestätigte Hinzufügen-/Entfernen-Aktionen prüfen vor dem Schreiben die aktuelle Zugehörigkeit erneut.
+- [x] Wunschdetail-Sprung hebt widersprüchliche Filter und Auswahlansicht auf, sodass die gewünschte Karte auch bei zuvor aktiven Filtern erreichbar ist. Archivierte Ziele werden nicht als aktive Sprungoptionen angezeigt.
+- [x] Wunschkarten erhalten eine direkte Aktion „Notiz & Kategorie“; leere Auswahlansicht erklärt den Zustand.
+- [x] Filter-/Ansichtswechsel werden während Sammelaktionen eingeschränkt; neue Filter verlassen die alte Auswahlansicht. Bestätigungsdialoge weisen auf zweistufiges, nicht-atomares Verschieben hin.
+- [ ] Nachweis eines erfolgreichen Syntaxchecks und Browser-/CI-Tests für diesen neuesten Head steht aus. Bestehende GitHub-Workflows können neue Commits automatisch prüfen; ihr Erfolg wird hier ausdrücklich nicht behauptet.
+- [ ] Bei partiellen Verschiebevorgängen weiterhin beide Listen prüfen. Ohne freigegebene serverseitige Transaktion ist ein vollständiger atomarer Wechsel nicht möglich.
+- [ ] RLS-Negativtests, echte Browserabnahme, rechtliche Pflichtangaben und Abuse-Schutz weiterhin offen. Keine Freigabe, kein Merge, kein Deployment.
+
+**Keine Vercel-Nutzung, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
