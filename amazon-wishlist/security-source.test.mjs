@@ -67,3 +67,14 @@ test('Playwright discovers the real production HTML dashboard integration suite'
  const config=readFileSync(new URL('./playwright.config.mjs',import.meta.url),'utf8');
  assert.match(config,/production-dashboard\.integration\.spec\.mjs/);
 });
+
+test('auth lifecycle refreshes private dashboard before profile requests and on logout',()=>{
+ const authStart=app.indexOf('async function auth()');
+ const signinStart=app.indexOf("$('signin').onclick",authStart);
+ const authBody=app.slice(authStart,signinStart);
+ assert.ok(authStart>=0&&signinStart>authStart);
+ assert.match(authBody,/await dashboard\.refresh\(\)/);
+ assert.ok(authBody.indexOf('await dashboard.refresh()')<authBody.indexOf("db.from('wishlist_profiles')"));
+ assert.match(app,/\$\('logout'\)\.onclick=run\(async\(\)=>[\s\S]*?await auth\(\)/);
+ assert.match(app,/db\.auth\.onAuthStateChange\(/);
+});
