@@ -69,7 +69,7 @@ function seal(publicKey,plaintext,{info,aad}) {
 }
 function open(privateKey,enc,ciphertext,{info,aad}) {
   if (!privateKey || !Buffer.isBuffer(enc) || enc.length!==32 ||
-      !Buffer.isBuffer(ciphertext) || ciphertext.length!==48) throw new Error('invalid_hpke_input');
+      !Buffer.isBuffer(ciphertext) || ciphertext.length<17 || ciphertext.length>4112) throw new Error('invalid_hpke_input');
   checkData(Buffer.alloc(32),aad,info);
   const recipientPublic=rawPublic(createPublicKey(privateKey));
   const dh=diffieHellman({privateKey,publicKey:importPublic(enc)});
