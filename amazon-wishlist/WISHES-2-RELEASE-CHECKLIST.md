@@ -241,3 +241,17 @@
 - [ ] Vollständige Playwright-/Node-Suite auf geeignetem Checkout ausführen; Lockfile verifizieren.
 
 **Freigabe gesperrt.** Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste; Vercel bleibt getrennt.
+
+## Produktfunktionen statt Testausbau – großer Autopilot-Schritt (2026-11-10)
+
+Auf Nutzerwunsch künftig **primär sichtbare Funktionen, Bedienbarkeit und reale Fehlerkorrekturen** umsetzen; nur unumgängliche Sicherheits-/Datenintegritätsprüfungen. Keine zusätzlichen umfangreichen Test-Suites ohne konkreten Anlass.
+
+- [x] Sammelauswahl „sichtbare Wünsche“ auf tatsächlich angezeigte Wunschkarten (`visibleLimit`) begrenzt, statt alle gefilterten, aber noch nicht angezeigten Treffer auszuwählen.
+- [x] Kategorie-Sammelauswahl auf angezeigte Treffer begrenzt und Rückmeldung präzisiert.
+- [x] Beim Listenwechsel sichtbare Kartenanzahl auf 100 zurückgesetzt.
+- [x] Archivierte Listen sperren Sammelaktionen, Checkboxen und auch veraltete Auswahlereignisse.
+- [x] Fortschrittsanzeige bei maximal 100 % begrenzt.
+- [x] Minimalprüfung: Dashboard-JavaScript syntaktisch kompiliert; fünf konkrete Quellcodebedingungen geprüft. **Keine Browser- oder Integrationstests in diesem Schritt ausgeführt.**
+- [ ] Endgültige Produktfreigabe weiterhin offen; keine Produktionsfreigabe ohne nötige Endabnahme.
+
+**Grenzen:** Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
