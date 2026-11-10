@@ -66,3 +66,10 @@
 - Detaildialog zeigt Titel, Priorität, Notiz und Hinzufügedatum; Kategorien lassen sich dort lokal setzen oder entfernen.
 - Kein zusätzliches Supabase-Schema, keine Änderung der produktiven Datenbank. Wunschtexte bleiben öffentlich; Kategorien sind lokale Metadaten.
 - Kurze Syntax- und DOM-ID-Prüfung erfolgreich, kein vollständiger Browser-Test. Kein Merge und kein Deployment.
+
+## Wunschmarkierungen und mobile Detailansicht
+- Pro Wunsch genau eine lokale Markierung: Favorit oder für später; erneutes Antippen entfernt die Markierung. Speicherung pro Benutzerkonto in localStorage, keine Synchronisierung.
+- Markierungsfilter (alle, Favoriten, später, ohne), Schnellaktionen auf Karten und Filter-zurücksetzen.
+- Detaildialog auf kleinen Bildschirmen als unteres Panel mit größeren Touch-Zielen und Rücksicht auf Safe-Area.
+- Kein neues Schema und keine Änderung der produktiven Supabase-Datenbank; keine Änderungen an öffentlichen Wunschdaten.
+- Kurze Syntax- und DOM-ID-Prüfungen erfolgreich, kein vollständiger Browser-Test, kein Merge und kein Deployment.
