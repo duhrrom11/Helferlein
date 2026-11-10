@@ -985,3 +985,10 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Browser-CI-Ergebnis bestätigen und ggf. Fehler beheben.
 - [ ] Die acht überlappenden Wishes-Dateien **inhaltlich zusammenführen**, bestehende main-Funktionen und Tests bewahren; erst danach PR-Merge erneut prüfen.
 - [ ] Produktiver Merge/Deployment weiterhin zurückgestellt, bis PR konfliktfrei, CI einschließlich Browser grün und Migrations-/Deployment-Schritte geprüft sind. Keine produktiven Supabase-Änderungen für dieses Paket.
+
+### Browser-CI-Nachbesserung (2026-11-10)
+
+- [x] Browser-CI-Lauf 42825105181 analysiert: Node-`checks` erfolgreich, Browser-Job beim Schritt `Install Chromium` fehlgeschlagen.
+- [x] Browser-Job auf offizielles versionsgebundenes Image `mcr.microsoft.com/playwright:v1.56.1-noble` umgestellt, passend zur Paketversion; fehleranfällige Host-Chromium-Installation entfernt.
+- [ ] Ergebnis des neuen Container-Browser-CI-Laufs 42825183364 bestätigen, bevor Browser-Gate als bestanden markiert wird.
+- [ ] Merge-Konflikte in den acht Wishes-Dateien weiterhin offen; kein automatisches Überschreiben der weiterentwickelten main-Dateien.
