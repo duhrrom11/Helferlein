@@ -383,3 +383,17 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Freigabe weiterhin gesperrt.
 
 **Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Produktentwicklung: Sammelauswahl und Schnellfilter (2026-11-10)
+
+- [x] Neue dauerhaft erreichbare Aktion „Auswahl aufheben“ direkt über Wunschkarten; stellt nach dem Leeren die reguläre Ansicht wieder her.
+- [x] Leere Ansicht „Nur Auswahl“ bietet einen passenden Weg zurück zu allen Wünschen.
+- [x] Ungültige/stale Checkbox-Aktionen werden optisch zurückgesetzt statt einen falschen Auswahlzustand anzuzeigen.
+- [x] Wunsch-Schnellfilter setzen widersprüchliche Such-, Prioritäts- und Kategoriebedingungen zurück; verlassen außerdem die Auswahlansicht.
+- [x] „Wunschfilter zurücksetzen“ verlässt ebenfalls die Auswahlansicht; „Nur Auswahl“ wird ohne ausgewählte Wünsche deaktiviert.
+- [x] Mobile Schnellaktionen responsiv angeordnet.
+- [x] Unumgängliche Minimalprüfung: JavaScript-Syntax und relevante UI-/Funktionsanker erfolgreich.
+- [ ] Browserabnahme von Auswahlansicht, Schnellfiltern und Sammelaktionen offen.
+- [ ] Produktfreigabe weiterhin gesperrt.
+
+**Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
