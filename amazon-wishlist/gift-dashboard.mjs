@@ -23,6 +23,7 @@ function render(){
  $('progress').textContent=percent+' %';$('progressBar').value=percent;
  $('progressText').textContent=gifted+' von '+gifts.length+' Geschenken verschenkt.';
  $('reservationText').textContent=reservationCount+' eigene Reservierungen, davon '+linkedCount+' mit deiner Geschenkplanung verknüpft.';
+ const checklistRoot=$('checklistSummary');checklistRoot.replaceChildren();const checklistMap=new Map();for(const t of tasks){if(!t.checklist_key||!t.occasion_id)continue;const x=checklistMap.get(t.occasion_id)||{total:0,done:0};x.total++;if(t.status==='done')x.done++;checklistMap.set(t.occasion_id,x)}if(!checklistMap.size)empty(checklistRoot,'Noch keine Geschenk-Checklisten angelegt.');for(const [occasionId,c] of checklistMap){const o=occasions.find(x=>x.id===occasionId);if(!o)continue;const wrap=node('div','','item');wrap.append(node('h3',o.title),node('p',c.done+' von '+c.total+' Aufgaben erledigt · '+Math.round(c.done/c.total*100)+' %'));const meter=document.createElement('progress');meter.className='progress';meter.max=c.total;meter.value=c.done;meter.setAttribute('aria-label','Checkliste '+o.title);wrap.append(meter);checklistRoot.append(wrap)}
  const reminderRoot=$('taskReminders');reminderRoot.replaceChildren();const dueTasks=tasks.filter(t=>t.status!=='done'&&t.due_date&&Math.round((Date.parse(t.due_date+'T00:00:00Z')-today())/86400000)<=t.reminder_days).sort((a,b)=>a.due_date.localeCompare(b.due_date)||a.priority-b.priority);if(!dueTasks.length)empty(reminderRoot,'Keine fälligen Aufgaben-Erinnerungen.');for(const t of dueTasks.slice(0,8)){const remaining=Math.round((Date.parse(t.due_date+'T00:00:00Z')-today())/86400000);reminderRoot.append(node('p',(remaining<0?'⚠️ '+(-remaining)+' Tage überfällig':remaining===0?'🔔 Heute fällig':'🔔 In '+remaining+' Tagen')+' · '+t.title,'warning'))}
  const occ=$('occasions');occ.replaceChildren();
  if(!upcoming.length)empty(occ,'Keine Anlässe in den nächsten 30 Tagen.');
@@ -53,7 +54,7 @@ async function main(){
   db.from('wishlist_occasions').select('id,title,person_name,occasion_date,repeats_yearly,budget_amount').eq('user_id',user.id).limit(1000),
   db.from('wishlist_gift_plans').select('id,occasion_id,title,priority,status,planned_amount,actual_amount').eq('user_id',user.id).limit(1000),
   db.rpc('wishlist_gift_dashboard_reservations'),
-  db.from('wishlist_gift_tasks').select('id,title,due_date,reminder_days,status,priority').eq('user_id',user.id).limit(1000)
+  db.from('wishlist_gift_tasks').select('id,title,due_date,reminder_days,status,priority,occasion_id,checklist_key').eq('user_id',user.id).limit(1000)
  ]);
  if(o.error||g.error||r.error||t.error)throw o.error||g.error||r.error||t.error;
  occasions=o.data||[];gifts=g.data||[];tasks=t.data||[];
