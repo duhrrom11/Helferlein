@@ -2,33 +2,39 @@
 export function mountListsDashboard(db, getUser) {
  const $=id=>document.getElementById(id);
  const root=$('listsDashboard');
- let lists=[],wishes=[],selected=null;
+ let lists=[],wishes=[],selected=null,loadedOwner=null,loadGeneration=0;
+ const editorSelect=$('wishListSelect');
+ function syncEditor(){const previous=editorSelect.value;editorSelect.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Ohne Liste speichern';editorSelect.append(empty);for(const list of lists.filter(x=>!x.archived)){const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title;editorSelect.append(option)}editorSelect.value=lists.some(x=>x.id===previous&&!x.archived)?previous:(lists.find(x=>x.title==='Meine Wünsche'&&!x.archived)?.id||'');editorSelect.disabled=!lists.length;}
+ async function assignWish(wishId,listId,uid){if(!listId)return;const {error}=await db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid});if(error)throw error;}
+ function reset(){++loadGeneration;loadedOwner=null;lists=[];wishes=[];selected=null;root.hidden=true;$('listsContent').replaceChildren();$('listItems').replaceChildren();syncEditor();}
+
  const msg=t=>{$('listsStatus').textContent=t};
  const button=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.onclick=async()=>{b.disabled=true;try{await fn()}catch(e){msg(e.message||'Aktion fehlgeschlagen')}finally{b.disabled=false}};return b};
  const owner=()=>{const u=getUser();if(!u)throw Error('Bitte anmelden');return u.id};
  async function load(){
-  if(!getUser()){root.hidden=true;return}
+  if(!getUser()){reset();return}
+  const generation=++loadGeneration;
   root.hidden=false;msg('Listen werden geladen …');
   const id=owner();
   const [lr,wr]=await Promise.all([
    db.from('wishlist_lists').select('id,title,description,icon,color,visibility,archived,created_at').eq('user_id',id).order('created_at',{ascending:false}),
    db.from('wishlist_wishes').select('id,note,wishlist_products(title)').eq('user_id',id).order('created_at',{ascending:false}).limit(200)
   ]);
-  if(getUser()?.id!==id)return;
-  if(lr.error){$('listsContent').replaceChildren();msg('Listenverwaltung vorbereitet. Das Datenbankschema wurde noch nicht freigeschaltet.');return}
+  if(getUser()?.id!==id||generation!==loadGeneration)return;
+  if(lr.error){lists=[];wishes=[];syncEditor();$('listsContent').replaceChildren();msg('Listenverwaltung vorbereitet. Das Datenbankschema wurde noch nicht freigeschaltet.');return}
   if(wr.error)throw wr.error;
-  lists=lr.data||[];wishes=wr.data||[];if(!lists.some(x=>x.id===selected))selected=lists[0]?.id||null;
-  msg(lists.length+' Listen · '+wishes.length+' geladene Wünsche');render();
+  loadedOwner=id;lists=lr.data||[];wishes=wr.data||[];syncEditor();if(!lists.some(x=>x.id===selected))selected=lists[0]?.id||null;
+  msg(lists.length+' Listen · '+wishes.length+' geladene Wünsche');$('listsTotal').textContent=String(lists.length);$('wishesTotal').textContent=String(wishes.length);render();
  }
  function render(){
   const grid=$('listsContent');grid.replaceChildren();
   if(!lists.length){const p=document.createElement('p');p.textContent='Noch keine Listen. Erstelle deine erste Wunschliste.';grid.append(p)}
   for(const list of lists){
-   const card=document.createElement('article');card.className='list-card';card.style.borderTop='6px solid '+list.color;
+   const card=document.createElement('article');card.className='list-card'+(selected===list.id?' is-selected':'');card.style.borderTop='6px solid '+list.color;
    const heading=document.createElement('h3');heading.textContent=list.icon+' '+list.title;card.append(heading);
    const desc=document.createElement('p');desc.textContent=list.description||'Ohne Beschreibung';card.append(desc);
    const meta=document.createElement('p');meta.textContent=(list.visibility==='public'?'Öffentlich':'Privat')+(list.archived?' · Archiviert':'');card.append(meta);
-   card.append(button('Öffnen',async()=>{selected=list.id;await showItems()}));
+   card.append(button('Öffnen',async()=>{selected=list.id;render()}));
    card.append(button('Umbenennen',async()=>{const title=prompt('Neuer Listenname',list.title)?.trim();if(!title)return;if(title.length>80)throw Error('Maximal 80 Zeichen');const res=await db.from('wishlist_lists').update({title}).eq('id',list.id).eq('user_id',owner());if(res.error)throw res.error;await load()}));
    card.append(button(list.archived?'Reaktivieren':'Archivieren',async()=>{const res=await db.from('wishlist_lists').update({archived:!list.archived}).eq('id',list.id).eq('user_id',owner());if(res.error)throw res.error;await load()}));
    card.append(button('Duplizieren',async()=>{const uid=owner();const {data:copy,error}=await db.from('wishlist_lists').insert({user_id:uid,title:(list.title+' Kopie').slice(0,80),description:list.description,icon:list.icon,color:list.color,visibility:'private'}).select('id').single();if(error)throw error;const {data:originalItems,error:itemsError}=await db.from('wishlist_list_items').select('wish_id').eq('list_id',list.id).eq('user_id',uid);if(itemsError)throw itemsError;if(originalItems.length){const {error:copyError}=await db.from('wishlist_list_items').insert(originalItems.map(item=>({list_id:copy.id,wish_id:item.wish_id,user_id:uid})));if(copyError)throw copyError}await load()}));
@@ -56,5 +62,5 @@ export function mountListsDashboard(db, getUser) {
  }
  $('createList').onclick=async()=>{const id=owner();const title=$('listTitle').value.trim();if(!title||title.length>80){msg('Listenname muss 1 bis 80 Zeichen enthalten.');return}const payload={user_id:id,title,description:$('listDescription').value.trim().slice(0,500),icon:$('listIcon').value,color:$('listColor').value,visibility:$('listVisibility').value};$('createList').disabled=true;try{const {error}=await db.from('wishlist_lists').insert(payload);if(error)throw error;$('listTitle').value='';$('listDescription').value='';await load()}catch(e){msg(e.message||'Liste konnte nicht angelegt werden')}finally{$('createList').disabled=false}};
  $('refreshLists').onclick=()=>load().catch(e=>msg(e.message));
- return {refresh:()=>load().catch(e=>msg(e.message))};
+ return {refresh:()=>load().catch(e=>msg(e.message)),reset,assignWish,selectedList:()=>loadedOwner===getUser()?.id?editorSelect.value:''};
 }
