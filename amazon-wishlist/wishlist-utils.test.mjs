@@ -128,15 +128,21 @@ test('share helper prefers Clipboard API and uses DOM fallback safely',async()=>
  const clipboard={writeText:async value=>{copied=value}};
  assert.equal(await copyShareLink('https://example.org/profile',clipboard),'clipboard');
  assert.equal(copied,'https://example.org/profile');
- let removed=false,selected=false;
+ let removed=false,selected=false,focused=false,restored=false;
  const fakeDoc={
-  createElement:()=>({style:{},setAttribute(){},select(){selected=true},remove(){removed=true}}),
+  activeElement:{isConnected:true,focus(){restored=true}},
+  createElement:()=>({style:{},setAttribute(){},focus(){focused=true},select(){selected=true},remove(){removed=true}}),
   body:{append(){}},
   execCommand:command=>command==='copy'
  };
  assert.equal(await copyShareLink('https://example.org/wish',null,fakeDoc),'fallback');
  assert.equal(selected,true);
+ assert.equal(focused,true);
  assert.equal(removed,true);
+ assert.equal(restored,true);
+ restored=false;fakeDoc.execCommand=()=>false;
+ await assert.rejects(()=>copyShareLink('https://example.org/wish',null,fakeDoc),/Kopieren nicht möglich/);
+ assert.equal(restored,true);
  await assert.rejects(()=>copyShareLink('javascript:alert(1)',clipboard));
 });
 
