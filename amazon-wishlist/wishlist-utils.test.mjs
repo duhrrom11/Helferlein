@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,isConfirmedSignIn} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -154,4 +154,10 @@ test('share links reject credentials and malformed HTTPS URLs',async()=>{
  for(const link of ['https://user:pass@example.org/','https://','https://example.org@evil.test/','http://example.org/']){
   await assert.rejects(()=>copyShareLink(link,clipboard),/Ungültiger Link/);
  }
+});
+
+test('sign-in confirmation requires matching authenticated user identity',()=>{
+ assert.equal(isConfirmedSignIn({id:'account-a'},{id:'account-a'}),true);
+ for(const current of [null,undefined,{id:'account-b'},{id:''}])assert.equal(isConfirmedSignIn({id:'account-a'},current),false);
+ for(const signedIn of [null,undefined,{}, {id:''}])assert.equal(isConfirmedSignIn(signedIn,{id:'account-a'}),false);
 });
