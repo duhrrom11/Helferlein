@@ -156,3 +156,21 @@ export function validateWishlistExportPage(rows,pageSize=200) {
  if(!Array.isArray(rows)||!Number.isInteger(pageSize)||pageSize<1||rows.length>pageSize)throw Error('Ungültige Exportantwort');
  return rows;
 }
+
+/** Build a portable JSON backup without private auth fields or internal account IDs. */
+export function exportWishlistJson(rows, publicProfile=null) {
+ if(!Array.isArray(rows))throw Error('Ungültige Exportdaten');
+ const wishes=rows.map(row=>{
+  const product=row?.wishlist_products;
+  if(!product||product.marketplace!=='amazon.de'||!/^[A-Z0-9]{10}$/.test(product.asin))throw Error('Ungültiger Exportdatensatz');
+  return {asin:product.asin,amazon_url:'https://www.amazon.de/dp/'+product.asin,title:String(product.title??''),note:String(row.note??''),priority:validatePriority(row.priority),created_at:String(row.created_at??'')};
+ });
+ const handle=requestedProfileHandle(publicProfile?.handle);
+ return JSON.stringify({format:'helferlein-wishlist-backup',version:1,exported_at:new Date().toISOString(),profile:handle?{handle,display_name:String(publicProfile.display_name??''),bio:String(publicProfile.bio??'')}:null,wishes},null,2)+'\n';
+}
+
+/** A failed export must not retain stale progress text. */
+export function exportProgressText(count,total=null) {
+ if(!Number.isSafeInteger(count)||count<0)throw Error('Ungültiger Exportfortschritt');
+ return total===null?count+' Wünsche geladen …':count+' von '+total+' Wünschen geladen …';
+}
