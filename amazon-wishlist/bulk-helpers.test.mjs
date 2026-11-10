@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages} from './bulk-helpers.mjs';
+import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,bulkControlsEnabled,currentDashboardLoad} from './bulk-helpers.mjs';
 import {filterListWishes} from './list-features.mjs';
 
 const items=[
@@ -64,4 +64,33 @@ test('invalid pagination size fails fast instead of looping forever',async()=>{
 });
 test('malformed paginated server response fails explicitly',async()=>{
  await assert.rejects(()=>fetchAllPages(async()=>({data:{id:'wrong'}})),/array/);
+});
+
+test('regression: reload disables bulk controls immediately until membership is ready',()=>{
+ assert.equal(bulkControlsEnabled({membershipReady:true,bulkBusy:false}),true);
+ assert.equal(bulkControlsEnabled({membershipReady:false,bulkBusy:false}),false);
+ assert.equal(bulkControlsEnabled({membershipReady:false,bulkBusy:true}),false);
+ assert.equal(bulkControlsEnabled({membershipReady:true,bulkBusy:true}),false);
+});
+test('regression: rejected initial read cannot publish a stale error after account switch or newer reload',()=>{
+ const active={requestedUserId:'user-a',currentUserId:'user-a',requestedGeneration:3,currentGeneration:3};
+ assert.equal(currentDashboardLoad(active),true);
+ assert.equal(currentDashboardLoad({...active,currentUserId:'user-b'}),false);
+ assert.equal(currentDashboardLoad({...active,currentGeneration:4}),false);
+ assert.equal(currentDashboardLoad({...active,currentUserId:null}),false);
+});
+test('regression: rejected initial read may show error only for active load',async()=>{
+ let currentUser='user-a',generation=1,status='loading';
+ const rejected=Promise.reject(new Error('connection lost'));
+ const load=async()=>{
+  try{await rejected}catch(error){
+   if(!currentDashboardLoad({requestedUserId:'user-a',currentUserId:currentUser,requestedGeneration:1,currentGeneration:generation}))return;
+   status='error';throw error;
+  }
+ };
+ await assert.rejects(load,/connection lost/);
+ assert.equal(status,'error');
+ status='loading';currentUser='user-b';generation=2;
+ await load();
+ assert.equal(status,'loading');
 });
