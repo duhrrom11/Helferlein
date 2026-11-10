@@ -19,3 +19,11 @@
 - Der Wunsch-Editor erstellt weiterhin Wünsche im bisherigen System; die Listen-Zuordnung erfolgt anschließend im Dashboard.
 - Das Dashboard lädt bis zu 200 eigene Wünsche für die Zuordnung; Pagination folgt später.
 - Kein Merge, kein Deployment, keine Produktivdatenänderung; Tests am neuen Head nicht bestätigt.
+
+## Nächste Entwicklungsrunde
+- Listenauswahl im Wunsch-Editor: beim Anlegen eines Wunsches optional sofortige Zuordnung; Fehler der Zuordnung wird separat angezeigt, der gespeicherte Wunsch bleibt erhalten.
+- Dashboard-Zähler und responsive Karten-Optik; ausgewählte Liste visuell markiert.
+- `DEFAULT-LIST-BACKFILL-PROPOSAL.sql`: ausschließlich vorbereitete, nicht ausgeführte Übernahme vorhandener Wünsche in `Meine Wünsche`.
+- Die Standardliste wird erst nach ausdrücklicher Freigabe des Schemas und der Übernahme tatsächlich erstellt; für neue Konten gibt es noch keine automatische Anlage.
+- Bestehende öffentliche Wünsche bleiben weiterhin öffentlich, auch wenn ihre Sammlung privat heißt.
+- Keine Live-DB-Änderung, kein Merge, kein Deployment. Browser- und CI-Prüfungen nicht bestätigt.
