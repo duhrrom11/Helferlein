@@ -209,3 +209,10 @@ test('export progress only accepts nonnegative integers',()=>{
  assert.equal(exportProgressText(12,100),'12 von 100 Wünschen geladen …');
  for(const value of [-1,1.5,NaN,'12'])assert.throws(()=>exportProgressText(value));
 });
+
+test('share helper handles Node without browser globals and reports missing fallback',async()=>{
+ const clipboard={writeText:async()=>{throw Error('Clipboard blocked')}};
+ await assert.rejects(()=>copyShareLink('https://example.org/wish',clipboard,undefined),/Kopieren nicht möglich/);
+ await assert.rejects(()=>copyShareLink('javascript:alert(1)',clipboard,undefined),/Ungültiger Link/);
+ assert.equal(await copyShareLink('https://example.org/wish',{writeText:async()=>{}},undefined),'clipboard');
+});
