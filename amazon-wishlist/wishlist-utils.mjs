@@ -144,3 +144,15 @@ export function exportWishlistCsv(rows) {
  }
  return '\uFEFF'+lines.join('\r\n')+'\r\n';
 }
+
+/** Stable, localized priority names for cards and exports. */
+export function priorityLabel(value) {
+ const priority=validatePriority(value);
+ return {1:'Sehr wichtig',2:'Normal',3:'Irgendwann'}[priority];
+}
+
+/** Reject unexpected export rows rather than silently exporting partial data. */
+export function validateWishlistExportPage(rows,pageSize=200) {
+ if(!Array.isArray(rows)||!Number.isInteger(pageSize)||pageSize<1||rows.length>pageSize)throw Error('Ungültige Exportantwort');
+ return rows;
+}
