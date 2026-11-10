@@ -13,14 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Probe current GitHub Pages and Vercel routes (pre-deployment baseline)
+      - name: Probe GitHub Pages routes (pre-deployment baseline)
         run: |
           python3 - <<'PY'
           import urllib.request, urllib.error, sys
-          sites = [
-            'https://duhrrom11.github.io/Helferlein',
-            'https://helferlein-ochre.vercel.app'
-          ]
+          sites = ['https://duhrrom11.github.io/Helferlein']
           paths = ['/', '/amazon-wishlist/index.html']
           errors = []
           for site in sites:
@@ -40,5 +37,5 @@ jobs:
           if errors:
               print(f'{len(errors)} existing public routes not reachable; do not infer deployment readiness', file=sys.stderr)
               sys.exit(1)
-          print('Both hosts serve the existing public HTML routes; this does not prove new code deployed')
+          print('GitHub Pages serves the existing public HTML routes; this does not prove new code deployed')
           PY
