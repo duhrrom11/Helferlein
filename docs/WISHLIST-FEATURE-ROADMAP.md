@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Kompakte Wunschlisten und Geschenkbudget auf Smartphones)
+
+- **Neu umgesetzt:** Mobile Wunschlisten-Übersicht mit verdichteten Kennzahlen, zweispaltigen Schnellaktionen und reduzierter dekorativer Hero-Fläche. „Zuletzt geöffnet“ und die Einstellungen zur Neuanlage von Listen werden in semantischen, aufklappbaren Bereichen angezeigt; der vorhandene „Liste erstellen“-Schnellzugriff öffnet die Einstellungen automatisch.
+- **Budgetplanung:** Kompakte responsive Eingabefelder und Ergebnis-Kacheln; Drucken und Teilen in einer aufklappbaren Zusatzsektion. Auf Desktop bleiben die Inhalte direkt sichtbar.
+- **Technik:** Bestehende DOM-Elemente werden lediglich verschoben und nicht dupliziert; IDs und vorhandene Eventhandler bleiben erhalten. Keine Datenbankmigration, keine Testdaten, keine Änderung an produktiven Konten, Wunschlisten oder Geschenken.
+- **Qualität:** Authentifizierter Browser-End-to-End-Test auf Smartphones und Desktop steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Mobile Startseite: Eigene Listen und Planung zuerst)
 
 - **Nutzerwunsch:** Auf Smartphones persönliche Wunschlisten und Geschenkplanung vor umfangreichen Inspirations- und Community-Modulen zeigen.
