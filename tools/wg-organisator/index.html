@@ -1153,6 +1153,8 @@
                 .update({ payload, updated_at: nextRevision })
                 .eq('id', id).eq('updated_at', secureWgRevision)
                 .select('updated_at').maybeSingle();
+            // A response for a previous WG must not alter the active WG state.
+            if (wgBinId !== expectedWgId) return false;
             if (error) throw new Error(error.message);
             if (!data) {
                 secureWgSaveBlocked = true;
@@ -1402,10 +1404,13 @@
                             contracts: getContracts(), infoboard: getInfoData()
                         };
                         const saved = await saveSecureWg(snapshot, savingWgId);
+                        if (wgBinId !== savingWgId) return false;
+                        if (!saved) return false;
                         secureWgSavedVersion = Math.max(secureWgSavedVersion, version);
                         secureWgDirty = secureWgSavedVersion < secureWgChangeVersion;
                         return saved;
                     } catch (error) {
+                        if (wgBinId !== savingWgId) return false;
                         secureWgDirty = true;
                         console.error('Geschützte WG-Speicherung fehlgeschlagen:', error);
                         alert('WG-Änderungen konnten nicht gespeichert werden: ' + error.message);
