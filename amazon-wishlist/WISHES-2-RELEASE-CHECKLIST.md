@@ -1049,3 +1049,11 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Fehler 2: fünf Bulk-Toolbar-Buttons überschreiten auf 320px den Viewport. CSS der **isolierten** Dashboard-Testoberfläche mit `min-width:0`, `max-width:100%` und `overflow-wrap:anywhere` korrigiert (Commit `79480d8b`). Die produktive Oberfläche bleibt unverändert.
 - [ ] Chromium-Lauf nach beiden Änderungen abschließen und verifizieren.
 - [ ] Die getestete mobile CSS-Korrektur bei späterer produktiver Dashboard-Integration übernehmen, nicht stillschweigend als bereits produktiv deklarieren.
+
+### Browser-CI jetzt grün (2026-11-10)
+
+- [x] Geometrie-Protokoll aus Lauf 42827468719: Bei 320px Viewport hatte die Toolbar selbst nur 262px Breite, die Buttons wurden aber in neue **horizontale Spalten** bei x=288, 536 und 784 umgebrochen. Ursache: `flex-direction:column` zusammen mit geerbtem `flex-wrap:wrap` und `max-height:40dvh`.
+- [x] Mobile Toolbar im isolierten Dashboard mit `flex-wrap:nowrap` korrigiert (Commit `fb41fe2e`).
+- [x] **Amazon wishlist checks vollständig grün:** GitHub-Actions-Läufe **42827644320** und **42827653961** auf Commit `fb41fe2e`: sowohl Node-`checks` als auch Playwright-Chromium-`browser` erfolgreich.
+- [x] Release-Smoke **42827653946** erfolgreich; Vault-Sync nach Crypto-Fix mehrfach erfolgreich.
+- [ ] Merge/Deployment weiterhin gesperrt, solange Listen-Dashboard nicht in die produktive App integriert und das dafür erforderliche Listen-/Mitgliedschaftsschema inklusive RLS nicht freigegeben und validiert ist. Die grünen Browser-Tests verwenden ausdrücklich eine isolierte Dashboard-Test-Fixture.
