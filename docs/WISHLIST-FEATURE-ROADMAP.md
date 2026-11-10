@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Startseite: Eigene Listen und Planung zuerst)
+
+- **Nutzerwunsch:** Auf Smartphones persönliche Wunschlisten und Geschenkplanung vor umfangreichen Inspirations- und Community-Modulen zeigen.
+- **Neu umgesetzt:** Vorhandenes privates Geschenk-Startdashboard, persönliche Wunschlisten, Anmeldung und Geschenkbudget werden vor den Wunschwelten platziert. Geschenkfinder und weitere Inspiration bleiben vollständig erreichbar. Die Reihenfolge wird beim Laden durch Verschieben der bestehenden DOM-Knoten hergestellt; keine Komponenten oder Daten werden dupliziert.
+- **Mobile Schnellnavigation:** Drei große Sprunglinks „Meine Listen“, „Budget planen“, „Inspiration“, mit responsive zweispaltiger Anordnung auf sehr kleinen Geräten. Auf breiten Bildschirmen bleibt die Hauptnavigation im Vordergrund.
+- **Datensicherheit:** Keine Supabase-Migration, keine neuen Abfragen, keine Testdaten, keine Änderungen an bestehenden Konten, Wunschlisten oder Geschenken.
+- **Qualität:** Einmalige IDs der betroffenen Bereiche geprüft; authentifizierter Browser-End-to-End-Test auf Mobilgeräten steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Kompakte mobile Startseite und Navigation)
 
 - **Nutzerfeedback:** Der Social-Feed-Banner nahm oberhalb der Wunschlisten viel Platz ein und wiederholte den Benachrichtigungszugriff.
