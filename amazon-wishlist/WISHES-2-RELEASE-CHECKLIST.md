@@ -761,3 +761,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; kein produktiver Datenbanktest. Nicht transaktionale Teilkopien bleiben ein Freigaberisiko.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: Quellzuordnung und mobile Listennavigation vor Schreibvorgängen prüfen (2026-11-10)
+
+- [x] Der Listenkarten-Kurzbefehl „Zugeordnete Wünsche“ verlangt einen aktuellen Benutzer-Arbeitsbereich, vollständige Zuordnungen und keine laufenden Kopier-, Sammel- oder Einzeländerungen.
+- [x] Die Schnellnavigation zur aktiven Liste und der mobile Zurück-Befehl respektieren laufende Änderungen.
+- [x] Vor einer bestätigten Einzelverschiebung werden die aktive Quellliste, Zielliste und das Vorhandensein des Wunsches erneut geprüft.
+- [x] Fehlermeldungen bei teilweise abgeschlossenen Einzelverschiebungen unterscheiden bereits bestehende Zielzuordnungen von neu angelegten Zielzuordnungen.
+- [x] Vor dem Start einer bestätigten Listenkopie werden geladener Benutzerkontext und vollständige, unveränderte Quellzuordnungen erneut geprüft.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Kopiervorgänge bleiben nicht transaktional.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
