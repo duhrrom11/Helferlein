@@ -498,3 +498,16 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Browser- und Node-Syntax-/Regressionstests weiterhin vor Freigabe erforderlich. Die GitHub-Inhaltsprüfung ist keine Laufzeitprüfung.
 - [ ] Nicht-atomare mehrstufige Operationen (Duplizieren/Verschieben) können bei Netzwerkfehlern Teilergebnisse hinterlassen; keine automatische Rückabwicklung.
 - [ ] Freigabe bleibt gesperrt. Kein Vercel, kein Merge, kein Deployment, keine produktiven Supabase-Änderungen und keine kostenpflichtigen Dienste.
+
+## Autopilot: Archivnavigation, Sammelaktionen und Teilergebnisse (2026-11-10)
+
+- [x] Archivierte Listen werden in der Übersicht als reaktivierungsbedürftig gekennzeichnet; der Öffnen-Knopf führt nicht mehr in einen unbrauchbaren Arbeitsbereich.
+- [x] Schnellnavigation, Favoritenfilter und Filter-Reset respektieren die Sperre während laufender Sammelaktionen; „Zugeordnete Wünsche“ beendet eine alte Nur-Auswahl-Ansicht.
+- [x] Mehrfachverschieben prüft nach Bestätigung erneut alle Quellzuordnungen und das Vorhandensein der geladenen Wünsche.
+- [x] Ein Kontextwechsel nach erfolgreicher Zielzuordnung beim Verschieben wird mit explizitem Hinweis auf eine möglicherweise doppelte Zuordnung gemeldet (nur im weiterhin gültigen Benutzerkontext).
+- [x] Ergebnisaktionen „Nicht bearbeitete auswählen“ und „Ergebnis schließen“ sind während laufender Sammelaktionen geschützt.
+- [x] Bei nur teilweise erfolgreichem Duplizieren wird die Listenübersicht aktualisiert, damit die unvollständige Kopie sichtbar und prüfbar ist.
+- [x] Archivieren und Löschen prüfen nach dem Bestätigungsdialog zusätzlich den geladenen Kontokontext.
+- [ ] Minimaler statischer GitHub-Inhaltsabgleich durchgeführt; keine Laufzeit-/Browser-/Syntaxprüfung als erfolgreich bestätigt.
+- [ ] Mehrstufiges Verschieben und Duplizieren bleiben ohne serverseitige Transaktion nicht atomar. Fehlerfälle vor Freigabe gezielt prüfen.
+- [ ] Kein Merge, kein Deployment, keine Vercel-Aufrufe, keine produktiven Supabase-Änderungen, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
