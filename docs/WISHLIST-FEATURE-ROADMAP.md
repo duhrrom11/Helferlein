@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private JSON-Sicherung und validierter Dashboard-Import)
+
+- **Neu umgesetzt:** Lokaler JSON-Export der eigenen Dashboard-Konfiguration (Sichtbarkeit, Reihenfolge, Kennzahlen, Sortierungen, Schnellzugriffe, Favoriten, aktive Ansicht und gespeicherte Layouts) mit Formatkennung und Version.
+- **Sicherer Import:** Lokale Dateiprüfung (max. 64 KB), strikte Format-/Versions- und Wertevalidierung, Gegenüberstellung aller zwölf Einstellungsfelder mit hervorgehobenen Unterschieden. Ein Import wird erst nach ausdrücklicher Bestätigung in die owner-geschützte Präferenztabelle geschrieben; zwischenzeitlich veränderte Einstellungen machen die Vorschau ungültig.
+- **Nachvollziehbarkeit:** Der vorhandene geschützte Datenbank-Trigger protokolliert tatsächlich geänderte importierte Einstellungen im privaten Verlauf. Export/Dateivorschau verändern keine Datenbankdaten.
+- **Sicherheit:** Owner-only RLS für Präferenzen und Verlauf geprüft; anon kein Lesen, Verlauf keine direkten Schreibrechte. Keine neue Migration, keine Testdaten und keine Änderungen an Geschenkaufgaben, Anlässen oder historischen Produktivdaten.
+- **Qualität:** JavaScript-Syntax geprüft. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Privater Vergleich historischer Dashboard-Einstellungen)
 
 - **Neu umgesetzt:** Zwei gespeicherte historische Dashboard-Konfigurationen lassen sich aus den letzten 30 Verlaufseinträgen auswählen und in einer mobil horizontal scrollbar dargestellten Tabelle vergleichen.
