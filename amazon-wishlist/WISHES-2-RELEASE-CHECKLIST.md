@@ -862,3 +862,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Mehrgeräte-Konkurrenz und nicht transaktionale Verschiebungen bleiben Freigaberisiken.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: sichere Wiederaufnahme und veraltete Sammelergebnisse (2026-11-10)
+
+- [x] Wiederaufnahme aus der Sammelergebnisübersicht erfordert passenden angemeldeten und geladenen Besitzer, aktive Ursprungsliste, geladene Mitgliedschaften und freie Mutationssperren.
+- [x] Verlauf-Löschen und Schließen der Ergebnisübersicht lehnen veraltete Besitzerarbeitsbereiche ab.
+- [x] Einzelverschiebungen schreiben keine verspäteten Statusmeldungen in einen fremden Arbeitsbereich und aktivieren keine abgehängten Kartensteuerungen.
+- [x] Die mobile Sammelaktionsleiste wird bei veraltetem Besitzer oder nicht geladenen Zuordnungen sichtbar deaktiviert.
+- [x] Ergebnisse aus veralteten Besitzerarbeitsbereichen werden nicht als aktuelles `lastBulkResult` übernommen.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
