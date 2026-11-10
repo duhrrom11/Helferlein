@@ -1184,3 +1184,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Zirkuläre Freigabeabhängigkeit beseitigt: Der manuell gestartete Auth-Browserworkflow prüft nun **den ausgecheckten Kandidaten-Commit** über einen nur im Runner erreichbaren lokalen HTTP-Server (`127.0.0.1:8765`), verbindet sich aber mit der **echten produktiven Supabase-Auth-API**. GitHub Pages muss dafür noch nicht den neuen Code veröffentlichen (Commit `3ec27a89`).
 - [ ] Der Test benötigt weiterhin explizit hinterlegte GitHub-Actions-Secrets für ein **bereits vorhandenes, autorisiertes Konto**. Er wird nicht automatisch als grün gewertet, wenn diese fehlen. Er führt nur Login, Dashboard-SELECT und Logout aus; keine Schreibaktionen.
 - [ ] Bei einem tatsächlichen grünen Auth-Workflow und vollständig grüner CI/CodeQL kann PR #166 freigegeben werden; anschließend GitHub-Pages-Deployment und Live-HTTP-Modulprüfung bestätigen.
+
+## Autopilot: CI und Secrets-Verfügbarkeit nach 6691fc3e (2026-11-10)
+
+- [x] Alle fünf Workflows auf `6691fc3e` abgeschlossen mit `success`: Wishlist Node/Chromium zweimal, Vault-Sync, Release-Smoke und GitHub-Pages-Reachability.
+- [x] CodeQL-Hauptcheck `success`, Actions-Analyse `success`; JavaScript/TypeScript-Analyse bei letzter Einzelabfrage noch `in_progress`, daher den vollständigen CodeQL-Status des aktuellen Heads separat bestätigen.
+- [x] Echten Auth-Smoke gehärtet: Zusätzlich zur sichtbaren angemeldeten Oberfläche muss mindestens ein `HTTP 200` auf einen tatsächlichen `wishlist_lists`-REST-SELECT der produktiven Supabase-API vorliegen; fehlgeschlagene Listen-REST-Antworten führen zu `FAIL` (Commits `034636ec`, `6ff5c83b`). Keine Datenmutationen.
+- [ ] **GitHub-Actions-Secrets konnten über den verfügbaren GitHub-Connector nicht auf Vorhandensein geprüft werden:** `GET /actions/secrets` wird durch den Connector nicht unterstützt. Keine Zugangsdaten gelesen, erzeugt oder ausgegeben.
+- [ ] **Manueller `workflow_dispatch`-Gate ist noch nicht ausgeführt.** GitHub stellt manuelle Workflow-Auslösung regulär erst bereit, wenn die Workflow-Datei auf dem Default-Branch existiert; diese Datei liegt aktuell nur auf dem Feature-Branch. Vor Merge muss eine autorisierte Pre-Merge-Ausführung über einen dafür freigegebenen Runner/Workflow erfolgen, sonst bleibt der echte Auth-Gate offen.
+- [ ] Neue CI auf aktuellem Head und echter Auth-Smoke müssen beide nachweislich grün sein, bevor Merge/Deployment erfolgen dürfen. GitHub Pages bleibt einziges Hostingziel.
