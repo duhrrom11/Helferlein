@@ -66,7 +66,7 @@ function appendWishExtras(card,wish){
 }
 
 function resetWishEditor() {wishEditorRevision++;editingWishId=null;$('editHint').hidden=true;$('url').disabled=false;$('url').value='';$('productTitle').value='';$('productTitle').disabled=false;$('wishNote').value='';$('priority').value='2';$('wishVisibility').value='public';$('saveWish').textContent='Wunsch speichern';$('wishSaveFeedback').textContent='';$('wishVisibility').dispatchEvent(new Event('change'));fillWishExtras(null,null)}
-$('cancelEdit').onclick=resetWishEditor;
+$('cancelEdit').onclick=()=>{resetWishEditor();$('saveWish').focus({preventScroll:true});$('saveWish').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'nearest'});report('Wunschbearbeitung abgebrochen.');};
 for(const id of ['url','productTitle','wishNote','priority','wishVisibility'])$(id).addEventListener('input',()=>{wishEditorRevision++});
 const run=fn=>async function(){const button=this instanceof HTMLButtonElement?this:null;if(button?.disabled)return;if(button)button.disabled=true;if(button?.id==='saveWish')$('wishSaveFeedback').textContent='';try{await fn()}catch(e){const message=wishlistErrorMessage(e);report(message);if(button?.id==='saveWish')$('wishSaveFeedback').textContent=message}finally{if(button?.isConnected)button.disabled=false}};
 $('restoreHiddenWishes').onclick=run(async()=>{hiddenWishIds.clear();lastHiddenWishId=null;updateHiddenWishes();await refreshFeed();report('Ausgeblendete Wünsche werden wieder angezeigt.')});
