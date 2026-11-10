@@ -370,3 +370,16 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Produktfreigabe weiterhin gesperrt.
 
 **Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Produktentwicklung: genaue Wunsch-Navigation und Auswahlansicht (2026-11-10)
+
+- [x] Sprung aus Wunschdetails zur konkreten Wunsch-ID statt Titel-Suche; identische Wunschtitel führen nicht mehr zur falschen Karte.
+- [x] Beim Sprung zu einem Wunsch, der hinter dem anfänglichen Anzeigelimit liegt, die angezeigte Ergebnismenge passend erweitern.
+- [x] Sammelauswahl aus Wunschdetails nur für in der aktuellen aktiven Listenansicht sichtbare und zulässige Wünsche.
+- [x] Umschaltbare Ansicht „Nur Auswahl“ für schnellere Kontrolle ausgewählter Wunschkarten, mit mobilem Layout.
+- [x] Auswahlansicht beim Listenwechsel und Zurücksetzen des Dashboards deaktivieren.
+- [x] Minimalprüfung: JavaScript-Syntax und Implementierungsanker für Navigation, Auswahl und Ansicht geprüft.
+- [ ] Browserabnahme mit doppelten Wunschtiteln, mehr als 100 Wünschen und Sammelauswahl offen.
+- [ ] Freigabe weiterhin gesperrt.
+
+**Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
