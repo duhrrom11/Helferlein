@@ -227,3 +227,30 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('backup preview enforces UTF-8 byte size rather than character count',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[]};
+ const prefix=JSON.stringify(base);
+ const raw=prefix.slice(0,-1)+',"ignored":"'+ 'ä'.repeat(1_000_000) +'"}';
+ assert.ok(raw.length<2_000_000);
+ assert.ok(new TextEncoder().encode(raw).byteLength>2_000_000);
+ assert.throws(()=>previewWishlistBackup(raw),/2 MB/);
+});
+test('backup preview rejects malformed profile and wish field types',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1}]};
+ for(const profile of [{handle:'tester_1',display_name:'Tester'}, {handle:'tester_1',display_name:'Tester',bio:null}, {handle:'tester_1',display_name:4,bio:''}, ['tester_1'], 'tester_1']){
+  assert.throws(()=>previewWishlistBackup(JSON.stringify({...base,profile})));
+ }
+ for(const patch of [{title:123},{note:null},{note:[]},{title:{}}]){
+  assert.throws(()=>previewWishlistBackup(JSON.stringify({...base,wishes:[{...base.wishes[0],...patch}]})));
+ }
+});
+test('backup preview validates optional canonical Amazon URL against ASIN',()=>{
+ const wish={asin:'B012345678',title:'Buch',note:'',priority:1};
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[wish]};
+ assert.equal(previewWishlistBackup(JSON.stringify(base)).count,1);
+ assert.equal(previewWishlistBackup(JSON.stringify({...base,wishes:[{...wish,amazon_url:'https://www.amazon.de/dp/B012345678'}]})).count,1);
+ for(const amazon_url of ['https://www.amazon.de/dp/B099999999','https://amazon.de/dp/B012345678','https://www.amazon.de/dp/B012345678?tag=other',null,42]){
+  assert.throws(()=>previewWishlistBackup(JSON.stringify({...base,wishes:[{...wish,amazon_url}]})),/Amazon-Link/);
+ }
+});
