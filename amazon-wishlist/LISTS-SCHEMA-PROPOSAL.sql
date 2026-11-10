@@ -18,7 +18,7 @@ alter table public.wishlist_wishes add constraint wishlist_wishes_id_owner_uniqu
 create table if not exists public.wishlist_list_items (
  list_id uuid not null,
  user_id uuid not null,
- wish_id uuid not null,
+ wish_id bigint not null,
  created_at timestamptz not null default now(),
  primary key(list_id,wish_id),
  foreign key(list_id,user_id) references public.wishlist_lists(id,user_id) on delete cascade,
