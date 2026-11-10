@@ -718,3 +718,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine transaktionale Duplizierung und kein produktiver Datenbanktest.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: mobile Auswahl-Handler und robuste Kopiersperre (2026-11-10)
+
+- [x] Schnellwahl „Zugeordnete“, „Ohne Liste“, „Sichtbare“, „Nur Auswahl“ und Kategorieauswahl sowie „Mehr laden“ respektieren eine laufende Listen-Duplizierung auch in den Ereignis-Handlern.
+- [x] Sammelaktions-Verlauf, Restmengenauswahl und Ergebnis-Schließen können während der Duplizierung nicht verändert werden.
+- [x] Eine blockierte „Sichtbare auswählen“-Checkbox wird aus dem tatsächlichen Auswahlzustand wiederhergestellt, statt eine optisch falsche Auswahl anzuzeigen.
+- [x] Schnellfilter „Zugeordnete“ und Zurücksetzen der Wunschfilter respektieren ebenfalls die Kopiersperre.
+- [x] Das sofortige Neurendern mobiler Karten bei Kopierstart liegt innerhalb von try/finally; selbst bei einem Darstellungsfehler wird die Kopiersperre wieder freigegeben.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Mehrstufige Kopien sind nicht transaktional.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
