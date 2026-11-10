@@ -237,7 +237,7 @@ export function mountListsDashboard(db, getUser) {
   if(!list||!membershipReady){$('wishSelectShown').disabled=true;$('wishClearSelection').disabled=true;updateBulkToolbar([]);return}
   $('wishClearSelection').disabled=bulkBusy||!bulkIds.size;
   $('wishSelectedOnly').setAttribute('aria-pressed',String(selectedOnlyView));$('wishSelectedOnly').textContent=selectedOnlyView?'Alle passenden zeigen':'Nur Auswahl ('+bulkIds.size+')';
-  const results=visibleWishes();updateBulkToolbar(results);$('wishSelectShown').disabled=bulkBusy||list.archived||!results.length;$('wishSelectShown').textContent=results.slice(0,visibleLimit).every(w=>bulkIds.has(w.id))&&results.length?'Sichtbare abwählen':'Sichtbare auswählen';
+  const results=visibleWishes();updateBulkToolbar(results);$('wishSelectedOnly').disabled=bulkBusy||(!selectedOnlyView&&!bulkIds.size);$('wishSelectShown').disabled=bulkBusy||list.archived||!results.length;$('wishSelectShown').textContent=results.slice(0,visibleLimit).every(w=>bulkIds.has(w.id))&&results.length?'Sichtbare abwählen':'Sichtbare auswählen';
   $('listWishCount').textContent=Math.min(results.length,visibleLimit)+' von '+results.length+' passenden Wünschen sichtbar ('+wishes.length+' geladen).';$('wishLoadMore').hidden=results.length<=visibleLimit;
   if(!results.length){const empty=document.createElement('p');empty.textContent='Keine passenden Wünsche gefunden. Passe deine Filter an oder füge einen Wunsch hinzu.';cards.append(empty);
    const resetFilters=button(selectedOnlyView?'Alle Wünsche wieder anzeigen':'Filter zurücksetzen',async()=>{selectedOnlyView=false;$('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';$('listWishMarker').value='all';$('listWishAssignment').value='all';$('listWishSort').value='newest';visibleLimit=100;renderWishCards()});cards.append(resetFilters)}
@@ -294,6 +294,7 @@ export function mountListsDashboard(db, getUser) {
   for(const [id,pressed] of Object.entries(quick))$(id).setAttribute('aria-pressed',String(pressed));
  }
  function setQuickWishFilter(mode){
+  $('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';selectedOnlyView=false;
   if(mode==='all'){$('listWishAssignment').value='all';$('listWishMarker').value='all'}
   if(mode==='assigned'){$('listWishAssignment').value='assigned';$('listWishMarker').value='all'}
   if(mode==='unassigned'){$('listWishAssignment').value='global-unassigned';$('listWishMarker').value='all'}
@@ -324,7 +325,7 @@ export function mountListsDashboard(db, getUser) {
  $('wishViewCompact').onclick=()=>setWishView(true);
  $('wishClearSelection').onclick=()=>{if(bulkBusy)return;bulkIds.clear();selectedOnlyView=false;renderWishCards()};
  $('wishSelectedOnly').onclick=()=>{selectedOnlyView=!selectedOnlyView;visibleLimit=100;renderWishCards()};
- $('wishClearFilters').onclick=()=>{for(const [id,value] of [['listWishSearch',''],['listWishPriority','all'],['listWishCategory','all'],['listWishMarker','all'],['listWishAssignment','assigned'],['listWishSort','newest']])$(id).value=value;visibleLimit=100;renderWishCards()};
+ $('wishClearFilters').onclick=()=>{selectedOnlyView=false;for(const [id,value] of [['listWishSearch',''],['listWishPriority','all'],['listWishCategory','all'],['listWishMarker','all'],['listWishAssignment','assigned'],['listWishSort','newest']])$(id).value=value;visibleLimit=100;renderWishCards()};
  $('wishSelectShown').onclick=()=>{if(bulkBusy||!membershipReady||!lists.some(l=>l.id===selected&&!l.archived))return;const ids=visibleWishes().slice(0,visibleLimit).map(w=>w.id);if(!ids.length)return;const all=ids.every(id=>bulkIds.has(id));for(const id of ids){if(all)bulkIds.delete(id);else bulkIds.add(id)}renderWishCards()};
  $('wishLoadMore').onclick=()=>{visibleLimit+=100;renderWishCards()};
  $('bulkSelectVisible').onchange=()=>{if(!bulkControlsEnabled({membershipReady,bulkBusy})||!lists.some(l=>l.id===selected&&!l.archived))return;for(const w of visibleWishes().slice(0,visibleLimit)){if($('bulkSelectVisible').checked)bulkIds.add(w.id);else bulkIds.delete(w.id)}renderWishCards()};
