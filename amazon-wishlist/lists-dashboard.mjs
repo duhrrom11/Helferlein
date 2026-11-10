@@ -78,7 +78,7 @@ export function mountListsDashboard(db, getUser) {
    allWishes=[...(wr.data||[]),...additional];
   }catch(e){if(!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;setItemsFeedback('error','Weitere Wünsche konnten nicht geladen werden. Bitte erneut versuchen.');throw e}
 
-  if(loadedOwner!==id){bulkIds.clear();bulkHistory=[];renderBulkHistory();lastBulkResult=null;$('bulkResultPanel').hidden=true;visibleLimit=100;favoriteIds=readFavorites(id);recentIds=readRecent(id);wishCategories=readCategories(id);wishMarkers=readMarkers(id)}loadedOwner=id;lists=lr.data||[];wishes=allWishes;favoriteIds=new Set([...favoriteIds].filter(x=>lists.some(l=>l.id===x)));recentIds=recentIds.filter(x=>lists.some(l=>l.id===x));syncEditor();if(!lists.some(x=>x.id===selected&&!x.archived)){selected=lists.find(x=>!x.archived)?.id||null;lastBulkResult=null;$('bulkResultPanel').hidden=true;}
+  if(loadedOwner!==id){selected=null;bulkIds.clear();bulkHistory=[];renderBulkHistory();lastBulkResult=null;$('bulkResultPanel').hidden=true;visibleLimit=100;favoriteIds=readFavorites(id);recentIds=readRecent(id);wishCategories=readCategories(id);wishMarkers=readMarkers(id)}loadedOwner=id;lists=lr.data||[];wishes=allWishes;favoriteIds=new Set([...favoriteIds].filter(x=>lists.some(l=>l.id===x)));recentIds=recentIds.filter(x=>lists.some(l=>l.id===x));syncEditor();if(!lists.some(x=>x.id===selected&&!x.archived)){selected=lists.find(x=>!x.archived)?.id||null;lastBulkResult=null;$('bulkResultPanel').hidden=true;}
   let membershipRows;
   try{membershipRows=await fetchDashboardMembership(db,id,{isCurrent:()=>getUser()?.id===id&&generation===loadGeneration})}
   catch(e){if(!currentDashboardLoad({requestedUserId:id,currentUserId:getUser()?.id,requestedGeneration:generation,currentGeneration:loadGeneration}))return;invalidateMembershipState();setItemsFeedback('error','Listenzuordnungen konnten nicht vollständig geladen werden. Bitte erneut versuchen.');throw e}
@@ -144,21 +144,21 @@ export function mountListsDashboard(db, getUser) {
   const {uid,listId,add,targets}=job;
   if(!bulkContextValid(job,{userId:getUser()?.id,listId:selected,ready:membershipReady,activeListIds:new Set(lists.filter(l=>!l.archived).map(l=>l.id))}))return;
    const currentTargets=new Set(eligibleBulkTargets(targets,wishes.map(w=>w.id),assignedIds,add));if(currentTargets.size!==targets.length||targets.some(id=>!currentTargets.has(id))){$('bulkStatus').textContent='Die Listenzuordnung hat sich geändert. Bitte Auswahl und Aktion erneut prüfen.';return}
-  const run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;lastBulkResult=null;$('bulkResultPanel').hidden=true;
+  const generation=loadGeneration,run=++bulkRunId;bulkBusy=true;bulkStopRequested=false;lastBulkResult=null;$('bulkResultPanel').hidden=true;
   $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
   updateBulkToolbar();reportBulk(0,targets.length,0,0);
   try{
    const result=await executeBulkJob({
     targets,
-    isCurrent:()=>run===bulkRunId&&getUser()?.id===uid&&selected===listId,
+    isCurrent:()=>run===bulkRunId&&generation===loadGeneration&&getUser()?.id===uid&&selected===listId,
     shouldStop:()=>bulkStopRequested,
     write:async wishId=>{
      const q=add?db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',listId).eq('wish_id',wishId).eq('user_id',uid);
      return q;
     },
-    onProgress:({done,total,success,failed})=>reportBulk(done,total,success,failed)
+    onProgress:({done,total,success,failed})=>{if(run===bulkRunId&&generation===loadGeneration&&getUser()?.id===uid&&selected===listId)reportBulk(done,total,success,failed)}
    });
-   if(result.invalidated||run!==bulkRunId||getUser()?.id!==uid||selected!==listId)return;
+   if(result.invalidated||run!==bulkRunId||generation!==loadGeneration||getUser()?.id!==uid||selected!==listId)return;
    for(const id of result.completed)bulkIds.delete(id);
    const summary={uid,listId,add,total:result.total,success:result.success,failed:result.failed,remaining:result.remaining,interrupted:result.interrupted,errors:result.errors};
    $('bulkStatus').textContent='Sammelaktion beendet. Details stehen in der Ergebnisübersicht.';
