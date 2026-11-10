@@ -5,6 +5,10 @@ export const LIST_TEMPLATES=Object.freeze([
  {id:'home',title:'Meine Traumwohnung',description:'Einrichtung, Deko und praktische Helfer.',icon:'🏡',color:'#E7A94D'},
  {id:'travel',title:'Reisewünsche',description:'Ausrüstung und Ideen für meine nächste Reise.',icon:'✈️',color:'#5E8BD6'},
  {id:'books',title:'Bücher & Inspiration',description:'Lesestoff und kreative Entdeckungen.',icon:'📚',color:'#9D78E8'},
+ {id:'cozy',title:'Meine Cozy-Wunschwelt',description:'Gemütliche Fundstücke, Deko und Wohlfühlmomente.',icon:'🕯️',color:'#E883A7'},
+ {id:'wishlist-under-50',title:'Geschenkideen unter 50 €',description:'Meine persönlichen Geschenkideen mit einem Wunschbudget bis 50 € – Preise bitte selbst prüfen.',icon:'💝',color:'#4EAA9D'},
+ {id:'creative',title:'Kreative Lieblingsstücke',description:'Kunst, DIY und Ideen für kreative Stunden.',icon:'🎨',color:'#E7A94D'},
+ {id:'wellness',title:'Meine Wellness-Welt',description:'Alles für Entspannung und kleine Auszeiten.',icon:'🌸',color:'#E883A7'},
  {id:'custom',title:'Meine Wunschliste',description:'',icon:'🎁',color:'#9D78E8'}
 ]);
 export const WISH_CATEGORIES=Object.freeze([{id:'tech',label:'💻 Technik'},{id:'gaming',label:'🎮 Gaming'},{id:'books',label:'📚 Bücher'},{id:'home',label:'🏡 Wohnen'},{id:'fashion',label:'👕 Mode'},{id:'travel',label:'✈️ Reisen'},{id:'other',label:'✨ Sonstiges'}]);
