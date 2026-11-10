@@ -8,8 +8,10 @@ function createTransactionalHeirRepository(pool){
  if(!pool||typeof pool.connect!=='function')throw new TypeError('invalid_pool');
  return Object.freeze({async readAuthorizedEnvelopeSnapshot(identity){
   const client=await pool.connect();
-  if(!client||typeof client.query!=='function'||typeof client.release!=='function')
+  if(!client||typeof client.query!=='function'||typeof client.release!=='function') {
+    if(client&&typeof client.release==='function')client.release();
     throw new TypeError('invalid_client');
+  }
   let begun=false;
   try{
    await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
