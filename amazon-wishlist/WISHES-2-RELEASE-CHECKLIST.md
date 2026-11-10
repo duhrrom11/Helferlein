@@ -344,3 +344,16 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Freigabe weiterhin gesperrt.
 
 **Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Produktentwicklung: Direktwechsel und Wunschkarten-Schnellaktionen (2026-11-10)
+
+- [x] Direkter Listenwechsel oberhalb der Wunschkarten, inklusive Kennzeichnung archivierter Listen und Sperre während Sammelaktionen.
+- [x] Beim Öffnen einer Liste standardmäßig die tatsächlich zugeordneten Wünsche anzeigen; globaler Blick bleibt über Schnellfilter „Alle“ erreichbar.
+- [x] Wunschkarten zeigen die Anzahl der Listen, denen der Wunsch zugeordnet ist.
+- [x] Schnellaktion „Titel kopieren“ mit verständlicher Fehlermeldung, wenn Zwischenablage nicht verfügbar oder nicht erlaubt ist.
+- [x] Mobile Bedienelemente: responsiver Listenwechsel und größere Wunschkarten-Aktionsflächen.
+- [x] Unumgängliche Minimalprüfung: JavaScript-Syntax und zentrale HTML-/Funktionsanker statisch geprüft.
+- [ ] Browserabnahme der neuen Listenwechsel- und Kopierfunktion weiterhin offen.
+- [ ] Produktfreigabe weiterhin gesperrt.
+
+**Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
