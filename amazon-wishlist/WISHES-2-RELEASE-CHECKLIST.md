@@ -1002,3 +1002,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] GitHub Actions für Merge-Commit `db4ddf2d` einschließlich Chromium-Browser-Job abschließen und prüfen.
 - [ ] Übernommene zusätzliche Listen-Dashboard-Module auf Integration mit der bewahrten produktiven App prüfen; bloßes Vorhandensein der Dateien bedeutet noch keine aktivierte Funktion.
 - [ ] Vor Merge/Deployment alle erforderlichen Checks, Browserfunktion und Supabase-Schema-/RLS-Voraussetzungen verifizieren. Kein Produktiv-Deployment oder Schemaeingriff durchgeführt.
+
+### Merge-Abgleich: CI-Nachprüfung (2026-11-10)
+
+- [x] Merge-Commit `db4ddf2d` beseitigt die Git-Merge-Konflikte; GitHub meldet `mergeable=true`.
+- [x] Die sechs einzeln ausgeführten Node-Test-Suites im Workflow 42825450158 sind jeweils erfolgreich, der zusätzliche parallele Gesamt-Testlauf schlug jedoch fehl. Gesamt-Testlauf und `test:node` deshalb auf sequenzielle Ausführung (`--test-concurrency=1`) umgestellt.
+- [x] Release-Smoke-Workflow 42825450344 war erfolgreich.
+- [ ] Den neuen **sequenziellen** Gesamt-Testlauf nach Commit `a20ee7b` bestätigen; vorherige Einzelsuite-Erfolge reichen nicht für Freigabe.
+- [ ] Browser-Job des Playwright-Containers abschließen und verifizieren; bislang kein erfolgreiches Browser-Gate bestätigt.
+- [ ] Zusätzlich ist Workflow `Vault Sync Queue Tests` (42825448865) mit `Run isolated queue tests` fehlgeschlagen. Vor Merge klären, ob der Fehler aus dem Abgleich stammt oder bereits auf main existiert.
+- [ ] Kein PR-Merge oder Deployment, solange CI-Gates fehlschlagen oder laufen; SQL-Vorschläge nicht produktiv angewendet.
