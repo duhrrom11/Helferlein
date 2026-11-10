@@ -223,8 +223,8 @@ export function mountListsDashboard(db, getUser) {
   updateActiveListContext();
   const cards=$('listWishCards');cards.replaceChildren();
   const list=lists.find(l=>l.id===selected);
-  if(!list||!membershipReady){updateBulkToolbar([]);return}
-  const results=visibleWishes();updateBulkToolbar(results);
+  if(!list||!membershipReady){$('wishSelectShown').disabled=true;updateBulkToolbar([]);return}
+  const results=visibleWishes();updateBulkToolbar(results);$('wishSelectShown').disabled=bulkBusy||list.archived||!results.length;$('wishSelectShown').textContent=results.slice(0,visibleLimit).every(w=>bulkIds.has(w.id))&&results.length?'Sichtbare abwählen':'Sichtbare auswählen';
   $('listWishCount').textContent=Math.min(results.length,visibleLimit)+' von '+results.length+' passenden Wünschen sichtbar ('+wishes.length+' geladen).';$('wishLoadMore').hidden=results.length<=visibleLimit;
   if(!results.length){const empty=document.createElement('p');empty.textContent='Keine passenden Wünsche gefunden. Passe deine Filter an oder füge einen Wunsch hinzu.';cards.append(empty);
    const resetFilters=button('Filter zurücksetzen',async()=>{$('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';$('listWishMarker').value='all';$('listWishAssignment').value='all';$('listWishSort').value='newest';visibleLimit=100;renderWishCards()});cards.append(resetFilters)}
@@ -309,6 +309,8 @@ export function mountListsDashboard(db, getUser) {
  $('quickFavoriteWishes').onclick=()=>setQuickWishFilter('favorite');
  $('wishViewCards').onclick=()=>setWishView(false);
  $('wishViewCompact').onclick=()=>setWishView(true);
+ $('wishClearFilters').onclick=()=>{for(const [id,value] of [['listWishSearch',''],['listWishPriority','all'],['listWishCategory','all'],['listWishMarker','all'],['listWishAssignment','assigned'],['listWishSort','newest']])$(id).value=value;visibleLimit=100;renderWishCards()};
+ $('wishSelectShown').onclick=()=>{if(bulkBusy||!membershipReady||!lists.some(l=>l.id===selected&&!l.archived))return;const ids=visibleWishes().slice(0,visibleLimit).map(w=>w.id);if(!ids.length)return;const all=ids.every(id=>bulkIds.has(id));for(const id of ids){if(all)bulkIds.delete(id);else bulkIds.add(id)}renderWishCards()};
  $('wishLoadMore').onclick=()=>{visibleLimit+=100;renderWishCards()};
  $('bulkSelectVisible').onchange=()=>{if(!bulkControlsEnabled({membershipReady,bulkBusy})||!lists.some(l=>l.id===selected&&!l.archived))return;for(const w of visibleWishes().slice(0,visibleLimit)){if($('bulkSelectVisible').checked)bulkIds.add(w.id);else bulkIds.delete(w.id)}renderWishCards()};
  $('bulkHistoryClear').onclick=()=>{if(bulkBusy)return;bulkHistory=[];renderBulkHistory()};$('bulkResumeRemaining').onclick=()=>{const r=lastBulkResult;if(r)prepareBulk({uid:r.uid,listId:r.listId,add:r.add,targets:r.remaining})};
