@@ -38,11 +38,11 @@ $('form').addEventListener('submit',async event=>{event.preventDefault();if(!use
  const title=$('title').value.trim();if(!title){$('status').textContent='Bitte Aufgabe eingeben.';return}
  const giftId=$('gift').value||null,linked=gifts.find(g=>g.id===giftId);
  const payload={title,occasion_id:$('occasion').value||linked?.occasion_id||null,gift_plan_id:giftId,due_date:$('due').value||null,reminder_days:Number($('reminder').value),priority:Number($('priority').value),status:$('taskStatus').value,notes:$('notes').value.trim()||null,updated_at:new Date().toISOString()};
- $('save').disabled=true;try{const fields='id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,created_at';const r=editing?await db.from('wishlist_gift_tasks').update(payload).eq('id',editing).eq('user_id',user.id).select(fields).single():await db.from('wishlist_gift_tasks').insert({...payload,user_id:user.id}).select(fields).single();if(r.error)throw r.error;tasks=tasks.filter(x=>x.id!==r.data.id);tasks.push(r.data);reset();render();$('status').textContent='Aufgabe gespeichert.'}catch{$('status').textContent='Aufgabe konnte nicht gespeichert werden.'}finally{$('save').disabled=false}
+ $('save').disabled=true;try{const fields='id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,checklist_year,archived_at,created_at';const r=editing?await db.from('wishlist_gift_tasks').update(payload).eq('id',editing).eq('user_id',user.id).select(fields).single():await db.from('wishlist_gift_tasks').insert({...payload,user_id:user.id}).select(fields).single();if(r.error)throw r.error;tasks=tasks.filter(x=>x.id!==r.data.id);tasks.push(r.data);reset();render();$('status').textContent='Aufgabe gespeichert.'}catch{$('status').textContent='Aufgabe konnte nicht gespeichert werden.'}finally{$('save').disabled=false}
 });
 async function main(){
  const {data,error}=await db.auth.getUser();user=data?.user;if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
- const [t,o,g]=await Promise.all([db.from('wishlist_gift_tasks').select('id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,created_at').eq('user_id',user.id).limit(1000),db.from('wishlist_occasions').select('id,title,occasion_date,repeats_yearly').eq('user_id',user.id).limit(1000),db.from('wishlist_gift_plans').select('id,title,occasion_id').eq('user_id',user.id).limit(1000)]);
+ const [t,o,g]=await Promise.all([db.from('wishlist_gift_tasks').select('id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,checklist_year,archived_at,created_at').eq('user_id',user.id).limit(1000),db.from('wishlist_occasions').select('id,title,occasion_date,repeats_yearly').eq('user_id',user.id).limit(1000),db.from('wishlist_gift_plans').select('id,title,occasion_id').eq('user_id',user.id).limit(1000)]);
  if(t.error||o.error||g.error)throw t.error||o.error||g.error;tasks=t.data||[];occasions=o.data||[];gifts=g.data||[];choices();for(const occasion of occasions)option($('checklistOccasion'),occasion.id,occasion.title);$('content').hidden=false;render();$('status').textContent='Deine Geschenk-To-dos sind aktuell.';
 }
 
@@ -135,8 +135,7 @@ for(const button of document.querySelectorAll('[data-checklist]'))button.addEven
  if(!confirm('Aufgabenpaket für den gewählten Anlass erstellen? Vorhandene Aufgaben desselben Pakets bleiben erhalten.'))return;
  button.disabled=true;
  try{const {data,error}=await db.rpc('wishlist_create_occasion_checklist_year',{p_occasion_id:occasionId,p_template:template,p_year:Number($('checklistYear').value)});if(error)throw error;
-  const result=await db.from('wishlist_gift_tasks').select('id,title,occasion_id,gift_plan_id,due_date,reminder_days,priority,status,notes,checklist_key,created_at').eq('user_id',user.id).limit(1000);if(result.error)throw result.error;
-  tasks=result.data||[];render();$('checklistStatus').textContent=data+' neue Aufgaben angelegt. '+(data===0?'Das Paket ist bereits vorhanden.':'Die Aufgaben können einzeln bearbeitet werden.');
+  await refreshTasks();$('checklistStatus').textContent=data+' neue Aufgaben angelegt. '+(data===0?'Das Paket ist bereits vorhanden.':'Die Aufgaben können einzeln bearbeitet werden.');
  }catch{$('checklistStatus').textContent='Aufgabenpaket konnte nicht erstellt werden.'}finally{button.disabled=false}
 });
 main().catch(()=>{$('status').textContent='Aufgaben konnten nicht geladen werden.'});
