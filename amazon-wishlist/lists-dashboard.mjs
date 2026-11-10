@@ -72,7 +72,7 @@ export function mountListsDashboard(db, getUser) {
   showItems().catch(e=>msg(e.message));
  }
  function renderUnassigned(){const n=wishes.filter(w=>!allAssignedIds.has(w.id)).length;$('unassignedCount').textContent=String(n);$('showUnassigned').disabled=!n}
- function visibleWishes(){return filterListWishes(wishes,{search:$('listWishSearch').value,priority:$('listWishPriority').value,assignment:$('listWishAssignment').value,assignedIds,sort:$('listWishSort').value,category:$('listWishCategory').value,categories:wishCategories,marker:$('listWishMarker').value,markers:wishMarkers})}
+ function visibleWishes(){const globallyUnassigned=$('listWishAssignment').value==='global-unassigned';return filterListWishes(globallyUnassigned?wishes.filter(w=>!allAssignedIds.has(w.id)):wishes,{search:$('listWishSearch').value,priority:$('listWishPriority').value,assignment:globallyUnassigned?'all':$('listWishAssignment').value,assignedIds,sort:$('listWishSort').value,category:$('listWishCategory').value,categories:wishCategories,marker:$('listWishMarker').value,markers:wishMarkers})}
  function updateBulkToolbar(results=visibleWishes()){const ids=results.map(w=>w.id),selectedVisible=ids.filter(id=>bulkIds.has(id)).length;$('bulkSelectedCount').textContent=bulkIds.size+' ausgewählt'+(bulkIds.size!==selectedVisible?' ('+selectedVisible+' sichtbar)':'');$('bulkSelectVisible').checked=ids.length>0&&selectedVisible===ids.length;$('bulkSelectVisible').indeterminate=selectedVisible>0&&selectedVisible<ids.length;$('bulkSelectVisible').disabled=bulkBusy||!ids.length;$('bulkAdd').disabled=bulkBusy||!bulkIds.size||!selected;$('bulkRemove').disabled=bulkBusy||!bulkIds.size||!selected;$('bulkClear').disabled=bulkBusy||!bulkIds.size}
  async function bulkAssign(add){
   if(bulkBusy||!selected||!bulkIds.size)return;
@@ -93,7 +93,7 @@ export function mountListsDashboard(db, getUser) {
  function renderWishCards(){
   const cards=$('listWishCards');cards.replaceChildren();
   const list=lists.find(l=>l.id===selected);
-  if(!list)return;
+  if(!list){updateBulkToolbar([]);return}
   const results=visibleWishes();updateBulkToolbar(results);
   $('listWishCount').textContent=results.length+' von '+wishes.length+' Wünschen angezeigt.';
   if(!results.length){const empty=document.createElement('p');empty.textContent='Keine passenden Wünsche gefunden. Passe deine Filter an oder füge einen Wunsch hinzu.';cards.append(empty)}
@@ -119,14 +119,15 @@ export function mountListsDashboard(db, getUser) {
  async function showItems(){
   const list=lists.find(x=>x.id===selected);const generation=++itemsGeneration;
   $('listWishCards').replaceChildren();
-  if(!list){$('listWishCount').textContent='Wähle eine Liste aus.';return}
+  if(!list){$('listWishCount').textContent='Wähle eine Liste aus.';updateBulkToolbar([]);return}
   const uid=owner();const {data,error}=await db.from('wishlist_list_items').select('wish_id').eq('list_id',list.id).eq('user_id',uid);
   if(error)throw error;if(getUser()?.id!==uid||selected!==list.id||generation!==itemsGeneration)return;
   assignedIds=new Set((data||[]).map(x=>x.wish_id));renderWishCards();
  }
  $('bulkSelectVisible').onchange=()=>{for(const w of visibleWishes()){if($('bulkSelectVisible').checked)bulkIds.add(w.id);else bulkIds.delete(w.id)}renderWishCards()};
  $('bulkClear').onclick=()=>{bulkIds.clear();renderWishCards()};$('bulkAdd').onclick=()=>bulkAssign(true).catch(e=>{$('bulkStatus').textContent=e.message});$('bulkRemove').onclick=()=>bulkAssign(false).catch(e=>{$('bulkStatus').textContent=e.message});
- $('showUnassigned').onclick=()=>{$('listWishAssignment').value='all';$('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';$('listWishMarker').value='all';$('listWishSort').value='newest';bulkIds.clear();renderWishCards();$('listWishCards').scrollIntoView({behavior:'smooth',block:'start'});};
+ const globalOption=document.createElement('option');globalOption.value='global-unassigned';globalOption.textContent='In keiner Liste';$('listWishAssignment').append(globalOption);
+ $('showUnassigned').onclick=()=>{$('listWishAssignment').value='global-unassigned';$('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';$('listWishMarker').value='all';$('listWishSort').value='newest';bulkIds.clear();renderWishCards();$('listWishCards').scrollIntoView({behavior:'smooth',block:'start'});};
  for(const id of ['listsSearch','listsView','listsSort'])$(id).addEventListener('input',render);
  $('homeFavorites').onclick=()=>{$('listsView').value='favorites';render();$('listsContent').scrollIntoView({behavior:'smooth',block:'start'})};
  $('homeNewWish').onclick=()=>{$('editor').scrollIntoView({behavior:'smooth',block:'start'});$('url').focus()};
