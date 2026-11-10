@@ -33,6 +33,12 @@ function requireContext(input) {
   }
   return input;
 }
+// Timing predicate only. It is NOT an authorization to release a key.
+function releaseDue(input) {
+  const ctx = requireContext(input);
+  return ctx.state === STATES.ALARM_PENDING &&
+    ctx.serverNowMs - ctx.alarmStartedAtMs >= MIN_DELAY_MS;
+}
 function decide(input, action) {
   const ctx = requireContext(input);
   const owner = ctx.actorId === ctx.ownerId;
@@ -47,10 +53,8 @@ function decide(input, action) {
     case 'CANCEL_ALARM':
       return owner && ctx.state === STATES.ALARM_PENDING
         ? granted(STATES.CANCELLED) : denied('not_authorized_or_wrong_state');
-    case 'RELEASE':
-      return ctx.actorId === 'trusted-server' && ctx.state === STATES.ALARM_PENDING &&
-        ctx.serverNowMs - ctx.alarmStartedAtMs >= MIN_DELAY_MS
-        ? granted(STATES.RELEASED) : denied('not_authorized_or_not_due');
+    // No RELEASE action here: a caller-controlled actorId can never prove server identity.
+    // A future trusted endpoint must enforce authentication and an atomic state transition.
     case 'READ_HEIR_ENVELOPE':
       return heir && ctx.state === STATES.RELEASED
         ? { allowed: true, reason: 'ok', nextState: ctx.state, nextVersion: ctx.version }
@@ -62,4 +66,4 @@ function decide(input, action) {
       return denied('unknown_action');
   }
 }
-module.exports = { STATES, MIN_DELAY_MS, decide };
+module.exports = { STATES, MIN_DELAY_MS, decide, releaseDue };
