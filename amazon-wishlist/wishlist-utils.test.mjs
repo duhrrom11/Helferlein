@@ -227,3 +227,15 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('backup preview rejects missing or non-string public profile fields',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,wishes:[],profile:{handle:'anna_123',display_name:'Anna',bio:''}};
+ for(const field of ['handle','display_name','bio']){
+  for(const invalid of [undefined,null,42,{},[]]){
+   const profile={...base.profile};
+   if(invalid===undefined)delete profile[field];else profile[field]=invalid;
+   assert.throws(()=>previewWishlistBackup(JSON.stringify({...base,profile})),/Ungültiges Profil/);
+  }
+ }
+ assert.deepEqual(previewWishlistBackup(JSON.stringify(base)).profile,{handle:'anna_123',display_name:'Anna',bio:''});
+});
