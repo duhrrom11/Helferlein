@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Zentrale mobile Geschenkzentrale)
+
+- **Neu umgesetzt:** `amazon-wishlist/gift-dashboard.html` und `gift-dashboard.mjs` als mobile Übersicht mit Anlässen in den nächsten 30 Tagen, offenen Geschenkaufgaben, Prioritätsfilter, Budgetwarnungen und Fortschrittsanzeige. Hauptnavigation erweitert.
+- **Additive Produktivmigration:** `wishlist_gift_plans.priority` (1 hoch, 2 mittel, 3 niedrig; Standard 2) mit Werteprüfung und Index. Bestehende Daten erhalten. Eigentümergebundene RLS der Geschenkplanung schützt Prioritätsänderungen.
+- **Private Reservierungszahlen:** `wishlist_gift_dashboard_reservations()` als `SECURITY DEFINER` mit leerem `search_path`, EXECUTE nur für `authenticated`. Liefert ausschließlich die Anzahl eigener Reservierungen und die Anzahl eigener Reservierungen mit eigenem Geschenkplan; keine fremden Reservierer.
+- **Grenzen:** Bis zu 1000 Anlässe und 1000 Geschenke pro Seitenaufruf; maximal 25 offene Aufgaben und 12 anstehende Anlässe auf der Startübersicht. Keine automatischen Push-Benachrichtigungen. Vollständiger Browser-End-to-End-Test mit angemeldetem Nutzer steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private Geschenkkoordination)
 
 - **Neu umgesetzt:** Geschenkstatus direkt auf mobilen Geschenkekarten ändern (Idee, Geplant, Gekauft, Verpackt, Verschenkt); Anzeige ausschließlich eigener Reservierungen für verknüpfte Wünsche.
