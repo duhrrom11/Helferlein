@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Monatsnavigation für Sicherungspunkt-Zeitachse)
+
+- **Neu umgesetzt:** Monatlich gruppierte private Dashboard-Sicherungspunkt-Zeitachse mit horizontal scrollbar angeordneten, mobil nutzbaren Monats-Sprungmarken und Links zurück zur Monatsnavigation.
+- **Kompakte Änderungen:** Jeder Sicherungspunkt zeigt maximal drei abweichende Einstellungsfelder mit Hinweis auf weitere Unterschiede; die aufklappbaren vollständigen Änderungsdetails bleiben erhalten. Die Monatsübersicht zeigt Anzahl der Sicherungspunkte und die gefilterte Zusammenfassung die Feldabweichungen gegenüber der aktuellen Konfiguration.
+- **Filter und Wiederherstellung:** Vorhandene Datums-, Layout- und Änderungsfilter sowie Vergleich und ausdrückliche Bestätigung vor Wiederherstellung bleiben erhalten. Monatsgruppen beziehen sich auf die aktuell gefilterten Sicherungspunkte.
+- **Sicherheit:** Keine Migration, keine Testdaten. RLS für Präferenzen, Verlauf und Sicherungspunkte geprüft; anonyme Nutzer ohne Leserechte, Verlauf und Sicherungspunkte ohne direkte Schreibrechte. Geschenkaufgaben, Anlässe und historische Produktivdaten unverändert.
+- **Qualität:** JavaScript-Syntax geprüft. Ein authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Mobile private Sicherungspunkt-Zeitachse)
 
 - **Neu umgesetzt:** Responsiv gestaltete, chronologische Zeitachse für die maximal 20 privaten Dashboard-Sicherungspunkte mit Zeitstempel, aktivem Layout und Anzahl der Unterschiede zur aktuellen Konfiguration.
