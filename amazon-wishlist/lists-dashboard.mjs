@@ -386,14 +386,14 @@ actions.append(button('Duplizieren',async()=>{
   if(bulkIds.has(detailWishId))bulkIds.delete(detailWishId);else bulkIds.add(detailWishId);
   $('wishDetailSelect').textContent=bulkIds.has(detailWishId)?'Aus Sammelauswahl entfernen':'Für Sammelaktion auswählen';renderWishCards()};
  $('wishDetailJump').onclick=()=>{const id=detailWishId;if(!id||!membershipReady||listCopyBusy||bulkBusy||activeWishMutations.size||getUser()?.id!==loadedOwner||!wishes.some(w=>w.id===id))return;const list=lists.find(l=>!l.archived&&membershipByList.get(l.id)?.has(id));if(list)jumpToWishInList(id,list.id);else msg('Der Wunsch ist keiner aktiven Liste zugeordnet.')};
- $('listsResetFilters').onclick=()=>{if(bulkBusy||activeWishMutations.size)return;$('listsSearch').value='';$('listsView').value='all';$('listsSort').value='favorites';render()};
+ $('listsResetFilters').onclick=()=>{if(listCopyBusy||bulkBusy||activeWishMutations.size)return;$('listsSearch').value='';$('listsView').value='all';$('listsSort').value='favorites';render()};
  $('bulkMoveTarget').onchange=()=>{if(!bulkBusy)updateBulkToolbar()};
  $('bulkMove').onclick=()=>moveSelectedWishes().catch(e=>{$('bulkStatus').textContent=e.message||'Verschieben fehlgeschlagen'});
  $('bulkClear').onclick=()=>{if(bulkBusy||activeWishMutations.size)return;bulkIds.clear();selectedOnlyView=false;renderWishCards()};$('bulkAdd').onclick=()=>bulkAssign(true).catch(e=>{$('bulkStatus').textContent=e.message});$('bulkRemove').onclick=()=>bulkAssign(false).catch(e=>{$('bulkStatus').textContent=e.message});
  const globalOption=document.createElement('option');globalOption.value='global-unassigned';globalOption.textContent='In keiner Liste';$('listWishAssignment').append(globalOption);
  $('showUnassigned').onclick=()=>{if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady)return;selectedOnlyView=false;$('listWishAssignment').value='global-unassigned';$('listWishSearch').value='';$('listWishPriority').value='all';$('listWishCategory').value='all';$('listWishMarker').value='all';$('listWishSort').value='newest';bulkIds.clear();renderWishCards();$('listWishCards').scrollIntoView({behavior:'smooth',block:'start'});};
- for(const id of ['listsSearch','listsView','listsSort'])$(id).addEventListener('input',()=>{if(!bulkBusy&&!activeWishMutations.size)render()});
- $('homeFavorites').onclick=()=>{if(bulkBusy||activeWishMutations.size)return;$('listsView').value='favorites';render();$('listsContent').scrollIntoView({behavior:'smooth',block:'start'})};
+ for(const id of ['listsSearch','listsView','listsSort'])$(id).addEventListener('input',()=>{if(!listCopyBusy&&!bulkBusy&&!activeWishMutations.size)render()});
+ $('homeFavorites').onclick=()=>{if(listCopyBusy||bulkBusy||activeWishMutations.size)return;$('listsView').value='favorites';render();$('listsContent').scrollIntoView({behavior:'smooth',block:'start'})};
  $('homeNewWish').onclick=()=>{$('editor').scrollIntoView({behavior:'smooth',block:'start'});$('url').focus()};
  $('homeNewList').onclick=()=>{$('listTitle').scrollIntoView({behavior:'smooth',block:'center'});$('listTitle').focus()};
  for(const category of WISH_CATEGORIES){for(const select of [$('listWishCategory'),$('wishDetailCategory')]){const option=document.createElement('option');option.value=category.id;option.textContent=category.label;select.append(option)}}const noCategory=document.createElement('option');noCategory.value='';noCategory.textContent='Ohne Kategorie';$('wishDetailCategory').prepend(noCategory);
