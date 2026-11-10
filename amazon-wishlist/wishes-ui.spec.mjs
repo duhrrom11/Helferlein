@@ -111,3 +111,34 @@ test('mobile layout at 320 and 375 pixels keeps bulk action buttons inside viewp
   expect(outside).toEqual([]);
  }
 });
+
+test('isolated DOM regression: reload clears stale cards, bulk selection and confirmation without writes',async({page})=>{
+ await mount(page);
+ await page.evaluate(()=>{
+  window.__mockSupabase={writes:0};
+  const cards=document.getElementById('listWishCards');
+  const card=document.createElement('article');card.textContent='Alter Wunsch';cards.append(card);
+  document.getElementById('bulkSelectedCount').textContent='1 ausgewählt';
+  document.getElementById('bulkResultPanel').hidden=false;
+  document.getElementById('bulkConfirmDialog').showModal();
+  const reload=()=>{
+   cards.replaceChildren();
+   document.getElementById('bulkSelectedCount').textContent='0 ausgewählt';
+   document.getElementById('bulkResultPanel').hidden=true;
+   document.getElementById('bulkConfirmDialog').close();
+   document.getElementById('bulkAdd').disabled=true;
+   document.getElementById('bulkRemove').disabled=true;
+   document.getElementById('listItemsFeedback').hidden=false;
+   document.getElementById('listItemsFeedbackText').textContent='Listenzuordnungen konnten nicht vollständig geladen werden.';
+  };
+  reload();
+ });
+ await expect(page.locator('#listWishCards article')).toHaveCount(0);
+ await expect(page.locator('#bulkSelectedCount')).toHaveText('0 ausgewählt');
+ await expect(page.locator('#bulkResultPanel')).toBeHidden();
+ await expect(page.locator('#bulkConfirmDialog')).not.toBeVisible();
+ await expect(page.locator('#bulkAdd')).toBeDisabled();
+ await expect(page.locator('#bulkRemove')).toBeDisabled();
+ await expect(page.locator('#listItemsFeedbackText')).toContainText('nicht vollständig geladen');
+ expect(await page.evaluate(()=>window.__mockSupabase.writes)).toBe(0);
+});
