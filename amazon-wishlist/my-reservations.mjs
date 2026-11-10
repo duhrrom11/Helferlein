@@ -7,10 +7,11 @@ function card(row){
  const tag=document.createElement('span');tag.className='tag';tag.textContent=row.is_public?'🎁 Von dir reserviert':'🔒 Nicht mehr öffentlich';
  const title=document.createElement('h3');title.textContent=row.product_title||'Wunsch';
  const details=document.createElement('p');details.textContent='Reserviert am '+fmt(row.created_at)+(row.collection_title?' · '+row.collection_title:'');
+ const plan=planByWish.get(String(row.wish_id));if(plan){const progress=document.createElement('p');progress.className='tag';const labels={idea:'💡 Idee',planned:'📝 Geplant',purchased:'🛍️ Gekauft',wrapped:'🎀 Verpackt',gifted:'🎁 Verschenkt'};progress.textContent='Deine Geschenkplanung: '+(labels[plan.status]||plan.status);article.append(progress)}
  const controls=document.createElement('div');controls.className='controls';
  if(row.is_public&&row.product_id){
   const transfer=document.createElement('button');transfer.className='primary';transfer.type='button';transfer.textContent='🎁 In Geschenkplanung';
-  transfer.addEventListener('click',()=>{location.href='./gift-planner.html?reserved_wish='+encodeURIComponent(row.wish_id)});
+  transfer.textContent=plan?'🎁 Geschenkplanung öffnen':'🎁 In Geschenkplanung';transfer.addEventListener('click',()=>{location.href=plan?'./gift-planner.html':'./gift-planner.html?reserved_wish='+encodeURIComponent(row.wish_id)});
   controls.append(transfer);
   if(row.collection_id){const a=document.createElement('a');a.href='./collection.html?id='+encodeURIComponent(row.collection_id);a.textContent='Wunschwelt ansehen ↗';a.style.alignSelf='center';controls.append(a)}
  }
@@ -45,6 +46,7 @@ $('more').addEventListener('click',()=>page());
 async function main(){
  const {data,error}=await db.auth.getUser();user=data?.user;
  if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
+ const {data:plans,error:planError}=await db.from('wishlist_gift_plans').select('source_wish_id,status,created_at').eq('user_id',user.id).not('source_wish_id','is',null).order('created_at',{ascending:false}).limit(1000);if(!planError)for(const p of plans||[])if(!planByWish.has(String(p.source_wish_id)))planByWish.set(String(p.source_wish_id),p);
  $('content').hidden=false;await page(true);
 }
 main().catch(()=>{$('status').textContent='Reservierungen konnten nicht geladen werden.'});
