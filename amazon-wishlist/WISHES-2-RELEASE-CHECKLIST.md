@@ -649,3 +649,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls ohne Imports und gezielte Quelltextkontrolle erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen. Laufende Operationen müssen vor Freigabe praktisch geprüft werden.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Autopilot: mobile Entsperrung nach Schreibvorgängen und veraltete Listenaktionen (2026-11-10)
+
+- [x] Mobile Schnellfilter, Filter-Zurücksetzen, „Nur Auswahl“ und das Leeren der Sammelauswahl werden während laufender Einzeländerungen nicht mehr umgeschaltet.
+- [x] Gestaltung, Archivieren, Reaktivieren, Duplizieren und Löschen aus Listenkarten prüfen die Lade-Generation bereits vor dem Öffnen des jeweiligen Bestätigungsdialogs oder Editors.
+- [x] Nach Abschluss einer Einzelverschiebung oder direkten Zuordnungsänderung werden aktuelle Wunschkarten erneut gerendert, nachdem die Einzeländerungs-Sperre aufgehoben wurde. Dadurch bleiben die frisch geladenen Karten nicht versehentlich deaktiviert.
+- [x] Minimale JavaScript-Syntaxprüfung ohne Imports und gezielte Quelltextkontrolle erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; insbesondere Entsperrung nach Erfolg und Ladefehler praktisch prüfen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
