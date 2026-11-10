@@ -1137,11 +1137,12 @@
             event.preventDefault();
             event.returnValue = '';
         });
-        async function saveSecureWg(payload) {
+        async function saveSecureWg(payload, expectedWgId = wgBinId) {
             await getAuthenticatedWgUser();
+            if (wgBinId !== expectedWgId) throw new Error('WG wurde während des Speicherns gewechselt. Speichern abgebrochen.');
             if (secureWgSaveBlocked) throw new Error('Speichern nach einem Konflikt angehalten. Bitte Daten sichern und die WG kontrolliert neu laden.');
             if (!secureWgRevision) throw new Error('WG muss vor dem Speichern neu geladen werden.');
-            const id = wgBinId.slice(SECURE_WG_PREFIX.length);
+            const id = expectedWgId.slice(SECURE_WG_PREFIX.length);
             // A new revision must differ from the previous one, even when
             // two saves happen in the same millisecond or the client clock lags.
             const previousRevisionMs = Date.parse(secureWgRevision);
@@ -1385,10 +1386,12 @@
                 infoboard: getInfoData()
             };
             if (isSecureWgId(wgBinId)) {
+                const savingWgId = wgBinId;
                 const version = ++secureWgChangeVersion;
                 secureWgDirty = true;
                 secureWgSaving = secureWgSaving.catch(() => false).then(async () => {
                     try {
+                        if (wgBinId !== savingWgId) throw new Error('WG wurde vor dem Speichern gewechselt.');
                         // Snapshot only when this queued write starts, so later edits are
                         // never accidentally marked as saved by an earlier response.
                         const snapshot = {
@@ -1398,7 +1401,7 @@
                             shopping: getShoppingList(), cooking: getCookingPlan(),
                             contracts: getContracts(), infoboard: getInfoData()
                         };
-                        const saved = await saveSecureWg(snapshot);
+                        const saved = await saveSecureWg(snapshot, savingWgId);
                         secureWgSavedVersion = Math.max(secureWgSavedVersion, version);
                         secureWgDirty = secureWgSavedVersion < secureWgChangeVersion;
                         return saved;
