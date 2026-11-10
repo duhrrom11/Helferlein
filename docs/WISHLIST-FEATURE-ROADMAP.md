@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Fokusführung für Wunschlisten-Navigation und Dashboard-Sortierung)
+
+- **Wunschlisten:** `openList` und der Button `listItemsBack` scrollten bislang ohne Tastaturfokuswechsel. Die neue clientseitige `focusListRegion`-Hilfe fokussiert die geöffnete Listenüberschrift bzw. beim Zurückspringen die Liste; sie berücksichtigt `prefers-reduced-motion`.
+- **Geschenk-Dashboard:** Nach einer Verschiebung in der Abschnittssortierung suchte die bisherige Fokuslogik an einer festen Position nach einem Pfeilbutton, der an Listenrändern deaktiviert sein konnte. Die Fokuswahl nimmt nun einen aktivierten Button des verschobenen Abschnitts.
+- **Prüfung:** Beide betroffenen JavaScript-Module `amazon-wishlist/lists-dashboard.mjs` und `amazon-wishlist/gift-start.mjs` erneut von GitHub geladen und ohne JavaScript-Syntaxfehler isoliert geprüft. Authentifizierter End-to-End-Browsertest steht aus.
+- **Produktionsschutz:** Ausschließlich clientseitige Fokus- und Scroll-Logik verändert; keine Supabase-Schreiboperation, Schemaänderung oder Testdaten und keine Änderung vorhandener Produktivdatensätze.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Geschenkplanung: mobile Fehlermeldungen und Fokusführung)
 
 - **Konkrete UX-Lücke:** In der separaten `amazon-wishlist/gift-planner.html` wurden Speicher- und Validierungshinweise bislang allein in der weit oben stehenden globalen Statuszeile angezeigt; auf Smartphones waren diese nach Scrollen zum Formular nicht unmittelbar sichtbar.
