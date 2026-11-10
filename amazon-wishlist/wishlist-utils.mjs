@@ -125,3 +125,22 @@ export async function copyShareLink(text,clipboard=navigator.clipboard,doc=docum
   return 'fallback';
  }finally{input.remove()}
 }
+
+/** Produce a spreadsheet-safe, UTF-8 CSV backup from the signed-in user's own wishes. */
+export function exportWishlistCsv(rows) {
+ if(!Array.isArray(rows))throw Error('Ungültige Exportdaten');
+ const safe=value=>{
+  let s=String(value??'').replace(/\r\n?/g,'\n');
+  // Avoid spreadsheet formula execution when opening a downloaded CSV.
+  if(/^[\s\u0000-\u001f]*[=+@-]/.test(s))s="'"+s;
+  return '"'+s.replace(/"/g,'""')+'"';
+ };
+ const header=['Amazon-ASIN','Produkttitel','Notiz','Priorität','Erstellt am','Amazon-Link'];
+ const lines=[header.map(safe).join(';')];
+ for(const row of rows){
+  const product=row?.wishlist_products;
+  if(!product||!/^([A-Z0-9]{10})$/.test(product.asin)||product.marketplace!=='amazon.de')throw Error('Ungültiger Exportdatensatz');
+  lines.push([product.asin,product.title,row.note,validatePriority(row.priority),row.created_at,'https://www.amazon.de/dp/'+product.asin].map(safe).join(';'));
+ }
+ return '\uFEFF'+lines.join('\r\n')+'\r\n';
+}
