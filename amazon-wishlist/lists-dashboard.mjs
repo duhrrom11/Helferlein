@@ -215,7 +215,7 @@ export function mountListsDashboard(db, getUser) {
   const source=lists.find(l=>l.id===sourceListId&&!l.archived);
   const target=lists.find(l=>l.id===targetListId&&!l.archived);
   if(!source||!target||selected!==sourceListId||!assignedIds.has(wishId))return msg('Bitte einen zugeordneten Wunsch aus einer aktiven Liste auswählen.');
-  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(bulkBusy||!membershipReady||selected!==sourceListId)return;
+  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(bulkBusy||!membershipReady||selected!==sourceListId||getUser()?.id!==uid||generation!==loadGeneration||!assignedIds.has(wishId)||!lists.some(l=>l.id===targetListId&&!l.archived))return;
   const current=()=>getUser()?.id===uid&&generation===loadGeneration&&selected===sourceListId;
   control.disabled=true;
   try{
@@ -224,11 +224,11 @@ export function mountListsDashboard(db, getUser) {
     const {error}=await db.from('wishlist_list_items').insert({list_id:targetListId,wish_id:wishId,user_id:uid});
     if(error)throw error;
    }
-   if(!current()){if(getUser()?.id===uid)msg('Zielzuordnung gespeichert. Bitte Listen neu laden, bevor du fortfährst.');return}
+   if(!current()){if(getUser()?.id===uid&&selected===sourceListId)msg('Zielzuordnung gespeichert. Bitte Listen neu laden, bevor du fortfährst.');return}
    const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid);
    if(error){if(current())msg('Wunsch wurde zur Zielliste hinzugefügt, konnte aber nicht aus der Ursprungsliste entfernt werden: '+error.message+'. Bitte erneut prüfen.');if(current())await load();return}
    await load();
-   if(current())msg('Wunsch nach „'+target.title+'“ verschoben. Die Ausgangsliste bleibt geöffnet.')
+   if(getUser()?.id===uid&&selected===sourceListId)msg('Wunsch nach „'+target.title+'“ verschoben. Die Ausgangsliste bleibt geöffnet.')
   }catch(e){if(getUser()?.id===uid&&selected===sourceListId)msg('Verschieben fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
   finally{control.disabled=false}
  }
