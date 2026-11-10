@@ -74,3 +74,10 @@ test('Nachlass release v2 is documented as a gated design, not an active authori
  assert.match(heir,/keine serverseitig durchgesetzte Zugriffssperre/);
  assert.match(html,/#key=\$\{encodeURIComponent\(cfg\.masterKeyHex\)\}/);
 });
+
+test('new vault and heir IDs use CSPRNG without exposing names or timestamps',()=>{
+ assert.match(html,/const vaultId = "v_" \+ Array\.from\(crypto\.getRandomValues\(new Uint8Array\(16\)\)/);
+ assert.match(html,/const personId = "p_" \+ Array\.from\(crypto\.getRandomValues\(new Uint8Array\(16\)\)/);
+ assert.doesNotMatch(html,/Math\.random\(\)/);
+ assert.match(html,/if \(storedVault === null\)/,'existing vault records must be loaded rather than regenerated');
+});
