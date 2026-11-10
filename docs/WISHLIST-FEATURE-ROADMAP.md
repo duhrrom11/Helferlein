@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Automatische private Dashboard-Sicherungspunkte)
+
+- **Neu umgesetzt:** Vor jeder tatsächlich veränderten bestehenden Dashboard-Konfiguration legt ein Datenbank-Trigger automatisch einen vollständigen Snapshot des vorherigen Zustands an. Es werden maximal 20 Sicherungspunkte je Konto vorgehalten; ältere Sicherungspunkte werden durch den Trigger automatisch bereinigt.
+- **Produktivmigration:** `wishlist_automatic_private_dashboard_checkpoints` erstellt `wishlist_gift_home_checkpoints`, Owner-SELECT-RLS und den geschützten BEFORE UPDATE-Trigger auf `wishlist_gift_home_preferences`. Bestehende Einstellungen bleiben erhalten; Sicherungspunkte beginnen erst bei zukünftigen Änderungen.
+- **Oberfläche:** Privater Bereich mit Sicherungspunkten, Zeitstempeln, Änderungsübersicht und ausdrücklicher Bestätigung vor der Wiederherstellung. Die Wiederherstellung erzeugt selbst einen neuen Sicherungspunkt der vorherigen Konfiguration und einen Eintrag im unveränderten Auditverlauf.
+- **Sicherheit:** Checkpoints: RLS aktiviert, kein anon-SELECT, keine direkten INSERT/UPDATE/DELETE-Rechte für authentifizierte Nutzer. Einstellungen und Auditverlauf ebenfalls mit aktivem Owner-RLS geprüft. Keine Testdaten und keine Änderungen an Geschenkaufgaben, Anlässen oder Jahresabschlüssen.
+- **Qualität:** JavaScript-Syntax geprüft; ein authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Private JSON-Sicherung und validierter Dashboard-Import)
 
 - **Neu umgesetzt:** Lokaler JSON-Export der eigenen Dashboard-Konfiguration (Sichtbarkeit, Reihenfolge, Kennzahlen, Sortierungen, Schnellzugriffe, Favoriten, aktive Ansicht und gespeicherte Layouts) mit Formatkennung und Version.
