@@ -292,3 +292,16 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Weiterhin kein vollständiger Produktions-Freigabenachweis.
 
 **Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.**
+
+## Produktentwicklung: Übersicht, Schnellfilter und direkte Wunscherfassung (2026-11-10)
+
+- [x] Kontext der geöffneten Liste über den Wunschkarten: Listenname, Zuordnungsanzahl und Archivstatus.
+- [x] Ein-Klick-Schnellfilter: alle Wünsche, dieser Liste zugeordnete Wünsche, global nicht zugeordnete Wünsche und Favoriten; aktive Filter über `aria-pressed` erkennbar.
+- [x] Direkte Rücknavigation zur Listenübersicht ohne langes Scrollen.
+- [x] „Wunsch zu dieser Liste“ öffnet die bestehende Wunscherfassung und wählt die aktuelle aktive Liste vor; bei archivierten Listen oder noch nicht geladenen Zuordnungen deaktiviert.
+- [x] Mobile Schnellfilter in zweispaltiger Anordnung, größere Touchflächen und responsive Kontextaktionen.
+- [x] Minimalprüfung: geänderte Dashboard-JavaScript-Dateien syntaktisch geprüft; keine umfangreichen neuen Tests.
+- [ ] Browserabnahme der neuen Navigations- und Filteraktionen vor Freigabe.
+- [ ] Produktfreigabe weiterhin gesperrt.
+
+Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
