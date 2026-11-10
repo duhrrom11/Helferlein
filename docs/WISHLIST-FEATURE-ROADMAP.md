@@ -204,6 +204,15 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Privatsphäre und Produktivbetrieb:** Bestehende RLS-Policies geprüft; nur öffentliche Sammlungen werden geladen, Merkliste bleibt eigentümergebunden. Keine Datenbankmigrationen oder Bestandsdatenänderungen.
 - **Einschränkungen:** Feed berücksichtigt maximal 100 zuletzt erstellte öffentliche Sammlungen; bei vielen gefolgten Profilen können ältere Beiträge fehlen. Empfehlungen sind einfache Schlagwortübereinstimmungen, keine semantische Suche. Browser-End-to-End-Test mit echten Nutzerkonten steht aus.
 
+## Entwicklungsfortschritt – 10.11.2026 (Persönliches Social-Dashboard)
+
+- **Neu umgesetzt:** Mobile-first Social-Dashboard unter `amazon-wishlist/social-dashboard.html` mit Follower-Zahl, erhaltenen Likes und Anzahl neuer Aktivitäten seit dem letzten markierten Besuch.
+- **Aktivitäten:** Neu veröffentlichte öffentliche Sammlungen gefolgter Profile, neue Follower sowie Likes auf eigene öffentliche Sammlungen. Die Einträge werden beim Aufruf aus vorhandenen `wishlist_follows`, `wishlist_lists`, `wishlist_profiles` und `wishlist_collection_likes` berechnet.
+- **Neu umgesetzt:** „Als gesehen markieren“ speichert einen Zeitstempel im lokalen Browserspeicher pro angemeldetem Nutzer; keine neue Datenbanktabelle, kein Push und keine E-Mail. Ohne bisherigen Zeitstempel werden die letzten sieben Tage als neu behandelt.
+- **Mobile Navigation:** Direkter Link im Hauptmenü und auf dem Startseiten-Banner.
+- **Privatsphäre:** RLS und Filter für öffentliche, nicht archivierte Sammlungen bleiben aktiv. Likes werden nur für eigene öffentliche Listen geladen. Keine Änderungen an bestehenden Supabase-Datensätzen.
+- **Grenzen:** Höchstens 200 Follower, 200 gefolgte Profile, 200 eigene Listen, 100 öffentliche Sammlungen gefolgter Profile und 200 Likes werden pro Aufruf berücksichtigt. Statistiken können bei größeren Mengen deshalb mit `200+` angezeigt werden; Benachrichtigungen sind berechnete Momentaufnahmen und keine persistierten Ereignisse. Vollständiger Browser-End-to-End-Test steht aus.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
