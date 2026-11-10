@@ -792,3 +792,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Kopiervorgänge und Verschiebungen bleiben nicht transaktional.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: Benutzerkontext für Sammelaktionen und mobile Filter (2026-11-10)
+
+- [x] Das Löschen einer Liste prüft den geladenen Benutzer bereits vor dem Bestätigungsdialog und lehnt veraltete Listenkarten ab.
+- [x] Sammelaktions-Ergebnisfelder und erneute Bestätigungen werden auf den geladenen Benutzerkontext begrenzt; Wiederholungs- und Fortsetzungsaktionen sind bei laufenden Änderungen deaktiviert.
+- [x] Vor dem Ausführen bestätigter Sammelaktionen werden Dashboard-Generation und geladener Benutzerkontext gemeinsam erneut geprüft; Sammelverschiebungen prüfen den geladenen Benutzer bereits beim Einstieg.
+- [x] Mobile Wunschfilter sind während Kopier-, Sammel- und Einzeländerungen sichtbar deaktiviert und werden nach Wiederherstellung der Mitgliedschaftsdaten erneut aktiviert.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Nicht transaktionale Kopier- und Verschiebungsvorgänge bleiben ein Freigaberisiko.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
