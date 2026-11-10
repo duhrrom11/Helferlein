@@ -1081,3 +1081,11 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Supabase Security Advisor nach Migration geprüft: nur bestehende Warnung zur deaktivierten Leaked-Password-Protection; keine neue RLS-Warnung.
 - [ ] Finale GitHub-Actions-Läufe nach dem SQL-Fix und der Dokumentation bestätigen, PR-Mergefähigkeit prüfen, tatsächliche Deployment-Konfiguration verifizieren.
 - [ ] Default-List-Backfill nicht automatisch ausführen. Für das leere Listen-Schema besteht kein Bedarf, bestehende Wünsche ungeprüft umzuverteilen.
+
+### Release-Gate nach produktiver Migration (2026-11-10)
+
+- [x] Statischer Node-Sicherheitstest `lists-schema.test.mjs` schützt die reale `bigint`-ID, beide Eigentümer-Fremdschlüssel und die RLS-Policy-Vorgaben (Commit `617e58a4`).
+- [x] GitHub PR #166 ist laut API `mergeable=true`, aber `mergeable_state=unstable` solange aktuelle Checks ausstehen.
+- [x] GitHub Pages als Veröffentlichungsziel aus `.github/workflows/live-site-http.yml` identifiziert: `https://duhrrom11.github.io/Helferlein`. Der bestehende Live-HTTP-Check prüft noch nicht die Wishes-Route.
+- [ ] Authentifizierte End-to-End-Prüfung gegen echte RLS-Rollen (ohne Testdaten in Produktion), einschließlich Benutzerwechsel, Neuanlage und Zuordnung, steht noch aus. Isolierte Browser-Tests sind keine vollständige Produktionsabnahme.
+- [ ] Keine Freigabe des PR-Merges und kein GitHub-Pages-Deployment, bis alle neuen Checks grün und die Auth-/Deployment-Gates bestätigt sind.
