@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Private historische Jahresabschlüsse)
+
+- **Neu umgesetzt:** Einmalige, ausdrücklich bestätigte Jahresabschlüsse für Geschenkpläne und historische Jahresbudgets. Abschlusswerte (Geschenkzahl, verschenkte Geschenke, geplante und erfasste Beträge, Jahresbudgets) sowie einzelne Geschenk- und Budgeteinträge werden als JSONB-Momentaufnahme gespeichert.
+- **Additive Produktivmigration:** `wishlist_gift_year_closings` mit eindeutigem `(user_id,closing_year)`, owner-only SELECT-RLS, keinen direkten Schreibrechten für Webrollen und `wishlist_close_gift_year(year,confirm)` als eng begrenzter `SECURITY DEFINER`-RPC mit `auth.uid()`-Prüfung, Bestätigungspflicht, advisory transaction lock und unveränderlichem Erstabschluss. Die Funktion legt keine Testdaten an.
+- **Mobile Jahresstatistik:** Abschlussbestätigung, gespeicherte Abschlussdetails, historische Jahresvergleichswerte und abgeschlossene Budgetkennzahl. Offene Jahre bleiben live.
+- **Grenzen:** Abschlüsse enthalten Geschenkstatus, Ausgaben und explizite Budgetwerte, jedoch keine Aufgabenstatus-Snapshots. Der aktuelle Abschnitt der Anlass-Budgetdetails zeigt für einzelne Anlässe weiterhin live editierbare Jahresbudgets; historische Abschlusswerte stehen separat in den Abschlussdetails. Geschenkjahr-Schätzungen aus dem Erstellungsjahr bleiben als solche markiert. Kein Browser-End-to-End-Test mit authentifiziertem Konto durchgeführt.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Geschenkjahr und historische Anlassbudgets)
 
 - **Additive Produktivmigration:** `wishlist_gift_plans.gift_year` und `gift_year_source` ergänzt. Bestehende Geschenke erhalten ihr Erstellungsjahr als ausdrücklich gekennzeichnete Schätzung (`inferred_created`), ohne ihre übrigen Daten zu verändern. Neue Geschenke erhalten das aktuelle Kalenderjahr als Standard. Über `wishlist_set_gift_year(plan_id,year)` können Eigentümer das Jahr korrigieren.
