@@ -9,18 +9,12 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- QRCode.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- EmailJS SDK -->
-    <!-- Legacy email dispatch disabled: no bearer decryption keys in third-party messages. -->
 
     <style>
         .tab-btn.active {
@@ -363,16 +357,6 @@
     </main>
 
     <script>
-        try {
-            if (typeof emailjs !== "undefined") {
-                emailjs.init("Z1iQ0xhr3cpIXVC0j");
-            } else {
-                console.warn("EmailJS konnte nicht geladen werden (Werbeblocker?).");
-            }
-        } catch (e) {
-            console.error("EmailJS Fehler:", e);
-        }
-
         const firebaseConfig = {
             apiKey: "AIzaSyAMWtuQHTGhMMd3WmIgW46NbvT6bQoBwm8",
             authDomain: "nachlass-app-99df8.firebaseapp.com",
