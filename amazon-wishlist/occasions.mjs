@@ -3,7 +3,7 @@ const $=id=>document.getElementById(id);
 let user=null,items=[],editing=null,filter='all';
 const today=()=>{const d=new Date();return Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())};
 const parse=s=>{const [y,m,d]=s.split('-').map(Number);return {y,m,d}};
-const validDay=(y,m,d)=>new Date(Date.UTC(y,m,d)).getUTCMonth()===m-1;
+const validDay=(y,m,d)=>new Date(Date.UTC(y,m-1,d)).getUTCMonth()===m-1;
 function occurrence(item){
  const {y,m,d}=parse(item.occasion_date);const base=Date.UTC(y,m-1,d);
  if(!item.repeats_yearly)return base;
