@@ -10,7 +10,7 @@ function render(){
  renderClosings();const year=Number($('year').value);selectedYear=year;const summary=summarize(year);
  $('gifts').textContent=summary.gifts;$('completion').textContent=(summary.gifts?Math.round(summary.gifted/summary.gifts*100):0)+' %';$('spent').textContent=money(summary.spent);
  const relevant=occasions.filter(o=>o.repeats_yearly||Number(o.occasion_date.slice(0,4))===year),budget=relevant.reduce((n,o)=>n+Number(annualBudgets.find(b=>b.occasion_id===o.id&&b.budget_year===year)?.budget_amount||0),0);
- $('budget').textContent=money(budget);
+ const selectedClosing=closings.find(c=>c.closing_year===year);$('budget').textContent=money(selectedClosing?selectedClosing.budget_total:budget);
  const comparison=$('comparison');comparison.replaceChildren();const years=new Set([year,year-1,year-2,...closings.map(c=>c.closing_year),...gifts.map(yearOf),...tasks.filter(t=>t.checklist_year).map(t=>t.checklist_year)]);for(const y of [...years].filter(Number.isInteger).sort((a,b)=>b-a).slice(0,15)){
  const x=summarize(y),closed=closings.find(c=>c.closing_year===y),tr=document.createElement('tr');for(const value of [String(y)+(closed?' 🔒':''),closed?closed.gift_count:x.gifts,(closed?closed.gift_count:x.gifts)?Math.round((closed?closed.gifted_count:x.gifted)/(closed?closed.gift_count:x.gifts)*100)+' %':'–',money(closed?closed.actual_total:x.spent),money(closed?closed.planned_total:x.planned),x.tasks?x.done+'/'+x.tasks:'–'])tr.append(el('td',String(value)));comparison.append(tr)}
  const budgets=$('budgetDetails');budgets.replaceChildren();if(!relevant.length)budgets.append(el('p','Keine Anlässe für dieses Jahr vorhanden.','empty'));
