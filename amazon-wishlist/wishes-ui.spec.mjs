@@ -1,12 +1,9 @@
 import {test,expect} from '@playwright/test';
-import {readFile} from 'node:fs/promises';
+import {loadIsolatedWishesPage} from './isolated-browser-fixture.mjs';
 
-// Isolated UI contract tests. Scripts and remote resources are removed deliberately:
-// no Supabase connection, no auth session, no production writes.
-const html=await readFile(new URL('./index.html',import.meta.url),'utf8');
-const fixture=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<script\b[^>]*\/>/gi,'').replace(/<link\b[^>]*>/gi,'');
+// Real HTML under a restrictive CSP: no scripts, remote resources or writes.
 async function mount(page){
- await page.setContent(fixture,{waitUntil:'domcontentloaded'});
+ await loadIsolatedWishesPage(page);
  await page.evaluate(()=>{
   for(const selector of ['#listsDashboard','#listWishCards','.wish-bulk-toolbar']){const el=document.querySelector(selector);if(!el)throw new Error('Missing UI fixture: '+selector);for(let node=el;node&&node!==document.body;node=node.parentElement)node.hidden=false;}
  });
