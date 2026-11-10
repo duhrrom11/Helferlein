@@ -475,3 +475,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Gezielte Syntax-, Browser- und Regressionstests des aktuellen HEAD stehen weiterhin aus; Implementierungsänderungen sind committet, aber nicht als erfolgreich browsergetestet gekennzeichnet.
 - [ ] Sammelverschieben bleibt ohne Datenbanktransaktion bei Netzwerkfehlern nicht atomar; die zwei Listen müssen bei Teilfehlern kontrolliert werden.
 - [ ] Produktfreigabe bleibt gesperrt: keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Autopilot: Einzelverschieben, archivierte Navigation und Sammelstatus (2026-11-10)
+
+- [x] Fehler in der Erfolgsmeldung beim Einzelverschieben korrigiert: Ein regulärer interner Reload erhöht die Ladegeneration und hatte dadurch die bisherige `current()`-Prüfung für die Erfolgsmeldung ungültig gemacht.
+- [x] Einzelverschieben validiert nach Bestätigung zusätzlich Konto, Ladegeneration, aktuelle Quellzuordnung und aktives Ziel.
+- [x] Schnellwechsel und aktiver Arbeitsbereich zeigen nur aktive Listen; archivierte Listen bleiben in der allgemeinen Listenübersicht reaktivierbar.
+- [x] Fortschrittsanzeige bei abgeschlossenen Hinzufügen-/Entfernen-Sammelaktionen wird wieder geschlossen.
+- [x] Leerer Zustand für global noch nicht zugeordnete Wünsche erklärt nun, wenn bereits alle Wünsche mindestens einer Liste zugeordnet sind.
+- [ ] Gezielte Browser-/Node-Regressionstests und RLS-Negativtests weiterhin vor Freigabe nötig; diese Änderungen wurden nicht als end-to-end getestet markiert.
+- [ ] Mehrfachverschieben bleibt ohne serverseitige Transaktion bei Netzwerk- oder Kontextfehlern potenziell partiell. Kein automatischer Rollback.
+- [ ] Freigabe nicht erteilt; kein Merge, Deployment, Vercel-Aufruf, produktiver Supabase-Eingriff oder kostenpflichtiger Dienst.
