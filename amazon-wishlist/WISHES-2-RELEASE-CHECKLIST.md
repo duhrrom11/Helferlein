@@ -96,3 +96,16 @@
 - [ ] Verifiziertes `package-lock.json` erzeugen; keine geprüften Registry-Metadaten/Integritäts-Hashes verfügbar
 
 **Freigabeentscheidung:** Weiterhin **nicht freigegeben**. Kein nachgewiesener Fehler in den erneut ausgeführten isolierten Tests, deshalb keine unbegründete Produktivcodeänderung. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Infrastruktur-Retry und konkrete Testkorrekturen (2026-11-10)
+
+- [x] `git ls-remote https://github.com/duhrrom11/Helferlein.git HEAD` erneut in der lokalen Laufzeit ausgeführt: **fehlgeschlagen**, `Could not resolve host: github.com`
+- [x] `npm install --package-lock-only --offline --ignore-scripts --no-audit --no-fund` erneut ausgeführt: **fehlgeschlagen**, `ENOTCACHED` für `@playwright/test`; **kein verifiziertes Lockfile erstellt**
+- [x] Originale Branch-UI-Testdatei untersucht: Die Fixture-Montage hob bisher nur einzelne `hidden`-Attribute auf, nicht versteckte Vorfahren; dies kann zu falschen Unsichtbarkeits-Fehlern führen. Fixture-Montage korrigiert und fehlende Fixture-Elemente explizit als Fehler markiert.
+- [x] Mobile Browserassertion erweitert: Prüft neben horizontalem Überlauf auch Buttons ohne sichtbare Größe.
+- [x] Retry-Assertion auf die eindeutige Status-Element-ID statt eine möglicherweise mehrdeutige `role=status`-Suche umgestellt.
+- [ ] Vollständige Branch-Node-Suite mit `node --test` ausführen; GitHub-Checkout weiterhin nicht verfügbar
+- [ ] Alle neun originalen Playwright-Fälle ausführen; npm-Paket und vollständiger lokaler Branch weiterhin nicht verfügbar
+- [ ] Echtes npm-Lockfile erst nach erfolgreicher Registry-Auflösung erzeugen und verifizieren
+
+**Bewertung:** Konkrete Testrobustheitsprobleme behoben, aber die aktualisierten Browserfälle konnten in dieser Runde nicht ausgeführt werden. Keine Behauptung eines erfolgreichen vollständigen Browser-/Node-Branch-Laufs. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
