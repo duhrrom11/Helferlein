@@ -177,7 +177,7 @@ export function mountListsDashboard(db, getUser) {
   const targets=[...bulkIds].filter(id=>assignedIds.has(id)&&loadedWishIds.has(id));
   const skipped=bulkIds.size-targets.length;
   if(!targets.length)return msg('Nur Wünsche, die bereits in dieser Liste liegen, können verschoben werden.');
-  if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten. Die Zuordnungen werden nacheinander geändert; bei Fehlern kann ein Wunsch vorübergehend in beiden Listen stehen.'))return;
+  if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten. Ein Stopp wirkt vor dem nächsten Wunsch; bei Fehlern kann ein Wunsch in beiden Listen stehen.'))return;
   const generation=loadGeneration,run=++bulkRunId;
   const current=()=>getUser()?.id===uid&&selected===sourceId&&generation===loadGeneration&&run===bulkRunId;
   let moved=0,failed=0,partial=0,stopped=false;
@@ -193,7 +193,7 @@ export function mountListsDashboard(db, getUser) {
       if(error)throw error;
      }
      if(!current()){stopped=true;partial++;break}
-      if(bulkStopRequested){stopped=true;partial++;break}
+     // Complete the current source removal before honoring Stop on the next wish.
      const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceId).eq('wish_id',wishId).eq('user_id',uid);
      if(error){partial++;failed++;if(current())msg('Zielzuordnung gespeichert, aber Entfernen aus der Ursprungsliste fehlgeschlagen. Bitte beide Listen prüfen.');continue}
      moved++;bulkIds.delete(wishId);
