@@ -5,7 +5,8 @@
   "scripts": {
     "test:node": "node --test *.test.mjs",
     "test:browser": "playwright test --config playwright.config.mjs",
-    "test:all": "npm run test:node && npm run test:browser"
+    "test:all": "npm run test:node && npm run test:browser",
+    "test:ci": "npm run test:node && npm run test:browser"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1"
