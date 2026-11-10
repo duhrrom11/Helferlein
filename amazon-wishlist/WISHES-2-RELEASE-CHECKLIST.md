@@ -531,3 +531,15 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung des Dashboard-Quelltexts (Imports ausgeklammert) erfolgreich; GitHub-Inhaltsprüfung der neuen Sperren und Kontolöschung erfolgreich.
 - [ ] Kein echter Browser-/End-to-End-Test und kein produktiver Supabase-Test. Vor Freigabe besonders Kontowechsel während einer laufenden Anfrage, Abbruch und nicht-atomare Verschiebungen manuell prüfen.
 - [ ] Freigabe bleibt gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Autopilot: robuste Karten, begrenztes Rendering und Listeneditor (2026-11-10)
+
+- [x] Auswahl- und Zuordnungscheckboxen auf Wunschkarten prüfen vor Änderungen den angemeldeten Kontokontext, die aktive Liste und das Vorhandensein des Wunsches; veraltete Karten lösen keine Schreibaktion mehr aus.
+- [x] Filter-Reset im leeren Wunschbereich wird bei fehlenden Listenzuordnungen oder inaktivem Arbeitsbereich abgefangen.
+- [x] „Alle zugeordneten“ bzw. „Alle ohne Liste“ auswählen behält die vollständige Sammelauswahl, rendert auf mobilen Geräten aber zunächst höchstens 100 Karten statt potenziell Tausender DOM-Elemente.
+- [x] Der Wunschzähler nennt zusätzlich die Gesamtzahl ausgewählter Wünsche, auch wenn nur ein Ausschnitt sichtbar ist.
+- [x] „Gestalten“ öffnet die Listenbearbeitung, ohne heimlich die aktive Wunschliste zu wechseln und dabei Auswahl-/Zuordnungskontext zu vermischen.
+- [x] Öffnen und Speichern des Listeneditors prüfen zusätzlich den aktuellen Benutzer-/Listenstatus.
+- [x] Minimale JavaScript-Parserprüfung des Dashboard-Quelltexts ohne Importzeilen erfolgreich; gezielte GitHub-Inhaltsprüfung der Änderungen erfolgreich.
+- [ ] Browser-/Mobilgeräte-/End-to-End-Tests bleiben offen. Kein produktiver Supabase-Test ausgeführt.
+- [ ] Freigabe weiterhin gesperrt. Kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
