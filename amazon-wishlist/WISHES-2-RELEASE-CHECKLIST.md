@@ -619,3 +619,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls ohne Imports und gezielte Quelltextkontrolle erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; keine produktiven Supabase-Tests ausgeführt.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Autopilot: bestätigte Sammelverschiebungen und aktuelle Listenaktionen (2026-11-10)
+
+- [x] Die Sammelverschiebung merkt sich die Daten-Generation vor dem Bestätigungsdialog und prüft danach die unveränderte Generation sowie aktive Quell- und Zielliste. Veraltete Bestätigungen lösen keine Schreibvorgänge aus.
+- [x] „Nicht bearbeitete Wünsche auswählen“ prüft die aktuell geladenen Wunsch-IDs und den für Hinzufügen bzw. Entfernen tatsächlich noch passenden Mitgliedschaftszustand; ungültige oder bereits erledigte Ziele werden nicht erneut ausgewählt.
+- [x] Sammelauswahl leeren ist während einer Einzeländerung gesperrt, damit laufende Bearbeitung und Auswahlstatus nicht gegeneinander arbeiten.
+- [x] Archivieren/Reaktivieren und Löschen prüfen nach der Bestätigung die ursprüngliche Daten-Generation und vollständige Zuordnungsdaten; veraltete Dialoge können keine Listenmutation auslösen.
+- [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls ohne Imports und gezielte GitHub-Inhaltsprüfung erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; mehrstufige Verschiebungen sind weiterhin nicht atomar.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
