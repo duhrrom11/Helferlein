@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Einheitliches mobiles Kartendesign)
+
+- **Neu umgesetzt:** Gemeinsame Kartensprache für persönliche Wunschlisten, Geschenkbudget, Wunschwelten und Geschenkfinder: konsistente Oberflächen, Rahmen, Radien, Schatten, Typografie und Abstände mit bestehenden Theme-Variablen.
+- **Mobil:** Kompaktere Innenabstände und Überschriften, reduzierte Dekoration, einspaltige Wunschlisten-Karten, übersichtliche Kennzahlen und Budgetergebnisse, kleinere Lücken in Ideen- und Ergebnisrastern.
+- **Barrierefreiheit:** Bestehende semantische Bereiche, Schaltflächen, Formular-IDs, Fokusdarstellung und Bedienlogik bleiben erhalten; berücksichtigt reduzierte Bewegung.
+- **Produktivdaten:** Nur CSS in `amazon-wishlist/index.html`, keine Supabase-Migration, keine Testdaten, keine Änderung an Daten oder bestehenden JavaScript-Funktionen.
+- **Qualität:** Eindeutige IDs der vier zentralen Bereiche und Vorhandensein des neuen Styleblocks geprüft; vollständiger authentifizierter Browser-/Gerätetest steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Kompakte Wunschlisten und Geschenkbudget auf Smartphones)
 
 - **Neu umgesetzt:** Mobile Wunschlisten-Übersicht mit verdichteten Kennzahlen, zweispaltigen Schnellaktionen und reduzierter dekorativer Hero-Fläche. „Zuletzt geöffnet“ und die Einstellungen zur Neuanlage von Listen werden in semantischen, aufklappbaren Bereichen angezeigt; der vorhandene „Liste erstellen“-Schnellzugriff öffnet die Einstellungen automatisch.
