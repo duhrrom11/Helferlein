@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Kompakter mobiler Arbeitsbereich und einheitliche Formulare)
+
+- **Mobile Startseite:** Geschenk-Dashboard, eigene Listen, Budgetplaner, Wunschwelten und Geschenkfinder verwenden auf Smartphones ein engeres gemeinsames Abstands- und Überschriftensystem; Verwaltungsdetails bleiben separat aufklappbar.
+- **Karten und Kennzahlen:** Vereinheitlichte Radien, Innenabstände und Schatten für bestehende Geschenk-, Listen-, Statistik- und Inspirationskarten. Zweispaltige Kennzahlen bleiben auf kleinen Geräten nutzbar; bei sehr schmalen Viewports erfolgt ein einspaltiger Umbruch.
+- **Formulare und Aktionen:** Bestehende Eingaben erhalten auf Smartphones konsistente Mindesthöhen, 16-Pixel-Schrift zur Vermeidung ungewollten iOS-Zooms, sichtbare Fokusmarkierung und Breitenbegrenzung. Aktionen dürfen umbrechen, statt seitlich überzulaufen.
+- **Funktions- und Datenschutzschutz:** Ausschließlich zusätzliche responsive CSS-Regeln in `amazon-wishlist/index.html`; keine Änderungen an bestehenden IDs, Formular-Handlern, Supabase-Zugriffen oder Produktivdaten. Keine Testdaten.
+- **Prüfung:** GitHub-Datei erneut geladen; neuer Stylesheet-Block genau einmal vorhanden, öffnende und schließende Style-Tags ausgeglichen. Visuelle Prüfung auf echten Smartphones und authentifizierter End-to-End-Test bleiben offen.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Mobile Deep-Links und Tastaturzugang)
 
 - **Direkte Navigation:** Hash-Links auf vorhandene Elemente öffnen deren geschlossene übergeordnete `details`-Bereiche automatisch. Das gilt auch für die mobile Dashboard-Verwaltung; bestehende Elemente und IDs bleiben erhalten.
