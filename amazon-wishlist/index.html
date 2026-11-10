@@ -649,4 +649,36 @@ main{padding-inline:12px}
  panel.addEventListener('toggle',()=>{if(!media.matches)panel.dataset.mobileVisited='true'});
  adapt(media);
 })();
+</script><script>
+/* Mobile Deep-Links und Tastaturbedienung: bestehende Elemente nur sichtbar machen. */
+(function(){
+ const navigation=document.querySelector('.wishlist-hub-nav');
+ function revealHashTarget(){
+  const raw=location.hash.slice(1);
+  if(!raw)return;
+  let id;
+  try{id=decodeURIComponent(raw)}catch{return}
+  const target=document.getElementById(id);
+  if(!target)return;
+  let changed=false;
+  for(let parent=target.parentElement;parent;parent=parent.parentElement){
+   if(parent.tagName==='DETAILS'&&!parent.open){parent.open=true;changed=true}
+  }
+  if(changed)requestAnimationFrame(()=>target.scrollIntoView({block:'start',behavior:'auto'}));
+ }
+ addEventListener('hashchange',revealHashTarget);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',revealHashTarget,{once:true});
+ else revealHashTarget();
+ if(!navigation)return;
+ navigation.addEventListener('keydown',event=>{
+  if(event.key!=='Escape')return;
+  const open=[...navigation.querySelectorAll('details[open]')];
+  if(!open.length)return;
+  const active=document.activeElement;
+  const current=open.find(group=>group.contains(active))||open[open.length-1];
+  current.open=false;
+  current.querySelector('summary')?.focus();
+  event.preventDefault();
+ });
+})();
 </script><script type="module" src="./wish-worlds.mjs"></script><script type="module" src="./gift-finder.mjs"></script><script type="module" src="./app.mjs"></script><script type="module" src="./gift-start.mjs"></script></body></html>
