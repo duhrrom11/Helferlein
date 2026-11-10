@@ -109,3 +109,18 @@
 - [ ] Echtes npm-Lockfile erst nach erfolgreicher Registry-Auflösung erzeugen und verifizieren
 
 **Bewertung:** Konkrete Testrobustheitsprobleme behoben, aber die aktualisierten Browserfälle konnten in dieser Runde nicht ausgeführt werden. Keine Behauptung eines erfolgreichen vollständigen Browser-/Node-Branch-Laufs. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Ladezustand und Testinfrastruktur – erneute Prüfung (2026-11-10)
+
+- [x] Lokale Laufzeit erneut geprüft: Node `v22.16.0`, npm `10.9.2`, Chromium `/usr/bin/chromium`, Python-Playwright vorhanden
+- [x] `git ls-remote https://github.com/duhrrom11/Helferlein.git HEAD` tatsächlich ausgeführt: **fehlgeschlagen**, DNS `Could not resolve host: github.com`
+- [x] `npm view @playwright/test@1.56.1 version --fetch-retries=0 --fetch-timeout=4000` tatsächlich ausgeführt: **fehlgeschlagen**, `EAI_AGAIN registry.npmjs.org`
+- [x] Konkreten Dashboard-Fehler behoben: `load()` deaktiviert Bulk-Steuerung sofort, wenn Mitgliedschaftsdaten nicht mehr aktuell sind
+- [x] Konkreten Dashboard-Fehler behoben: Promise-Rejection beim initialen parallelen Listen-/Wünsche-Laden setzt nun einen sichtbaren Fehlerstatus; veraltete Generationen ändern den Status nicht
+- [x] Aktualisierte `lists-dashboard.mjs` in isolierter JavaScript-Syntaxprüfung erfolgreich geprüft
+- [ ] Verifiziertes npm-`package-lock.json` erstellen; Registry nicht erreichbar, daher keine geprüften Integritätsdaten
+- [ ] Vollständige Node-Branch-Suite ausführen; vollständiger Checkout weiterhin nicht lokal verfügbar
+- [ ] Alle neun Playwright-Branch-Tests mit `@playwright/test` ausführen; Paket fehlt und Registry nicht erreichbar
+- [ ] Neue Fehlerbehebungen in einem vollständigen isolierten Dashboard-Integrationstest gegen einen Mock-Client bestätigen
+
+**Freigabe:** Weiterhin **gesperrt**. In dieser Runde wurde **kein vollständiger Node- oder Playwright-Branch-Testlauf** behauptet. Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
