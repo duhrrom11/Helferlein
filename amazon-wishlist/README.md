@@ -2,9 +2,9 @@
 
 ## Aktueller Stand (10. November 2026)
 
-Die Wunschlisten-App wird auf `main` entwickelt und über Vercel produktiv bereitgestellt:
+Die Wunschlisten-App wird auf `main` entwickelt und über GitHub Pages produktiv bereitgestellt:
 
-- https://helferlein-ochre.vercel.app/amazon-wishlist/index.html
+- https://duhrrom11.github.io/Helferlein/amazon-wishlist/index.html
 - GitHub: `duhrrom11/Helferlein`, Verzeichnis `amazon-wishlist/`
 - Supabase: bestehendes Produktivprojekt `alltagshelfer` (`avapuibsidubuzxjtyld`), Tabellen ausschließlich mit Präfix `wishlist_`
 - Amazon.de-Partnerkennung: `duhrrom-21`; keine anderen Amazon-Marktplätze freigeben
@@ -39,7 +39,7 @@ node --check amazon-wishlist/wishlist-utils.mjs
 node --test amazon-wishlist/*.test.mjs
 ```
 
-Die GitHub-Action `.github/workflows/amazon-wishlist.yml` soll die Prüfungen ausführen. Ein erfolgreicher Vercel-Build allein beweist **keinen** erfolgreichen Unit-, RLS- oder Browser-Testlauf. GitHub-Actions-Ergebnisse müssen für den jeweiligen Commit gesondert verifiziert werden.
+Die GitHub-Action `.github/workflows/amazon-wishlist.yml` soll die Prüfungen ausführen. Ein erfolgreicher GitHub-Pages-Build allein beweist **keinen** erfolgreichen Unit-, RLS- oder Browser-Testlauf. GitHub-Actions-Ergebnisse müssen für den jeweiligen Commit gesondert verifiziert werden.
 
 ## Weiterentwicklung
 
