@@ -212,9 +212,9 @@ actions.append(button('Duplizieren',async()=>{
   const targets=[...bulkIds].filter(id=>assignedIds.has(id)&&loadedWishIds.has(id));
   const skipped=bulkIds.size-targets.length;
   if(!targets.length)return msg('Nur Wünsche, die bereits in dieser Liste liegen, können verschoben werden.');
-  if(activeWishMutations.size)return msg('Ein Wunsch wird gerade bearbeitet. Bitte danach erneut versuchen.');if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten. Ein Stopp wirkt vor dem nächsten Wunsch; bei Fehlern kann ein Wunsch in beiden Listen stehen.'))return;if(listMutationBusy||listCopyBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||getUser()?.id!==uid||selected!==sourceId||confirmationGeneration!==loadGeneration||!lists.some(l=>l.id===sourceId&&!l.archived)||!lists.some(l=>l.id===targetId&&!l.archived)||activeWishMutations.size||targets.some(id=>!assignedIds.has(id)||!wishes.some(w=>w.id===id))){$('bulkStatus').textContent='Listendaten oder Auswahl haben sich geändert. Bitte Verschieben erneut prüfen.';return}
+  if(activeWishMutations.size)return msg('Ein Wunsch wird gerade bearbeitet. Bitte danach erneut versuchen.');if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten. Ein Stopp wirkt vor dem nächsten Wunsch; bei Fehlern kann ein Wunsch in beiden Listen stehen.'))return;if(listMutationBusy||listCopyBusy||!bulkControlsEnabled({membershipReady,bulkBusy})||getUser()?.id!==uid||loadedOwner!==uid||selected!==sourceId||confirmationGeneration!==loadGeneration||!lists.some(l=>l.id===sourceId&&!l.archived)||!lists.some(l=>l.id===targetId&&!l.archived)||activeWishMutations.size||targets.some(id=>!assignedIds.has(id)||!wishes.some(w=>w.id===id))){$('bulkStatus').textContent='Listendaten oder Auswahl haben sich geändert. Bitte Verschieben erneut prüfen.';return}
   const generation=loadGeneration,run=++bulkRunId;
-  const current=()=>getUser()?.id===uid&&selected===sourceId&&generation===loadGeneration&&run===bulkRunId;
+  const current=()=>getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&generation===loadGeneration&&run===bulkRunId;
   let moved=0,failed=0,partial=0,stopped=false;
   bulkBusy=true;bulkStopRequested=false;
   $('bulkProgressPanel').hidden=false;$('bulkStop').disabled=false;
@@ -227,7 +227,7 @@ actions.append(button('Duplizieren',async()=>{
       const {error}=await db.from('wishlist_list_items').insert({list_id:targetId,wish_id:wishId,user_id:uid});
       if(error)throw error;
      }
-     if(!current()){stopped=true;partial++;if(getUser()?.id===uid)msg('Zielzuordnung gespeichert, aber die Ursprungsliste wurde wegen eines Kontextwechsels nicht geändert. Bitte beide Listen prüfen.');break}
+     if(!current()){stopped=true;partial++;if(getUser()?.id===uid&&loadedOwner===uid)msg('Zielzuordnung gespeichert, aber die Ursprungsliste wurde wegen eines Kontextwechsels nicht geändert. Bitte beide Listen prüfen.');break}
      // Complete the current source removal before honoring Stop on the next wish.
      const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceId).eq('wish_id',wishId).eq('user_id',uid);
      if(error){partial++;failed++;if(current())msg('Zielzuordnung gespeichert, aber Entfernen aus der Ursprungsliste fehlgeschlagen. Bitte beide Listen prüfen.');continue}
