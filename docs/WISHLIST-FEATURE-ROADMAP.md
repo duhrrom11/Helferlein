@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Mobile Navigationszustände, Touch und Tastatur)
+
+- **Mobiler Klappzustand:** Die bestehende DOM-Gruppierung für `mobileListCreation`, `mobileRecentLists` und `mobileGiftExtra` speichert die über Touch-/Tastaturaktivierung gewählte Öffnung nun am jeweiligen `details`-Element (`data-mobile-open`). Beim responsiven Wechsel auf Desktop bleiben die Bereiche offen und beim Zurückwechseln zu Mobilgeräten wird die dort beabsichtigte Auswahl wiederhergestellt.
+- **Programmatisch geöffnete Formulare:** Die Schnellaktionen `homeNewList` / `quickNewList`, Direktlinks in zuvor geschlossene Bereiche und Validierungsfehler der Listenerstellung markieren ihr mobiles `details` als absichtlich geöffnet. Dadurch fällt das Formular nach einem Bildschirmbreitenwechsel nicht unbeabsichtigt zu. Analog berücksichtigt die Verwaltung des privaten Geschenk-Dashboards programmatisches Öffnen durch Direktlinks.
+- **Tastatur:** `Escape` in der Hauptnavigation schließt nur noch eine tatsächlich geöffnete Navigationsgruppe, die den aktuellen Tastaturfokus enthält. Der Fokus wird auf die `summary` dieser Gruppe zurückgesetzt; andere Gruppen bleiben unberührt.
+- **Prüfung:** `amazon-wishlist/index.html`, `app.mjs` und `lists-dashboard.mjs` nach Veröffentlichung erneut von GitHub geladen. Zehn Inline-JavaScript-Blöcke und beide JavaScript-Module wurden isoliert ohne Syntaxfehler geprüft; 21 CSS-Stylesheets mit ausgeglichenen Klammern und keine doppelten statischen HTML-IDs. Vollständiger authentifizierter Live-Browser-Test auf Touchgeräten bleibt offen; die genannten Fehler wurden anhand des aktuellen Programmablaufs nachvollzogen, nicht durch einen vollständigen produktiven E2E-Test.
+- **Produktionsschutz:** Ausschließlich clientseitige Navigation, Fokus und DOM-Zustandsmarker; keine Supabase-Schreiboperationen oder Migrationen, keine Testdaten, keine Änderungen an bestehenden Produktivdatensätzen.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Mobile Erreichbarkeit und zugeordnete Formularfehler)
 
 - **Schnellaktion „Neue Liste“:** Die bestehenden Auslöser `homeNewList`, `quickNewList` und `createList` öffnen den mobilen `details`-Bereich `mobileListCreation` vor nachfolgenden Fokus- und Speicheraktionen. Insbesondere die Schnellaktion `quickNewList` fokussiert damit keine Eingabe mehr in einem geschlossenen Bereich.
