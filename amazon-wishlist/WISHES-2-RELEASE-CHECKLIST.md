@@ -707,3 +707,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Syntaxprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen. Bestehende Karten werden bei Beginn einer Kopie nicht zwangsläufig neu gerendert; Ereignis-Guards verhindern die betroffenen Schreibvorgänge dennoch.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: sofortige mobile Kopiersperre und verbleibende Schreibpfade (2026-11-10)
+
+- [x] Der direkte Checkbox-Schreibpfad für Listenzuordnungen prüft die aktive Duplizierung unmittelbar vor der Änderung.
+- [x] Kategorie-Sammelauswahl, Detail-Sammelauswahl und Detailsprung berücksichtigen die exklusive Kopiersperre.
+- [x] Die Sammelaktionsleiste behandelt eine aktive Listenkopie als gesperrten Zustand; Auswahl leeren, Verlauf löschen, Filter zurücksetzen und die Anzeige listenloser Wünsche respektieren die Sperre.
+- [x] Zu Beginn einer Listen-Duplizierung werden mobile Wunschkarten sofort neu gerendert und deaktivierte Steuerelemente angezeigt; nach Abschluss werden sie wieder aktualisiert.
+- [x] Listenfilter und Favoriten-Schnellnavigation verändern den Listenarbeitsbereich während des Kopierens nicht.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine transaktionale Duplizierung und kein produktiver Datenbanktest.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
