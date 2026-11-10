@@ -101,7 +101,7 @@ export function mountListsDashboard(db, getUser) {
    const meta=document.createElement('p');meta.className='list-card-meta';meta.textContent=(list.visibility==='public'?'Öffentlich (Freigabe folgt)':'Privat')+(list.archived?' · Archiviert':'');card.append(meta);
    const count=listCounts.get(list.id)||0;card.setAttribute('aria-label',list.title+', '+count+' Wünsche'+(list.archived?', archiviert':''));const countLabel=document.createElement('p');countLabel.className='list-card-count';countLabel.textContent=count+' Wünsche in dieser Liste';card.append(countLabel);
    const progress=document.createElement('div');progress.className='list-card-progress';progress.setAttribute('role','progressbar');progress.setAttribute('aria-label','Wünsche in dieser Liste, Anteil an geladenen Wünschen');progress.setAttribute('aria-valuemin','0');progress.setAttribute('aria-valuemax','100');const percent=wishes.length?Math.min(100,Math.round(count/wishes.length*100)):0;progress.setAttribute('aria-valuenow',String(percent));const fill=document.createElement('span');fill.style.width=percent+'%';progress.append(fill);card.append(progress);
-   const fav=button(favoriteIds.has(list.id)?'★ Favorit':'☆ Merken',async()=>{const uid=owner();if(favoriteIds.has(list.id))favoriteIds.delete(list.id);else favoriteIds.add(list.id);writeFavorites(uid);render()});fav.className='favorite-toggle';fav.setAttribute('aria-pressed',String(favoriteIds.has(list.id)));fav.setAttribute('aria-label',(favoriteIds.has(list.id)?'Favorit entfernen: ':'Als Favorit markieren: ')+list.title);card.append(fav);
+   const fav=button(favoriteIds.has(list.id)?'★ Favorit':'☆ Merken',async()=>{if(bulkBusy)return;const uid=owner();if(favoriteIds.has(list.id))favoriteIds.delete(list.id);else favoriteIds.add(list.id);writeFavorites(uid);render()});fav.className='favorite-toggle';fav.setAttribute('aria-pressed',String(favoriteIds.has(list.id)));fav.setAttribute('aria-label',(favoriteIds.has(list.id)?'Favorit entfernen: ':'Als Favorit markieren: ')+list.title);card.append(fav);
    const actions=document.createElement('div');actions.className='list-card-actions';card.append(actions);
    actions.append(button('Öffnen',async()=>{openList(list.id)}));
    if(!list.archived&&count>0)actions.append(button('Zugeordnete Wünsche',async()=>{openList(list.id);$('listWishAssignment').value='assigned';renderWishCards()}));
@@ -177,7 +177,7 @@ export function mountListsDashboard(db, getUser) {
   const targets=[...bulkIds].filter(id=>assignedIds.has(id)&&loadedWishIds.has(id));
   const skipped=bulkIds.size-targets.length;
   if(!targets.length)return msg('Nur Wünsche, die bereits in dieser Liste liegen, können verschoben werden.');
-  if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten. Ein Stopp wirkt vor dem nächsten Wunsch; bei Fehlern kann ein Wunsch in beiden Listen stehen.'))return;
+  if(!window.confirm(targets.length+' Wünsche von „'+source.title+'“ nach „'+target.title+'“ verschieben?'+(skipped?' '+skipped+' nicht zugeordnete Auswahl(en) werden übersprungen.':'')+' Die Wünsche bleiben erhalten. Ein Stopp wirkt vor dem nächsten Wunsch; bei Fehlern kann ein Wunsch in beiden Listen stehen.'))return;if(!bulkControlsEnabled({membershipReady,bulkBusy})||getUser()?.id!==uid||selected!==sourceId||!lists.some(l=>l.id===targetId&&!l.archived))return;
   const generation=loadGeneration,run=++bulkRunId;
   const current=()=>getUser()?.id===uid&&selected===sourceId&&generation===loadGeneration&&run===bulkRunId;
   let moved=0,failed=0,partial=0,stopped=false;
@@ -215,7 +215,7 @@ export function mountListsDashboard(db, getUser) {
   const source=lists.find(l=>l.id===sourceListId&&!l.archived);
   const target=lists.find(l=>l.id===targetListId&&!l.archived);
   if(!source||!target||selected!==sourceListId||!assignedIds.has(wishId))return msg('Bitte einen zugeordneten Wunsch aus einer aktiven Liste auswählen.');
-  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;
+  if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(bulkBusy||!membershipReady||selected!==sourceListId)return;
   const current=()=>getUser()?.id===uid&&generation===loadGeneration&&selected===sourceListId;
   control.disabled=true;
   try{
