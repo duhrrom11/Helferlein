@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Aufgeräumte mobile Hauptnavigation)
+
+- **Nutzerfeedback:** Zu viele gleichwertige Buttons im Kopfbereich auf Smartphones erschweren die Orientierung.
+- **Neu umgesetzt:** Vier priorisierte Hauptzugriffe (Meine Wunschlisten, Wünsche entdecken, Geschenkzentrale, Benachrichtigungen) und drei semantisch gruppierte, standardmäßig geschlossene, per Tastatur bedienbare Details-Gruppen (Geschenke planen, Ideen & Inspiration, Community & Social).
+- **Erhalt:** Alle bisherigen Navigationsziele inklusive der versteckten Bearbeitungsnavigation bleiben erreichbar; keine Datenbankänderung, keine Testdaten, keine Änderung an Produktivdatensätzen.
+- **Mobil:** Zwei Spalten für Hauptzugriffe auf üblichen Smartphone-Breiten, einspaltige Gruppen, große Touch-Ziele. Browser-End-to-End-Prüfung mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Erweiterter Vergleich privater Cloud-Filterfavoriten)
 
 - **Neu umgesetzt:** Lesender Detailvergleich zweier angehefteter Cloud-Filteransichten mit nebeneinanderliegenden Datums-, Layout-, Änderungsbereichs- und Kategorieeinstellungen; abweichende Felder werden farblich markiert.
