@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Interaktive private Sicherungspunkt-Änderungsanalyse)
+
+- **Neu umgesetzt:** Anklickbare, per Tastatur bedienbare Änderungskategorien in der privaten Dashboard-Zeitachse; Mehrfachauswahl verwendet UND-Verknüpfung und lässt sich mit Datums-, Layout- und bisherigen Änderungsfiltern kombinieren. Die Schaltflächen kennzeichnen ihren Zustand mit aria-pressed.
+- **Historischer Vergleich:** Zwei unterschiedliche private Sicherungspunkte lassen sich anhand der Zeitstempel auswählen und in einer Tabelle über alle zwölf Dashboard-Einstellungsfelder vergleichen; abweichende Werte werden markiert. Der Vergleich speichert nichts.
+- **Wiederherstellung:** Bleibt über den gesonderten Vergleich mit der aktuellen Konfiguration und ausdrückliche Bestätigung geschützt. Historischer A/B-Vergleich allein löst keine Wiederherstellung aus.
+- **Sicherheit:** Keine Migration, keine Testdaten. RLS und Rechte für Einstellungen, Historie und Sicherungspunkte erneut überprüft; kein anonymer Lesezugriff, keine direkten Schreibrechte für Historie/Sicherungspunkte. Geschenkaufgaben, Anlässe und historische Produktivdaten unverändert.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus. Kategorien beschreiben Abweichungen zur aktuellen Konfiguration.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Visuelle private Sicherungspunkt-Änderungsübersicht)
 
 - **Neu umgesetzt:** Responsives Statistik-Dashboard innerhalb der privaten Sicherungspunkt-Zeitachse: Anzahl gefilterter Sicherungspunkte, Monatsanzahl und Anzahl der Sicherungspunkte mit Abweichungen zur aktuellen Konfiguration.
