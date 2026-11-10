@@ -802,3 +802,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Nicht transaktionale Kopier- und Verschiebungsvorgänge bleiben ein Freigaberisiko.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: exklusive Listen-Schreibsperre (2026-11-10)
+
+- [x] Gemeinsame `listMutationBusy`-Sperre eingeführt: Archivieren, Reaktivieren, Löschen, Erstellen und Gestalten einer Liste serialisieren ihre asynchronen Schreib- und Reload-Phasen.
+- [x] Normale Dashboard-Reloads, Kartenaktionen und Sammelaktionen respektieren laufende Listen-Schreibvorgänge; der jeweils eigene abgeschlossene Schreibvorgang kann kontrolliert mit `load({afterBulk:true})` neu laden.
+- [x] Exklusive Listenkopien werden nicht gleichzeitig mit anderen Listenmutationen gestartet.
+- [x] Mobile Wunschfilter, Schnellnavigation und Sammelaktions-Ergebnissteuerung berücksichtigen die zusätzliche Sperre und werden nach dem Abschluss wieder aktualisiert.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Die clientseitige Sperre ersetzt keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktprüfung.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
