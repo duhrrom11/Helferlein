@@ -35,3 +35,11 @@
 - Zurücksetzen des Editors und der Dashboard-Zähler bei Kontowechsel.
 - JavaScript-Syntax des Listen-Dashboard-Moduls geprüft; keine Browser- oder Live-Datenbankprüfung durchgeführt.
 - SQL-Entwürfe unverändert und nicht ausgeführt; kein Merge, kein Deployment.
+
+## Vorlagen, Wunschkarten und Schnellfilter
+- Sieben kostenlose Vorlagen mit Namen, Beschreibung, Symbol und Farbe.
+- Kartenansicht der Wünsche je Liste mit Priorität und Notiz, Zuordnung direkt per Checkbox.
+- Suche, Prioritätsfilter, Zuordnungsfilter und Sortierung ohne neue Datenbanktabellen.
+- Listen- und Vorlagenfunktionen setzen die bisher nur vorbereiteten SQL-Tabellen voraus.
+- Syntaxprüfung der beiden betroffenen JavaScript-Module erfolgreich; kein Browser-Test.
+- Keine Produktivdatenbankänderungen, kein Merge und kein Deployment.
