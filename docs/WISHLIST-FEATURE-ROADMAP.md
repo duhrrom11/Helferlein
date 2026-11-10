@@ -1,3 +1,12 @@
+## Entwicklungsfortschritt – 10.11.2026 (Privates mobiles Geschenk-Planungscockpit)
+
+- **Neu umgesetzt:** `amazon-wishlist/gift-cockpit.html` und `gift-cockpit.mjs` als mobile, private Übersichtsseite. Verlinkung aus `gift-assistant.html`.
+- **Tagesprioritäten:** Eigentümergefilterte offene Geschenkaufgaben mit Fälligkeit bis heute, überfällige zuerst, dann gespeicherte Priorität; nachvollziehbare Gründe und Links zur Aufgabenverwaltung.
+- **Kommende Anlässe:** Wiederkehrende und einmalige Anlässe nach nächstem Datum, mit transparentem Standard-Planungsvorlauf von 21 Tagen; keine automatische Checklistenübernahme.
+- **Fortschritt und Historie:** Aktueller Erledigungsstand nicht archivierter Aufgaben; separate Zählung tatsächlich protokollierter Erledigungs- und Verschiebungsereignisse; historische Geschenk-Jahresabschlüsse als eigene unveränderliche Datenquelle.
+- **Empfehlungen:** Regelbasierte Hinweise zu überfälligen Aufgaben, nahenden Anlässen, Terminverschiebungen und vorhandenen Jahresabschlüssen. Kein AI- oder Erfolgsversprechen.
+- **Datenschutz:** Ausschließlich owner-gefilterte, paginierte SELECT-Abfragen auf `wishlist_gift_tasks`, `wishlist_occasions`, `wishlist_gift_year_closings`, `wishlist_gift_task_events`. RLS und owner-only SELECT auf allen vier Tabellen überprüft; anon kein SELECT. Keine Migration, keine Testdaten, keine Produktivdaten geändert. Browser-End-to-End-Test mit angemeldetem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Privater Aufgaben-Erfolgsbericht)
 
 - **Neu umgesetzt:** Monatsübersichten für Erledigungs-, Terminverschiebungs- und Wiedereröffnungsereignisse; Anlassvergleiche und transparente, regelbasierte persönliche Empfehlungen im privaten `gift-task-report.html`/`gift-task-report.mjs`.
