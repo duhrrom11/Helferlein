@@ -68,3 +68,12 @@ export function bulkControlsEnabled({membershipReady,bulkBusy}) {
 export function currentDashboardLoad({requestedUserId,currentUserId,requestedGeneration,currentGeneration}) {
  return !!requestedUserId&&requestedUserId===currentUserId&&requestedGeneration===currentGeneration;
 }
+
+/** Fetch the dashboard's initial read-only snapshot through an injected Supabase-like client. */
+export async function fetchDashboardBase(db,userId) {
+ const [lists,wishes]=await Promise.all([
+  db.from('wishlist_lists').select('id,title,description,icon,color,visibility,archived,created_at').eq('user_id',userId).order('created_at',{ascending:false}),
+  db.from('wishlist_wishes').select('id,note,priority,created_at,wishlist_products(title)').eq('user_id',userId).order('created_at',{ascending:false}).order('id',{ascending:false}).range(0,999)
+ ]);
+ return {lists,wishes};
+}
