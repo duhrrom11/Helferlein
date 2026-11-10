@@ -11,6 +11,7 @@ join nachlass_v2.heir_memberships m on m.vault_id = v.id
 join nachlass_v2.heir_envelopes e on e.vault_id = m.vault_id
  and e.heir_user_id = m.heir_user_id
 where v.id = $1 and m.heir_user_id = $2
+ and v.owner_user_id <> $2
  and v.state = 'RELEASED' and m.status = 'ACTIVE'
  and m.identity_verified is true
 for share of v, m, e`;
@@ -24,7 +25,7 @@ function createHeirRepository(db) {
       if (!result || !Array.isArray(result.rows) || result.rows.length !== 1) return null;
       const r=result.rows[0];
       if (r.vault_id!==vaultId || r.membership_vault_id!==vaultId ||
-          r.heir_user_id!==userId || r.state!=='RELEASED' ||
+          r.heir_user_id!==userId || r.owner_user_id===userId || r.state!=='RELEASED' ||
           r.status!=='ACTIVE' || r.identity_verified!==true ||
           !r.encrypted_envelope || typeof r.encrypted_envelope!=='object' ||
           Array.isArray(r.encrypted_envelope)) return null;
