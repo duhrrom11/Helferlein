@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 10.11.2026 (Privater Aufgaben-Fortschrittsbericht)
+
+- **Neu umgesetzt:** Druckfertiger, mobiler Aufgaben-Fortschrittsbericht in `amazon-wishlist/gift-task-report.html` und `gift-task-report.mjs`, verlinkt aus der Geschenk-Planungsassistenz.
+- **Ereignisbasierte Kennzahlen:** Tatsächlich protokollierte Erledigungen, Wiedereröffnungen, Terminverschiebungen; durchschnittliche Terminverschiebung nur bei Ereignissen mit altem und neuem Datum. Historischer Achtwochenvergleich nach tatsächlichem Ereigniszeitpunkt; letzte 200 Ereignisse als Chronik. Kennzahlen basieren auf allen geladenen Ereignissen.
+- **Methodik:** Ausschließlich `wishlist_gift_task_events` als Datenquelle, keine Live-Aufgaben und keine rückwirkend geschätzten Erledigungszeiten. Mehrfache Erledigung derselben wiedereröffneten Aufgabe zählt als mehrfaches Ereignis. Ohne vollständige alte/neue Datumswerte keine Durchschnittsberechnung.
+- **Datenschutz:** Owner-gefilterte paginierte SELECT-Abfragen; vorhandene owner-only RLS und unveränderliche Ereignis-Webberechtigungen überprüft. Keine Migration, keine Testdaten, keine Änderung an Produktivdaten. Browser-End-to-End-Test mit authentifiziertem Konto steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Privates Aufgaben-Aktivitätsprotokoll)
 
 - **Produktivmigration:** `wishlist_private_immutable_task_activity_events` erstellt `wishlist_gift_task_events` mit Eigentümer-ID, Aufgaben-ID und gespeichertem Titel, Ereignistyp, altem/neuem Status und Fälligkeitsdatum sowie serverseitigem `occurred_at`. Ein AFTER UPDATE Trigger auf `wishlist_gift_tasks` schreibt Status- und Terminänderungen automatisch und transaktionsgebunden. Bestehende Aufgaben und Jahresabschlüsse werden nicht verändert, historische Ereignisse nicht erfunden.
