@@ -108,3 +108,14 @@ Keine zusätzlichen Regex-/Mutations-Tests ohne konkrete bisher ungesicherte Sch
 **Paket A unmittelbar beginnen und die umsetzbaren Teile von B und C möglichst im selben Durchgang erledigen.** Erst die vollständige Daten-, Rechte- und Schlüsselarchitektur gegen den realen Projektbestand abgleichen, dann Backend und Portal integriert implementieren. Anschließend das sicherheitskritische Freigabe-Gate aus Paket D abarbeiten. Keine weitere Testserie als Selbstzweck.
 
 **Aktueller Roadmap-Status:** A offen; B/C vorbereitet, nicht fertig; D blockiert bis isolierte Integrationsumgebung und sichere Implementierung vorliegen; E nach erfolgreicher Freigabe.
+
+## 7. Umsetzungsstand – Eigentümer-Metadaten-API (10. November 2026)
+
+- **Bestandsabgleich:** Die produktive Datenbank enthält `public.vault_cloud_snapshots`, aber keine Tabelle `public.vault_ownership`. Die frühere `vault-api` referenzierte damit eine nicht vorhandene Tabelle.
+- **Rechte geprüft (nur lesend):** `vault_cloud_snapshots` hat RLS aktiviert; eine SELECT-Policy bindet `owner_user_id` an `auth.uid()`. `authenticated` hat SELECT, `anon` nicht; `FORCE ROW LEVEL SECURITY` ist nicht aktiviert.
+- **Backend-Code:** `supabase/functions/vault-api/index.ts` verwendet nun ein mit dem geprüften Benutzer-JWT konfiguriertes Supabase-Clientobjekt und liest ausschließlich `vault_id`, `owner_user_id` und `updated_at` aus `vault_cloud_snapshots`. Es gibt nur Metadaten für den nachweislich passenden Eigentümer zurück; keine verschlüsselten Inhalte, Schlüssel oder Erbenfreigaben. `service_role` wird nicht verwendet.
+- **Gezielte Offline-Prüfung:** Fünf Node.js-Handler-Tests bestanden (Eigentümer, ungültige Tokens, Fremdzugriff, Datenbankfehler, ungültige Tresor-ID). Getestet mit Mock-Clients; **keine reale JWT-/RLS-End-to-End-Prüfung**.
+- **Commits:** API `d23a140489af9979c0212be3c9e67a802a11a496`; Tests `eec7e76ec187755560867ec2b554382e7b91bea0`.
+- **Deployment:** In diesem Arbeitsschritt **nicht deployed** und **nicht aktiviert**. Kein produktives Schema oder Nutzerdatum geändert.
+
+**Nächste gebündelte Etappe:** Schlüssel- und Freigabeprotokoll sowie Besitzer-/Erben-Datenflüsse verbindlich abschließen; bestehende Alt-Firebase-Lesepfade vor aktivierter Erbenfreigabe ersetzen oder sicher sperren; anschließend Backend und UI integriert vervollständigen. Eine produktive Erbenfreigabe bleibt bis zum Sicherheits-Gate von Paket D aus.
