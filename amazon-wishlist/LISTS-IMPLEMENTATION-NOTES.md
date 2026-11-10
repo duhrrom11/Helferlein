@@ -87,3 +87,10 @@
 - Kategorieauswahl wählt passende Filtertreffer; vor Mehrfachaktionen zeigt ein Dialog Zielliste, Anzahl und bis zu fünf betroffene Wünsche.
 - Die Bestätigung führt ausschließlich Änderungen an Listenzuordnungen aus; pro Eintrag werden Konto und gewählte Liste geprüft. Auswahl wird beim Kontowechsel zurückgesetzt.
 - Kein vollständiger Browser-/Integrationstest, nur Syntax- und DOM-ID-Prüfung. Keine Produktivdatenbankänderungen, kein Merge, kein Deployment.
+
+## Fortschritt und Sicherheit bei großen Sammelaktionen
+- Fortschrittsbalken zeigt verarbeitete Zuordnungen und Erfolg-/Fehleranzahl; Stoppsignal beendet die Schleife nach der laufenden Netzwerkanfrage.
+- Fehlgeschlagene und nicht bearbeitete Wünsche bleiben ausgewählt. Bereits erfolgreiche Änderungen werden nicht rückgängig gemacht; Stopp ist keine Transaktion.
+- Auswahlaktionen werden während des Vorgangs gesperrt; Konto- und Listenwechsel brechen weitere Verarbeitung ab. Kontoreset invalidiert den Lauf.
+- Wunsch-Pagination nutzt zusätzlich zur Zeitstempelsortierung eine ID-Sortierung für deterministische Reihenfolge.
+- Nur kurze Syntax- und DOM-ID-Prüfungen, keine vollständigen Browser-/Integrationstests; kein Merge, Deployment oder produktive Supabase-Schemaänderung.
