@@ -40,7 +40,7 @@ export function mountListsDashboard(db, getUser) {
  const editorSelect=$('wishListSelect');
  function syncEditor(){const previous=editorSelect.value;editorSelect.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent='Ohne Liste speichern';editorSelect.append(empty);for(const list of lists.filter(x=>!x.archived)){const option=document.createElement('option');option.value=list.id;option.textContent=list.icon+' '+list.title;editorSelect.append(option)}editorSelect.value=lists.some(x=>x.id===previous&&!x.archived)?previous:(lists.find(x=>x.title==='Meine Wünsche'&&!x.archived)?.id||'');editorSelect.disabled=!lists.length;}
  async function assignWish(wishId,listId,uid){if(!listId)return;const {error}=await db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid});if(error)throw error;}
- function reset(){++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;favoriteIds=new Set();recentIds=[];listCounts=new Map();assignedTotal=0;wishCategories={};wishMarkers={};detailWishId=null;$('wishDetailDialog').close();assignedIds=new Set();membershipByList=new Map();membershipReady=false;bulkIds.clear();allAssignedIds=new Set();bulkBusy=false;pendingBulk=null;lastBulkResult=null;bulkHistory=[];$('bulkResultPanel').hidden=true;$('bulkProgressPanel').hidden=true;renderBulkHistory();bulkStopRequested=true;++bulkRunId;visibleLimit=100;$('bulkConfirmDialog').close();++itemsGeneration;root.hidden=true;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';$('homeFavoritesContent').replaceChildren();$('homeRecentContent').replaceChildren();renderProgress();syncEditor();}
+ function reset(){setWishView(false);++loadGeneration;$('editListForm').hidden=true;$('editListId').value='';$('listsTotal').textContent='0';$('wishesTotal').textContent='0';loadedOwner=null;lists=[];wishes=[];selected=null;favoriteIds=new Set();recentIds=[];listCounts=new Map();assignedTotal=0;wishCategories={};wishMarkers={};detailWishId=null;$('wishDetailDialog').close();assignedIds=new Set();membershipByList=new Map();membershipReady=false;bulkIds.clear();allAssignedIds=new Set();bulkBusy=false;pendingBulk=null;lastBulkResult=null;bulkHistory=[];$('bulkResultPanel').hidden=true;$('bulkProgressPanel').hidden=true;renderBulkHistory();bulkStopRequested=true;++bulkRunId;visibleLimit=100;$('bulkConfirmDialog').close();++itemsGeneration;root.hidden=true;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';$('homeFavoritesContent').replaceChildren();$('homeRecentContent').replaceChildren();renderProgress();syncEditor();}
 
  function invalidateMembershipState(){
   membershipReady=false;membershipByList=new Map();assignedIds=new Set();allAssignedIds=new Set();listCounts=new Map();assignedTotal=0;bulkIds.clear();pendingBulk=null;lastBulkResult=null;
@@ -217,6 +217,8 @@ export function mountListsDashboard(db, getUser) {
   }catch(e){msg('Verschieben fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
   finally{control.disabled=false}
  }
+ let compactWishView=false;
+ function setWishView(compact){compactWishView=compact;$('wishViewCards').setAttribute('aria-pressed',String(!compact));$('wishViewCompact').setAttribute('aria-pressed',String(compact));$('listWishCards').classList.toggle('is-compact',compact)}
  function renderWishCards(){
   updateActiveListContext();
   const cards=$('listWishCards');cards.replaceChildren();
@@ -293,6 +295,8 @@ export function mountListsDashboard(db, getUser) {
  $('quickAssignedWishes').onclick=()=>setQuickWishFilter('assigned');
  $('quickUnassignedWishes').onclick=()=>setQuickWishFilter('unassigned');
  $('quickFavoriteWishes').onclick=()=>setQuickWishFilter('favorite');
+ $('wishViewCards').onclick=()=>setWishView(false);
+ $('wishViewCompact').onclick=()=>setWishView(true);
  $('wishLoadMore').onclick=()=>{visibleLimit+=100;renderWishCards()};
  $('bulkSelectVisible').onchange=()=>{if(!bulkControlsEnabled({membershipReady,bulkBusy})||!lists.some(l=>l.id===selected&&!l.archived))return;for(const w of visibleWishes().slice(0,visibleLimit)){if($('bulkSelectVisible').checked)bulkIds.add(w.id);else bulkIds.delete(w.id)}renderWishCards()};
  $('bulkHistoryClear').onclick=()=>{if(bulkBusy)return;bulkHistory=[];renderBulkHistory()};$('bulkResumeRemaining').onclick=()=>{const r=lastBulkResult;if(r)prepareBulk({uid:r.uid,listId:r.listId,add:r.add,targets:r.remaining})};
