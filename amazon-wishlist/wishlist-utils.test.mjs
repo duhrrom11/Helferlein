@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,exportWishlistCsv} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -154,4 +154,19 @@ test('share links reject credentials and malformed HTTPS URLs',async()=>{
  for(const link of ['https://user:pass@example.org/','https://','https://example.org@evil.test/','http://example.org/']){
   await assert.rejects(()=>copyShareLink(link,clipboard),/Ungültiger Link/);
  }
+});
+
+test('own-wishes CSV export escapes delimiters and spreadsheet formulas',()=>{
+ const csv=exportWishlistCsv([{wishlist_products:{asin:'B012345678',marketplace:'amazon.de',title:'=SUM(1;2)'},note:'Text; mit "Zitat"\nzweite Zeile',priority:2,created_at:'2026-11-10T00:00:00Z'}]);
+ assert.ok(csv.startsWith('\uFEFF'));
+ assert.match(csv,/"'=SUM\(1;2\)"/);
+ assert.match(csv,/"Text; mit ""Zitat""\nzweite Zeile"/);
+ assert.match(csv,/https:\/\/www\.amazon\.de\/dp\/B012345678/);
+ assert.equal(csv.split('\r\n').length,3);
+ assert.match(exportWishlistCsv([]),/Amazon-ASIN/);
+});
+test('CSV export rejects malformed product references',()=>{
+ assert.throws(()=>exportWishlistCsv(null));
+ assert.throws(()=>exportWishlistCsv([{wishlist_products:{asin:'bad',marketplace:'amazon.de'},priority:1}]));
+ assert.throws(()=>exportWishlistCsv([{wishlist_products:{asin:'B012345678',marketplace:'other'},priority:1}]));
 });
