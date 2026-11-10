@@ -49,3 +49,16 @@ test('backup preview is read-only and never posts selected file content to Supab
  assert.doesNotMatch(handler,/db\.from\(|\.insert\(|\.upsert\(|\.update\(|\.delete\(/);
  assert.match(html,/Es wird nichts importiert, überschrieben oder in Supabase gespeichert/);
 });
+
+
+test('production app mounts dashboard and retains backup/export controls',()=>{
+ const dashboard=readFileSync(new URL('./lists-dashboard.mjs',import.meta.url),'utf8');
+ assert.match(app,/import \{mountListsDashboard\} from '\.\/lists-dashboard\.mjs'/);
+ assert.match(app,/mountListsDashboard\(db,\(\)=>user\)/);
+ assert.match(app,/dashboard\.refresh\(\)/);
+ assert.match(app,/dashboard\.assignWish\(/);
+ for(const id of ['listsDashboard','wishListSelect','listWishCards','bulkConfirmDialog','exportWishes','exportWishesJson','backupFile','previewBackup']){
+  assert.match(html,new RegExp('id="'+id+'"'));
+ }
+ assert.match(dashboard,/return \{refresh:/);
+});
