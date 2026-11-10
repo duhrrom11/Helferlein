@@ -64,7 +64,7 @@ $('form').addEventListener('submit',async event=>{event.preventDefault();const o
 });
 $('cancel').addEventListener('click',reset);
 
-const keywords=s=>String(s||'').toLocaleLowerCase('de-DE').split(/[^\\p{L}\\p{N}]+/u).filter(w=>w.length>3&&!['geschenk','geschenke','wunschliste','wunschwelt','meine','deine','einen','einem'].includes(w));
+const keywords=s=>String(s||'').toLocaleLowerCase('de-DE').split(/[^\p{L}\p{N}]+/u).filter(w=>w.length>3&&!['geschenk','geschenke','wunschliste','wunschwelt','meine','deine','einen','einem'].includes(w));
 function renderRecommendations(){
  const root=$('recommendations');root.replaceChildren();
  const selected=byId($('occasion').value)||occasions[0];const target=new Set(keywords([selected?.title,selected?.person_name,...gifts.filter(g=>g.occasion_id===selected?.id).map(g=>g.title)].join(' ')));
