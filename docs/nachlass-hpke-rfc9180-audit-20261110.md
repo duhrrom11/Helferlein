@@ -2,6 +2,8 @@
 
 Scope: draft PR #249, branch `audit/hpke-negative-tests-clean-20261110`; no production deployment or data changes.
 
+**Current evidence status:** See [Final verified status for draft PR #249](#final-verified-status-for-draft-pr-249-2026-11-10). Earlier sections are a chronological audit trail and may contain explicitly superseded observations.
+
 ## Suite and evidence
 
 - Base mode, DHKEM(X25519, HKDF-SHA256), HKDF-SHA256, AES-256-GCM (KEM 0x0020, KDF 0x0001, AEAD 0x0002).
@@ -14,12 +16,12 @@ Scope: draft PR #249, branch `audit/hpke-negative-tests-clean-20261110`; no prod
 
 Pinned CFRG JSON `mode=0, kem_id=32, kdf_id=1, aead_id=2`, `encryptions[1]`: AAD `436f756e742d31`, nonce `151d9929e2449747889bc922`, ciphertext `2c43aff25343fdbff864506f0818b9d87df84ea01b1a2144d23b4d40c26bf655fdf197fe40297a8aebeed5cc2d`. Its AES-GCM plaintext matches the first encryption. The nonce is `base_nonce XOR 1` per RFC 9180. Independently executed with local Node crypto and obtained `Beauty is truth, truth beauty`. Commit `1e5af0cd` adds regression coverage. GitHub CI for this commit has not been independently confirmed.
 
-## CI evidence (scope-limited)
+## Historical CI evidence (scope-limited; superseded where later verified)
 
 - GitHub Actions run [42782314241](https://github.com/duhrrom11/Helferlein/actions/runs/42782314241): `nachlass-ui` job completed successfully, including Chromium browser verification and evidence preservation. This does **not** establish that the later HPKE test commit `1e5af0cd` passed CI.
 - GitHub commit `2f8d9f9d` records this second case; its CI is not independently confirmed.
 
-## Verified CI follow-up (2026-11-10)
+## Historical CI follow-up (2026-11-10)
 
 - Commit `2f8d9f9dcb2905bc638b44ee33651ce0925f768e`: [B3 Nachlass 42782729693](https://github.com/duhrrom11/Helferlein/actions/runs/42782729693) and [release smoke 42782729760](https://github.com/duhrrom11/Helferlein/actions/runs/42782729760) both completed successfully.
 - Audit correction commit `10fd5b52261a24b52af1084d5aa785323d6aef2e`: [B3 Nachlass 42783367200](https://github.com/duhrrom11/Helferlein/actions/runs/42783367200) and [release smoke 42783367165](https://github.com/duhrrom11/Helferlein/actions/runs/42783367165) both completed successfully. B3 `nachlass-ui` and release `smoke` jobs have successful step summaries.
@@ -40,7 +42,7 @@ References:
 - https://github.com/duhrrom11/Helferlein/actions/runs/42782126785
 - https://github.com/duhrrom11/Helferlein/actions/runs/42782127083
 
-## Follow-up verification after `a0d9515c` (2026-11-10)
+## Historical verification after `a0d9515c` (2026-11-10; local execution later completed)
 
 - GitHub run [42783604085](https://github.com/duhrrom11/Helferlein/actions/runs/42783604085), Release smoke checks: completed, success.
 - GitHub run [42783604208](https://github.com/duhrrom11/Helferlein/actions/runs/42783604208), B3 Nachlass pilot: `nachlass-ui` job completed, success; all returned step summaries successful.
@@ -55,7 +57,7 @@ References:
 - For preceding audit commit `cc11fb2033fad8fefd3ead49d6779bf740342a23`, GitHub [B3 Nachlass run 42783796286](https://github.com/duhrrom11/Helferlein/actions/runs/42783796286) and [release smoke run 42783796243](https://github.com/duhrrom11/Helferlein/actions/runs/42783796243) both completed successfully.
 - These are offline tests of the original two HPKE files, not production integration tests, a second independent KEM setup, a deployment, or a merge authorization.
 
-## Follow-up CI and security coverage review (2026-11-10)
+## Historical coverage review (2026-11-10; four gaps subsequently tested)
 
 - Audit commit `1d059b355cb6f9992b3809399c6d5fcb2ac66c4f`: [B3 Nachlass pilot 42784120055](https://github.com/duhrrom11/Helferlein/actions/runs/42784120055) and [Release smoke checks 42784120078](https://github.com/duhrrom11/Helferlein/actions/runs/42784120078) both completed with `success` per GitHub workflow-run records.
 - Reviewed current branch implementation blob `5910923c26b06c41d6931a4dbe66a8947c3ad571` and test blob `44d2598d68f2b88bca6f5bff7dabaf29f62fa4c0` through GitHub file access.
@@ -63,7 +65,7 @@ References:
 - This follow-up did **not** add or execute new tests. Direct download of branch source into the local runtime failed due DNS resolution (`Could not resolve host: raw.githubusercontent.com`), and the available local ZIP does not contain these HPKE files. Prior 10/10 execution evidence remains documented above, but is not a fresh run of any newly proposed tests. No new test results are claimed.
 - No production data writes, Vercel, deployment, or merge.
 
-## Additional offline HPKE negative tests (2026-11-10)
+## Additional offline HPKE negative tests (2026-11-10; CI later completed)
 
 - Added four regression tests in `tests/nachlass-hpke-offline-v2.test.cjs` at commit [`197522f8`](https://github.com/duhrrom11/Helferlein/commit/197522f870671a0b16f0d20940b0b619152fb504): GCM tag corruption; X25519 all-zero low-order key and malformed 31-byte public key; 1024/1025-byte `info` and `aad` limits; and 16/17/4112/4113-byte ciphertext limits.
 - Independently executed a local Node.js v22.16.0 test file containing these four cases against a manually reconstructed offline HPKE implementation: TAP `tests 4`, `pass 4`, `fail 0`, `skipped 0`. This local reconstruction is not byte-identical evidence for the entire GitHub test suite.
@@ -71,7 +73,7 @@ References:
 - GitHub [B3 Nachlass pilot 42784627431](https://github.com/duhrrom11/Helferlein/actions/runs/42784627431) was still in progress at the latest check, but the `Verify preserved security notice and vault contract` step (which runs `node --test` including `tests/nachlass-hpke-offline-v2.test.cjs`) completed successfully. Full workflow success remains pending.
 - These tests assert rejection rather than a uniform application-level error category for low-order keys; exception normalization remains a separate possible hardening task. No production integration or deployment.
 
-## CI verification of four new negative tests (2026-11-10)
+## Intermediate CI verification of four new negative tests (2026-11-10; full B3 runs later succeeded)
 
 - For test commit `197522f870671a0b16f0d20940b0b619152fb504`, [B3 run 42784627431](https://github.com/duhrrom11/Helferlein/actions/runs/42784627431) reports the `Verify preserved security notice and vault contract` step as `completed/success`. The checked-in workflow executes `node --test` including `tests/nachlass-hpke-offline-v2.test.cjs` in that step. Its overall `nachlass-ui` job was still `in_progress` during verification (Chromium installation); **do not claim full B3 success**.
 - For audit commit `9510f2387c61d076d8ca7a67edbe1de390bcd7e2`, [B3 run 42784691674](https://github.com/duhrrom11/Helferlein/actions/runs/42784691674) likewise reports the Node test step as `completed/success`, with full job still `in_progress` at the last check.
@@ -86,3 +88,14 @@ References:
 - GitHub confirms preserved `nachlass-test-evidence` artifacts for both B3 runs: artifact IDs `13747881924` and `13749245314` (not expired at verification). The job logs themselves provided sufficient TAP evidence; ZIP contents were not separately inspected.
 - For prior audit commit `d82bff7af1b7220f63a7b91e00e9433594f7230b`, [B3 run 42784782054](https://github.com/duhrrom11/Helferlein/actions/runs/42784782054) and [release smoke run 42784782040](https://github.com/duhrrom11/Helferlein/actions/runs/42784782040) both completed with `success`.
 - Scope: offline HPKE implementation and tests only. No deployment, production mutation, Vercel, or merge.
+
+## Final verified status for draft PR #249 (2026-11-10)
+
+**Authoritative current status; preceding sections preserve chronological observations and are not current pending-action statements.**
+
+- GitHub commit `6d33322b53dd3f19f7bf18bd6b2ae413e0747585`: [B3 Nachlass pilot 42784965534](https://github.com/duhrrom11/Helferlein/actions/runs/42784965534) and [Release smoke checks 42784965289](https://github.com/duhrrom11/Helferlein/actions/runs/42784965289) both `completed/success`.
+- For the actual HPKE test-change commit `197522f8` and audit commit `9510f238`, both B3 workflows subsequently completed successfully. Retrieved GitHub job logs for `129722662677` and `129722883320` individually list HPKE tests `ok 11` through `ok 24` (14/14), including all four new negative tests. Combined Node TAP results: **52 tests, 52 pass, 0 fail** in each run.
+- The original ten-test suite was also locally executed earlier against the byte-identically reconstructed original source files (10/10). The four additional negative cases were independently checked locally (4/4), but **a separate byte-identical local run of the combined 14-test branch suite has not been established**. The GitHub CI logs are the authoritative combined-suite evidence.
+- Previously pending items **now resolved**: B3 completion for `42784627431` and `42784691674`, exact per-case CI proof for all fourteen HPKE tests, and addition of the four requested negative tests. Previously proposed tests are no longer listed as unimplemented.
+- **Remaining limitations**: one pinned CFRG KEM setup with a second encryption from that same setup, not a second independent KEM vector; single-message offline API and application-specific 32-byte DEK constraint; low-order key tests assert rejection but not a normalized error category; no production integration/security certification or deployment approval.
+- This audit supports continued **draft** review of PR #249, **not merge or production release authorization**. No production data changes, Vercel, deployment, or merge were performed.
