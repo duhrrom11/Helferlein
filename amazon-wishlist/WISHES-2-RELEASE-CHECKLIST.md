@@ -913,3 +913,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: sichere mobile Schnellnavigation und Besitzerzustände (2026-11-10)
+
+- [x] Abgehängte und veraltete „Zuletzt geöffnet“-Schnellzugriffe prüfen Rendergeneration, geladenen Besitzer, aktive Liste und aktuellen Verlauf.
+- [x] Mobile Listenauswahl, Neuen-Wunsch-Aktion und Schnellfilter sind bei veraltetem Besitzer oder unvollständigen Mitgliedschaften deaktiviert bzw. wirkungslos.
+- [x] „Wünsche ohne Liste“ und Sammelaktionsverlauf zeigen ihre Sperre bei veraltetem Besitzer sichtbar an.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Clientseitige Sperren ersetzen keine serverseitigen Transaktionen oder Mehrgeräte-Konfliktkontrollen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
