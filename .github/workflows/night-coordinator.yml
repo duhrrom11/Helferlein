@@ -1,9 +1,9 @@
-name: Helferlein Nachtbetrieb
+name: Helferlein Nachtschicht – reines Audit
 
 on:
-  # UTC schedule: every five minutes, around the clock.
+  # Daily at 05:00 UTC; report is informational only.
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 5 * * *'
   workflow_dispatch:
 
 permissions:
@@ -17,20 +17,16 @@ concurrency:
 jobs:
   night-coordinator:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 15
     steps:
       - name: Checkout default branch
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-      - name: Validate coordinator syntax and safety guardrails
-        run: |
-          node --check scripts/night-coordinator.cjs
-          node --check scripts/night-coordinator-guardrails.cjs
-          node scripts/night-coordinator-guardrails.cjs
-      - name: Read-only continuous check and checkpoint
+      - name: Validate audit script syntax
+        run: node --check scripts/night-audit.cjs
+      - name: Read-only branch, page, release and work audit
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-        run: node scripts/night-coordinator.cjs
+        run: node scripts/night-audit.cjs
