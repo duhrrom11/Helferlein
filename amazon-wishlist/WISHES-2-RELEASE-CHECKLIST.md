@@ -658,3 +658,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Syntaxprüfung ohne Imports und gezielte Quelltextkontrolle erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; insbesondere Entsperrung nach Erfolg und Ladefehler praktisch prüfen.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Autopilot: mobile Filterzustände und Detaildialog bei Neuladungen (2026-11-10)
+
+- [x] Mobile Auswahl- und Filtersteuerung zeigt während Einzeländerungen konsistent deaktivierte Bedienelemente: Auswahl leeren, „Nur Auswahl“, Zugeordnete anzeigen und Zuordnungsfilter.
+- [x] Mobile Listen-Schnellwahl, Filter für listenlose Wünsche und Nachladen weiterer Karten prüfen aktive Einzeländerungen auch beim Auslösen erneut.
+- [x] Wunschdetails werden beim Invalidieren der Mitgliedschaftsdaten geschlossen und die bisherige Detail-ID zurückgesetzt. So können Detailaktionen nach Neuladen nicht auf veraltete Daten zugreifen.
+- [x] Wunschdetails lassen sich während Einzel- und Sammelschreibvorgängen nicht neu öffnen; der Karten-Button zeigt den gesperrten Zustand.
+- [x] Minimale JavaScript-Syntaxprüfung ohne Imports und gezielte Quelltextkontrolle erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; Detaildialog-Verhalten nach Neuladung praktisch prüfen.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
