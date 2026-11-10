@@ -115,9 +115,9 @@ actions.append(button('Duplizieren',async()=>{
     if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||cardGeneration!==loadGeneration)return msg('Bitte die aktuelle Listenkarte verwenden und laufende Änderungen abschließen.');
     const uid=owner(),generation=loadGeneration,originalIds=[...(membershipByList.get(list.id)||new Set())];
     if(!window.confirm('Liste „'+list.title+'“ mit '+originalIds.length+' Zuordnungen duplizieren? Die Wünsche selbst werden nicht kopiert.'))return;
-    if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==uid||generation!==loadGeneration||!lists.some(l=>l.id===list.id))return;
+    if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==uid||generation!==loadGeneration||!lists.some(l=>l.id===list.id&&l.archived===list.archived))return;
     listCopyBusy=true;
-    const current=()=>getUser()?.id===uid&&generation===loadGeneration;
+    const current=()=>getUser()?.id===uid&&loadedOwner===uid&&generation===loadGeneration;
     let copied=0,created=false;
     try{
      if(getUser()?.id===uid&&membershipReady){renderWishCards();msg('Listen-Kopie wird vorbereitet: '+originalIds.length+' Zuordnungen. Bitte warten.')}
@@ -135,11 +135,11 @@ actions.append(button('Duplizieren',async()=>{
      }
      if(!current())return;
      try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid)msg('Liste mit '+copied+' Zuordnungen dupliziert, aber Aktualisierung fehlgeschlagen. Bitte neu laden.');return}
-     if(getUser()?.id===uid)msg('Liste mit '+copied+' Zuordnungen dupliziert.');
+     if(current())msg('Liste mit '+copied+' Zuordnungen dupliziert.');
     }catch(e){
      if(!current())return;
      try{await load({afterBulk:true})}catch{}
-     if(getUser()?.id===uid)msg(created?'Kopie angelegt, aber nur '+copied+' von '+originalIds.length+' Zuordnungen übernommen: '+(e.message||'Fehler')+'. Bitte Kopie prüfen.':'Liste konnte nicht dupliziert werden: '+(e.message||'Fehler'));
+     if(getUser()?.id===uid&&loadedOwner===uid)msg(created?'Kopie angelegt, aber nur '+copied+' von '+originalIds.length+' Zuordnungen übernommen: '+(e.message||'Fehler')+'. Bitte Kopie prüfen.':'Liste konnte nicht dupliziert werden: '+(e.message||'Fehler'));
     }finally{listCopyBusy=false;if(getUser()?.id===uid&&loadedOwner===uid&&membershipReady)renderWishCards()}
    }));
    actions.append(button('Löschen',async()=>{if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||cardGeneration!==loadGeneration)return msg('Bitte die aktuelle Listenkarte verwenden und laufende Änderungen abschließen.');const beforeConfirm=loadGeneration;if(!confirm('Liste „'+list.title+'“ löschen? Die Wünsche selbst bleiben erhalten.'))return;if(listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||beforeConfirm!==loadGeneration||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===list.id))return;const uid=owner(),generation=loadGeneration;const {error}=await db.from('wishlist_lists').delete().eq('id',list.id).eq('user_id',uid);if(error)throw error;if(getUser()?.id!==uid||generation!==loadGeneration)return;try{await load()}catch(e){if(getUser()?.id===uid)msg('Liste gelöscht, aber Aktualisierung fehlgeschlagen. Bitte neu laden.')}}));
