@@ -600,3 +600,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Syntaxprüfung des Dashboard-Moduls (ohne Imports) und gezielte Quelltextkontrolle erfolgreich.
 - [ ] Browser-/Mobilgeräte-/End-to-End-Tests offen; keine produktiven Supabase-Tests ausgeführt.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Autopilot: veraltete Wunschkarten und Sammelbestätigungen (2026-11-10)
+
+- [x] Kartenaktionen für Sammelauswahl, direkte Listenzuordnung und Einzelverschieben prüfen zusätzlich die beim Rendern gültige Lade-Generation. Veraltete Karten können nach einer Neuladung keine neuen Schreibvorgänge starten.
+- [x] Auswahlwerkzeuge für sichtbare, zugeordnete und listenlose Wünsche sowie das Sammelaktions-Ziel werden während laufender Einzeländerungen sichtbar gesperrt.
+- [x] Sammelbestätigungen speichern die Lade-Generation beim Vorbereiten und verwerfen die Bestätigung, wenn die Daten inzwischen neu geladen wurden. Nutzer müssen die Aktion dann neu prüfen.
+- [x] Minimale JavaScript-Syntaxprüfung des Dashboard-Moduls ohne Imports und gezielte Quelltextprüfung erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests bleiben offen; keine produktiven Supabase-Tests durchgeführt.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
