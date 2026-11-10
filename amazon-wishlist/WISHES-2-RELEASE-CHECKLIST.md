@@ -1057,3 +1057,16 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] **Amazon wishlist checks vollständig grün:** GitHub-Actions-Läufe **42827644320** und **42827653961** auf Commit `fb41fe2e`: sowohl Node-`checks` als auch Playwright-Chromium-`browser` erfolgreich.
 - [x] Release-Smoke **42827653946** erfolgreich; Vault-Sync nach Crypto-Fix mehrfach erfolgreich.
 - [ ] Merge/Deployment weiterhin gesperrt, solange Listen-Dashboard nicht in die produktive App integriert und das dafür erforderliche Listen-/Mitgliedschaftsschema inklusive RLS nicht freigegeben und validiert ist. Die grünen Browser-Tests verwenden ausdrücklich eine isolierte Dashboard-Test-Fixture.
+
+## Autopilot: echte Dashboard-Integration und Schema-Härtung (2026-11-10)
+
+- [x] Produktives `index.html` mit Dashboard-Abschnitt, vollständigen Bedienelementen, responsivem CSS und Listen-Auswahlfeld ergänzt (Commit `cb71e5c8`). Die acht vorhandenen Export-/Backup-Elemente aus main bleiben erhalten; insgesamt 174 eindeutige HTML-IDs, keine Duplikate.
+- [x] `app.mjs` importiert und initialisiert `mountListsDashboard(db,()=>user)`, lädt Dashboard bei Auth-Änderung und nach Wunschänderungen, bietet eine optionale Listenzuordnung bei der Neuanlage und meldet Teilfehler ohne den erfolgreich angelegten Wunsch zu verschweigen (Commit `26f45bff`).
+- [x] Listen-SQL-Vorschlag gehärtet: zusammengesetzter Fremdschlüssel `(wish_id,user_id)` verhindert auch unabhängig von RLS die Zuordnung fremder Wünsche; dafür eindeutiger Schlüssel `wishlist_wishes(id,user_id)` (Commit `30e21ca5`).
+- [x] Echter produktiver HTML-DOM wird in neuer isolierter Chromium-Integrationsprüfung verwendet; Export-/Backup-Bedienelemente und schreibfreier Dashboard-Start werden geprüft (Commit `8af2fb34`).
+- [x] Statische Regression für die tatsächliche App-Verkabelung und Erhaltung der Backup-/Exportfunktionen ergänzt (Commit `31285b27`).
+- [x] Responsive Chromium-Prüfung für das **echte** Produktions-HTML bei 320px ergänzt (Commit `391371a1`).
+- [x] Supabase-Produktivschema lesend inventarisiert: `wishlist_lists` und `wishlist_list_items` existieren noch nicht; vorhandene Wishes-Tabellen haben RLS. Dokumentation: https://supabase.com/docs/guides/database/postgres/row-level-security
+- [ ] Finale Node-/Chromium-CI auf dem neuesten Commit vollständig abwarten. Vorher keine produktive Migration oder Freigabe.
+- [ ] Schema-Migration erst nach grünen Tests mit RLS-/FK-Nachprüfung ausführen. Default-List-Backfill **nicht** automatisch anwenden; bestehende Daten sollen nicht ungeprüft verändert werden.
+- [ ] Anschließend PR #166 auf Konflikte, Schutzregeln und tatsächliche Deployment-Zielkonfiguration prüfen. Erst nach bestandenem Produktionsgate mergen/deployen.
