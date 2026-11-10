@@ -590,3 +590,13 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung des Dashboard-Moduls ohne Imports und gezielte Quelltextprüfung erfolgreich.
 - [ ] Browser-/Mobilgeräte-/End-to-End-Tests und Überprüfung der mehrstufigen Verschiebungen bleiben offen; keine produktiven Supabase-Tests.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
+
+## Autopilot: Auswahlkonsistenz und skalierbare Zuordnungszählung (2026-11-10)
+
+- [x] Bereits gerenderte Auswahl-Checkboxen prüfen beim Klick erneut die Sperre des betroffenen Wunsches; während einer Einzeländerung lässt sich derselbe Wunsch nicht versehentlich in eine Sammelauswahl übernehmen.
+- [x] Mobiler Listen-Schnellwechsel wird während laufender Einzeländerungen oder unvollständiger Mitgliedschaftsdaten sichtbar deaktiviert.
+- [x] Hinzufügen, Entfernen und Verschieben als Sammelaktion sind während Einzeländerungen bereits in der Werkzeugleiste deaktiviert. Auch die Vorbereitung und das Öffnen des Bestätigungsdialogs prüfen die Sperre erneut.
+- [x] Listen- und Gesamtzuordnungszähler werden direkt aus den bereits validierten eindeutigen Mitgliedschaftsmengen berechnet, statt alle Mitgliedschaftszeilen erneut mit wiederholter Listensuche zu durchlaufen.
+- [x] Minimale JavaScript-Syntaxprüfung des Dashboard-Moduls (ohne Imports) und gezielte Quelltextkontrolle erfolgreich.
+- [ ] Browser-/Mobilgeräte-/End-to-End-Tests offen; keine produktiven Supabase-Tests ausgeführt.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment und keine kostenpflichtigen Dienste.
