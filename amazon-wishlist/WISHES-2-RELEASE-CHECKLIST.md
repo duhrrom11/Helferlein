@@ -947,3 +947,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Isolierte Node.js-RegEx-Prüfung der relevanten gültigen und ungültigen Pfadfälle erfolgreich.
 - [ ] Vollständiger Node-Testlauf, Browser-/Mobilgeräte-Tests und CI-Status dieser Commits noch nicht bestätigt.
 - [ ] Freigabe gesperrt: kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: CI-Ausbau und produktiver Sicherheitscheck (2026-11-10)
+
+- [x] CI-Syntaxprüfung auf `lists-dashboard.mjs`, `list-features.mjs` und `bulk-helpers.mjs` erweitert; bestehende Node-Test-Suite bleibt im Workflow.
+- [x] Vorübergehend irrtümlich referenziertes, nicht vorhandenes `bulk-workflows.mjs` aus der CI-Konfiguration wieder entfernt.
+- [x] Produktives Supabase-Projekt `Helferlein` (nicht `Helferlein-Test`) eindeutig identifiziert und Security Advisor lesend geprüft.
+- [ ] Supabase-Sicherheitswarnung: `auth_leaked_password_protection` ist deaktiviert. Vor Freigabe prüfen und über Auth-Einstellungen aktivieren; siehe https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection .
+- [ ] Kein produktives Schema geändert: Für die aktuellen Parser-/CI-Änderungen ist keine Migration erforderlich.
+- [ ] Vollständige CI-, Browser- und Mobilgeräteabnahme sowie überprüfte Deployment-Konfiguration weiterhin offen. Merge/Deployment sind vom Nutzer grundsätzlich autorisiert, werden aber erst nach bestätigter Freigabereife durchgeführt.
