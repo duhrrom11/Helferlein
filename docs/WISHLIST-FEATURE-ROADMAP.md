@@ -194,6 +194,16 @@ Diese Funktionen nach Phase 1 bzw. abhängig von Kapazität, zulässigen Datenqu
 - **Grenzen:** Entdecken lädt maximal 60 neueste öffentliche Sammlungen; die Likes-Rangliste sortiert **innerhalb dieser Auswahl**. Die private Merkliste lädt maximal 200 Einträge. Likes sind öffentlich sichtbar und deren Datensätze enthalten Nutzer-UUIDs; die private Merkliste ist davon getrennt. Eine vollständige browserbasierte Prüfung mit realen Nutzerkonten steht noch aus.
 - **Weitere Roadmap:** Serverbasierte Pagination für globale Rankings, bessere Login-Rückkehr, Profil-Favoriten und performante Social-Statistiken.
 
+## Entwicklungsfortschritt – 10.11.2026 (Persönlicher Social-Feed)
+
+- **Neu umgesetzt:** Responsive Seite `amazon-wishlist/social-feed.html` mit Tabs `Gefolgt`, `Gemerkt` und `Für dich`, plus direkter Einstieg und Navigation auf der mobilen Wishlist-Startseite.
+- **Gefolgt:** Zeigt neueste öffentliche, nicht archivierte Sammlungen der Nutzer aus `wishlist_follows` (nur bei Anmeldung).
+- **Gemerkt:** Zeigt die öffentlich gebliebenen Sammlungen aus der persönlichen `wishlist_collection_bookmarks`-Merkliste.
+- **Für dich:** Kostenlose, deterministische Themenempfehlungen aus Schlüsselwörtern von gelikten/gemerkten Sammlungen; zusätzlich Like-Zahlen und Aktualität als Sortiersignale. Kein KI-Dienst, keine zusätzliche Profilspeicherung.
+- **Social-Aktionen:** Öffentliche Sammlungen lassen sich aus dem Feed heraus liken und merken; gemeinsame Logik aus `collection-social.mjs`.
+- **Privatsphäre und Produktivbetrieb:** Bestehende RLS-Policies geprüft; nur öffentliche Sammlungen werden geladen, Merkliste bleibt eigentümergebunden. Keine Datenbankmigrationen oder Bestandsdatenänderungen.
+- **Einschränkungen:** Feed berücksichtigt maximal 100 zuletzt erstellte öffentliche Sammlungen; bei vielen gefolgten Profilen können ältere Beiträge fehlen. Empfehlungen sind einfache Schlagwortübereinstimmungen, keine semantische Suche. Browser-End-to-End-Test mit echten Nutzerkonten steht aus.
+
 ## Herkunft und Geltung
 
 Grundlage ist die vom Nutzer am 10.11.2026 hochgeladene vollständige Ideensammlung („Eingefügter Text.txt“, ca. 694 Zeilen) mit der großen Vision, der kostenlosen Feature-Liste, drei Kostenphasen und dem Entwicklungsauftrag. Die vorliegende Datei ist eine strukturierte **vollständige Feature-Referenz**, keine wortwörtliche Transkription der damaligen Unterhaltung. Bei Widersprüchen gelten die **neueren ausdrücklichen Nutzeranweisungen**, insbesondere die Freigabe für eigenständige Veröffentlichungen.
