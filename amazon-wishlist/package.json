@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:node": "node --test *.test.mjs",
+    "test:node": "node --test --test-concurrency=1 *.test.mjs",
     "test:browser": "playwright test --config playwright.config.mjs",
     "test:all": "npm run test:node && npm run test:browser",
     "test:ci": "npm run test:node && npm run test:browser"
