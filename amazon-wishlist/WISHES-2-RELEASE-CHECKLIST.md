@@ -552,3 +552,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] JavaScript-Syntaxprüfung des aktuellen Dashboard-Moduls (ohne Imports) erfolgreich und GitHub-Inhaltsprüfung der neuen Schutzbedingungen erfolgreich.
 - [ ] Keine Browser-/Mobilgeräte-/End-to-End- oder produktiven Supabase-Tests durchgeführt. Nicht-atomare Mehrschrittoperationen bleiben als Risiko offen.
 - [ ] Freigabe weiterhin gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
+
+## Autopilot: mobile Leerzustände, lokale Markierungen und Einzelverschieben (2026-11-10)
+
+- [x] Der Leerzustand „In keiner Liste“ meldet nur dann „Alle Wünsche zugeordnet“, wenn tatsächlich kein unzugeordneter Wunsch existiert; bei einschränkenden Such-/Kategorie-/Prioritätsfiltern erscheint stattdessen ein Filterhinweis.
+- [x] Lokale Wunschmarkierungen und Kategorieänderungen sind während laufender Sammelaktionen gesperrt; die Markierungsbuttons spiegeln die Sperre sichtbar wider.
+- [x] Einzelverschieben unterscheidet nach erfolgreichem Datenbankschreiben einen nachfolgenden Reload-Fehler vom eigentlichen Verschiebefehler. Bei fehlgeschlagenem Entfernen aus der Quellliste überschreibt ein fehlgeschlagener Reload den Teilfehlerhinweis nicht mehr.
+- [x] Minimale JavaScript-Parserprüfung des aktuellen Dashboard-Quelltexts (Imports ausgenommen) und gezielte GitHub-Inhaltsprüfung erfolgreich.
+- [ ] Browser-, Mobilgeräte- und Regressionstests bleiben offen. Mehrschrittoperationen sind nicht atomar und können teilweise abgeschlossene Zuordnungen hinterlassen.
+- [ ] Freigabe bleibt gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste.
