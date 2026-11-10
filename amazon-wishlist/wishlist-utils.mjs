@@ -180,7 +180,7 @@ export function exportProgressText(count,total=null) {
  * The preview deliberately ignores any unrecognized fields, including account IDs.
  */
 export function previewWishlistBackup(raw) {
- if(typeof raw!=='string'||raw.length>2_000_000)throw Error('Sicherungsdatei fehlt oder ist zu groß (maximal 2 MB).');
+ if(typeof raw!=='string'||raw.length>2_000_000||new TextEncoder().encode(raw).byteLength>2_000_000)throw Error('Sicherungsdatei fehlt oder ist zu groß (maximal 2 MB).');
  let data;
  try{data=JSON.parse(raw)}catch{throw Error('Die Datei enthält kein gültiges JSON.')}
  if(!data||Array.isArray(data)||data.format!=='helferlein-wishlist-backup'||data.version!==1||!Array.isArray(data.wishes))throw Error('Keine unterstützte Helferlein-Wunschlisten-Sicherung.');
