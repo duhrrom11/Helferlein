@@ -729,3 +729,14 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
 - [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Mehrstufige Kopien sind nicht transaktional.
 - [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
+
+## Autopilot: Kopierfortschritt und mobile Kontextstabilität (2026-11-10)
+
+- [x] Der mobile Listen-Schnellwechsel und die Neuwunsch-Schaltfläche im aktiven Listenkontext sind während Kopiervorgängen und konkurrierenden Wunschänderungen deaktiviert.
+- [x] Die Kartenansicht-Umschaltung und das Sammelaktions-Ziellistenfeld ändern während gesperrter Zustände keinen aktiven Arbeitskontext.
+- [x] Ergebnisaktionen für fehlgeschlagene oder noch offene Sammeländerungen sind während einer Listenkopie deaktiviert.
+- [x] Listen-Duplizierung meldet den Fortschritt nach jedem begrenzten Kopierpaket; bei Abschluss oder Fehler gelten weiterhin die bestehenden Ergebnis- und Teilfehlerhinweise.
+- [x] Nach Abschluss einer Listenkopie werden mobile Karten nur im ursprünglich geladenen Benutzer-Arbeitsbereich erneut gerendert.
+- [x] Minimale JavaScript-Parserprüfung und gezielte Quelltextkontrollen erfolgreich.
+- [ ] Browser-, Mobilgeräte-, Integrations- und End-to-End-Tests offen; keine produktiven Datenbankänderungen oder Testdaten. Kopien sind nicht atomar.
+- [ ] Freigabe gesperrt; kein Vercel, keine produktiven Supabase-Änderungen, kein Merge, kein Deployment.
