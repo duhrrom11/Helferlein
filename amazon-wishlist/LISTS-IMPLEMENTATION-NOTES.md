@@ -51,3 +51,11 @@
 - Kontowechsel lässt Filterelemente im DOM bestehen; Favoriten werden bei Wechsel neu eingelesen.
 - Kurze Syntax- und HTML-ID-Prüfung erfolgreich; keine Browser- oder Produktivdatenbanktests.
 - Kein Merge, kein Deployment und keine Änderung an der produktiven Supabase-Datenbank.
+
+## Persönliche Zentrale, Fortschritt und Mobilansicht
+- Übersicht: geladene Wünsche, Listen, Lieblingslisten und Zahl der Wünsche mit mindestens einer Listenzuordnung.
+- Fortschrittsbalken zeigt den Anteil zugeordneter Wünsche unter den maximal 200 geladenen Wünschen; kein Kauf-, Erfüllungs- oder Geschenkfortschritt.
+- Listenkarten zeigen die Zahl ihrer Zuordnungen und den Anteil relativ zu den geladenen Wünschen; bei mehr als 200 Wünschen sind Kennzahlen nicht vollständig.
+- Zuletzt geöffnete Listen werden kontogetrennt im lokalen Browser gespeichert (maximal fünf), ohne Server-Synchronisierung.
+- Mobile Schnellaktionsleiste und responsive Statistiken/Karten; keine Produktivdatenbankänderungen.
+- Kurze JavaScript-Syntax- und DOM-ID-Prüfung erfolgreich; keine vollständigen Browser- oder CI-Tests.
