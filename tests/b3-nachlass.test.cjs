@@ -47,6 +47,7 @@ test('heir portal discloses client-only access and does not render raw cloud err
 test('heir links are not printed as visible plaintext and clipboard success is awaited',()=>{
  assert.match(html,/Erben-Link mit geheimem Schlüssel/);
  assert.doesNotMatch(html,/\$\{escapeHtml\(personLink\)\}<\/p>/);
+ assert.match(html,/Der QR-Code enthält einen geheimen Schlüssel/);
  assert.match(html,/navigator\.clipboard\.writeText\(link\)\s*\.then\(/);
  assert.match(html,/Kopieren fehlgeschlagen/);
 });
