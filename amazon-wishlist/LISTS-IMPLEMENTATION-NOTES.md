@@ -80,3 +80,10 @@
 - Übersicht und Filter für Wünsche, die keiner Liste zugeordnet sind. Der Zähler bezieht sich auf maximal 200 geladene Wünsche; keine Vollständigkeitsgarantie für größere Sammlungen.
 - Das Listen-Schema bleibt ein nicht angewendeter Vorschlag. Keine Produktivdatenbankänderungen, kein Merge, kein Deployment.
 - Kurze JavaScript-Syntax- und DOM-ID-Prüfung erfolgreich; keine vollständigen Browser- oder Integrationstests.
+
+## Große Wunschsammlungen und Sammelaktionen
+- Wunschdaten und Zuordnungen werden mit Supabase `.range()` in 1000er Seiten geladen statt der bisherigen 200er Begrenzung.
+- Wunschkarten werden in 100er Schritten dargestellt; die Auswahl aller sichtbaren Filtertreffer umfasst auch noch nicht gerenderte Karten.
+- Kategorieauswahl wählt passende Filtertreffer; vor Mehrfachaktionen zeigt ein Dialog Zielliste, Anzahl und bis zu fünf betroffene Wünsche.
+- Die Bestätigung führt ausschließlich Änderungen an Listenzuordnungen aus; pro Eintrag werden Konto und gewählte Liste geprüft. Auswahl wird beim Kontowechsel zurückgesetzt.
+- Kein vollständiger Browser-/Integrationstest, nur Syntax- und DOM-ID-Prüfung. Keine Produktivdatenbankänderungen, kein Merge, kein Deployment.
