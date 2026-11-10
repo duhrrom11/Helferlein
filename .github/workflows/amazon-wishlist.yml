@@ -47,6 +47,8 @@ jobs:
         run: node --test amazon-wishlist/*.test.mjs
   browser:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
     timeout-minutes: 20
     defaults:
       run:
@@ -58,7 +60,5 @@ jobs:
           node-version: '22'
       - name: Install isolated browser test dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
       - name: Run isolated browser tests
         run: npm run test:browser
