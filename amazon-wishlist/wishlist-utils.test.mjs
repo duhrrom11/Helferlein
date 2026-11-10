@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,exportWishlistCsv,priorityLabel,validateWishlistExportPage} from './wishlist-utils.mjs';
+import {normalizeProfileSearch,validateWishFields,validateHandle,validatePriority,profilePageUrl,isUniqueViolation,requestedProfileHandle,validateProfileFields,feedPage,validateCredentials,validatedProfileSearch,shouldRestoreSharedProductUrl,isFeedRequestStale,isWishLocallyHidden,profileDisplayLabel,wishlistErrorMessage,copyShareLink,exportWishlistCsv,priorityLabel,validateWishlistExportPage,exportWishlistJson,exportProgressText} from './wishlist-utils.mjs';
 test('normalizes search and strips PostgREST punctuation',()=>{
  assert.equal(normalizeProfileSearch('  Alice_(test)  '),'Alicetest');
  assert.equal(normalizeProfileSearch('  Änne  '),'Änne');
@@ -185,4 +185,27 @@ test('export pagination fails closed on malformed backend results',()=>{
  assert.throws(()=>validateWishlistExportPage(null));
  assert.throws(()=>validateWishlistExportPage([1,2],1));
  assert.throws(()=>validateWishlistExportPage([],0));
+});
+
+test('portable JSON backup exports only public profile and wish fields',()=>{
+ const input=[{id:444,user_id:'private-account-id',priority:1,note:'Notiz',created_at:'2026-11-10T00:00:00Z',wishlist_products:{id:888,asin:'B012345678',marketplace:'amazon.de',title:'Geschenk'}}];
+ const profile={user_id:'private-account-id',handle:'tester_1',display_name:'Tester',bio:'Hallo',email:'private@example.com'};
+ const parsed=JSON.parse(exportWishlistJson(input,profile));
+ assert.equal(parsed.format,'helferlein-wishlist-backup');
+ assert.equal(parsed.version,1);
+ assert.deepEqual(parsed.profile,{handle:'tester_1',display_name:'Tester',bio:'Hallo'});
+ assert.deepEqual(parsed.wishes[0],{asin:'B012345678',amazon_url:'https://www.amazon.de/dp/B012345678',title:'Geschenk',note:'Notiz',priority:1,created_at:'2026-11-10T00:00:00Z'});
+ assert.doesNotMatch(JSON.stringify(parsed),/private-account-id|private@example.com/);
+ assert.ok(parsed.exported_at);
+});
+test('JSON backup handles empty list and rejects invalid products',()=>{
+ assert.deepEqual(JSON.parse(exportWishlistJson([])).wishes,[]);
+ assert.equal(JSON.parse(exportWishlistJson([])).profile,null);
+ assert.throws(()=>exportWishlistJson(null));
+ assert.throws(()=>exportWishlistJson([{wishlist_products:{asin:'oops',marketplace:'amazon.de'},priority:2}]));
+});
+test('export progress only accepts nonnegative integers',()=>{
+ assert.equal(exportProgressText(0),'0 Wünsche geladen …');
+ assert.equal(exportProgressText(12,100),'12 von 100 Wünschen geladen …');
+ for(const value of [-1,1.5,NaN,'12'])assert.throws(()=>exportProgressText(value));
 });
