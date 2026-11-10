@@ -61,6 +61,7 @@ export function mountListsDashboard(db, getUser) {
  const owner=()=>{const u=getUser();if(!u)throw Error('Bitte anmelden');return u.id};
  async function load({afterBulk=false}={}){
   if(!getUser()){reset();return}
+  if(loadedOwner&&loadedOwner!==getUser()?.id)reset();
   if(bulkBusy&&!afterBulk){msg('Sammelaktion läuft. Bitte stoppen oder abschließen, bevor du Listen aktualisierst.');return}
   const generation=++loadGeneration;
   invalidateMembershipState();$('wishLoadMore').hidden=true;root.hidden=false;setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
