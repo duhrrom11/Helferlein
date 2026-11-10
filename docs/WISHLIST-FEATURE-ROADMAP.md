@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Erreichbarkeit und zugeordnete Formularfehler)
+
+- **Schnellaktion „Neue Liste“:** Die bestehenden Auslöser `homeNewList`, `quickNewList` und `createList` öffnen den mobilen `details`-Bereich `mobileListCreation` vor nachfolgenden Fokus- und Speicheraktionen. Insbesondere die Schnellaktion `quickNewList` fokussiert damit keine Eingabe mehr in einem geschlossenen Bereich.
+- **Desktop-Erreichbarkeit:** Die für Smartphones nachträglich gruppierten Bereiche `mobileListCreation`, `mobileRecentLists` und `mobileGiftExtra` werden ab 760 px geöffnet. Unterhalb davon bleibt die manuell gewählte mobile Klappstellung erhalten; ursprüngliche DOM-Elemente und Event-Handler bleiben bestehen.
+- **Formular-Fehlermeldungen:** Listen- und Wunschfelder erhalten bei bestehenden Validierungsfehlern `aria-invalid="true"` und einen `aria-describedby`-Verweis auf `listsStatus`, `editListFeedback` bzw. `wishSaveFeedback`. Bei Listenfehlern werden geschlossene übergeordnete `details` vor dem Setzen des Fokus geöffnet. Nach Korrektur bzw. beim Zurücksetzen werden Fehlerattribute entfernt.
+- **Gezielte Prüfung:** Aktuelle `index.html`, `app.mjs` und `lists-dashboard.mjs` nach Veröffentlichung über GitHub neu geladen; alle zehn Inline-JavaScript-Blöcke und beide Module isoliert ohne Syntaxfehler geprüft, 21 öffnende und 21 schließende Style-Tags sowie keine doppelten statischen HTML-IDs. Ein vollständiger angemeldeter Browser-End-to-End-Test steht noch aus.
+- **Produktionsschutz:** Änderungen ausschließlich an clientseitiger Navigation, Sichtbarkeit und Zugänglichkeitsattributen; keine Supabase-Schreiboperationen oder Schemaänderungen, keine Testdaten und keine Änderungen vorhandener Produktivdatensätze.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Mobile Formularvalidierung und Feldfokus)
 
 - **Listen anlegen/bearbeiten:** Ungültige oder fehlende Listennamen führen nun zu einer direkt mit `aria-invalid="true"` markierten und fokussierten Eingabe; bei der bestehenden Listenbearbeitung gilt dasselbe für ungültige HTTPS-Titelbildadressen. Die vorhandene globale bzw. formularnahe Statusmeldung bleibt erhalten.
