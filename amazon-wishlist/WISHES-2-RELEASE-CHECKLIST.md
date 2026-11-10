@@ -956,3 +956,12 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Supabase-Sicherheitswarnung: `auth_leaked_password_protection` ist deaktiviert. Vor Freigabe prüfen und über Auth-Einstellungen aktivieren; siehe https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection .
 - [ ] Kein produktives Schema geändert: Für die aktuellen Parser-/CI-Änderungen ist keine Migration erforderlich.
 - [ ] Vollständige CI-, Browser- und Mobilgeräteabnahme sowie überprüfte Deployment-Konfiguration weiterhin offen. Merge/Deployment sind vom Nutzer grundsätzlich autorisiert, werden aber erst nach bestätigter Freigabereife durchgeführt.
+
+## Autopilot: CI-Gate geprüft und Parser-Regression behoben (2026-11-10)
+
+- [x] Mehrfach-Präfix-Fehler im Amazon-Hostparser behoben: exakt ein erlaubtes Präfix `www.`, `smile.` oder `m.` wird entfernt. `www.m.amazon.de` bleibt verboten; `m.amazon.de` funktioniert.
+- [x] `npm run test:node` auf alle `*.test.mjs` umgestellt, damit neue Tests nicht stillschweigend fehlen.
+- [x] GitHub Actions tatsächlich abgefragt: Run 42824434530 für Commit `87bb1706` ist **failure**; Syntaxprüfungen waren in vorherigem Run erfolgreich, `node --test amazon-wishlist/*.test.mjs` schlug fehl.
+- [ ] Fehlerursache der vollständigen Node-Test-Suite aus CI-Logs ermitteln und beheben. Ohne grünen CI-Run keine Freigabe.
+- [ ] Browser-/Mobilgeräte-Tests und Deployment-Konfiguration weiter prüfen. Nutzer hat Merge, produktive Supabase-Änderungen und Deployment autorisiert; **nicht durchgeführt**, da Qualitäts-Gates rot sind.
+- [ ] Keine Datenbankmigration für diese reinen Frontend-/CI-Änderungen nötig.
