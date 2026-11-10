@@ -1134,3 +1134,11 @@ Keine produktiven Supabase-Änderungen, kein Vercel, kein Merge, kein Deployment
 - [ ] Diese Rollenprüfung simuliert den JWT-Claim in SQL; sie ist **kein** tatsächlicher Login mit Passwort/Session im Browser und beweist keine realen Listen-Mutationen.
 - [ ] Vercel- und GitHub-Pages-Live-HTTPS-Gates erst nach echter Ausführung als bestanden deklarieren; bei aktueller Ausführung vor Deployment kann der erwartete neue Dashboard-Code fehlen.
 - [ ] Merge und Deployment bleiben bis zur Bestätigung dieser Freigabevoraussetzungen gesperrt; keine Testdaten erzeugen.
+
+### Tatsächliche Live-HTTP-Probe aus GitHub Actions (2026-11-10)
+
+- [x] Eigenständigen Pre-Release-Workflow `.github/workflows/live-host-reachability.yml` auf Feature-Push eingerichtet (Commit `3925ad57`), ohne GitHub-Pages- und Vercel-Status zu vermischen.
+- [x] **Echte HTTPS-Ergebnisse aus Runner-Logs** des Laufs `42830663858`: GitHub Pages `/` **200 OK**, GitHub Pages `/amazon-wishlist/index.html` **200 OK**; Vercel `/` **404**, Vercel `/amazon-wishlist/index.html` **404**. Workflow korrekt **failure**, nicht grüngefärbt.
+- [ ] **Vercel-Hosting-Blocker**: Die im GitHub-Repository hinterlegte Homepage `https://helferlein-ochre.vercel.app` liefert tatsächlich 404. Vor Merge/Deployment Vercel-Ziel klären bzw. einen nachweislich funktionierenden Veröffentlichungsweg bestimmen. Bestehende GitHub-Pages-Erreichbarkeit beweist noch nicht, dass der neue Dashboard-Stand aus dem Feature-Branch veröffentlicht ist.
+- [ ] Authentifizierte SQL-Rollenprüfung mit vorhandenem `auth.users`-Konto ohne Datenerzeugung bestanden; vollständiger echter Browser-Login mit JWT und produktiven Listenaktionen bleibt offen.
+- [ ] PR #166 nicht mergen, solange der Pre-Release-Live-Hosting-Gate fehlschlägt und die authentifizierte Browserabnahme fehlt.
