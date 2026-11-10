@@ -216,3 +216,16 @@
 - [ ] Vollständige native Node-Suite und verifiziertes npm-Lockfile nach Wiederherstellung der Infrastruktur.
 
 **Grenzen:** Kein produktiver Supabase-Zugriff, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.
+
+## Autopilot-Großschritt: Browser-Testinfrastruktur stabilisiert (2026-11-10)
+
+- [x] Auf Nutzerwunsch **Vercel-Plugin in ChatGPT deinstalliert** (Bestätigung `uninstalled`). Vercel künftig nicht für Helferlein verwenden. Eventuelle externe GitHub/Vercel-Installationen sind davon nicht automatisch entfernt.
+- [x] Browser-Fixture-Fehler behoben: zuvor doppelt maskierte RegExp-Sequenzen verhinderten das zuverlässige Entfernen von `<script>` und `<link>`; jetzt korrekte reguläre Ausdrücke.
+- [x] Listenwechsel-Test auf tatsächlich vorhandene `Öffnen`-Schaltfläche in `.list-card` umgestellt.
+- [x] `playwright.config.mjs` umfasst jetzt `wishes-ui.spec.mjs` und `dashboard-browser.integration.spec.mjs` statt nur der ersten Suite.
+- [x] Echte Dashboard-Browser-Suite von drei auf **fünf** Szenarien erweitert: Reload-Fehler, Listenwechsel, angehaltener Reload, Retry nach Mitgliedschaftsfehler, Kontowechsel während verzögerter Abfrage.
+- [x] **44/44 isolierte Branch-Logiktests** erneut tatsächlich ausgeführt und bestanden; Browser-Suite auf fünf Testfälle und Konfiguration/Fixture-RegExp statisch geprüft.
+- [ ] **Fünf neue Dashboard-Playwright-Browserfälle tatsächlich ausführen**; weiterhin kein vollständiger lokaler Feature-Branch-Checkout mit installiertem `@playwright/test`. Keine unbestätigten Browser-Erfolge melden.
+- [ ] Vollständige native Node-Test-Suite und verifiziertes Lockfile.
+
+**Keine produktiven Supabase-Änderungen, kein Merge, kein Deployment, keine kostenpflichtigen Dienste. Freigabe weiterhin gesperrt.**
