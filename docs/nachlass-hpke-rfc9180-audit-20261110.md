@@ -10,7 +10,16 @@ Scope: draft PR #249, branch `audit/hpke-negative-tests-clean-20261110`; no prod
 - Additional negative cases: modified AAD on the published vector; malformed ciphertext sizes; oversized info/AAD; roundtrip and wrong-recipient checks.
 - CI for commit `260ce24d7172ea66606f072284d48ce6514c1bb2`: B3 Nachlass pilot run 42782126785 SUCCESS; release smoke run 42782127083 SUCCESS. B3 workflow executes `node --test tests/nachlass-hpke-offline-v2.test.cjs` as part of its Node test step.
 
-## Follow-up official encryption case\n\nPinned CFRG JSON `mode=0, kem_id=32, kdf_id=1, aead_id=2`, `encryptions[1]`: AAD `436f756e742d31`, nonce `151d9929e2449747889bc922`, ciphertext `2c43aff25343fdbff864506f0818b9d87df84ea01b1a2144d23b4d40c26bf655fdf197fe40297a8aebeed5cc2d`. Its AES-GCM plaintext matches the first encryption. The nonce is `base_nonce XOR 1` per RFC 9180. Independently executed with local Node crypto and obtained `Beauty is truth, truth beauty`. Commit `1e5af0cd` adds regression coverage; CI for that commit is pending.\n\n## Limits / follow-up
+## Follow-up official encryption case
+
+Pinned CFRG JSON `mode=0, kem_id=32, kdf_id=1, aead_id=2`, `encryptions[1]`: AAD `436f756e742d31`, nonce `151d9929e2449747889bc922`, ciphertext `2c43aff25343fdbff864506f0818b9d87df84ea01b1a2144d23b4d40c26bf655fdf197fe40297a8aebeed5cc2d`. Its AES-GCM plaintext matches the first encryption. The nonce is `base_nonce XOR 1` per RFC 9180. Independently executed with local Node crypto and obtained `Beauty is truth, truth beauty`. Commit `1e5af0cd` adds regression coverage. GitHub CI for this commit has not been independently confirmed.
+
+## CI evidence (scope-limited)
+
+- GitHub Actions run [42782314241](https://github.com/duhrrom11/Helferlein/actions/runs/42782314241): `nachlass-ui` job completed successfully, including Chromium browser verification and evidence preservation. This does **not** establish that the later HPKE test commit `1e5af0cd` passed CI.
+- GitHub commit `2f8d9f9d` records this second case; its CI is not independently confirmed.
+
+## Limits / follow-up
 
 - The intermediate checkpoints are **not a second independent published vector**; all derive from the same pinned CFRG case.
 - RFC 9180 Appendix A includes X25519/AES-128-GCM and X25519/ChaCha20-Poly1305 examples, but not the precise X25519/AES-256-GCM suite; do not substitute a different suite as a purported direct match.
