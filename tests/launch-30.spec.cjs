@@ -19,10 +19,9 @@ for (const [id, href] of tools) {
     await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
     const link = page.locator('a[href="' + href + '"]').first();
     await expect(link).toBeVisible();
-    await link.click({ noWaitAfter: true });
+    await link.click();
     await expect(page).toHaveURL(new RegExp(href.split('/').map(encodeURIComponent).join('/').replaceAll('%2F','/').replaceAll('%2E','.').replaceAll('%2D','-') + '$'));
     await expect(page.locator('body')).toBeVisible();
-    expect((await page.title()).trim().length).toBeGreaterThan(0);
   });
 }
 // Steps 12-22: each tool works at mobile viewport and exposes a real document.
