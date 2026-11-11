@@ -161,3 +161,13 @@ Keine zusätzlichen Regex-/Mutations-Tests ohne konkrete bisher ungesicherte Sch
 **Commits dieses Pakets:** Service `e2d7d55d39f760f53aa66af8c7a1c7981a47f9eb`, privater SQL-Entwurf `c0bcb746635bf4f34e376d114292748183cc8fac`, Domain-Tests `e81c1a8b5537b0668e53962220c3bb22196d0493`, Transaktionsadapter `8e0505dcb118d345465e730c5d0689ec770691b3`, Adapter-Tests `a8bbb2c4c906716d8eacbfa827001aa113d8195e`.
 
 **Verbleibende zwingende Blocker vor produktiver Freigabe:** isoliertes PG17 mit echten Sessions; geprüfte Privilegien/Transaktions- und Deadlock-Semantik; Public-Key-Registrierung und **Besitznachweis** (`verified_at` bleibt bis dahin NULL); überprüfte HPKE-Implementierung mit sicherem, authentifiziertem Endgeräte-Schlüsseltausch; serverseitige Freigabe-/Alarm-/Karenz-Zustandsmaschine, sichere Ausgabe verschlüsselter Snapshots/Hüllen und E2E-Browserprüfung; Backup, Rollback und kontrollierte Migration. Keine neue Edge Function, kein Browserzugriff, kein Deployment, keine Datenänderung und keine Freigabe in dieser Runde.
+
+## 11. Besitznachweis, HPKE-Schlüsselhüllen und Alarm-Karenz (11. November 2026)
+
+**Nur im GitHub-Repository, nicht deployed:** `heir-key-proof-staging.ts` registriert X25519-Public-Keys mit serverseitig generierter, fünf Minuten gültiger ECDH/HKDF-Challenge und einmaligem Besitznachweis; Identität muss aus serverseitig verifiziertem Supabase-JWT stammen. `heir-hpke-envelope.ts` implementiert clientseitige RFC-9180-HPKE-Schlüsselhüllen (X25519/HKDF-SHA256/AES-256-GCM), deren AAD an Besitzer, Erben, Tresor, Schlüssel-ID und Zuordnungsversion gebunden ist. `heir-release-staging.ts` setzt Alarm, Abbruch und serverseitige 24h-Karenz als atomare, nicht deployte SQL-Operationen um. Zeitablauf führt **ausschließlich** zu `pending_independent_review`, niemals zu einer Schlüsselfreigabe.
+
+**Review-only SQL:** `docs/sql-drafts/heir_key_release_REVIEW_ONLY.sql` enthält nur Entwürfe für `heir_key_proofs` und `heir_release_cases`; keine Migration, GRANTs, Edge Function oder produktive Datenänderung.
+
+**Prüfungen:** TypeScript Strict-Check der drei Module und 5/5 offline ausgeführte Node.js-Tests (Identity/Replay, verbrauchter Fehlversuch, Envelope-Roundtrip mit falschem Schlüssel/AAD, Alarm/Abbruch, offizieller RFC-9180-X25519-KEM-Testvektor). Keine reale PostgreSQL-/RLS-, Browser-, API- oder Produktivprüfung.
+
+**Freigabe-Blocker:** Isolierte PostgreSQL-17-Tests mit zwei Sessions, Rechte/Owner/Lock-Audit, vollständige Ende-zu-Ende-Integration, unabhängige kryptografische Review sowie rechtlich/operativ definiertes gesondertes Freigabeverfahren. Produktive Erbenfreigabe bleibt gesperrt.
