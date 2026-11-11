@@ -60,7 +60,14 @@ function render(){
     if(user?.id!==ownerId||!select.isConnected)return;
     select.value=String(previous);
     $('status').textContent='Priorität konnte nicht gespeichert werden.';
-   }finally{if(select.isConnected)select.disabled=false}
+   }finally{
+    if(select.isConnected){
+     select.disabled=false;
+     // Disabling a focused select can blur it even when the save fails.
+     // Restore only if focus was not deliberately moved to another control.
+     if(restoreFocus&&(!document.activeElement||document.activeElement===document.body))select.focus({preventScroll:true});
+    }
+   }
   });
   const link=document.createElement('a');link.href='./gift-planner.html';link.textContent='Geschenk bearbeiten ↗';
   item.append(h,p,tag,node('span',' · '),select,node('p',''),link);tasks.append(item);
@@ -76,12 +83,14 @@ function render(){
 async function main(){
  const {data,error}=await db.auth.getUser();user=data?.user;
  if(error||!user){$('login').hidden=false;$('status').textContent='Bitte anmelden.';return}
+ const ownerId=user.id;
  const [o,g,r,t]=await Promise.all([
-  db.from('wishlist_occasions').select('id,title,person_name,occasion_date,repeats_yearly,budget_amount').eq('user_id',user.id).limit(1000),
-  db.from('wishlist_gift_plans').select('id,occasion_id,title,priority,status,planned_amount,actual_amount').eq('user_id',user.id).limit(1000),
+  db.from('wishlist_occasions').select('id,title,person_name,occasion_date,repeats_yearly,budget_amount').eq('user_id',ownerId).limit(1000),
+  db.from('wishlist_gift_plans').select('id,occasion_id,title,priority,status,planned_amount,actual_amount').eq('user_id',ownerId).limit(1000),
   db.rpc('wishlist_gift_dashboard_reservations'),
-  db.from('wishlist_gift_tasks').select('id,title,due_date,reminder_days,status,priority,occasion_id,checklist_key,checklist_year,archived_at').eq('user_id',user.id).limit(1000)
+  db.from('wishlist_gift_tasks').select('id,title,due_date,reminder_days,status,priority,occasion_id,checklist_key,checklist_year,archived_at').eq('user_id',ownerId).limit(1000)
  ]);
+ if(user?.id!==ownerId)return;
  if(o.error||g.error||r.error||t.error)throw o.error||g.error||r.error||t.error;
  occasions=o.data||[];gifts=g.data||[];tasks=t.data||[];
  reservationCount=Number(r.data?.[0]?.my_reservations||0);linkedCount=Number(r.data?.[0]?.linked_reservations||0);
