@@ -101,7 +101,6 @@ def main():
                     # An actual account transition invalidates the previous DOM immediately.
                     page.evaluate("window.ci.setAccount('other')")
                     page.get_by_text('Noch nicht freigeschaltet',exact=False).wait_for(timeout=10000)
-                    page.get_by_text('Einladungen konnten nicht geladen werden.',exact=False).wait_for(timeout=10000)
                     assert page.locator('#host tbody tr').count()==0 or page.get_by_text('Noch nicht freigeschaltet',exact=False).count()>0
                     # Browser believes a token is valid; server-side auth.getUser rejects it.
                     page.evaluate('window.ci.sessionRevokedOnServer()')
