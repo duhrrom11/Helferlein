@@ -341,7 +341,7 @@ actions.append(button('Duplizieren',async()=>{
    const confirmedTarget=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetListId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
    if(!current())return;
    if(confirmedTarget.error)throw confirmedTarget.error;
-   if(!confirmedTarget.data?.length){msg('Zielzuordnung wurde während des Verschiebens entfernt. Ursprungszuordnung bleibt erhalten; bitte Listen neu laden.');return}
+   if(!confirmedTarget.data?.length){const warning='Zielzuordnung wurde während des Verschiebens entfernt. Diese Aktion hat die Ursprungszuordnung nicht gelöscht; andere Tabs können sie verändert haben. Bitte beide Listen prüfen.';const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;try{await refresh}catch{}if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration)msg(warning);return}
    const {error,data:removedSource}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid).select('wish_id');
    if(!current())return;
    if(!error&&!removedSource?.length){const warning='Die Ursprungszuordnung wurde bereits in einem anderen Tab entfernt. Bitte beide Listen neu laden und prüfen.';const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;try{await refresh}catch{}if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration)msg(warning);return}
