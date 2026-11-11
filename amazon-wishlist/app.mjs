@@ -28,7 +28,7 @@ function readValidatedWishExtras(){
 function saveWishExtras(owner,id,extras){
  if(!owner||!id)return;
  const {imageUrl,price,quantity,status}=extras;
- let all={};try{all=JSON.parse(localStorage.getItem(localWishExtrasKey(owner))||'{}')||{}}catch{}
+ let all;try{const raw=localStorage.getItem(localWishExtrasKey(owner));all=raw===null?{}:JSON.parse(raw);if(!all||typeof all!=='object'||Array.isArray(all))return false}catch{return false}
  all[id]={imageUrl,price,quantity,status};
  try{localStorage.setItem(localWishExtrasKey(owner),JSON.stringify(all));return true}catch{return false}
 }
