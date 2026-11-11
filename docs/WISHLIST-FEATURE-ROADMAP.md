@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (lokale Wunsch-Zusatzdaten nach erfolgreichem Datenbank-Commit)
+
+- **Nachgewiesener Teilfehler:** `saveWishExtras()` warf bei `localStorage.setItem`-Fehlern eine Exception, obwohl der vorausgehende `wishlist_wishes.insert/update` bereits erfolgreich abgeschlossen war. Dadurch erschien der gesamte Speichervorgang als fehlgeschlagen und konnte zu unnötigen erneuten Datenbank-Schreibversuchen verleiten.
+- **Korrektur:** `saveWishExtras()` meldet den Erfolg des lokalen Schreibens nun als booleschen Wert. Beide Wunsch-Speicherpfade schließen den Datenbank-Erfolg weiterhin ab, aktualisieren die Ansicht und melden bei fehlgeschlagenem lokalen Schreiben ausdrücklich den Teilfehler. Bei Neuanlage wird zum Bearbeiten des bestehenden Wunsches statt zur erneuten Anlage geraten. Eine fehlgeschlagene Listenzuordnung wird unabhängig davon angezeigt. Code: `6217f971c7c2bb391d515c7c7f0960690842384d`.
+- **Grenzen:** Die lokalen Zusatzdaten bleiben bei Speicherausfall verloren; keine atomare Transaktion zwischen Datenbank und Browser-localStorage. Statische Quellcodeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listen-Duplizierung: Unterbrechung zwischen Zuordnungs-Batches)
 
 - **Nachgewiesener Teilfehler:** Bei der mehrstufigen Listen-Duplizierung führten `if(!current())return`-Abbrüche vor späteren Zuordnungs-Batches oder nach dem letzten Batch zu stillen Teilkopien. Bereits erfolgreich gespeicherte Zuordnungen blieben bestehen, ohne dass der Benutzer die Anzahl sah.
