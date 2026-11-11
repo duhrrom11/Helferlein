@@ -1,3 +1,15 @@
+## Feature-Paket 1 – 11.11.2026 (Private Cloud-Zusatzdaten: erste produktive Stufe)
+
+- **RLS-Befund:** `wishlist_wishes` erlaubt `anon` und `authenticated` das Lesen öffentlicher Wünsche; eigene Wünsche sind zusätzlich für Eigentümer sichtbar. Daher werden persönliche Zusatzdaten **nicht** als öffentlich lesbare Wunschspalten angelegt.
+- **Produktive additive Migration:** Neue Tabelle `public.wishlist_wish_extras` mit zusammengesetztem Fremdschlüssel `(wish_id,user_id)` auf `wishlist_wishes`, HTTPS-/Preis-/Mengen-/Status-Constraints und RLS mit vier Eigentümer-Policies. `anon` hat keine Tabellenberechtigung. Keine Änderung bestehender Wünsche; die neue Tabelle hatte bei der anschließenden Prüfung **0 Zeilen**, RLS aktiv, vier Policies und `anon_can_select=false`.
+- **Frontend-Stufe:** Der bestehende Wunscheditor lädt für eigene Wünsche ohne vorhandene lokale Zusatzdaten optional einen privaten Cloud-Eintrag (`maybeSingle`). Die Antwort wird nur für dieselbe angemeldete Person, denselben Editor-Wunsch und dieselbe Editor-Revision übernommen; während der Anfrage veränderte Felder werden nicht überschrieben. Bestehende lokale Zusatzdaten bleiben vorrangig. Cloud-Abfragefehler führen zum lokalen Fallback.
+- **Wichtig:** Noch **kein Cloud-Schreiben** und **kein automatischer Import**. Die bisherige Speichern-Funktion legt Zusatzdaten weiterhin nur lokal ab. Geräteübergreifende Speicherung ist deshalb noch nicht abgeschlossen.
+- **Tests:** Isolierte Tests für Validierung, Fremd-ID-Ausschluss und Konflikte erweitert. Live-Authentifizierung, Browserlauf und RLS-Rollentests mit einem echten Nutzer wurden nicht durchgeführt.
+- **Offene nächste Stufe:** Explizites, transaktional sicheres Cloud-Speichern mit Fehleranzeige, Konfliktbehandlung und opt-in Importvorschau; danach Cloud-Anzeige auf Wunschkarten und gesondert entschiedene öffentliche Freigabe. Bestehende Nutzerinhalte nicht überschreiben.
+- **Security Advisors:** Der Projekt-Scan meldet bereits bestehende Hinweise zu `wishlist_gift_reservations` und ausführbaren SECURITY-DEFINER-Funktionen; sie betreffen nicht die neue Extras-Tabelle und wurden in dieser Änderung nicht angepasst.
+
+---
+
 ## Feature-Paket 1 – 11.11.2026 (Geräteübergreifende Wunsch-Zusatzdaten: Bestandsaufnahme und sichere Vorbereitung)
 
 **Bestandsaufnahme:** Produktbild-URL, Wunschpreis, Menge und Status werden in `amazon-wishlist/app.mjs` unter `localStorage['helferlein-wish-extras:'+userId]` je Wunsch-ID gespeichert. `wishlist_wishes` besitzt laut lesender produktiver Supabase-Schemaabfrage derzeit `id,user_id,product_id,priority,note,created_at,visibility`, jedoch keine Spalten für diese vier Zusatzfelder. Das vorhandene Datenmodell hat RLS aktiviert. Ein lokaler Browserwert ist nicht automatisch öffentlich oder geräteübergreifend.
