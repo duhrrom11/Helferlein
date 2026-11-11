@@ -228,6 +228,33 @@
                     💾 Vertrauenspersonen speichern
                 </button>
             </div>
+            <section id="heirInvitePreparation" aria-labelledby="heirInviteTitle" class="bg-slate-950 p-6 rounded-2xl border border-amber-700/70 space-y-4 shadow-xl">
+                <div class="flex items-start gap-3">
+                    <span aria-hidden="true" class="text-xl">🔒</span>
+                    <div class="space-y-2">
+                        <h3 id="heirInviteTitle" class="text-sm font-bold text-slate-100">Sichere Erbeneinladungen</h3>
+                        <p role="status" class="text-amber-200 text-xs font-semibold">Noch nicht freigeschaltet – es wird keine Einladung versendet.</p>
+                        <p class="text-slate-300 text-xs leading-relaxed">Gespeicherte Vertrauenspersonen sind <strong>keine</strong> berechtigten Erben. Eine Einladung wird erst nach Anmeldung, Prüfung des Erbenkontos und Verfügbarkeit des geprüften Servers möglich. Dein bestehender Tresor bleibt unverändert.</p>
+                    </div>
+                </div>
+                <fieldset disabled aria-describedby="heirInviteHelp" class="grid gap-3 rounded-xl border border-slate-700 p-4 opacity-75">
+                    <legend class="px-2 text-xs font-semibold text-slate-200">Einladung vorbereiten</legend>
+                    <label for="heirInviteRecipient" class="text-xs text-slate-300">Erbenkonto auswählen</label>
+                    <select id="heirInviteRecipient" class="w-full rounded-lg bg-slate-900 border border-slate-700 p-2 text-slate-200">
+                        <option>Erst nach sicherer Anmeldung verfügbar</option>
+                    </select>
+                    <label for="heirInviteExpiry" class="text-xs text-slate-300">Gültigkeit der Einladung</label>
+                    <select id="heirInviteExpiry" class="w-full rounded-lg bg-slate-900 border border-slate-700 p-2 text-slate-200">
+                        <option>24 Stunden</option>
+                    </select>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" disabled aria-disabled="true" class="rounded-lg bg-slate-700 px-4 py-2 text-xs font-bold text-slate-300 cursor-not-allowed">Einladung erstellen – gesperrt</button>
+                        <button type="button" disabled aria-disabled="true" class="rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 text-xs text-slate-300 cursor-not-allowed">Einladung widerrufen – gesperrt</button>
+                    </div>
+                </fieldset>
+                <p id="heirInviteHelp" class="text-xs leading-relaxed text-slate-400">Späterer Ablauf: Erbenkonto auswählen → Einladung mit zeitlich begrenztem Einmalcode erstellen → Erbe bestätigt seinen eigenen Schlüssel → Zugriff nur nach gesonderter, rechtlich geprüfter Freigabe. Keine Master-Keys, Links mit Schlüsseln oder automatischen E-Mails.</p>
+                <p class="text-xs text-slate-400" role="note">Noch keine serverseitige Einladungsliste vorhanden. Einladungen können hier derzeit weder angelegt noch widerrufen werden; lokale Kontakte bleiben separat verwaltbar.</p>
+            </section>
         </div>
 
         <!-- TAB 4: PAPIER NOTFALL-KIT MIT QR-CODES -->

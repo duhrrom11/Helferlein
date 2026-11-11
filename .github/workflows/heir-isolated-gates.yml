@@ -7,6 +7,7 @@ on:
       - '.github/workflows/heir-isolated-gates.yml'
       - 'tests/security/heir-pg17-*'
       - 'tests/security/heir-http-*'
+      - 'tests/security/heir-server-composition.test.mjs'
       - 'tests/security/heir-indexeddb-real-browser.py'
       - 'docs/sql-drafts/heir_private_backend_REVIEW_ONLY.sql'
       - 'docs/sql-drafts/heir_key_release_REVIEW_ONLY.sql'
@@ -64,6 +65,8 @@ jobs:
           npm install --no-save --ignore-scripts --no-package-lock pg@8.16.3
       - name: Verify fail-closed HTTP dispatch and admission contracts
         run: node --experimental-strip-types --test tests/security/heir-http-staging.test.mjs tests/security/heir-http-rate-limit-staging.test.mjs
+      - name: Verify server-side assembly without activating any network endpoint
+        run: node --experimental-strip-types --test tests/security/heir-server-composition.test.mjs
       - name: Exercise actual TypeScript SqlBackend against PostgreSQL 17
         env:
           PGUSER: heir_ci_backend
@@ -91,5 +94,7 @@ jobs:
           npm install --global typescript@5.8.3
           python -m pip install 'playwright==1.56.0'
           python -m playwright install --with-deps chromium
+      - name: Type-check composed server boundary with pinned TypeScript
+        run: tsc --noEmit --strict --skipLibCheck --target ES2022 --module ES2022 --moduleResolution bundler --allowImportingTsExtensions --lib es2022,dom supabase/functions/_shared/heir-server-composition-staging.ts
       - name: Run real Chromium with temporary IndexedDB and two tabs
         run: python tests/security/heir-indexeddb-real-browser.py
