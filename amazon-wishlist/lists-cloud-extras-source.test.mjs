@@ -14,3 +14,8 @@ test('local extras win and cloud cache clears on reset',()=>{
  assert.match(source,/loadedOwner=null;cloudWishExtras=new Map\(\);lists=\[\]/);
  assert.match(source,/const generation=\+\+loadGeneration;cloudWishExtras=new Map\(\)/);
 });
+
+test('numeric cloud prices are displayed even when returned as strings',()=>{
+ assert.match(source,/Number\.isFinite\(Number\(extras\.price\)\)/);
+ assert.match(source,/format\(Number\(extras\.price\)\)/);
+});
