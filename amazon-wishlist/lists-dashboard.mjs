@@ -337,7 +337,7 @@ actions.append(button('Duplizieren',async()=>{
     const {error}=await db.from('wishlist_list_items').insert({list_id:targetListId,wish_id:wishId,user_id:uid});
     if(error&&error.code!=='23505')throw error;
    }
-   if(!current()){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId)msg('Zielzuordnung gespeichert. Bitte Listen neu laden, bevor du fortfährst.');return}
+   if(!current()){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&generation===loadGeneration)msg('Zielzuordnung nach Kontextwechsel nicht eindeutig bestätigt. Bitte beide Listen neu laden und prüfen.');return}
    const confirmedTarget=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetListId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
    if(!current())return;
    if(confirmedTarget.error)throw confirmedTarget.error;
