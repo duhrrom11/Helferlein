@@ -1,3 +1,12 @@
+## Produktive Live- und Deployment-Prüfung – 11.11.2026 (nur lesend)
+
+- **Deployment bestätigt:** GitHub-Pages-Workflow https://github.com/duhrrom11/Helferlein/actions/runs/43029771850 für Commit `665f4411c019420dfd9eca755297de10199ef0d3`: Jobs `build`, `report-build-status`, `deploy` jeweils `success`. Kein zusätzliches Deployment ausgelöst.
+- **Release-Smoke bestätigt:** https://github.com/duhrrom11/Helferlein/actions/runs/43029773561, Commit `665f4411`: Job `smoke` `success`; Log: `Release smoke checks passed`, `16/16 passed` in 453 ms, Guardrails `16 files and 7 safety conditions` bestanden.
+- **Live-HTTP bestätigt:** https://github.com/duhrrom11/Helferlein/actions/runs/43029498856 für Commit `60ac20b4`: Job `live-site` `success`; Original-Log zeigt **21/21 öffentliche Routen HTTP 200**, darunter `/amazon-wishlist/index.html`, `/amazon-wishlist/app.mjs`, `/amazon-wishlist/lists-dashboard.mjs`. Der neueste Commit `665f4411` enthält ausschließlich Dokumentation; für diesen Commit wurde kein erfolgreicher Live-HTTP-Lauf belegt (nur übersprungene Trigger sichtbar).
+- **Wishes-CI:** https://github.com/duhrrom11/Helferlein/actions/runs/43029666999, Commit `60ac20b4`: 11/11 Tests erfolgreich (7 Regression + 4 statische Dashboard-Integrationstests).
+- **Grenzen:** Keine authentifizierte Browser-End-to-End-Prüfung und keine produktiven Supabase-Datenabfragen durchgeführt. Öffentliche HTTP-Erreichbarkeit bestätigt nicht die Funktion der angemeldeten Wunschlistenaktionen.
+- **Entscheidung:** Kein neuer Fehler nachgewiesen, daher kein Codefix, Merge, zusätzliches Deployment oder Supabase-Produktivschreibzugriff. Keine Testdaten erzeugt. Die Prüfung selbst war ausschließlich lesend; diese Roadmap-Aktualisierung ist eine Dokumentationsänderung.
+
 ## Vollständig verifizierte isolierte CI – 11.11.2026
 
 - **GitHub Actions:** https://github.com/duhrrom11/Helferlein/actions/runs/43029666999 (Run #3, `workflow_dispatch`, `main`, Commit `60ac20b4a5abddd6ea751d4f5cdcb22d451fab0e`, `completed/success`).
