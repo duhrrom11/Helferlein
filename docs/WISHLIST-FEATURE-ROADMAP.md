@@ -1,3 +1,12 @@
+## Verifizierter GitHub-Actions-Lauf – 11.11.2026
+
+- **Run:** https://github.com/duhrrom11/Helferlein/actions/runs/43028222115 (Run #1, Ereignis `push`, Branch `main`, Commit `e9c6abcfa0245025004dde211c379ea96fbc19e7`). GitHub API: `status=completed`, `conclusion=success`.
+- **Job:** `regression`, Job-ID `130548232567`, `completed/success`. Original-Job-Log per GitHub-Connector abgerufen. Checkout, Node-Setup, Syntaxprüfungen und Testschritt erfolgreich.
+- **Tatsächliches TAP-Ergebnis:** 7 Tests, 7 bestanden, 0 fehlgeschlagen, 0 übersprungen; Node v22.23.4; Testdauer 61,59 ms. Die drei Syntaxprüfungen `bulk-helpers.mjs`, `list-features.mjs` und `lists-dashboard.mjs` bestanden.
+- **Wichtige Reichweitengrenze:** Der Workflow lief auf Commit `e9c6abc` und **vor** dem Hinzufügen der vier statischen Dashboard-Integrationstests in Commit `3a2498d`. Folglich wurden in diesem Run **nur die sieben isolierten Regressionstests** ausgeführt, nicht die vier Dashboard-Integrationstests. Für den aktuellen `main`-Stand ist eine erneute `workflow_dispatch`-Ausführung erforderlich.
+- **Unkritische Warnungen:** `punycode`-Deprecation und Hinweis auf Node-20-Abkündigung für `actions/checkout@v4`/`actions/setup-node@v4`; Job dennoch erfolgreich. Keine Fehlerkorrektur ohne nachgewiesenen Defekt.
+- **Produktionsentscheidung:** Kein Merge/Deployment und keine Supabase-Produktivänderung, solange die vollständige aktuelle CI (7 + 4 Tests) nicht bestätigt ist. Keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (erneute GitHub-Actions-Prüfung)
 
 - Workflow `.github/workflows/wishlist-regression.yml` auf `main` erneut per GitHub-Connector abgerufen: Node.js 22, Syntaxprüfung, sieben isolierte Regressionstests und vier statische Dashboard-Integrationstests sind konfiguriert; `workflow_dispatch` vorhanden, `contents: read`, keine Supabase-Secrets oder Deployment-Schritte.
