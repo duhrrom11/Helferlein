@@ -3,7 +3,7 @@
 <head>
     <meta name="referrer" content="no-referrer">
     <!-- Transitional CSP: no inline scripts/handlers; external CDN scripts still require supply-chain audit. -->
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdn.tailwindcss.com https://www.gstatic.com https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'; style-src 'self' 'unsafe-inline'">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdn.tailwindcss.com https://www.gstatic.com https://cdn.jsdelivr.net; script-src-attr 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; connect-src 'self' https://avapuibsidubuzxjtyld.supabase.co wss://avapuibsidubuzxjtyld.supabase.co https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline'">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digitaler Nachlassverwalter – Sicherheitsprüfung | Helferlein</title>
@@ -17,7 +17,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.js"></script>
 
     <link rel="stylesheet" href="../../assets/heir-owner-legacy.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">

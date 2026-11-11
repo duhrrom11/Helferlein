@@ -35,6 +35,14 @@ def main():
                 csp=page.locator('meta[http-equiv="Content-Security-Policy"]').get_attribute('content')
                 assert "script-src 'self'" in csp and "'unsafe-inline'" not in csp.split('style-src')[0]
                 assert "object-src 'none'" in csp
+                assert "script-src-attr 'none'" in csp
+                assert "connect-src 'self'" in csp
+                assert "https://avapuibsidubuzxjtyld.supabase.co" in csp
+                sdk=page.locator('script[src*="@supabase/supabase-js"]')
+                assert sdk.count()==1
+                assert sdk.get_attribute('src')=='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.js'
+                assert page.locator('script[src*="@supabase/supabase-js@2"]').count()==1
+
                 assert page.locator('script[src="../../assets/heir-owner-legacy.js"]').count()==1
                 page.evaluate("""() => {
                   document.getElementById('auth-email').value='test@example.invalid';
