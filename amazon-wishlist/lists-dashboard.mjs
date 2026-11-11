@@ -259,8 +259,9 @@ actions.append(button('Duplizieren',async()=>{
    for(const id of result.completed)bulkIds.delete(id);
    const summary={uid,listId,add,total:result.total,success:result.success,failed:result.failed,remaining:result.remaining,interrupted:result.interrupted,errors:result.errors};
    $('bulkStatus').textContent='Sammelaktion beendet. Details stehen in der Ergebnisübersicht.';
-   try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&run===bulkRunId)msg('Zuordnungen aktualisiert, aber das Neuladen ist fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
-   if(getUser()?.id===uid&&loadedOwner===uid&&run===bulkRunId&&selected===listId){bulkHistory.unshift({...summary,time:new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),listTitle:lists.find(l=>l.id===listId)?.title||'Liste'});bulkHistory=bulkHistory.slice(0,10);renderBulkHistory();showBulkResult(summary)}
+   const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;
+   try{await refresh}catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&run===bulkRunId&&refreshGeneration===loadGeneration)msg('Zuordnungen aktualisiert, aber das Neuladen ist fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
+   if(getUser()?.id===uid&&loadedOwner===uid&&run===bulkRunId&&refreshGeneration===loadGeneration&&membershipReady&&selected===listId){bulkHistory.unshift({...summary,time:new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),listTitle:lists.find(l=>l.id===listId)?.title||'Liste'});bulkHistory=bulkHistory.slice(0,10);renderBulkHistory();showBulkResult(summary)}
   }finally{
    if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkStop').disabled=true;$('bulkProgressPanel').hidden=true;if(getUser()?.id===uid&&loadedOwner===uid&&selected===listId){updateBulkToolbar();renderWishCards()}}
   }
