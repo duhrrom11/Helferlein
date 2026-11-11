@@ -35,7 +35,15 @@ async function main() {
     user:'heir_ci_backend',password:process.env.HEIR_CI_ROLE_PASSWORD,
     max:3,connectionTimeoutMillis:2000,statement_timeout:5000});
   try {
-    const db=createHeirPgTransactionAdapter(pool);
+    const adapter=createHeirPgTransactionAdapter(pool);
+    const db={transaction: async (work) => {
+      try { return await adapter.transaction(work); }
+      catch (error) {
+        // CI-only diagnostics; do not print SQL parameters, tokens, or ciphertext.
+        console.error('isolated_transaction_error', error?.code ?? error?.message ?? 'unknown');
+        throw error;
+      }
+    }};
     const service=createHeirStagingBackend(db,verifier);
     // Browser account cannot use the service role. Owner identity comes only
     // from getUser; user-supplied ownerUserId is not an authority.
