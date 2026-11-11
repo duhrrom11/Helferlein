@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listenformular: konsistenter Speicherstand und Sitzungsgrenzen)
+
+- **Asynchroner Bearbeitungs-Speicherpfad:** In `lists-dashboard.mjs` werden Symbol und Farbe der bearbeiteten Liste jetzt vor dem Speichervorgang zusammen mit Titel, Beschreibung, Sichtbarkeit und Bildadresse erfasst. Die Update-Nutzlast verwendet ausschließlich diesen erfassten Stand statt spätere Formularwerte zu lesen.
+- **Veraltete Abschlussantwort:** Das `finally` des Bearbeitungsformulars gab bisher Eingaben und Speichern-/Abbrechen-Schaltflächen ohne Sitzungsprüfung frei. Jetzt erfolgt die Freigabe nur, wenn Konto und Ladegeneration noch zum gestarteten Speichervorgang passen.
+- **Prüfgrenzen:** Statische Quellcodeprüfung und Veröffentlichung auf GitHub; keine authentifizierten Browser-E2E-Tests und keine Supabase-Schreibprobe. Weitere Wunschformular-Pfade bleiben separat zu untersuchen.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Fokus beim asynchronen Verschieben zwischen Listen)
 
 - **Nachgewiesener Fokusverlust im Quellcode:** Nach der zweistufigen Verschiebeoperation wird die Wunschkartenansicht über `load({afterBulk:true})` und `renderWishCards()` ersetzt. Der auslösende Verschieben-Button verliert dadurch seinen DOM-Knoten und den Tastaturfokus.
