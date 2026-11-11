@@ -1,3 +1,14 @@
+## Feature-Paket 1 – 11.11.2026 (Private Cloud-Zusatzdaten in der Listenverwaltung)
+
+- **Deploymentkontrolle:** GitHub-Pages-Build und Release-Smoke-Checks für `fe8176e` erfolgreich; neuester Live-HTTP-Status separat prüfen.
+- **Implementierung:** `lists-dashboard.mjs` fragt nach erfolgreichem Laden der Listen und Zuordnungen die private Tabelle `wishlist_wish_extras` nur für die eigenen geladenen Wunsch-IDs und die aktuelle Benutzer-ID ab. Abfragen erfolgen in 500er-Paketen. Die Cloud-Werte werden nur in der Eigentümeransicht für Bild, Wunschpreis, Menge und Status verwendet.
+- **Priorität und Fehlerverhalten:** Ein vorhandener nichtleerer lokaler Zusatzdatensatz gewinnt gegenüber Cloud-Daten. Cloud-Abfragefehler verhindern die Listenanzeige nicht und belassen die lokalen Werte.
+- **Asynchrone Sicherheit:** Vor und nach jedem Paket wird die aktuelle `loadGeneration`, die angemeldete Benutzer-ID und `loadedOwner` geprüft. Bei neuen Ladevorgängen und `reset()` wird der Cloud-Zwischenspeicher gelöscht. Listenwechsel nutzen die bereits geladenen Eigentümerdaten und erfordern keine eigene Cloud-Anfrage.
+- **Tests:** Isolierter Quellcode-Regressionstest `lists-cloud-extras-source.test.mjs` ergänzt. Keine authentifizierten Browser-/RLS-Rollentests, keine Testdatensätze, keine automatischen Imports, keine Änderung bestehender Nutzerinhalte.
+- **Offen:** Importvorschau mit ausdrücklicher Zustimmung, vollständige Browser-End-to-End-Validierung, gezielte Anzeige eines Cloud-Lesefehlers ohne Beeinträchtigung lokaler Daten.
+
+---
+
 ## Feature-Paket 1 – 11.11.2026 (Private Cloud-Zusatzdaten auf eigenen Feed-Wunschkarten)
 
 - **Deployment geprüft:** Für `810d4a9` waren GitHub-Pages-Deployment, Release-Smoke-Checks und Live-HTTP-Check erfolgreich.
