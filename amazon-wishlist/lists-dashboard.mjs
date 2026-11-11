@@ -175,21 +175,22 @@ actions.append(button('Duplizieren',async()=>{
     listCopyBusy=true;
     const current=()=>getUser()?.id===uid&&loadedOwner===uid&&generation===loadGeneration;
     let copied=0,created=false;
+    const reportInterruptedCopy=async()=>{if(getUser()?.id!==uid||loadedOwner!==uid)return;try{await load({afterBulk:true})}catch{}if(getUser()?.id===uid&&loadedOwner===uid)msg('Listen-Kopie angelegt, aber nur '+copied+' von '+originalIds.length+' Zuordnungen übernommen. Bitte Kopie prüfen.');};
     try{
      if(getUser()?.id===uid&&membershipReady){detailWishId=null;$('wishDetailDialog').close();renderWishCards();msg('Listen-Kopie wird vorbereitet: '+originalIds.length+' Zuordnungen. Bitte warten.')}
      const {data:copy,error}=await db.from('wishlist_lists').insert({user_id:uid,title:(list.title+' Kopie').slice(0,80),description:list.description,icon:list.icon,color:list.color,visibility:'private'}).select('id').single();
      if(error)throw error;
      created=true;
-     if(!current()){if(getUser()?.id===uid&&loadedOwner===uid){try{await load({afterBulk:true})}catch{}if(getUser()?.id===uid&&loadedOwner===uid)msg('Listen-Kopie angelegt, aber Zuordnungen wegen einer zwischenzeitlichen Aktualisierung nicht übernommen. Bitte Kopie prüfen.');}return;}
+     if(!current()){await reportInterruptedCopy();return;}
      for(let i=0;i<originalIds.length;i+=100){
-      if(!current())return;
+      if(!current()){await reportInterruptedCopy();return;}
       const batch=originalIds.slice(i,i+100).map(wish_id=>({list_id:copy.id,wish_id,user_id:uid}));
       const {error:copyError}=await db.from('wishlist_list_items').insert(batch);
       if(copyError)throw copyError;
       copied+=batch.length;
       if(current())msg('Listen-Kopie: '+copied+' von '+originalIds.length+' Zuordnungen übernommen …');
      }
-     if(!current())return;
+     if(!current()){await reportInterruptedCopy();return;}
      try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&loadedOwner===uid)msg('Liste mit '+copied+' Zuordnungen dupliziert, aber Aktualisierung fehlgeschlagen. Bitte neu laden.');return}
      if(getUser()?.id===uid&&loadedOwner===uid)msg('Liste mit '+copied+' Zuordnungen dupliziert.');
     }catch(e){
