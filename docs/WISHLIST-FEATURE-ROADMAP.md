@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Regressionstests lokal ausgeführt)
+
+- **Ausführung:** Node.js v22.16.0, `node --test tests/wishlist-move-regression.test.cjs`; 7 bestanden, 0 fehlgeschlagen, ca. 99 ms. Isolierte Tests für Schreibfehler vor/nach Teiländerung, Kontextwechsel, vorläufige Ergebnisse, überlappende Sammelzähler und keine automatischen Retries.
+- **Provenienz-Einschränkung:** Da der direkte Download von GitHub in die lokale Laufzeit an DNS-Auflösung scheiterte, wurden die über den GitHub-Connector abgerufenen Testinhalte und benötigten Hilfsfunktionen lokal rekonstruiert und ausgeführt. Dies ist kein vollständiger Checkout und kein vollständiger Testlauf des veröffentlichten Repositories; ein CI-Lauf auf GitHub bleibt ausstehend.
+- **Dashboard-Integrationsprüfung (statisch):** Der GitHub-Stand von `lists-dashboard.mjs` importiert `bulkMoveRefreshStatus`, `moveFailureState` und `bulkMoveCounts` und ruft sie in Sammel-/Einzelverschiebungswegen auf. Ein authentifizierter Browser-/DOM-E2E-Test wurde nicht ausgeführt.
+- **Fehlerbefund:** Die sieben isolierten Prüfungen lieferten keinen reproduzierten Fehler; daher keine unbewiesene Produktivcode-Korrektur vorgenommen.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten geändert, keine Datenbank-Testdaten angelegt, kein Merge und kein Deployment.
+
 ## Entwicklungsfortschritt – 11.11.2026 (isolierte Regressionstests)
 
 - Neue Node-Testdatei: `tests/wishlist-move-regression.test.cjs` mit sieben isolierten Tests zu Fehlern vor/nach Schreibbeginn, Kontextwechsel, vorläufigen Sammelergebnissen, überlappenden Zählern, ungültiger Fortschrittsanzeige und fehlenden automatischen Wiederholungen.
