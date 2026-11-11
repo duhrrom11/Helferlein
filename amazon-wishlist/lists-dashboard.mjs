@@ -424,7 +424,7 @@ actions.append(button('Duplizieren',async()=>{
       }
       const tags=document.createElement('div');tags.className='wish-product-extras';
       const values=[];
-      if(Number.isFinite(extras.price)&&extras.price>=0)values.push('🎯 '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(extras.price));
+      if(extras.price!==null&&extras.price!==undefined&&extras.price!==''&&Number.isFinite(Number(extras.price))&&Number(extras.price)>=0)values.push('🎯 '+new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(Number(extras.price)));
       if(Number.isInteger(extras.quantity)&&extras.quantity>1)values.push('× '+extras.quantity);
       if(extras.status==='planned')values.push('📌 Geplant');
       if(extras.status==='fulfilled')values.push('✓ Erfüllt');
