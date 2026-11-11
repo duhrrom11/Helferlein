@@ -17,3 +17,12 @@ test('cloud extras do not silently replace existing records',()=>{
 test('cloud feedback is announced accessibly',()=>{
  assert.match(html,/id="wishExtrasCloudFeedback" role="status" aria-live="polite"/);
 });
+
+test('updates require confirmation and exact stored version',()=>{
+ assert.match(html,/id="updateWishExtrasCloud"[^>]*hidden/);
+ assert.match(app,/\$\('updateWishExtrasCloud'\)\.onclick=run\(async/);
+ assert.match(app,/if\(!confirm\(details/);
+ assert.match(app,/\.eq\('updated_at',old\.updated_at\)\.select\('wish_id'\)/);
+ assert.match(app,/changed\.data\?\.length!==1/);
+ assert.doesNotMatch(app,/from\('wishlist_wish_extras'\)\.upsert\(/);
+});
