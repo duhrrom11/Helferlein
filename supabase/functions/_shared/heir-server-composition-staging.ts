@@ -7,7 +7,8 @@
 import { createHeirStagingBackend, type SqlBackend } from './heir-staging-backend.ts';
 import { createHeirKeyProofStaging } from './heir-key-proof-staging.ts';
 import { createHeirReleaseStaging } from './heir-release-staging.ts';
-import { createHeirActiveSessionVerifier, type SessionAwareAuthProvider } from './heir-active-session-staging.ts';
+import { createHeirActiveSessionVerifier, resolveHeirVerifiedSession, type SessionAwareAuthProvider } from './heir-active-session-staging.ts';
+import { createHeirSessionBoundDatabase } from './heir-session-bound-db-staging.ts';
 import { createHeirPgAdmission, type TrustedIngressIdentity } from './heir-http-rate-limit-staging.ts';
 import { createHeirHttpStaging } from './heir-http-staging.ts';
 
@@ -33,26 +34,34 @@ export function composeHeirServerStaging(deps: HeirServerStagingDependencies):
     throw new Error('heir_server_unconfigured');
   }
   const verifyUser = createHeirActiveSessionVerifier(deps.database, deps.supabaseAuth);
-  const invitations = createHeirStagingBackend(deps.database, verifyUser);
-  const keys = createHeirKeyProofStaging(deps.database, verifyUser);
-  const release = createHeirReleaseStaging(deps.database, verifyUser);
   const admission = createHeirPgAdmission(deps.database, deps.trustedIngress);
 
   return createHeirHttpStaging({
     verifyUser,
     admission,
     allowedOrigins: deps.allowedOrigins,
-    services: {
-      createInvitation: (auth, body) => invitations.createInvitation(auth, body),
-      redeemInvitation: (auth, body) => invitations.redeemInvitation(auth, body),
-      listInvitations: (auth, body) => invitations.listInvitations(auth, body),
-      revokeInvitation: (auth, body) => invitations.revokeInvitation(auth, body),
-      putEnvelope: (auth, body) => invitations.putEnvelope(auth, body),
-      beginEnrollment: (auth, body) => keys.beginEnrollment(auth, body),
-      confirmEnrollment: (auth, body) => keys.confirmEnrollment(auth, body),
-      raiseAlarm: (auth, body) => release.raiseAlarm(auth, body),
-      cancelAlarm: (auth, body) => release.cancelAlarm(auth, body),
-      reviewStatus: (auth, body) => release.reviewStatus(auth, body),
+    async createServices(auth, userId) {
+      // Per-request, never a process-global auth/session mutable variable.
+      const session=await resolveHeirVerifiedSession(deps.supabaseAuth,auth);
+      if(!session || session.userId!==userId)throw Error('session_scope_denied');
+      // All domain SQL (including owner row locks and mutations) now happens
+      // with a pinned auth.sessions row until that transaction commits.
+      const guarded=createHeirSessionBoundDatabase(deps.database,session);
+      const invitations=createHeirStagingBackend(guarded,verifyUser);
+      const keys=createHeirKeyProofStaging(guarded,verifyUser);
+      const release=createHeirReleaseStaging(guarded,verifyUser);
+      return {
+        createInvitation: (header, body) => invitations.createInvitation(header,body),
+        redeemInvitation: (header, body) => invitations.redeemInvitation(header,body),
+        listInvitations: (header, body) => invitations.listInvitations(header,body),
+        revokeInvitation: (header, body) => invitations.revokeInvitation(header,body),
+        putEnvelope: (header, body) => invitations.putEnvelope(header,body),
+        beginEnrollment: (header, body) => keys.beginEnrollment(header,body),
+        confirmEnrollment: (header, body) => keys.confirmEnrollment(header,body),
+        raiseAlarm: (header, body) => release.raiseAlarm(header,body),
+        cancelAlarm: (header, body) => release.cancelAlarm(header,body),
+        reviewStatus: (header, body) => release.reviewStatus(header,body),
+      };
     },
   });
 }

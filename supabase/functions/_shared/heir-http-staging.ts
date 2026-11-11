@@ -47,7 +47,9 @@ export interface HeirHttpConfig {
   allowedOrigins: readonly string[];
   verifyUser: VerifyUser;
   admission: HeirHttpAdmission;
-  services: HeirHttpServices;
+  services?: HeirHttpServices;
+  /** Called AFTER rate limiting, verified identity and payload validation. */
+  createServices?: (auth: string, userId: string) => Promise<HeirHttpServices>;
 }
 
 function cleanOrigin(input: string): boolean {
@@ -109,7 +111,8 @@ export function createHeirHttpStaging(config: HeirHttpConfig): (request: Request
       config.allowedOrigins.some(origin => !cleanOrigin(origin)) ||
       typeof config.verifyUser !== 'function' || !config.admission ||
       typeof config.admission.preAuth !== 'function' || typeof config.admission.user !== 'function' ||
-      !config.services || Object.values(config.services).some(fn => typeof fn !== 'function')) {
+      (!config.services && typeof config.createServices !== 'function') ||
+      (config.services && Object.values(config.services).some(fn => typeof fn !== 'function'))) {
     throw new Error('heir_http_unconfigured');
   }
   const allowed = new Set(config.allowedOrigins);
@@ -150,7 +153,9 @@ export function createHeirHttpStaging(config: HeirHttpConfig): (request: Request
       if (await config.admission.user(userId, route) !== true) return json(429, { ok: false }, origin);
       const body = await readSmallJson(request);
       if (!body || !exactShape(body, routes[route])) return json(400, { ok: false }, origin);
-      const ops = config.services;
+      const ops = config.createServices
+        ? await config.createServices(auth, userId) : config.services!;
+      if(!ops || Object.values(ops).some(fn=>typeof fn!=='function')) return json(403,{ok:false},origin);
       // No endpoint returns a plaintext master key, DEK, encrypted snapshot, or released envelope.
       let result: ServiceResult;
       switch (route) {

@@ -6,8 +6,9 @@ END $$;
 CREATE ROLE heir_ci_backend LOGIN PASSWORD 'test-server-role-local-only' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
 GRANT USAGE ON SCHEMA heir_private TO heir_ci_backend;
 GRANT USAGE ON SCHEMA auth TO heir_ci_backend;
-GRANT SELECT(id,user_id) ON auth.sessions TO heir_ci_backend;
-CREATE POLICY heir_ci_active_sessions ON auth.sessions FOR SELECT TO heir_ci_backend USING (true);
+-- Do not grant direct access to Supabase-managed auth.sessions.
+-- Only this reviewed helper can obtain the row lock.
+GRANT EXECUTE ON FUNCTION heir_private.heir_lock_active_session(uuid,uuid) TO heir_ci_backend;
 -- Explicit allowlist; future private tables do not silently inherit grants.
 GRANT SELECT,INSERT,UPDATE ON
   heir_private.heir_invitations,

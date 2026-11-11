@@ -13,11 +13,14 @@ on:
       - 'tests/security/heir-owner-*.py'
       - 'assets/heir-owner-invitations-*.js'
       - 'assets/heir-owner-session-staging.js'
+      - 'assets/heir-owner-legacy.js'
+      - 'assets/heir-owner-legacy.css'
       - 'tools/digitaler-nachlass/index.html'
       - 'tests/security/heir-indexeddb-real-browser.py'
       - 'docs/sql-drafts/heir_private_backend_REVIEW_ONLY.sql'
       - 'docs/sql-drafts/heir_key_release_REVIEW_ONLY.sql'
       - 'docs/sql-drafts/heir_http_limits_REVIEW_ONLY.sql'
+      - 'docs/sql-drafts/heir_session_lock_REVIEW_ONLY.sql'
       - 'supabase/functions/_shared/heir-*.ts'
       - 'tests/security/heir-pg17-restricted-role.sql'
       - 'tests/security/heir-pg17-service-integration.mjs'
@@ -63,6 +66,7 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f docs/sql-drafts/heir_private_backend_REVIEW_ONLY.sql
           psql -X -v ON_ERROR_STOP=1 -f docs/sql-drafts/heir_key_release_REVIEW_ONLY.sql
           psql -X -v ON_ERROR_STOP=1 -f docs/sql-drafts/heir_http_limits_REVIEW_ONLY.sql
+          psql -X -v ON_ERROR_STOP=1 -f docs/sql-drafts/heir_session_lock_REVIEW_ONLY.sql
       - name: Run two independent PostgreSQL 17 sessions, actual grants and races
         run: python tests/security/heir-pg17-two-session.py
       - name: Prepare restricted server principal for real adapter tests

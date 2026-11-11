@@ -15,7 +15,7 @@ function sandbox() {
         const tx = {
           async one(sql, args) {
             if (sql.includes('heir_http_limits')) { calls.rate++; return { hits: 1 }; }
-            if (sql.includes('FROM auth.sessions')) { calls.sessions++; return { exists: true }; }
+            if (sql.includes('heir_lock_active_session')) { calls.sessions++; return { active: true }; }
             if (sql.includes('public.vault_cloud_snapshots')) {
               return args[0] === OWNER ? { vault_id: VAULT } : null;
             }
