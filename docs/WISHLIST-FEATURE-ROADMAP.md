@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Fehlgeschlagene Layout-Speicherung erhält die Vorschau)
+
+- **Vorschau-Bestätigung und Race Condition:** `homeConfirmPreview` in `gift-start.mjs` rief bisher `endPreview(false)` vor der asynchronen `saveLayoutChange`-Operation auf. Bei einem Speicherfehler waren die Vorschau und ihr Ziel damit verloren, obwohl der neue Layoutzustand nicht dauerhaft übernommen worden war. `saveLayoutChange` meldet den Erfolg jetzt als boolesches Ergebnis an den Aufrufer; die Vorschau wird erst nach bestätigtem Erfolg durch `endPreview(false)` beendet. Bei einem Fehler bleiben die Vorschau samt Bedienelementen für einen neuen Bestätigungsversuch verfügbar.
+- **Status und Fokus:** Bei fehlgeschlagenem Speichern einer aktiven Vorschau meldet die bestehende `homeLayoutStatus`-Live-Region ausdrücklich, dass die Vorschau geöffnet bleibt. Die vorhandene Fokusführung auf die Statusregion bleibt erhalten. Sonstige Layout-Speicherpfade nutzen weiterhin die bestehende Funktion und ihre Statusmeldungen.
+- **Prüfung:** Nach Veröffentlichung aktuelle `gift-start.mjs`, unveränderte `lists-dashboard.mjs` und `index.html` erneut aus GitHub abgerufen. Beide Module sowie zehn Inline-JavaScript-Blöcke isoliert syntaktisch ohne Fehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test mit simuliertem Speicherausfall bleibt offen.
+- **Produktionsschutz:** Nur clientseitiger Abschlusszeitpunkt der Vorschau und Rückmeldung geändert. Keine Supabase-Connectoraufrufe, Migrationen, produktiven Datenänderungen oder Testdaten.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschau gegen laufende Speicheraktionen abgesichert)
 
 - **Vorschau während laufender Speicherung:** Die vorherige `settingsSaveBusy`-Sperre verhinderte parallele Schreibvorgänge, aber `showPreview` prüfte nur `layoutBusy`. Während reguläre Dashboard-Einstellungen gespeichert wurden, konnte die Vorschau weiterhin den lokalen `preferences`- und Formularzustand neu zeichnen. Jetzt prüft `showPreview` vor Änderungen beide Busy-Zustände und meldet den laufenden Speichervorgang über `homeLayoutStatus`.
