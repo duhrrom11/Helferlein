@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (offene Wunschdetails: Kategorie-Synchronisierung)
+
+- **Nachgewiesener veralteter Dialogzustand:** Der `storage`-Listener aktualisierte `wishCategories` und die Wunschkarten, ließ aber das Kategorie-Auswahlfeld eines bereits geöffneten Wunschdetaildialogs unverändert. Änderungen aus anderen Tabs waren im offenen Formular daher nicht sichtbar.
+- **Korrektur:** Vor der Aktualisierung wird geprüft, ob das Kategorie-Auswahlfeld noch dem bisher angezeigten Wert entspricht. Nur bei unveränderter Auswahl wird es nach dem erneuten Einlesen aus `localStorage` auf den aktuellen Wert gesetzt. Bereits im Dialog vorgenommene, ungespeicherte Auswahländerungen werden nicht überschrieben. Code: `427b762a66d5d1cd02f8a8b0319037fac2038841`.
+- **Grenzen:** Konflikte bei gleichzeitigen Änderungen derselben Kategorie können weiterhin eine spätere Speicherung des aktuellen Tabs bevorzugen. Kontowechsel und Dialog-Races benötigen weitere Prüfung. Statische Quellcodeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Tab-Synchronisierung lokaler Wunschlisten-Daten)
 
 - **Nachgewiesene veraltete Ansichten:** Favoriten, Kategorien und Markierungen wurden in der Listenverwaltung beim Laden aus `localStorage` übernommen, Änderungen anderer bereits geöffneter Browser-Tabs lösten jedoch keine Aktualisierung der laufenden Ansicht aus.
