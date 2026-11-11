@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: nicht abgeschlossene Wünsche im Status zählen)
+
+- **Nachgewiesener Fehlerpfad:** Die Abschlussmeldung von `moveSelectedWishes()` nannte bei `stopped` nur `Vorgang gestoppt`, ohne die Anzahl der noch nicht abgeschlossenen Wünsche auszuweisen. Zudem wurde jeder `partial`-Fall als `nach Unterbrechung unklar` bezeichnet, obwohl auch parallele Löschungen und Fehler nach begonnenen Schreiboperationen diese Fälle erzeugen.
+- **Korrektur:** Bei gestoppten Läufen nennt die Meldung nun `targets.length-moved-failed` nicht abgeschlossene Wünsche. `partial` wird neutral als `Zuordnungsstände unklar` ausgewiesen. Code: `56075360794e74e9e9a4da10ee8ada3038f4f719`.
+- **Grenzen:** Die Zählung ist eine UI-Zusammenfassung des beobachteten Laufes, kein atomarer Datenbank-Snapshot. Parallele Änderungen bleiben möglich; kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: Kontextwechsel-Warnung absichern)
 
 - **Nachgewiesener Fehlerpfad:** Nach dem Ziel-INSERT und einem ungültigen Kontext zeigte `moveSelectedWishes()` eine Warnung bereits bei passender Benutzer-ID. Ein überholter Lauf konnte dadurch Rückmeldungen in einen neueren Listenstand schreiben. Die Aussage, die Ursprungsliste sei nicht verändert worden, berücksichtigte parallele Änderungen anderer Tabs nicht.
