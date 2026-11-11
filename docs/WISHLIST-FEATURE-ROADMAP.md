@@ -1,3 +1,919 @@
+## Entwicklungsfortschritt – 11.11.2026 (Export-/Backup-Drafts konsolidiert)
+
+- Führender PR: #267; ersetzt die überlappenden Entwürfe #262, #264, #265, #266 und #268. Branch auf main `e1aa697619d00cbd7819a03ad6d6b5350da139f5` aktualisiert.
+- Gemeinsame CSV-/JSON-Exportprüfung: ungültige Texttypen ablehnen, Titel/Notizen normalisieren und Eingaben unverändert lassen. Fehlende und `null`-Notizen bleiben aus Kompatibilitätsgründen leer; die Backup-Vorschau verlangt weiterhin Strings.
+- Zusammengeführte Regressionen: Profilfeld-Matrix aus #262, Export-Längen und Unverändertheit aus #266, strenge Exporttypen aus #267; exakte UTF-8-Grenze von 2.000.000 Bytes und ein Byte darüber ergänzt. `undefined` bei der optionalen Fortschrittsgesamtzahl wird korrekt wie ein ausgelassener Parameter behandelt.
+- Lokaler vollständiger Wishes-Node-Gate: 103/103 bestanden. GitHub-Actions-Nachweis wird im PR dokumentiert; grüne Browser-Smokes sind kein vollständiger Nachweis aller produktiven RLS-Regeln.
+- Keine Supabase-Zugriffe, Produktivdatenänderungen oder Migrationen. Konsolidierung erfolgt im PR-Branch, ohne main-Merge oder Deployment.
+
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: kein unbestätigter Erfolg nach Kontextwechsel)
+
+- **Nachgewiesener Fehlerpfad:** `moveWishToList()` meldete nach dem INSERT-Versuch bei einem Kontextwechsel `Zielzuordnung gespeichert`, obwohl zu diesem Zeitpunkt noch keine erneute Zielabfrage stattgefunden hatte. Bei parallelen Änderungen konnte die Aussage falsch sein.
+- **Korrektur:** Der Hinweis beschreibt die Zielzuordnung nun als `nicht eindeutig bestätigt` und empfiehlt die Prüfung beider Listen. Die Meldung setzt zusätzlich eine weiterhin passende `loadGeneration` voraus. Code: `dd14d0a12f2d7884e917f77f2116c0838197f3a2`.
+- **Grenzen:** Die Änderung betrifft die UI-Rückmeldung; sie verhindert keine bereits gestartete Datenbankoperation und macht Verschiebungen nicht atomar. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: parallele Ziel-Löschung neu laden)
+
+- **Nachgewiesener Fehlerpfad:** `moveWishToList()` meldete bei fehlender Zielzuordnung vor dem Ursprungs-DELETE pauschal `Ursprungszuordnung bleibt erhalten`, obwohl andere Browser-Tabs diese bereits entfernt haben konnten. Zusätzlich wurde ohne Dashboard-Reload abgebrochen, sodass die Mitgliedschaftsanzeige veraltet bleiben konnte.
+- **Korrektur:** Der Hinweis unterscheidet zwischen der noch nicht ausgeführten Löschung durch diese Aktion und parallelen Fremdänderungen. Der Fehlerpfad lädt die Mitgliedschaften neu und zeigt den Hinweis nur bei weiterhin gültigem Benutzerkonto, ausgewählter Ursprungsliste und Ladegeneration. Code: `8c38b4bab83e61924482731a06474267bf076c53`.
+- **Grenzen:** Keine atomare Transaktion und keine automatische Wiederherstellung. Bereits gestartete Schreiboperationen können nach Kontowechseln abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: Ziel nach Ursprungslöschung erneut bestätigen)
+
+- **Nachgewiesener Fehlerpfad:** `moveWishToList()` bestätigte die Zielzuordnung nur vor dem DELETE der Ursprungszuordnung. Eine parallele Ziel-Löschung zwischen Bestätigung und DELETE konnte eine irreführende Erfolgsmeldung auslösen.
+- **Korrektur:** Nach erfolgreichem Ursprungs-DELETE wird die Zielzuordnung erneut gelesen. Bei fehlender Zielzeile oder Lesefehler erfolgt ein Reload und eine Warnung über den nicht eindeutig bestätigten Zuordnungsstand; regulärer Erfolg setzt bestätigtes Ziel und gültigen Kontext voraus. Warnungen nach Reload sind an dessen `loadGeneration` gebunden. Code: `effce51c4bcb185d738fcbb8bf8db1c496c5d393`.
+- **Grenzen:** Auch diese Leseprüfung ist nicht atomar; nach dem Read sind weitere parallele Änderungen möglich. Bereits gestartete Schreiboperationen können nach Kontowechseln abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: Ziel nach Ursprungslöschung erneut bestätigen)
+
+- **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` prüfte die Zielzuordnung nur vor dem DELETE der Ursprungszuordnung. Ein anderer Tab konnte das Ziel zwischen dieser Prüfung und dem erfolgreichen DELETE entfernen, während die Aktion dennoch `moved++` ausführte und Erfolg meldete.
+- **Korrektur:** Nach erfolgreicher Ursprungslöschung wird die Zielzuordnung erneut gelesen. Nur bei bestätigtem Ziel und weiterhin gültigem Benutzer-/Listen-/Ladekontext wird `moved` erhöht. Bei fehlendem Ziel oder Lesefehler wird der Zustand als fehlgeschlagen/unklar behandelt und die Prüfung beider Listen empfohlen. Code: `2f342ee3c38b07c68a3bde60c2095775552076a2`.
+- **Grenzen:** Die zusätzliche Leseprüfung ist keine atomare Transaktion; nach dem Read können weitere konkurrierende Änderungen stattfinden. Unterbrechungen nach gestarteten Schreiboperationen bleiben möglich. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: Ursprung bei paralleler Ziel-Löschung nicht als sicher behaupten)
+
+- **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` meldete nach fehlender Zielzuordnung bei der Bestätigungsabfrage pauschal `Ursprungszuordnung bleibt erhalten`. Die Aktion selbst hatte den Ursprung zu diesem Zeitpunkt zwar noch nicht gelöscht, ein anderer Browser-Tab konnte die Ursprungszuordnung aber bereits unabhängig entfernt haben.
+- **Korrektur:** Die Meldung sagt jetzt präzise, dass **diese Aktion** den Ursprung nicht gelöscht hat, verweist auf mögliche parallele Änderungen und fordert zum Neuladen und Prüfen beider Listen auf. Die Meldung wird zusätzlich an `current()` gebunden. Code: `f6895a0735b911a49af5d0da2cebd5c6fb46eca9`.
+- **Grenzen:** Die Änderung verbessert die Fehlerkommunikation und Kontextprüfung, macht zweistufige Verschiebungen aber nicht atomar und stellt unterbrochene Änderungen nicht automatisch wieder her. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: Reload nach parallel entfernter Ursprungsliste)
+
+- **Nachgewiesener Fehlerpfad:** `moveWishToList()` erkannte eine bereits von einem anderen Tab entfernte Ursprungszuordnung anhand eines erfolgreichen DELETE ohne zurückgelieferte Zeile, zeigte aber nur eine Warnung und kehrte ohne Neuladen zurück. Der lokal angezeigte Mitgliedschaftsstand konnte deshalb veraltet bleiben.
+- **Korrektur:** Auch dieser Konfliktpfad startet jetzt `load({afterBulk:true})`. Die Warnmeldung wird nur angezeigt, wenn Benutzerkonto, ausgewählte Ursprungsliste und Ladegeneration nach dem Reload noch übereinstimmen. Code: `c210ac0f716751f5856226d98194fd008a3580bc`.
+- **Grenzen:** Die Korrektur lädt den Listenstand neu, ohne die zweistufige Verschiebung atomar zu machen. Ein Reload-Fehler bleibt im Warnhinweis zur manuellen Prüfung berücksichtigt. Bereits gestartete Datenbankoperationen können nach Kontowechseln abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (unterbrochene Sammelverschiebung: Zuordnungsstand korrekt beschreiben)
+
+- **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` erhöht `partial` sowohl nach Kontextverlust direkt nach der Zielzuordnung als auch nach einer bereits gestarteten Ursprungslöschung. Die Ergebniszusammenfassung bezeichnete alle Fälle als `möglicherweise in beiden Listen`, obwohl nach erfolgreicher Ursprungslöschung gerade keine Doppelzuordnung vorliegen muss.
+- **Korrektur:** Die Zusammenfassung meldet jetzt `Zuordnungsstände nach Unterbrechung unklar – bitte beide Listen prüfen` statt einen bestimmten möglichen Endzustand hervorzuheben. Code: `1e970be74acabc486d29d0c6310f0eb36a801e4a`.
+- **Grenzen:** Nur Korrektur der UI-Aussage; keine automatische Wiederherstellung oder atomare Verschiebung. Bereits gestartete Schreiboperationen können nach Kontowechseln abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: überholte Rückmeldungen nach Reload)
+
+- **Nachgewiesener Fehlerpfad:** `moveWishToList()` zeigte nach `await load({afterBulk:true})` Erfolg bzw. Fehler allein aufgrund von Benutzerkonto und ausgewählter Liste an. Ein paralleler neuer Dashboard-Reload konnte dieselben Werte beibehalten, wodurch die ältere Verschiebung eine überholte Rückmeldung in den neueren UI-Zustand schrieb.
+- **Korrektur:** Der von der Einzelverschiebung gestartete Reload erfasst die `loadGeneration`. Erfolg wird nur bei weiterhin passender Generation und vollständigen Mitgliedschaftsdaten (`membershipReady`) angezeigt; die Ladefehler- und Teilfehlerwarnung sind ebenfalls an die Generation gebunden. Code: `7c246421add897e5830831ab88b2f4c523898619`.
+- **Grenzen:** Die Verschiebung bleibt zweistufig und nicht atomar. Konkurrierende Änderungen zwischen Zielbestätigung und Ursprungs-Löschung sowie bereits gestartete Schreiboperationen beim Kontowechsel werden dadurch nicht rückgängig gemacht. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (veraltete Erfolgsmeldung nach Sammelverschiebung)
+
+- **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` veröffentlichte die Zusammenfassung nach `await load({afterBulk:true})` allein anhand von Benutzerkonto, ausgewählter Liste und `bulkRunId`. Ein zwischenzeitlicher zweiter Dashboard-Reload konnte dieselben Werte behalten und die ältere Zusammenfassung nachträglich in den neuen UI-Zustand schreiben.
+- **Korrektur:** Der von der Verschiebung ausgelöste Reload erfasst seine `loadGeneration`. Erfolg wird nur bei weiterhin passender Generation und `membershipReady` angezeigt; auch die Fehleranzeige ist an die Generation gebunden. Code: `f13bcacf5183674e61a164c89626daff9dee1b64`.
+- **Grenzen:** Die Korrektur verhindert veraltete UI-Rückmeldungen, nicht bereits gestartete Schreiboperationen oder konkurrierende Änderungen zwischen Zielbestätigung und Ursprungs-Löschung. Keine authentifizierten Browser-E2E-Tests ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (tabübergreifende Sammelkonflikte verständlich melden)
+
+- **Nachgewiesener Fehlerpfad:** `applyBulk()` gibt bei bereits parallel entfernter Mitgliedschaft einen spezifischen Fehlertext zurück, während `bulkErrorHint()` ihn bislang nur als generisches `Änderung fehlgeschlagen` zusammenfasste. Auch der neu eingeführte Konflikthinweis bei parallelem Hinzufügen erhielt keine eigene Klassifizierung.
+- **Korrektur:** `bulkErrorHint()` unterscheidet jetzt beide Konfliktfälle ausdrücklich und empfiehlt das Aktualisieren der Liste. Code: `d29c9fe017577798011328f53ac454520a13e4bd`.
+- **Grenzen:** Die Klassifizierung verbessert nur die Fehleranzeige, nicht die Atomarität der Datenbankoperationen. Bereits gestartete Schreiboperationen können nach Kontowechseln noch abgeschlossen werden. Keine authentifizierten Browser-E2E-Tests ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (verbleibende Sammelziele erst nach Reload auswählen)
+
+- **Nachgewiesener Fehlerpfad:** Der Ergebnis-Button `bulkSelectRemaining` verwendete lokal zwischengespeicherte `assignedIds`, um zuvor nicht bearbeitete Wünsche erneut auszuwählen. Änderungen in einem anderen Browser-Tab seit dem letzten Dashboard-Laden konnten dadurch übersehen werden.
+- **Korrektur:** Der Button lädt die Listenzuordnungen jetzt vor der Auswahl neu und prüft danach Benutzerkonto, Listenauswahl, vollständige Mitgliedschaftsdaten und erwartete Ladegeneration. Nur Wünsche, deren aktueller lokaler Stand nach dem Reload zur gewünschten Aktion passt, werden ausgewählt. Code: `9d025a2c701114edc29a74151d3194ff1ae288ee`.
+- **Grenzen:** Das Neuladen schließt die vorherige Ergebnisübersicht und verwirft die bisherige Sammelauswahl. Die Aktion ist nicht atomar gegenüber weiteren Tab-Änderungen. Bereits gestartete Schreiboperationen können nach einem Kontowechsel noch abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Ergebnisübersicht: Wiederholungen nach Daten-Reload)
+
+- **Nachgewiesener Fehlerpfad:** `bulkResumeRemaining` und `bulkRetryFailed` bereiteten erneute Sammelaktionen direkt anhand lokal zwischengespeicherter `assignedIds` vor. Änderungen anderer Browser-Tabs seit dem letzten Dashboard-Reload wurden dadurch bei der Wiederholung nicht berücksichtigt.
+- **Korrektur:** Gemeinsamer asynchroner Wiederholungsweg `retryBulkResult(kind)`: Aktuelle Listen und Mitgliedschaften werden zunächst mit `load()` neu geladen. Die Wiederholung wird nur vorbereitet, wenn Benutzerkonto, ausgewählte Liste, vollständiger Mitgliedschaftsstand und erwartete Ladegeneration anschließend weiterhin passen. Code: `074cd1f0e8a2636b6d942ea2b53b97ab4cd70cae`.
+- **Grenzen:** Das Neuladen verwirft die vorherige Ergebnisübersicht; die Ziel-IDs werden für den einmaligen Wiederholungsversuch lokal festgehalten. Ein anderer Tab kann unmittelbar nach dem Reload erneut Änderungen vornehmen. Bereits gestartete Datenbankoperationen lassen sich beim Kontowechsel nicht automatisch zurückrollen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (historische Sammelaktionen vor Wiederholung aktualisieren)
+
+- **Nachgewiesener Fehlerpfad:** Der Verlaufsbutton `Offene Änderungen prüfen` rief `prepareBulk()` anhand des lokal zwischengespeicherten `assignedIds` auf. Parallele Änderungen an `wishlist_list_items` aus anderen Tabs seit dem letzten Laden konnten deshalb bei der Vorbereitung fehlen.
+- **Korrektur:** Bei bereits geöffneter Zielliste wird vor der Wiederholung `load()` abgewartet. Danach müssen Benutzerkonto, Verlaufszugehörigkeit, Listenauswahl, `membershipReady` und exakt die erwartete neue Ladegeneration weiterhin passen. Nur dann wird die Sammelaktion anhand der neu geladenen Mitgliedschaften vorbereitet. Code: `7449cfa213ad3227a9d41103d7c7a2ded85da540`.
+- **Grenzen:** Die Prüfung ist nicht atomar mit der späteren Schreiboperation; andere Tabs können unmittelbar danach erneut ändern. Bei Wechsel der ausgewählten Liste wird zunächst nur diese Liste geöffnet, ohne die Aktion sofort vorzubereiten. Bereits gestartete Datenbankoperationen werden bei Kontowechseln nicht zurückgerollt. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (parallele Sammelzuordnungen und Unique-Konflikte)
+
+- **Nachgewiesener Fehlerpfad:** Bei `applyBulk()` wurde ein PostgreSQL-Unique-Konflikt `23505` während des Hinzufügens von Listenzuordnungen als `{error:null}` zurückgegeben. Der Sammelaktionszähler konnte den kollidierten Schreibversuch daher als eigenen Erfolg ausweisen, obwohl ein anderer Tab die Zuordnung bereits angelegt hatte.
+- **Korrektur:** Die Sammelzuordnung meldet `23505` jetzt als Konflikt mit Hinweis auf Neuladen der Liste. Der Schritt wird im Sammelaktions-Ergebnis nicht als erfolgreiche neue Zuordnung gezählt. Code: `f8db0dbf983ea9e1753a303395bfb8c27ef36bf1`.
+- **Grenzen:** Die Behandlung setzt voraus, dass `23505` einen Zuordnungskonflikt betrifft; der Code ermittelt den konkreten Constraint nicht. Tabübergreifende Aktionen bleiben ohne gemeinsame Sperre, und bereits gestartete Schreiboperationen können nach Kontowechseln abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (historische Sammelaktions-Ergebnisse klar kennzeichnen)
+
+- **Nachgewiesene Irreführungsgefahr:** Im Sammelaktions-Verlauf standen `erfolgreich` und `offen` ohne zeitliche Einordnung. Nach parallelen Zuordnungsänderungen in anderen Tabs konnten historische Zähler als aktueller Mitgliedschaftsstatus missverstanden werden.
+- **Korrektur:** Verlaufseinträge kennzeichnen Erfolgszahlen ausdrücklich als damalige Ergebnisse, nennen unbearbeitete Aktionen `nicht bearbeitet` und ergänzen den Hinweis `kein aktueller Listenstatus`. Code: `18ebc2ddca9984b8de0ac7352dcfa9c3e747e3e7`.
+- **Grenzen:** Diese Änderung ist eine Klarstellung der Anzeige, keine technische Synchronisierung zwischen Tabs. Historische Zähler werden nicht rückwirkend aus der Datenbank neu berechnet. Bereits laufende Schreiboperationen bei Kontowechseln und nichtatomare Verschiebungen bleiben offene Risiken. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (veraltete Sammelaktionsmeldungen nach Reload)
+
+- **Nachgewiesener UI-Fehler:** `invalidateMembershipState()` verwarf beim Dashboard-Reload die aktive Sammelauswahl und Ergebnisübersicht, setzte aber `bulkStatus`, `bulkProgressText`, `bulkProgressDetails` und den Fortschrittsbalken nicht zurück. Dadurch konnten Statusinformationen einer alten Sammelaktion auf dem neu geladenen Dashboard verbleiben.
+- **Korrektur:** Die Invalidierung der Mitgliedschaftsdaten leert jetzt diese Status- und Fortschrittsanzeigen und setzt den Balken auf null. Code: `ae68087049aa8e06b8d49d07c86bbe6fc8085d70`.
+- **Grenzen:** Der historische Verlauf bleibt als Verlauf erhalten; seine Erfolgszahlen sind keine Live-Bestätigung aktueller Mitgliedschaften. Parallele Datenbankoperationen verschiedener Tabs werden nicht atomar koordiniert. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (veraltete Sammelaktionsanzeigen beim Kontowechsel)
+
+- **Nachgewiesener UI-Fehler:** `reset()` verwarf beim Kontowechsel Sammelaktions-Verlauf und Ergebnisübersicht, ließ jedoch `bulkStatus`, Fortschrittstexte, Fortschrittsbalken und den Stop-Button unverändert. Alte Statusinformationen konnten dadurch nach dem Sitzungswechsel sichtbar bleiben.
+- **Korrektur:** Der Konto-Reset leert alle genannten Sammelaktions-Statusfelder, setzt den Fortschrittsbalken zurück und deaktiviert die Stopptaste. Bestehende Invalidierung von `bulkRunId` bleibt erhalten. Code: `550c95a9a907a2a92d486841233e0660d41074fc`.
+- **Grenzen:** Die UI-Bereinigung bricht bereits gestartete Datenbankoperationen nicht ab und bietet keine tabübergreifende Transaktionssperre. Parallele Listenzuordnungen und historische Sammelergebnisse müssen weiterhin anhand aktueller Mitgliedschaften geprüft werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (veraltete Sammelergebnisse nach überlappenden Reloads)
+
+- **Nachgewiesener Fehlerpfad:** Nach Abschluss einer Sammelaktion wartete die Ergebnisanzeige auf `load({afterBulk:true})`, prüfte anschließend aber nicht, ob zwischenzeitlich ein neuerer Dashboard-Reload begonnen hatte. Ein älterer Abschluss konnte damit Verlauf und Ergebnisübersicht auf einem neueren oder unvollständigen Listenstand veröffentlichen.
+- **Korrektur:** Die Generation des ausgelösten Reloads wird unmittelbar nach dessen Start festgehalten. Ergebnis und Verlauf erscheinen nur, wenn diese Generation noch aktuell und `membershipReady` wahr ist. Auch Reload-Fehler werden nur für die passende Generation gemeldet. Code: `3649ed1f0ae1b5deb4a1674856194bb31f049258`.
+- **Grenzen:** Die UI-Prüfung verhindert keine parallelen Datenbankänderungen zwischen Tabs und stoppt keine bereits gestarteten Operationen bei Kontowechsel. Ein überholtes Ergebnis wird bewusst nicht in die Ansicht übernommen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Sammelentfernung bei parallelen Tabs)
+
+- **Nachgewiesener Fehlerpfad:** Bei der Sammelaktion „Aus Liste entfernen“ wurde ein DELETE ohne Datenbankfehler als Erfolg gezählt, auch wenn wegen einer parallelen Entfernung in einem anderen Tab keine Zuordnung mehr vorhanden war.
+- **Korrektur:** Die Sammelentfernung fordert per `.select('wish_id')` die tatsächlich gelöschten Zeilen an. Ein DELETE ohne betroffene Zeilen wird als Konflikt mit Hinweis auf Neuladen der Liste erfasst und nicht mehr als erfolgreiche Entfernung gezählt. Code: `d9208c5ea9def31165388e3fd28d1df77d8ef609`.
+- **Grenzen:** Der Konflikt wird erkannt, aber parallele Sammelaktionen bleiben ohne tabübergreifende Sperre bzw. atomare serverseitige Operationen möglich. Bereits gestartete Datenbankoperationen können nach einem Kontowechsel noch abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (veralteter Listen-Update-Abschluss)
+
+- **Nachgewiesener Fehlerpfad:** Der Listeneditor prüfte vor dem UPDATE die Editor-/Dashboard-Generation, nach dem asynchronen UPDATE jedoch nur Benutzer-ID, geladenen Besitzer und Listen-ID. Ein zwischenzeitlicher Reload konnte dadurch trotz veraltetem Kontext noch den normalen Abschluss und weiteren Reload auslösen.
+- **Korrektur:** Unmittelbar nach dem Await werden Konto, geladener Besitzer, Dashboard-Generation, Listen-ID und Editor-Generation gemeinsam geprüft. Veraltete Ergebnisse beenden den UI-Abschluss, bevor Fehlermeldungen, Erfolgsverarbeitung oder Folge-Reload erfolgen. Code: `1d733c02d2880075724f03c9b97282b026902b73`.
+- **Grenzen:** Ein bereits gestartetes Datenbank-UPDATE kann trotz UI-Invalidierung erfolgreich geschrieben worden sein; die Änderung rollt es nicht zurück. Parallele Sammelaktionen über Tabs und nichtatomare Verschiebungen bleiben weitere Prüfbereiche. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listeneditor nach Dashboard-Reload invalidieren)
+
+- **Nachgewiesener Stale-Editor-Pfad:** Der geöffnete Listeneditor hielt Feld-Baselines für optimistische Datenbankkonfliktprüfungen, aber keine Dashboard-Generation. Nach einem Listen-Reload konnte er weiterhin versuchen, mit einem alten UI-Stand zu speichern.
+- **Korrektur:** Beim Öffnen wird `loadGeneration` als `listEditGeneration` erfasst. Vor dem Datenbank-Update wird die Generation erneut geprüft; ein zwischenzeitlicher Reload führt zu einem verständlichen Fehler und fordert zum erneuten Öffnen der Liste auf. Reset und Abbrechen verwerfen die Editor-Generation. Code: `84c54dfe73f32737c87e24bde538f940707d71f2`.
+- **Grenzen:** Auch harmlose Reloads invalidieren den Editor. Bereits laufende Datenbank-Updates werden nicht rückwirkend gestoppt; parallele Sammelaktionen in anderen Tabs bleiben nicht atomar. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebungen und konkurrierende Listenzuordnungen)
+
+- **Nachgewiesener Fehlerpfad:** Die Sammelverschiebung nutzte für die Zielzuordnung nur den lokalen `membershipByList`-Snapshot. Nach parallelem Entfernen der Zielzuordnung konnte sie die Neuanlage überspringen und anschließend die Ursprungszuordnung löschen. Zudem wurde ein DELETE ohne tatsächlich entfernte Zeile als erfolgreiche Verschiebung gezählt.
+- **Korrektur:** Jede Sammelverschiebung liest die Zielzuordnung frisch, behandelt parallele Unique-Konflikte beim Einfügen, bestätigt die Zielmitgliedschaft erneut unmittelbar vor dem Löschen der Ursprungszuordnung und prüft über `.select('wish_id')` die tatsächlich entfernten Zeilen. Nach asynchronen Schritten wird die Konto-/Dashboard-Generation erneut geprüft. Konflikte werden als fehlgeschlagen/teilweise abgeschlossen angezeigt statt als Erfolg. Code: `548473ecf5760cc92111fef1cd269b30fe3783b1`.
+- **Grenzen:** Die einzelnen Datenbankoperationen sind weiterhin nicht atomar. Das Konfliktfenster nach der letzten Zielprüfung bleibt bestehen; für vollständige Sicherheit wäre eine serverseitige Transaktion erforderlich. Weitere parallele Listenbearbeitungen bleiben zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Sammelzuordnungen bei Parallelaktionen)
+
+- **Nachgewiesener Konfliktpfad:** Die Sammelaktion wertete jeden INSERT-Fehler als gescheiterte Zuordnung. Bei parallelen Tabs kann die Zuordnung bereits existieren und ein Unique-Konflikt (`23505`) auftreten, obwohl der gewünschte Mitgliedschaftszustand vorhanden ist.
+- **Korrektur:** Beim Hinzufügen behandelt die Sammelaktion `23505` als bereits vorhandene Zuordnung. Vor jeder einzelnen Schreiboperation prüft sie erneut Konto, geladenen Besitzer, Dashboard-Generation und Sammelaktionskennung. Andere Datenbankfehler bleiben sichtbar. Code: `6f94ece81d996c97f97a938e01550d2e116ace17`.
+- **Grenzen:** Eine bereits gestartete Schreiboperation kann nicht rückwirkend gestoppt werden. Die Behandlung von `23505` setzt voraus, dass der Unique-Konflikt die erwartete Mitgliedschaft betrifft; die konkrete Constraint wurde nicht an der Produktivdatenbank geprüft. Weitere konkurrierende Listenbearbeitungen und atomare Wunsch-Verschiebungen bleiben offen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (doppelte Listenzuordnung und Kontowechsel während Insert)
+
+- **Nachgewiesene Fehlerpfade:** `assignWish` prüfte den aktiven Benutzer nur vor dem asynchronen INSERT und behandelte auch einen Unique-Konflikt für eine bereits bestehende Zuordnung als Fehler. Nach einem Kontowechsel während des INSERT fehlte die erneute Sitzungsprüfung.
+- **Korrektur:** Nach dem INSERT wird die aktuelle Konto-ID erneut mit dem gestarteten Eigentümer verglichen. Bei Wechsel wird eine aussagekräftige Fehlermeldung mit Prüfhilfe ausgegeben. PostgreSQL-Unique-Konflikte (`23505`) werden als idempotente, bereits bestehende Zuordnung behandelt; andere Datenbankfehler werden weitergeworfen. Code: `a151076ada0a888d35ddc0d8b7a757562ad4b183`.
+- **Grenzen:** Eine bereits gestartete Datenbankoperation wird durch die nachträgliche Kontoprüfung nicht abgebrochen oder zurückgerollt. `23505` wird unter der Annahme der erwarteten Eindeutigkeit der Zuordnung behandelt; die konkrete Constraint-Zuordnung wurde nicht live verifiziert. Nichtatomare Verschiebungen und weitere parallele Listenaktionen bleiben zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (parallele Quellenlöschung beim Verschieben erkennen)
+
+- **Nachgewiesener Konfliktpfad:** Die Quellenlöschung beim zweistufigen Wunsch-Verschieben wertete nur `error` aus. Wenn die Ursprungszuordnung bereits durch einen anderen Tab entfernt worden war, konnte ein erfolgreiches DELETE mit null betroffenen Zeilen als regulär abgeschlossene Verschiebung gemeldet werden.
+- **Korrektur:** Die DELETE-Abfrage fordert mit `.select('wish_id')` die tatsächlich entfernten Zeilen zurück. Bei null Zeilen wird ein Konflikthinweis statt der Erfolgsmeldung ausgegeben. Nach dem Await wird zudem die aktuelle Konto-/Dashboard-Generation erneut geprüft. Code: `1ddddd1d6f2dcb7959826cfe9064904578213a3c`.
+- **Grenzen:** Das Verfahren erkennt diesen Konflikt, verhindert aber nicht sämtliche zwischenzeitlichen Änderungen oder Datenverluste ohne serverseitig atomare Verschiebung. Bereits gestartete Schreiboperationen sind clientseitig nicht rückwirkend abbrechbar. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (offene Wunsch-Editoren nach Feed-Reload)
+
+- **Nachgewiesener Stale-Editor-Pfad:** Die Feed-Generation wurde bisher nur beim Öffnen aus einer Wunschkarte geprüft. Ein bereits geöffneter Editor konnte nach einem späteren Feed-Reload weiter speichern, ohne den veralteten UI-Stand zu erkennen.
+- **Korrektur:** Der Editor speichert die Feed-Generation beim Öffnen. Vor dem Update eines bestehenden Wunsches wird sie mit `feedRevision` verglichen; bei Abweichung wird die Speicherung abgebrochen und zum erneuten Öffnen aus dem aktuellen Feed aufgefordert. Der Editor-Reset verwirft die gespeicherte Generation. Code: `bb841d6edec2488b860753fbcabe6f9b31a16a65`.
+- **Grenzen:** Auch harmlose Feed-Reloads invalidieren den Editor (bewusst konservativ). Bereits laufende Schreiboperationen sind dadurch nicht rückwirkend abbrechbar. Wunsch-Verschiebungen bleiben ohne serverseitige Transaktion nicht atomar. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (veraltete Feed-Karten vor Editoröffnung abweisen)
+
+- **Nachgewiesener Stale-UI-Pfad:** Die Bearbeiten-Aktion einer gerenderten Wunschkarte übernahm Daten aus dem ursprünglichen Feed-Resultat, ohne vor dem Öffnen die aktuelle Feed-Generation oder das aktive Konto erneut zu prüfen. Während eines Feed-Reloads bzw. Kontowechsels konnte die alte Karte noch angeklickt werden.
+- **Korrektur:** Der Klick-Handler vergleicht vor dem Öffnen `revision` mit `feedRevision` und die Konto-ID mit `w.user_id`. Bei veraltetem Stand wird kein Editor geöffnet und stattdessen ein Hinweis angezeigt. Code: `a2d3aecff771e7e52665a8deb6e97109900fe7e3`.
+- **Grenzen:** Bereits geöffnete Editoren und Konflikte während laufender Schreiboperationen bleiben durch gesonderte Baseline-Prüfungen bzw. serverseitige Transaktionen abzusichern. Verschieben von Wünschen bleibt zweistufig und nicht atomar. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Zielzuordnung unmittelbar vor Quellenlöschung prüfen)
+
+- **Nachgewiesenes Race-Fenster:** Nach dem Lesen beziehungsweise Anlegen der Zielzuordnung konnte ein anderer Tab die Zielzuordnung entfernen, bevor die Ursprungszuordnung gelöscht wurde. Die bestehende Verschiebelogik prüfte den Zielzustand an dieser Stelle nicht erneut.
+- **Korrektur:** Unmittelbar vor dem Löschen der Ursprungszuordnung erfolgt eine erneute Datenbankabfrage der Zielmitgliedschaft. Bei inzwischen fehlender Zielzuordnung wird die Quellenlöschung nicht gestartet und ein Konflikthinweis angezeigt; die Konto- und Dashboard-Generation wird nach dem Await erneut geprüft. Code: `9ba5fe76ae2ebb87b3b44e623ec43a9adab5b4da`.
+- **Grenzen:** Der Vorgang ist weiterhin nicht atomar: Änderungen zwischen letzter Zielprüfung und Quellenlöschung sind möglich. Offene Wunsch-Editoren nach Feed-Reloads und weitere parallele Operationen bleiben gesondert zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Zielzuordnung beim Verschieben frisch prüfen)
+
+- **Nachgewiesener Stale-Membership-Pfad:** Beim Verschieben eines Wunsches entschied ausschließlich `membershipByList` aus dem letzten Dashboard-Reload, ob die Zielzuordnung bereits bestand. Wurde sie zwischenzeitlich in einem anderen Tab entfernt, konnte das Verschieben die Neuanlage überspringen und danach die Ursprungszuordnung löschen.
+- **Korrektur:** Vor dem Entfernen der Ursprungszuordnung wird die Zielmitgliedschaft frisch über `wishlist_list_items` gelesen. Nach der Abfrage wird die aktuelle Konto-/Dashboard-Generation geprüft; bei fehlender Mitgliedschaft wird eingefügt. Ein paralleler Unique-Konflikt (Postgres `23505`) beim Insert wird als bereits bestehende Zielzuordnung behandelt. Code: `25f86a9e8d019120f4c18314fb1ee5dc3d32143c`, Korrektur `4f9808720f35e493dc30758edefc1fafea823b69`.
+- **Grenzen:** Zwischen Zielprüfung bzw. Insert und dem Löschen der Ursprungszuordnung bleibt ein nichtatomarer Zeitraum. Eine vollständig transaktionale Verschiebeoperation benötigt serverseitige Absicherung. Feed-/Editor-Reload-Races bleiben zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Zusatzdaten-Konflikte zwischen Wunsch-Editoren)
+
+- **Nachgewiesener Lost-Update-Pfad:** Der Wunsch-Editor übernahm Zusatzdaten (Produktbild, Preis, Menge, Status) aus `localStorage`, speicherte später aber ohne Vergleich mit zwischenzeitlichen Änderungen aus anderen Tabs.
+- **Korrektur:** Beim Öffnen des Wunsch-Editors wird eine serialisierte Baseline der lokalen Zusatzdaten gespeichert. Vor dem Datenbankupdate eines bestehenden Wunsches wird der aktuelle `localStorage`-Stand mit dieser Baseline verglichen; bei Abweichung wird ein Konflikt gemeldet. Beim Editor-Reset wird die Baseline gelöscht. Code: `7458c2e6f36bed2558a3aa84cc830b9615fea93a`.
+- **Grenzen:** Der Vergleich ist ein Vorabcheck und kein atomarer Compare-and-Swap über mehrere Tabs. Listenzuordnungen und Reload-Konflikte sind weiterhin gesondert zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Konflikterkennung bei paralleler Wunschbearbeitung)
+
+- **Nachgewiesener Lost-Update-Pfad:** Der Wunsch-Editor schrieb `note`, `priority` und `visibility` ohne Abgleich des beim Öffnen geladenen Stands. Parallele Bearbeitungen in zwei Tabs konnten dadurch Änderungen unbemerkt überschreiben.
+- **Korrektur:** Beim Öffnen des Editors wird eine Baseline aus Wunsch-ID, Notiz, Priorität und Sichtbarkeit gespeichert. Der Update-Query vergleicht die ursprünglichen Werte mit `.eq(...)` bzw. `.is(...,null)` und erkennt mit `.select('id')` einen Konflikt oder entfernten Wunsch. Der Editor-Reset verwirft die Baseline. Code: `5e0ea1d41815baddedfb556f567e9993dbdd2784`.
+- **Grenzen:** Der Schutz gilt für diese drei Datenbankfelder; weitere Wunschmetadaten, Listenzuordnungen und Refresh-Races sind gesondert zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Konflikterkennung bei paralleler Listenbearbeitung)
+
+- **Nachgewiesener Lost-Update-Pfad:** Das Bearbeitungsformular schrieb Titel, Beschreibung, Symbol, Farbe, Sichtbarkeit und Titelbild ohne Abgleich des beim Öffnen angezeigten Datenstands. Zwei Tabs konnten so die jeweils anderen Änderungen still überschreiben.
+- **Korrektur:** `openEditor()` merkt sich die sechs ursprünglichen Feldwerte. Der Update-Query vergleicht alle sechs Werte mittels `.eq(...)` bzw. `.is(...,null)` und prüft mit `.select('id')`, ob eine Zeile aktualisiert wurde. Bei abweichendem Stand wird ein Konflikt gemeldet und kein stilles Überschreiben durchgeführt. Baseline wird bei Abbruch und Konto-Reset verworfen. Code: `20ff8877a770cbda583fcbd0d3c936c3fdd70651`.
+- **Grenzen:** Der Konfliktschutz deckt die sechs Editorfelder ab, nicht alle Listen- oder Wunschmutationen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Archivstatus-Konflikte zwischen Tabs)
+
+- **Nachgewiesener Konfliktpfad:** Archivieren/Reaktivieren setzte `wishlist_lists.archived` anhand eines zuvor geladenen Kartenstatus, ohne den ursprünglichen Archivwert in der Datenbankbedingung abzugleichen. Eine parallele Änderung in einem anderen Tab konnte so unbemerkt überschrieben werden.
+- **Korrektur:** Das Update verlangt nun zusätzlich `.eq('archived',list.archived)` und fordert per `.select('id')` die aktualisierten Zeilen an. Bei null Treffern wird ein Konflikthinweis angezeigt. Fehler werden für das noch aktive Ursprungskonto abgefangen. Code: `f11ee0b767368fa2aa64f4c0e6e2254352982dde`.
+- **Grenzen:** Weitere Listenfelder und Wunschänderungen benötigen eigene Konfliktprüfung; keine allgemeine tabübergreifende Sperre. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listenzuordnung vor Insert gegen Kontowechsel absichern)
+
+- **Nachgewiesene Lücke:** `assignWish(wishId,listId,uid)` führte den Insert in `wishlist_list_items` ohne Prüfung der aktuellen Konto-ID aus. Nach einem Kontowechsel zwischen Wunsch-Neuanlage und Listenzuordnung konnte dadurch ein verspäteter Zuordnungsversuch für das ursprüngliche Konto gestartet werden.
+- **Korrektur:** `assignWish` vergleicht vor dem Insert `getUser()?.id` mit der übergebenen ursprünglichen Konto-ID und startet bei Abweichung keine Datenbankoperation. Code: `9c28194d556c391907cebd284662093768da7db8`.
+- **Grenzen:** Bereits gestartete Datenbankoperationen werden nicht abgebrochen. Parallele Listenmutationen, tabübergreifende Konflikte und weitere Speicher-Races bleiben offen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (überholte Speicherabschlüsse nach Kontowechsel)
+
+- **Nachgewiesene Race Condition:** Der gemeinsame `run()`-Wrapper aktivierte `saveWish` im `finally`, wenn die aktuelle Konto-ID der Start-ID entsprach. Nach einem Wechsel A → B → A konnte dadurch ein alter Speichervorgang die Schaltfläche während eines neueren Speichervorgangs vorzeitig aktivieren.
+- **Korrektur:** `wishSaveRunGeneration` wird bei jedem Wunsch-Speicherstart und bei erkanntem Kontowechsel erhöht. Der `finally`-Block darf die Speicherschaltfläche nur bei unveränderter Konto-ID und identischer Generation aktivieren. Code: `23d115547e316e9977efef5a94e1afae36731080`.
+- **Grenzen:** Bereits gestartete Datenbankoperationen werden nicht abgebrochen. Weitere parallele Listenmutationen und Datenbank-Konflikte benötigen Prüfung. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Speichern nach Kontowechsel wieder freigeben)
+
+- **Nachgewiesener UI-Fehler:** Der gemeinsame `run()`-Wrapper deaktiviert während `saveWish` die Speicherschaltfläche. Sein `finally` aktiviert diese bei gewechselter Konto-ID absichtlich nicht mehr. `auth()` setzte zwar den Editor, aber nicht `saveWish.disabled` zurück. Dadurch konnte das neue Konto dauerhaft keine Wünsche speichern.
+- **Korrektur:** Bei erkanntem Kontowechsel aktiviert `auth()` unmittelbar nach `resetWishEditor()` die Schaltfläche `saveWish` wieder. Der alte Speichervorgang bleibt für UI-Rückmeldungen an die ursprüngliche Konto-ID gebunden. Code: `4c64bd2af7c0a0dd7e2f85e93b585b4db3074c79`.
+- **Grenzen:** Bereits laufende Datenbankoperationen werden nicht abgebrochen. Weitere mögliche Parallelitätskonflikte und asynchrone Listenmutationen bleiben zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Kontowechsel während Wunsch-Listenzuordnung)
+
+- **Nachgewiesene Race Condition:** Nach erfolgreicher Wunsch-Neuanlage wurde bei gewählter Zielliste `await dashboard.assignWish(...)` ausgeführt. Danach konnte die Routine ohne erneute Kontoprüfung den Editor zurücksetzen und Folgeaktualisierungen auslösen, obwohl während der asynchronen Listenzuordnung das Konto gewechselt hatte.
+- **Korrektur:** Direkt nach Abschluss der optionalen Listenzuordnung wird `user?.id` erneut mit der ursprünglichen Konto-ID verglichen. Bei Kontowechsel endet der alte Speichervorgang vor Editor-Reset und Folgeaktualisierungen. Code: `1dd4c863111109f90e915d974302b38171684a7c`.
+- **Grenzen:** Bereits bestätigte Datenbankänderungen bleiben bestehen. Gleichzeitige Mutationen und die restlichen Konto-/Auth-Races sind weiter zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Wunsch-Speichern: Folgeaktionen bei Kontowechsel)
+
+- **Nachgewiesener Fehler:** Beim Bearbeiten und Anlegen eines Wunsches erfolgte nach bestätigter Datenbankänderung `await refreshFeed(); await dashboard.refresh();` ohne Kontoprüfung dazwischen. Ein Kontowechsel während der Feed-Aktualisierung konnte so noch eine alte Listenaktualisierung starten und anschließend eine irreführende Fehlermeldung `Sitzung hat sich geändert` auslösen, obwohl die Datenbankänderung bereits abgeschlossen war.
+- **Korrektur:** Beide Speicherpfade prüfen nach `refreshFeed()` und nach `dashboard.refresh()` erneut die ursprüngliche Konto-ID. Bei Kontowechsel werden alte Folgeaktionen und Rückmeldungen ohne irreführende Fehlermeldung beendet. Code: `32595a531b4fd228c17c92ed95c3cf44ca21c24c`.
+- **Grenzen:** Bereits bestätigte Datenbankänderungen bleiben bestehen; nicht alle Zwischenphasen und parallel laufenden Operationen sind damit abgedeckt. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Wunschlöschung bei Kontowechsel)
+
+- **Nachgewiesene irreführende Fehlermeldung:** Die asynchrone Wunschlöschung warf nach erfolgreichem Datenbank-Delete bei einem zwischenzeitlichen Kontowechsel `Sitzung hat sich geändert`. Dadurch konnte eine bereits abgeschlossene Löschung fälschlich als fehlgeschlagen erscheinen.
+- **Korrektur:** Nach bestätigtem Delete wird bei einem Kontowechsel die alte Routine ohne Fehlermeldung beendet. Nach `refreshFeed()` und nach `dashboard.refresh()` wird die Kontozugehörigkeit jeweils erneut geprüft; weitere alte Folgeaktionen und Erfolgsmeldungen entfallen bei Kontowechsel. Code: `1ba85a90a27cd703e543b1ba72f088d5f8df0141`.
+- **Grenzen:** Die bereits gestartete Datenbanklöschung wird nicht abgebrochen. Weitere asynchrone Mutationen und Feed-Races benötigen Prüfung. Statische Codeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (überholte Authentifizierungsereignisse)
+
+- **Nachgewiesene Race Condition:** Der `onAuthStateChange`-Handler rief verzögert `auth()` und anschließend `refreshFeed()` auf. Bei rasch aufeinanderfolgenden Authentifizierungsereignissen konnten ältere Handler trotz neuerer Ereignisse die Feed-Aktualisierung starten oder verspätete Fehlermeldungen ausgeben.
+- **Korrektur:** `authEventGeneration` kennzeichnet den jüngsten Ereignis-Handler. Vor dem asynchronen Aufruf und nach `auth()` werden überholte Handler verworfen; Fehlermeldungen werden nur für den jüngsten Handler angezeigt. Code: `4d0aca79e1320dfa42cd10451940f5c557f1c31e`.
+- **Grenzen:** Bereits laufende Feed- und Datenbankabfragen werden hierdurch nicht aktiv abgebrochen; ihre eigenen Generation- und Konto-Prüfungen bleiben entscheidend. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Wunschdetaildialog bei Neuladen und Kontowechsel)
+
+- **Nachgewiesener veralteter UI-Zustand:** Der Wunschdetaildialog blieb beim Start eines neuen Dashboard-Ladevorgangs geöffnet, obwohl die bisherige Wunsch- und Zuordnungsansicht invalidiert wurde. Die Kategorie-Konflikt-Baseline und Wunschdetail-ID konnten dabei veraltet bleiben.
+- **Korrektur:** `load()` schließt vor der asynchronen Datenabfrage einen offenen Wunschdetaildialog und löscht `detailWishId` sowie `detailCategoryBaseline`. `reset()` bereinigt dieselben Zustände bei der Rücksetzung der Listenverwaltung. Code: `bc9543f6b2570013c14707f176bbc20578873e19`.
+- **Grenzen:** Bereits laufende asynchrone Änderungen und sämtliche Authentifizierungsereignisse sind damit nicht vollständig geprüft; weitere statische und Browser-E2E-Prüfung erforderlich. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Konflikterkennung bei Kategorien in mehreren Tabs)
+
+- **Nachgewiesener Konflikt:** Ein geöffneter Wunschdetaildialog konnte eine im anderen Browser-Tab zwischenzeitlich geänderte Kategorie durch Speichern einer veralteten Auswahl überschreiben.
+- **Korrektur:** Beim Öffnen der Wunschdetails wird die ursprüngliche Kategorie in `detailCategoryBaseline` gespeichert. Bei unverändertem Dialogfeld wird die Baseline durch Storage-Events synchronisiert. `saveCategory()` vergleicht vor dem Schreiben den aktuell gespeicherten Wert mit dieser Baseline; bei Abweichung wird die Änderung mit einem Konflikthinweis abgebrochen. Code: `f2f9624109bc0b1559d63fcde68fd43f14f76d48`.
+- **Grenzen:** Der Vergleich ist keine atomare Cross-Tab-Sperre. Kontowechsel und andere Detaildialog-Aktionen müssen weiter untersucht werden. Statische Quellcodeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (offene Wunschdetails: Kategorie-Synchronisierung)
+
+- **Nachgewiesener veralteter Dialogzustand:** Der `storage`-Listener aktualisierte `wishCategories` und die Wunschkarten, ließ aber das Kategorie-Auswahlfeld eines bereits geöffneten Wunschdetaildialogs unverändert. Änderungen aus anderen Tabs waren im offenen Formular daher nicht sichtbar.
+- **Korrektur:** Vor der Aktualisierung wird geprüft, ob das Kategorie-Auswahlfeld noch dem bisher angezeigten Wert entspricht. Nur bei unveränderter Auswahl wird es nach dem erneuten Einlesen aus `localStorage` auf den aktuellen Wert gesetzt. Bereits im Dialog vorgenommene, ungespeicherte Auswahländerungen werden nicht überschrieben. Code: `427b762a66d5d1cd02f8a8b0319037fac2038841`.
+- **Grenzen:** Konflikte bei gleichzeitigen Änderungen derselben Kategorie können weiterhin eine spätere Speicherung des aktuellen Tabs bevorzugen. Kontowechsel und Dialog-Races benötigen weitere Prüfung. Statische Quellcodeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Tab-Synchronisierung lokaler Wunschlisten-Daten)
+
+- **Nachgewiesene veraltete Ansichten:** Favoriten, Kategorien und Markierungen wurden in der Listenverwaltung beim Laden aus `localStorage` übernommen, Änderungen anderer bereits geöffneter Browser-Tabs lösten jedoch keine Aktualisierung der laufenden Ansicht aus.
+- **Korrektur:** Ein `storage`-Listener verarbeitet Änderungen an den drei benutzerbezogenen Schlüsseln. Bei aktuell geladenem und authentifiziertem Konto sowie vollständig geladenen Zuordnungen werden Favoriten, Kategorien oder Markierungen erneut eingelesen und die betroffenen Ansichten aktualisiert. Ereignisse für andere Konten werden ignoriert. Code: `86985ff887026b780647652d74caa96ecb846c51`.
+- **Grenzen:** Das Storage-Event ist keine atomare Transaktion; nahezu gleichzeitige Schreibvorgänge können weiterhin kollidieren. Beschädigte externe Daten werden von den bisherigen Lesefunktionen für die Anzeige als leer behandelt, beim Schreiben aber nicht überschrieben. Kontowechsel und Dialogzustände verdienen weitere E2E-Prüfung. Statische Quellcodeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Kategorien und Markierungen: Mehrtab-Betrieb und beschädigter Speicher)
+
+- **Nachgewiesenes Risiko:** `setMarker()` und `saveCategory()` schrieben jeweils die im aktuellen Tab zwischengespeicherten vollständigen Objekte `wishMarkers` bzw. `wishCategories`. Änderungen anderer Tabs konnten damit überschrieben werden. Beschädigte oder nicht lesbare localStorage-Inhalte wurden beim initialen Laden als leere Objekte dargestellt und beim nächsten Speichern ebenfalls überschrieben.
+- **Korrektur:** Beide Handler lesen vor dem Schreiben die aktuellen Storage-Inhalte erneut, prüfen die JSON-Struktur und erlaubten Werte und ändern nur den ausgewählten Wunsch. Bei beschädigten oder nicht lesbaren Daten wird nicht überschrieben. Der lokale UI-Zustand wird erst nach erfolgreichem `setItem` übernommen. Code: `6c07308b6dae83381f7344a52dbfc4efa133fd11`.
+- **Grenzen:** Gleichzeitige Read-Modify-Write-Aktionen aus verschiedenen Tabs sind weiterhin nicht atomar; eine automatische Storage-Event-Synchronisierung der geöffneten Ansichten wurde nicht ergänzt. Kontowechsel und UI-Aktualisierung bleiben weiter zu prüfen. Statische Codeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listenfavoriten: andere Browser-Tabs und beschädigte localStorage-Daten)
+
+- **Nachgewiesenes Risiko:** Favoriten-Toggles basierten auf dem im jeweiligen Tab zwischengespeicherten `favoriteIds`. Änderungen aus einem zweiten Tab konnten bei der nächsten Aktion mit einem veralteten vollständigen Favoriten-Set überschrieben werden.
+- **Korrektur:** `writeFavorites(id,listId)` liest vor jeder Favoritenänderung den aktuellen gespeicherten Zustand, prüft die JSON-Struktur und toggelt nur die angeforderte Listen-ID. Erst nach erfolgreichem `localStorage.setItem` wird der neue Favoritenzustand im aktuellen Tab übernommen. Ungültige oder nicht lesbare Daten werden nicht mit einer leeren Liste überschrieben. Code: `eb676514d1cd966995682a577edf29c5ecb9153e`.
+- **Grenzen:** Read-Modify-Write über `localStorage` ist zwischen gleichzeitig schreibenden Tabs nicht atomar. Kategorie- und Markierungsänderungen, Tab-Synchronisation sowie Kontowechsel benötigen weitere Prüfung. Statische Codeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (lokale Wunsch-Zusatzdaten: beschädigte Speicherinhalte nicht überschreiben)
+
+- **Nachgewiesenes Datenverlustrisiko:** `saveWishExtras()` ersetzte bei `localStorage.getItem`- oder JSON-Parsefehlern die bisherige Datenstruktur stillschweigend durch `{}` und konnte beim nächsten `setItem` vorhandene lokale Zusatzdaten überschreiben. Auch JSON-Werte mit unerwarteter Struktur wurden nicht ausreichend validiert.
+- **Korrektur:** Ein tatsächlich fehlender Storage-Eintrag (`null`) wird weiterhin als neue leere Sammlung behandelt. Bei Lesefehlern, ungültigem JSON sowie Nicht-Objekten oder Arrays bricht das lokale Schreiben mit `false` ab, ohne die bestehende Sammlung zu überschreiben. Die bereits eingeführte Teil-Erfolgsmeldung nach erfolgreichem Datenbank-Commit greift weiterhin. Code: `71bd8ff08d5f36265ac10b8c1b1252063f952057`.
+- **Grenzen:** Andere lokale Speicherpfade und parallele Browser-Tabs sind noch nicht umfassend abgesichert. Keine authentifizierten Browser-E2E-Tests. Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listenfavoriten: lokaler Speicherfehler darf UI nicht verändern)
+
+- **Nachgewiesener Fehler:** Die Favoriten-Schaltfläche änderte `favoriteIds` vor `localStorage.setItem`. Bei verweigertem oder vollem Browserspeicher blieb die Änderung im Arbeitsspeicher sichtbar, obwohl sie nicht dauerhaft gespeichert wurde.
+- **Korrektur:** Der Handler berechnet `nextFavorites` als Kopie. `writeFavorites(id,next)` gibt den Erfolg des Schreibens zurück. Nur nach erfolgreichem `setItem` werden `favoriteIds` übernommen und die Favoritenansicht neu gerendert; andernfalls bleibt der vorherige Zustand erhalten und eine Fehlermeldung erscheint. Code: `60738616fb61f0a0dbf83507e521d411d1acb9e4`.
+- **Weitere Prüfung:** Kategorien und Markierungen schreiben bereits vor der Änderung des In-Memory-Zustands in `localStorage`. Die Liste zuletzt geöffneter Listen wird bewusst auch ohne dauerhafte Speicherung für die laufende Sitzung aktualisiert und warnt bei Speicherfehlern. Weitere Race Conditions und Speicherpfade bleiben prüfbar.
+- **Prüfgrenzen:** Statische Codeprüfung ohne authentifizierten Browser-E2E-Test. Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (lokale Wunsch-Zusatzdaten nach erfolgreichem Datenbank-Commit)
+
+- **Nachgewiesener Teilfehler:** `saveWishExtras()` warf bei `localStorage.setItem`-Fehlern eine Exception, obwohl der vorausgehende `wishlist_wishes.insert/update` bereits erfolgreich abgeschlossen war. Dadurch erschien der gesamte Speichervorgang als fehlgeschlagen und konnte zu unnötigen erneuten Datenbank-Schreibversuchen verleiten.
+- **Korrektur:** `saveWishExtras()` meldet den Erfolg des lokalen Schreibens nun als booleschen Wert. Beide Wunsch-Speicherpfade schließen den Datenbank-Erfolg weiterhin ab, aktualisieren die Ansicht und melden bei fehlgeschlagenem lokalen Schreiben ausdrücklich den Teilfehler. Bei Neuanlage wird zum Bearbeiten des bestehenden Wunsches statt zur erneuten Anlage geraten. Eine fehlgeschlagene Listenzuordnung wird unabhängig davon angezeigt. Code: `6217f971c7c2bb391d515c7c7f0960690842384d`.
+- **Grenzen:** Die lokalen Zusatzdaten bleiben bei Speicherausfall verloren; keine atomare Transaktion zwischen Datenbank und Browser-localStorage. Statische Quellcodeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Duplizierung: Unterbrechung zwischen Zuordnungs-Batches)
+
+- **Nachgewiesener Teilfehler:** Bei der mehrstufigen Listen-Duplizierung führten `if(!current())return`-Abbrüche vor späteren Zuordnungs-Batches oder nach dem letzten Batch zu stillen Teilkopien. Bereits erfolgreich gespeicherte Zuordnungen blieben bestehen, ohne dass der Benutzer die Anzahl sah.
+- **Korrektur:** Der gemeinsame asynchrone Abschluss `reportInterruptedCopy()` lädt bei unverändert aktivem Konto die Listen neu und meldet anschließend die Zahl der bereits übertragenen Zuordnungen. Er wird nach Anlage der Kopie, zwischen den Batches und vor dem abschließenden Refresh bei veraltetem Kontext aufgerufen. Code: `ba4ddbfc21bd3474182547653e6cc719516462bf`.
+- **Lokale Speicherpfade geprüft:** `saveWishExtras()` kann nach erfolgreichem Datenbank-Schreibauftrag an `localStorage.setItem` scheitern; Datenbank und Browser-Speicher sind nicht atomar. Keine ungesicherte automatische Wiederholung eingebaut; weitere Korrektur der Teilfehler-Rückmeldung erforderlich.
+- **Prüfgrenzen:** Statische Codeprüfung ohne authentifizierten Browser-E2E-Test. Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Archivstatus und teilweise Listen-Kopien)
+
+- **Archivierung/Reaktivierung:** Nach erfolgreichem `wishlist_lists.update({archived:...})` brach der Handler bei geänderter `loadGeneration` vor dem Dashboard-Refresh ab. Jetzt wird bei weiterhin gleichem geladenen Konto auch nach zwischenzeitlichem Refresh neu geladen. Code: `0c5491ece99d472eccefa6e68109ef429a7214a4`.
+- **Teilweise Listen-Duplizierung:** Wenn die Kopie bereits per Insert angelegt war, aber vor der ersten Übernahme von Wunschzuordnungen eine Ladegeneration wechselte, endete die Operation bisher still. Der Handler lädt jetzt bei weiterhin aktivem ursprünglichem Konto die Listen neu und meldet ausdrücklich, dass die Kopie ohne Zuordnungen angelegt wurde und geprüft werden muss. Die Meldung wird erst nach dem Reload gesetzt, damit dieser sie nicht überschreibt. Code: `485ffd4ce5cc43a6e42710c8d06ffc8da68fde66`, Nachkorrektur `7c439d6678abbe282e3dfb7d40e7d7651ee2722d`.
+- **Verbleibende Risiken:** Die Duplizierung bleibt eine mehrstufige, nicht atomare Operation. Bereits kopierte Zuordnungen können bei späterem Abbruch teilweise bestehen bleiben. Lokale Speicherfehler wurden in dieser Runde nicht vollständig geprüft. Keine authentifizierten Browser-E2E-Tests.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listenlöschung: erfolgreichen Delete trotz zwischenzeitlichem Refresh abschließen)
+
+- **Nachgewiesener Race-Condition-Pfad:** Der Lösch-Handler verwarf nach erfolgreichem `wishlist_lists.delete()` den abschließenden Dashboard-Refresh, sobald `loadGeneration` zwischenzeitlich geändert wurde. Dadurch konnte die gelöschte Liste in der lokalen Ansicht verbleiben.
+- **Korrektur:** Nach erfolgreichem Delete wird der Abschluss nur noch bei Kontowechsel bzw. abweichendem geladenen Konto unterdrückt. Eine geänderte Ladegeneration allein verhindert die Aktualisierung nicht mehr.
+- **Prüfgrenzen:** Statische Quellcodeprüfung ohne authentifizierten Browser-E2E-Test. Duplizierung, Archivierung und lokale Speicherfehler sind nicht abschließend geprüft.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listenbearbeitung: erfolgreichen Save trotz Refresh abschließen)
+
+- **Nachgewiesener Race-Condition-Pfad:** Der `editListForm`-Handler verwarf nach einem erfolgreichen `wishlist_lists.update(...)` den Abschluss, wenn sich `loadGeneration` während des Schreibauftrags geändert hatte. Dadurch konnte die Liste bereits gespeichert sein, während die Bearbeitungsansicht offen blieb und keine abschließende Aktualisierung erfolgte.
+- **Korrektur:** Nach erfolgreichem Update wird nun geprüft, ob das ursprüngliche Konto noch geladen ist und dieselbe Listen-ID im Bearbeitungsformular steht. Ein zwischenzeitlicher Refresh allein verhindert den Abschluss nicht mehr; anschließend wird die Liste wie bisher neu geladen.
+- **Grenzen:** Statische Codeprüfung ohne authentifizierten Browser-E2E-Test; keine serverseitige Idempotenzgarantie. Weitere parallele Aktionen und lokale Speicherfehler sind nicht abschließend geprüft.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Neuanlage: erfolgreiche Inserts trotz zwischenzeitlichem Refresh abschließen)
+
+- **Nachgewiesener Duplikat-Risikopfad:** Nach erfolgreichem `wishlist_lists.insert(payload)` brach der Erstellen-Handler bei jeder Änderung von `loadGeneration` ab. Eine zwischenzeitliche Dashboard-Aktualisierung konnte daher dazu führen, dass die Liste bereits in der Datenbank existierte, der unveränderte Formularinhalt aber stehen blieb und eine erneute Anlage möglich war.
+- **Korrektur:** Nach erfolgreichem Insert wird der Abschluss nicht mehr allein wegen einer neuen Ladegeneration verworfen. Stattdessen wird geprüft, ob das ursprüngliche Konto noch aktiv und im Dashboard geladen ist. Dann werden unveränderte Eingaben geleert und die Listen aktualisiert. Ein Kontowechsel verhindert weiterhin Änderungen an fremdem UI-Zustand.
+- **Grenzen:** Keine serverseitige Idempotenzgarantie für unabhängige oder geräteübergreifende Anlageversuche. Statische Codeprüfung ohne authentifizierten Browser-E2E-Test; keine Supabase-Schreibprobe.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Neuanlage: Fokus nach asynchronem Speichern)
+
+- **Nachgewiesener Fokuspfad:** Der `createList`-Handler deaktivierte beim Start des Datenbank-Schreibauftrags die fokussierte Erstellen-Schaltfläche und aktivierte sie im `finally` wieder, ohne den Tastaturfokus zurückzuführen.
+- **Korrektur:** Der Handler merkt sich den ursprünglichen Fokus. Nach Abschluss wird der Button nur bei unverändert geladenem Konto reaktiviert und der Fokus nur dann zurückgesetzt, wenn er zuvor auf dem Button lag und aktuell kein anderes Bedienelement fokussiert ist.
+- **Prüfgrenzen:** Statische Quellcodeprüfung und GitHub-Veröffentlichung; kein authentifizierter Browser-E2E-Test. Weitere parallele Aktionen und lokale Speicherfehler sind nicht abschließend geprüft.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Erfolgsmeldung nach eigenem Reset)
+
+- **Nachgewiesener Folgefehler:** Die zuvor eingeführte Prüfung der `wishEditorRevision` vor einer asynchronen Erfolgsmeldung unterdrückte auch die reguläre Erfolgsmeldung nach erfolgreichem Speichern. Grund: `resetWishEditor()` erhöht die Revision selbst, bevor die nachfolgenden Refreshes und die Erfolgsprüfung ausgeführt werden.
+- **Korrektur:** Der Speicherpfad erfasst `completionRevision` und aktualisiert diesen Wert nur beim eigenen, revisionsgeschützten Editor-Reset. Die abschließende Erfolgsmeldung prüft gegen diesen Abschlussstand; spätere Benutzereingaben bleiben weiterhin erkennbar. Dies gilt für Neuanlage und Bearbeitung.
+- **Prüfgrenzen:** Statische Quellcodeprüfung und GitHub-Veröffentlichung, kein authentifizierter Browser-E2E-Test. Keine Aussage über atomare Speicherung zwischen Supabase und Browser-localStorage.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Erfolgsmeldung an Eingaberevision binden)
+
+- **Nachgewiesener Race-Condition-Pfad:** Die asynchronen Speicherpfade für Wunsch-Neuanlage und Wunschbearbeitung prüften nach `refreshFeed()` und `dashboard.refresh()` bisher zwar Konto und Bearbeitungs-Wunsch, nicht aber die zwischenzeitlich geänderte `wishEditorRevision`. Eine ältere Speicherantwort konnte daher „Wunsch gespeichert“ melden, obwohl neue Eingaben noch nicht gespeichert waren.
+- **Korrektur:** Beide Erfolgsmeldungen werden jetzt nur ausgegeben, wenn die beim Start erfasste Editorrevision noch aktuell ist. Die vorhandene Prüfung auf einen inzwischen anderen Bearbeitungswunsch bleibt erhalten.
+- **Prüfgrenzen:** Statische Quellcodeprüfung und GitHub-Veröffentlichung. Keine Browser-E2E-Prüfung, keine Supabase-Schreibprobe; laufende Datenbankoperationen werden durch die Rückmeldungsprüfung nicht abgebrochen.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: veraltete Fehlerantworten nach Kontextwechsel)
+
+- **Nachgewiesener Race-Condition-Pfad:** Der gemeinsame asynchrone `run`-Handler meldete Fehler des Wunsch-Speichervorgangs bislang auch dann, wenn während des Wartens ein anderer Wunsch geöffnet, das Formular verändert oder das Konto gewechselt wurde. Dadurch konnten Fehlermeldungen eines alten Vorgangs in einer neuen Bearbeitung erscheinen.
+- **Korrektur:** Beim Start werden Konto-ID, Bearbeitungs-Wunsch-ID und Editorrevision erfasst. Ein Fehler des Wunsch-Speichervorgangs wird nur dann im Status und Formular angezeigt, wenn alle drei Werte noch passen. Das erneute Aktivieren des Speichern-Buttons erfolgt bei diesem Vorgang nur für dasselbe Konto.
+- **Grenzen:** Der Handler verhindert keine bereits gestarteten Datenbankänderungen und ersetzt keine serverseitige Transaktions- oder Idempotenzabsicherung. Ein authentifizierter Browser-E2E-Test wurde nicht durchgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Zusatzfeld-Revisionen und verspätete Erfolgsmeldungen)
+
+- **Nachgewiesene Versionslücke:** `wishEditorRevision` wurde bisher nur bei URL, Titel, Notiz, Priorität und Sichtbarkeit erhöht. Änderungen an Produktbild, Zielpreis, Menge oder Status konnten während eines laufenden Speicherauftrags erfolgen, ohne die Versionsprüfung für das anschließende Zurücksetzen des Editors auszulösen. Jetzt erhöhen auch diese vier Zusatzfelder bei `input` und `change` die Revision.
+- **Verspätete Erfolgsmeldungen:** Nach `refreshFeed()` und `dashboard.refresh()` prüft der Speichervorgang jetzt zusätzlich, ob inzwischen die Bearbeitung eines anderen Wunsches geöffnet wurde. In diesem Fall wird die alte Erfolgsmeldung nicht in die neue Bearbeitung geschrieben.
+- **Grenzen:** Ein lokaler Speicherfehler nach erfolgreichem Datenbank-Commit kann weiterhin eine partielle Speicherung verursachen. Die neuen Prüfungen ersetzen keine atomare Datenbanktransaktion und keine authentifizierten Browser-Tests.
+- **Produktionsschutz:** Nur GitHub-Code und Roadmap geändert; keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Zusatzdaten vor Datenbankänderungen validieren)
+
+- **Nachgewiesener partieller Speicherfehler:** In `app.mjs` wurden zusätzliche Wunschangaben (HTTPS-Produktbild, Zielpreis, Menge, Status) erst in `saveWishExtras` geprüft, nachdem die Wunschänderung bereits in Supabase gespeichert war. Ungültige Eingaben konnten dadurch nach einem erfolgreichen Datenbank-Schreibauftrag einen Formularfehler auslösen.
+- **Korrektur:** `readValidatedWishExtras()` prüft und erfasst alle Zusatzangaben vor der ersten Datenbankänderung. `saveWishExtras(owner,id,extras)` verwendet den erfassten Stand statt nach asynchronen Schritten erneut aktuelle Formularfelder auszulesen.
+- **Verbleibende Grenzen:** Die lokalen Zusatzdaten werden weiterhin getrennt von der Datenbank gespeichert; Fehler bei `localStorage.setItem` können weiterhin zu einer partiellen Speicherung führen. Ein vollständig atomarer Commit über Datenbank und Browserspeicher ist damit nicht möglich.
+- **Prüfumfang:** Statische Codeprüfung und GitHub-Veröffentlichung, kein authentifizierter Browser-E2E-Test und keine produktive Supabase-Schreibprobe.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten geändert und keine Testdatensätze angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular und Listen-Neuanlage: asynchrone Sitzungsgrenzen)
+
+- **Wunsch-Neuanlage:** Die im Listen-Dashboard ausgewählte Zielliste wird nun beim Start des Speichervorgangs erfasst. Vorher wurde `dashboard.selectedList()` erst nach den Produkt- und Wunschdatenbankanfragen gelesen; ein zwischenzeitlicher Listenwechsel konnte die Zuordnung unbemerkt auf eine andere Liste umlenken.
+- **Wunschbearbeitung:** Nach der Datenbankantwort wird die Konto-ID geprüft, bevor `saveWishExtras` zusätzliche lokale Wunschinformationen schreibt. Damit wird der bisherige lokale Schreibpfad bei einer verspäteten Antwort nach Kontowechsel unterbunden.
+- **Listen-Neuanlage:** Die Speichern-Schaltfläche wird im `finally` nur für das weiterhin geladene Konto entsperrt. Ein während des Speicherns ausgelöster eigener Listen-Refresh darf die Entsperrung nicht verhindern; deshalb wird hierfür bewusst nicht die alte Ladegeneration verlangt.
+- **Prüfgrenzen:** Statische Codeprüfung und GitHub-Veröffentlichung; keine authentifizierten Browser-E2E-Tests und keine Supabase-Schreibprobe. Weitere Formular- und Listenaktionen bleiben separat zu prüfen.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listenformular: konsistenter Speicherstand und Sitzungsgrenzen)
+
+- **Asynchroner Bearbeitungs-Speicherpfad:** In `lists-dashboard.mjs` werden Symbol und Farbe der bearbeiteten Liste jetzt vor dem Speichervorgang zusammen mit Titel, Beschreibung, Sichtbarkeit und Bildadresse erfasst. Die Update-Nutzlast verwendet ausschließlich diesen erfassten Stand statt spätere Formularwerte zu lesen.
+- **Veraltete Abschlussantwort:** Das `finally` des Bearbeitungsformulars gab bisher Eingaben und Speichern-/Abbrechen-Schaltflächen ohne Sitzungsprüfung frei. Jetzt erfolgt die Freigabe nur, wenn Konto und Ladegeneration noch zum gestarteten Speichervorgang passen.
+- **Prüfgrenzen:** Statische Quellcodeprüfung und Veröffentlichung auf GitHub; keine authentifizierten Browser-E2E-Tests und keine Supabase-Schreibprobe. Weitere Wunschformular-Pfade bleiben separat zu untersuchen.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Fokus beim asynchronen Verschieben zwischen Listen)
+
+- **Nachgewiesener Fokusverlust im Quellcode:** Nach der zweistufigen Verschiebeoperation wird die Wunschkartenansicht über `load({afterBulk:true})` und `renderWishCards()` ersetzt. Der auslösende Verschieben-Button verliert dadurch seinen DOM-Knoten und den Tastaturfokus.
+- **Korrektur:** Der Fokus wird vor dem Deaktivieren des Buttons erfasst. Nach dem Neuaufbau wird die Ziellistenauswahl desselben Wunsches fokussiert, sofern keine bewusste Fokusverlagerung erfolgte. Ist der Wunsch nicht mehr sichtbar, wird die Wunschsuche als Rücksprungziel verwendet.
+- **Sicherheitsgrenzen:** Die vorhandenen Konto-, Generationen- und Listenprüfungen sowie die getrennte Fehlerbehandlung für Zielzuordnung und Entfernen aus der Quellliste bleiben bestehen. Ein Verschieben ist weiterhin keine atomare Datenbanktransaktion; bei einem Fehler im zweiten Schritt kann eine zusätzliche Zuordnung bestehen bleiben und muss geprüft werden.
+- **Prüfumfang:** Statische Quellcodeprüfung und GitHub-Veröffentlichung; keine Browser-E2E-Prüfung und keine Supabase-Schreibprobe. Die weiteren Listen- und Wunschformular-Speicherpfade sind noch nicht vollständig geprüft.
+- **Produktionsschutz:** Ausschließlich GitHub-Quellcode und Roadmap geändert; keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Zuordnungscheckbox: Tastaturfokus nach asynchronem Nachladen)
+
+- **Nachgewiesener Fokusverlust im Quellcode:** Die Checkbox zum Hinzufügen oder Entfernen eines Wunsches löst nach der asynchronen Datenbankoperation `load({afterBulk:true})` und im `finally` `renderWishCards()` aus. Dabei wird die fokussierte Checkbox durch ein neues Element ersetzt.
+- **Korrektur:** Vor dem Deaktivieren wird der Fokuszustand erfasst. Die neu gerenderte Checkbox wird über eine stabile Wunsch-ID wiedergefunden; falls sie durch den Filter verschwindet, wird die Wunschsuche fokussiert. Eine bewusste Fokusverlagerung während der Anfrage bleibt erhalten.
+- **Sitzungsgrenzen:** Die vorhandenen Prüfungen auf Konto, Listen-ID und Ladezustand bleiben erhalten; die Fokuswiederherstellung erfolgt nur im passenden aktuellen Listen-Kontext.
+- **Prüfgrenzen:** Statische Codeprüfung und GitHub-Veröffentlichung; kein authentifizierter Browser-End-to-End-Test und keine Supabase-Schreibprobe. Andere Listenaktionen, insbesondere Verschieben und Formularspeicherung, bleiben gesondert zu prüfen.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert, keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Prioritätsänderungen ohne gegenseitigen Fokusverlust)
+
+- **Konkreter Folgefehler:** Das bisherige vollständige `render()` nach einer Prioritätsänderung entfernte auch andere, noch deaktivierte und auf ihre Speicherantwort wartende Prioritätsfelder. Deren asynchrone Handler arbeiteten anschließend mit abgehängten DOM-Elementen. Jetzt wird nach erfolgreicher Speicherung nur das betroffene Prioritätskennzeichen aktualisiert beziehungsweise die Karte entfernt, falls sie nicht mehr zum aktiven Filter passt.
+- **Tastaturfokus:** Der Fokuszustand wird vor dem Deaktivieren des Select-Feldes erfasst. Nach der Antwort wird der Fokus nur zurückgegeben, wenn er inzwischen auf dem Dokumentkörper liegt; eine bewusste Fokusverlagerung wird nicht überschrieben. Bei einer durch den Filter entfernten Karte dient der Prioritätsfilter als Rücksprungziel.
+- **Sitzungs- und Fehlergrenzen:** Verspätete Antworten nach Kontowechsel oder nach Entfernen des Elements ändern keine sichtbaren Felder. Fehlgeschlagene Speicherungen setzen den Auswahlwert zurück; verbundene Selects werden im `finally` wieder aktiviert.
+- **Prüfumfang:** Statische Codeprüfung; keine authentifizierten Browser- oder Datenbank-Schreibtests. Insbesondere parallele Prioritätsänderungen und die Filterdarstellung sollten in einer isolierten Browser-Testumgebung nachgeprüft werden.
+- **Produktionsschutz:** Nur GitHub-Code und Roadmap geändert; keine Supabase-Produktivdaten und keine Testdatensätze angelegt oder verändert.
+
+## Entwicklungsfortschritt – 11.11.2026 (Geschenk-Dashboard: asynchrones Prioritätsspeichern)
+
+- **Nachgewiesener Fokusverlust:** Die Prioritätsauswahl in `gift-dashboard.mjs` rief nach erfolgreichem Speichern `render()` auf und ersetzte damit das fokussierte Select-Element. Der Handler merkt sich den Fokus und stellt ihn nach dem Rendern auf die Priorität desselben Geschenks zurück; wenn das Geschenk durch den aktiven Filter verschwindet, wird der Prioritätsfilter fokussiert.
+- **Fehlerpfad:** Bei einer unerwarteten Exception während der asynchronen Anfrage blieb das Select bisher deaktiviert und der Fehler wurde nicht als Speicherfehler gemeldet. `try/catch/finally` setzt den Wert zurück, meldet den Fehler und entsperrt ein noch verbundenes Feld zuverlässig.
+- **Sitzungswechsel:** Die Schreiboperation verwendet die beim Start erfasste Konto-ID. Verspätete Antworten ändern bei abweichender Sitzung weder Dashboard-Daten noch Status oder Fokus.
+- **Grenzen der Prüfung:** Codeprüfung und Syntaxkontrolle; kein authentifizierter Browser-E2E-Test und keine produktive Supabase-Schreibprobe. Weitere Listenaktionen und Dashboard-Speicherpfade müssen separat auf überholte Antworten und Fokusübergänge geprüft werden.
+- **Produktionsschutz:** Ausschließlich GitHub-Quellcode und Roadmap geändert; keine Supabase-Produktivdaten oder Testdatensätze verändert.
+
+## Entwicklungsfortschritt – 11.11.2026 (Wunschlisten nach Kontowechsel trotz laufender Mutation nachladen)
+
+- **Kontowechsel während einer Listenänderung:** In `lists-dashboard.mjs` kann `load()` während `listMutationBusy` nur einen Hinweis ausgeben und ohne Datenabfrage zurückkehren. Wenn die alte Sitzung gerade eine Listen-Neuanlage oder Listenbearbeitung speichert und die neue Sitzung gleichzeitig ihren Dashboard-Refresh auslöst, bleibt deren Listenansicht damit bis zu einer späteren manuellen Aktualisierung leer. Beide asynchronen Listen-Speicherpfade prüfen jetzt im `finally`, ob ein anderes Konto angemeldet ist und seine Listen noch nicht geladen wurden. In diesem Fall starten sie nach dem Aufheben der Mutation-Sperre einen neuen `load()`-Versuch.
+- **Fehlermeldungen sitzungsgebunden:** Die Nachladeaktion erfasst `refreshOwner` und zeigt Fehler nur an, falls dieses Konto weiterhin angemeldet ist. Dadurch überschreibt eine verspätete Fehlerrückmeldung nicht den Listenstatus einer inzwischen anderen Sitzung.
+- **Prüfung:** Nach Veröffentlichung `lists-dashboard.mjs`, `gift-start.mjs` und `index.html` erneut aus dem GitHub-Repository geladen. Beide JavaScript-Module und zehn Inline-Skripte isoliert erfolgreich syntaktisch geprüft; keine doppelten statischen HTML-IDs. Authentifizierte mobile Browser- und Netzwerk-Race-End-to-End-Tests stehen aus.
+- **Produktionsschutz:** Nur ein bisher fehlender clientseitiger Nachladeversuch und dessen Statusbehandlung ergänzt. Keine Supabase-Connectoraufrufe, Datenbankmigrationen, produktiven Schreibvorgänge oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Veraltete Nachladeantworten nach Listen-Speicheraktionen)
+
+- **Race Condition nach Listenbearbeitung:** `editListForm.onsubmit` wartete nach erfolgreichem Update auf `load({afterBulk:true})`, prüfte vor Erfolgsmeldung und `finishListEditing()` aber nur die aktuelle Konto-ID. Wurde die Ansicht zwischenzeitlich erneut geladen oder der Sitzungszustand zurückgesetzt, konnte die ältere Aktion eine überholte Statusmeldung schreiben und den mobilen Tastaturfokus verschieben. Der Handler erfasst nun die `loadGeneration` des eigens angestoßenen Nachladens und prüft vor Status- und Fokusaktionen sowohl Konto-ID als auch die unveränderte Nachladegeneration.
+- **Race Condition nach Listen-Neuanlage:** Auch `createList` zeigte bei einer fehlgeschlagenen Nachladeoperation den alten Fehlerhinweis bislang nur unter Prüfung der Konto-ID. Die Neuanlage sichert diese Fehlermeldung jetzt mit derselben generationsgebundenen Prüfung ab, damit später gestartete Aktualisierungen nicht von älteren Rückmeldungen überschrieben werden.
+- **Prüfung:** `lists-dashboard.mjs`, `gift-start.mjs` und `index.html` nach GitHub-Veröffentlichung erneut abgerufen. Beide JavaScript-Module und zehn Inline-Skripte isoliert ohne Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test mit konkurrierenden Nachladevorgängen steht weiterhin aus.
+- **Produktionsschutz:** Nur clientseitige Status- und Fokusbehandlung geändert. Keine zusätzlichen Datenbankoperationen, Supabase-Connectoraufrufe, Migrationen, Änderungen an Produktivdaten oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Editor während asynchronem Speichern geschützt)
+
+- **Asynchrone Listenbearbeitung:** `editListForm.onsubmit` in `lists-dashboard.mjs` deaktivierte bisher während der asynchronen Update-Operation lediglich die Schaltflächen für Speichern und Abbrechen. Die übrigen `input`-, `select`- und `textarea`-Elemente blieben bearbeitbar, während das Formular bei erfolgreicher Antwort geschlossen wurde. Dadurch konnten spätere Eingaben während der ausstehenden Antwort unbemerkt verloren gehen. Jetzt werden alle bearbeitbaren Editorfelder während des Speichervorgangs temporär deaktiviert und im `finally`-Zweig wieder freigegeben.
+- **Mobile Tastatur- und Fokusführung:** Ein vorübergehend deaktivierter Speichern-Button kann den aktiven Browserfokus verlieren. Bleibt das Formular nach einem Speicherfehler geöffnet, stellt die Abschlusslogik bei noch unverändertem Nutzer- und Ladezustand den Fokus auf die wieder freigegebene Speichern-Schaltfläche zurück, falls `document.body` den Fokus übernommen hat. Ein inzwischen bewusst veränderter Fokus wird nicht überschrieben.
+- **Prüfung:** `lists-dashboard.mjs`, `gift-start.mjs` und `index.html` nach den GitHub-Commits erneut geladen. Beide JavaScript-Module und zehn Inline-JavaScript-Blöcke ohne Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test mit verzögerter oder fehlschlagender Speicherung ist weiterhin offen.
+- **Produktionsschutz:** Nur clientseitige Formularsperre und Fokusführung geändert. Keine Supabase-Connectoraufrufe, Migrationen, Produktivdatenänderungen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Eingaben während asynchroner Listen-Neuanlage erhalten)
+
+- **Race Condition bei der mobilen Listen-Neuanlage:** `createList` in `lists-dashboard.mjs` deaktivierte während einer laufenden Insert-Anfrage nur die Schaltfläche `createList`. `listTitle` und `listDescription` blieben für weitere Eingaben oder eine neue Vorlagenauswahl offen, wurden aber nach erfolgreichem `await` bisher bedingungslos geleert. So konnten nachträglich eingegebene Inhalte verloren gehen.
+- **Gezielte Korrektur:** Beim Absenden werden die ursprünglichen Rohwerte `submittedTitle` und `submittedDescription` erfasst. Nach erfolgreicher, sitzungs- und generationsgültiger Antwort werden die Eingabefelder nur geleert, wenn ihr jeweiliger aktueller Wert noch exakt dem abgeschickten Wert entspricht. Spätere Änderungen bleiben im Formular erhalten. Die vorhandene Eingabevalidierung, Datenbankanfrage und Sitzungsprüfung bleiben unverändert.
+- **Prüfung:** Aktualisierte `lists-dashboard.mjs`, unveränderte `gift-start.mjs` und `index.html` nach Veröffentlichung erneut von GitHub geladen. Beide JavaScript-Module und zehn Inline-Skripte ohne Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test mit verzögerter Antwort steht weiterhin aus.
+- **Produktionsschutz:** Nur clientseitiger Umgang mit Formularwerten geändert. Keine Supabase-Connectoraufrufe, Migrationen, Änderungen an Produktivdaten oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Status und Wunschlistenfilter beim Kontowechsel bereinigt)
+
+- **Dashboard-Statusmeldungen nach Sitzungswechsel:** In `gift-start.mjs` wurden beim Abmelden und beim Wechsel zu einer anderen angemeldeten Person bereits Vorschauzustände und Vorschauaktionen zurückgesetzt. Die Live-Meldungen `homeSettingsStatus` und `homeLayoutStatus` blieben dagegen unverändert. Beide Statusfelder werden nun an denselben Authentifizierungs-Reset-Stellen geleert, sodass Speicher- und Fehlermeldungen des bisherigen Kontos nicht in der nächsten Sitzung angezeigt werden.
+- **Wunschlisten-Suche und -Filter:** `reset()` in `lists-dashboard.mjs` bereinigte zuletzt private Formularentwürfe, ließ aber `listsSearch`, `listsView` und `listsSort` bestehen. Damit konnte eine Suche oder die Auswahl „Nur Favoriten“ des bisherigen Kontos die Listen einer neuen Sitzung unbeabsichtigt filtern. Die Liste startet nun beim Sitzungsreset mit leerem Suchbegriff, der Ansicht `active` und der Standardsortierung `favorites`. Es werden keine gespeicherten Datensätze verändert.
+- **Prüfung:** Aktualisierte `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` erneut über GitHub abgerufen. Beide JavaScript-Module und zehn Inline-Skripte ohne Syntaxfehler geprüft, keine doppelten statischen HTML-IDs. Authentifizierte mobile Browser-End-to-End-Tests mit realem Kontowechsel stehen noch aus.
+- **Produktionsschutz:** Nur clientseitige Status- und Filterzustände geändert. Keine Supabase-Connectoraufrufe, Datenbankmigrationen, produktiven Datenänderungen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Private Listenformularentwürfe beim Sitzungswechsel bereinigt)
+
+- **Kontowechsel und Listenentwürfe:** `reset()` in `lists-dashboard.mjs` blendete bisher die persönliche Wunschlistenoberfläche aus und leerte `editListId`, ließ aber bereits eingegebene `listTitle`-/`listDescription`-Werte und die Formularauswahl bestehen. Beim nächsten Anmelden konnten damit Entwürfe der vorherigen Sitzung weiterhin im Frontend erscheinen. Jetzt werden Neuanlage- und ausgeblendete Bearbeitungsfelder einschließlich Beschreibung, Vorlagenauswahl, Symbol, Farbe, Sichtbarkeit und Titelbild-URL beim Reset geleert beziehungsweise auf die Standardauswahl gesetzt.
+- **Veraltete Formularfehler:** Der gleiche Sitzungsreset löscht `aria-invalid` und `aria-describedby` der betroffenen Listenfelder sowie alte Formular- und Editorstatusmeldungen. Neue Formulare beginnen dadurch nicht mit Fehlermarkierungen aus einer früheren Sitzung.
+- **Verspätete Editoraktion:** `editListForm.onsubmit` rief `owner()` vor der Überprüfung einer eventuell beendeten Anmeldung auf. Ein Submit nach dem Logout konnte deshalb eine Ausnahme auslösen. Ein früher Authentifizierungs-Guard beendet diesen Pfad jetzt vor dem Zugriff auf die Konto-ID.
+- **Prüfung:** Aktuelle `lists-dashboard.mjs`, `gift-start.mjs` und `index.html` erneut von GitHub abgerufen. Zwei Module sowie zehn Inline-JavaScript-Blöcke isoliert ohne Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler Browser-End-to-End-Test mit Kontowechsel steht noch aus.
+- **Produktionsschutz:** Ausschließlich clientseitige Sitzungs-, Formular- und Validierungszustände angepasst. Keine Supabase-Connectoraufrufe, Datenbankmigrationen, Produktivdatenschreibvorgänge oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Mobile Listen-Sichtbarkeit und Vorlagenvalidierung)
+
+- **Listen-Sichtbarkeit bei Neuanlage und Bearbeitung:** Die Bearbeitungsmaske in `lists-dashboard.mjs` meldete eine außerhalb von `private`/`public` liegende Auswahl bislang ohne Bezug zum fehlerhaften Feld. Jetzt wird `invalidField(editListVisibility, …)` verwendet; die Auswahl wird `aria-invalid` markiert, mit dem bestehenden Live-Feedback verknüpft und fokussiert. Die Neuanlage prüft `listVisibility` nun ebenfalls explizit, bevor der bisherige Insert-Pfad gestartet wird. Die vorhandenen `input`-/`change`-Handler räumen veraltete Markierungen beider Auswahlfelder auf.
+- **Listen-Vorlage und Beschreibung:** Die Vorlagenauswahl überschreibt `listDescription` programmatisch. Ein zuvor durch eine überlange Beschreibung gesetztes `aria-invalid`/`aria-describedby` wurde dadurch nicht zurückgesetzt. Jetzt werden beide Attribute beim Vorlagenwechsel entfernt. Die alte Beschreibungsfehlermeldung wird nur dann durch einen Hinweis zur übernommenen Vorlage ersetzt, wenn sie tatsächlich noch die angezeigte Listen-Statusmeldung ist. Die bestehende Bereinigung für `listTitle` bleibt bestehen.
+- **Prüfung:** Veröffentlichte `lists-dashboard.mjs`, unveränderte `gift-start.mjs` und `index.html` erneut aus GitHub geladen. Beide JavaScript-Module und zehn Inline-Skripte syntaktisch ohne Fehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler Browser-End-to-End-Test steht aus.
+- **Produktionsschutz:** Ausschließlich clientseitige Formularvalidierung, Statusanzeige und Fokusführung. Keine Supabase-Connectoraufrufe, Migrationen, Produktivdatenänderungen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Sitzungsrevision für Speichern, Vorschaufokus und Ladefehler)
+
+- **Speicherantworten nach Authentifizierungswechsel:** `gift-start.mjs` berücksichtigte bisher in den asynchronen Speicherpfaden für Dashboard-Einstellungen und Layouts nur `currentUser===saveOwner`. Nach einem Authentifizierungswechsel mit wieder gleicher Konto-ID konnte dadurch eine alte Antwort trotzdem lokale Einstellungen und Statusmeldungen verändern. Beide Pfade erfassen jetzt zusätzlich `saveAuthRevision` und prüfen nach `await` sowohl die Konto-ID als auch die Authentifizierungsrevision, bevor sie erfolgreiche oder fehlerhafte Ergebnisse anzeigen.
+- **Vorlagenspeicherung und Vorschau-Fokus:** `homeSaveLayout` stellt den vor dem Speichern erfassten Formularentwurf nur noch dann wieder her, wenn die Sitzung unverändert ist. Der Abschluss von `saveLayoutChange` gibt Buttons nicht aufgrund einer alten Antwort in einer mittlerweile abgelösten Sitzung frei. `homeConfirmPreview` prüft nach der Speicherung Konto und Sitzungsrevision, bevor die Vorschau geschlossen und die Statusmeldung fokussiert wird.
+- **Veraltete Ladefehler:** Der `catch`-Zweig von `refresh()` zeigte bislang eine Fehlernachricht auch dann, wenn die fehlgeschlagene Anfrage bereits durch eine neue Authentifizierungsrevision überholt war. Jetzt schreibt er nur noch in die sichtbare Statusregion, wenn seine Revision aktuell ist.
+- **Prüfung:** Aktualisierte `gift-start.mjs`, `lists-dashboard.mjs` sowie `index.html` nach GitHub-Veröffentlichung erneut abgerufen. Beide Module und zehn Inline-Skripte syntaktisch ohne Fehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter Browser-End-to-End-Test mit Sessionwechsel und verzögerten Antworten bleibt offen.
+- **Produktionsschutz:** Nur clientseitige Sitzungs-, Fokus- und Abschlussprüfungen geändert. Keine Supabase-Connectoraufrufe, Datenbankmigrationen, Produktivdatenschreibvorgänge oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Authentifizierungsrevision beim Laden und Fokusbereinigung nach Sitzungswechsel)
+
+- **Dashboard-Laden bei Sitzungswechsel:** In `gift-start.mjs` wurde eine während `refresh()` eintreffende Authentifizierungsänderung zuletzt zwar durch `refreshPending` nachgeladen, der ursprünglich laufende asynchrone Abruf konnte jedoch zuvor noch veraltete persönliche Präferenzen und Dashboard-Daten anwenden. `authRevision` wird nun bei Authentifizierungsereignissen erhöht, während jeder `refresh()`-Durchlauf seine Ausgangsversion erfasst. Nach `auth.getUser()`, vor und nach den Dashboard-Datenabfragen sowie in `loadPreferences(uid,authVersion)` werden überholte Ergebnisse verworfen. Die vorgemerkte Aktualisierung lädt danach den aktuellen Kontostand erneut.
+- **Mobiler Wunschlisten-Editor:** `reset()` in `lists-dashboard.mjs` blendete beim Sitzungswechsel den geöffneten Listen-Editor aus, ließ aber die alte `listEditReturnFocus`-Referenz bestehen. Sie wird nun zusammen mit dem übrigen Sitzungszustand gelöscht, damit eine spätere Fokusrückgabe nicht auf einen früheren Auslöser verweist.
+- **Prüfung:** `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach den GitHub-Commits erneut abgerufen. Beide JavaScript-Module und zehn Inline-Skripte isoliert ohne Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test mit verzögerten Netzwerkantworten und tatsächlichem Kontowechsel ist weiterhin offen.
+- **Produktionsschutz:** Änderungen ausschließlich in der clientseitigen Sitzungs- und Fokuslogik, ohne zusätzliche Schreibabfragen. Keine Supabase-Connectoraufrufe, Datenbankmigrationen, Änderungen an Produktivdaten oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Sitzungswechsel bei Layout-Speicherabschluss und Dashboard-Laden)
+
+- **Asynchroner Vorlagenabschluss:** Beim Speichern persönlicher Dashboard-Layout-Vorlagen konnte `homeSaveLayout` nach dem `await saveLayoutChange(...)` noch `restoreSettingsDraft(draft)` ausführen, obwohl währenddessen ein anderes Konto aktiv geworden war. Der ursprüngliche `saveOwner` wird nun vor dem Speichern erfasst; das Formular wird nur wiederhergestellt, solange `currentUser===saveOwner` ist. Außerdem deaktiviert der `saveLayoutChange`-Abschluss alle Layout-Bedienelemente, wenn kein Nutzer mehr angemeldet ist, statt sie nach Abmeldung pauschal freizugeben.
+- **Authentifizierungsereignisse während des Ladens:** `refresh()` ignorierte mit `if(loading)return` Authentifizierungsereignisse, die während eines laufenden asynchronen Dashboard-Ladevorgangs eintreffen. `refreshPending` merkt solche Ereignisse jetzt vorübergehend vor und löst nach dem laufenden `finally` eine weitere Aktualisierung aus, damit der aktuelle Sitzungszustand erneut geprüft wird.
+- **Prüfung:** `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach den beiden GitHub-Commits erneut abgerufen. Zwei JavaScript-Module und zehn Inline-Skripte ohne Syntaxfehler geprüft, keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test mit Kontowechsel und verzögerten Netzwerkantworten steht aus.
+- **Produktionsschutz:** Nur clientseitige Sitzungs-, Fokus- und Zustandslogik geändert; keine Supabase-Connectoraufrufe, Migrationen, produktiven Datenänderungen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Verspätete Dashboard-Speicherantworten bei Kontowechsel)
+
+- **Kontogebundene asynchrone Speichervorgänge:** In `gift-start.mjs` wurden Antworten auf `homeGiftSettingsForm`-Speicherungen und `saveLayoutChange` bisher auf den aktuellen lokalen Dashboard-Zustand angewendet, obwohl während des `await` ein anderes Konto aktiv geworden sein konnte. Beide Pfade merken sich jetzt `saveOwner` beim Beginn der Aktion und benutzen diese ID unverändert für die bestehende Schreibanfrage. Nach der Antwort werden lokale Einstellungen und Erfolgsmeldungen ausschließlich aktualisiert, wenn `currentUser===saveOwner` gilt.
+- **Fehler- und Vorschauzustand:** Bei fehlgeschlagenen Speicheraktionen werden Statusmeldungen ebenfalls nur für das noch aktive Ursprungskonto geschrieben. `saveLayoutChange` meldet bei einem inzwischen anderen Konto `false` zurück; damit kann auch der aufrufende Vorschau-Bestätigungspfad keinen verspäteten Erfolg auf die neue Sitzung übertragen. Bereits abgesendete Datenbankoperationen werden weder neu ausgelöst noch rückwirkend abgebrochen.
+- **Prüfung:** `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach GitHub-Veröffentlichung erneut abgerufen; zwei JavaScript-Module und zehn Inline-Skripte isoliert ohne Syntaxfehler geprüft, keine doppelten statischen HTML-IDs. Ein authentifizierter Browser-Race-Test mit tatsächlichem Kontowechsel steht aus.
+- **Produktionsschutz:** Ausschließlich clientseitige Kontozuordnung und Reaktionslogik für bereits bestehende asynchrone Speicherpfade geändert. Keine Supabase-Connectoraufrufe, Migrationen, produktive Datenänderungen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Fehlgeschlagene Layout-Speicherung erhält die Vorschau)
+
+- **Vorschau-Bestätigung und Race Condition:** `homeConfirmPreview` in `gift-start.mjs` rief bisher `endPreview(false)` vor der asynchronen `saveLayoutChange`-Operation auf. Bei einem Speicherfehler waren die Vorschau und ihr Ziel damit verloren, obwohl der neue Layoutzustand nicht dauerhaft übernommen worden war. `saveLayoutChange` meldet den Erfolg jetzt als boolesches Ergebnis an den Aufrufer; die Vorschau wird erst nach bestätigtem Erfolg durch `endPreview(false)` beendet. Bei einem Fehler bleiben die Vorschau samt Bedienelementen für einen neuen Bestätigungsversuch verfügbar.
+- **Status und Fokus:** Bei fehlgeschlagenem Speichern einer aktiven Vorschau meldet die bestehende `homeLayoutStatus`-Live-Region ausdrücklich, dass die Vorschau geöffnet bleibt. Die vorhandene Fokusführung auf die Statusregion bleibt erhalten. Sonstige Layout-Speicherpfade nutzen weiterhin die bestehende Funktion und ihre Statusmeldungen.
+- **Prüfung:** Nach Veröffentlichung aktuelle `gift-start.mjs`, unveränderte `lists-dashboard.mjs` und `index.html` erneut aus GitHub abgerufen. Beide Module sowie zehn Inline-JavaScript-Blöcke isoliert syntaktisch ohne Fehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test mit simuliertem Speicherausfall bleibt offen.
+- **Produktionsschutz:** Nur clientseitiger Abschlusszeitpunkt der Vorschau und Rückmeldung geändert. Keine Supabase-Connectoraufrufe, Migrationen, produktiven Datenänderungen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschau gegen laufende Speicheraktionen abgesichert)
+
+- **Vorschau während laufender Speicherung:** Die vorherige `settingsSaveBusy`-Sperre verhinderte parallele Schreibvorgänge, aber `showPreview` prüfte nur `layoutBusy`. Während reguläre Dashboard-Einstellungen gespeichert wurden, konnte die Vorschau weiterhin den lokalen `preferences`- und Formularzustand neu zeichnen. Jetzt prüft `showPreview` vor Änderungen beide Busy-Zustände und meldet den laufenden Speichervorgang über `homeLayoutStatus`.
+- **Vorschau bestätigen:** `homeConfirmPreview` konnte `endPreview(false)` aufrufen und den lokalen Vorschauzustand verwerfen, bevor `saveLayoutChange` wegen eines laufenden Speichervorgangs den eigentlichen Speicherauftrag ablehnte. Die Busy-Prüfung erfolgt nun bereits vor der Bestätigungsabfrage und vor `endPreview`.
+- **Vorschau verwerfen:** `homePreviewUndo` konnte den lokalen Zustand während eines laufenden Speicherauftrags wiederherstellen. Ein analoger Guard verhindert das Verwerfen während `layoutBusy` oder `settingsSaveBusy`. In allen drei Fällen bleibt die vorhandene Vorschau unangetastet; es werden keine zusätzlichen Schreibvorgänge gestartet.
+- **Prüfung:** Veröffentlichtes `gift-start.mjs`, unverändertes `lists-dashboard.mjs` sowie `index.html` erneut von GitHub geladen. Beide Module und zehn Inline-JavaScript-Blöcke isoliert erfolgreich auf Syntax geprüft, keine doppelten statischen HTML-IDs. Authentifizierte Browser- und Race-Condition-End-to-End-Tests stehen aus.
+- **Produktionsschutz:** Nur clientseitige Zustands-Guards und Live-Statusmeldungen; keine Supabase-Connectoraufrufe, produktiven Datenbankoperationen, Migrationen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Speicheraktionen gegen Überschneidungen abgesichert)
+
+- **Parallele Dashboard-Speicheraktionen:** In `gift-start.mjs` wurde `homeSettingsSave` nur während seines eigenen asynchronen Schreibvorgangs gesperrt; `saveLayoutChange` verwendete eine getrennte `layoutBusy`-Sperre. Dadurch konnten normale Dashboard-Einstellungen und persönliche Layout-Vorlagen gleichzeitig in denselben Präferenzdatensatz geschrieben werden. Die neue clientseitige `settingsSaveBusy`-Sperre verhindert doppelte Formular-Submits und blockiert Layout-Schreibvorgänge, solange Einstellungen gespeichert werden. Umgekehrt prüft das Formular `layoutBusy`, bevor es eine Speicherung beginnt. Es erscheint eine vorhandene Live-Statusmeldung, wenn ein weiterer Vorgang noch läuft.
+- **Vorlagenauswahl:** `homeSaveLayout` prüft vor dem Lesen des Formularentwurfs beide Busy-Zustände, sodass bei bereits laufendem Speichern kein zweiter Vorlagen-Schreibvorgang angestoßen wird. Der Guard liegt vor der bestehenden Vorschau- und Validierungsbehandlung; vorhandene Datenbankabfragen bleiben unverändert.
+- **Prüfung:** `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach Veröffentlichung erneut über GitHub geladen. Beide JavaScript-Module und zehn Inline-Skripte ohne Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Vollständiger authentifizierter Browser- und Race-Condition-End-to-End-Test bleibt offen.
+- **Produktionsschutz:** Nur clientseitige Busy-/Status-Logik geändert. Keine Supabase-Connectoraufrufe, Migrationen, Produktivdatenänderungen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Listenbeschreibung bei Neuanlage und Fokus in ungültigen Layout-Vorschauen)
+
+- **Neue Wunschliste:** `createList` schnitt den getrimmten `listDescription`-Text über `.slice(0,500)` stillschweigend ab. Die Formularlogik prüft jetzt ausdrücklich die Grenze von 500 Zeichen, erhält die Eingabe und markiert/fokussiert das Beschreibungsfeld über `invalidField` einschließlich vorhandener Live-Statusmeldung. Beim erneuten Bearbeiten wird die Fehlermarkierung wieder entfernt. Die bisherige Datenbank-Insert-Operation wurde nicht geändert.
+- **Dashboard-Layout-Vorschauen:** `showPreview` gab bei ungültigen Vorlagen oder Formulareinstellungen zuvor nur die Meldung „Ungültige Layout-Vorschau.“ aus. Jetzt wird der Einstellungsbereich `homeGiftSettings` geöffnet, eine konkrete Sortier-/Kennzahlen-/Link- oder Bereichssteuerung fokussiert und per `aria-describedby` mit `homeLayoutStatus` verknüpft; das Scrollverhalten berücksichtigt `prefers-reduced-motion`. Bei gültigen Vorschauen ist die Anzeige unverändert.
+- **Prüfung:** Aktuelle `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach den Commits von GitHub abgerufen. Beide Module und zehn Inline-Skripte isoliert auf JavaScript-Syntax geprüft: keine Fehler; keine doppelten statischen HTML-IDs. Keine authentifizierte Browser-E2E-Prüfung durchgeführt.
+- **Produktionsschutz:** Ausschließlich clientseitige Formular- und Fokuslogik geändert. Keine Supabase-Connectoraufrufe, Datenbankmigrationen, Produktivdatenschreibvorgänge oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Formularvalidierung für Listenbeschreibung und persönliche Layout-Vorlagen)
+
+- **Listenbearbeitung:** Eine Beschreibung von mehr als 500 Zeichen wurde in `lists-dashboard.mjs` zuvor lediglich über `msg` gemeldet. Der Nutzer blieb beim Speichern-Button und das beschreibende Feld hatte weder `aria-invalid` noch einen Bezug zur Statusmeldung. Die Validierung nutzt nun `invalidField(editListDescription, …)` mit Fokusrückgabe und Screenreader-Verknüpfung. Die bestehende Attributbereinigung beim Ändern der Eingabe und beim Öffnen des Editors wurde auf `editListDescription` erweitert.
+- **Dashboard-Vorlagenspeicherung:** Bei ungültigem `draft` in `homeSaveLayout` meldete `gift-start.mjs` bisher nur einen allgemeinen Fehler. Nun wird je nach ungültiger Sortierung, Kennzahlen-, Schnellzugriffs-, Favoriten- oder Bereichsauswahl das passende Feld fokussiert, per `aria-describedby` mit der vorhandenen `homeLayoutStatus`-Live-Meldung verknüpft und unter Berücksichtigung reduzierter Bewegung ins Sichtfeld gebracht. Die vorhandene Validierungs- und Speicherlogik bleibt unverändert.
+- **Prüfung:** Die aktualisierten `gift-start.mjs`, `lists-dashboard.mjs` sowie `index.html` erneut von GitHub geladen; beide Module und zehn Inline-JavaScript-Blöcke ohne Syntaxfehler geprüft, keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler Browser-End-to-End-Test bleibt offen.
+- **Produktionsschutz:** Nur clientseitige Formularvalidierung und Fokusführung geändert, keine Supabase-Abfragen oder produktiven Daten geändert, keine Migrationen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschau bei Kontowechsel und Vorlagenspeicherung abgesichert)
+
+- **Kontowechsel und Abmeldung:** Die Authentifizierungsaktualisierung in `gift-start.mjs` setzte `previewSnapshot` und `previewTarget` bei Abmeldung zurück, ließ den zuletzt gesicherten, nicht gespeicherten `previewFormDraft` jedoch bestehen. Beim Abmelden und beim Wechsel zu einer anderen angemeldeten Person werden jetzt alle drei temporären Vorschauzustände zurückgesetzt und die Vorschauaktionen `homePreviewUndo` und `homeConfirmPreview` deaktiviert. Damit verbleiben keine alten Formularentwürfe in einer neuen Sitzung.
+- **Vorlagen während Vorschau:** `homeSaveLayout` ließ das Speichern eines persönlichen Layouts zu, während eine unbestätigte Vorschau aktiv war. Die anschließende `applyPreferences`-Neuzeichnung konnte gespeicherte und vorläufige Ansichten inkonsistent machen. Bei aktivem `previewSnapshot` wird die Vorlagenspeicherung jetzt vor dem bisherigen Schreibpfad abgefangen: Es erscheint eine formularnahe Live-Meldung, dass die Vorschau zuerst bestätigt oder verworfen werden muss, und die Fokusführung wechselt zur vorhandenen Rückgängig-Aktion.
+- **Prüfung:** Die aktualisierte `gift-start.mjs`, unveränderte `lists-dashboard.mjs` und `index.html` nach GitHub-Veröffentlichung erneut abgerufen. Beide JavaScript-Module und zehn Inline-Skripte syntaktisch ohne Fehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter Browser-End-to-End-Test bleibt offen.
+- **Produktionsschutz:** Ausschließlich clientseitige Zustandsbereinigung und ein zusätzlicher Guard vor bestehenden Speicheraktionen. Keine Supabase-Connectoraufrufe, Migrationen, produktiven Schreibvorgänge oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Formularentwurf beim Layout-Speichern und korrekte Listen-Vorlagenmeldung)
+
+- **Geschenk-Dashboard: Vorlagenspeicherung:** `homeSaveLayout` speichert in `gift-start.mjs` den aktuellen Formularentwurf als persönliche Vorlage. Die gemeinsame `saveLayoutChange`-Routine zeichnete danach über `applyPreferences()` die Formularfelder anhand der bisher aktiven, gespeicherten Dashboard-Konfiguration neu und verwarf dadurch noch nicht gespeicherte Eingaben. Die neue gemeinsame `restoreSettingsDraft`-Hilfsfunktion erhält den aktuellen Formularentwurf nach der Vorlagenaktion einschließlich Sichtbarkeits-Checkboxen, Sortieroptionen, Kennzahlen, Links und Abschnittsreihenfolge. Die Funktion wird auch beim Rückgängigmachen einer Vorschau wiederverwendet; die tatsächlichen Supabase-Speicherparameter bleiben unverändert.
+- **Wunschlisten-Vorlagen:** Die bisherige Korrektur für `listTitle` beseitigte zwar `aria-invalid` nach Einsetzen eines Vorlagentitels, ließ aber die alte globale Fehlermeldung „Listenname muss 1 bis 80 Zeichen enthalten.“ im Live-Status bestehen. Bei genau diesem zuvor bestehenden Fehlerzustand ersetzt die Vorlagenauswahl den veralteten Hinweis nun durch eine passende Rückmeldung. Andere Fehlermeldungen werden nicht überschrieben.
+- **Prüfung:** `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach Veröffentlichung erneut über GitHub abgerufen. Beide Module und zehn Inline-JavaScript-Blöcke isoliert ohne Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Kein angemeldeter mobiler End-to-End-Browsertest durchgeführt.
+- **Produktionsschutz:** Ausschließlich clientseitige Formularzustands-Wiederherstellung und Statusanzeige; keine Supabase-Connectoraufrufe, Migrationen, neuen Testdaten oder Änderungen an bestehenden Produktivdatensätzen.
+
+## Entwicklungsfortschritt – 11.11.2026 (Individuelle Dashboard-Vorschau und Listen-Vorlagenvalidierung)
+
+- **Individuelle Dashboard-Vorschau:** Die `custom`-Aktion im Layoutbalken von `gift-start.mjs` übergab zuvor `previewSnapshot||preferences` an `showPreview`. Damit wurde bei einer bestehenden Vorschau auf gespeicherte Dashboard-Werte statt auf den vor der Vorschau gesicherten nicht gespeicherten Formularentwurf zurückgegriffen. Jetzt wird `previewFormDraft||draftSettings()` für die individuelle Vorschau verwendet, damit die aktuellen beziehungsweise vor Vorschauwechsel gesicherten Einstellungen korrekt angezeigt werden. Bestehende Vorschau-/Speicherlogik und Datenbankaufrufe bleiben unverändert.
+- **Wunschlisten-Vorlagen:** Die Vorlagenauswahl in `lists-dashboard.mjs` setzt `listTitle` programmatisch auf den Vorlagentitel. War das Feld zuvor als ungültig markiert, blieben `aria-invalid` und `aria-describedby` trotz neuer Eingabe erhalten, weil kein normales Eingabeereignis ausgelöst wurde. Nach der Vorlagenauswahl werden beide veralteten Attribute nun entfernt; der laufende Tastaturfokus bleibt unberührt.
+- **Prüfung:** Aktualisierte `gift-start.mjs` und `lists-dashboard.mjs` sowie `index.html` nach GitHub-Veröffentlichung neu geladen. Beide Module und zehn Inline-Skripte erfolgreich isoliert auf JavaScript-Syntax geprüft, keine doppelten statischen HTML-IDs. Ein vollständiger Test im authentifizierten Mobilbrowser steht aus.
+- **Produktionsschutz:** Ausschließlich clientseitige Vorschauauswahl und Formular-Fehlerzustände angepasst. Keine Supabase-Connectoraufrufe, Datenbankmigrationen, Änderungen an Produktivdatensätzen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschau bewahrt Formularentwurf und mobile Bewegungspräferenz)
+
+- **Nicht gespeicherte Dashboard-Einstellungen:** `showPreview` zeichnete die Konfigurationsfelder mit `applyPreferences()` neu. Dadurch gingen noch nicht gespeicherte Checkbox-, Sortier- und Abschnittsreihenfolgeänderungen verloren, wenn eine Layout-Vorschau verworfen wurde. Die neue temporäre `previewFormDraft`-Sicherung erfasst den aktuellen Formularentwurf beim ersten Vorschauwechsel. `endPreview(true)` stellt nach dem Wiederherstellen der tatsächlichen Dashboard-Ansicht auch die ursprünglichen Formulareingaben und die `draftOrder`-Reihenfolge wieder her; `endPreview(false)` verwirft die Entwurfssicherung bei bestätigter Übernahme. Es wurde keine bestehende Supabase-Speicherabfrage geändert.
+- **Mobile Start-Schnellaktionen:** `homeNewWish` und `homeNewList` berücksichtigen jetzt `prefers-reduced-motion` beim Scrollen zum gewünschten Formular. Bestehende Fokusaktionen bleiben erhalten.
+- **Prüfung:** `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach GitHub-Veröffentlichung erneut abgerufen. Beide Module und zehn Inline-Skripte isoliert ohne JavaScript-Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Vollständige authentifizierte Browser-/Touch-E2E-Prüfung bleibt ausstehend.
+- **Produktionsschutz:** Änderungen ausschließlich im Client an Formularzustand und Scrollverhalten. Keine Supabase-Connectoraufrufe, Migrationen, produktive Schreiboperationen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschauaktionen und mobile Schnellnavigation)
+
+- **Vorschau und Fokus:** In `gift-start.mjs` deaktivieren `endPreview` und der Speichervorgang die gerade verwendeten Buttons „Vorschau rückgängig“ bzw. „Vorschau übernehmen“. Der Tastaturfokus blieb zuvor auf einem danach deaktivierten Button. Nach Abbruch oder bestätigter Übernahme wird die bestehende `homeLayoutStatus`-Live-Meldung programmatisch fokussiert; die bestehende Speicherlogik bleibt unverändert.
+- **Listen-Schnellaktion:** `quickOpenSelected` in `lists-dashboard.mjs` scrollte bisher lediglich zur ausgewählten Liste. Die Aktion verwendet nun die vorhandene `focusListRegion('activeListHeading')`-Hilfe für einen nachvollziehbaren Tastatur- und Screenreader-Kontext.
+- **Bewegungspräferenz:** Die Schnellaktionen `mobileNewWish`, `quickAddWish` und `quickNewList` respektieren `prefers-reduced-motion`, statt `smooth`-Scrollen unbedingt zu erzwingen.
+- **Prüfung:** Nach Veröffentlichung `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` neu aus GitHub abgerufen. Zwei Module und zehn Inline-Skripte isoliert auf JavaScript-Syntax geprüft: keine Fehler; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test bleibt offen.
+- **Produktionsschutz:** Nur clientseitige Fokus-, Navigations- und Scrolllogik geändert; keine Supabase-Connectoraufrufe, Datenbankmigrationen, Produktivdatenänderungen oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschau und sichere Fokusrückgabe)
+
+- **Dashboard-Vorschau:** In `gift-start.mjs` schaltete `saveLayoutChange` im `finally`-Block sämtliche Layoutbuttons frei, also auch `homeConfirmPreview` und `homePreviewUndo`, obwohl `endPreview` die Vorschau bereits beenden konnte. Diese beiden Aktionen bleiben nun deaktiviert, solange `previewSnapshot` nicht existiert. Bereits vorhandene Vorschaufunktionen und Speicherabfragen bleiben unverändert.
+- **Listen-Editor:** `finishListEditing` stellte den Fokus nach Speichern/Abbrechen auf das ursprünglich aktive Element zurück, sobald dieses noch mit dem DOM verbunden war und keinen `[hidden]`-Vorfahren besaß. Mit einer zusätzlichen Prüfung über `getClientRects()` und `:disabled` werden auch per CSS ausgeblendete oder inzwischen deaktivierte Auslöser erkannt. In diesen Fällen dient `listsContent` als barrierefrei fokussierbarer Rücksprungpunkt.
+- **Prüfung:** `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach den GitHub-Commits erneut geladen. Beide JavaScript-Module sowie zehn Inline-Skripte syntaktisch ohne Fehler geprüft; keine doppelten statischen HTML-IDs. Ein angemeldeter Browser-End-to-End-Test bleibt ausstehend.
+- **Produktionsschutz:** Ausschließlich clientseitige Button-Zustände und Fokusführung geändert. Keine Supabase-Connectoraufrufe, Migrationen, produktiven Schreibvorgänge oder Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Sichere Listenbearbeitung und Dashboard-Formularfokus)
+
+- **Listen-Editor:** Beim Speichern in `lists-dashboard.mjs` blieb der Button „Abbrechen“ aktiv, obwohl `listMutationBusy` gesetzt war und eine asynchrone Speicherung lief. Jetzt werden beide Formularaktionen während dieses Vorgangs gesperrt, ein formularnaher Live-Status meldet „Änderungen werden gespeichert …“, und beide Aktionen werden im `finally` wieder freigegeben. Der Abbruch-Handler ignoriert Klicks während der laufenden Listenänderung. Die bisherigen Datenbankoperationen bleiben unverändert.
+- **Dashboard-Einstellungen:** Bei einer fehlerhaften Konfiguration in `gift-start.mjs` führte die Validierung bislang ausschließlich bei leerer Kennzahlenauswahl gezielt zum Feld. Jetzt wird je nach Fehler zuerst der betroffene Sortier- oder Auswahlbereich fokussiert und per `aria-describedby` mit der bestehenden Live-Statusmeldung verknüpft; die temporäre Verknüpfung wird beim Ändern entfernt. Auch reduzierte Bewegung wird beim Scrollen berücksichtigt.
+- **Prüfung:** Aktualisierte Dateien `lists-dashboard.mjs`, `gift-start.mjs` und unveränderte `index.html` erneut von GitHub geladen. Beide Module und zehn Inline-JavaScript-Blöcke syntaktisch ohne Fehler geprüft, keine doppelten statischen HTML-IDs. Vollständiger authentifizierter Mobilbrowser-End-to-End-Test weiterhin offen.
+- **Produktionsschutz:** Nur clientseitige Sperr-, Fokus- und Formularstatuslogik angepasst; keine Supabase-Abfragen, -Migrationen oder produktiven Daten verändert, keine Testdaten angelegt.
+
+## Entwicklungsfortschritt – 11.11.2026 (Fokus bei Wunschfilter-Reset und Mehrfachauswahl)
+
+- **Leere Suchergebnisse:** In `lists-dashboard.mjs` erzeugt `renderWishCards` bei null Treffern einen eigenen Button „Filter zurücksetzen“. Dessen Klick entfernt den Button beim Neuzeichnen selbst. Nach dem Rücksetzen wird nun das sichtbare Wunsch-Suchfeld `listWishSearch` fokussiert; die reguläre Aktion `listWishClearFilters` erhält dieselbe konsistente Fokusführung.
+- **Mehrfachauswahl:** Die Aktionen `bulkClear` und `wishClearSelection` leeren die lokale Sammelauswahl und aktualisieren die Karten und Toolbar. Dabei können ursprünglich fokussierte Aktionsbuttons deaktiviert werden. Der Fokus wechselt jetzt nach dem Neuzeichnen zum weiterhin bedienbaren Wunsch-Suchfeld, während bestehende Live-Ergebniszähler unverändert bleiben.
+- **Prüfung:** Die aktuelle `lists-dashboard.mjs`, `gift-start.mjs` und `index.html` nach GitHub-Veröffentlichung erneut geladen. Beide Module und zehn Inline-JavaScript-Blöcke ohne Syntaxfehler geprüft, keine doppelten statischen HTML-IDs. Das Geschenk-Dashboard benötigte in dieser Runde keine Codeänderung; ein vollständiger authentifizierter Browser-End-to-End-Test bleibt ausstehend.
+- **Produktionsschutz:** Ausschließlich clientseitige Fokusführung nach Filter- und Auswahlaktionen geändert; keine neuen/geänderten Supabase-Abfragen, keine Produktivdatenänderungen und keine Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Dynamische Listenfilter und Nachladen ohne Fokusverlust)
+
+- **Filter zurücksetzen:** Der im leeren Suchergebnis nachträglich erzeugte Button „Listenfilter zurücksetzen“ wird durch `render()` aus dem DOM entfernt. Auch der reguläre Zurücksetzen-Button kann nach der Filterkorrektur ausgeblendet werden. Beide Aktionen führen den Tastaturfokus jetzt nach dem Neuzeichnen zum weiterhin sichtbaren `listsSearch`-Feld zurück.
+- **Wünsche nachladen:** Beim letzten Klick auf „Weitere 100 Wünsche anzeigen“ kann `wishLoadMore` nach dem Aktualisieren ausgeblendet werden, sodass der aktive Tastaturfokus verschwindet. In diesem Fall wird der bereits bestehende `listWishCount`-Ergebnisstatus temporär fokussierbar gemacht und fokussiert; solange weitere Seiten vorhanden sind, bleibt der Nachladen-Button unverändert.
+- **Dashboard und Status:** Die vorhandenen Ergebniszähler `listsViewCount` und `listWishCount` sind bereits Live-Statusregionen. Die bestehenden Dashboard-Module wurden zusätzlich statisch überprüft; in dieser Runde war keine Änderung an `gift-start.mjs` erforderlich.
+- **Prüfung:** Aktuelle `lists-dashboard.mjs`, `gift-start.mjs`, `index.html` erneut über GitHub abgerufen. Beide Module und zehn Inline-Skripte ohne JavaScript-Syntaxfehler geprüft, keine doppelten statischen IDs. Kein authentifizierter End-to-End-Test und keine produktiven Schreibtests.
+- **Produktionsschutz:** Nur clientseitige Fokusführung nach Neuzeichnen/Filterwechsel; keine neuen oder geänderten Supabase-Abfragen, Migrationen, Testdaten oder Änderungen an Produktivdatensätzen.
+
+## Entwicklungsfortschritt – 11.11.2026 (Fokus bei dynamischen Wunschkarten und Dashboard-Live-Rückmeldungen)
+
+- **Wunschkarten-Markierungen:** `setMarker` zeichnet die gesamte Kartenansicht nach einer Favoriten-/Später-Markierung neu. Dabei verschwand der bisher fokussierte Button aus dem DOM. Neue `data-wish-marker`-Kennungen und die `restoreWishCardControl`-Hilfe setzen den Fokus auf die entsprechende neu gezeichnete Schaltfläche zurück, sofern die Aktion aus der Kartenansicht erfolgte. Die Detailansicht wird nicht unbeabsichtigt überfokussiert.
+- **Mehrfachauswahl:** Wenn „Nur ausgewählte“ aktiv ist und ein Wunsch per Checkbox abgewählt wird, verschwindet seine Karte. Die Fokusführung landet nun bei einem passenden neuen Auswahlfeld oder beim Wunschfilter beziehungsweise der Listenüberschrift, statt auf einem entfernten Element zu verbleiben.
+- **Kategoriebearbeitung:** Nach dem Speichern einer gerätelokalen Wunschkategorie und Schließen des Detaildialogs wird die zugehörige neu gezeichnete Wunschkarte wieder fokussiert, sofern sichtbar.
+- **Dashboard-Einstellungen:** Nach dem Verschieben eines Abschnitts nennt die vorhandene Live-Statusmeldung jetzt den Namen des Abschnitts und die neue Position von vier Bereichen statt einer allgemeinen Bestätigung.
+- **Prüfung:** Die aktualisierten `lists-dashboard.mjs`, `gift-start.mjs` sowie die unveränderte `index.html` aus GitHub neu geladen. Beide Module und zehn Inline-Skripte ohne Syntaxfehler isoliert geprüft; keine doppelten statischen HTML-IDs. Vollständiger authentifizierter Browser-E2E-Test bleibt offen.
+- **Produktionsschutz:** Ausschließlich DOM-Fokus und barrierefreie Statusmeldungen. Keine neuen oder geänderten Supabase-Abfragen, Migrationen, Testdaten oder Änderungen an bestehenden Produktivdatensätzen.
+
+## Entwicklungsfortschritt – 11.11.2026 (Dynamisch aktualisierte Favoriten und Dashboard-Validierung)
+
+- **Konkreter Fokusverlust beim Favoritenwechsel:** Die Favoritenaktion in `lists-dashboard.mjs` zeichnet mit `render()` sämtliche Listenkarten neu. Dabei wurde auch der gerade aktive Favoritenbutton entfernt, wodurch die Tastaturnavigation ihren Anker verlor. Listenkarten erhalten nun ein internes `data-list-id`; nach dem Neuzeichnen fokussiert die Aktion den entsprechenden neuen Favoritenbutton. Falls die Karte durch den aktuellen Filter nicht mehr sichtbar ist (z. B. beim Entfernen aus „Nur Favoriten“), wandert der Fokus zum weiterhin erreichbaren Listenfilter.
+- **Dashboard-Einstellungen ohne Kennzahl:** Die vorhandene clientseitige Validierung in `gift-start.mjs` zeigt bei einer leeren Kennzahlenauswahl nicht mehr ausschließlich eine Statusmeldung am Speichern-Button: Sie verknüpft den ersten Kennzahlen-Checkbox-Eintrag über `aria-describedby` mit `homeSettingsStatus`, fokussiert das Feld und scrollt unter Berücksichtigung reduzierter Bewegung zur Auswahl. Nach einer Änderung in der Auswahl wird diese temporäre Zuordnung entfernt.
+- **Geprüft:** Nach Veröffentlichung `amazon-wishlist/lists-dashboard.mjs`, `gift-start.mjs` und `index.html` neu von GitHub geladen. Beide Module und die zehn Inline-Skripte ohne JavaScript-Syntaxfehler; keine doppelten statischen HTML-IDs. Ein vollständiger Browser-End-to-End-Test mit Anmeldung bleibt offen.
+- **Produktionsschutz:** Ausschließlich clientseitige DOM-, Fokus- und Validierungsdarstellung; keine Datenbankabfragen geändert, keine Supabase-Migrationen oder -Schreiboperationen, keine Testdaten, keine Änderung bestehender Produktivdatensätze.
+
+## Entwicklungsfortschritt – 11.11.2026 (Mobile Schnellnavigation und sortierbare Dashboard-Abschnitte)
+
+- **Konkreter Sortierfehler im privaten Geschenk-Dashboard:** Nach dem Verschieben eines Abschnitts wählte die Tastaturfokuslogik stets den ersten aktiven Pfeilbutton. Wer wiederholt „Nach unten“ auslöste, konnte daher versehentlich mit „Nach oben“ die gerade ausgeführte Änderung umkehren. Der Fokus bleibt nun bei der gewählten Richtung, solange deren Button aktiv ist; an Listenrändern wird auf einen noch aktiven Button ausgewichen.
+- **Mobile Wunschlisten-Schnellnavigation:** „Favoriten ansehen“ (`homeFavorites`) und „Listen“ (`mobileMyLists`) fokussieren die Listenübersicht nach dem Sprung. Die bestehende `focusListRegion`-Hilfe übernimmt Fokus und Scrollbewegung; Filter- und Datenlogik bleibt unverändert.
+- **Wunschkarten:** Beim gezielten Navigieren zu einer Wunschkarte berücksichtigt `focusWishCard` die Systemeinstellung `prefers-reduced-motion` anstelle einer immer erzwungenen sanften Scrollbewegung.
+- **Prüfung:** Aktuelle `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach Veröffentlichung von GitHub geladen. Beide Module und zehn Inline-Skripte syntaktisch geprüft, keine Fehler; keine doppelten statischen HTML-IDs. Die Auswahl aktivierter Sortierbuttons wurde zusätzlich mit beiden Bewegungsrichtungen und verschiedenen Deaktivierungszuständen durchgespielt. Ein authentifizierter End-to-End-Browsertest bleibt offen.
+- **Produktionsschutz:** Reine clientseitige Fokus-, Navigations- und Bewegungsanpassungen. Keine Supabase-Migration, keine Produktivdatenänderung, keine Testdaten.
+
+## Entwicklungsfortschritt – 11.11.2026 (Fokusführung für Wunschlisten-Navigation und Dashboard-Sortierung)
+
+- **Wunschlisten:** `openList` und der Button `listItemsBack` scrollten bislang ohne Tastaturfokuswechsel. Die neue clientseitige `focusListRegion`-Hilfe fokussiert die geöffnete Listenüberschrift bzw. beim Zurückspringen die Liste; sie berücksichtigt `prefers-reduced-motion`.
+- **Geschenk-Dashboard:** Nach einer Verschiebung in der Abschnittssortierung suchte die bisherige Fokuslogik an einer festen Position nach einem Pfeilbutton, der an Listenrändern deaktiviert sein konnte. Die Fokuswahl nimmt nun einen aktivierten Button des verschobenen Abschnitts.
+- **Prüfung:** Beide betroffenen JavaScript-Module `amazon-wishlist/lists-dashboard.mjs` und `amazon-wishlist/gift-start.mjs` erneut von GitHub geladen und ohne JavaScript-Syntaxfehler isoliert geprüft. Authentifizierter End-to-End-Browsertest steht aus.
+- **Produktionsschutz:** Ausschließlich clientseitige Fokus- und Scroll-Logik verändert; keine Supabase-Schreiboperation, Schemaänderung oder Testdaten und keine Änderung vorhandener Produktivdatensätze.
+
+## Entwicklungsfortschritt – 11.11.2026 (Geschenkplanung: mobile Fehlermeldungen und Fokusführung)
+
+- **Konkrete UX-Lücke:** In der separaten `amazon-wishlist/gift-planner.html` wurden Speicher- und Validierungshinweise bislang allein in der weit oben stehenden globalen Statuszeile angezeigt; auf Smartphones waren diese nach Scrollen zum Formular nicht unmittelbar sichtbar.
+- **Formularnahe Meldungen:** Neue Live-Regionen `budgetSaveFeedback` beim Anlassbudget und `giftFormFeedback` direkt nach den Geschenkspeicheraktionen; bestehende globale Statusmeldung bleibt erhalten. Rückmeldungen zu erfolgreichem Budget-/Geschenkspeichern und zu Fehlern erscheinen zusätzlich im relevanten Formular.
+- **Validierung und Fokus:** Fehlende Anlässe/Titel oder ungültige Beträge führen beim bestehenden clientseitigen Validierungspfad zu `aria-invalid`, `aria-describedby` mit Verweis auf den lokalen Fehlerstatus sowie zum Fokus auf dem betreffenden Feld. Fehlerkennzeichnung wird beim Korrigieren des Feldes entfernt. Keine Änderung der Supabase-Schreibbedingungen.
+- **Bearbeiten/Abbrechen:** Beim Bearbeiten eines Geschenks wird der auslösende Button erfasst; bei „Abbrechen“ kehrt der Fokus nach Möglichkeit dorthin zurück. Nach erfolgreichem Speichern wird die neue lokale Statusmeldung fokussiert. Die Meldungen sind für mobile Bildschirme und das dunkle Farbschema gestaltet.
+- **Prüfung:** Beide GitHub-Dateien erneut abgerufen; isolierte JavaScript-Syntaxprüfung des Moduls ohne Fehler, Style-Tags und CSS-Klammern ausgeglichen sowie keine doppelten statischen IDs. Ein authentifizierter Browser-End-to-End-Test mit tatsächlichen Produktivdatensätzen steht aus.
+- **Mobile Dashboard-Navigation:** Der vorhandene „Nach oben“-Button der Wunschlisten-Startseite setzt den Tastaturfokus jetzt auf den Hauptinhalt statt ihn nur vom Button zu entfernen. So bleibt nach der Sprungaktion ein nachvollziehbarer Tastaturpfad. Auch diese Änderung betrifft nur Client-JavaScript in `amazon-wishlist/index.html`.
+- **Produktionsschutz:** Ausschließlich Änderungen an HTML/CSS und clientseitigen UI-Rückmeldungen sowie Fokus; keine Supabase-Migration, keine Testdaten oder Änderungen an Produktivdatensätzen.
+
+## Entwicklungsfortschritt – 11.11.2026 (Mobile Navigationszustände, Touch und Tastatur)
+
+- **Mobiler Klappzustand:** Die bestehende DOM-Gruppierung für `mobileListCreation`, `mobileRecentLists` und `mobileGiftExtra` speichert die über Touch-/Tastaturaktivierung gewählte Öffnung nun am jeweiligen `details`-Element (`data-mobile-open`). Beim responsiven Wechsel auf Desktop bleiben die Bereiche offen und beim Zurückwechseln zu Mobilgeräten wird die dort beabsichtigte Auswahl wiederhergestellt.
+- **Programmatisch geöffnete Formulare:** Die Schnellaktionen `homeNewList` / `quickNewList`, Direktlinks in zuvor geschlossene Bereiche und Validierungsfehler der Listenerstellung markieren ihr mobiles `details` als absichtlich geöffnet. Dadurch fällt das Formular nach einem Bildschirmbreitenwechsel nicht unbeabsichtigt zu. Analog berücksichtigt die Verwaltung des privaten Geschenk-Dashboards programmatisches Öffnen durch Direktlinks.
+- **Tastatur:** `Escape` in der Hauptnavigation schließt nur noch eine tatsächlich geöffnete Navigationsgruppe, die den aktuellen Tastaturfokus enthält. Der Fokus wird auf die `summary` dieser Gruppe zurückgesetzt; andere Gruppen bleiben unberührt.
+- **Prüfung:** `amazon-wishlist/index.html`, `app.mjs` und `lists-dashboard.mjs` nach Veröffentlichung erneut von GitHub geladen. Zehn Inline-JavaScript-Blöcke und beide JavaScript-Module wurden isoliert ohne Syntaxfehler geprüft; 21 CSS-Stylesheets mit ausgeglichenen Klammern und keine doppelten statischen HTML-IDs. Vollständiger authentifizierter Live-Browser-Test auf Touchgeräten bleibt offen; die genannten Fehler wurden anhand des aktuellen Programmablaufs nachvollzogen, nicht durch einen vollständigen produktiven E2E-Test.
+- **Produktionsschutz:** Ausschließlich clientseitige Navigation, Fokus und DOM-Zustandsmarker; keine Supabase-Schreiboperationen oder Migrationen, keine Testdaten, keine Änderungen an bestehenden Produktivdatensätzen.
+
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Erreichbarkeit und zugeordnete Formularfehler)
+
+- **Schnellaktion „Neue Liste“:** Die bestehenden Auslöser `homeNewList`, `quickNewList` und `createList` öffnen den mobilen `details`-Bereich `mobileListCreation` vor nachfolgenden Fokus- und Speicheraktionen. Insbesondere die Schnellaktion `quickNewList` fokussiert damit keine Eingabe mehr in einem geschlossenen Bereich.
+- **Desktop-Erreichbarkeit:** Die für Smartphones nachträglich gruppierten Bereiche `mobileListCreation`, `mobileRecentLists` und `mobileGiftExtra` werden ab 760 px geöffnet. Unterhalb davon bleibt die manuell gewählte mobile Klappstellung erhalten; ursprüngliche DOM-Elemente und Event-Handler bleiben bestehen.
+- **Formular-Fehlermeldungen:** Listen- und Wunschfelder erhalten bei bestehenden Validierungsfehlern `aria-invalid="true"` und einen `aria-describedby`-Verweis auf `listsStatus`, `editListFeedback` bzw. `wishSaveFeedback`. Bei Listenfehlern werden geschlossene übergeordnete `details` vor dem Setzen des Fokus geöffnet. Nach Korrektur bzw. beim Zurücksetzen werden Fehlerattribute entfernt.
+- **Gezielte Prüfung:** Aktuelle `index.html`, `app.mjs` und `lists-dashboard.mjs` nach Veröffentlichung über GitHub neu geladen; alle zehn Inline-JavaScript-Blöcke und beide Module isoliert ohne Syntaxfehler geprüft, 21 öffnende und 21 schließende Style-Tags sowie keine doppelten statischen HTML-IDs. Ein vollständiger angemeldeter Browser-End-to-End-Test steht noch aus.
+- **Produktionsschutz:** Änderungen ausschließlich an clientseitiger Navigation, Sichtbarkeit und Zugänglichkeitsattributen; keine Supabase-Schreiboperationen oder Schemaänderungen, keine Testdaten und keine Änderungen vorhandener Produktivdatensätze.
+
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Formularvalidierung und Feldfokus)
+
+- **Listen anlegen/bearbeiten:** Ungültige oder fehlende Listennamen führen nun zu einer direkt mit `aria-invalid="true"` markierten und fokussierten Eingabe; bei der bestehenden Listenbearbeitung gilt dasselbe für ungültige HTTPS-Titelbildadressen. Die vorhandene globale bzw. formularnahe Statusmeldung bleibt erhalten.
+- **Wünsche speichern:** Ungültige Amazon.de-Produktlinks, Produkttitel und zu lange Wunsch-Notizen werden dem tatsächlich betroffenen Eingabefeld zugeordnet. Der bestehende Fehlertext wird weiter über die vorhandene Speicherfehlerbehandlung ausgegeben; zusätzlich wandert der Fokus zum Feld und `aria-invalid` kennzeichnet den Fehler für assistive Technologien.
+- **Mobiles Design:** Deutliche rote Fokus-/Fehlerumrandung für ungültige Eingaben im Wunsch- und Listen-Editor bei Bildschirmbreiten bis 759 px. Bei Eingabe oder Auswahlwechsel wird die Markierung entfernt; beim erneuten Öffnen/Zurücksetzen des Editors werden alte Markierungen bereinigt.
+- **Prüfung:** Die veröffentlichten Dateien `index.html`, `app.mjs`, `lists-dashboard.mjs` aus GitHub neu geladen; alle zehn Inline-JavaScript-Blöcke und beide Module isoliert ohne Syntaxfehler geprüft; 21 öffnende und 21 schließende Style-Tags sowie keine doppelten statischen HTML-IDs. Kein produktiver Browser-End-to-End-Test durchgeführt.
+- **Produktionsschutz:** Nur Frontend-Validierungsdarstellung und Fokusführung verändert. Keine neuen oder geänderten Supabase-Abfragen, Migrationen oder Testdaten; keine Produktivdatensätze angefasst.
+
+## Entwicklungsfortschritt – 10.11.2026 (Fokusführung nach Speichern und Abbrechen)
+
+- **Listenbearbeitung:** Vor dem Öffnen des vorhandenen Listen-Editors wird das fokussierte Auslöseelement gemerkt. Beim Abbrechen und nach erfolgreichem Speichern führt die Oberfläche den Tastaturfokus wieder zu diesem Button, sofern er nach der Aktualisierung noch existiert und sichtbar ist. Falls der Button beim Neuzeichnen der Liste entfernt wurde, wird die Listenübersicht programmatisch fokussierbar und als sicherer Rücksprungpunkt genutzt. Auch bei bereits gespeichertem Listendesign mit nachfolgendem Ladefehler wird der Fokus zurückgeführt.
+- **Wunschbearbeitung:** Der bestehende Abbruch setzt weiterhin alle Eingabewerte zurück und beendet den Bearbeitungsmodus; zusätzlich wird der Fokus auf den sichtbaren Speichern-Button zurückgeführt, und die globale Statusmeldung bestätigt den Abbruch. `prefers-reduced-motion` wird bei der Navigation berücksichtigt.
+- **Barrierefreiheit:** Diese Anpassungen verhindern nach dem Ausblenden des Listenformulars einen Fokus auf einem versteckten Eingabefeld und erhalten einen nachvollziehbaren Tastaturpfad. Keine Änderungen an Formularvalidierung oder Datenbankabfragen.
+- **Prüfung:** Nach Veröffentlichung beide JavaScript-Module und `index.html` erneut aus GitHub abgerufen; isolierte JavaScript-Syntaxprüfung der Module (einschließlich Top-Level-`await`) und Inline-Skripte ohne Syntaxfehler, keine doppelten statischen HTML-IDs. Authentifizierter Browser-End-to-End-Test bleibt ausstehend.
+- **Produktionsschutz:** Nur clientseitige Fokus-/Scroll- und Statuslogik; keine Supabase-Schreiboperation, keine Migration, keine Testdaten oder Änderungen an Produktivdatensätzen.
+
+## Entwicklungsfortschritt – 10.11.2026 (Formular-Navigation und lokale Fehlermeldungen)
+
+- **Wunschbearbeitung:** Die bestehende Aktion „Bearbeiten“ scrollt nun zum tatsächlichen Wunsch-Editor-Titel statt an den Anfang des davorliegenden Profilbereichs und setzt den Fokus auf die bearbeitbare Notiz. Reduzierte Animation wird berücksichtigt; die Auswahl zur Sichtbarkeit aktualisiert ihren Privatsphäre-Hinweis beim Befüllen bestehender Wünsche.
+- **Speicherrückmeldungen:** Zusätzlicher, barrierearm als Live-Region markierter Status `wishSaveFeedback` direkt unter dem Wunsch-Speicherbereich. Fehler aus der bestehenden `run`-Fehlerbehandlung sowie die vorhandenen Erfolgs- und Teilfehlermeldungen werden neben dem Formular angezeigt; die globale Statusmeldung bleibt bestehen.
+- **Listenbearbeitung:** `editListFeedback` als lokale Live-Region im vorhandenen Formular `editListForm`. Während der Bearbeitung erscheinen bestehende Listenmeldungen zusätzlich direkt im Formular; das Öffnen scrollt gezielt zum Formular und fokussiert den Namen, „Abbrechen“ kehrt zur Listenübersicht zurück. Es wurden keine Speicherabfragen verändert.
+- **Prüfung:** GitHub-Dateien `index.html`, `app.mjs` und `lists-dashboard.mjs` nach den Commits erneut gelesen; HTML-Inline-Skripte und `lists-dashboard.mjs` ohne Syntaxfehler bei statischer JavaScript-Prüfung, CSS-Klammern ausgeglichen. `app.mjs` nutzt bereits Top-Level-`await` und ist deshalb nicht mit einer klassischen Function-Parser-Prüfung als Ganzes validierbar. Authentifizierter Browser-End-to-End-Test weiterhin offen.
+- **Produktionsschutz:** UI-, Status- und Navigationsänderungen ohne neue Supabase-Datenbankaufrufe, Migrationen oder Testdaten; vorhandene Produktivdaten werden nicht angefasst.
+
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Wunsch- und Geschenkformulare verbessert)
+
+- **Datenschutzklarheit beim Wunsch-Speichern:** Der bisher statische Hinweis „Dein Wunsch wird öffentlich angezeigt“ wurde an die bestehende Auswahl `wishVisibility` gebunden. Bei `private` erklärt der Hinweis, dass der Wunsch selbst in öffentlichen Listen privat bleibt; bei `public` weist er auf die Sichtbarkeit von Titel und öffentlichen Notizen hin. Aktualisierung bei Eingabe/Auswahl und nach Klicks im Editor; ein `role="status"` mit `aria-live="polite"` unterstützt Screenreader. Die bestehende Speichern-/Supabase-Logik wird nicht verändert.
+- **Mobile Wunschlisten-Bearbeitung:** Responsive Begrenzungen für die vorhandenen Wunsch-, Listen- und Listenbearbeitungsfelder, flüssig umbrechende Schaltflächen, breitenbegrenzte Wunschvorschau und mobile 16-px-Eingabeschrift. Preis- und Mengenfelder erhalten passende `inputmode`-Attribute.
+- **Separate Geschenkplanungsseite:** `amazon-wishlist/gift-planner.html` bekommt mobile Karten-/Formularabstände, flexible Aktionsbuttons, Fokusmarkierung und einspaltige Kennzahlen auf sehr schmalen Bildschirmen; Budget- und Betragsfelder verwenden `inputmode="decimal"`.
+- **Prüfung:** Beide Dateien nach den GitHub-Commits erneut geladen. `index.html`: zehn Inline-Skripte ohne JavaScript-Syntaxfehler, 21 Stylesheets ohne unausgeglichene CSS-Klammern und ohne doppelte statische HTML-IDs. `gift-planner.html`: ein Stylesheet mit ausgeglichenen CSS-Klammern und keine doppelten statischen IDs. Ein authentifizierter End-to-End-Test und echter Live-Viewport-Test stehen aus.
+- **Produktionsschutz:** Nur Frontend-HTML/CSS/JS, keine Supabase-Migration oder -Schreiboperation, keine Testdaten, keine Änderung bestehender Wünsche oder Geschenke.
+
+## Entwicklungsfortschritt – 10.11.2026 (Chromium-Viewport-Prüfung und lesbarere mobile Hauptnavigation)
+
+- **Browserprüfung:** Headless Chromium wurde lokal mit einem ausdrücklich **nachgebildeten, reduzierten HTML/CSS-Testaufbau** der mobilen Hauptnavigation, Dashboard-Kennzahlen, Wunschlisten und Geschenkbudget-Flächen verwendet. Prüfformen: 320, 340, 360, 375, 390, 391, 420, 430, 759 und 760 px. In diesen Testansichten trat kein horizontaler Seitenüberlauf auf; die Einspalten- und Zweispaltenwechsel wurden kontrolliert.
+- **Sichtbarer Verbesserungsbedarf:** Im nachgebildeten 420-px-Layout beanspruchten längere Hauptnavigations-Bezeichnungen in zwei Spalten mehrere Zeilen. Die tatsächlichen CSS-Regeln im GitHub-Code wurden deshalb um eine gezielte Regel erweitert: bis 440 px erhält die Hauptnavigation eine Spalte mit linksbündigen, gut lesbaren, mindestens 46 px hohen Links.
+- **Nachprüfung:** Browser-Testaufbau mit der neuen Regel bei denselben zehn Breiten erneut geprüft; kein horizontaler Seitenüberlauf. Die produktive HTML-Datei enthält ausschließlich zusätzliche CSS-Regeln, keine geänderten IDs, Handler oder Datenzugriffe.
+- **Einschränkung:** Die lokale Repository-ZIP enthält den aktuellen `amazon-wishlist/`-Ordner nicht. Ein Abruf der vollständigen GitHub-Live-Seite im Chromium-Container war nicht möglich. Es handelt sich **nicht** um einen vollständigen Live-Screenshot-Test oder authentifizierten End-to-End-Test; die Browser-Fixtures bilden relevante Layoutregeln nach, nicht die gesamte Produktivseite.
+- **Produktionsschutz:** Keine Supabase-Migration oder -Schreiboperation, keine Testdaten, keine Änderung bestehender Produktivdatensätze.
+
+## Entwicklungsfortschritt – 10.11.2026 (Mobile-Feinschliff: schmale Displays und Dashboard-Bedienung)
+
+- **Konkreter Layoutfehler behoben:** Der zuletzt ergänzte Mobile-Stylesheet-Block hat bei Bildschirmbreiten unter 390 px versehentlich die bestehende Einspaltenregel des privaten Geschenk-Dashboards mit zwei Spalten überschrieben. Die spätere Regel stellt jetzt bis einschließlich 390 px ausdrücklich eine Spalte her; andere Karten und Eingaben bleiben unverändert.
+- **Dashboard-Verwaltung stabilisiert:** Der manuell gewählte Öffnungszustand des Verwaltungsbereichs wird jetzt nur durch eine echte Aktivierung der Zusammenfassung erfasst, nicht durch `toggle`-Ereignisse automatischer Viewport-Anpassungen. Desktop zeigt den Bereich weiterhin offen; Mobilgeräte standardmäßig geschlossen, außer nach manueller Öffnung.
+- **Robustheit:** Die Gruppierung des Dashboards hängt nicht mehr von einer ungenutzten, fragilen Abfrage benachbarter Überschriftselemente ab.
+- **Prüfung:** Veröffentlichte `amazon-wishlist/index.html` erneut aus GitHub gelesen: neun Inline-Skripte ohne JavaScript-Syntaxfehler, 21 Stylesheets mit ausgeglichenen Klammern und Style-Tags, keine doppelten statischen HTML-IDs; Einspaltenregel und neue Bedienlogik vorhanden.
+- **Produktionsschutz:** Nur Frontend-CSS und DOM-Bedienlogik; keine Supabase-Schreiboperation, Migration oder Testdaten. Browser-Visual-Review und angemeldeter End-to-End-Test sind weiterhin offen.
+
+## Entwicklungsfortschritt – 10.11.2026 (Kompakter mobiler Arbeitsbereich und einheitliche Formulare)
+
+- **Mobile Startseite:** Geschenk-Dashboard, eigene Listen, Budgetplaner, Wunschwelten und Geschenkfinder verwenden auf Smartphones ein engeres gemeinsames Abstands- und Überschriftensystem; Verwaltungsdetails bleiben separat aufklappbar.
+- **Karten und Kennzahlen:** Vereinheitlichte Radien, Innenabstände und Schatten für bestehende Geschenk-, Listen-, Statistik- und Inspirationskarten. Zweispaltige Kennzahlen bleiben auf kleinen Geräten nutzbar; bei sehr schmalen Viewports erfolgt ein einspaltiger Umbruch.
+- **Formulare und Aktionen:** Bestehende Eingaben erhalten auf Smartphones konsistente Mindesthöhen, 16-Pixel-Schrift zur Vermeidung ungewollten iOS-Zooms, sichtbare Fokusmarkierung und Breitenbegrenzung. Aktionen dürfen umbrechen, statt seitlich überzulaufen.
+- **Funktions- und Datenschutzschutz:** Ausschließlich zusätzliche responsive CSS-Regeln in `amazon-wishlist/index.html`; keine Änderungen an bestehenden IDs, Formular-Handlern, Supabase-Zugriffen oder Produktivdaten. Keine Testdaten.
+- **Prüfung:** GitHub-Datei erneut geladen; neuer Stylesheet-Block genau einmal vorhanden, öffnende und schließende Style-Tags ausgeglichen. Visuelle Prüfung auf echten Smartphones und authentifizierter End-to-End-Test bleiben offen.
+
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Deep-Links und Tastaturzugang)
+
+- **Direkte Navigation:** Hash-Links auf vorhandene Elemente öffnen deren geschlossene übergeordnete `details`-Bereiche automatisch. Das gilt auch für die mobile Dashboard-Verwaltung; bestehende Elemente und IDs bleiben erhalten.
+- **Tastatur:** Escape schließt die aktuell fokussierte offene Navigationsgruppe und setzt den Fokus auf deren Zusammenfassung zurück. Die Bedienung bleibt mit nativen `details`-Elementen kompatibel.
+- **Produktivdaten:** Ausschließlich clientseitiges JavaScript in `amazon-wishlist/index.html`; keine Supabase-Migration, keine Testdaten, keine Änderung an Konten, Wunschlisten oder Geschenken.
+- **Prüfung:** Statischer Abgleich des Skript-Einfügepunkts und einmaliges Vorhandensein des neuen Blocks; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Dashboard-Verwaltung für Smartphones gruppiert)
+
+- **Nutzerführung:** Die Geschenkübersicht wird vor den umfangreichen Verwaltungsoptionen gezeigt. Ein neuer aufklappbarer Bereich „Dashboard verwalten“ gruppiert Layout/Vorschau, Anzeige/Einstellungen und Sicherungen/Verlauf/Datenübernahme.
+- **Responsive Verhalten:** Verwaltung auf Smartphones standardmäßig geschlossen, auf größeren Bildschirmen geöffnet; kompaktere Dashboard-Karten, Abstände und Kennzahlen auf kleinen Displays.
+- **Funktionsschutz:** Vorhandene Dashboard-Elemente werden als DOM-Knoten verschoben, nicht kopiert; ursprüngliche IDs, Formulare, Aktionen, Statusmeldungen und Sicherungsfunktionen bleiben erhalten.
+- **Produktivdaten:** Nur Frontend-HTML/CSS/JS; keine Datenbankmigration, keine Testdaten, keine Änderungen an bestehenden Wunschlisten oder Geschenkdatensätzen.
+- **Qualität:** Einmaligkeit der relevanten IDs und Vorhandensein des neuen Panels geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Orientierung und reduzierte Navigationslast)
+
+- **Neu umgesetzt:** Kontextabhängiger, auf Smartphones erst nach weiterem Scrollen sichtbarer „Nach oben“-Button. Berücksichtigt sichere Bildschirmränder und die Einstellung für reduzierte Bewegung.
+- **Nutzerführung:** Die mobile Schnellnavigation markiert den aktuell im Blickfeld befindlichen Bereich. Aufklappbare Hauptmenügruppen schließen nach Auswahl eines enthaltenen Links.
+- **Darstellung:** Ruhigere Navigationsflächen, konsistente Karten und Schaltflächen sowie bessere Umbrüche und horizontale Themen-Navigation auf kleinen Displays.
+- **Produktivdaten:** Nur HTML, CSS und rein clientseitige Navigationslogik. Keine Supabase-Migration, keine Testdaten und keine Änderungen an Konten, Wunschlisten oder Geschenken.
+- **Qualität:** Vorhandensein des neuen Bedienelements und eindeutige IDs der zentralen Bereiche geprüft. Authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Designverfeinerung: Karten und Navigation)
+
+- **Navigation:** Mobile Hauptnavigation verdichtet; aufklappbare Featuregruppen schließen einander beim Öffnen, damit die Seite nicht durch mehrere offene Menüs unnötig lang wird. Aktiver Sprunglink wird über `aria-current=location` hervorgehoben.
+- **Karten:** Einheitliche Touch-Ziele, ruhige Abstände, verbesserte Fokusmarkierungen und flexible Textumbrüche für Wunschlisten, Geschenkbudget, Wunschwelten und Geschenkfinder. Sehr schmale Smartphones erhalten einspaltige Untermenüs.
+- **Barrierefreiheit:** Tastaturbedienbare native Details-Elemente, mindestens 44px große Eingaben und Links, Fokusdarstellung und reduzierte Bewegung berücksichtigt.
+- **Produktivdaten:** Nur HTML/CSS und clientseitige Navigationslogik; keine Supabase-Migration, keine Testdaten, keine Änderung bestehender Wunschlisten, Konten oder Geschenke.
+- **Qualität:** Vorhandensein der neuen Styles und einmalige IDs der vier Kernbereiche geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Einheitliches mobiles Kartendesign)
+
+- **Neu umgesetzt:** Gemeinsame Kartensprache für persönliche Wunschlisten, Geschenkbudget, Wunschwelten und Geschenkfinder: konsistente Oberflächen, Rahmen, Radien, Schatten, Typografie und Abstände mit bestehenden Theme-Variablen.
+- **Mobil:** Kompaktere Innenabstände und Überschriften, reduzierte Dekoration, einspaltige Wunschlisten-Karten, übersichtliche Kennzahlen und Budgetergebnisse, kleinere Lücken in Ideen- und Ergebnisrastern.
+- **Barrierefreiheit:** Bestehende semantische Bereiche, Schaltflächen, Formular-IDs, Fokusdarstellung und Bedienlogik bleiben erhalten; berücksichtigt reduzierte Bewegung.
+- **Produktivdaten:** Nur CSS in `amazon-wishlist/index.html`, keine Supabase-Migration, keine Testdaten, keine Änderung an Daten oder bestehenden JavaScript-Funktionen.
+- **Qualität:** Eindeutige IDs der vier zentralen Bereiche und Vorhandensein des neuen Styleblocks geprüft; vollständiger authentifizierter Browser-/Gerätetest steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Kompakte Wunschlisten und Geschenkbudget auf Smartphones)
+
+- **Neu umgesetzt:** Mobile Wunschlisten-Übersicht mit verdichteten Kennzahlen, zweispaltigen Schnellaktionen und reduzierter dekorativer Hero-Fläche. „Zuletzt geöffnet“ und die Einstellungen zur Neuanlage von Listen werden in semantischen, aufklappbaren Bereichen angezeigt; der vorhandene „Liste erstellen“-Schnellzugriff öffnet die Einstellungen automatisch.
+- **Budgetplanung:** Kompakte responsive Eingabefelder und Ergebnis-Kacheln; Drucken und Teilen in einer aufklappbaren Zusatzsektion. Auf Desktop bleiben die Inhalte direkt sichtbar.
+- **Technik:** Bestehende DOM-Elemente werden lediglich verschoben und nicht dupliziert; IDs und vorhandene Eventhandler bleiben erhalten. Keine Datenbankmigration, keine Testdaten, keine Änderung an produktiven Konten, Wunschlisten oder Geschenken.
+- **Qualität:** Authentifizierter Browser-End-to-End-Test auf Smartphones und Desktop steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Mobile Startseite: Eigene Listen und Planung zuerst)
+
+- **Nutzerwunsch:** Auf Smartphones persönliche Wunschlisten und Geschenkplanung vor umfangreichen Inspirations- und Community-Modulen zeigen.
+- **Neu umgesetzt:** Vorhandenes privates Geschenk-Startdashboard, persönliche Wunschlisten, Anmeldung und Geschenkbudget werden vor den Wunschwelten platziert. Geschenkfinder und weitere Inspiration bleiben vollständig erreichbar. Die Reihenfolge wird beim Laden durch Verschieben der bestehenden DOM-Knoten hergestellt; keine Komponenten oder Daten werden dupliziert.
+- **Mobile Schnellnavigation:** Drei große Sprunglinks „Meine Listen“, „Budget planen“, „Inspiration“, mit responsive zweispaltiger Anordnung auf sehr kleinen Geräten. Auf breiten Bildschirmen bleibt die Hauptnavigation im Vordergrund.
+- **Datensicherheit:** Keine Supabase-Migration, keine neuen Abfragen, keine Testdaten, keine Änderungen an bestehenden Konten, Wunschlisten oder Geschenken.
+- **Qualität:** Einmalige IDs der betroffenen Bereiche geprüft; authentifizierter Browser-End-to-End-Test auf Mobilgeräten steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Kompakte mobile Startseite und Navigation)
+
+- **Nutzerfeedback:** Der Social-Feed-Banner nahm oberhalb der Wunschlisten viel Platz ein und wiederholte den Benachrichtigungszugriff.
+- **Neu umgesetzt:** Banner als schmale Social-Feed-Zeile unter die gruppierte Hauptnavigation verschoben; redundanter Benachrichtigungs-Button entfernt, Hauptnavigation behält Benachrichtigungen. Auf kleinen Smartphones entfällt der zusätzliche Banner-Erklärungstext.
+- **Zugänglichkeit:** Direkter Sprunglink zu Wunschwelten, sichtbare Tastatur-Fokusmarkierungen und angepasste helle Farbdarstellung für die drei aufklappbaren Navigationsgruppen.
+- **Sicherheit und Daten:** Ausschließlich HTML/CSS-Änderungen, keine Supabase-Abfragen, keine Datenbankmigration, keine Testdaten, keine Änderung an produktiven Wunschlisten oder Konten.
+- **Qualität:** Authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Aufgeräumte mobile Hauptnavigation)
+
+- **Nutzerfeedback:** Zu viele gleichwertige Buttons im Kopfbereich auf Smartphones erschweren die Orientierung.
+- **Neu umgesetzt:** Vier priorisierte Hauptzugriffe (Meine Wunschlisten, Wünsche entdecken, Geschenkzentrale, Benachrichtigungen) und drei semantisch gruppierte, standardmäßig geschlossene, per Tastatur bedienbare Details-Gruppen (Geschenke planen, Ideen & Inspiration, Community & Social).
+- **Erhalt:** Alle bisherigen Navigationsziele inklusive der versteckten Bearbeitungsnavigation bleiben erreichbar; keine Datenbankänderung, keine Testdaten, keine Änderung an Produktivdatensätzen.
+- **Mobil:** Zwei Spalten für Hauptzugriffe auf üblichen Smartphone-Breiten, einspaltige Gruppen, große Touch-Ziele. Browser-End-to-End-Prüfung mit angemeldetem Konto steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Erweiterter Vergleich privater Cloud-Filterfavoriten)
+
+- **Neu umgesetzt:** Lesender Detailvergleich zweier angehefteter Cloud-Filteransichten mit nebeneinanderliegenden Datums-, Layout-, Änderungsbereichs- und Kategorieeinstellungen; abweichende Felder werden farblich markiert.
+- **Monatsanalyse:** Gemeinsame Monatsübersicht zeigt Treffer je Ansicht und Schnittmenge pro Monat; Ergebniszusammenfassung mit exklusiven und gemeinsamen Sicherungspunkten.
+- **Mobil:** Horizontal scrollbar gehaltene Tabellen und kompakte Darstellung auf Smartphones.
+- **Sicherheit:** Ausschließlich bereits eigentümergebunden geladene Daten, keine Migration, keine Testdaten. RLS und Tabellenprivilegien für Cloud-Filteransichten, Präferenzen, Historie und Sicherungspunkte geprüft; kein anonymer Lesezugriff, keine direkten Schreibrechte für Historie/Sicherungspunkte.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Privater Favoritenvergleich für Sicherungspunkte)
+
+- **Neu umgesetzt:** Zwei angeheftete Cloud-Filteransichten in einem responsiven, lesenden Vergleich gegenüberstellen. Auswahl A/B, Trefferzahl, Schnittmenge, exklusive Treffer und Anzahl der Treffer mit Abweichungen zur aktuellen Dashboard-Konfiguration.
+- **Privatsphäre:** Vergleich nur über bereits privat geladene Sicherungspunkte und eigene Cloud-Ansichten; keine neue Datenbankabfrage oder Migration, keine Testdaten. Bei Kontoabmeldung wird die Vergleichsoberfläche verborgen.
+- **Sicherheit:** RLS und Tabellenprivilegien für Cloud-Filteransichten, Dashboard-Präferenzen, Historie und Sicherungspunkte geprüft; kein anonymer Lesezugriff, keine direkten Schreibrechte auf Sicherungspunkte/Historie.
+- **Qualität:** JavaScript-Syntax geprüft. Authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Gebündelte Favoriten-Navigation)
+
+- **Neu umgesetzt:** Private Monatsvorschau angehefteter Sicherungspunkt-Filteransichten mit Zurück/Weiter-Navigation, gezieltem Öffnen je Favorit und Schließen der Vorschau. Alle Vorschauaktionen verändern die aktiven Filter nicht; die gesonderte Anwenden-Schaltfläche bleibt erhalten.
+- **Mobil und barrierearm:** Responsive Navigation mit großen Touch-Zielen und beschrifteten Vorschau-Schaltflächen.
+- **Sicherheit:** Keine Datenbankmigration und keine Testdaten. RLS und Berechtigungen für Cloud-Filteransichten, Präferenzen, Historie und Sicherungspunkte erneut geprüft; kein anonymer Lesezugriff und keine direkten Schreibrechte auf Historie/Sicherungspunkte.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Gebündelte Favoriten-Monatsvorschau und Weiter-Button)
+
+- **Neu umgesetzt:** Favoriten-Schnellleiste um einen ausdrücklich beschrifteten „▶️ Weiter – nächsten Favoriten ansehen“-Button ergänzt. Er durchläuft angeheftete Filteransichten zyklisch, ohne die aktiven Filter zu verändern.
+- **Monatsvorschau:** Passende Sicherungspunkte pro Monat werden vor Anwendung anhand bereits geladener privater Daten berechnet und als mobile, barrierearm beschriftete Balken dargestellt. Ein gesonderter Button aktiviert die Vorschau-Filter auf Wunsch.
+- **Sicherheit:** Keine Datenbankmigration, keine Testdaten und keine Änderung an Sicherungspunkten oder Produktivdaten. RLS und anonyme Leserechte für Cloud-Filteransichten, Präferenzen, Historie und Sicherungspunkte überprüft.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Ergebnisvorschau in der Favoriten-Schnellleiste)
+
+- **Neu umgesetzt:** Angeheftete Cloud-Filteransichten zeigen direkt in der mobilen Schnellleiste die Anzahl passender, bereits geladener privater Dashboard-Sicherungspunkte vor dem Anwenden.
+- **Filterparität:** Trefferzählung berücksichtigt Datumsgrenzen, gespeichertes aktives Layout, abweichenden Einstellungsbereich sowie die UND-Verknüpfung aller ausgewählten Änderungskategorien. Die Vorschau verändert keine aktiven Filter.
+- **Sicherheit:** Rein lokale Berechnung über bereits eigentümergebunden geladene Daten; keine neuen Datenbankabfragen, keine Migration, keine Testdaten. RLS und Rechte für Cloud-Ansichten, Präferenzen, Historie und Sicherungspunkte erneut geprüft.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Favoriten-Schnellleiste für private Sicherungspunkte)
+
+- **Neu umgesetzt:** Horizontale, mobil scrollbar angelegte Schnellleiste direkt über der privaten Dashboard-Sicherungspunkt-Zeitachse. Angeheftete Cloud-Filteransichten können mit einem Klick angewendet werden; der aktuelle Filterzustand wird per `aria-pressed` kenntlich gemacht.
+- **Synchronisierung:** Schnellleiste verwendet ausschließlich die bereits privat geladenen, owner-gebundenen Cloud-Ansichten; reagiert auf Favoritenänderungen und auf das Anwenden von Filteransichten. Bei Kontoabmeldung wird sie geleert.
+- **Sicherheit:** Keine Datenbankmigration, keine Testdaten, keine Änderungen an Sicherungspunkten oder Produktivdaten. RLS und Privilegien der Cloud-Filteransichten, Präferenzen, Historie und Sicherungspunkte geprüft.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Favoriten für private Cloud-Filteransichten)
+
+- **Neu umgesetzt:** Persönliche Cloud-Filteransichten können per Schaltfläche als Favorit angeheftet oder wieder gelöst werden. Angeheftete Ansichten erscheinen in der responsiven Kartenübersicht zuerst, danach alphabetisch.
+- **Persistenz:** Neues boolesches Feld `is_favorite` (Standard `false`) in `wishlist_gift_checkpoint_filter_views`. Vorhandene Ansichten bleiben unverändert und erhalten den Standardwert. Favoriten werden owner-gebunden in Supabase synchronisiert; Duplikate und importierte Ansichten starten ohne Favoritenstatus.
+- **Sicherheit:** RLS und Tabellenprivilegien für Cloud-Ansichten, Präferenzen, Historie und Sicherungspunkte geprüft; kein anonymer Lesezugriff, Sicherungspunkte und Historie ohne direkte Schreibrechte. Keine Testdaten und keine Änderungen an Geschenk- oder Planungsdaten.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Kartenübersicht privater Cloud-Filteransichten)
+
+- **Neu umgesetzt:** Responsive Kartenübersicht für alle privaten Cloud-Filteransichten der Dashboard-Sicherungspunkt-Zeitachse, mit Namen, gespeicherter Filterkombination und letztem Änderungsdatum.
+- **Interaktion:** Jede Karte bietet eine lesende Vorschau mit Anzahl der Unterschiede zu aktuellen Filtern sowie die direkte Anwendung der gespeicherten Filter. Keine Änderungen an Sicherungspunkten oder deren Wiederherstellungsablauf.
+- **Sicherheit:** Keine Datenbankmigration und keine Testdaten. RLS und Berechtigungen für Cloud-Ansichten, Dashboard-Präferenzen, Historie und Sicherungspunkte geprüft. Kein anonymer Lesezugriff; Sicherungspunkte und Historie weiterhin nicht direkt beschreibbar.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Private Cloud-Filteransichten verwalten)
+
+- **Neu umgesetzt:** Bestehende Cloud-Filteransichten lassen sich mit einem neuen Namen atomar umbenennen oder unter einem freien Namen duplizieren. Ausgewählte Ansichten zeigen das letzte Änderungsdatum und die Anzahl der gespeicherten Kategorien.
+- **Sicherheit:** Umbenennen über `wishlist_rename_checkpoint_filter_view` als SECURITY INVOKER mit `auth.uid()`-Eigentümerprüfung; Cloud-Tabelle bleibt owner-RLS-geschützt. Kein anonymer Zugriff. Duplizieren erzeugt nur eine neue eigene Ansicht, niemals eine Sicherungspunktkopie.
+- **Produktivdaten:** Keine bestehenden Ansichten oder Sicherungspunkte migriert, gelöscht oder verändert. Keine Testdaten. RLS und Berechtigungen der vier relevanten Tabellen erneut geprüft.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Geräteübergreifende private Filteransichten)
+
+- **Neu umgesetzt:** Private Supabase-Tabelle `wishlist_gift_checkpoint_filter_views` mit owner-gebundenen Namen, Filter-JSON und Kategorien; RLS-Policies für ausschließlich eigene Lese-/Schreibzugriffe, kein anonymer Zugriff.
+- **Cloud-Synchronisierung:** Persönliche Filteransichten lassen sich geräteübergreifend laden, speichern, anwenden und nach Bestätigung löschen. Oberfläche für maximal fünf Ansichten je Konto.
+- **Lokaler Bestand:** Bisherige browserlokale Ansichten werden nicht gelöscht oder automatisch überschrieben. Ausdrücklich bestätigter Import kopiert freie, noch nicht gleichnamig vorhandene Ansichten in die Cloud und lässt lokale Originale unverändert.
+- **Sicherheit:** Keine bestehenden Tabellen oder Produktivdatensätze migriert oder gelöscht; keine Testdaten. RLS und Privilegien für Cloud-Ansichten, Dashboard-Präferenzen, Historie und Sicherungspunkte überprüft.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
+## Entwicklungsfortschritt – 10.11.2026 (Private gespeicherte Filteransichten)
+
+- **Neu umgesetzt:** Bis zu fünf benannte Filterkombinationen pro angemeldetem Konto für die private Dashboard-Sicherungspunkt-Zeitachse speichern, anwenden, nach Bestätigung überschreiben und löschen.
+- **Umfang:** Datumsfilter, Layout, abweichender Einstellungsbereich und interaktive Mehrfachkategorien werden gemeinsam gespeichert. Die Filteransichten sind browserlokal (localStorage), nach Nutzer-ID getrennt und **nicht geräteübergreifend synchronisiert**; es werden keine Sicherungspunkt-Inhalte lokal gespeichert.
+- **Sicherheit:** Keine Datenbankmigration, keine Testdaten. RLS und Rechte für Dashboard-Einstellungen, Historie und Sicherungspunkte erneut geprüft; keine anonymen Leserechte und keine direkten Schreibrechte für Historie/Sicherungspunkte. Produktivdaten bleiben unverändert.
+- **Qualität:** JavaScript-Syntax geprüft; authentifizierter Browser-End-to-End-Test steht aus.
+
 ## Entwicklungsfortschritt – 10.11.2026 (Interaktive private Sicherungspunkt-Änderungsanalyse)
 
 - **Neu umgesetzt:** Anklickbare, per Tastatur bedienbare Änderungskategorien in der privaten Dashboard-Zeitachse; Mehrfachauswahl verwendet UND-Verknüpfung und lässt sich mit Datums-, Layout- und bisherigen Änderungsfiltern kombinieren. Die Schaltflächen kennzeichnen ihren Zustand mit aria-pressed.

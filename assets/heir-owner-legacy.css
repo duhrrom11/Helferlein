@@ -1,0 +1,13 @@
+
+        .tab-btn.active {
+            border-bottom-color: #4f46e5 !important;
+            color: #4f46e5 !important;
+            font-weight: 700;
+        }
+        .qrcode-box img {
+            margin: 0 auto;
+            border-radius: 8px;
+            padding: 4px;
+            background: white;
+        }
+    

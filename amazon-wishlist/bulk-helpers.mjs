@@ -12,6 +12,8 @@ export function bulkContextValid(job,{userId,listId,ready,activeListIds}) {
 }
 export function bulkErrorHint(error) {
  const code=String(error?.code||''),status=Number(error?.status||0),message=String(error?.message||'').toLowerCase();
+ if(message.includes('bereits in einem anderen tab entfernt'))return 'Zuordnung parallel entfernt – bitte Liste aktualisieren.';
+ if(message.includes('bereits in einem anderen tab hinzugefügt'))return 'Zuordnungskonflikt mit anderem Tab – bitte Liste aktualisieren.';
  if(code==='23505'||message.includes('duplicate key'))return 'Bereits zugeordnet – bitte Liste aktualisieren.';
  if(status===401||status===403||code==='42501'||message.includes('permission denied'))return 'Keine Berechtigung – bitte Anmeldung und Listenrechte prüfen.';
  if(status===429||message.includes('rate limit'))return 'Zu viele Anfragen – bitte später erneut versuchen.';

@@ -129,8 +129,8 @@ export async function copyShareLink(text,clipboard=globalThis.navigator?.clipboa
 
 /** Reject malformed export fields instead of coercing them into apparently valid backups. */
 function strictExportWishFields(title,note) {
- if(typeof title!=='string'||typeof note!=='string')throw Error('Ungültige Exporttexte');
- return validateWishFields(title,note);
+ if(typeof title!=='string'||(note!=null&&typeof note!=='string'))throw Error('Ungültige Exporttexte');
+ return validateWishFields(title,note??'');
 }
 
 /** Produce a spreadsheet-safe, UTF-8 CSV backup from the signed-in user's own wishes. */
@@ -195,7 +195,7 @@ function BufferlessUtf8Size(text) {
  * The preview deliberately ignores any unrecognized fields, including account IDs.
  */
 export function previewWishlistBackup(raw) {
- if(typeof raw!=='string'||BufferlessUtf8Size(raw)>2_000_000)throw Error('Sicherungsdatei fehlt oder ist zu groß (maximal 2 MB).');
+ if(typeof raw!=='string'||raw.length>2_000_000||BufferlessUtf8Size(raw)>2_000_000)throw Error('Sicherungsdatei fehlt oder ist zu groß (maximal 2 MB).');
  let data;
  try{data=JSON.parse(raw)}catch{throw Error('Die Datei enthält kein gültiges JSON.')}
  if(!data||Array.isArray(data)||data.format!=='helferlein-wishlist-backup'||data.version!==1||!Array.isArray(data.wishes))throw Error('Keine unterstützte Helferlein-Wunschlisten-Sicherung.');
