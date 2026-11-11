@@ -127,3 +127,4 @@ jobs:
           python tests/security/heir-owner-invitations-browser.py
           python tests/security/heir-owner-transport-browser.py
           python tests/security/heir-owner-session-browser.py
+          python tests/security/heir-owner-actual-html-browser.py
