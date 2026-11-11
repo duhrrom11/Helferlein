@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschau bewahrt Formularentwurf und mobile Bewegungspräferenz)
+
+- **Nicht gespeicherte Dashboard-Einstellungen:** `showPreview` zeichnete die Konfigurationsfelder mit `applyPreferences()` neu. Dadurch gingen noch nicht gespeicherte Checkbox-, Sortier- und Abschnittsreihenfolgeänderungen verloren, wenn eine Layout-Vorschau verworfen wurde. Die neue temporäre `previewFormDraft`-Sicherung erfasst den aktuellen Formularentwurf beim ersten Vorschauwechsel. `endPreview(true)` stellt nach dem Wiederherstellen der tatsächlichen Dashboard-Ansicht auch die ursprünglichen Formulareingaben und die `draftOrder`-Reihenfolge wieder her; `endPreview(false)` verwirft die Entwurfssicherung bei bestätigter Übernahme. Es wurde keine bestehende Supabase-Speicherabfrage geändert.
+- **Mobile Start-Schnellaktionen:** `homeNewWish` und `homeNewList` berücksichtigen jetzt `prefers-reduced-motion` beim Scrollen zum gewünschten Formular. Bestehende Fokusaktionen bleiben erhalten.
+- **Prüfung:** `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach GitHub-Veröffentlichung erneut abgerufen. Beide Module und zehn Inline-Skripte isoliert ohne JavaScript-Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Vollständige authentifizierte Browser-/Touch-E2E-Prüfung bleibt ausstehend.
+- **Produktionsschutz:** Änderungen ausschließlich im Client an Formularzustand und Scrollverhalten. Keine Supabase-Connectoraufrufe, Migrationen, produktive Schreiboperationen oder Testdaten.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschauaktionen und mobile Schnellnavigation)
 
 - **Vorschau und Fokus:** In `gift-start.mjs` deaktivieren `endPreview` und der Speichervorgang die gerade verwendeten Buttons „Vorschau rückgängig“ bzw. „Vorschau übernehmen“. Der Tastaturfokus blieb zuvor auf einem danach deaktivierten Button. Nach Abbruch oder bestätigter Übernahme wird die bestehende `homeLayoutStatus`-Live-Meldung programmatisch fokussiert; die bestehende Speicherlogik bleibt unverändert.
