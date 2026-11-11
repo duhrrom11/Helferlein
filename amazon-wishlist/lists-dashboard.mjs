@@ -64,7 +64,7 @@ export function mountListsDashboard(db, getUser) {
 
  function invalidateMembershipState(){
   membershipReady=false;membershipByList=new Map();assignedIds=new Set();allAssignedIds=new Set();listCounts=new Map();assignedTotal=0;bulkIds.clear();pendingBulk=null;lastBulkResult=null;detailWishId=null;$('wishDetailDialog').close();
-  $('bulkResultPanel').hidden=true;$('bulkConfirmDialog').close();$('listWishCards').replaceChildren();$('listWishCount').textContent='';updateBulkToolbar([]);renderProgress();
+  $('bulkResultPanel').hidden=true;$('bulkConfirmDialog').close();$('bulkStatus').textContent='';$('bulkProgressText').textContent='';$('bulkProgressDetails').textContent='';$('bulkProgressBar').value=0;$('listWishCards').replaceChildren();$('listWishCount').textContent='';updateBulkToolbar([]);renderProgress();
  }
  const msg=t=>{$('listsStatus').textContent=t;if(!$('editListForm').hidden)$('editListFeedback').textContent=t};
  const invalidField=(field,message)=>{
