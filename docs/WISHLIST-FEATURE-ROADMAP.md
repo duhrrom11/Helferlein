@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: kein unbestätigter Erfolg nach Kontextwechsel)
+
+- **Nachgewiesener Fehlerpfad:** `moveWishToList()` meldete nach dem INSERT-Versuch bei einem Kontextwechsel `Zielzuordnung gespeichert`, obwohl zu diesem Zeitpunkt noch keine erneute Zielabfrage stattgefunden hatte. Bei parallelen Änderungen konnte die Aussage falsch sein.
+- **Korrektur:** Der Hinweis beschreibt die Zielzuordnung nun als `nicht eindeutig bestätigt` und empfiehlt die Prüfung beider Listen. Die Meldung setzt zusätzlich eine weiterhin passende `loadGeneration` voraus. Code: `dd14d0a12f2d7884e917f77f2116c0838197f3a2`.
+- **Grenzen:** Die Änderung betrifft die UI-Rückmeldung; sie verhindert keine bereits gestartete Datenbankoperation und macht Verschiebungen nicht atomar. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: parallele Ziel-Löschung neu laden)
 
 - **Nachgewiesener Fehlerpfad:** `moveWishToList()` meldete bei fehlender Zielzuordnung vor dem Ursprungs-DELETE pauschal `Ursprungszuordnung bleibt erhalten`, obwohl andere Browser-Tabs diese bereits entfernt haben konnten. Zusätzlich wurde ohne Dashboard-Reload abgebrochen, sodass die Mitgliedschaftsanzeige veraltet bleiben konnte.
