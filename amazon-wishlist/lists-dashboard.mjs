@@ -515,7 +515,7 @@ actions.append(button('Duplizieren',async()=>{
    const {error}=await db.from('wishlist_lists').update({title,description,icon:$('editListIcon').value,color:$('editListColor').value,visibility,cover_url:coverUrl||null}).eq('id',listId).eq('user_id',id);
    if(error)throw error;if(getUser()?.id!==id||generation!==loadGeneration)return;
    $('editListForm').hidden=true;$('editListId').value='';try{await load({afterBulk:true})}catch(e){if(getUser()?.id===id){msg('Listendesign gespeichert, aber Aktualisierung fehlgeschlagen. Bitte neu laden.');finishListEditing()}return}if(getUser()?.id===id){msg('Listendesign gespeichert.');finishListEditing()}
-  }catch(e){if(getUser()?.id===id&&generation===loadGeneration)msg(e.message||'Liste konnte nicht gespeichert werden')}finally{listMutationBusy=false;for(const field of editFields)field.disabled=false;save.disabled=false;cancel.disabled=false;if(getUser()?.id===id&&loadedOwner===id&&membershipReady)renderWishCards()}
+  }catch(e){if(getUser()?.id===id&&generation===loadGeneration)msg(e.message||'Liste konnte nicht gespeichert werden')}finally{listMutationBusy=false;for(const field of editFields)field.disabled=false;save.disabled=false;cancel.disabled=false;if(getUser()?.id===id&&generation===loadGeneration&&!$('editListForm').hidden&&document.activeElement===document.body)save.focus({preventScroll:true});if(getUser()?.id===id&&loadedOwner===id&&membershipReady)renderWishCards()}
  };
  $('mobileNewWish').onclick=()=>{$('editor').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});$('url').focus()};
  $('mobileMyLists').onclick=()=>focusListRegion('listsContent');
