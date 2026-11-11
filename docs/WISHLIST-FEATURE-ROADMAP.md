@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: Fehler nur im gültigen Ladekontext anzeigen)
+
+- **Nachgewiesener Fehlerpfad:** Der allgemeine `catch` von `moveWishToList()` zeigte nach asynchronen Datenbankoperationen Fehler noch an, wenn Benutzerkonto und ausgewählte Liste passten, aber ein neuer Dashboard-Reload die alte `loadGeneration` bereits ungültig gemacht hatte.
+- **Korrektur:** Der Fehlerpfad verwendet jetzt `current()` einschließlich der Ladegeneration und beschreibt den Zuordnungsstand bei unklaren Schreibresultaten ausdrücklich als prüfbedürftig. Code: `c67fbfc1aeecd2eac50000ec9e5ac1094012b8a6`.
+- **Grenzen:** Die Änderung betrifft die Fehleranzeige, nicht die Atomarität der Einzel-/Sammelverschiebungen. Bereits gestartete Datenbankoperationen können nach einem Kontowechsel abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listen löschen: parallele Löschung und Fehlerbehandlung)
 
 - **Nachgewiesener Fehlerpfad:** Der Lösch-Handler prüfte nur `error` einer `delete().eq('id',...).eq('user_id',...)`-Abfrage. Ein erfolgreicher Request mit null gelöschten Zeilen (z. B. nach Löschung in anderem Tab) war damit nicht unterscheidbar. Zusätzlich fehlte ein `catch`-Pfad; Datenbankfehler konnten als unbehandelte Promise-Rejection enden.
