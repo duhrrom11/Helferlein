@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Fokus beim asynchronen Verschieben zwischen Listen)
+
+- **Nachgewiesener Fokusverlust im Quellcode:** Nach der zweistufigen Verschiebeoperation wird die Wunschkartenansicht über `load({afterBulk:true})` und `renderWishCards()` ersetzt. Der auslösende Verschieben-Button verliert dadurch seinen DOM-Knoten und den Tastaturfokus.
+- **Korrektur:** Der Fokus wird vor dem Deaktivieren des Buttons erfasst. Nach dem Neuaufbau wird die Ziellistenauswahl desselben Wunsches fokussiert, sofern keine bewusste Fokusverlagerung erfolgte. Ist der Wunsch nicht mehr sichtbar, wird die Wunschsuche als Rücksprungziel verwendet.
+- **Sicherheitsgrenzen:** Die vorhandenen Konto-, Generationen- und Listenprüfungen sowie die getrennte Fehlerbehandlung für Zielzuordnung und Entfernen aus der Quellliste bleiben bestehen. Ein Verschieben ist weiterhin keine atomare Datenbanktransaktion; bei einem Fehler im zweiten Schritt kann eine zusätzliche Zuordnung bestehen bleiben und muss geprüft werden.
+- **Prüfumfang:** Statische Quellcodeprüfung und GitHub-Veröffentlichung; keine Browser-E2E-Prüfung und keine Supabase-Schreibprobe. Die weiteren Listen- und Wunschformular-Speicherpfade sind noch nicht vollständig geprüft.
+- **Produktionsschutz:** Ausschließlich GitHub-Quellcode und Roadmap geändert; keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listen-Zuordnungscheckbox: Tastaturfokus nach asynchronem Nachladen)
 
 - **Nachgewiesener Fokusverlust im Quellcode:** Die Checkbox zum Hinzufügen oder Entfernen eines Wunsches löst nach der asynchronen Datenbankoperation `load({afterBulk:true})` und im `finally` `renderWishCards()` aus. Dabei wird die fokussierte Checkbox durch ein neues Element ersetzt.
