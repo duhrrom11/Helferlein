@@ -7,6 +7,7 @@ Tests the existing REVIEW_ONLY DDL, locks, races and browser-role grants, not
 an operational heir release. Never grants any heir access.
 """
 import json
+import ipaddress
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -32,8 +33,9 @@ def check_isolation():
     with conn() as c:
         if c.execute('SHOW server_version_num').fetchone()[0][:2] != '17':
             raise RuntimeError('PostgreSQL 17 required')
-        if c.execute('SELECT inet_server_addr()::text').fetchone()[0] not in (None, '127.0.0.1'):
-            raise RuntimeError('Remote PostgreSQL forbidden')
+        address = c.execute('SELECT inet_server_addr()::text').fetchone()[0]
+        if address is None or not ipaddress.ip_address(address).is_private:
+            raise RuntimeError('Public or unverified PostgreSQL endpoint forbidden')
 
 
 def check_roles():
