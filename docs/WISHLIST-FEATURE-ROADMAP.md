@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: Ursprung bei paralleler Ziel-Löschung nicht als sicher behaupten)
+
+- **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` meldete nach fehlender Zielzuordnung bei der Bestätigungsabfrage pauschal `Ursprungszuordnung bleibt erhalten`. Die Aktion selbst hatte den Ursprung zu diesem Zeitpunkt zwar noch nicht gelöscht, ein anderer Browser-Tab konnte die Ursprungszuordnung aber bereits unabhängig entfernt haben.
+- **Korrektur:** Die Meldung sagt jetzt präzise, dass **diese Aktion** den Ursprung nicht gelöscht hat, verweist auf mögliche parallele Änderungen und fordert zum Neuladen und Prüfen beider Listen auf. Die Meldung wird zusätzlich an `current()` gebunden. Code: `f6895a0735b911a49af5d0da2cebd5c6fb46eca9`.
+- **Grenzen:** Die Änderung verbessert die Fehlerkommunikation und Kontextprüfung, macht zweistufige Verschiebungen aber nicht atomar und stellt unterbrochene Änderungen nicht automatisch wieder her. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: Reload nach parallel entfernter Ursprungsliste)
 
 - **Nachgewiesener Fehlerpfad:** `moveWishToList()` erkannte eine bereits von einem anderen Tab entfernte Ursprungszuordnung anhand eines erfolgreichen DELETE ohne zurückgelieferte Zeile, zeigte aber nur eine Warnung und kehrte ohne Neuladen zurück. Der lokal angezeigte Mitgliedschaftsstand konnte deshalb veraltet bleiben.
