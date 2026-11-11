@@ -5,6 +5,9 @@ DO $$ BEGIN
 END $$;
 CREATE ROLE heir_ci_backend LOGIN PASSWORD 'test-server-role-local-only' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
 GRANT USAGE ON SCHEMA heir_private TO heir_ci_backend;
+GRANT USAGE ON SCHEMA auth TO heir_ci_backend;
+GRANT SELECT(id,user_id) ON auth.sessions TO heir_ci_backend;
+CREATE POLICY heir_ci_active_sessions ON auth.sessions FOR SELECT TO heir_ci_backend USING (true);
 GRANT SELECT,INSERT,UPDATE ON ALL TABLES IN SCHEMA heir_private TO heir_ci_backend;
 GRANT SELECT(owner_user_id,vault_id) ON public.vault_cloud_snapshots TO heir_ci_backend;
 -- SELECT FOR UPDATE requires UPDATE privileges. Only a non-secret bookkeeping

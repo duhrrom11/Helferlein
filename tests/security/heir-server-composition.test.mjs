@@ -8,13 +8,14 @@ const ORIGIN = 'https://example.org';
 const VAULT = 'v_abcdefgh';
 
 function sandbox() {
-  const calls = { auth: 0, rate: 0, invites: 0 };
+  const calls = { auth: 0, claims: 0, sessions: 0, rate: 0, invites: 0 };
   const deps = {
     database: {
       async transaction(fn) {
         const tx = {
           async one(sql, args) {
             if (sql.includes('heir_http_limits')) { calls.rate++; return { hits: 1 }; }
+            if (sql.includes('FROM auth.sessions')) { calls.sessions++; return { exists: true }; }
             if (sql.includes('public.vault_cloud_snapshots')) {
               return args[0] === OWNER ? { vault_id: VAULT } : null;
             }
@@ -34,6 +35,12 @@ function sandbox() {
     },
     supabaseAuth: {
       auth: {
+        async getClaims(token) {
+          calls.claims++;
+          return token === 'valid_token_abcdefg'
+            ? { data: { claims: { sub: OWNER, session_id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', exp: Math.floor(Date.now()/1000)+600 } }, error: null }
+            : { data: null, error: 'invalid' };
+        },
         async getUser(token) {
           calls.auth++;
           return token === 'valid_token_abcdefg'
@@ -63,6 +70,7 @@ test('inert assembly fails closed unless all trusted dependencies are supplied',
   const { deps } = sandbox();
   assert.throws(() => composeHeirServerStaging({ ...deps, trustedIngress: null }), /unconfigured/);
   assert.throws(() => composeHeirServerStaging({ ...deps, allowedOrigins: ['*'] }), /unconfigured/);
+  assert.throws(() => composeHeirServerStaging({ ...deps, supabaseAuth: {auth:{getUser:async()=>({data:null,error:null})}} }), /unconfigured/);
 });
 
 test('owner invitation flows through real composed HTTP, Supabase getUser and DB admission', async () => {
@@ -75,6 +83,7 @@ test('owner invitation flows through real composed HTTP, Supabase getUser and DB
   assert.match(data.token, /^[A-Za-z0-9_-]{43}$/);
   assert.equal(calls.invites, 1);
   assert.ok(calls.auth >= 2, 'HTTP and domain both verify the token');
+  assert.ok(calls.claims >= 2 && calls.sessions >= 2, 'every authorization uses live session check');
   assert.equal(calls.rate, 2, 'pre-auth and verified-user quotas both used');
   assert.match(response.headers.get('cache-control') ?? '', /no-store/);
 });

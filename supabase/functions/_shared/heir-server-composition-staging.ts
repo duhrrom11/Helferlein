@@ -7,7 +7,7 @@
 import { createHeirStagingBackend, type SqlBackend } from './heir-staging-backend.ts';
 import { createHeirKeyProofStaging } from './heir-key-proof-staging.ts';
 import { createHeirReleaseStaging } from './heir-release-staging.ts';
-import { createHeirSupabaseVerifier, type SupabaseAuthProvider } from './heir-supabase-auth.ts';
+import { createHeirActiveSessionVerifier, type SessionAwareAuthProvider } from './heir-active-session-staging.ts';
 import { createHeirPgAdmission, type TrustedIngressIdentity } from './heir-http-rate-limit-staging.ts';
 import { createHeirHttpStaging } from './heir-http-staging.ts';
 
@@ -15,7 +15,7 @@ export interface HeirServerStagingDependencies {
   /** Restricted, server-side PostgreSQL transaction adapter. No browser access. */
   database: SqlBackend;
   /** Server-side Supabase Auth client. Must verify token using auth.getUser. */
-  supabaseAuth: SupabaseAuthProvider;
+  supabaseAuth: SessionAwareAuthProvider;
   /** Authoritative ingress identity, never untrusted request headers. */
   trustedIngress: TrustedIngressIdentity;
   /** Explicit HTTPS origins. No wildcard and no default host. */
@@ -27,11 +27,12 @@ export function composeHeirServerStaging(deps: HeirServerStagingDependencies):
   (request: Request) => Promise<Response> {
   if (!deps?.database || typeof deps.database.transaction !== 'function' ||
       !deps.supabaseAuth || typeof deps.supabaseAuth.auth?.getUser !== 'function' ||
+      typeof deps.supabaseAuth.auth?.getClaims !== 'function' ||
       !deps.trustedIngress || typeof deps.trustedIngress.remoteIdentity !== 'function' ||
       !Array.isArray(deps.allowedOrigins) || deps.allowedOrigins.length === 0) {
     throw new Error('heir_server_unconfigured');
   }
-  const verifyUser = createHeirSupabaseVerifier(deps.supabaseAuth);
+  const verifyUser = createHeirActiveSessionVerifier(deps.database, deps.supabaseAuth);
   const invitations = createHeirStagingBackend(deps.database, verifyUser);
   const keys = createHeirKeyProofStaging(deps.database, verifyUser);
   const release = createHeirReleaseStaging(deps.database, verifyUser);

@@ -17,6 +17,11 @@ const ownerToken='ci_owner_ephemeral_access_token';
 const otherToken='ci_other_ephemeral_access_token';
 const heirToken='ci_heir_ephemeral_access_token';
 const users=new Map([[ownerToken,OWNER],[otherToken,OTHER],[heirToken,HEIR]]);
+const sessions=new Map([
+  [ownerToken,'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'],
+  [otherToken,'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'],
+  [heirToken,'cccccccc-cccc-4ccc-8ccc-cccccccccccc'],
+]);
 
 if(process.env.HEIR_ISOLATED_TEST_DB!=='1'||process.env.PGDATABASE!=='helferlein_heir_ci'||
    process.env.PGHOST!=='127.0.0.1'||process.env.PGUSER!=='heir_ci_backend'||
@@ -102,7 +107,10 @@ server.listen(0,'127.0.0.1',()=>{
  const origin=`https://127.0.0.1:${server.address().port}`;
  httpHandler=composeHeirServerStaging({
    database:db,
-   supabaseAuth:{auth:{async getUser(token){return {data:{user:users.has(token)?{id:users.get(token)}:null},error:null};}}},
+   supabaseAuth:{auth:{
+     async getUser(token){return {data:{user:users.has(token)?{id:users.get(token)}:null},error:null};},
+     async getClaims(token){return {data:users.has(token)?{claims:{sub:users.get(token),session_id:sessions.get(token),exp:Math.floor(Date.now()/1000)+300}}:null,error:users.has(token)?null:'invalid'};}
+   }},
    trustedIngress:{async remoteIdentity(request){return ingress.get(request)||null;}},
    allowedOrigins:[origin]
  });
