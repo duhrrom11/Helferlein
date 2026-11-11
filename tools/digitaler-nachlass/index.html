@@ -253,7 +253,21 @@
                     </div>
                 </fieldset>
                 <p id="heirInviteHelp" class="text-xs leading-relaxed text-slate-400">Späterer Ablauf: Erbenkonto auswählen → Einladung mit zeitlich begrenztem Einmalcode erstellen → Erbe bestätigt seinen eigenen Schlüssel → Zugriff nur nach gesonderter, rechtlich geprüfter Freigabe. Keine Master-Keys, Links mit Schlüsseln oder automatischen E-Mails.</p>
-                <p class="text-xs text-slate-400" role="note">Noch keine serverseitige Einladungsliste vorhanden. Einladungen können hier derzeit weder angelegt noch widerrufen werden; lokale Kontakte bleiben separat verwaltbar.</p>
+                <div class="rounded-xl border border-slate-700 overflow-hidden" aria-labelledby="heirInvitationsHeading">
+                    <h4 id="heirInvitationsHeading" class="text-xs font-bold text-slate-100 px-3 py-3 bg-slate-900">Einladungsübersicht</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <caption class="sr-only">Erbeneinladungen mit Empfänger, Status, Ablauf und Widerruf</caption>
+                            <thead class="bg-slate-900/70 text-slate-300">
+                                <tr><th scope="col" class="px-3 py-2">Empfänger</th><th scope="col" class="px-3 py-2">Status</th><th scope="col" class="px-3 py-2">Gültig bis</th><th scope="col" class="px-3 py-2">Aktion</th></tr>
+                            </thead>
+                            <tbody id="heirInvitationRows">
+                                <tr><td colspan="4" class="px-3 py-4 text-slate-400">Noch keine sichere Serververbindung: Einladungen können nicht geladen werden. Die lokalen Vertrauenspersonen sind davon unabhängig.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400" role="note">Einladungsstatus: ausstehend, angenommen, abgelaufen oder widerrufen. Widerrufe sind erst nach Authentifizierung und sicherer Serveranbindung möglich. Einmalcodes werden weder in dieser Liste noch in Links angezeigt.</p>
             </section>
         </div>
 

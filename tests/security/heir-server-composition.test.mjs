@@ -91,3 +91,28 @@ test('unknown requests, forged owner fields and invalid bearer never mutate invi
     'https://evil.example.org'))).status, 403);
   assert.equal(calls.invites, 0);
 });
+
+test('HTTP invitation list excludes token material and rejects unverified identity', async () => {
+  const { handler, deps } = sandbox();
+  // CI memory adapter provides only a metadata result; the real SQL query is
+  // exercised in the isolated PostgreSQL 17 service integration test.
+  const original = deps.database.transaction;
+  deps.database.transaction = async work => original(async tx => {
+    const one = tx.one;
+    tx.one = async (sql, args) => sql.includes('jsonb_agg(')
+      ? { invitations: [{ invitationId: '44444444-4444-4444-8444-444444444444',
+          intendedUserId: HEIR, status: 'pending', createdAt: '2026-11-11T00:00:00Z',
+          expiresAt: '2026-11-12T00:00:00Z', token_hash: 'secret' }] }
+      : one(sql, args);
+    return work(tx);
+  });
+  const response = await handler(req('/v1/heirs/invitations/list',{vaultId:VAULT}));
+  assert.equal(response.status,200);
+  const body = await response.json();
+  assert.deepEqual(Object.keys(body).sort(), ['hasMore','invitations','ok']);
+  assert.deepEqual(Object.keys(body.invitations[0]).sort(),
+    ['createdAt','expiresAt','intendedUserId','invitationId','status']);
+  assert.equal(JSON.stringify(body).includes('secret'), false);
+  const denied = await handler(req('/v1/heirs/invitations/list',{vaultId:VAULT},'invalid_token_abcde'));
+  assert.equal(denied.status,401);
+});

@@ -11,6 +11,7 @@ const MAX_BODY = 8192;
 const routes = {
   '/v1/heirs/invitations/create': ['vaultId', 'intendedUserId', 'ttlSeconds'],
   '/v1/heirs/invitations/redeem': ['token'],
+  '/v1/heirs/invitations/list': ['vaultId'],
   '/v1/heirs/invitations/revoke': ['vaultId', 'invitationId'],
   '/v1/heirs/envelopes/put': ['vaultId', 'heirUserId', 'keyId', 'publicKeyFingerprintHex', 'encapsulatedKeyHex', 'wrappedDekHex', 'suite'],
   '/v1/heirs/keys/begin': ['publicKeyHex'],
@@ -27,6 +28,7 @@ type Invocation = (auth: string | null, payload: any) => Promise<ServiceResult>;
 export interface HeirHttpServices {
   createInvitation: Invocation;
   redeemInvitation: Invocation;
+  listInvitations: Invocation;
   revokeInvitation: Invocation;
   putEnvelope: Invocation;
   beginEnrollment: Invocation;
@@ -154,6 +156,7 @@ export function createHeirHttpStaging(config: HeirHttpConfig): (request: Request
       switch (route) {
         case '/v1/heirs/invitations/create': result = await ops.createInvitation(auth, body); break;
         case '/v1/heirs/invitations/redeem': result = await ops.redeemInvitation(auth, body.token); break;
+        case '/v1/heirs/invitations/list': result = await ops.listInvitations(auth, body); break;
         case '/v1/heirs/invitations/revoke': result = await ops.revokeInvitation(auth, body); break;
         case '/v1/heirs/envelopes/put': result = await ops.putEnvelope(auth, body); break;
         case '/v1/heirs/keys/begin': result = await ops.beginEnrollment(auth, body.publicKeyHex); break;
@@ -166,6 +169,29 @@ export function createHeirHttpStaging(config: HeirHttpConfig): (request: Request
       if (route === '/v1/heirs/invitations/create') {
         return typeof result.token === 'string' && /^[A-Za-z0-9_-]{43}$/.test(result.token)
           ? json(200, { ok: true, token: result.token }, origin) : json(403, { ok: false }, origin);
+      }
+
+      if (route === '/v1/heirs/invitations/list') {
+        // Whitelist only owner-scoped metadata, never token hashes / invitation codes.
+        if (!Array.isArray(result.invitations) || result.invitations.length > 50 ||
+            typeof result.hasMore !== 'boolean') return json(403, { ok: false }, origin);
+        const items: Array<Record<string, string>> = [];
+        for (const item of result.invitations) {
+          if (!item || typeof item !== 'object') return json(403, { ok: false }, origin);
+          const x = item as Record<string, unknown>;
+          if (typeof x.invitationId !== 'string' || !UUID.test(x.invitationId) ||
+              typeof x.intendedUserId !== 'string' || !UUID.test(x.intendedUserId) ||
+              !['pending','accepted','expired','revoked'].includes(String(x.status)) ||
+              typeof x.createdAt !== 'string' || !Number.isFinite(Date.parse(x.createdAt)) ||
+              typeof x.expiresAt !== 'string' || !Number.isFinite(Date.parse(x.expiresAt))) {
+            return json(403, { ok: false }, origin);
+          }
+          items.push({
+            invitationId: x.invitationId, intendedUserId: x.intendedUserId,
+            status: x.status as string, createdAt: x.createdAt, expiresAt: x.expiresAt,
+          });
+        }
+        return json(200, { ok: true, invitations: items, hasMore: result.hasMore }, origin);
       }
       if (route === '/v1/heirs/keys/begin') {
         const { keyId, challengeId, ephemeralPublicKeyHex, saltHex, suite } = result;

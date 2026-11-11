@@ -64,6 +64,19 @@ async function main() {
       assert.equal(invitations.rows[0].token_hash.length,32);
       assert.ok(!invitations.rows[0].token_hash.includes(created.token));
     } finally {client.release()}
+
+    // Owner-only list: accepted invitation visible without revealing token or hash.
+    const ownerList = await service.listInvitations('Bearer trusted-owner-token', { vaultId: VAULT });
+    assert.equal(ownerList.ok, true, 'verified owner can inspect invitation metadata');
+    assert.equal(ownerList.invitations.length, 1);
+    assert.equal(ownerList.invitations[0].status, 'accepted');
+    assert.equal(ownerList.invitations[0].intendedUserId, OTHER);
+    assert.equal(typeof ownerList.invitations[0].invitationId, 'string');
+    assert.match(ownerList.invitations[0].expiresAt, /^\\d{4}-\\d\\d-/);
+    assert.equal(JSON.stringify(ownerList).includes(created.token), false);
+    assert.equal(JSON.stringify(ownerList).includes('token_hash'), false);
+    assert.equal((await service.listInvitations('Bearer trusted-other-token',{vaultId:VAULT})).ok,false);
+    assert.equal((await service.listInvitations('Bearer trusted-owner-token',{vaultId:'v_badowner'})).ok,false);
     // Prepare a synthetic, verified recipient key in the isolated database.
     // Actual private-key proof and HPKE correctness are covered by separate tests.
     const keyId='77777777-7777-4777-8777-777777777777';
@@ -86,6 +99,9 @@ async function main() {
     const rev=await pool.query('SELECT status,revoked_at FROM heir_private.heir_assignments WHERE owner_user_id=$1 AND heir_user_id=$2',[OWNER,OTHER]);
     assert.equal(rev.rows[0].status,'revoked');
     assert.ok(rev.rows[0].revoked_at);
+    const revokedList = await service.listInvitations('Bearer trusted-owner-token',{vaultId:VAULT});
+    assert.equal(revokedList.ok,true);
+    assert.equal(revokedList.invitations[0].status,'revoked');
     const afterRevoke=await pool.query('SELECT revoked_at FROM heir_private.heir_envelopes WHERE owner_user_id=$1 AND heir_user_id=$2',[OWNER,OTHER]);
     assert.ok(afterRevoke.rows[0].revoked_at);
     assert.equal((await service.putEnvelope('Bearer trusted-owner-token',envelope)).ok,false);
@@ -95,7 +111,7 @@ async function main() {
     const count=await pool.query('SELECT count(*)::int AS n FROM heir_private.heir_assignments WHERE status=$1',['active']);
     assert.equal(count.rows[0].n,0);
     console.log(JSON.stringify({status:'passed',engine:'PostgreSQL 17',service:'real TypeScript SqlBackend',
-      actual_supabase_jwt:'not tested (auth.getUser test double)',checks:['restricted role','owner-only create','recipient-only single-use redeem','real transactional revoke','verified envelope stored','revoked envelope denied','snapshot ciphertext not writable']}));
+      actual_supabase_jwt:'not tested (auth.getUser test double)',checks:['restricted role','owner-only create','recipient-only single-use redeem','real transactional revoke','verified envelope stored','revoked envelope denied','snapshot ciphertext not writable','owner-only list hides tokens','list shows accepted and revoked']}));
   } finally {await pool.end();}
 }
 main().catch(err=>{console.error(JSON.stringify({status:'failed',reason:String(err)}));process.exitCode=1;});

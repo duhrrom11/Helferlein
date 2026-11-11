@@ -44,6 +44,7 @@ export function composeHeirServerStaging(deps: HeirServerStagingDependencies):
     services: {
       createInvitation: (auth, body) => invitations.createInvitation(auth, body),
       redeemInvitation: (auth, body) => invitations.redeemInvitation(auth, body),
+      listInvitations: (auth, body) => invitations.listInvitations(auth, body),
       revokeInvitation: (auth, body) => invitations.revokeInvitation(auth, body),
       putEnvelope: (auth, body) => invitations.putEnvelope(auth, body),
       beginEnrollment: (auth, body) => keys.beginEnrollment(auth, body),

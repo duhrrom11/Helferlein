@@ -146,6 +146,70 @@ export function createHeirStagingBackend(db: SqlBackend, verifyUser: VerifyUser)
       }));
     },
 
+
+    /** Owner-only metadata view. Never exposes bearer tokens, token hashes or DEKs.
+     * The owner snapshot is locked first, matching all mutation lock ordering.
+     * All status decisions are evaluated at PostgreSQL server time.
+     */
+    async listInvitations(auth: string | null, input: { vaultId: string }): Promise<Result<{
+      ok: true;
+      invitations: Array<{
+        invitationId: string; intendedUserId: string;
+        status: 'pending' | 'accepted' | 'expired' | 'revoked';
+        createdAt: string; expiresAt: string;
+      }>;
+      hasMore: boolean;
+    }>> {
+      const uid = await actor(auth);
+      if (!uid || !isVault(input?.vaultId)) return no;
+      return safe(async () => db.transaction(async tx => {
+        const owner = await lockOwner(tx, uid);
+        if (!owner || owner.vault_id !== input.vaultId) stop();
+        // 51 items are selected to detect pagination needs without unbounded reads.
+        // Future pagination needs an audited, owner-scoped keyset cursor.
+        const row = await tx.one<{ invitations: unknown }>(
+          `SELECT COALESCE(jsonb_agg(
+             jsonb_build_object(
+               'invitationId',invitation_id, 'intendedUserId',intended_user_id,
+               'status',status,'createdAt',created_at,'expiresAt',expires_at)
+             ORDER BY created_at DESC, invitation_id DESC), '[]'::jsonb) AS invitations
+           FROM (
+             SELECT i.invitation_id, i.intended_user_id, i.created_at, i.expires_at,
+               CASE
+                 WHEN i.revoked_at IS NOT NULL OR a.status = 'revoked' THEN 'revoked'
+                 WHEN i.accepted_at IS NOT NULL THEN 'accepted'
+                 WHEN i.expires_at <= clock_timestamp() THEN 'expired'
+                 ELSE 'pending'
+               END AS status
+             FROM heir_private.heir_invitations i
+             LEFT JOIN heir_private.heir_assignments a
+               ON a.invitation_id = i.invitation_id AND a.owner_user_id = i.owner_user_id
+             WHERE i.owner_user_id = $1 AND i.vault_id = $2
+             ORDER BY i.created_at DESC, i.invitation_id DESC
+             LIMIT 51
+           ) visible`, [uid, input.vaultId]);
+        if (!row || !Array.isArray(row.invitations) || row.invitations.length > 51) stop();
+        const invitations = row.invitations.slice(0, 50).map(item => {
+          if (!item || typeof item !== 'object') stop();
+          const it = item as Record<string, unknown>;
+          if (!isUuid(it.invitationId) || !isUuid(it.intendedUserId) ||
+              !['pending','accepted','expired','revoked'].includes(String(it.status)) ||
+              typeof it.createdAt !== 'string' || typeof it.expiresAt !== 'string') stop();
+          const created = new Date(it.createdAt);
+          const expiry = new Date(it.expiresAt);
+          if (!Number.isFinite(created.getTime()) || !Number.isFinite(expiry.getTime())) stop();
+          return {
+            invitationId: it.invitationId,
+            intendedUserId: it.intendedUserId,
+            status: it.status as 'pending' | 'accepted' | 'expired' | 'revoked',
+            createdAt: created.toISOString(),
+            expiresAt: expiry.toISOString(),
+          };
+        });
+        return { ok: true as const, invitations, hasMore: row.invitations.length === 51 };
+      }));
+    },
+
     async revokeInvitation(auth: string | null, input: {
       vaultId: string; invitationId: string;
     }): Promise<Result> {
