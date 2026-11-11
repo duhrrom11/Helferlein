@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschauaktionen und mobile Schnellnavigation)
+
+- **Vorschau und Fokus:** In `gift-start.mjs` deaktivieren `endPreview` und der Speichervorgang die gerade verwendeten Buttons „Vorschau rückgängig“ bzw. „Vorschau übernehmen“. Der Tastaturfokus blieb zuvor auf einem danach deaktivierten Button. Nach Abbruch oder bestätigter Übernahme wird die bestehende `homeLayoutStatus`-Live-Meldung programmatisch fokussiert; die bestehende Speicherlogik bleibt unverändert.
+- **Listen-Schnellaktion:** `quickOpenSelected` in `lists-dashboard.mjs` scrollte bisher lediglich zur ausgewählten Liste. Die Aktion verwendet nun die vorhandene `focusListRegion('activeListHeading')`-Hilfe für einen nachvollziehbaren Tastatur- und Screenreader-Kontext.
+- **Bewegungspräferenz:** Die Schnellaktionen `mobileNewWish`, `quickAddWish` und `quickNewList` respektieren `prefers-reduced-motion`, statt `smooth`-Scrollen unbedingt zu erzwingen.
+- **Prüfung:** Nach Veröffentlichung `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` neu aus GitHub abgerufen. Zwei Module und zehn Inline-Skripte isoliert auf JavaScript-Syntax geprüft: keine Fehler; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test bleibt offen.
+- **Produktionsschutz:** Nur clientseitige Fokus-, Navigations- und Scrolllogik geändert; keine Supabase-Connectoraufrufe, Datenbankmigrationen, Produktivdatenänderungen oder Testdaten.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschau und sichere Fokusrückgabe)
 
 - **Dashboard-Vorschau:** In `gift-start.mjs` schaltete `saveLayoutChange` im `finally`-Block sämtliche Layoutbuttons frei, also auch `homeConfirmPreview` und `homePreviewUndo`, obwohl `endPreview` die Vorschau bereits beenden konnte. Diese beiden Aktionen bleiben nun deaktiviert, solange `previewSnapshot` nicht existiert. Bereits vorhandene Vorschaufunktionen und Speicherabfragen bleiben unverändert.
