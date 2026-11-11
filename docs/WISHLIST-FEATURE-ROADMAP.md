@@ -1,3 +1,13 @@
+## Roadmap-Fortschritt – 11.11.2026 (Aufklappbare Wunschverwaltung absichern)
+
+- **Statische DOM-Prüfung:** 312 eindeutige HTML-IDs in `amazon-wishlist/index.html`; keine doppelten IDs gefunden. Vorhandene IDs für Suche, Filter, Auswahl, Sammelaktionen, Fortschritt und Ergebnisse bleiben erhalten.
+- **JavaScript-Abgleich:** `lists-dashboard.mjs` greift weiterhin auf `bulkSelectedCount`, `bulkProgressPanel`, `bulkResultPanel`, `listWishClearFilters` und die Auswahlwerkzeuge zu; keine Umbenennung oder Entfernung dieser IDs vorgenommen.
+- **Nachgewiesener CSS-Konflikt:** Die zuvor sticky/fixiert wirkende `.wish-bulk-toolbar` hatte auf Mobilgeräten eine maximale Höhe von `40dvh` und `overflow:auto`. Seit der Einbettung in `<details class="wish-bulk-panel">` verursachte das einen unnötigen inneren Scrollbereich und potenzielle Überlagerungen.
+- **Fix:** Die Leiste ist innerhalb des aufklappbaren Bereichs wieder statisch, ohne Höhenbegrenzung und ohne innere Scrollfläche; schmale Layouts und sichtbare Tastatur-Fokusmarkierung verbessert. Commit `217bbdd74d2ffa660c3c378e21f22850c72868bb`.
+- **Nicht behauptet:** Kein authentifizierter Browser-End-to-End-Test und keine tatsächliche visuelle Messung auf Geräten. Deployment-Ergebnis des neuen Fixes separat prüfen. Keine Supabase-Änderungen, keine Testdaten.
+
+---
+
 ## Aktueller Roadmap-Stand – 11.11.2026 (UI-Vereinfachung und Theme-Qualität)
 
 **Abgeschlossen und auf `main` veröffentlicht:**
