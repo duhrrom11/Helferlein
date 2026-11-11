@@ -19,3 +19,10 @@ test('import guards account changes, changed local data and stale previews',()=>
  assert.match(app,/localStorage\.getItem\(localWishExtrasKey\(preview\.ownerId\)\)!==preview\.raw/);
  assert.match(app,/user\?\.id!==preview\.ownerId/);
 });
+
+test('import prevents overlapping submissions and changes during upload',()=>{
+ assert.match(app,/let wishExtrasImportBusy=false/);
+ assert.match(app,/if\(wishExtrasImportBusy\)return;/);
+ assert.match(app,/wishExtrasImportBusy=true/);
+ assert.match(app,/finally\{wishExtrasImportBusy=false/);
+});
