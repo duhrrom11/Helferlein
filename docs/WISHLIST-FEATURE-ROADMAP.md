@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Konflikterkennung bei paralleler Listenbearbeitung)
+
+- **Nachgewiesener Lost-Update-Pfad:** Das Bearbeitungsformular schrieb Titel, Beschreibung, Symbol, Farbe, Sichtbarkeit und Titelbild ohne Abgleich des beim Öffnen angezeigten Datenstands. Zwei Tabs konnten so die jeweils anderen Änderungen still überschreiben.
+- **Korrektur:** `openEditor()` merkt sich die sechs ursprünglichen Feldwerte. Der Update-Query vergleicht alle sechs Werte mittels `.eq(...)` bzw. `.is(...,null)` und prüft mit `.select('id')`, ob eine Zeile aktualisiert wurde. Bei abweichendem Stand wird ein Konflikt gemeldet und kein stilles Überschreiben durchgeführt. Baseline wird bei Abbruch und Konto-Reset verworfen. Code: `20ff8877a770cbda583fcbd0d3c936c3fdd70651`.
+- **Grenzen:** Der Konfliktschutz deckt die sechs Editorfelder ab, nicht alle Listen- oder Wunschmutationen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Archivstatus-Konflikte zwischen Tabs)
 
 - **Nachgewiesener Konfliktpfad:** Archivieren/Reaktivieren setzte `wishlist_lists.archived` anhand eines zuvor geladenen Kartenstatus, ohne den ursprünglichen Archivwert in der Datenbankbedingung abzugleichen. Eine parallele Änderung in einem anderen Tab konnte so unbemerkt überschrieben werden.
