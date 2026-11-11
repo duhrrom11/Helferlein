@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (doppelte Listenzuordnung und Kontowechsel während Insert)
+
+- **Nachgewiesene Fehlerpfade:** `assignWish` prüfte den aktiven Benutzer nur vor dem asynchronen INSERT und behandelte auch einen Unique-Konflikt für eine bereits bestehende Zuordnung als Fehler. Nach einem Kontowechsel während des INSERT fehlte die erneute Sitzungsprüfung.
+- **Korrektur:** Nach dem INSERT wird die aktuelle Konto-ID erneut mit dem gestarteten Eigentümer verglichen. Bei Wechsel wird eine aussagekräftige Fehlermeldung mit Prüfhilfe ausgegeben. PostgreSQL-Unique-Konflikte (`23505`) werden als idempotente, bereits bestehende Zuordnung behandelt; andere Datenbankfehler werden weitergeworfen. Code: `a151076ada0a888d35ddc0d8b7a757562ad4b183`.
+- **Grenzen:** Eine bereits gestartete Datenbankoperation wird durch die nachträgliche Kontoprüfung nicht abgebrochen oder zurückgerollt. `23505` wird unter der Annahme der erwarteten Eindeutigkeit der Zuordnung behandelt; die konkrete Constraint-Zuordnung wurde nicht live verifiziert. Nichtatomare Verschiebungen und weitere parallele Listenaktionen bleiben zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (parallele Quellenlöschung beim Verschieben erkennen)
 
 - **Nachgewiesener Konfliktpfad:** Die Quellenlöschung beim zweistufigen Wunsch-Verschieben wertete nur `error` aus. Wenn die Ursprungszuordnung bereits durch einen anderen Tab entfernt worden war, konnte ein erfolgreiches DELETE mit null betroffenen Zeilen als regulär abgeschlossene Verschiebung gemeldet werden.
