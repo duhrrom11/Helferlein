@@ -1,3 +1,10 @@
+## Manuelle Browser-Abnahme – Schritt 3 abgeschlossen (Nutzerrückmeldung, 11.11.2026)
+
+- **Vorgehen:** Nutzer hat in der produktiven Wunschlisten-Anwendung den gefundenen Button `Abmelden` betätigt. Keine Wunschlisten-Datenmutation und keine Testdaten.
+- **Bestätigte Beobachtungen:** Anmeldebereich nach Abmeldung sichtbar = **ja**; privates Dashboard = **ausgeblendet**; Fehlermeldung = **keine**; weitere Auffälligkeiten = **keine**.
+- **Bewertung:** Sichtbare Abmeldefunktion und Ausblendung des privaten Dashboards durch Nutzerbeobachtung bestätigt. Dies ist kein unabhängiger Nachweis serverseitiger RLS-/Autorisierungsregeln und keine automatisierte Browserprüfung.
+- **Offen:** Schritt 4: Verhalten nach erneutem Neuladen im abgemeldeten Zustand; keine neue Anmeldung und keine Schreiboperation nötig. Kein Fehlerfix oder Deployment erforderlich.
+
 ## Manuelle Browser-Abnahme – Schritt 3, Zwischenstand (Nutzerrückmeldung, 11.11.2026)
 
 - Nutzer meldet nach Browser-Suche nach `Abmelden`: **Button gefunden** (`found`).
