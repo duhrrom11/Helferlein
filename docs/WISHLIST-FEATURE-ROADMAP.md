@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Duplizierung: Unterbrechung zwischen Zuordnungs-Batches)
+
+- **Nachgewiesener Teilfehler:** Bei der mehrstufigen Listen-Duplizierung führten `if(!current())return`-Abbrüche vor späteren Zuordnungs-Batches oder nach dem letzten Batch zu stillen Teilkopien. Bereits erfolgreich gespeicherte Zuordnungen blieben bestehen, ohne dass der Benutzer die Anzahl sah.
+- **Korrektur:** Der gemeinsame asynchrone Abschluss `reportInterruptedCopy()` lädt bei unverändert aktivem Konto die Listen neu und meldet anschließend die Zahl der bereits übertragenen Zuordnungen. Er wird nach Anlage der Kopie, zwischen den Batches und vor dem abschließenden Refresh bei veraltetem Kontext aufgerufen. Code: `ba4ddbfc21bd3474182547653e6cc719516462bf`.
+- **Lokale Speicherpfade geprüft:** `saveWishExtras()` kann nach erfolgreichem Datenbank-Schreibauftrag an `localStorage.setItem` scheitern; Datenbank und Browser-Speicher sind nicht atomar. Keine ungesicherte automatische Wiederholung eingebaut; weitere Korrektur der Teilfehler-Rückmeldung erforderlich.
+- **Prüfgrenzen:** Statische Codeprüfung ohne authentifizierten Browser-E2E-Test. Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Archivstatus und teilweise Listen-Kopien)
 
 - **Archivierung/Reaktivierung:** Nach erfolgreichem `wishlist_lists.update({archived:...})` brach der Handler bei geänderter `loadGeneration` vor dem Dashboard-Refresh ab. Jetzt wird bei weiterhin gleichem geladenen Konto auch nach zwischenzeitlichem Refresh neu geladen. Code: `0c5491ece99d472eccefa6e68109ef429a7214a4`.
