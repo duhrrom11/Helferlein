@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Produktionsfreigabe, CI-Verifikation blockiert)
+
+- **Freigabe des Auftraggebers:** Notwendige Produktivänderungen, Merge und Deployment grundsätzlich erlaubt; nur bei konkret begründetem Bedarf und nach Prüfung.
+- **Lokal tatsächlich ausgeführt:** `node --test tests/wishlist-move-regression.test.cjs` mit Node.js v22.16.0: 7 Tests bestanden, 0 fehlgeschlagen (ca. 81 ms). Lokale Kopie der isolierten Helper-Tests; kein vollständiger aktueller GitHub-Checkout.
+- **GitHub-Abfragen:** Für Commits `3a2498d29c98a190e367889b84b29ea146af3ecb` und `5d78a0a8524737dd1a09161acde89dce497fef46` meldete die verfügbare Workflow-Abfrage jeweils `workflow_runs: []`; der Commit-Status für `5d78a0a` meldete `statuses: []`. Diese API erfasst hier nur PR-getriggerte Läufe und belegt daher weder Erfolg noch Fehlschlag von Push-CI.
+- **Zugriffsbeschränkung:** Direkte GitHub-Actions-Webansicht nicht abrufbar; lokaler `git ls-remote` scheiterte an DNS-Auflösung für github.com. Der neue Dashboard-Integrationstest wurde über den GitHub-Connector auf Vorhandensein geprüft, aber nicht gegen einen vollständigen Checkout ausgeführt.
+- **Entscheidung:** Kein nachgewiesener neuer Defekt, daher keine unbegründete Codeänderung, kein Supabase-Eingriff, kein Merge und kein Deployment. Erst CI-Jobstatus/Logs und vollständige Integrationsprüfung verifizieren, dann gegebenenfalls gezielt korrigieren und veröffentlichen.
+
 ## Entwicklungsfortschritt – 11.11.2026 (GitHub Actions CI und Dashboard-Integration)
 
 - GitHub-Actions-Workflow `.github/workflows/wishlist-regression.yml` veröffentlicht (Commit `e9c6abc`). Auslöser: relevante Pushes und manueller `workflow_dispatch`; Node.js 22, Syntaxprüfung von drei Modulen und isolierte Node-Tests; nur `contents: read`, keine Secrets, keine Datenbank- oder Deployment-Schritte.
