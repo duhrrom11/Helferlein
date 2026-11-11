@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Kontowechsel während Wunsch-Listenzuordnung)
+
+- **Nachgewiesene Race Condition:** Nach erfolgreicher Wunsch-Neuanlage wurde bei gewählter Zielliste `await dashboard.assignWish(...)` ausgeführt. Danach konnte die Routine ohne erneute Kontoprüfung den Editor zurücksetzen und Folgeaktualisierungen auslösen, obwohl während der asynchronen Listenzuordnung das Konto gewechselt hatte.
+- **Korrektur:** Direkt nach Abschluss der optionalen Listenzuordnung wird `user?.id` erneut mit der ursprünglichen Konto-ID verglichen. Bei Kontowechsel endet der alte Speichervorgang vor Editor-Reset und Folgeaktualisierungen. Code: `1dd4c863111109f90e915d974302b38171684a7c`.
+- **Grenzen:** Bereits bestätigte Datenbankänderungen bleiben bestehen. Gleichzeitige Mutationen und die restlichen Konto-/Auth-Races sind weiter zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Wunsch-Speichern: Folgeaktionen bei Kontowechsel)
 
 - **Nachgewiesener Fehler:** Beim Bearbeiten und Anlegen eines Wunsches erfolgte nach bestätigter Datenbankänderung `await refreshFeed(); await dashboard.refresh();` ohne Kontoprüfung dazwischen. Ein Kontowechsel während der Feed-Aktualisierung konnte so noch eine alte Listenaktualisierung starten und anschließend eine irreführende Fehlermeldung `Sitzung hat sich geändert` auslösen, obwohl die Datenbankänderung bereits abgeschlossen war.
