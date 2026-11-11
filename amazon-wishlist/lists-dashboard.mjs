@@ -1,5 +1,5 @@
 import {LIST_TEMPLATES,WISH_CATEGORIES,filterListWishes} from './list-features.mjs';
-import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,executeBulkJob,bulkControlsEnabled,currentDashboardLoad,fetchDashboardBase,fetchDashboardMembership,membershipForSelectedList} from './bulk-helpers.mjs';
+import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,executeBulkJob,bulkControlsEnabled,currentDashboardLoad,fetchDashboardBase,fetchDashboardMembership,membershipForSelectedList,bulkMoveRefreshStatus,moveFailureState,bulkMoveCounts} from './bulk-helpers.mjs';
 // Multi-list dashboard. Requires LISTS-SCHEMA-PROPOSAL.sql to be reviewed and applied separately.
 export function mountListsDashboard(db, getUser) {
  const $=id=>document.getElementById(id);
@@ -313,10 +313,11 @@ actions.append(button('Duplizieren',async()=>{
     finally{if(current())reportBulk(moved+failed,targets.length,moved,failed)}
    }
    if(current()){
-    const summary=moved+' verschoben, '+failed+' fehlgeschlagen'+(skipped?', '+skipped+' nicht in dieser Liste – übersprungen':'')+(stopped?', Vorgang gestoppt; '+(targets.length-moved-failed)+' nicht abgeschlossen':'')+(partial?', bei '+partial+' Vorgängen Zuordnungsstand unklar (Überschneidung mit fehlgeschlagen/nicht abgeschlossen möglich) – bitte beide Listen prüfen':'')+'.';
+    const counts=bulkMoveCounts({total:targets.length,moved,failed,uncertain:partial,stopped});
+    const summary=counts.moved+' verschoben, '+counts.failed+' fehlgeschlagen'+(skipped?', '+skipped+' nicht in dieser Liste – übersprungen':'')+(stopped?', Vorgang gestoppt; '+(targets.length-moved-failed)+' nicht abgeschlossen':'')+(partial?', bei '+partial+' Vorgängen Zuordnungsstand unklar (Überschneidung mit fehlgeschlagen/nicht abgeschlossen möglich) – bitte beide Listen prüfen':'')+'.';
     const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;
     try{await refresh;if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&run===bulkRunId&&refreshGeneration===loadGeneration&&membershipReady)$('bulkStatus').textContent=summary}
-    catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&run===bulkRunId&&refreshGeneration===loadGeneration){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent='Sammelverschiebung beendet, aber der aktuelle Zuordnungsstand konnte nicht geladen werden. Vorläufiges Ergebnis: '+summary}}
+    catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&run===bulkRunId&&refreshGeneration===loadGeneration){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent=bulkMoveRefreshStatus(summary,{refreshSucceeded:false,currentContext:true})}}
    }
   }finally{
    if(run===bulkRunId){bulkBusy=false;bulkStopRequested=false;$('bulkProgressPanel').hidden=true;$('bulkStop').disabled=true;if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId){updateBulkToolbar();renderWishCards()}}
@@ -358,7 +359,7 @@ actions.append(button('Duplizieren',async()=>{
    const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;
    try{await refresh}catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration)msg('Wunsch verschoben, aber Listen konnten nicht neu geladen werden: '+(e.message||'Ladefehler')+'. Bitte aktualisieren.');return}
    if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration&&membershipReady)msg('Wunsch nach „'+target.title+'“ verschoben. Die Ausgangsliste bleibt geöffnet.')
-  }catch(e){if(current()){const warning='Verschieben fehlgeschlagen'+(writeStarted?' nach gestarteter Schreiboperation; Zuordnungsstand unklar':'')+': '+(e.message||'Unbekannter Fehler')+'. Bitte beide Listen prüfen.';if(writeStarted){const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;try{await refresh}catch{}if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration)msg(warning)}else if(current())msg(warning)}}
+  }catch(e){if(current()){const failure=moveFailureState({writeStarted,contextValid:current()});const warning='Verschieben fehlgeschlagen'+(failure.uncertain?' nach gestarteter Schreiboperation; Zuordnungsstand unklar':'')+': '+(e.message||'Unbekannter Fehler')+'. Bitte beide Listen prüfen.';if(writeStarted){const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;try{await refresh}catch{}if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration)msg(warning)}else if(current())msg(warning)}}
   finally{activeWishMutations.delete(uid+':'+wishId);if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&membershipReady&&!bulkBusy){const restoreFocus=hadFocus&&(!document.activeElement||document.activeElement===document.body);if(control.isConnected)control.disabled=false;renderWishCards();if(restoreFocus){const card=[...$('listWishCards').children].find(el=>el.dataset.wishId===String(wishId));const destination=card?.querySelector('.wish-move-actions select');(destination||$('listWishSearch')).focus({preventScroll:true})}}}
  }
  let compactWishView=false;
