@@ -528,7 +528,7 @@ actions.append(button('Duplizieren',async()=>{
   const uid=loadedOwner;
   if(!uid||getUser()?.id!==uid||!membershipReady||!event.key)return;
   if(event.key===favoriteKey(uid)){favoriteIds=new Set([...readFavorites(uid)].filter(id=>lists.some(l=>l.id===id)));render();return;}
-  if(event.key===categoryKey(uid)){wishCategories=readCategories(uid);renderWishCards();if(detailWishId)syncDetailMarkers();return;}
+  if(event.key===categoryKey(uid)){const previousCategory=detailWishId?wishCategories[detailWishId]||'':'';const categoryField=$('wishDetailCategory');const untouched=detailWishId&&categoryField.value===previousCategory;wishCategories=readCategories(uid);if(untouched&&$('wishDetailDialog').open)categoryField.value=wishCategories[detailWishId]||'';renderWishCards();return;}
   if(event.key===markerKey(uid)){wishMarkers=readMarkers(uid);renderWishCards();if(detailWishId)syncDetailMarkers();}
  });
  $('refreshLists').onclick=()=>load().catch(e=>msg(e.message));
