@@ -27,6 +27,13 @@ const SHA256HEX = /^[a-f0-9]{64}$/;
 const HEX = /^[a-f0-9]+$/;
 const CIPHER_SUITE = 'HPKE-v1-X25519-HKDF-SHA256-AES-256-GCM';
 const no: Denied = Object.freeze({ ok: false });
+/** PostgreSQL int8 values are decoded as strings by pg to avoid precision loss. */
+function positiveSafeVersion(value: unknown): number | null {
+  if (typeof value === 'string' && !/^[1-9][0-9]*$/.test(value)) return null;
+  if (typeof value !== 'number' && typeof value !== 'string') return null;
+  const parsed = typeof value === 'number' ? value : Number(value);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : null;
+}
 function stop(): never { throw new Error('denied'); } // handled uniformly, not exposed
 const isUuid = (value: unknown): value is string => typeof value === 'string' && UUID.test(value);
 const isVault = (value: unknown): value is string => typeof value === 'string' && VAULT.test(value);
@@ -197,11 +204,12 @@ export function createHeirStagingBackend(db: SqlBackend, verifyUser: VerifyUser)
       return safe(async () => db.transaction(async tx => {
         const owner = await lockOwner(tx, uid);
         if (!owner || owner.vault_id !== input.vaultId) stop();
-        const assignment = await tx.one<{ version: number; status: string }>(
+        const assignment = await tx.one<{ version: string | number; status: string }>(
           `SELECT version,status FROM heir_private.heir_assignments
            WHERE owner_user_id=$1 AND heir_user_id=$2 FOR UPDATE`,
           [uid, input.heirUserId]);
-        if (!assignment || assignment.status !== 'active' || !Number.isInteger(assignment.version)) stop();
+        const assignmentVersion = positiveSafeVersion(assignment?.version);
+        if (!assignment || assignment.status !== 'active' || assignmentVersion === null) stop();
         const key = await tx.one<{ fingerprint_hex: string }>(
           `SELECT encode(fingerprint,'hex') AS fingerprint_hex
            FROM heir_private.heir_public_keys
@@ -217,7 +225,7 @@ export function createHeirStagingBackend(db: SqlBackend, verifyUser: VerifyUser)
                suite=EXCLUDED.suite,encapsulated_key=EXCLUDED.encapsulated_key,
                wrapped_dek=EXCLUDED.wrapped_dek,revoked_at=NULL,updated_at=clock_timestamp()
            WHERE heir_private.heir_envelopes.revoked_at IS NULL`,
-          [uid,input.heirUserId,input.keyId,assignment.version,input.suite,
+          [uid,input.heirUserId,input.keyId,assignmentVersion,input.suite,
             input.encapsulatedKeyHex,input.wrappedDekHex]);
         if (changed !== 1) stop();
         return { ok: true as const };
