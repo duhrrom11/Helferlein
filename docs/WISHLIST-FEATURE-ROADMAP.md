@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: Reload nach Schreibfehlern)
+
+- **Nachgewiesener Fehlerpfad:** Der allgemeine `catch` in `moveWishToList()` meldete Fehler nach begonnenem Ziel-INSERT oder Ursprungs-DELETE, ohne die Mitgliedschaftsanzeige erneut zu laden. Teiländerungen konnten damit bei unverändertem Kontext in der UI veraltet erscheinen.
+- **Korrektur:** `writeStarted` wird vor beiden Schreiboperationen gesetzt. Bei Fehlern nach Schreibbeginn erfolgt ein Reload mit `afterBulk:true`; die Warnung über unklaren Zuordnungsstand wird nur bei weiterhin passendem Benutzerkonto, Ursprungsliste und Reload-Generation angezeigt. Fehler vor Schreibbeginn bleiben ohne zusätzlichen Reload. Code: `423cebd573213d8577a0fa2fea375092172403ab`.
+- **Grenzen:** Keine atomare Verschiebung oder automatische Datenbank-Wiederherstellung. Bereits gestartete Schreiboperationen können trotz Kontextwechsel abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: überlappende Statuszähler kennzeichnen)
 
 - **Nachgewiesene Unklarheit:** `partial` zählt Fälle mit unklarem Zuordnungsstand, darunter Fehler nach gestarteten Schreiboperationen (`failed`) und Abbrüche nach Kontextwechsel (`nicht abgeschlossen`). Die Abschlussmeldung ließ offen, dass diese Zähler sich überschneiden können.
