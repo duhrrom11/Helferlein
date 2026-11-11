@@ -1,3 +1,19 @@
+## Manuelle produktive Browser-Abnahme – Abschluss Schritte 1–5 (11.11.2026)
+
+**Status: Für die tatsächlich beobachteten, rein lesenden Szenarien erfolgreich abgeschlossen.** Grundlage sind ausschließlich Rückmeldungen des Nutzers aus seinem eigenen Browser, **keine** unabhängige authentifizierte Browserautomatisierung durch den Assistenten.
+
+| Schritt | Vom Nutzer bestätigte Beobachtungen | Bewertung |
+| --- | --- | --- |
+| 1 – Angemeldeter Leerzustand | Angemeldet; **0 Listen / 0 Wünsche**; keine Fehlermeldung; Ladeanzeige nicht beobachtet | Leerzustand bestätigt; Ladeanzeige offen |
+| 2 – Neuladen angemeldet | Weiterhin angemeldet; **0 Listen / 0 Wünsche**; keine Fehlermeldung; Ladeanzeige nicht beobachtet | Sitzung und Leerzustand nach Neuladen bestätigt |
+| 3 – Abmelden | Abmelden-Button gefunden und betätigt; Anmeldebereich sichtbar; privates Dashboard ausgeblendet; keine Fehlermeldung | Sichtbare Abmeldung bestätigt |
+| 4 – Neuladen abgemeldet | Anmeldebereich weiterhin sichtbar; privates Dashboard ausgeblendet; keine Fehlermeldung | Abgemeldeter Zustand nach Neuladen bestätigt |
+| 5 – Abschluss | Während der Abnahme **keine Fehlermeldung**, **keine Ladeanzeige beobachtet**, **keine Änderungen an produktiven Wunschlisten-/Wunschdaten**, keine weiteren Auffälligkeiten | Abschluss ohne beobachteten Fehler oder Datenmutation |
+
+**Ausdrücklich nicht verifiziert:** tatsächliche Darstellung/Dauer der Ladeanzeige (nicht gesehen, nicht als Defekt gewertet); Fehlerbehandlung bei absichtlich ausgelösten Netzwerk-/Serverfehlern (nicht provoziert); Listenwechsel mit vorhandenen Listen (keine Listen im beobachteten Leerzustand); unabhängige serverseitige Auth-/RLS-Durchsetzung durch Browser-/API-Tests. Das Fehlen beobachteter Fehlermeldungen beweist nicht die Funktion sämtlicher Fehlerpfade.
+
+**Sicherheits-/Betriebsgrenzen:** Keine Testkonten, keine Testdaten, keine produktiven Schreiboperationen an Wunschlisten oder Wünschen; nur normale Auth-Sitzungsaktionen (An-/Abmeldung), Seitenneuladen und Beobachtung. Kein Codefix, kein zusätzliches Deployment erforderlich. Dokumentation ist die einzige Repository-Änderung.
+
 ## Manuelle Browser-Abnahme – Schritt 4 abgeschlossen (Nutzerrückmeldung, 11.11.2026)
 
 - **Vorgehen:** Nutzer lud die produktive Wunschlisten-Seite im abgemeldeten Zustand neu. Keine Anmeldung, keine Testdaten, keine produktiven Datenänderungen.
