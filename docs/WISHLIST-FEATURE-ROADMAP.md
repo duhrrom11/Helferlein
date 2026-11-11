@@ -1,3 +1,13 @@
+## Roadmap-Fortschritt – 11.11.2026 (Deployment und Rückmeldungen)
+
+- **Deployment:** Der Pages-Lauf für CSS-Commit `217bbdd74` wurde durch einen nachfolgenden Lauf abgebrochen (`cancelled`). Der neuere Commit `36a361650` enthält den Fix und wurde erfolgreich über GitHub Pages veröffentlicht; Release-Smoke-Checks und Live-HTTP-Check ebenfalls erfolgreich. Dies ist kein Browser-E2E-Nachweis.
+- **DOM-/Sichtbarkeitsprüfung:** `bulkProgressPanel`, `bulkStatus`, `bulkResultPanel`, `bulkHistoryPanel` und `listItemsFeedback` stehen außerhalb des einklappbaren `wish-bulk-panel`. Ihre Meldungen werden durch dessen Schließzustand nicht verborgen. `bulkSelectedCount` bleibt in der Zusammenfassung des aufklappbaren Bereichs sichtbar.
+- **Konkreter Theme-Fehler:** Fortschritts-, Ergebnis-, Verlauf- und Fehlermeldungsbereiche hatten fest helle Hintergründe und teilweise dunkel definierte Sekundärschrift, ohne passende explizite Dark-Theme-Regeln. CSS-Korrektur für beide Themes, Textumbrüche und mobile Aktionsgrößen in Commit `07b8498cf45c31ed5fdb50caafd87d1bc8419179`.
+- **Fokus:** Native `<details><summary>`-Elemente bleiben per Tastatur bedienbar und erhalten sichtbare `:focus-visible`-Markierung. Vollständige Fokus-Rückkehr nach Dialog- und asynchronen Aktionen ist ohne Browser-E2E noch offen.
+- **Grenzen:** Keine tatsächlichen Smartphone-Screenshots oder authentifizierten Interaktionen erhoben; keine Supabase- oder Produktivdatenänderungen.
+
+---
+
 ## Roadmap-Fortschritt – 11.11.2026 (Aufklappbare Wunschverwaltung absichern)
 
 - **Statische DOM-Prüfung:** 312 eindeutige HTML-IDs in `amazon-wishlist/index.html`; keine doppelten IDs gefunden. Vorhandene IDs für Suche, Filter, Auswahl, Sammelaktionen, Fortschritt und Ergebnisse bleiben erhalten.
