@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Zusatzdaten vor Datenbankänderungen validieren)
+
+- **Nachgewiesener partieller Speicherfehler:** In `app.mjs` wurden zusätzliche Wunschangaben (HTTPS-Produktbild, Zielpreis, Menge, Status) erst in `saveWishExtras` geprüft, nachdem die Wunschänderung bereits in Supabase gespeichert war. Ungültige Eingaben konnten dadurch nach einem erfolgreichen Datenbank-Schreibauftrag einen Formularfehler auslösen.
+- **Korrektur:** `readValidatedWishExtras()` prüft und erfasst alle Zusatzangaben vor der ersten Datenbankänderung. `saveWishExtras(owner,id,extras)` verwendet den erfassten Stand statt nach asynchronen Schritten erneut aktuelle Formularfelder auszulesen.
+- **Verbleibende Grenzen:** Die lokalen Zusatzdaten werden weiterhin getrennt von der Datenbank gespeichert; Fehler bei `localStorage.setItem` können weiterhin zu einer partiellen Speicherung führen. Ein vollständig atomarer Commit über Datenbank und Browserspeicher ist damit nicht möglich.
+- **Prüfumfang:** Statische Codeprüfung und GitHub-Veröffentlichung, kein authentifizierter Browser-E2E-Test und keine produktive Supabase-Schreibprobe.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten geändert und keine Testdatensätze angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Wunschformular und Listen-Neuanlage: asynchrone Sitzungsgrenzen)
 
 - **Wunsch-Neuanlage:** Die im Listen-Dashboard ausgewählte Zielliste wird nun beim Start des Speichervorgangs erfasst. Vorher wurde `dashboard.selectedList()` erst nach den Produkt- und Wunschdatenbankanfragen gelesen; ein zwischenzeitlicher Listenwechsel konnte die Zuordnung unbemerkt auf eine andere Liste umlenken.
