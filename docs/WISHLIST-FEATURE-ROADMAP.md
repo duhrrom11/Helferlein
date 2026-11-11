@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Tab-Synchronisierung lokaler Wunschlisten-Daten)
+
+- **Nachgewiesene veraltete Ansichten:** Favoriten, Kategorien und Markierungen wurden in der Listenverwaltung beim Laden aus `localStorage` übernommen, Änderungen anderer bereits geöffneter Browser-Tabs lösten jedoch keine Aktualisierung der laufenden Ansicht aus.
+- **Korrektur:** Ein `storage`-Listener verarbeitet Änderungen an den drei benutzerbezogenen Schlüsseln. Bei aktuell geladenem und authentifiziertem Konto sowie vollständig geladenen Zuordnungen werden Favoriten, Kategorien oder Markierungen erneut eingelesen und die betroffenen Ansichten aktualisiert. Ereignisse für andere Konten werden ignoriert. Code: `86985ff887026b780647652d74caa96ecb846c51`.
+- **Grenzen:** Das Storage-Event ist keine atomare Transaktion; nahezu gleichzeitige Schreibvorgänge können weiterhin kollidieren. Beschädigte externe Daten werden von den bisherigen Lesefunktionen für die Anzeige als leer behandelt, beim Schreiben aber nicht überschrieben. Kontowechsel und Dialogzustände verdienen weitere E2E-Prüfung. Statische Quellcodeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Kategorien und Markierungen: Mehrtab-Betrieb und beschädigter Speicher)
 
 - **Nachgewiesenes Risiko:** `setMarker()` und `saveCategory()` schrieben jeweils die im aktuellen Tab zwischengespeicherten vollständigen Objekte `wishMarkers` bzw. `wishCategories`. Änderungen anderer Tabs konnten damit überschrieben werden. Beschädigte oder nicht lesbare localStorage-Inhalte wurden beim initialen Laden als leere Objekte dargestellt und beim nächsten Speichern ebenfalls überschrieben.
