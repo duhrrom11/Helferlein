@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: veraltete Fehlerantworten nach Kontextwechsel)
+
+- **Nachgewiesener Race-Condition-Pfad:** Der gemeinsame asynchrone `run`-Handler meldete Fehler des Wunsch-Speichervorgangs bislang auch dann, wenn während des Wartens ein anderer Wunsch geöffnet, das Formular verändert oder das Konto gewechselt wurde. Dadurch konnten Fehlermeldungen eines alten Vorgangs in einer neuen Bearbeitung erscheinen.
+- **Korrektur:** Beim Start werden Konto-ID, Bearbeitungs-Wunsch-ID und Editorrevision erfasst. Ein Fehler des Wunsch-Speichervorgangs wird nur dann im Status und Formular angezeigt, wenn alle drei Werte noch passen. Das erneute Aktivieren des Speichern-Buttons erfolgt bei diesem Vorgang nur für dasselbe Konto.
+- **Grenzen:** Der Handler verhindert keine bereits gestarteten Datenbankänderungen und ersetzt keine serverseitige Transaktions- oder Idempotenzabsicherung. Ein authentifizierter Browser-E2E-Test wurde nicht durchgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Zusatzfeld-Revisionen und verspätete Erfolgsmeldungen)
 
 - **Nachgewiesene Versionslücke:** `wishEditorRevision` wurde bisher nur bei URL, Titel, Notiz, Priorität und Sichtbarkeit erhöht. Änderungen an Produktbild, Zielpreis, Menge oder Status konnten während eines laufenden Speicherauftrags erfolgen, ohne die Versionsprüfung für das anschließende Zurücksetzen des Editors auszulösen. Jetzt erhöhen auch diese vier Zusatzfelder bei `input` und `change` die Revision.
