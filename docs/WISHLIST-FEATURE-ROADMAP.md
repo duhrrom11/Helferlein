@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: veraltete Ergebnisanzeige)
+
+- **Nachgewiesener UI-Fehler:** Nach einem fehlgeschlagenen Reload zeigte `bulkStatus` weiterhin die normale Abschlusszusammenfassung, ohne den nicht verifizierten Zuordnungsstand direkt im Ergebnistext zu kennzeichnen.
+- **Korrektur:** Bei Reload-Fehlern wird die Zusammenfassung ausdrücklich als *vorläufiges Ergebnis* bezeichnet und auf den nicht geladenen aktuellen Zuordnungsstand hingewiesen. Kein automatischer Wiederholungsversuch von Datenbank-Schreiboperationen.
+- **Geprüfte bestehende Schutzmaßnahmen:** Einzelverschiebungen laden nach Fehlern bei begonnenen Writes neu; Sammelverschiebungen kennzeichnen überlappende Zähler. Schreibfehler können weiterhin Teiländerungen hinterlassen.
+- **Offen:** Authentifizierte Browser-/Mobilabnahme und reproduzierbare Fehlersimulation mit isolierten Mocks, ohne Produktivdaten und ohne Testdatensätze.
+- **Produktionsschutz:** Ausschließlich GitHub-Code und Roadmap geändert; keine Supabase-Produktivdaten verändert, keine Testdaten angelegt, kein Merge oder Deployment.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: Reload nach Schreibfehlern)
 
 - **Nachgewiesener Fehlerpfad:** Der allgemeine `catch` in `moveWishToList()` meldete Fehler nach begonnenem Ziel-INSERT oder Ursprungs-DELETE, ohne die Mitgliedschaftsanzeige erneut zu laden. Teiländerungen konnten damit bei unverändertem Kontext in der UI veraltet erscheinen.
