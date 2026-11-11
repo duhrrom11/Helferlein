@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Editor während asynchronem Speichern geschützt)
+
+- **Asynchrone Listenbearbeitung:** `editListForm.onsubmit` in `lists-dashboard.mjs` deaktivierte bisher während der asynchronen Update-Operation lediglich die Schaltflächen für Speichern und Abbrechen. Die übrigen `input`-, `select`- und `textarea`-Elemente blieben bearbeitbar, während das Formular bei erfolgreicher Antwort geschlossen wurde. Dadurch konnten spätere Eingaben während der ausstehenden Antwort unbemerkt verloren gehen. Jetzt werden alle bearbeitbaren Editorfelder während des Speichervorgangs temporär deaktiviert und im `finally`-Zweig wieder freigegeben.
+- **Mobile Tastatur- und Fokusführung:** Ein vorübergehend deaktivierter Speichern-Button kann den aktiven Browserfokus verlieren. Bleibt das Formular nach einem Speicherfehler geöffnet, stellt die Abschlusslogik bei noch unverändertem Nutzer- und Ladezustand den Fokus auf die wieder freigegebene Speichern-Schaltfläche zurück, falls `document.body` den Fokus übernommen hat. Ein inzwischen bewusst veränderter Fokus wird nicht überschrieben.
+- **Prüfung:** `lists-dashboard.mjs`, `gift-start.mjs` und `index.html` nach den GitHub-Commits erneut geladen. Beide JavaScript-Module und zehn Inline-JavaScript-Blöcke ohne Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test mit verzögerter oder fehlschlagender Speicherung ist weiterhin offen.
+- **Produktionsschutz:** Nur clientseitige Formularsperre und Fokusführung geändert. Keine Supabase-Connectoraufrufe, Migrationen, Produktivdatenänderungen oder Testdaten.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Eingaben während asynchroner Listen-Neuanlage erhalten)
 
 - **Race Condition bei der mobilen Listen-Neuanlage:** `createList` in `lists-dashboard.mjs` deaktivierte während einer laufenden Insert-Anfrage nur die Schaltfläche `createList`. `listTitle` und `listDescription` blieben für weitere Eingaben oder eine neue Vorlagenauswahl offen, wurden aber nach erfolgreichem `await` bisher bedingungslos geleert. So konnten nachträglich eingegebene Inhalte verloren gehen.
