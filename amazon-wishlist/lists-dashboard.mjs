@@ -247,9 +247,10 @@ actions.append(button('Duplizieren',async()=>{
     shouldStop:()=>bulkStopRequested,
     write:async wishId=>{
      if(getUser()?.id!==uid||loadedOwner!==uid||generation!==loadGeneration||run!==bulkRunId)throw Error('Sammelaktion nach Kontowechsel oder Listen-Reload abgebrochen.');
-     const q=add?db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',listId).eq('wish_id',wishId).eq('user_id',uid);
+     const q=add?db.from('wishlist_list_items').insert({list_id:listId,wish_id:wishId,user_id:uid}):db.from('wishlist_list_items').delete().eq('list_id',listId).eq('wish_id',wishId).eq('user_id',uid).select('wish_id');
      const result=await q;
      if(add&&result.error?.code==='23505')return {error:null};
+     if(!add&&!result.error&&!result.data?.length)return {error:new Error('Zuordnung wurde bereits in einem anderen Tab entfernt. Bitte Liste neu laden.')};
      return result;
     },
     onProgress:({done,total,success,failed})=>{if(run===bulkRunId&&generation===loadGeneration&&getUser()?.id===uid&&loadedOwner===uid&&selected===listId)reportBulk(done,total,success,failed)}
