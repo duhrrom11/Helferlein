@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listenbeschreibung bei Neuanlage und Fokus in ungültigen Layout-Vorschauen)
+
+- **Neue Wunschliste:** `createList` schnitt den getrimmten `listDescription`-Text über `.slice(0,500)` stillschweigend ab. Die Formularlogik prüft jetzt ausdrücklich die Grenze von 500 Zeichen, erhält die Eingabe und markiert/fokussiert das Beschreibungsfeld über `invalidField` einschließlich vorhandener Live-Statusmeldung. Beim erneuten Bearbeiten wird die Fehlermarkierung wieder entfernt. Die bisherige Datenbank-Insert-Operation wurde nicht geändert.
+- **Dashboard-Layout-Vorschauen:** `showPreview` gab bei ungültigen Vorlagen oder Formulareinstellungen zuvor nur die Meldung „Ungültige Layout-Vorschau.“ aus. Jetzt wird der Einstellungsbereich `homeGiftSettings` geöffnet, eine konkrete Sortier-/Kennzahlen-/Link- oder Bereichssteuerung fokussiert und per `aria-describedby` mit `homeLayoutStatus` verknüpft; das Scrollverhalten berücksichtigt `prefers-reduced-motion`. Bei gültigen Vorschauen ist die Anzeige unverändert.
+- **Prüfung:** Aktuelle `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach den Commits von GitHub abgerufen. Beide Module und zehn Inline-Skripte isoliert auf JavaScript-Syntax geprüft: keine Fehler; keine doppelten statischen HTML-IDs. Keine authentifizierte Browser-E2E-Prüfung durchgeführt.
+- **Produktionsschutz:** Ausschließlich clientseitige Formular- und Fokuslogik geändert. Keine Supabase-Connectoraufrufe, Datenbankmigrationen, Produktivdatenschreibvorgänge oder Testdaten.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Formularvalidierung für Listenbeschreibung und persönliche Layout-Vorlagen)
 
 - **Listenbearbeitung:** Eine Beschreibung von mehr als 500 Zeichen wurde in `lists-dashboard.mjs` zuvor lediglich über `msg` gemeldet. Der Nutzer blieb beim Speichern-Button und das beschreibende Feld hatte weder `aria-invalid` noch einen Bezug zur Statusmeldung. Die Validierung nutzt nun `invalidField(editListDescription, …)` mit Fokusrückgabe und Screenreader-Verknüpfung. Die bestehende Attributbereinigung beim Ändern der Eingabe und beim Öffnen des Editors wurde auf `editListDescription` erweitert.
