@@ -330,6 +330,7 @@ actions.append(button('Duplizieren',async()=>{
   if(!source||!target||selected!==sourceListId||!assignedIds.has(wishId))return msg('Bitte einen zugeordneten Wunsch aus einer aktiven Liste auswählen.');
   if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(listMutationBusy||listCopyBusy||bulkBusy||!membershipReady||activeWishMutations.size||selected!==sourceListId||getUser()?.id!==uid||loadedOwner!==uid||generation!==loadGeneration||!assignedIds.has(wishId)||!lists.some(l=>l.id===sourceListId&&!l.archived)||!lists.some(l=>l.id===targetListId&&!l.archived)||!wishes.some(w=>w.id===wishId))return;
   const current=()=>getUser()?.id===uid&&loadedOwner===uid&&generation===loadGeneration&&selected===sourceListId;
+  let writeStarted=false;
   const hadFocus=document.activeElement===control;activeWishMutations.add(uid+':'+wishId);control.disabled=true;
   try{
    const targetMembership=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetListId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
@@ -337,6 +338,7 @@ actions.append(button('Duplizieren',async()=>{
    if(!current())return;
    const alreadyThere=!!targetMembership.data?.length;
    if(!alreadyThere){
+    writeStarted=true;
     const {error}=await db.from('wishlist_list_items').insert({list_id:targetListId,wish_id:wishId,user_id:uid});
     if(error&&error.code!=='23505')throw error;
    }
@@ -345,6 +347,7 @@ actions.append(button('Duplizieren',async()=>{
    if(!current())return;
    if(confirmedTarget.error)throw confirmedTarget.error;
    if(!confirmedTarget.data?.length){const warning='Zielzuordnung wurde während des Verschiebens entfernt. Diese Aktion hat die Ursprungszuordnung nicht gelöscht; andere Tabs können sie verändert haben. Bitte beide Listen prüfen.';const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;try{await refresh}catch{}if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration)msg(warning);return}
+   writeStarted=true;
    const {error,data:removedSource}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid).select('wish_id');
    if(!current())return;
    if(!error&&!removedSource?.length){const warning='Die Ursprungszuordnung wurde bereits in einem anderen Tab entfernt. Bitte beide Listen neu laden und prüfen.';const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;try{await refresh}catch{}if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration)msg(warning);return}
@@ -355,7 +358,7 @@ actions.append(button('Duplizieren',async()=>{
    const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;
    try{await refresh}catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration)msg('Wunsch verschoben, aber Listen konnten nicht neu geladen werden: '+(e.message||'Ladefehler')+'. Bitte aktualisieren.');return}
    if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration&&membershipReady)msg('Wunsch nach „'+target.title+'“ verschoben. Die Ausgangsliste bleibt geöffnet.')
-  }catch(e){if(current())msg('Verschieben fehlgeschlagen oder Zuordnungsstand unklar: '+(e.message||'Unbekannter Fehler')+'. Bitte beide Listen prüfen.')}
+  }catch(e){if(current()){const warning='Verschieben fehlgeschlagen'+(writeStarted?' nach gestarteter Schreiboperation; Zuordnungsstand unklar':'')+': '+(e.message||'Unbekannter Fehler')+'. Bitte beide Listen prüfen.';if(writeStarted){const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;try{await refresh}catch{}if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration)msg(warning)}else if(current())msg(warning)}}
   finally{activeWishMutations.delete(uid+':'+wishId);if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&membershipReady&&!bulkBusy){const restoreFocus=hadFocus&&(!document.activeElement||document.activeElement===document.body);if(control.isConnected)control.disabled=false;renderWishCards();if(restoreFocus){const card=[...$('listWishCards').children].find(el=>el.dataset.wishId===String(wishId));const destination=card?.querySelector('.wish-move-actions select');(destination||$('listWishSearch')).focus({preventScroll:true})}}}
  }
  let compactWishView=false;
