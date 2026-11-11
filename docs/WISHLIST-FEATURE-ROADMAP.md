@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Zuordnungscheckbox: Tastaturfokus nach asynchronem Nachladen)
+
+- **Nachgewiesener Fokusverlust im Quellcode:** Die Checkbox zum Hinzufügen oder Entfernen eines Wunsches löst nach der asynchronen Datenbankoperation `load({afterBulk:true})` und im `finally` `renderWishCards()` aus. Dabei wird die fokussierte Checkbox durch ein neues Element ersetzt.
+- **Korrektur:** Vor dem Deaktivieren wird der Fokuszustand erfasst. Die neu gerenderte Checkbox wird über eine stabile Wunsch-ID wiedergefunden; falls sie durch den Filter verschwindet, wird die Wunschsuche fokussiert. Eine bewusste Fokusverlagerung während der Anfrage bleibt erhalten.
+- **Sitzungsgrenzen:** Die vorhandenen Prüfungen auf Konto, Listen-ID und Ladezustand bleiben erhalten; die Fokuswiederherstellung erfolgt nur im passenden aktuellen Listen-Kontext.
+- **Prüfgrenzen:** Statische Codeprüfung und GitHub-Veröffentlichung; kein authentifizierter Browser-End-to-End-Test und keine Supabase-Schreibprobe. Andere Listenaktionen, insbesondere Verschieben und Formularspeicherung, bleiben gesondert zu prüfen.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert, keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Prioritätsänderungen ohne gegenseitigen Fokusverlust)
 
 - **Konkreter Folgefehler:** Das bisherige vollständige `render()` nach einer Prioritätsänderung entfernte auch andere, noch deaktivierte und auf ihre Speicherantwort wartende Prioritätsfelder. Deren asynchrone Handler arbeiteten anschließend mit abgehängten DOM-Elementen. Jetzt wird nach erfolgreicher Speicherung nur das betroffene Prioritätskennzeichen aktualisiert beziehungsweise die Karte entfernt, falls sie nicht mehr zum aktiven Filter passt.
