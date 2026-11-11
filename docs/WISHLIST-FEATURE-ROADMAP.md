@@ -1,3 +1,14 @@
+## Feature-Paket 1 – 11.11.2026 (Private Cloud-Zusatzdaten auf eigenen Feed-Wunschkarten)
+
+- **Deployment geprüft:** Für `810d4a9` waren GitHub-Pages-Deployment, Release-Smoke-Checks und Live-HTTP-Check erfolgreich.
+- **Implementiert:** Der Feed lädt private `wishlist_wish_extras` nur für IDs der aktuellen Seite, deren `wishlist_wishes.user_id` der angemeldeten Benutzer-ID entspricht. Die Abfrage filtert zusätzlich nach `user_id` und diesen Wunsch-IDs; RLS der Cloud-Tabelle beschränkt den Zugriff unabhängig vom Client.
+- **Anzeige:** Eigene Wunschkarten verwenden weiterhin lokale Zusatzdaten, sofern vorhanden; andernfalls private Cloud-Werte für Bild, Preis, Menge und Status. Fremde öffentliche Wunschkarten erhalten keinerlei private Zusatzdaten. Cloud-Fehler führen zu leerem Cloud-Ergebnis und lokalem Fallback, ohne die Feed-Abfrage scheitern zu lassen.
+- **Asynchroner Schutz:** Nach der Cloud-Abfrage wird der bestehende Feed-Stale-Guard geprüft, bevor gerendert wird. Bei Benutzer-/Filter-/Profil-/Offsetwechsel werden Ergebnisse verworfen.
+- **Tests:** Statische Regressionstests für Eigentümerfilter, Cloud-Abfrage, lokale Priorität und Stale-Guard ergänzt. Kein authentifizierter Browser-End-to-End-Test, keine Testdatensätze, kein Import und keine Änderung bestehender Nutzerinhalte.
+- **Offen:** Zusätzliche Karten in der separaten Listenverwaltung auf Cloud-Zusatzdaten prüfen; Konflikt-/Importvorschau und vollständige Geräte-Synchronisation validieren. Cloud-Abfrage ist derzeit ein separater seitenweiser Request, kein öffentlicher Join.
+
+---
+
 ## Feature-Paket 1 – 11.11.2026 (Serverseitige monotone Version)
 
 - **Deploymentkontrolle:** Für `d750b152` waren GitHub Pages, Release-Smoke-Checks und Live-HTTP-Check erfolgreich.
