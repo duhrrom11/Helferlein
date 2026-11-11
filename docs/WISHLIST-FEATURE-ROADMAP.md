@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: Reload nach parallel entfernter Ursprungsliste)
+
+- **Nachgewiesener Fehlerpfad:** `moveWishToList()` erkannte eine bereits von einem anderen Tab entfernte Ursprungszuordnung anhand eines erfolgreichen DELETE ohne zurückgelieferte Zeile, zeigte aber nur eine Warnung und kehrte ohne Neuladen zurück. Der lokal angezeigte Mitgliedschaftsstand konnte deshalb veraltet bleiben.
+- **Korrektur:** Auch dieser Konfliktpfad startet jetzt `load({afterBulk:true})`. Die Warnmeldung wird nur angezeigt, wenn Benutzerkonto, ausgewählte Ursprungsliste und Ladegeneration nach dem Reload noch übereinstimmen. Code: `c210ac0f716751f5856226d98194fd008a3580bc`.
+- **Grenzen:** Die Korrektur lädt den Listenstand neu, ohne die zweistufige Verschiebung atomar zu machen. Ein Reload-Fehler bleibt im Warnhinweis zur manuellen Prüfung berücksichtigt. Bereits gestartete Datenbankoperationen können nach Kontowechseln abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (unterbrochene Sammelverschiebung: Zuordnungsstand korrekt beschreiben)
 
 - **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` erhöht `partial` sowohl nach Kontextverlust direkt nach der Zielzuordnung als auch nach einer bereits gestarteten Ursprungslöschung. Die Ergebniszusammenfassung bezeichnete alle Fälle als `möglicherweise in beiden Listen`, obwohl nach erfolgreicher Ursprungslöschung gerade keine Doppelzuordnung vorliegen muss.
