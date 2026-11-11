@@ -10,6 +10,7 @@ on:
       - 'tests/security/heir-server-composition.test.mjs'
       - 'tests/security/heir-owner-*.py'
       - 'assets/heir-owner-invitations-*.js'
+      - 'assets/heir-owner-session-staging.js'
       - 'tools/digitaler-nachlass/index.html'
       - 'tests/security/heir-indexeddb-real-browser.py'
       - 'docs/sql-drafts/heir_private_backend_REVIEW_ONLY.sql'
@@ -105,3 +106,4 @@ jobs:
         run: |
           python tests/security/heir-owner-invitations-browser.py
           python tests/security/heir-owner-transport-browser.py
+          python tests/security/heir-owner-session-browser.py

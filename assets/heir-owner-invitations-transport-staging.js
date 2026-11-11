@@ -52,15 +52,23 @@
       const token=await options.getAccessToken();
       if(typeof token!=='string' || token.length<8 || token.length>4096 ||
          !/^[A-Za-z0-9._~-]+$/.test(token))throw Error('unauthenticated');
+      if(options.signal?.aborted)throw Error('session_changed');
       const controller=new AbortController();
+      const cancel=()=>controller.abort();
+      if(options.signal)options.signal.addEventListener('abort',cancel,{once:true});
+      if(options.signal?.aborted)controller.abort();
       const timeout=root.setTimeout(()=>controller.abort(),8000);
       try {
+        if(controller.signal.aborted)throw Error('session_changed');
         const response=await root.fetch(origin+path,{
           method:'POST',mode:'same-origin',credentials:'omit',cache:'no-store',redirect:'error',
           referrerPolicy:'no-referrer',signal:controller.signal,
           headers:{'authorization':'Bearer '+token,'content-type':'application/json'},
           body:JSON.stringify(body)
         });
+        if((response.status===401 || response.status===403) && typeof options.onUnauthorized==='function')
+          options.onUnauthorized();
+        if(controller.signal.aborted)throw Error('session_changed');
         if(!response.ok || response.redirected || response.url &&
            new URL(response.url).origin!==origin)throw Error('unavailable');
         const data=await boundedJson(response);
@@ -74,7 +82,10 @@
            !Array.isArray(data.invitations) || data.invitations.length>50 ||
            typeof data.hasMore!=='boolean')throw Error('unavailable');
         return {ok:true,invitations:data.invitations,hasMore:data.hasMore};
-      } finally {root.clearTimeout(timeout);}
+      } finally {
+        root.clearTimeout(timeout);
+        if(options.signal)options.signal.removeEventListener('abort',cancel);
+      }
     };
   }
   root.HeirOwnerInvitationTransportStaging=Object.freeze({create});
