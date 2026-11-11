@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Zusatzfeld-Revisionen und verspätete Erfolgsmeldungen)
+
+- **Nachgewiesene Versionslücke:** `wishEditorRevision` wurde bisher nur bei URL, Titel, Notiz, Priorität und Sichtbarkeit erhöht. Änderungen an Produktbild, Zielpreis, Menge oder Status konnten während eines laufenden Speicherauftrags erfolgen, ohne die Versionsprüfung für das anschließende Zurücksetzen des Editors auszulösen. Jetzt erhöhen auch diese vier Zusatzfelder bei `input` und `change` die Revision.
+- **Verspätete Erfolgsmeldungen:** Nach `refreshFeed()` und `dashboard.refresh()` prüft der Speichervorgang jetzt zusätzlich, ob inzwischen die Bearbeitung eines anderen Wunsches geöffnet wurde. In diesem Fall wird die alte Erfolgsmeldung nicht in die neue Bearbeitung geschrieben.
+- **Grenzen:** Ein lokaler Speicherfehler nach erfolgreichem Datenbank-Commit kann weiterhin eine partielle Speicherung verursachen. Die neuen Prüfungen ersetzen keine atomare Datenbanktransaktion und keine authentifizierten Browser-Tests.
+- **Produktionsschutz:** Nur GitHub-Code und Roadmap geändert; keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Zusatzdaten vor Datenbankänderungen validieren)
 
 - **Nachgewiesener partieller Speicherfehler:** In `app.mjs` wurden zusätzliche Wunschangaben (HTTPS-Produktbild, Zielpreis, Menge, Status) erst in `saveWishExtras` geprüft, nachdem die Wunschänderung bereits in Supabase gespeichert war. Ungültige Eingaben konnten dadurch nach einem erfolgreichen Datenbank-Schreibauftrag einen Formularfehler auslösen.
