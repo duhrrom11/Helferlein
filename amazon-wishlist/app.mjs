@@ -109,7 +109,7 @@ $('updateWishExtrasCloud').onclick=run(async()=>{
  const feedback=$('wishExtrasCloudFeedback');
  let extras;try{extras=readValidatedWishExtras()}catch(error){feedback.textContent=wishlistErrorMessage(error);return}
  feedback.textContent='Aktueller Cloud-Stand wird geprüft …';
- const current=await db.from('wishlist_wish_extras').select('image_url,target_price,quantity,wish_status,updated_at').eq('user_id',ownerId).eq('wish_id',wishId).maybeSingle();
+ const current=await db.from('wishlist_wish_extras').select('image_url,target_price,quantity,wish_status,version').eq('user_id',ownerId).eq('wish_id',wishId).maybeSingle();
  if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision)return;
  if(current.error){feedback.textContent='Cloud-Daten konnten nicht geprüft werden. Es wurde nichts geändert. '+wishlistErrorMessage(current.error);return}
  if(!current.data){feedback.textContent='Noch keine Cloud-Daten vorhanden. Bitte zuerst die separate Aktion zum erstmaligen Cloud-Speichern verwenden.';return}
@@ -118,8 +118,8 @@ $('updateWishExtrasCloud').onclick=run(async()=>{
  if(!confirm(details+'\\nDiese Cloud-Daten jetzt durch die Eingaben im Editor ersetzen?')){feedback.textContent='Cloud-Aktualisierung abgebrochen. Keine Daten geändert.';return}
  if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision)return;
  feedback.textContent='Cloud-Daten werden mit Versionsprüfung aktualisiert …';
- const payload={image_url:extras.imageUrl||null,target_price:extras.price,quantity:extras.quantity,wish_status:extras.status,updated_at:new Date().toISOString()};
- const changed=await db.from('wishlist_wish_extras').update(payload).eq('user_id',ownerId).eq('wish_id',wishId).eq('updated_at',old.updated_at).select('wish_id');
+ const payload={image_url:extras.imageUrl||null,target_price:extras.price,quantity:extras.quantity,wish_status:extras.status};
+ const changed=await db.from('wishlist_wish_extras').update(payload).eq('user_id',ownerId).eq('wish_id',wishId).eq('version',old.version).select('wish_id,version');
  if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision)return;
  if(changed.error){feedback.textContent='Cloud-Aktualisierung fehlgeschlagen. Lokale Daten unverändert. '+wishlistErrorMessage(changed.error);return}
  if(changed.data?.length!==1){feedback.textContent='Konflikt: Cloud-Daten wurden inzwischen geändert oder entfernt. Nichts überschrieben; bitte erneut prüfen.';return}
