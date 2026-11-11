@@ -1,3 +1,13 @@
+## Roadmap-Prüfung – 11.11.2026 (Tastaturbedienung und Responsive-Layout)
+
+- **Statischer Accessibility-Audit:** Die aufklappbaren Filter-, Sammelaktions- und Auswahlbereiche verwenden native `<details><summary>`-Elemente mit sichtbarer `:focus-visible`-Markierung. Suchfeld und Filter haben sichtbare `<label>`-Beschriftungen; Fortschritts-, Fehler- und Ergebnisbereiche besitzen Status-/Live-Regionen. Der modale Bestätigungsdialog verwendet `<dialog>` mit `aria-labelledby`.
+- **Responsive-Quellcodeprüfung:** Suchfeld und Filter nutzen `max-width:100%` und `box-sizing:border-box`; bei kleinen Viewports werden Filter einspaltig, Sammelaktions-Schaltflächen vollbreit und Auswahlwerkzeuge unter 380 px einspaltig dargestellt. Die zuvor störende Sticky-/Scroll-Regel der Sammelaktionsleiste wurde bereits in `217bbdd74` korrigiert.
+- **Keine neue CSS-/JS-Korrektur:** In den statisch überprüften Selektoren und DOM-Beziehungen wurde kein weiterer reproduzierbar belegter Fehler identifiziert. Deshalb keine spekulative Änderung an produktivem Anwendungscode.
+- **Deploymentkontrolle:** Der vorherige Dokumentations-Commit `b75efcf` hatte bei der Abfrage erfolgreiche Release-Smoke-Checks; Pages-Lauf war noch `in_progress`, Live-HTTP-Check `queued`. Status der aktuellen Dokumentationsänderung muss nach dem Commit erneut geprüft werden.
+- **Offene Browser-Abnahme:** Tatsächliche Tab-Reihenfolge, Escape-/Fokusrückgabe, Screenreader-Ansagen, Zoom 200–400 %, Überlauf bei 320/375 px und Zustände mit echten Listendaten benötigen einen Browser-Test. Keine authentifizierte Browserprüfung durchgeführt; keine Testdaten oder Supabase-Änderungen.
+
+---
+
 ## Roadmap-Prüfung – 11.11.2026 (Dialogfokus und Deployment)
 
 - **Deployment verifiziert:** Pages-Lauf für `07b8498` wurde wegen nachfolgendem Commit abgebrochen; Pages-Lauf für `dc695624` erfolgreich abgeschlossen. Release-Smoke-Checks und Live-HTTP-Check für `dc695624` ebenfalls erfolgreich. Die neue Kontrastkorrektur ist in diesem neueren Stand enthalten.
