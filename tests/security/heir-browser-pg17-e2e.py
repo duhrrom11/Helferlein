@@ -94,7 +94,7 @@ def main():
                     assert 'Ausstehend' in page.locator('#host tbody tr').first.inner_text()
                     page.evaluate('window.ci.setConfirmation(true)')
                     revoke.click()
-                    page.locator('#host tbody tr').first.get_by_text('Widerrufen',exact=True).wait_for(timeout=10000)
+                    page.locator('#host tbody tr').first.locator('td').nth(2).get_by_text('Widerrufen',exact=True).wait_for(timeout=10000)
                     assert page.locator('#host tbody tr').first.get_by_role('button',name='Widerrufen').count()==0
                     assert page.evaluate('localStorage.length')==0
                     assert 'ci_owner_ephemeral_access_token' not in page.url
@@ -108,7 +108,7 @@ def main():
                     page.get_by_text('Noch nicht freigeschaltet',exact=False).wait_for(timeout=10000)
                     assert page.locator('#host tbody tr').count()==0 or page.get_by_text('Noch nicht freigeschaltet',exact=False).count()>0
                     page.evaluate("window.ci.setAccount('owner')")
-                    page.locator('#host tbody tr').first.get_by_text('Widerrufen',exact=True).wait_for(timeout=10000)
+                    page.locator('#host tbody tr').first.locator('td').nth(2).get_by_text('Widerrufen',exact=True).wait_for(timeout=10000)
                     page.evaluate('window.ci.setAccount(null)')
                     page.get_by_text('Noch nicht freigeschaltet',exact=False).wait_for(timeout=10000)
                     assert page.locator('#host tbody tr').count()==0 or page.get_by_text('Noch nicht freigeschaltet',exact=False).count()>0
