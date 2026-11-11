@@ -325,7 +325,9 @@ actions.append(button('Duplizieren',async()=>{
    if(!current())return;
    if(confirmedTarget.error)throw confirmedTarget.error;
    if(!confirmedTarget.data?.length){msg('Zielzuordnung wurde während des Verschiebens entfernt. Ursprungszuordnung bleibt erhalten; bitte Listen neu laden.');return}
-   const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid);
+   const {error,data:removedSource}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid).select('wish_id');
+   if(!current())return;
+   if(!error&&!removedSource?.length){msg('Die Ursprungszuordnung wurde bereits in einem anderen Tab entfernt. Bitte beide Listen neu laden und prüfen.');return}
    if(error){const warning=(alreadyThere?'Wunsch war bereits in der Zielliste, konnte aber nicht aus der Ursprungsliste entfernt werden: ':'Wunsch wurde zur Zielliste hinzugefügt, konnte aber nicht aus der Ursprungsliste entfernt werden: ')+error.message+'. Bitte beide Listen prüfen.';if(current())try{await load({afterBulk:true})}catch{}if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId)msg(warning);return}
    try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId)msg('Wunsch verschoben, aber Listen konnten nicht neu geladen werden: '+(e.message||'Ladefehler')+'. Bitte aktualisieren.');return}
    if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId)msg('Wunsch nach „'+target.title+'“ verschoben. Die Ausgangsliste bleibt geöffnet.')
