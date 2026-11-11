@@ -285,11 +285,13 @@ actions.append(button('Duplizieren',async()=>{
   try{
    for(const wishId of targets){
     if(!current()||bulkStopRequested){stopped=true;break}
+    let writeStarted=false;
     try{
      const targetState=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
      if(!current()){stopped=true;break}
      if(targetState.error)throw targetState.error;
      if(!targetState.data?.length){
+      writeStarted=true;
       const {error}=await db.from('wishlist_list_items').insert({list_id:targetId,wish_id:wishId,user_id:uid});
       if(error&&error.code!=='23505')throw error;
      }
@@ -299,6 +301,7 @@ actions.append(button('Duplizieren',async()=>{
      if(confirmed.error)throw confirmed.error;
      if(!confirmed.data?.length){partial++;failed++;if(current())msg('Zielzuordnung fehlt inzwischen. Die Ursprungszuordnung wurde von dieser Aktion nicht gelöscht, kann aber parallel verändert worden sein. Bitte beide Listen neu laden und prüfen.');continue}
      // Complete the current source removal before honoring Stop on the next wish.
+     writeStarted=true;
      const {error,data:removed}=await db.from('wishlist_list_items').delete().eq('list_id',sourceId).eq('wish_id',wishId).eq('user_id',uid).select('wish_id');
      if(!current()){stopped=true;partial++;break}
      if(error||!removed?.length){partial++;failed++;if(current())msg('Ursprungszuordnung konnte nicht eindeutig entfernt werden. Bitte beide Listen prüfen.');continue}
@@ -306,7 +309,7 @@ actions.append(button('Duplizieren',async()=>{
      if(!current()){stopped=true;partial++;break}
      if(finalTarget.error||!finalTarget.data?.length){partial++;failed++;if(current())msg('Ursprungszuordnung entfernt, aber Zielzuordnung konnte anschließend nicht bestätigt werden. Bitte beide Listen prüfen.');continue}
      moved++;bulkIds.delete(wishId);
-    }catch(e){failed++;if(current())msg('Ein Wunsch konnte nicht verschoben werden: '+(e.message||'Unbekannter Fehler'))}
+    }catch(e){failed++;if(writeStarted)partial++;if(current())msg('Ein Wunsch konnte nicht eindeutig verschoben werden: '+(e.message||'Unbekannter Fehler')+(writeStarted?' Schreiboperation bereits gestartet; bitte beide Listen prüfen.':''))}
     finally{if(current())reportBulk(moved+failed,targets.length,moved,failed)}
    }
    if(current()){
