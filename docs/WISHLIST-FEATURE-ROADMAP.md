@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listenzuordnung vor Insert gegen Kontowechsel absichern)
+
+- **Nachgewiesene Lücke:** `assignWish(wishId,listId,uid)` führte den Insert in `wishlist_list_items` ohne Prüfung der aktuellen Konto-ID aus. Nach einem Kontowechsel zwischen Wunsch-Neuanlage und Listenzuordnung konnte dadurch ein verspäteter Zuordnungsversuch für das ursprüngliche Konto gestartet werden.
+- **Korrektur:** `assignWish` vergleicht vor dem Insert `getUser()?.id` mit der übergebenen ursprünglichen Konto-ID und startet bei Abweichung keine Datenbankoperation. Code: `9c28194d556c391907cebd284662093768da7db8`.
+- **Grenzen:** Bereits gestartete Datenbankoperationen werden nicht abgebrochen. Parallele Listenmutationen, tabübergreifende Konflikte und weitere Speicher-Races bleiben offen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (überholte Speicherabschlüsse nach Kontowechsel)
 
 - **Nachgewiesene Race Condition:** Der gemeinsame `run()`-Wrapper aktivierte `saveWish` im `finally`, wenn die aktuelle Konto-ID der Start-ID entsprach. Nach einem Wechsel A → B → A konnte dadurch ein alter Speichervorgang die Schaltfläche während eines neueren Speichervorgangs vorzeitig aktivieren.
