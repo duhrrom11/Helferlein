@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Eingaben während asynchroner Listen-Neuanlage erhalten)
+
+- **Race Condition bei der mobilen Listen-Neuanlage:** `createList` in `lists-dashboard.mjs` deaktivierte während einer laufenden Insert-Anfrage nur die Schaltfläche `createList`. `listTitle` und `listDescription` blieben für weitere Eingaben oder eine neue Vorlagenauswahl offen, wurden aber nach erfolgreichem `await` bisher bedingungslos geleert. So konnten nachträglich eingegebene Inhalte verloren gehen.
+- **Gezielte Korrektur:** Beim Absenden werden die ursprünglichen Rohwerte `submittedTitle` und `submittedDescription` erfasst. Nach erfolgreicher, sitzungs- und generationsgültiger Antwort werden die Eingabefelder nur geleert, wenn ihr jeweiliger aktueller Wert noch exakt dem abgeschickten Wert entspricht. Spätere Änderungen bleiben im Formular erhalten. Die vorhandene Eingabevalidierung, Datenbankanfrage und Sitzungsprüfung bleiben unverändert.
+- **Prüfung:** Aktualisierte `lists-dashboard.mjs`, unveränderte `gift-start.mjs` und `index.html` nach Veröffentlichung erneut von GitHub geladen. Beide JavaScript-Module und zehn Inline-Skripte ohne Syntaxfehler geprüft; keine doppelten statischen HTML-IDs. Ein authentifizierter mobiler End-to-End-Test mit verzögerter Antwort steht weiterhin aus.
+- **Produktionsschutz:** Nur clientseitiger Umgang mit Formularwerten geändert. Keine Supabase-Connectoraufrufe, Migrationen, Änderungen an Produktivdaten oder Testdaten.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Status und Wunschlistenfilter beim Kontowechsel bereinigt)
 
 - **Dashboard-Statusmeldungen nach Sitzungswechsel:** In `gift-start.mjs` wurden beim Abmelden und beim Wechsel zu einer anderen angemeldeten Person bereits Vorschauzustände und Vorschauaktionen zurückgesetzt. Die Live-Meldungen `homeSettingsStatus` und `homeLayoutStatus` blieben dagegen unverändert. Beide Statusfelder werden nun an denselben Authentifizierungs-Reset-Stellen geleert, sodass Speicher- und Fehlermeldungen des bisherigen Kontos nicht in der nächsten Sitzung angezeigt werden.
