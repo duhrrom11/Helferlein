@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Archivstatus und teilweise Listen-Kopien)
+
+- **Archivierung/Reaktivierung:** Nach erfolgreichem `wishlist_lists.update({archived:...})` brach der Handler bei geänderter `loadGeneration` vor dem Dashboard-Refresh ab. Jetzt wird bei weiterhin gleichem geladenen Konto auch nach zwischenzeitlichem Refresh neu geladen. Code: `0c5491ece99d472eccefa6e68109ef429a7214a4`.
+- **Teilweise Listen-Duplizierung:** Wenn die Kopie bereits per Insert angelegt war, aber vor der ersten Übernahme von Wunschzuordnungen eine Ladegeneration wechselte, endete die Operation bisher still. Der Handler lädt jetzt bei weiterhin aktivem ursprünglichem Konto die Listen neu und meldet ausdrücklich, dass die Kopie ohne Zuordnungen angelegt wurde und geprüft werden muss. Die Meldung wird erst nach dem Reload gesetzt, damit dieser sie nicht überschreibt. Code: `485ffd4ce5cc43a6e42710c8d06ffc8da68fde66`, Nachkorrektur `7c439d6678abbe282e3dfb7d40e7d7651ee2722d`.
+- **Verbleibende Risiken:** Die Duplizierung bleibt eine mehrstufige, nicht atomare Operation. Bereits kopierte Zuordnungen können bei späterem Abbruch teilweise bestehen bleiben. Lokale Speicherfehler wurden in dieser Runde nicht vollständig geprüft. Keine authentifizierten Browser-E2E-Tests.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listenlöschung: erfolgreichen Delete trotz zwischenzeitlichem Refresh abschließen)
 
 - **Nachgewiesener Race-Condition-Pfad:** Der Lösch-Handler verwarf nach erfolgreichem `wishlist_lists.delete()` den abschließenden Dashboard-Refresh, sobald `loadGeneration` zwischenzeitlich geändert wurde. Dadurch konnte die gelöschte Liste in der lokalen Ansicht verbleiben.
