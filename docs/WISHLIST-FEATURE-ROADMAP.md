@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Zielzuordnung beim Verschieben frisch prüfen)
+
+- **Nachgewiesener Stale-Membership-Pfad:** Beim Verschieben eines Wunsches entschied ausschließlich `membershipByList` aus dem letzten Dashboard-Reload, ob die Zielzuordnung bereits bestand. Wurde sie zwischenzeitlich in einem anderen Tab entfernt, konnte das Verschieben die Neuanlage überspringen und danach die Ursprungszuordnung löschen.
+- **Korrektur:** Vor dem Entfernen der Ursprungszuordnung wird die Zielmitgliedschaft frisch über `wishlist_list_items` gelesen. Nach der Abfrage wird die aktuelle Konto-/Dashboard-Generation geprüft; bei fehlender Mitgliedschaft wird eingefügt. Ein paralleler Unique-Konflikt (Postgres `23505`) beim Insert wird als bereits bestehende Zielzuordnung behandelt. Code: `25f86a9e8d019120f4c18314fb1ee5dc3d32143c`, Korrektur `4f9808720f35e493dc30758edefc1fafea823b69`.
+- **Grenzen:** Zwischen Zielprüfung bzw. Insert und dem Löschen der Ursprungszuordnung bleibt ein nichtatomarer Zeitraum. Eine vollständig transaktionale Verschiebeoperation benötigt serverseitige Absicherung. Feed-/Editor-Reload-Races bleiben zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Zusatzdaten-Konflikte zwischen Wunsch-Editoren)
 
 - **Nachgewiesener Lost-Update-Pfad:** Der Wunsch-Editor übernahm Zusatzdaten (Produktbild, Preis, Menge, Status) aus `localStorage`, speicherte später aber ohne Vergleich mit zwischenzeitlichen Änderungen aus anderen Tabs.
