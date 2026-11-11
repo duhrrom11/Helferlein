@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Erfolgsmeldung nach eigenem Reset)
+
+- **Nachgewiesener Folgefehler:** Die zuvor eingeführte Prüfung der `wishEditorRevision` vor einer asynchronen Erfolgsmeldung unterdrückte auch die reguläre Erfolgsmeldung nach erfolgreichem Speichern. Grund: `resetWishEditor()` erhöht die Revision selbst, bevor die nachfolgenden Refreshes und die Erfolgsprüfung ausgeführt werden.
+- **Korrektur:** Der Speicherpfad erfasst `completionRevision` und aktualisiert diesen Wert nur beim eigenen, revisionsgeschützten Editor-Reset. Die abschließende Erfolgsmeldung prüft gegen diesen Abschlussstand; spätere Benutzereingaben bleiben weiterhin erkennbar. Dies gilt für Neuanlage und Bearbeitung.
+- **Prüfgrenzen:** Statische Quellcodeprüfung und GitHub-Veröffentlichung, kein authentifizierter Browser-E2E-Test. Keine Aussage über atomare Speicherung zwischen Supabase und Browser-localStorage.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Erfolgsmeldung an Eingaberevision binden)
 
 - **Nachgewiesener Race-Condition-Pfad:** Die asynchronen Speicherpfade für Wunsch-Neuanlage und Wunschbearbeitung prüften nach `refreshFeed()` und `dashboard.refresh()` bisher zwar Konto und Bearbeitungs-Wunsch, nicht aber die zwischenzeitlich geänderte `wishEditorRevision`. Eine ältere Speicherantwort konnte daher „Wunsch gespeichert“ melden, obwohl neue Eingaben noch nicht gespeichert waren.
