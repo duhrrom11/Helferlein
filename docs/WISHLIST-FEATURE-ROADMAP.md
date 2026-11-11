@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Erfolgsmeldung an Eingaberevision binden)
+
+- **Nachgewiesener Race-Condition-Pfad:** Die asynchronen Speicherpfade für Wunsch-Neuanlage und Wunschbearbeitung prüften nach `refreshFeed()` und `dashboard.refresh()` bisher zwar Konto und Bearbeitungs-Wunsch, nicht aber die zwischenzeitlich geänderte `wishEditorRevision`. Eine ältere Speicherantwort konnte daher „Wunsch gespeichert“ melden, obwohl neue Eingaben noch nicht gespeichert waren.
+- **Korrektur:** Beide Erfolgsmeldungen werden jetzt nur ausgegeben, wenn die beim Start erfasste Editorrevision noch aktuell ist. Die vorhandene Prüfung auf einen inzwischen anderen Bearbeitungswunsch bleibt erhalten.
+- **Prüfgrenzen:** Statische Quellcodeprüfung und GitHub-Veröffentlichung. Keine Browser-E2E-Prüfung, keine Supabase-Schreibprobe; laufende Datenbankoperationen werden durch die Rückmeldungsprüfung nicht abgebrochen.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: veraltete Fehlerantworten nach Kontextwechsel)
 
 - **Nachgewiesener Race-Condition-Pfad:** Der gemeinsame asynchrone `run`-Handler meldete Fehler des Wunsch-Speichervorgangs bislang auch dann, wenn während des Wartens ein anderer Wunsch geöffnet, das Formular verändert oder das Konto gewechselt wurde. Dadurch konnten Fehlermeldungen eines alten Vorgangs in einer neuen Bearbeitung erscheinen.
