@@ -1,3 +1,15 @@
+## Feature-Paket 1 – 11.11.2026 (Netzwerkfehler und veraltete Cloud-Antworten)
+
+- **Deploymentkontrolle:** `f55c5e6` hatte erfolgreiche GitHub-Pages-, Release-Smoke- und Live-HTTP-Checks.
+- **Importvorschau:** Exceptions beim Laden der eigenen Wünsche und Cloud-Konflikte werden lokal im `wishExtrasImportFeedback` angezeigt; eine fehlerhafte Vorschau wird verworfen. Fehler beim Zugriff auf `localStorage` verhindern die Freigabe des Imports.
+- **Importübertragung:** Geworfene Netzwerk- oder Speicherfehler werden im Importstatus mit der bis dahin gezählten Anzahl erfolgreicher Inserts und Konflikte angezeigt. Bereits erfolgreich übertragene Datensätze bleiben bestehen. Buttons werden im `finally` entsperrt; der bestehende Import-Reentrancy-Guard bleibt aktiv.
+- **Cloud-Editor:** Sowohl erster INSERT als auch Versions-UPDATE und die vorausgehende Cloud-Abfrage fangen geworfene Netzwerkfehler ab und melden sie in `wishExtrasCloudFeedback`. Bei unklarer Serverantwort wird ausdrücklich zum erneuten Prüfen geraten, statt Erfolg oder Fehlschlag zu behaupten.
+- **Stale-Schutz:** Eine fortlaufende `wishExtrasCloudOperation`-Kennung ergänzt Eigentümer-, Wunsch-ID- und Editor-Revisionsprüfung; ältere Antworten überschreiben den Status neuerer Cloud-Aktionen nicht. Importvorschauen bleiben über die Generationskennung invalidierbar.
+- **Tests:** Quellcode-Regressionen für Fehlerfeedback und Stale-Guards ergänzt. Kein authentifizierter Browser-E2E-Test, keine Testdaten, keine automatische Übertragung und keine Änderungen vorhandener Nutzerinhalte.
+- **Offen:** Browser-End-to-End-Test mit echten Daten nach ausdrücklicher Freigabe; optionaler Status für bewusst abgebrochene Cloud-Abfragen. Der Versionsschutz und die RLS-Eigentümerregeln wurden in dieser Runde nicht verändert.
+
+---
+
 ## Feature-Paket 1 – 11.11.2026 (Sicherheits- und Laufzeit-Codeaudit)
 
 - **Deployment:** `89c0fe7`: Pages-Build, Release-Smoke-Checks und Live-HTTP-Check erfolgreich.
