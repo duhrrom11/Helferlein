@@ -1,3 +1,11 @@
+## Authentifiziertes Wishlist-Dashboard / Supabase-Leseprüfung – 11.11.2026
+
+- **Produktivprojekt:** Supabase `Helferlein` (Status `ACTIVE_HEALTHY`). Ausschließlich lesende Tabellen-Metadatenabfrage und SQL-`SELECT COUNT(*)` durchgeführt, keine Mutation, keine Testdaten.
+- **Schema:** `public.wishlist_lists`, `public.wishlist_wishes`, `public.wishlist_list_items` und `public.wishlist_products` existieren, RLS ist bei allen vier Tabellen aktiviert. Tatsächliche Datensatzzahlen: jeweils **0**.
+- **Statische Dashboard-Prüfung:** `amazon-wishlist/lists-dashboard.mjs` lädt Listen und Wünsche per `fetchDashboardBase` und Mitgliedschaften per `fetchDashboardMembership`, jeweils nach `user_id` gefiltert. Der Ladezustand wird zu Beginn gesetzt; fehlgeschlagene Listen-, Wunsch- und Mitgliedschaftsabfragen setzen spezifische Fehlermeldungen; Mitgliedschaftssteuerungen bleiben bis zum vollständigen Snapshot gesperrt. `currentDashboardLoad` prüft Benutzerkennung und Ladegeneration gegen veraltete Antworten. `openList` blockiert ungültige/inaktive Listen und Wechsel während Mutationen, setzt Auswahl und Filter zurück.
+- **Grenzen:** Kein Zugriff auf eine angemeldete Browser-Sitzung oder deren Auth-Token; die Admin-/Connector-Abfragen beweisen keine RLS-`authenticated`-Berechtigungen. Bei null Listen/Wünschen können echte Listenwechsel und Anzeige bestehender Daten nicht produktiv validiert werden. Kein Browser-End-to-End-Test durchgeführt; die beschriebenen UI-Eigenschaften sind Quellcode-Inspektion, kein Laufzeitnachweis.
+- **Entscheidung:** Kein nachgewiesener Defekt, deshalb kein Codefix, Merge, zusätzliches Deployment oder Supabase-Schreibzugriff. Für echte Auth- und UI-Validierung ist eine sichere angemeldete Browserprüfung mit vorhandenen Daten nötig, sobald solche vorhanden sind; keine Testdaten anlegen.
+
 ## Produktive Live- und Deployment-Prüfung – 11.11.2026 (nur lesend)
 
 - **Deployment bestätigt:** GitHub-Pages-Workflow https://github.com/duhrrom11/Helferlein/actions/runs/43029771850 für Commit `665f4411c019420dfd9eca755297de10199ef0d3`: Jobs `build`, `report-build-status`, `deploy` jeweils `success`. Kein zusätzliches Deployment ausgelöst.
