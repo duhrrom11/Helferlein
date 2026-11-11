@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (parallele Quellenlöschung beim Verschieben erkennen)
+
+- **Nachgewiesener Konfliktpfad:** Die Quellenlöschung beim zweistufigen Wunsch-Verschieben wertete nur `error` aus. Wenn die Ursprungszuordnung bereits durch einen anderen Tab entfernt worden war, konnte ein erfolgreiches DELETE mit null betroffenen Zeilen als regulär abgeschlossene Verschiebung gemeldet werden.
+- **Korrektur:** Die DELETE-Abfrage fordert mit `.select('wish_id')` die tatsächlich entfernten Zeilen zurück. Bei null Zeilen wird ein Konflikthinweis statt der Erfolgsmeldung ausgegeben. Nach dem Await wird zudem die aktuelle Konto-/Dashboard-Generation erneut geprüft. Code: `1ddddd1d6f2dcb7959826cfe9064904578213a3c`.
+- **Grenzen:** Das Verfahren erkennt diesen Konflikt, verhindert aber nicht sämtliche zwischenzeitlichen Änderungen oder Datenverluste ohne serverseitig atomare Verschiebung. Bereits gestartete Schreiboperationen sind clientseitig nicht rückwirkend abbrechbar. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (offene Wunsch-Editoren nach Feed-Reload)
 
 - **Nachgewiesener Stale-Editor-Pfad:** Die Feed-Generation wurde bisher nur beim Öffnen aus einer Wunschkarte geprüft. Ein bereits geöffneter Editor konnte nach einem späteren Feed-Reload weiter speichern, ohne den veralteten UI-Stand zu erkennen.
