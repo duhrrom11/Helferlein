@@ -8,6 +8,9 @@ on:
       - 'tests/security/heir-pg17-*'
       - 'tests/security/heir-http-*'
       - 'tests/security/heir-server-composition.test.mjs'
+      - 'tests/security/heir-owner-invitations-browser.py'
+      - 'assets/heir-owner-invitations-*.js'
+      - 'tools/digitaler-nachlass/index.html'
       - 'tests/security/heir-indexeddb-real-browser.py'
       - 'docs/sql-drafts/heir_private_backend_REVIEW_ONLY.sql'
       - 'docs/sql-drafts/heir_key_release_REVIEW_ONLY.sql'
@@ -98,3 +101,5 @@ jobs:
         run: tsc --noEmit --strict --skipLibCheck --target ES2022 --module ES2022 --moduleResolution bundler --allowImportingTsExtensions --lib es2022,dom supabase/functions/_shared/heir-server-composition-staging.ts
       - name: Run real Chromium with temporary IndexedDB and two tabs
         run: python tests/security/heir-indexeddb-real-browser.py
+      - name: Verify disabled owner invitation UI and safe revocation in real Chromium
+        run: python tests/security/heir-owner-invitations-browser.py
