@@ -297,7 +297,7 @@ actions.append(button('Duplizieren',async()=>{
      const confirmed=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
      if(!current()){stopped=true;partial++;break}
      if(confirmed.error)throw confirmed.error;
-     if(!confirmed.data?.length){partial++;failed++;msg('Zielzuordnung fehlt inzwischen. Ursprungszuordnung bleibt erhalten; bitte beide Listen prüfen.');continue}
+     if(!confirmed.data?.length){partial++;failed++;if(current())msg('Zielzuordnung fehlt inzwischen. Die Ursprungszuordnung wurde von dieser Aktion nicht gelöscht, kann aber parallel verändert worden sein. Bitte beide Listen neu laden und prüfen.');continue}
      // Complete the current source removal before honoring Stop on the next wish.
      const {error,data:removed}=await db.from('wishlist_list_items').delete().eq('list_id',sourceId).eq('wish_id',wishId).eq('user_id',uid).select('wish_id');
      if(!current()){stopped=true;partial++;break}
