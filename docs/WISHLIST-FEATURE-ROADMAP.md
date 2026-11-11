@@ -1,3 +1,10 @@
+## Manuelle Browser-Abnahme – Schritt 1 (Nutzerrückmeldung, 11.11.2026)
+
+- **Quelle:** Rückmeldung des angemeldeten Nutzers nach Öffnen der produktiven Wunschlisten-Anwendung; keine automatisierte Browserinspektion durch den Assistenten.
+- **Beobachtet:** Konto angemeldet = ja; Dashboard zeigt **0 Listen / 0 Wünsche**; keine Fehlermeldung; Ladeanzeige **nicht beobachtet**.
+- **Bewertung:** Angemeldeter Leerzustand ohne sichtbaren Fehler bestätigt. Ladeindikator nicht verifiziert (nicht beobachtet ist kein Nachweis für einen Defekt). Keine produktiven Datenänderungen und keine Testdaten.
+- **Offen:** Schritt 2: Seite neu laden, angemeldete Sitzung, unveränderten Leerzustand und Fehlermeldungen prüfen; weitere Abnahmeschritte folgen. Kein Codefix oder Deployment notwendig.
+
 ## Sichere Browser-Abnahme vorbereitet – 11.11.2026
 
 - **Ziel:** Rein lesende Abnahme des authentifizierten Wunschlisten-Dashboards unter `https://duhrrom11.github.io/Helferlein/amazon-wishlist/index.html`. Keine neuen Benutzer, Listen, Wünsche, Zuordnungen oder Testdaten; keine absichtlich ausgelösten Produktionsfehler.
