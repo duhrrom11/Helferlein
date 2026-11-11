@@ -35,29 +35,33 @@ function render(){
   const item=node('article','','item'),h=node('h3',g.title),o=occasions.find(x=>x.id===g.occasion_id),p=node('p',(o?.title||'Anlass')+' · '+labels[g.status]+' · '+euro(g.planned_amount)),tag=node('span',priority[g.priority]||priority[2],'tag'),select=document.createElement('select');
   select.setAttribute('aria-label','Priorität für '+g.title);select.title='Priorität ändern';
   for(const [value,label] of Object.entries(priority)){const opt=document.createElement('option');opt.value=value;opt.textContent=label;select.append(opt)}
-  select.value=String(g.priority);select.addEventListener('change',async()=>{
-   if(select.disabled||!user)return;
+  select.value=String(g.priority);select.dataset.giftId=String(g.id);select.addEventListener('change',async()=>{
+   if(select.disabled||!user||!select.isConnected)return;
    const previous=g.priority,next=Number(select.value),ownerId=user.id;
    if(!Object.hasOwn(priority,String(next))){select.value=String(previous);return}
+   const restoreFocus=document.activeElement===select;
    select.disabled=true;
    try{
     const {error}=await db.from('wishlist_gift_plans').update({priority:next,updated_at:new Date().toISOString()}).eq('id',g.id).eq('user_id',ownerId);
     if(error)throw error;
-    if(user?.id!==ownerId)return;
+    if(user?.id!==ownerId||!select.isConnected)return;
     g.priority=next;
-    const hadFocus=document.activeElement===select;
-    render();
-    if(hadFocus){
-     const replacement=[...$('tasks').querySelectorAll('select')].find(el=>el.dataset.giftId===String(g.id));
-     (replacement||$('priorityFilter')).focus({preventScroll:true});
+    // Keep other in-flight selects mounted: a full render would discard their pending state.
+    tag.textContent=priority[next];
+    const filter=$('priorityFilter').value;
+    if(filter!=='all'&&String(next)!==filter){
+     item.remove();
+     if(restoreFocus&&(!document.activeElement||document.activeElement===document.body))$('priorityFilter').focus({preventScroll:true});
+    }else if(restoreFocus&&(!document.activeElement||document.activeElement===document.body)){
+     select.disabled=false;select.focus({preventScroll:true});
     }
     $('status').textContent='Priorität gespeichert.';
    }catch{
-    if(user?.id!==ownerId)return;
+    if(user?.id!==ownerId||!select.isConnected)return;
     select.value=String(previous);
     $('status').textContent='Priorität konnte nicht gespeichert werden.';
    }finally{if(select.isConnected)select.disabled=false}
-  });select.dataset.giftId=String(g.id);
+  });
   const link=document.createElement('a');link.href='./gift-planner.html';link.textContent='Geschenk bearbeiten ↗';
   item.append(h,p,tag,node('span',' · '),select,node('p',''),link);tasks.append(item);
  }
