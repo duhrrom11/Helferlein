@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Neuanlage: Fokus nach asynchronem Speichern)
+
+- **Nachgewiesener Fokuspfad:** Der `createList`-Handler deaktivierte beim Start des Datenbank-Schreibauftrags die fokussierte Erstellen-Schaltfläche und aktivierte sie im `finally` wieder, ohne den Tastaturfokus zurückzuführen.
+- **Korrektur:** Der Handler merkt sich den ursprünglichen Fokus. Nach Abschluss wird der Button nur bei unverändert geladenem Konto reaktiviert und der Fokus nur dann zurückgesetzt, wenn er zuvor auf dem Button lag und aktuell kein anderes Bedienelement fokussiert ist.
+- **Prüfgrenzen:** Statische Quellcodeprüfung und GitHub-Veröffentlichung; kein authentifizierter Browser-E2E-Test. Weitere parallele Aktionen und lokale Speicherfehler sind nicht abschließend geprüft.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Wunschformular: Erfolgsmeldung nach eigenem Reset)
 
 - **Nachgewiesener Folgefehler:** Die zuvor eingeführte Prüfung der `wishEditorRevision` vor einer asynchronen Erfolgsmeldung unterdrückte auch die reguläre Erfolgsmeldung nach erfolgreichem Speichern. Grund: `resetWishEditor()` erhöht die Revision selbst, bevor die nachfolgenden Refreshes und die Erfolgsprüfung ausgeführt werden.
