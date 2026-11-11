@@ -48,11 +48,10 @@ export function createHeirActiveSessionVerifier(db: SqlBackend, client: SessionA
     const session=await resolveHeirVerifiedSession(client,header);
     if(!session)return null;
     try {
-      const found=await db.transaction(tx=>tx.one<{exists:boolean}>(
-        `SELECT EXISTS (SELECT 1 FROM auth.sessions
-           WHERE id=$1::uuid AND user_id=$2::uuid) AS exists`,
-        [session.sessionId,session.userId]));
-      return found?.exists===true ? session.userId : null;
+      const found=await db.transaction(tx=>tx.one<{active:boolean}>(
+        'SELECT heir_private.heir_lock_active_session($1::uuid,$2::uuid) AS active',
+        [session.userId,session.sessionId]));
+      return found?.active===true ? session.userId : null;
     }catch{return null;}
   };
 }
