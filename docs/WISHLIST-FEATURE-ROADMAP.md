@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Geschenk-Dashboard: asynchrones Prioritätsspeichern)
+
+- **Nachgewiesener Fokusverlust:** Die Prioritätsauswahl in `gift-dashboard.mjs` rief nach erfolgreichem Speichern `render()` auf und ersetzte damit das fokussierte Select-Element. Der Handler merkt sich den Fokus und stellt ihn nach dem Rendern auf die Priorität desselben Geschenks zurück; wenn das Geschenk durch den aktiven Filter verschwindet, wird der Prioritätsfilter fokussiert.
+- **Fehlerpfad:** Bei einer unerwarteten Exception während der asynchronen Anfrage blieb das Select bisher deaktiviert und der Fehler wurde nicht als Speicherfehler gemeldet. `try/catch/finally` setzt den Wert zurück, meldet den Fehler und entsperrt ein noch verbundenes Feld zuverlässig.
+- **Sitzungswechsel:** Die Schreiboperation verwendet die beim Start erfasste Konto-ID. Verspätete Antworten ändern bei abweichender Sitzung weder Dashboard-Daten noch Status oder Fokus.
+- **Grenzen der Prüfung:** Codeprüfung und Syntaxkontrolle; kein authentifizierter Browser-E2E-Test und keine produktive Supabase-Schreibprobe. Weitere Listenaktionen und Dashboard-Speicherpfade müssen separat auf überholte Antworten und Fokusübergänge geprüft werden.
+- **Produktionsschutz:** Ausschließlich GitHub-Quellcode und Roadmap geändert; keine Supabase-Produktivdaten oder Testdatensätze verändert.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Wunschlisten nach Kontowechsel trotz laufender Mutation nachladen)
 
 - **Kontowechsel während einer Listenänderung:** In `lists-dashboard.mjs` kann `load()` während `listMutationBusy` nur einen Hinweis ausgeben und ohne Datenabfrage zurückkehren. Wenn die alte Sitzung gerade eine Listen-Neuanlage oder Listenbearbeitung speichert und die neue Sitzung gleichzeitig ihren Dashboard-Refresh auslöst, bleibt deren Listenansicht damit bis zu einer späteren manuellen Aktualisierung leer. Beide asynchronen Listen-Speicherpfade prüfen jetzt im `finally`, ob ein anderes Konto angemeldet ist und seine Listen noch nicht geladen wurden. In diesem Fall starten sie nach dem Aufheben der Mutation-Sperre einen neuen `load()`-Versuch.
