@@ -1,3 +1,14 @@
+## Feature-Paket 1 – 11.11.2026 (Sicherheits- und Laufzeit-Codeaudit)
+
+- **Deployment:** `89c0fe7`: Pages-Build, Release-Smoke-Checks und Live-HTTP-Check erfolgreich.
+- **Produktive DB nur gelesen:** `wishlist_wish_extras` weiterhin 0 Zeilen; RLS aktiviert, vier Eigentümer-Policies vorhanden, serverseitiger Versionstrigger aktiv, `anon` ohne SELECT. Keine Schreibtests und keine Änderungen an Nutzerdaten.
+- **Nachgewiesener Importfehler behoben:** Während eines bestätigten Imports waren parallele Bestätigungen und eine neue Vorschau möglich. Neuer `wishExtrasImportBusy`-Guard verhindert Doppelstarts, parallele Vorschauen und Abbruch während laufender Übertragungen; Buttons sind bis zum `finally` deaktiviert.
+- **Nachgewiesener Anzeigefehler behoben:** PostgreSQL-`numeric` kann über Supabase als String eintreffen. Die Listenansicht zeigte solche Cloud-Wunschpreise wegen `Number.isFinite(string)` nicht an. Konvertierung und Prüfung vor der Formatierung ergänzt.
+- **Tests:** Regressionstests für den Import-Reentrancy-Guard und die Darstellung numerischer Cloud-Preise ergänzt.
+- **Grenzen:** Kein authentifizierter Browser-E2E-Test und keine konkurrierenden realen Cloud-Schreibtests ohne Testdaten. Weitere Härtung: Fehler von Netzwerk-Ausnahmen innerhalb der Import-Schleife im lokalen Import-Status statt nur im globalen Status ausgeben; Eingabe-/Cloud-Snapshot bei Editoränderungen weiter absichern.
+
+---
+
 ## Feature-Paket 1 – 11.11.2026 (Bestätigungspflichtige Importvorschau)
 
 - **Deploymentkontrolle:** `f56fc415`: GitHub-Pages-Deployment, Release-Smoke-Checks und Live-HTTP-Check erfolgreich.
