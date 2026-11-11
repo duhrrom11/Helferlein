@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: Ziel nach Ursprungslöschung erneut bestätigen)
+
+- **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` prüfte die Zielzuordnung nur vor dem DELETE der Ursprungszuordnung. Ein anderer Tab konnte das Ziel zwischen dieser Prüfung und dem erfolgreichen DELETE entfernen, während die Aktion dennoch `moved++` ausführte und Erfolg meldete.
+- **Korrektur:** Nach erfolgreicher Ursprungslöschung wird die Zielzuordnung erneut gelesen. Nur bei bestätigtem Ziel und weiterhin gültigem Benutzer-/Listen-/Ladekontext wird `moved` erhöht. Bei fehlendem Ziel oder Lesefehler wird der Zustand als fehlgeschlagen/unklar behandelt und die Prüfung beider Listen empfohlen. Code: `2f342ee3c38b07c68a3bde60c2095775552076a2`.
+- **Grenzen:** Die zusätzliche Leseprüfung ist keine atomare Transaktion; nach dem Read können weitere konkurrierende Änderungen stattfinden. Unterbrechungen nach gestarteten Schreiboperationen bleiben möglich. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: Ursprung bei paralleler Ziel-Löschung nicht als sicher behaupten)
 
 - **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` meldete nach fehlender Zielzuordnung bei der Bestätigungsabfrage pauschal `Ursprungszuordnung bleibt erhalten`. Die Aktion selbst hatte den Ursprung zu diesem Zeitpunkt zwar noch nicht gelöscht, ein anderer Browser-Tab konnte die Ursprungszuordnung aber bereits unabhängig entfernt haben.
