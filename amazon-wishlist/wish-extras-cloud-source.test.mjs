@@ -38,3 +38,12 @@ test('local extras take precedence and stale cloud results are discarded',()=>{
  assert.match(app,/Object\.keys\(local\)\.length\?local:cloudExtras/);
  assert.match(app,/if\(isStale\(\)\)\{feedRefreshPending=true;return;\}/);
 });
+
+test('cloud actions show network errors locally and discard stale results',()=>{
+ assert.match(app,/let wishExtrasCloudOperation=0/);
+ assert.match(app,/operation===wishExtrasCloudOperation/);
+ assert.match(app,/operation!==wishExtrasCloudOperation/);
+ assert.match(app,/Cloud-Speicherung wegen Netzwerkfehler fehlgeschlagen/);
+ assert.match(app,/Cloud-Stand wegen Netzwerkfehler nicht lesbar/);
+ assert.match(app,/Cloud-Aktualisierung durch Netzwerkfehler unterbrochen/);
+});
