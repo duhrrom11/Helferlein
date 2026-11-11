@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Wunschformular und Listen-Neuanlage: asynchrone Sitzungsgrenzen)
+
+- **Wunsch-Neuanlage:** Die im Listen-Dashboard ausgewählte Zielliste wird nun beim Start des Speichervorgangs erfasst. Vorher wurde `dashboard.selectedList()` erst nach den Produkt- und Wunschdatenbankanfragen gelesen; ein zwischenzeitlicher Listenwechsel konnte die Zuordnung unbemerkt auf eine andere Liste umlenken.
+- **Wunschbearbeitung:** Nach der Datenbankantwort wird die Konto-ID geprüft, bevor `saveWishExtras` zusätzliche lokale Wunschinformationen schreibt. Damit wird der bisherige lokale Schreibpfad bei einer verspäteten Antwort nach Kontowechsel unterbunden.
+- **Listen-Neuanlage:** Die Speichern-Schaltfläche wird im `finally` nur für das weiterhin geladene Konto entsperrt. Ein während des Speicherns ausgelöster eigener Listen-Refresh darf die Entsperrung nicht verhindern; deshalb wird hierfür bewusst nicht die alte Ladegeneration verlangt.
+- **Prüfgrenzen:** Statische Codeprüfung und GitHub-Veröffentlichung; keine authentifizierten Browser-E2E-Tests und keine Supabase-Schreibprobe. Weitere Formular- und Listenaktionen bleiben separat zu prüfen.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listenformular: konsistenter Speicherstand und Sitzungsgrenzen)
 
 - **Asynchroner Bearbeitungs-Speicherpfad:** In `lists-dashboard.mjs` werden Symbol und Farbe der bearbeiteten Liste jetzt vor dem Speichervorgang zusammen mit Titel, Beschreibung, Sichtbarkeit und Bildadresse erfasst. Die Update-Nutzlast verwendet ausschließlich diesen erfassten Stand statt spätere Formularwerte zu lesen.
