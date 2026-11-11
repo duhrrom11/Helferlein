@@ -318,7 +318,7 @@ actions.append(button('Duplizieren',async()=>{
    const alreadyThere=!!targetMembership.data?.length;
    if(!alreadyThere){
     const {error}=await db.from('wishlist_list_items').insert({list_id:targetListId,wish_id:wishId,user_id:uid});
-    if(error&&!isUniqueViolation(error))throw error;
+    if(error&&error.code!=='23505')throw error;
    }
    if(!current()){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId)msg('Zielzuordnung gespeichert. Bitte Listen neu laden, bevor du fortfährst.');return}
    const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid);
