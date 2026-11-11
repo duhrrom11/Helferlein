@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Kategorien und Markierungen: Mehrtab-Betrieb und beschädigter Speicher)
+
+- **Nachgewiesenes Risiko:** `setMarker()` und `saveCategory()` schrieben jeweils die im aktuellen Tab zwischengespeicherten vollständigen Objekte `wishMarkers` bzw. `wishCategories`. Änderungen anderer Tabs konnten damit überschrieben werden. Beschädigte oder nicht lesbare localStorage-Inhalte wurden beim initialen Laden als leere Objekte dargestellt und beim nächsten Speichern ebenfalls überschrieben.
+- **Korrektur:** Beide Handler lesen vor dem Schreiben die aktuellen Storage-Inhalte erneut, prüfen die JSON-Struktur und erlaubten Werte und ändern nur den ausgewählten Wunsch. Bei beschädigten oder nicht lesbaren Daten wird nicht überschrieben. Der lokale UI-Zustand wird erst nach erfolgreichem `setItem` übernommen. Code: `6c07308b6dae83381f7344a52dbfc4efa133fd11`.
+- **Grenzen:** Gleichzeitige Read-Modify-Write-Aktionen aus verschiedenen Tabs sind weiterhin nicht atomar; eine automatische Storage-Event-Synchronisierung der geöffneten Ansichten wurde nicht ergänzt. Kontowechsel und UI-Aktualisierung bleiben weiter zu prüfen. Statische Codeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listenfavoriten: andere Browser-Tabs und beschädigte localStorage-Daten)
 
 - **Nachgewiesenes Risiko:** Favoriten-Toggles basierten auf dem im jeweiligen Tab zwischengespeicherten `favoriteIds`. Änderungen aus einem zweiten Tab konnten bei der nächsten Aktion mit einem veralteten vollständigen Favoriten-Set überschrieben werden.
