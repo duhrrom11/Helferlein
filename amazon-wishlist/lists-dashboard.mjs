@@ -295,7 +295,7 @@ actions.append(button('Duplizieren',async()=>{
       const {error}=await db.from('wishlist_list_items').insert({list_id:targetId,wish_id:wishId,user_id:uid});
       if(error&&error.code!=='23505')throw error;
      }
-     if(!current()){stopped=true;partial++;if(getUser()?.id===uid&&loadedOwner===uid)msg('Zielzuordnung möglicherweise gespeichert, aber die Ursprungsliste wurde wegen eines Kontextwechsels nicht geändert. Bitte beide Listen prüfen.');break}
+     if(!current()){stopped=true;partial++;if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&generation===loadGeneration&&run===bulkRunId)msg('Zielzuordnung nach Kontextwechsel nicht eindeutig bestätigt. Diese Aktion hat die Ursprungszuordnung noch nicht gelöscht; andere Tabs können sie verändert haben. Bitte beide Listen prüfen.');break}
      const confirmed=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
      if(!current()){stopped=true;partial++;break}
      if(confirmed.error)throw confirmed.error;
