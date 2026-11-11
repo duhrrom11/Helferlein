@@ -1,3 +1,13 @@
+## Roadmap-Fortschritt – 11.11.2026 (Asynchrone Ladezustände)
+
+- **Workflowkontrolle:** GitHub Pages und Release-Smoke-Checks für Commit `2007734c` erfolgreich; Live-HTTP-Check war zum Zeitpunkt der ersten Abfrage noch in Bearbeitung.
+- **JavaScript-Prüfung:** `load()` verwendet `loadGeneration` und `currentDashboardLoad`, um verspätete Antworten eines früheren Ladevorgangs zu verwerfen. Fehler beim Basisabruf, beim Nachladen zusätzlicher Wünsche und bei Listenzuordnungen führen zu sichtbarem Fehlerstatus mit erneutem Laden.
+- **Nachgewiesenes Problem:** Vor Beginn eines neuen Basisabrufs wurden vorhandene Listen- und Wunschkarten nicht geleert. Bei langsamer Verbindung oder fehlgeschlagenem Abruf konnten deshalb alte Karten unter dem neuen Lade-/Fehlerstatus sichtbar bleiben.
+- **Fix:** `listsContent`, `listWishCards` und `listWishCount` werden zu Beginn von `load()` zurückgesetzt. Commit `07bcc7fd06a5ae76ea2bd0c3c72d85e867ee50c3`. Keine Änderung an API, Datenbank oder Produktivdaten.
+- **Weiter offen:** Authentifizierter Browser-E2E-Test bei langsamer Verbindung, Fehlern, parallelen Abrufen und Listenwechsel; CI-Erfolg beweist diese Laufzeitszenarien nicht. Deploymentstatus des Fixes separat prüfen.
+
+---
+
 ## Roadmap-Prüfung – 11.11.2026 (Tastaturbedienung und Responsive-Layout)
 
 - **Statischer Accessibility-Audit:** Die aufklappbaren Filter-, Sammelaktions- und Auswahlbereiche verwenden native `<details><summary>`-Elemente mit sichtbarer `:focus-visible`-Markierung. Suchfeld und Filter haben sichtbare `<label>`-Beschriftungen; Fortschritts-, Fehler- und Ergebnisbereiche besitzen Status-/Live-Regionen. Der modale Bestätigungsdialog verwendet `<dialog>` mit `aria-labelledby`.
