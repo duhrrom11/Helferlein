@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listeneditor nach Dashboard-Reload invalidieren)
+
+- **Nachgewiesener Stale-Editor-Pfad:** Der geöffnete Listeneditor hielt Feld-Baselines für optimistische Datenbankkonfliktprüfungen, aber keine Dashboard-Generation. Nach einem Listen-Reload konnte er weiterhin versuchen, mit einem alten UI-Stand zu speichern.
+- **Korrektur:** Beim Öffnen wird `loadGeneration` als `listEditGeneration` erfasst. Vor dem Datenbank-Update wird die Generation erneut geprüft; ein zwischenzeitlicher Reload führt zu einem verständlichen Fehler und fordert zum erneuten Öffnen der Liste auf. Reset und Abbrechen verwerfen die Editor-Generation. Code: `84c54dfe73f32737c87e24bde538f940707d71f2`.
+- **Grenzen:** Auch harmlose Reloads invalidieren den Editor. Bereits laufende Datenbank-Updates werden nicht rückwirkend gestoppt; parallele Sammelaktionen in anderen Tabs bleiben nicht atomar. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebungen und konkurrierende Listenzuordnungen)
 
 - **Nachgewiesener Fehlerpfad:** Die Sammelverschiebung nutzte für die Zielzuordnung nur den lokalen `membershipByList`-Snapshot. Nach parallelem Entfernen der Zielzuordnung konnte sie die Neuanlage überspringen und anschließend die Ursprungszuordnung löschen. Zudem wurde ein DELETE ohne tatsächlich entfernte Zeile als erfolgreiche Verschiebung gezählt.
