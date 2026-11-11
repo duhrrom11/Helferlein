@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Konflikterkennung bei paralleler Wunschbearbeitung)
+
+- **Nachgewiesener Lost-Update-Pfad:** Der Wunsch-Editor schrieb `note`, `priority` und `visibility` ohne Abgleich des beim Öffnen geladenen Stands. Parallele Bearbeitungen in zwei Tabs konnten dadurch Änderungen unbemerkt überschreiben.
+- **Korrektur:** Beim Öffnen des Editors wird eine Baseline aus Wunsch-ID, Notiz, Priorität und Sichtbarkeit gespeichert. Der Update-Query vergleicht die ursprünglichen Werte mit `.eq(...)` bzw. `.is(...,null)` und erkennt mit `.select('id')` einen Konflikt oder entfernten Wunsch. Der Editor-Reset verwirft die Baseline. Code: `5e0ea1d41815baddedfb556f567e9993dbdd2784`.
+- **Grenzen:** Der Schutz gilt für diese drei Datenbankfelder; weitere Wunschmetadaten, Listenzuordnungen und Refresh-Races sind gesondert zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Konflikterkennung bei paralleler Listenbearbeitung)
 
 - **Nachgewiesener Lost-Update-Pfad:** Das Bearbeitungsformular schrieb Titel, Beschreibung, Symbol, Farbe, Sichtbarkeit und Titelbild ohne Abgleich des beim Öffnen angezeigten Datenstands. Zwei Tabs konnten so die jeweils anderen Änderungen still überschreiben.
