@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (veraltete Sammelergebnisse nach überlappenden Reloads)
+
+- **Nachgewiesener Fehlerpfad:** Nach Abschluss einer Sammelaktion wartete die Ergebnisanzeige auf `load({afterBulk:true})`, prüfte anschließend aber nicht, ob zwischenzeitlich ein neuerer Dashboard-Reload begonnen hatte. Ein älterer Abschluss konnte damit Verlauf und Ergebnisübersicht auf einem neueren oder unvollständigen Listenstand veröffentlichen.
+- **Korrektur:** Die Generation des ausgelösten Reloads wird unmittelbar nach dessen Start festgehalten. Ergebnis und Verlauf erscheinen nur, wenn diese Generation noch aktuell und `membershipReady` wahr ist. Auch Reload-Fehler werden nur für die passende Generation gemeldet. Code: `3649ed1f0ae1b5deb4a1674856194bb31f049258`.
+- **Grenzen:** Die UI-Prüfung verhindert keine parallelen Datenbankänderungen zwischen Tabs und stoppt keine bereits gestarteten Operationen bei Kontowechsel. Ein überholtes Ergebnis wird bewusst nicht in die Ansicht übernommen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sammelentfernung bei parallelen Tabs)
 
 - **Nachgewiesener Fehlerpfad:** Bei der Sammelaktion „Aus Liste entfernen“ wurde ein DELETE ohne Datenbankfehler als Erfolg gezählt, auch wenn wegen einer parallelen Entfernung in einem anderen Tab keine Zuordnung mehr vorhanden war.
