@@ -307,7 +307,7 @@ actions.append(button('Duplizieren',async()=>{
   if(!source||!target||selected!==sourceListId||!assignedIds.has(wishId))return msg('Bitte einen zugeordneten Wunsch aus einer aktiven Liste auswählen.');
   if(!window.confirm('Wunsch von „'+source.title+'“ nach „'+target.title+'“ verschieben? Der Wunsch bleibt bestehen; die Änderung erfolgt in zwei Schritten.'))return;if(listMutationBusy||listCopyBusy||bulkBusy||!membershipReady||activeWishMutations.size||selected!==sourceListId||getUser()?.id!==uid||loadedOwner!==uid||generation!==loadGeneration||!assignedIds.has(wishId)||!lists.some(l=>l.id===sourceListId&&!l.archived)||!lists.some(l=>l.id===targetListId&&!l.archived)||!wishes.some(w=>w.id===wishId))return;
   const current=()=>getUser()?.id===uid&&loadedOwner===uid&&generation===loadGeneration&&selected===sourceListId;
-  activeWishMutations.add(uid+':'+wishId);control.disabled=true;
+  const hadFocus=document.activeElement===control;activeWishMutations.add(uid+':'+wishId);control.disabled=true;
   try{
    const alreadyThere=membershipByList.get(targetListId)?.has(wishId);
    if(!alreadyThere){
@@ -320,7 +320,7 @@ actions.append(button('Duplizieren',async()=>{
    try{await load({afterBulk:true})}catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId)msg('Wunsch verschoben, aber Listen konnten nicht neu geladen werden: '+(e.message||'Ladefehler')+'. Bitte aktualisieren.');return}
    if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId)msg('Wunsch nach „'+target.title+'“ verschoben. Die Ausgangsliste bleibt geöffnet.')
   }catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId)msg('Verschieben fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
-  finally{activeWishMutations.delete(uid+':'+wishId);if(control.isConnected&&getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&membershipReady&&!bulkBusy){control.disabled=false;renderWishCards()}}
+  finally{activeWishMutations.delete(uid+':'+wishId);if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&membershipReady&&!bulkBusy){const restoreFocus=hadFocus&&(!document.activeElement||document.activeElement===document.body);if(control.isConnected)control.disabled=false;renderWishCards();if(restoreFocus){const card=[...$('listWishCards').children].find(el=>el.dataset.wishId===String(wishId));const destination=card?.querySelector('.wish-move-actions select');(destination||$('listWishSearch')).focus({preventScroll:true})}}}
  }
  let compactWishView=false;
  function setWishView(compact){compactWishView=compact;$('wishViewCards').setAttribute('aria-pressed',String(!compact));$('wishViewCompact').setAttribute('aria-pressed',String(compact));$('listWishCards').classList.toggle('is-compact',compact)}
