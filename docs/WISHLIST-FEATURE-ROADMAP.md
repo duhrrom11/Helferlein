@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sammelentfernung bei parallelen Tabs)
+
+- **Nachgewiesener Fehlerpfad:** Bei der Sammelaktion „Aus Liste entfernen“ wurde ein DELETE ohne Datenbankfehler als Erfolg gezählt, auch wenn wegen einer parallelen Entfernung in einem anderen Tab keine Zuordnung mehr vorhanden war.
+- **Korrektur:** Die Sammelentfernung fordert per `.select('wish_id')` die tatsächlich gelöschten Zeilen an. Ein DELETE ohne betroffene Zeilen wird als Konflikt mit Hinweis auf Neuladen der Liste erfasst und nicht mehr als erfolgreiche Entfernung gezählt. Code: `d9208c5ea9def31165388e3fd28d1df77d8ef609`.
+- **Grenzen:** Der Konflikt wird erkannt, aber parallele Sammelaktionen bleiben ohne tabübergreifende Sperre bzw. atomare serverseitige Operationen möglich. Bereits gestartete Datenbankoperationen können nach einem Kontowechsel noch abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (veralteter Listen-Update-Abschluss)
 
 - **Nachgewiesener Fehlerpfad:** Der Listeneditor prüfte vor dem UPDATE die Editor-/Dashboard-Generation, nach dem asynchronen UPDATE jedoch nur Benutzer-ID, geladenen Besitzer und Listen-ID. Ein zwischenzeitlicher Reload konnte dadurch trotz veraltetem Kontext noch den normalen Abschluss und weiteren Reload auslösen.
