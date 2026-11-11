@@ -1,0 +1,74 @@
+name: Nachlass isolated security gates (no production)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/heir-isolated-gates.yml'
+      - 'tests/security/heir-pg17-*'
+      - 'tests/security/heir-indexeddb-real-browser.py'
+      - 'docs/sql-drafts/heir_private_backend_REVIEW_ONLY.sql'
+      - 'docs/sql-drafts/heir_key_release_REVIEW_ONLY.sql'
+      - 'supabase/functions/_shared/heir-*.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-17-two-sessions:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: isolated-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: isolated-ci-only
+      PGDATABASE: helferlein_heir_ci
+      HEIR_ISOLATED_TEST_DB: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Isolated PostgreSQL client and Python driver
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client
+          python -m pip install --user 'psycopg[binary]==3.2.12'
+      - name: Initialize ephemeral throwaway database and apply review-only DDL
+        run: |
+          PGDATABASE=postgres psql -X -v ON_ERROR_STOP=1 -c 'CREATE DATABASE helferlein_heir_ci'
+          psql -X -v ON_ERROR_STOP=1 -f tests/security/heir-pg17-fixture.sql
+          psql -X -v ON_ERROR_STOP=1 -f docs/sql-drafts/heir_private_backend_REVIEW_ONLY.sql
+          psql -X -v ON_ERROR_STOP=1 -f docs/sql-drafts/heir_key_release_REVIEW_ONLY.sql
+      - name: Run two independent PostgreSQL 17 sessions, actual grants and races
+        run: python tests/security/heir-pg17-two-session.py
+
+  real-chromium-indexeddb:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned isolated browser test dependencies
+        run: |
+          npm install --global typescript@5.9.3
+          python -m pip install 'playwright==1.56.0'
+          python -m playwright install --with-deps chromium
+      - name: Run real Chromium with temporary IndexedDB and two tabs
+        run: python tests/security/heir-indexeddb-real-browser.py

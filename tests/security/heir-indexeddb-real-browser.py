@@ -52,10 +52,14 @@ def main():
         thread = threading.Thread(target=httpd.serve_forever, daemon=True)
         thread.start()
         try:
-            executable = shutil.which('chromium') or shutil.which('chromium-browser')
-            if not executable:
-                raise RuntimeError('No real Chromium executable found')
             with sync_playwright() as pw:
+                # Prefer the Playwright-managed binary installed on the CI runner.
+                # Fallback to system Chromium for local developer environments.
+                executable = pw.chromium.executable_path
+                if not Path(executable).is_file():
+                    executable = shutil.which('chromium') or shutil.which('chromium-browser')
+                if not executable:
+                    raise RuntimeError('No real Chromium executable found')
                 context = pw.chromium.launch_persistent_context(str(Path(tmp) / 'profile'), executable_path=executable,
                                                                 headless=True, args=['--no-sandbox', '--disable-background-networking',
                                                                     '--disable-default-apps', '--disable-sync',
