@@ -89,7 +89,9 @@ $('cancelEdit').onclick=()=>{resetWishEditor();$('saveWish').focus({preventScrol
 for(const id of ['url','productTitle','wishNote','priority','wishVisibility','wishImageUrl','wishTargetPrice','wishQuantity','wishStatus'])for(const type of ['input','change'])$(id).addEventListener(type,()=>{wishEditorRevision++});
 const run=fn=>async function(){const button=this instanceof HTMLButtonElement?this:null;if(button?.disabled)return;const isWishSave=button?.id==='saveWish',startedOwner=user?.id,startedRevision=wishEditorRevision,startedWish=editingWishId,saveRunGeneration=isWishSave?++wishSaveRunGeneration:null;if(button)button.disabled=true;if(isWishSave)$('wishSaveFeedback').textContent='';try{await fn()}catch(e){if(!isWishSave||(user?.id===startedOwner&&editingWishId===startedWish&&wishEditorRevision===startedRevision)){const message=wishlistErrorMessage(e);report(message);if(isWishSave)$('wishSaveFeedback').textContent=message}}finally{if(button?.isConnected&&(!isWishSave||(user?.id===startedOwner&&saveRunGeneration===wishSaveRunGeneration)))button.disabled=false}};
 let pendingWishExtrasImport=null;
+let wishExtrasImportGeneration=0;
 function clearWishExtrasImport(){
+ ++wishExtrasImportGeneration;
  pendingWishExtrasImport=null;
  $('wishExtrasImportPreview').hidden=true;
  $('wishExtrasImportDetails').replaceChildren();
@@ -98,6 +100,7 @@ function clearWishExtrasImport(){
 $('cancelWishExtrasImport').onclick=()=>{clearWishExtrasImport();$('wishExtrasImportFeedback').textContent='Import abgebrochen. Es wurde nichts übertragen.'};
 $('previewWishExtrasImport').onclick=run(async()=>{
  clearWishExtrasImport();
+ const generation=wishExtrasImportGeneration;
  const ownerId=requireUser(),feedback=$('wishExtrasImportFeedback');
  feedback.textContent='Eigene Wünsche und vorhandene Cloud-Einträge werden geprüft …';
  const raw=localStorage.getItem(localWishExtrasKey(ownerId));
@@ -106,17 +109,18 @@ $('previewWishExtrasImport').onclick=run(async()=>{
  const owned=[],remote={};
  for(let from=0;;from+=500){
   const r=await db.from('wishlist_wishes').select('id').eq('user_id',ownerId).order('id',{ascending:true}).range(from,from+499);
-  if(user?.id!==ownerId)return;
+  if(user?.id!==ownerId||generation!==wishExtrasImportGeneration)return;
   if(r.error){feedback.textContent='Eigene Wünsche konnten nicht vollständig geprüft werden. Kein Import.';return}
   owned.push(...(r.data||[]).map(x=>String(x.id)));
   if((r.data||[]).length<500)break;
  }
  for(let start=0;start<owned.length;start+=500){
   const r=await db.from('wishlist_wish_extras').select('wish_id').eq('user_id',ownerId).in('wish_id',owned.slice(start,start+500));
-  if(user?.id!==ownerId)return;
+  if(user?.id!==ownerId||generation!==wishExtrasImportGeneration)return;
   if(r.error){feedback.textContent='Cloud-Konflikte konnten nicht vollständig geprüft werden. Kein Import.';return}
   for(const item of r.data||[])remote[String(item.wish_id)]=true;
  }
+ if(user?.id!==ownerId||generation!==wishExtrasImportGeneration)return;
  const plan=planWishExtrasImport(local,remote,owned);
  const excluded=Object.keys(local).filter(id=>!owned.includes(id));
  const entries=Object.entries(plan.toCreate);
