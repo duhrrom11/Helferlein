@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (verbleibende Sammelziele erst nach Reload auswählen)
+
+- **Nachgewiesener Fehlerpfad:** Der Ergebnis-Button `bulkSelectRemaining` verwendete lokal zwischengespeicherte `assignedIds`, um zuvor nicht bearbeitete Wünsche erneut auszuwählen. Änderungen in einem anderen Browser-Tab seit dem letzten Dashboard-Laden konnten dadurch übersehen werden.
+- **Korrektur:** Der Button lädt die Listenzuordnungen jetzt vor der Auswahl neu und prüft danach Benutzerkonto, Listenauswahl, vollständige Mitgliedschaftsdaten und erwartete Ladegeneration. Nur Wünsche, deren aktueller lokaler Stand nach dem Reload zur gewünschten Aktion passt, werden ausgewählt. Code: `9d025a2c701114edc29a74151d3194ff1ae288ee`.
+- **Grenzen:** Das Neuladen schließt die vorherige Ergebnisübersicht und verwirft die bisherige Sammelauswahl. Die Aktion ist nicht atomar gegenüber weiteren Tab-Änderungen. Bereits gestartete Schreiboperationen können nach einem Kontowechsel noch abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Ergebnisübersicht: Wiederholungen nach Daten-Reload)
 
 - **Nachgewiesener Fehlerpfad:** `bulkResumeRemaining` und `bulkRetryFailed` bereiteten erneute Sammelaktionen direkt anhand lokal zwischengespeicherter `assignedIds` vor. Änderungen anderer Browser-Tabs seit dem letzten Dashboard-Reload wurden dadurch bei der Wiederholung nicht berücksichtigt.
