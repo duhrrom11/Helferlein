@@ -1,3 +1,14 @@
+## Feature-Paket 1 – 11.11.2026 (Bestätigungspflichtige Importvorschau)
+
+- **Deploymentkontrolle:** `f56fc415`: GitHub-Pages-Deployment, Release-Smoke-Checks und Live-HTTP-Check erfolgreich.
+- **Importvorschau:** Neue Schaltfläche `previewWishExtrasImport` liest ausschließlich die lokalen Zusatzdaten des angemeldeten Kontos, lädt die eigenen Wunsch-IDs und die existierenden privaten Cloud-Wunsch-IDs seitenweise und plant den Import mit `planWishExtrasImport`. Die UI zeigt gültige neue Einträge, Cloud-Konflikte, ungültige lokale Werte und nicht eigenen Wünschen zuordenbare Einträge jeweils mit Anzahl und Wunsch-IDs. Die Vorschau ist schreibfrei.
+- **Expliziter Import:** Separate `confirmWishExtrasImport`-Aktion plus `confirm()`-Dialog; nur die zuvor gültigen, neuen Einträge werden einzeln per `INSERT` geschrieben. `23505`-Konflikte werden übersprungen; kein `UPSERT`, kein Cloud-`UPDATE`, keine Veränderung oder Löschung lokaler Werte.
+- **Abbruchschutz:** Vor und während der Übertragung werden Benutzer-ID und unveränderter lokaler Rohdaten-Snapshot geprüft. Veraltete Vorschauen werden bei Abbruch/Neustart verworfen. Teilerfolge und Fehler werden im Live-Status angezeigt; bereits erfolgreiche Inserts werden nicht zurückgerollt.
+- **Tests:** Quellcode-Regressionstest für Bestätigung, Konfliktverhalten, unveränderte lokale Daten und Stale-Guard ergänzt. Authentifizierter Browser-End-to-End-Test ohne produktive Testdatensätze weiterhin offen.
+- **Offen:** Browsergestützte Verifikation mit echtem Nutzerkonto und kontrollierten echten Daten; UX bei sehr großen Importvorschauen und Teilerfolgen. Keine automatischen Imports.
+
+---
+
 ## Feature-Paket 1 – 11.11.2026 (Private Cloud-Zusatzdaten in der Listenverwaltung)
 
 - **Deploymentkontrolle:** GitHub-Pages-Build und Release-Smoke-Checks für `fe8176e` erfolgreich; neuester Live-HTTP-Status separat prüfen.
