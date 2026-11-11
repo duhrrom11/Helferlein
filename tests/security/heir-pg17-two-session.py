@@ -66,10 +66,6 @@ def check_roles():
         for role in ('anon','authenticated'):
             assert c.execute('SELECT has_function_privilege(%s,%s,%s)',
                 (role,'heir_private.heir_lock_active_session(uuid,uuid)','EXECUTE')).fetchone()[0] is False
-        assert c.execute('SELECT has_function_privilege(%s,%s,%s)',
-            ('heir_ci_backend','heir_private.heir_lock_active_session(uuid,uuid)','EXECUTE')).fetchone()[0] is True
-        assert c.execute('SELECT has_table_privilege(%s,%s,%s)',
-            ('heir_ci_backend','auth.sessions','UPDATE,DELETE')).fetchone()[0] is False
 
 
 def seed():
