@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (veraltete Sammelaktionsanzeigen beim Kontowechsel)
+
+- **Nachgewiesener UI-Fehler:** `reset()` verwarf beim Kontowechsel Sammelaktions-Verlauf und Ergebnisübersicht, ließ jedoch `bulkStatus`, Fortschrittstexte, Fortschrittsbalken und den Stop-Button unverändert. Alte Statusinformationen konnten dadurch nach dem Sitzungswechsel sichtbar bleiben.
+- **Korrektur:** Der Konto-Reset leert alle genannten Sammelaktions-Statusfelder, setzt den Fortschrittsbalken zurück und deaktiviert die Stopptaste. Bestehende Invalidierung von `bulkRunId` bleibt erhalten. Code: `550c95a9a907a2a92d486841233e0660d41074fc`.
+- **Grenzen:** Die UI-Bereinigung bricht bereits gestartete Datenbankoperationen nicht ab und bietet keine tabübergreifende Transaktionssperre. Parallele Listenzuordnungen und historische Sammelergebnisse müssen weiterhin anhand aktueller Mitgliedschaften geprüft werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (veraltete Sammelergebnisse nach überlappenden Reloads)
 
 - **Nachgewiesener Fehlerpfad:** Nach Abschluss einer Sammelaktion wartete die Ergebnisanzeige auf `load({afterBulk:true})`, prüfte anschließend aber nicht, ob zwischenzeitlich ein neuerer Dashboard-Reload begonnen hatte. Ein älterer Abschluss konnte damit Verlauf und Ergebnisübersicht auf einem neueren oder unvollständigen Listenstand veröffentlichen.
