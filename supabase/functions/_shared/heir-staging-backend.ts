@@ -238,14 +238,15 @@ export function createHeirStagingBackend(db: SqlBackend, verifyUser: VerifyUser)
              WHERE owner_user_id=$1 AND heir_user_id=$2 AND invitation_id=$3 FOR UPDATE`,
             [uid, invitation.intended_user_id, input.invitationId]);
           if (!assignment) stop();
-          if (assignment.status === 'revoked') return { ok: true as const };
-          if (assignment.status !== 'active') stop();
+          if (assignment.status !== 'active' && assignment.status !== 'revoked') stop();
+          if (assignment.status === 'active') {
           const changed = await tx.exec(
             `UPDATE heir_private.heir_assignments
              SET status='revoked',revoked_at=clock_timestamp(),version=version+1
              WHERE owner_user_id=$1 AND heir_user_id=$2 AND invitation_id=$3 AND status='active'`,
             [uid, invitation.intended_user_id, input.invitationId]);
           if (changed !== 1) stop();
+          }
           await tx.exec(
             `UPDATE heir_private.heir_envelopes SET revoked_at=clock_timestamp()
              WHERE owner_user_id=$1 AND heir_user_id=$2 AND revoked_at IS NULL`,
