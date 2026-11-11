@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (historische Sammelaktionen vor Wiederholung aktualisieren)
+
+- **Nachgewiesener Fehlerpfad:** Der Verlaufsbutton `Offene Änderungen prüfen` rief `prepareBulk()` anhand des lokal zwischengespeicherten `assignedIds` auf. Parallele Änderungen an `wishlist_list_items` aus anderen Tabs seit dem letzten Laden konnten deshalb bei der Vorbereitung fehlen.
+- **Korrektur:** Bei bereits geöffneter Zielliste wird vor der Wiederholung `load()` abgewartet. Danach müssen Benutzerkonto, Verlaufszugehörigkeit, Listenauswahl, `membershipReady` und exakt die erwartete neue Ladegeneration weiterhin passen. Nur dann wird die Sammelaktion anhand der neu geladenen Mitgliedschaften vorbereitet. Code: `7449cfa213ad3227a9d41103d7c7a2ded85da540`.
+- **Grenzen:** Die Prüfung ist nicht atomar mit der späteren Schreiboperation; andere Tabs können unmittelbar danach erneut ändern. Bei Wechsel der ausgewählten Liste wird zunächst nur diese Liste geöffnet, ohne die Aktion sofort vorzubereiten. Bereits gestartete Datenbankoperationen werden bei Kontowechseln nicht zurückgerollt. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (parallele Sammelzuordnungen und Unique-Konflikte)
 
 - **Nachgewiesener Fehlerpfad:** Bei `applyBulk()` wurde ein PostgreSQL-Unique-Konflikt `23505` während des Hinzufügens von Listenzuordnungen als `{error:null}` zurückgegeben. Der Sammelaktionszähler konnte den kollidierten Schreibversuch daher als eigenen Erfolg ausweisen, obwohl ein anderer Tab die Zuordnung bereits angelegt hatte.
