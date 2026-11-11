@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Fokus bei Wunschfilter-Reset und Mehrfachauswahl)
+
+- **Leere Suchergebnisse:** In `lists-dashboard.mjs` erzeugt `renderWishCards` bei null Treffern einen eigenen Button „Filter zurücksetzen“. Dessen Klick entfernt den Button beim Neuzeichnen selbst. Nach dem Rücksetzen wird nun das sichtbare Wunsch-Suchfeld `listWishSearch` fokussiert; die reguläre Aktion `listWishClearFilters` erhält dieselbe konsistente Fokusführung.
+- **Mehrfachauswahl:** Die Aktionen `bulkClear` und `wishClearSelection` leeren die lokale Sammelauswahl und aktualisieren die Karten und Toolbar. Dabei können ursprünglich fokussierte Aktionsbuttons deaktiviert werden. Der Fokus wechselt jetzt nach dem Neuzeichnen zum weiterhin bedienbaren Wunsch-Suchfeld, während bestehende Live-Ergebniszähler unverändert bleiben.
+- **Prüfung:** Die aktuelle `lists-dashboard.mjs`, `gift-start.mjs` und `index.html` nach GitHub-Veröffentlichung erneut geladen. Beide Module und zehn Inline-JavaScript-Blöcke ohne Syntaxfehler geprüft, keine doppelten statischen HTML-IDs. Das Geschenk-Dashboard benötigte in dieser Runde keine Codeänderung; ein vollständiger authentifizierter Browser-End-to-End-Test bleibt ausstehend.
+- **Produktionsschutz:** Ausschließlich clientseitige Fokusführung nach Filter- und Auswahlaktionen geändert; keine neuen/geänderten Supabase-Abfragen, keine Produktivdatenänderungen und keine Testdaten.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Dynamische Listenfilter und Nachladen ohne Fokusverlust)
 
 - **Filter zurücksetzen:** Der im leeren Suchergebnis nachträglich erzeugte Button „Listenfilter zurücksetzen“ wird durch `render()` aus dem DOM entfernt. Auch der reguläre Zurücksetzen-Button kann nach der Filterkorrektur ausgeblendet werden. Beide Aktionen führen den Tastaturfokus jetzt nach dem Neuzeichnen zum weiterhin sichtbaren `listsSearch`-Feld zurück.
