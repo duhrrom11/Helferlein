@@ -89,8 +89,8 @@ const run=fn=>async function(){const button=this instanceof HTMLButtonElement?th
 $('saveWishExtrasCloud').onclick=run(async()=>{
  const ownerId=requireUser(),wishId=editingWishId,revision=wishEditorRevision;
  if(!wishId||!editingWishBaseline||editingWishBaseline.id!==wishId)throw Error('Bitte zuerst einen vorhandenen eigenen Wunsch zur Bearbeitung öffnen.');
- const extras=readValidatedWishExtras();
  const feedback=$('wishExtrasCloudFeedback');
+ let extras;try{extras=readValidatedWishExtras()}catch(error){feedback.textContent=wishlistErrorMessage(error);return}
  feedback.textContent='Private Cloud-Speicherung läuft …';
  const payload={wish_id:wishId,user_id:ownerId,image_url:extras.imageUrl||null,target_price:extras.price,quantity:extras.quantity,wish_status:extras.status};
  // INSERT only: the primary key prevents overwriting any existing cloud record.
@@ -106,7 +106,8 @@ $('saveWishExtrasCloud').onclick=run(async()=>{
 $('updateWishExtrasCloud').onclick=run(async()=>{
  const ownerId=requireUser(),wishId=editingWishId,revision=wishEditorRevision;
  if(!wishId||editingWishBaseline?.id!==wishId)throw Error('Bitte einen eigenen Wunsch zur Bearbeitung öffnen.');
- const extras=readValidatedWishExtras(),feedback=$('wishExtrasCloudFeedback');
+ const feedback=$('wishExtrasCloudFeedback');
+ let extras;try{extras=readValidatedWishExtras()}catch(error){feedback.textContent=wishlistErrorMessage(error);return}
  feedback.textContent='Aktueller Cloud-Stand wird geprüft …';
  const current=await db.from('wishlist_wish_extras').select('image_url,target_price,quantity,wish_status,updated_at').eq('user_id',ownerId).eq('wish_id',wishId).maybeSingle();
  if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision)return;
