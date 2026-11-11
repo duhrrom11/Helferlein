@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (tabübergreifende Sammelkonflikte verständlich melden)
+
+- **Nachgewiesener Fehlerpfad:** `applyBulk()` gibt bei bereits parallel entfernter Mitgliedschaft einen spezifischen Fehlertext zurück, während `bulkErrorHint()` ihn bislang nur als generisches `Änderung fehlgeschlagen` zusammenfasste. Auch der neu eingeführte Konflikthinweis bei parallelem Hinzufügen erhielt keine eigene Klassifizierung.
+- **Korrektur:** `bulkErrorHint()` unterscheidet jetzt beide Konfliktfälle ausdrücklich und empfiehlt das Aktualisieren der Liste. Code: `d29c9fe017577798011328f53ac454520a13e4bd`.
+- **Grenzen:** Die Klassifizierung verbessert nur die Fehleranzeige, nicht die Atomarität der Datenbankoperationen. Bereits gestartete Schreiboperationen können nach Kontowechseln noch abgeschlossen werden. Keine authentifizierten Browser-E2E-Tests ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (verbleibende Sammelziele erst nach Reload auswählen)
 
 - **Nachgewiesener Fehlerpfad:** Der Ergebnis-Button `bulkSelectRemaining` verwendete lokal zwischengespeicherte `assignedIds`, um zuvor nicht bearbeitete Wünsche erneut auszuwählen. Änderungen in einem anderen Browser-Tab seit dem letzten Dashboard-Laden konnten dadurch übersehen werden.
