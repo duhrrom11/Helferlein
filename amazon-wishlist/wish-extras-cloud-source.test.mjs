@@ -27,3 +27,14 @@ test('updates require confirmation and exact stored version',()=>{
  assert.match(app,/changed\.data\?\.length!==1/);
  assert.doesNotMatch(app,/from\('wishlist_wish_extras'\)\.upsert\(/);
 });
+
+test('feed cloud extras are owner-scoped and private to own cards',()=>{
+ assert.match(app,/page\.items\.filter\(w=>w\.user_id===feedUserId\)/);
+ assert.match(app,/from\('wishlist_wish_extras'\)\.select\('wish_id,image_url,target_price,quantity,wish_status'\)\.eq\('user_id',feedUserId\)\.in\('wish_id',ownIds\)/);
+ assert.match(app,/appendWishExtras\(div,w,cloudExtrasByWish\.get\(String\(w\.id\)\)\)/);
+ assert.match(app,/if\(wish\.user_id!==user\?\.id\)return/);
+});
+test('local extras take precedence and stale cloud results are discarded',()=>{
+ assert.match(app,/Object\.keys\(local\)\.length\?local:cloudExtras/);
+ assert.match(app,/if\(isStale\(\)\)\{feedRefreshPending=true;return;\}/);
+});
