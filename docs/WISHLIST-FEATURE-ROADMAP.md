@@ -1,3 +1,24 @@
+## Aktueller Roadmap-Stand – 11.11.2026 (UI-Vereinfachung und Theme-Qualität)
+
+**Abgeschlossen und auf `main` veröffentlicht:**
+- Startseite und Navigation vereinfacht; Hauptaktionen für Wunschlisten hervorgehoben, doppelte Schnellzugriffe reduziert.
+- Bereich „Meine Wunschlisten“ mit einklappbarer Listenerstellung, Statistiken und Lieblingslisten.
+- Wunschverwaltung je Liste mit direkt sichtbarer Suche und Schnellfiltern; erweiterte Filter, Sammelaktionen und Auswahlwerkzeuge in aufklappbaren Bereichen. Vorhandene Element-IDs und Handler wurden beibehalten.
+- Hell-/Dunkelmodus mit expliziten Theme-Farben statt alleiniger Systemfarb-Abhängigkeit; dezente orange-dunkelblaue Farbpalette, Kontrastverbesserungen für Header, Kontomenü, Karten, Eingaben und Fokusmarkierungen.
+- Letzte CSS-Korrektur: Commit `ded11929a7810bcf51457bac7b7e412db30cd546`. GitHub Pages, Release-Smoke-Checks und Live-HTTP-Check für diesen Commit: **success**.
+
+**Noch nicht nachgewiesen:** Unabhängiger visueller Browser-Test bei 320/375/768/1280 px, tatsächlicher Farbkontrast sämtlicher dynamischer Zustände, authentifizierte Interaktion mit bestehenden Listen, langsame/fehlgeschlagene Speicheroperationen und mehrstufige Sammelaktionen. Erfolgreiche CI-/HTTP-Checks ersetzen diese Prüfungen nicht.
+
+**Nächste Prioritäten (ohne neue Testdaten oder Supabase-Produktivänderungen):**
+1. Lesende statische Prüfung der neuen aufklappbaren Bereiche: DOM-Struktur, Fokusführung, Event-Handler, mobile Überläufe und Sichtbarkeit von Fehler-/Fortschrittsmeldungen.
+2. Visuelle Abnahme beider Themes auf Smartphone und Desktop mit echten Browseransichten; ausschließlich nachgewiesene Kontrast-/Layoutfehler korrigieren.
+3. Authentifizierte, möglichst lesende Abnahme vorhandener Listen und Filter; schreibende Fehlerpfade nur in einer ausdrücklich freigegebenen sicheren Umgebung testen.
+4. Nach jeder Korrektur GitHub-Pages-Deployment und Smoke-Checks kontrollieren; keine unbestätigten Live-Erfolge behaupten.
+
+**Produktionsschutz:** Keine Testkonten oder Testdaten, keine Änderung vorhandener Wunschlisten-/Wunschdaten und keine Supabase-Schema- oder Policy-Änderungen in dieser UI-Phase.
+
+---
+
 ## Manuelle produktive Browser-Abnahme – Abschluss Schritte 1–5 (11.11.2026)
 
 **Status: Für die tatsächlich beobachteten, rein lesenden Szenarien erfolgreich abgeschlossen.** Grundlage sind ausschließlich Rückmeldungen des Nutzers aus seinem eigenen Browser, **keine** unabhängige authentifizierte Browserautomatisierung durch den Assistenten.
