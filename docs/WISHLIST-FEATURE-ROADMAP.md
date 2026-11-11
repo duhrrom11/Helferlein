@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebungen und konkurrierende Listenzuordnungen)
+
+- **Nachgewiesener Fehlerpfad:** Die Sammelverschiebung nutzte für die Zielzuordnung nur den lokalen `membershipByList`-Snapshot. Nach parallelem Entfernen der Zielzuordnung konnte sie die Neuanlage überspringen und anschließend die Ursprungszuordnung löschen. Zudem wurde ein DELETE ohne tatsächlich entfernte Zeile als erfolgreiche Verschiebung gezählt.
+- **Korrektur:** Jede Sammelverschiebung liest die Zielzuordnung frisch, behandelt parallele Unique-Konflikte beim Einfügen, bestätigt die Zielmitgliedschaft erneut unmittelbar vor dem Löschen der Ursprungszuordnung und prüft über `.select('wish_id')` die tatsächlich entfernten Zeilen. Nach asynchronen Schritten wird die Konto-/Dashboard-Generation erneut geprüft. Konflikte werden als fehlgeschlagen/teilweise abgeschlossen angezeigt statt als Erfolg. Code: `548473ecf5760cc92111fef1cd269b30fe3783b1`.
+- **Grenzen:** Die einzelnen Datenbankoperationen sind weiterhin nicht atomar. Das Konfliktfenster nach der letzten Zielprüfung bleibt bestehen; für vollständige Sicherheit wäre eine serverseitige Transaktion erforderlich. Weitere parallele Listenbearbeitungen bleiben zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sammelzuordnungen bei Parallelaktionen)
 
 - **Nachgewiesener Konfliktpfad:** Die Sammelaktion wertete jeden INSERT-Fehler als gescheiterte Zuordnung. Bei parallelen Tabs kann die Zuordnung bereits existieren und ein Unique-Konflikt (`23505`) auftreten, obwohl der gewünschte Mitgliedschaftszustand vorhanden ist.
