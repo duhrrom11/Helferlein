@@ -55,10 +55,10 @@ def main():
                     page.goto(origin+'/index.html')
                     for script in SCRIPTS:page.add_script_tag(path=str(script))
                     page.evaluate("""([owner,other])=>{
-                      window.authState={id:owner,token:'owner_isolated_valid_token',error:false,listeners:[],userCalls:0};
+                      window.authState={id:owner,token:'owner_isolated_valid_token',error:false,listeners:[],userCalls:0,expiresAt:Math.floor(Date.now()/1000)+300};
                       window.fakeSupabase={auth:{
                         getSession:async()=>({data:{session:window.authState.token?{
-                          access_token:window.authState.token,expires_at:Math.floor(Date.now()/1000)+300
+                          access_token:window.authState.token,expires_at:window.authState.expiresAt
                         }:null},error:null}),
                         getUser:async(token)=>{window.authState.userCalls++;
                           return {data:{user:token===window.authState.token&&!window.authState.error
@@ -97,6 +97,19 @@ def main():
                     page.get_by_text('Ausstehend',exact=True).wait_for()
                     assert calls[-1]['authorization']=='Bearer other_isolated_valid_token'
                     assert calls[-1]['authorization']!=calls[0]['authorization']
+                    # A valid session near expiry must clear an idle view proactively.
+                    page.evaluate("""()=>{
+                      window.authState.expiresAt=Math.floor(Date.now()/1000)+8;
+                      window.emitAuth('TOKEN_REFRESHED');
+                    }""")
+                    page.get_by_text('Ausstehend',exact=True).wait_for()
+                    page.get_by_text('Noch nicht freigeschaltet',exact=False).wait_for(timeout=6000)
+                    assert page.get_by_text(INV).count()==0
+                    page.evaluate("""()=>{
+                      window.authState.expiresAt=Math.floor(Date.now()/1000)+300;
+                      window.emitAuth('SIGNED_IN');
+                    }""")
+                    page.get_by_text('Ausstehend',exact=True).wait_for()
                     config['unauthorized']=True
                     page.get_by_role('button',name='Liste aktualisieren').click()
                     page.get_by_text('Noch nicht freigeschaltet',exact=False).wait_for()
@@ -108,7 +121,7 @@ def main():
                     print(json.dumps({'status':'passed','real_chromium':True,
                         'checks':['verified browser session','logout clears metadata',
                         'account change cannot reuse old token','401 clears metadata',
-                        'subscription removed','no bearer persisted']}))
+                        'proactive idle expiry','subscription removed','no bearer persisted']}))
                 finally:browser.close()
         finally:
             server.shutdown();server.server_close();thread.join(timeout=5)

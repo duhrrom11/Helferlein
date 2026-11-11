@@ -16,8 +16,10 @@
        typeof options.confirm!=='function') throw Error('session_bridge_unconfigured');
     let generation=0, userId=null, disposed=false, mounted=null;
     let requestAbort=new AbortController();
+    let expiryTimer=null;
     const disable=()=>{
       generation++;
+      if(expiryTimer!==null){root.clearTimeout(expiryTimer);expiryTimer=null;}
       requestAbort.abort();
       requestAbort=new AbortController();
       userId=null;
@@ -37,7 +39,7 @@
       const id=userData?.user?.id;
       if(disposed || generation!==gen || userError || !UUID.test(id) ||
          (expectedUser && id.toLowerCase()!==expectedUser))throw Error('identity_changed');
-      return {token,id:id.toLowerCase()};
+      return {token,id:id.toLowerCase(),expiresAt:session.expires_at*1000};
     };
     async function refresh() {
       if(disposed)return;
@@ -47,6 +49,10 @@
         const account=await current(gen,null);
         if(disposed || generation!==gen)return;
         userId=account.id;
+        // Close even an idle view before the currently verified access token expires.
+        expiryTimer=root.setTimeout(()=>{
+          if(!disposed && generation===gen)disable();
+        },Math.max(0,Math.min(2147483647,account.expiresAt-Date.now()-5000)));
         const request=root.HeirOwnerInvitationTransportStaging.create({
           signal:requestAbort.signal,
           onUnauthorized:()=>{if(!disposed && generation===gen)disable();},
