@@ -25,6 +25,15 @@ const fake={
  }
 };
 try{
+ const rolePrivileges=await restricted.query(`SELECT
+   has_function_privilege(current_user,'heir_private.heir_lock_active_session(uuid,uuid)','EXECUTE') AS can_lock,
+   has_table_privilege(current_user,'auth.sessions','SELECT') AS can_select,
+   has_table_privilege(current_user,'auth.sessions','UPDATE') AS can_update,
+   has_table_privilege(current_user,'auth.sessions','DELETE') AS can_delete`);
+ assert.deepEqual(
+   [rolePrivileges.rows[0].can_lock,rolePrivileges.rows[0].can_select,
+    rolePrivileges.rows[0].can_update,rolePrivileges.rows[0].can_delete],
+   [true,false,false,false], 'CI role only executes narrow session guard');
  const verify=createHeirActiveSessionVerifier(createHeirPgTransactionAdapter(restricted),fake);
  assert.equal(await verify('Bearer valid_owner_token'),UID,'CI active session accepted');
  assert.equal(await verify('Bearer forged_owner_token'),null);
