@@ -97,8 +97,9 @@ export async function openHeirEnvelopeOnDevice(
 }
 
 /** IndexedDB stores CryptoKey using structured clone, never raw private bytes.
- * This does NOT protect against malicious same-origin JavaScript; deploy only
- * after origin/CSP/dependency security audit. Missing IndexedDB fails closed.
+ * A previously stored key cannot be replaced or downgraded: the only accepted
+ * mutation is pending -> verified for the same (userId, keyId, publicKey).
+ * Same-origin script compromise remains out of scope. Missing IndexedDB fails closed.
  */
 export function createIndexedDbHeirKeyStore(factory: IDBFactory,
   databaseName = 'helferlein-heir-keys-staging-v1'): HeirKeyStore {
@@ -123,7 +124,19 @@ export function createIndexedDbHeirKeyStore(factory: IDBFactory,
         const tx = db.transaction('keys', 'readwrite');
         tx.oncomplete = () => resolve();
         tx.onabort = tx.onerror = () => reject(new Error('unavailable'));
-        tx.objectStore('keys').put(value);
+        const store = tx.objectStore('keys');
+        // Read and conditional write share ONE readwrite transaction, so another
+        // tab cannot interleave a replacement between checking and writing.
+        const previous = store.get([value.userId, value.keyId]);
+        previous.onerror = () => tx.abort();
+        previous.onsuccess = () => {
+          const existing = previous.result as DeviceHeirKey | undefined;
+          const firstWrite = !existing && value.status === 'pending';
+          const confirmation = !!existing && existing.status === 'pending' &&
+            value.status === 'verified' && existing.publicKeyHex === value.publicKeyHex;
+          if (!firstWrite && !confirmation) { tx.abort(); return; }
+          try { store.put(value); } catch { tx.abort(); }
+        };
       });
     } finally { db.close(); }
   }
@@ -140,17 +153,32 @@ export function createIndexedDbHeirKeyStore(factory: IDBFactory,
       });
     } finally { db.close(); }
   }
+  // X25519 multiplication by the standard basepoint re-derives the public
+  // key without ever exporting the private key. This rejects corrupted or
+  // substituted local records before they reach IndexedDB.
+  async function hasMatchingPrivateKey(value: DeviceHeirKey): Promise<boolean> {
+    try {
+      const basepoint = new Uint8Array(32);
+      basepoint[0] = 9;
+      const base = await crypto.subtle.importKey('raw', basepoint, 'X25519', false, []);
+      const derived = new Uint8Array(await crypto.subtle.deriveBits(
+        { name: 'X25519', public: base }, value.privateKey, 256));
+      return toHex(derived) === value.publicKeyHex;
+    } catch { return false; }
+  }
   return {
     async save(value) {
       if (!isUuid(value.userId) || !isUuid(value.keyId) ||
           !validLocalKey(value, value.userId, value.keyId) ||
-          !['pending', 'verified'].includes(value.status)) throw new Error('unavailable');
+          !['pending', 'verified'].includes(value.status) ||
+          !(await hasMatchingPrivateKey(value))) throw new Error('unavailable');
       await write(value);
     },
     async load(userId, keyId) {
       if (!isUuid(userId) || !isUuid(keyId)) return null;
       const value = await read(userId, keyId);
-      return validLocalKey(value, userId, keyId) ? value : null;
+      return validLocalKey(value, userId, keyId) && await hasMatchingPrivateKey(value)
+        ? value : null;
     },
   };
 }
