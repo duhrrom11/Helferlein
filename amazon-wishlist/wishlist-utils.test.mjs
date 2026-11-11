@@ -227,3 +227,65 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('exports validate and normalize text without mutating source rows',()=>{
+ const row={wishlist_products:{asin:'B012345678',marketplace:'amazon.de',title:'  Buch  '},note:'  Geschenk  ',priority:2,created_at:''};
+ const before=JSON.stringify(row);
+ assert.match(exportWishlistCsv([row]),/"Buch";"Geschenk"/);
+ const wish=JSON.parse(exportWishlistJson([row])).wishes[0];
+ assert.equal(wish.title,'Buch');
+ assert.equal(wish.note,'Geschenk');
+ assert.equal(JSON.stringify(row),before);
+ for(const title of [null,42,{},[],undefined,' ','x'.repeat(251)]){
+  const invalid={...row,wishlist_products:{...row.wishlist_products,title}};
+  assert.throws(()=>exportWishlistCsv([invalid]));
+  assert.throws(()=>exportWishlistJson([invalid]));
+ }
+ for(const note of [42,{},[],'x'.repeat(501)]){
+  assert.throws(()=>exportWishlistCsv([{...row,note}]));
+  assert.throws(()=>exportWishlistJson([{...row,note}]));
+ }
+ for(const note of [null,undefined,'']){
+  const input=[{...row,note}];
+  assert.equal(JSON.parse(exportWishlistJson(input)).wishes[0].note,'');
+  assert.match(exportWishlistCsv(input),/"Buch";""/);
+  assert.equal(previewWishlistBackup(exportWishlistJson(input)).wishes[0].note,'');
+ }
+});
+test('backup preview rejects malformed profile and wish types and noncanonical links',()=>{
+ const profile={handle:'anna_123',display_name:'Anna',bio:''};
+ const wish={asin:'B012345678',title:'Buch',note:'',priority:1};
+ const good={format:'helferlein-wishlist-backup',version:1,profile,wishes:[wish]};
+ const parse=patch=>previewWishlistBackup(JSON.stringify({...good,...patch}));
+ for(const key of ['handle','display_name','bio']){
+  for(const bad of [null,42,{},[]])assert.throws(()=>parse({profile:{...profile,[key]:bad}}),/Profil/);
+  const missing={...profile};delete missing[key];assert.throws(()=>parse({profile:missing}),/Profil/);
+ }
+ for(const profile of [[],42,'anna'])assert.throws(()=>parse({profile}),/Profil/);
+ for(const key of ['title','note']){
+  for(const bad of [null,42,{},[]])assert.throws(()=>parse({wishes:[{...wish,[key]:bad}]}));
+  const missing={...wish};delete missing[key];assert.throws(()=>parse({wishes:[missing]}));
+ }
+ for(const amazon_url of [null,42,'https://evil.example/dp/B012345678','https://www.amazon.de/dp/B000000000','https://amazon.de/dp/B012345678','https://www.amazon.de/dp/B012345678?tag=other']){
+  assert.throws(()=>parse({wishes:[{...wish,amazon_url}]}),/Amazon-Link/);
+ }
+ assert.equal(parse({}).count,1);
+ assert.equal(parse({wishes:[{...wish,amazon_url:'https://www.amazon.de/dp/B012345678'}]}).count,1);
+});
+test('backup preview accepts exactly 2 MB of UTF-8 and rejects one byte more',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[],padding:''};
+ const overhead=new TextEncoder().encode(JSON.stringify(base)).byteLength;
+ const padding='ä'.repeat(Math.floor((2_000_000-overhead)/2))+'a'.repeat((2_000_000-overhead)%2);
+ const exact=JSON.stringify({...base,padding});
+ assert.equal(new TextEncoder().encode(exact).byteLength,2_000_000);
+ assert.equal(previewWishlistBackup(exact).count,0);
+ const oversized=JSON.stringify({...base,padding:padding+'a'});
+ assert.ok(oversized.length<2_000_000);
+ assert.throws(()=>previewWishlistBackup(oversized),/2 MB/);
+});
+test('export progress rejects impossible totals and accepts unknown totals',()=>{
+ for(const total of [-1,0,1.5,NaN,Infinity,'3',Number.MAX_SAFE_INTEGER+1])assert.throws(()=>exportProgressText(2,total));
+ assert.equal(exportProgressText(0,0),'0 von 0 Wünschen geladen …');
+ assert.equal(exportProgressText(2,2),'2 von 2 Wünschen geladen …');
+ for(const total of [null,undefined])assert.equal(exportProgressText(2,total),'2 Wünsche geladen …');
+});

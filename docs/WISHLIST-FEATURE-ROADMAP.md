@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Export-/Backup-Drafts konsolidiert)
+
+- Führender PR: #267; ersetzt die überlappenden Entwürfe #262, #264, #265, #266 und #268. Branch auf main `e1aa697619d00cbd7819a03ad6d6b5350da139f5` aktualisiert.
+- Gemeinsame CSV-/JSON-Exportprüfung: ungültige Texttypen ablehnen, Titel/Notizen normalisieren und Eingaben unverändert lassen. Fehlende und `null`-Notizen bleiben aus Kompatibilitätsgründen leer; die Backup-Vorschau verlangt weiterhin Strings.
+- Zusammengeführte Regressionen: Profilfeld-Matrix aus #262, Export-Längen und Unverändertheit aus #266, strenge Exporttypen aus #267; exakte UTF-8-Grenze von 2.000.000 Bytes und ein Byte darüber ergänzt. `undefined` bei der optionalen Fortschrittsgesamtzahl wird korrekt wie ein ausgelassener Parameter behandelt.
+- Lokaler vollständiger Wishes-Node-Gate: 103/103 bestanden. GitHub-Actions-Nachweis wird im PR dokumentiert; grüne Browser-Smokes sind kein vollständiger Nachweis aller produktiven RLS-Regeln.
+- Keine Supabase-Zugriffe, Produktivdatenänderungen oder Migrationen. Konsolidierung erfolgt im PR-Branch, ohne main-Merge oder Deployment.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: kein unbestätigter Erfolg nach Kontextwechsel)
 
 - **Nachgewiesener Fehlerpfad:** `moveWishToList()` meldete nach dem INSERT-Versuch bei einem Kontextwechsel `Zielzuordnung gespeichert`, obwohl zu diesem Zeitpunkt noch keine erneute Zielabfrage stattgefunden hatte. Bei parallelen Änderungen konnte die Aussage falsch sein.
