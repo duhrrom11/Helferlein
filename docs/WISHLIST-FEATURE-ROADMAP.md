@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Ergebnisübersicht: Wiederholungen nach Daten-Reload)
+
+- **Nachgewiesener Fehlerpfad:** `bulkResumeRemaining` und `bulkRetryFailed` bereiteten erneute Sammelaktionen direkt anhand lokal zwischengespeicherter `assignedIds` vor. Änderungen anderer Browser-Tabs seit dem letzten Dashboard-Reload wurden dadurch bei der Wiederholung nicht berücksichtigt.
+- **Korrektur:** Gemeinsamer asynchroner Wiederholungsweg `retryBulkResult(kind)`: Aktuelle Listen und Mitgliedschaften werden zunächst mit `load()` neu geladen. Die Wiederholung wird nur vorbereitet, wenn Benutzerkonto, ausgewählte Liste, vollständiger Mitgliedschaftsstand und erwartete Ladegeneration anschließend weiterhin passen. Code: `074cd1f0e8a2636b6d942ea2b53b97ab4cd70cae`.
+- **Grenzen:** Das Neuladen verwirft die vorherige Ergebnisübersicht; die Ziel-IDs werden für den einmaligen Wiederholungsversuch lokal festgehalten. Ein anderer Tab kann unmittelbar nach dem Reload erneut Änderungen vornehmen. Bereits gestartete Datenbankoperationen lassen sich beim Kontowechsel nicht automatisch zurückrollen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (historische Sammelaktionen vor Wiederholung aktualisieren)
 
 - **Nachgewiesener Fehlerpfad:** Der Verlaufsbutton `Offene Änderungen prüfen` rief `prepareBulk()` anhand des lokal zwischengespeicherten `assignedIds` auf. Parallele Änderungen an `wishlist_list_items` aus anderen Tabs seit dem letzten Laden konnten deshalb bei der Vorbereitung fehlen.
