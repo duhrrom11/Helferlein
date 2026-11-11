@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Zusatzdaten-Konflikte zwischen Wunsch-Editoren)
+
+- **Nachgewiesener Lost-Update-Pfad:** Der Wunsch-Editor übernahm Zusatzdaten (Produktbild, Preis, Menge, Status) aus `localStorage`, speicherte später aber ohne Vergleich mit zwischenzeitlichen Änderungen aus anderen Tabs.
+- **Korrektur:** Beim Öffnen des Wunsch-Editors wird eine serialisierte Baseline der lokalen Zusatzdaten gespeichert. Vor dem Datenbankupdate eines bestehenden Wunsches wird der aktuelle `localStorage`-Stand mit dieser Baseline verglichen; bei Abweichung wird ein Konflikt gemeldet. Beim Editor-Reset wird die Baseline gelöscht. Code: `7458c2e6f36bed2558a3aa84cc830b9615fea93a`.
+- **Grenzen:** Der Vergleich ist ein Vorabcheck und kein atomarer Compare-and-Swap über mehrere Tabs. Listenzuordnungen und Reload-Konflikte sind weiterhin gesondert zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Konflikterkennung bei paralleler Wunschbearbeitung)
 
 - **Nachgewiesener Lost-Update-Pfad:** Der Wunsch-Editor schrieb `note`, `priority` und `visibility` ohne Abgleich des beim Öffnen geladenen Stands. Parallele Bearbeitungen in zwei Tabs konnten dadurch Änderungen unbemerkt überschreiben.
