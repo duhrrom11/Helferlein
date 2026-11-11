@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (veraltete Feed-Karten vor Editoröffnung abweisen)
+
+- **Nachgewiesener Stale-UI-Pfad:** Die Bearbeiten-Aktion einer gerenderten Wunschkarte übernahm Daten aus dem ursprünglichen Feed-Resultat, ohne vor dem Öffnen die aktuelle Feed-Generation oder das aktive Konto erneut zu prüfen. Während eines Feed-Reloads bzw. Kontowechsels konnte die alte Karte noch angeklickt werden.
+- **Korrektur:** Der Klick-Handler vergleicht vor dem Öffnen `revision` mit `feedRevision` und die Konto-ID mit `w.user_id`. Bei veraltetem Stand wird kein Editor geöffnet und stattdessen ein Hinweis angezeigt. Code: `a2d3aecff771e7e52665a8deb6e97109900fe7e3`.
+- **Grenzen:** Bereits geöffnete Editoren und Konflikte während laufender Schreiboperationen bleiben durch gesonderte Baseline-Prüfungen bzw. serverseitige Transaktionen abzusichern. Verschieben von Wünschen bleibt zweistufig und nicht atomar. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Zielzuordnung unmittelbar vor Quellenlöschung prüfen)
 
 - **Nachgewiesenes Race-Fenster:** Nach dem Lesen beziehungsweise Anlegen der Zielzuordnung konnte ein anderer Tab die Zielzuordnung entfernen, bevor die Ursprungszuordnung gelöscht wurde. Die bestehende Verschiebelogik prüfte den Zielzustand an dieser Stelle nicht erneut.
