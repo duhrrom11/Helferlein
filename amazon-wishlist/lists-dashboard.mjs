@@ -471,7 +471,7 @@ actions.append(button('Duplizieren',async()=>{
  function showItems(){
   updateActiveListContext();
   const list=lists.find(x=>x.id===selected&&!x.archived);const generation=++itemsGeneration;
-  if(!list){$('listWishCards').replaceChildren();$('listWishCount').textContent='Wähle eine aktive Liste aus.';$('wishLoadMore').hidden=true;updateBulkToolbar([]);return}
+  if(!list){$('listWishCards').replaceChildren();$('listWishCount').textContent='Wähle eine aktive Liste aus.';$('wishLoadMore').hidden=true;updateBulkToolbar([]);if(membershipReady)setItemsFeedback('ready','');return}
   if(!membershipReady){assignedIds=new Set();$('wishLoadMore').hidden=true;$('listWishCards').replaceChildren();$('listWishCount').textContent='';updateBulkToolbar([]);setItemsFeedback('loading','Zuordnungen werden geladen …');return}
   assignedIds=membershipForSelectedList({membershipReady,membershipByList,listId:list.id});syncBulkMoveTargets();
   if(generation!==itemsGeneration)return;
