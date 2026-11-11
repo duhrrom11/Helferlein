@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: Fehler nach gestarteten Schreiboperationen als unklar markieren)
+
+- **Nachgewiesener Fehlerpfad:** Im `catch` von `moveSelectedWishes()` wurde bei Fehlern nach bereits gestartetem Ziel-INSERT oder Ursprungs-DELETE nur `failed` erhöht. Der Sammelstatus konnte dadurch unklare Zuordnungsstände unterschlagen.
+- **Korrektur:** Ein pro Wunsch geführtes `writeStarted` wird vor INSERT und DELETE gesetzt. Bei einem anschließenden Fehler erhöht die Fehlerbehandlung zusätzlich `partial` und weist auf die notwendige Prüfung beider Listen hin. Code: `4e3c9bf107fb0470dd071dd0bcd5aee72015f2a8`.
+- **Grenzen:** Bereits gestartete Schreiboperationen lassen sich hierdurch weder abbrechen noch atomar zurückrollen. Die Nachprüfung bleibt für parallele Tab-Änderungen notwendig. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: Fehler nur im gültigen Ladekontext anzeigen)
 
 - **Nachgewiesener Fehlerpfad:** Der allgemeine `catch` von `moveWishToList()` zeigte nach asynchronen Datenbankoperationen Fehler noch an, wenn Benutzerkonto und ausgewählte Liste passten, aber ein neuer Dashboard-Reload die alte `loadGeneration` bereits ungültig gemacht hatte.
