@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: überholte Rückmeldungen nach Reload)
+
+- **Nachgewiesener Fehlerpfad:** `moveWishToList()` zeigte nach `await load({afterBulk:true})` Erfolg bzw. Fehler allein aufgrund von Benutzerkonto und ausgewählter Liste an. Ein paralleler neuer Dashboard-Reload konnte dieselben Werte beibehalten, wodurch die ältere Verschiebung eine überholte Rückmeldung in den neueren UI-Zustand schrieb.
+- **Korrektur:** Der von der Einzelverschiebung gestartete Reload erfasst die `loadGeneration`. Erfolg wird nur bei weiterhin passender Generation und vollständigen Mitgliedschaftsdaten (`membershipReady`) angezeigt; die Ladefehler- und Teilfehlerwarnung sind ebenfalls an die Generation gebunden. Code: `7c246421add897e5830831ab88b2f4c523898619`.
+- **Grenzen:** Die Verschiebung bleibt zweistufig und nicht atomar. Konkurrierende Änderungen zwischen Zielbestätigung und Ursprungs-Löschung sowie bereits gestartete Schreiboperationen beim Kontowechsel werden dadurch nicht rückgängig gemacht. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (veraltete Erfolgsmeldung nach Sammelverschiebung)
 
 - **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` veröffentlichte die Zusammenfassung nach `await load({afterBulk:true})` allein anhand von Benutzerkonto, ausgewählter Liste und `bulkRunId`. Ein zwischenzeitlicher zweiter Dashboard-Reload konnte dieselben Werte behalten und die ältere Zusammenfassung nachträglich in den neuen UI-Zustand schreiben.
