@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listenfavoriten: andere Browser-Tabs und beschädigte localStorage-Daten)
+
+- **Nachgewiesenes Risiko:** Favoriten-Toggles basierten auf dem im jeweiligen Tab zwischengespeicherten `favoriteIds`. Änderungen aus einem zweiten Tab konnten bei der nächsten Aktion mit einem veralteten vollständigen Favoriten-Set überschrieben werden.
+- **Korrektur:** `writeFavorites(id,listId)` liest vor jeder Favoritenänderung den aktuellen gespeicherten Zustand, prüft die JSON-Struktur und toggelt nur die angeforderte Listen-ID. Erst nach erfolgreichem `localStorage.setItem` wird der neue Favoritenzustand im aktuellen Tab übernommen. Ungültige oder nicht lesbare Daten werden nicht mit einer leeren Liste überschrieben. Code: `eb676514d1cd966995682a577edf29c5ecb9153e`.
+- **Grenzen:** Read-Modify-Write über `localStorage` ist zwischen gleichzeitig schreibenden Tabs nicht atomar. Kategorie- und Markierungsänderungen, Tab-Synchronisation sowie Kontowechsel benötigen weitere Prüfung. Statische Codeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (lokale Wunsch-Zusatzdaten: beschädigte Speicherinhalte nicht überschreiben)
 
 - **Nachgewiesenes Datenverlustrisiko:** `saveWishExtras()` ersetzte bei `localStorage.getItem`- oder JSON-Parsefehlern die bisherige Datenstruktur stillschweigend durch `{}` und konnte beim nächsten `setItem` vorhandene lokale Zusatzdaten überschreiben. Auch JSON-Werte mit unerwarteter Struktur wurden nicht ausreichend validiert.
