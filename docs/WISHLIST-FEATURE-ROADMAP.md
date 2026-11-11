@@ -1,3 +1,10 @@
+## Manuelle Browser-Abnahme – Schritt 4 abgeschlossen (Nutzerrückmeldung, 11.11.2026)
+
+- **Vorgehen:** Nutzer lud die produktive Wunschlisten-Seite im abgemeldeten Zustand neu. Keine Anmeldung, keine Testdaten, keine produktiven Datenänderungen.
+- **Bestätigte Beobachtungen:** Anmeldebereich nach Neuladen sichtbar = **ja**; privates Dashboard weiterhin ausgeblendet = **ja**; Fehlermeldung = **keine**; weitere Auffälligkeiten = **keine**.
+- **Bewertung:** Abgemeldeter Zustand bleibt beim Neuladen erhalten; sichtbare private Dashboard-Inhalte bleiben ausgeblendet. Nur nutzerberichtete Browserbeobachtung, kein unabhängiger RLS-Nachweis.
+- **Offen:** Schritt 5: Abschließende rein lesende Bestandsaufnahme der Fehlerbehandlung und Ladeanzeige, ohne künstliche Fehler, Datenänderungen oder neue Konten. Nicht beobachtete Zustände ausdrücklich als **nicht geprüft** kennzeichnen.
+
 ## Manuelle Browser-Abnahme – Schritt 3 abgeschlossen (Nutzerrückmeldung, 11.11.2026)
 
 - **Vorgehen:** Nutzer hat in der produktiven Wunschlisten-Anwendung den gefundenen Button `Abmelden` betätigt. Keine Wunschlisten-Datenmutation und keine Testdaten.
