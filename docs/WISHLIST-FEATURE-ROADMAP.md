@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: parallele Ziel-Löschung neu laden)
+
+- **Nachgewiesener Fehlerpfad:** `moveWishToList()` meldete bei fehlender Zielzuordnung vor dem Ursprungs-DELETE pauschal `Ursprungszuordnung bleibt erhalten`, obwohl andere Browser-Tabs diese bereits entfernt haben konnten. Zusätzlich wurde ohne Dashboard-Reload abgebrochen, sodass die Mitgliedschaftsanzeige veraltet bleiben konnte.
+- **Korrektur:** Der Hinweis unterscheidet zwischen der noch nicht ausgeführten Löschung durch diese Aktion und parallelen Fremdänderungen. Der Fehlerpfad lädt die Mitgliedschaften neu und zeigt den Hinweis nur bei weiterhin gültigem Benutzerkonto, ausgewählter Ursprungsliste und Ladegeneration. Code: `8c38b4bab83e61924482731a06474267bf076c53`.
+- **Grenzen:** Keine atomare Transaktion und keine automatische Wiederherstellung. Bereits gestartete Schreiboperationen können nach Kontowechseln abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: Ziel nach Ursprungslöschung erneut bestätigen)
 
 - **Nachgewiesener Fehlerpfad:** `moveWishToList()` bestätigte die Zielzuordnung nur vor dem DELETE der Ursprungszuordnung. Eine parallele Ziel-Löschung zwischen Bestätigung und DELETE konnte eine irreführende Erfolgsmeldung auslösen.
