@@ -1,3 +1,10 @@
+## Manuelle Browser-Abnahme – Schritt 3, Zwischenstand (Nutzerrückmeldung, 11.11.2026)
+
+- Nutzer meldet nach Browser-Suche nach `Abmelden`: **Button gefunden** (`found`).
+- Damit ist ausschließlich die Auffindbarkeit des Abmelden-Buttons bestätigt; **Abmeldung selbst, Ausblendung des privaten Dashboards und Sitzungsende sind noch nicht geprüft**.
+- Keine produktiven Datenänderungen oder Testdaten. Keine Fehlerkorrektur nötig, solange kein Defekt nachgewiesen ist.
+- Nächster Abnahmeschritt: Button anklicken, Anmeldebereich, Dashboard-Ausblendung, verbleibende persönliche Inhalte und Fehlermeldungen beobachten und zurückmelden.
+
 ## Manuelle Browser-Abnahme – Schritt 2 (Nutzerrückmeldung, 11.11.2026)
 
 - **Vorgehen:** Nutzer hat die bereits angemeldete produktive Wunschlisten-Seite neu geladen. Keine Testdaten oder produktiven Schreiboperationen.
