@@ -56,7 +56,20 @@ def check_roles():
             except errors.InsufficientPrivilege:
                 c.rollback()
                 # Roles also must not read even if they know another user's UUID.
-        assert c.execute("SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='heir_private' AND p.prosecdef").fetchone()[0] == 0
+        # Exactly one reviewed SECURITY DEFINER gate may lock auth.sessions.
+        # It cannot disclose session fields; PUBLIC/anon/authenticated lack EXECUTE.
+        privileged = c.execute("""SELECT p.proname, p.pronargs, p.proargtypes::text,
+                        p.proconfig,pg_get_userbyid(p.proowner)
+                    FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+                    WHERE n.nspname='heir_private' AND p.prosecdef""").fetchall()
+        assert privileged == [('heir_lock_active_session', 2, '2950 2950', ['search_path='], 'postgres')], privileged
+        for role in ('anon','authenticated'):
+            assert c.execute('SELECT has_function_privilege(%s,%s,%s)',
+                (role,'heir_private.heir_lock_active_session(uuid,uuid)','EXECUTE')).fetchone()[0] is False
+        assert c.execute('SELECT has_function_privilege(%s,%s,%s)',
+            ('heir_ci_backend','heir_private.heir_lock_active_session(uuid,uuid)','EXECUTE')).fetchone()[0] is True
+        assert c.execute('SELECT has_table_privilege(%s,%s,%s)',
+            ('heir_ci_backend','auth.sessions','UPDATE,DELETE')).fetchone()[0] is False
 
 
 def seed():
