@@ -180,7 +180,7 @@ actions.append(button('Duplizieren',async()=>{
      const {data:copy,error}=await db.from('wishlist_lists').insert({user_id:uid,title:(list.title+' Kopie').slice(0,80),description:list.description,icon:list.icon,color:list.color,visibility:'private'}).select('id').single();
      if(error)throw error;
      created=true;
-     if(!current()){if(getUser()?.id===uid&&loadedOwner===uid){msg('Listen-Kopie angelegt, aber Zuordnungen wegen einer zwischenzeitlichen Aktualisierung nicht übernommen. Bitte Kopie prüfen und Listen neu laden.');try{await load({afterBulk:true})}catch{}}return;}
+     if(!current()){if(getUser()?.id===uid&&loadedOwner===uid){try{await load({afterBulk:true})}catch{}if(getUser()?.id===uid&&loadedOwner===uid)msg('Listen-Kopie angelegt, aber Zuordnungen wegen einer zwischenzeitlichen Aktualisierung nicht übernommen. Bitte Kopie prüfen.');}return;}
      for(let i=0;i<originalIds.length;i+=100){
       if(!current())return;
       const batch=originalIds.slice(i,i+100).map(wish_id=>({list_id:copy.id,wish_id,user_id:uid}));
