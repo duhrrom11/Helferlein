@@ -1,0 +1,35 @@
+name: Wishlist isolated regression
+on:
+  push:
+    paths:
+      - 'amazon-wishlist/bulk-helpers.mjs'
+      - 'amazon-wishlist/lists-dashboard.mjs'
+      - 'amazon-wishlist/list-features.mjs'
+      - 'tests/wishlist-move-regression.test.cjs'
+      - 'tests/wishlist-dashboard-integration.test.cjs'
+      - '.github/workflows/wishlist-regression.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check module syntax
+        run: |
+          node --check amazon-wishlist/bulk-helpers.mjs
+          node --check amazon-wishlist/list-features.mjs
+          node --check amazon-wishlist/lists-dashboard.mjs
+      - name: Run isolated regression and static integration tests
+        run: node --test tests/wishlist-move-regression.test.cjs tests/wishlist-dashboard-integration.test.cjs
