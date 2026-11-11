@@ -4,6 +4,7 @@ import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAl
 export function mountListsDashboard(db, getUser) {
  const $=id=>document.getElementById(id);
  const root=$('listsDashboard');
+ let cloudWishExtras=new Map();
  let lists=[],wishes=[],selected=null,loadedOwner=null,loadGeneration=0,itemsGeneration=0,assignedIds=new Set(),favoriteIds=new Set(),recentIds=[],listCounts=new Map(),assignedTotal=0,wishCategories={},wishMarkers={},detailWishId=null,bulkIds=new Set(),allAssignedIds=new Set(),bulkBusy=false,pendingBulk=null,visibleLimit=100,bulkStopRequested=false,bulkRunId=0,lastBulkResult=null,bulkHistory=[],membershipByList=new Map(),membershipReady=false;
  let detailCategoryBaseline='';let listEditBaseline=null;let listEditGeneration=null;
  const markerKey=id=>'helferlein-wish-markers:'+id;
@@ -90,7 +91,7 @@ export function mountListsDashboard(db, getUser) {
    if(listCopyBusy&&!afterBulk){msg('Eine Listen-Kopie wird gerade erstellt. Bitte den Abschluss abwarten.');return}
    if(bulkBusy&&!afterBulk){msg('Sammelaktion läuft. Bitte stoppen oder abschließen, bevor du Listen aktualisierst.');return}
   if(activeWishMutations.size&&!afterBulk){msg('Eine Wunschänderung läuft. Bitte anschließend aktualisieren.');return}
-  const generation=++loadGeneration;
+  const generation=++loadGeneration;cloudWishExtras=new Map();
   if($('wishDetailDialog').open)$('wishDetailDialog').close();detailWishId=null;detailCategoryBaseline='';
   invalidateMembershipState();$('wishLoadMore').hidden=true;root.hidden=false;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
   const id=owner();
@@ -364,6 +365,25 @@ actions.append(button('Duplizieren',async()=>{
  }
  let compactWishView=false;
  function setWishView(compact){compactWishView=compact;$('wishViewCards').setAttribute('aria-pressed',String(!compact));$('wishViewCompact').setAttribute('aria-pressed',String(compact));$('listWishCards').classList.toggle('is-compact',compact)}
+ async function loadPrivateWishExtras(ownerId,generation){
+  const ids=wishes.map(w=>w.id);
+  if(!ids.length)return;
+  const own=new Map();
+  // Keep the request owner-scoped and below PostgREST's typical 1000-row limit.
+  try{
+   for(let start=0;start<ids.length;start+=500){
+    if(generation!==loadGeneration||getUser()?.id!==ownerId||loadedOwner!==ownerId)return;
+    const batch=ids.slice(start,start+500);
+    const result=await db.from('wishlist_wish_extras').select('wish_id,image_url,target_price,quantity,wish_status').eq('user_id',ownerId).in('wish_id',batch);
+    if(generation!==loadGeneration||getUser()?.id!==ownerId||loadedOwner!==ownerId)return;
+    if(result.error)return; // Existing device-local values remain available.
+    for(const item of result.data||[])if(batch.some(id=>String(id)===String(item.wish_id)))own.set(String(item.wish_id),{imageUrl:item.image_url||'',price:item.target_price,quantity:item.quantity,status:item.wish_status});
+   }
+   if(generation!==loadGeneration||getUser()?.id!==ownerId||loadedOwner!==ownerId)return;
+   cloudWishExtras=own;
+   if(membershipReady)renderWishCards();
+  }catch{/* Cloud is optional; keep the existing local rendering. */}
+ }
  function renderWishCards(){
   updateActiveListContext();
   const cards=$('listWishCards');cards.replaceChildren();
@@ -395,7 +415,8 @@ actions.append(button('Duplizieren',async()=>{
    try{
     const owner=getUser()?.id;
     if(owner&&owner===loadedOwner){
-     const extras=JSON.parse(localStorage.getItem('helferlein-wish-extras:'+owner)||'{}')?.[wish.id];
+     const local=JSON.parse(localStorage.getItem('helferlein-wish-extras:'+owner)||'{}')?.[wish.id];
+     const extras=local&&typeof local==='object'&&Object.keys(local).length?local:cloudWishExtras.get(String(wish.id));
      if(extras&&typeof extras==='object'){
       if(typeof extras.imageUrl==='string'&&extras.imageUrl.startsWith('https://')){
        const image=document.createElement('img');image.className='wish-product-image';image.src=extras.imageUrl;image.alt='Produktbild';image.loading='lazy';image.referrerPolicy='no-referrer';card.append(image);
