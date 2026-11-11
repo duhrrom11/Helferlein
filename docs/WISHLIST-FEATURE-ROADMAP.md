@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listen löschen: parallele Löschung und Fehlerbehandlung)
+
+- **Nachgewiesener Fehlerpfad:** Der Lösch-Handler prüfte nur `error` einer `delete().eq('id',...).eq('user_id',...)`-Abfrage. Ein erfolgreicher Request mit null gelöschten Zeilen (z. B. nach Löschung in anderem Tab) war damit nicht unterscheidbar. Zusätzlich fehlte ein `catch`-Pfad; Datenbankfehler konnten als unbehandelte Promise-Rejection enden.
+- **Korrektur:** Die Löschabfrage fordert `.select('id')` an und prüft die Zahl zurückgegebener Zeilen. Bei null Treffern wird die parallele Änderung erläutert und die Listenansicht neu geladen. Ein `catch` meldet Löschfehler kontrolliert. Die bereits vorhandene Sperre für parallele Listenaktionen bleibt bestehen.
+- **Code-Commit:** `0834fb7471a43cdc8262d87fa27624067a93eb2e`.
+- **Grenzen:** Statische Codeprüfung, kein authentifizierter Browser-E2E-Test. Kopieren und Verschieben bleiben Gegenstand weiterer Prüfung; keine Atomarität der Mehrschritt-Operationen zugesichert.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert, keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listen-Editor: Fokus nach asynchronem Speicherfehler)
 
 - **Nachgewiesener Fehlerpfad:** Beim Absenden des Listen-Bearbeitungsformulars werden die Eingabefelder und Schaltflächen deaktiviert. Dies kann den Fokus des bisher aktiven Formularfelds entfernen. Der bisherige Fehlerpfad fokussierte anschließend pauschal `saveListChanges`, statt das zuvor aktive Element wiederherzustellen.
