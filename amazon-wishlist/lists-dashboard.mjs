@@ -92,7 +92,7 @@ export function mountListsDashboard(db, getUser) {
   if(activeWishMutations.size&&!afterBulk){msg('Eine Wunschänderung läuft. Bitte anschließend aktualisieren.');return}
   const generation=++loadGeneration;
   if($('wishDetailDialog').open)$('wishDetailDialog').close();detailWishId=null;detailCategoryBaseline='';
-  invalidateMembershipState();$('wishLoadMore').hidden=true;root.hidden=false;setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
+  invalidateMembershipState();$('wishLoadMore').hidden=true;root.hidden=false;$('listsContent').replaceChildren();$('listWishCards').replaceChildren();$('listWishCount').textContent='';setItemsFeedback('loading','Wunschlisten werden geladen …');msg('Listen werden geladen …');
   const id=owner();
   let lr,wr;
   try{({lists:lr,wishes:wr}=await fetchDashboardBase(db,id));
