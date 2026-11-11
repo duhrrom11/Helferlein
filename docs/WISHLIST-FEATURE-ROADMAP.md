@@ -1,3 +1,10 @@
+## Manuelle Browser-Abnahme – Schritt 2 (Nutzerrückmeldung, 11.11.2026)
+
+- **Vorgehen:** Nutzer hat die bereits angemeldete produktive Wunschlisten-Seite neu geladen. Keine Testdaten oder produktiven Schreiboperationen.
+- **Bestätigte Beobachtungen:** Nach Neuladen weiterhin angemeldet; Anzeige **0 Listen und 0 Wünsche**; **keine Fehlermeldung**; Ladeanzeige **nicht beobachtet**; keine weiteren Beobachtungen.
+- **Bewertung:** Sitzungsfortbestand beim Neuladen und stabiler Leerzustand durch Nutzerrückmeldung bestätigt. Die Ladeanzeige ist nicht validiert; ihr Nichtbeobachten ist kein nachgewiesener Fehler. Keine automatisierte Browserinspektion behauptet.
+- **Nächster sicherer Schritt:** Abmelden und prüfen, dass der private Dashboardbereich verschwindet und keine persönlichen Daten sichtbar bleiben. Abmelden ändert den lokalen Auth-Sitzungszustand, aber keine Wunschlisten-/Datenbankeinträge. Kein Fix/Deployment erforderlich.
+
 ## Manuelle Browser-Abnahme – Schritt 1 (Nutzerrückmeldung, 11.11.2026)
 
 - **Quelle:** Rückmeldung des angemeldeten Nutzers nach Öffnen der produktiven Wunschlisten-Anwendung; keine automatisierte Browserinspektion durch den Assistenten.
