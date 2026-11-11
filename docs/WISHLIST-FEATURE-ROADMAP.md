@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Editor: Fokus nach asynchronem Speicherfehler)
+
+- **Nachgewiesener Fehlerpfad:** Beim Absenden des Listen-Bearbeitungsformulars werden die Eingabefelder und Schaltflächen deaktiviert. Dies kann den Fokus des bisher aktiven Formularfelds entfernen. Der bisherige Fehlerpfad fokussierte anschließend pauschal `saveListChanges`, statt das zuvor aktive Element wiederherzustellen.
+- **Korrektur:** Das zuvor fokussierte Element wird vor dem Deaktivieren erfasst. Bleibt das Formular nach einem fehlgeschlagenen Speichervorgang geöffnet und liegt der Fokus nur noch auf `document.body`, wird das weiterhin verbundene und aktivierte ursprüngliche Element fokussiert. Andernfalls dient der Speichern-Button als Fallback. Ein zwischenzeitlicher bewusster Fokuswechsel wird nicht überschrieben.
+- **Code-Commit:** `40e83b080507a40522e7aff30a894b19a34b9277`.
+- **Grenzen:** Statische Prüfung; kein authentifizierter Browser-E2E-Test. Weitere asynchrone Listenaktionen und Fehlerpfade sind weiter zu untersuchen. Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Geschenk-Dashboard: Fokus bei Fehler und Lade-Kontext)
 
 - **Nachprüfung:** Der Prioritäts-Handler erfasst den ursprünglichen Fokus bereits vor dem Deaktivieren und aktualisiert nur das betroffene Element statt alle laufenden Auswahlfelder neu aufzubauen. Das war auf dem aktuellen GitHub-Stand bereits vorhanden.
