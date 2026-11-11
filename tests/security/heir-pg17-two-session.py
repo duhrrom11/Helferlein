@@ -34,7 +34,7 @@ def check_isolation():
         if c.execute('SHOW server_version_num').fetchone()[0][:2] != '17':
             raise RuntimeError('PostgreSQL 17 required')
         address = c.execute('SELECT inet_server_addr()::text').fetchone()[0]
-        if address is None or not ipaddress.ip_address(address).is_private:
+        if address is None or not ipaddress.ip_interface(address).ip.is_private:
             raise RuntimeError('Public or unverified PostgreSQL endpoint forbidden')
 
 
