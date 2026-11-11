@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: überlappende Statuszähler kennzeichnen)
+
+- **Nachgewiesene Unklarheit:** `partial` zählt Fälle mit unklarem Zuordnungsstand, darunter Fehler nach gestarteten Schreiboperationen (`failed`) und Abbrüche nach Kontextwechsel (`nicht abgeschlossen`). Die Abschlussmeldung ließ offen, dass diese Zähler sich überschneiden können.
+- **Korrektur:** Die Zusammenfassung kennzeichnet bei `partial` nun ausdrücklich mögliche Überschneidungen mit `fehlgeschlagen` und `nicht abgeschlossen`. Maßgeblicher Code-Commit: `212f0fa2710e1c9a8cd55b5633f5bef7227c4a10` (vorheriger Zwischencommit `273d76da100989be11e01ed324f19e2c28969592`).
+- **Grenzen:** Nur Statusdarstellung; keine atomare Verschiebung und keine automatische Wiederherstellung. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: nicht abgeschlossene Wünsche im Status zählen)
 
 - **Nachgewiesener Fehlerpfad:** Die Abschlussmeldung von `moveSelectedWishes()` nannte bei `stopped` nur `Vorgang gestoppt`, ohne die Anzahl der noch nicht abgeschlossenen Wünsche auszuweisen. Zudem wurde jeder `partial`-Fall als `nach Unterbrechung unklar` bezeichnet, obwohl auch parallele Löschungen und Fehler nach begonnenen Schreiboperationen diese Fälle erzeugen.
