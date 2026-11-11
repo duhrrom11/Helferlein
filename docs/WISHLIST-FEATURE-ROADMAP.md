@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Dynamische Listenfilter und Nachladen ohne Fokusverlust)
+
+- **Filter zurücksetzen:** Der im leeren Suchergebnis nachträglich erzeugte Button „Listenfilter zurücksetzen“ wird durch `render()` aus dem DOM entfernt. Auch der reguläre Zurücksetzen-Button kann nach der Filterkorrektur ausgeblendet werden. Beide Aktionen führen den Tastaturfokus jetzt nach dem Neuzeichnen zum weiterhin sichtbaren `listsSearch`-Feld zurück.
+- **Wünsche nachladen:** Beim letzten Klick auf „Weitere 100 Wünsche anzeigen“ kann `wishLoadMore` nach dem Aktualisieren ausgeblendet werden, sodass der aktive Tastaturfokus verschwindet. In diesem Fall wird der bereits bestehende `listWishCount`-Ergebnisstatus temporär fokussierbar gemacht und fokussiert; solange weitere Seiten vorhanden sind, bleibt der Nachladen-Button unverändert.
+- **Dashboard und Status:** Die vorhandenen Ergebniszähler `listsViewCount` und `listWishCount` sind bereits Live-Statusregionen. Die bestehenden Dashboard-Module wurden zusätzlich statisch überprüft; in dieser Runde war keine Änderung an `gift-start.mjs` erforderlich.
+- **Prüfung:** Aktuelle `lists-dashboard.mjs`, `gift-start.mjs`, `index.html` erneut über GitHub abgerufen. Beide Module und zehn Inline-Skripte ohne JavaScript-Syntaxfehler geprüft, keine doppelten statischen IDs. Kein authentifizierter End-to-End-Test und keine produktiven Schreibtests.
+- **Produktionsschutz:** Nur clientseitige Fokusführung nach Neuzeichnen/Filterwechsel; keine neuen oder geänderten Supabase-Abfragen, Migrationen, Testdaten oder Änderungen an Produktivdatensätzen.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Fokus bei dynamischen Wunschkarten und Dashboard-Live-Rückmeldungen)
 
 - **Wunschkarten-Markierungen:** `setMarker` zeichnet die gesamte Kartenansicht nach einer Favoriten-/Später-Markierung neu. Dabei verschwand der bisher fokussierte Button aus dem DOM. Neue `data-wish-marker`-Kennungen und die `restoreWishCardControl`-Hilfe setzen den Fokus auf die entsprechende neu gezeichnete Schaltfläche zurück, sofern die Aktion aus der Kartenansicht erfolgte. Die Detailansicht wird nicht unbeabsichtigt überfokussiert.
