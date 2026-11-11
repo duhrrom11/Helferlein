@@ -23,7 +23,8 @@ try {
   const attempts = await Promise.all(Array.from({ length: 36 }, () => admission.preAuth(request, route)));
   assert.equal(attempts.filter(Boolean).length, 30, 'atomic concurrent pre-auth limit: exactly 30 accepted');
   assert.equal(await admission.preAuth(request, route), false);
-  const uid = '11111111-1111-4111-8111-111111111111';
+  // Dedicated synthetic quota identity: independent of the owner E2E requests.
+  const uid = '99999999-9999-4999-8999-999999999999';
   const userAttempts = await Promise.all(Array.from({ length: 6 }, () => admission.user(uid, route)));
   assert.equal(userAttempts.filter(Boolean).length, 3, 'atomic user invite limit: exactly 3 accepted');
   assert.equal(await admission.user(uid, '/v1/heirs/invitations/redeem'), true);
