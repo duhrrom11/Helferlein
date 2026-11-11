@@ -74,7 +74,7 @@ export function mountListsDashboard(db, getUser) {
   if(disclosure){disclosure.dataset.mobileOpen='true';disclosure.open=true;}
   msg(message);field.focus();
  };
- for(const fieldId of ['listTitle','editListTitle','editListCoverUrl']){
+ for(const fieldId of ['listTitle','editListTitle','editListDescription','editListCoverUrl']){
   const field=$(fieldId);
   for(const type of ['input','change'])field.addEventListener(type,()=>{
    field.removeAttribute('aria-invalid');field.removeAttribute('aria-describedby');
@@ -502,7 +502,7 @@ actions.append(button('Duplizieren',async()=>{
   listEditReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
   $('editListId').value=list.id;$('editListTitle').value=list.title;$('editListDescription').value=list.description||'';
   $('editListIcon').value=list.icon;$('editListColor').value=list.color;$('editListVisibility').value=list.visibility;$('editListCoverUrl').value=list.cover_url||'';
-  for(const fieldId of ['editListTitle','editListCoverUrl']){$(fieldId).removeAttribute('aria-invalid');$(fieldId).removeAttribute('aria-describedby')}
+  for(const fieldId of ['editListTitle','editListDescription','editListCoverUrl']){$(fieldId).removeAttribute('aria-invalid');$(fieldId).removeAttribute('aria-describedby')}
   $('editListFeedback').textContent='';$('editListForm').hidden=false;$('editListForm').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});$('editListTitle').focus({preventScroll:true});
  }
  $('cancelListEdit').onclick=()=>{if(listMutationBusy)return;$('editListForm').hidden=true;$('editListId').value='';$('editListFeedback').textContent='';finishListEditing();};
@@ -510,7 +510,7 @@ actions.append(button('Duplizieren',async()=>{
   event.preventDefault();const id=owner(),generation=loadGeneration,listId=$('editListId').value;
   if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size)return msg('Bitte laufende Wunschänderungen zuerst abschließen.');if(!membershipReady||id!==loadedOwner||!listId||$('editListForm').hidden)return;if(!lists.some(l=>l.id===listId&&!l.archived))return msg('Bitte eine aktive Liste bearbeiten.');
   const title=$('editListTitle').value.trim(),description=$('editListDescription').value.trim();
-  if(!title||title.length>80)return invalidField($('editListTitle'),'Bitte einen Listennamen mit 1 bis 80 Zeichen eingeben.');if(description.length>500)return msg('Beschreibung darf höchstens 500 Zeichen enthalten.');
+  if(!title||title.length>80)return invalidField($('editListTitle'),'Bitte einen Listennamen mit 1 bis 80 Zeichen eingeben.');if(description.length>500)return invalidField($('editListDescription'),'Beschreibung darf höchstens 500 Zeichen enthalten.');
   const coverUrl=$('editListCoverUrl').value.trim();if(coverUrl&&(!/^https:\/\//i.test(coverUrl)||coverUrl.length>2048))return invalidField($('editListCoverUrl'),'Titelbild muss eine gültige HTTPS-Adresse sein.');const visibility=$('editListVisibility').value;if(!['private','public'].includes(visibility))return msg('Ungültige Sichtbarkeit.');if(visibility==='public'&&!lists.some(l=>l.id===listId&&l.visibility==='public')&&!window.confirm('Sammlung öffentlich freigeben? Jeder mit dem Link kann Titel, Beschreibung und alle zugeordneten Wünsche einschließlich Notizen sehen.'))return;const save=$('saveListChanges'),cancel=$('cancelListEdit');save.disabled=true;cancel.disabled=true;listMutationBusy=true;$('editListFeedback').textContent='Änderungen werden gespeichert …';try{if(getUser()?.id===id&&membershipReady)renderWishCards();
    const {error}=await db.from('wishlist_lists').update({title,description,icon:$('editListIcon').value,color:$('editListColor').value,visibility,cover_url:coverUrl||null}).eq('id',listId).eq('user_id',id);
    if(error)throw error;if(getUser()?.id!==id||generation!==loadGeneration)return;
