@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Speichern nach Kontowechsel wieder freigeben)
+
+- **Nachgewiesener UI-Fehler:** Der gemeinsame `run()`-Wrapper deaktiviert während `saveWish` die Speicherschaltfläche. Sein `finally` aktiviert diese bei gewechselter Konto-ID absichtlich nicht mehr. `auth()` setzte zwar den Editor, aber nicht `saveWish.disabled` zurück. Dadurch konnte das neue Konto dauerhaft keine Wünsche speichern.
+- **Korrektur:** Bei erkanntem Kontowechsel aktiviert `auth()` unmittelbar nach `resetWishEditor()` die Schaltfläche `saveWish` wieder. Der alte Speichervorgang bleibt für UI-Rückmeldungen an die ursprüngliche Konto-ID gebunden. Code: `4c64bd2af7c0a0dd7e2f85e93b585b4db3074c79`.
+- **Grenzen:** Bereits laufende Datenbankoperationen werden nicht abgebrochen. Weitere mögliche Parallelitätskonflikte und asynchrone Listenmutationen bleiben zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Kontowechsel während Wunsch-Listenzuordnung)
 
 - **Nachgewiesene Race Condition:** Nach erfolgreicher Wunsch-Neuanlage wurde bei gewählter Zielliste `await dashboard.assignWish(...)` ausgeführt. Danach konnte die Routine ohne erneute Kontoprüfung den Editor zurücksetzen und Folgeaktualisierungen auslösen, obwohl während der asynchronen Listenzuordnung das Konto gewechselt hatte.
