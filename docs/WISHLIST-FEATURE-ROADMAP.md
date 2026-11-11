@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Geschenk-Dashboard: Fokus bei Fehler und Lade-Kontext)
+
+- **Nachprüfung:** Der Prioritäts-Handler erfasst den ursprünglichen Fokus bereits vor dem Deaktivieren und aktualisiert nur das betroffene Element statt alle laufenden Auswahlfelder neu aufzubauen. Das war auf dem aktuellen GitHub-Stand bereits vorhanden.
+- **Behobener Fokusfehler:** Nach einem fehlgeschlagenen Prioritäts-Update wurde das Auswahlfeld zwar wieder aktiviert, aber bei durch `disabled` verlorenem Fokus nicht erneut fokussiert. Der `finally`-Pfad stellt den Fokus nun auch im Fehlerfall wieder her, sofern der Nutzer nicht inzwischen ein anderes Element fokussiert hat.
+- **Behobener Lade-Kontextfehler:** Die parallelen Dashboard-Abfragen verwenden jetzt eine beim Start erfasste Benutzer-ID. Vor der Übernahme der Ergebnisse wird geprüft, ob der lokale Benutzerkontext noch dazu passt. Das verhindert die Übernahme veralteter Ergebnisse nach einer lokalen Kontextänderung; ein unabhängiger Auth-Listener und eine vollständige browserseitige Sitzungsprüfung bleiben weitere Aufgaben.
+- **Code-Commit:** `eb2a33d4fa5b27e9fd522e5208a194fa92df82ba`.
+- **Grenzen:** Kein authentifizierter Browser-E2E-Test; Fokusverhalten muss im echten Browser überprüft werden. Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: kein unbestätigter Erfolg nach Kontextwechsel)
 
 - **Nachgewiesener Fehlerpfad:** `moveWishToList()` meldete nach dem INSERT-Versuch bei einem Kontextwechsel `Zielzuordnung gespeichert`, obwohl zu diesem Zeitpunkt noch keine erneute Zielabfrage stattgefunden hatte. Bei parallelen Änderungen konnte die Aussage falsch sein.
