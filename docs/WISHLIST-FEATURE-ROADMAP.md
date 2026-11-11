@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Wunsch-Speichern: Folgeaktionen bei Kontowechsel)
+
+- **Nachgewiesener Fehler:** Beim Bearbeiten und Anlegen eines Wunsches erfolgte nach bestätigter Datenbankänderung `await refreshFeed(); await dashboard.refresh();` ohne Kontoprüfung dazwischen. Ein Kontowechsel während der Feed-Aktualisierung konnte so noch eine alte Listenaktualisierung starten und anschließend eine irreführende Fehlermeldung `Sitzung hat sich geändert` auslösen, obwohl die Datenbankänderung bereits abgeschlossen war.
+- **Korrektur:** Beide Speicherpfade prüfen nach `refreshFeed()` und nach `dashboard.refresh()` erneut die ursprüngliche Konto-ID. Bei Kontowechsel werden alte Folgeaktionen und Rückmeldungen ohne irreführende Fehlermeldung beendet. Code: `32595a531b4fd228c17c92ed95c3cf44ca21c24c`.
+- **Grenzen:** Bereits bestätigte Datenbankänderungen bleiben bestehen; nicht alle Zwischenphasen und parallel laufenden Operationen sind damit abgedeckt. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Wunschlöschung bei Kontowechsel)
 
 - **Nachgewiesene irreführende Fehlermeldung:** Die asynchrone Wunschlöschung warf nach erfolgreichem Datenbank-Delete bei einem zwischenzeitlichen Kontowechsel `Sitzung hat sich geändert`. Dadurch konnte eine bereits abgeschlossene Löschung fälschlich als fehlgeschlagen erscheinen.
