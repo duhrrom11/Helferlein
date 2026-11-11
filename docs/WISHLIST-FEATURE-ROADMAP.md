@@ -1,3 +1,11 @@
+## Vollständig verifizierte isolierte CI – 11.11.2026
+
+- **GitHub Actions:** https://github.com/duhrrom11/Helferlein/actions/runs/43029666999 (Run #3, `workflow_dispatch`, `main`, Commit `60ac20b4a5abddd6ea751d4f5cdcb22d451fab0e`, `completed/success`).
+- **Job:** `regression` (Job-ID `130553189397`) `completed/success`; vollständiges Original-Job-Log abgerufen und ausgewertet. Checkout, Node-Setup, Syntaxprüfungen der drei Module und Node-Testlauf erfolgreich.
+- **TAP-Protokoll:** **11 Tests bestanden, 0 fehlgeschlagen, 0 übersprungen**; 7 isolierte Move-Regressionstests und 4 statische Dashboard-Integrationstests; Testdauer 59,86 ms.
+- **Grenzen:** Dashboard-Integration statisch per Quelltext-Assertions geprüft, kein Browser-End-to-End-Test; keine Supabase-Schreiboperationen oder Testdaten. Im Log lediglich `punycode`-Deprecation und Node-20-Abkündigungswarnung für Actions v4, kein Testfehler.
+- **Produktionsentscheidung:** Aktueller geprüfter Code befindet sich bereits auf `main`; kein offener PR-Merge oder nachgewiesener Fehler, daher kein zusätzlicher Merge oder Codefix. Keine notwendige Supabase-Datenänderung. Ein separates Deployment wird nicht ohne identifizierten Release-Bedarf oder überprüften Zielzustand ausgelöst; GitHub zeigt bereits einen erfolgreichen `release-smoke`-Lauf für den geprüften Commit, dieser ersetzt keine Bestätigung der Live-Funktionalität.
+
 ## Verifizierter GitHub-Actions-Lauf – 11.11.2026
 
 - **Run:** https://github.com/duhrrom11/Helferlein/actions/runs/43028222115 (Run #1, Ereignis `push`, Branch `main`, Commit `e9c6abcfa0245025004dde211c379ea96fbc19e7`). GitHub API: `status=completed`, `conclusion=success`.
