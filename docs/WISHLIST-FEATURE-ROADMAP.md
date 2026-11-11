@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: Ziel nach Ursprungslöschung erneut bestätigen)
+
+- **Nachgewiesener Fehlerpfad:** `moveWishToList()` bestätigte die Zielzuordnung nur vor dem DELETE der Ursprungszuordnung. Eine parallele Ziel-Löschung zwischen Bestätigung und DELETE konnte eine irreführende Erfolgsmeldung auslösen.
+- **Korrektur:** Nach erfolgreichem Ursprungs-DELETE wird die Zielzuordnung erneut gelesen. Bei fehlender Zielzeile oder Lesefehler erfolgt ein Reload und eine Warnung über den nicht eindeutig bestätigten Zuordnungsstand; regulärer Erfolg setzt bestätigtes Ziel und gültigen Kontext voraus. Warnungen nach Reload sind an dessen `loadGeneration` gebunden. Code: `effce51c4bcb185d738fcbb8bf8db1c496c5d393`.
+- **Grenzen:** Auch diese Leseprüfung ist nicht atomar; nach dem Read sind weitere parallele Änderungen möglich. Bereits gestartete Schreiboperationen können nach Kontowechseln abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: Ziel nach Ursprungslöschung erneut bestätigen)
 
 - **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` prüfte die Zielzuordnung nur vor dem DELETE der Ursprungszuordnung. Ein anderer Tab konnte das Ziel zwischen dieser Prüfung und dem erfolgreichen DELETE entfernen, während die Aktion dennoch `moved++` ausführte und Erfolg meldete.
