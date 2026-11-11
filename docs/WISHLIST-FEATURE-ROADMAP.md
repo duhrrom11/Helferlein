@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (unterbrochene Sammelverschiebung: Zuordnungsstand korrekt beschreiben)
+
+- **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` erhöht `partial` sowohl nach Kontextverlust direkt nach der Zielzuordnung als auch nach einer bereits gestarteten Ursprungslöschung. Die Ergebniszusammenfassung bezeichnete alle Fälle als `möglicherweise in beiden Listen`, obwohl nach erfolgreicher Ursprungslöschung gerade keine Doppelzuordnung vorliegen muss.
+- **Korrektur:** Die Zusammenfassung meldet jetzt `Zuordnungsstände nach Unterbrechung unklar – bitte beide Listen prüfen` statt einen bestimmten möglichen Endzustand hervorzuheben. Code: `1e970be74acabc486d29d0c6310f0eb36a801e4a`.
+- **Grenzen:** Nur Korrektur der UI-Aussage; keine automatische Wiederherstellung oder atomare Verschiebung. Bereits gestartete Schreiboperationen können nach Kontowechseln abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Einzelverschiebung: überholte Rückmeldungen nach Reload)
 
 - **Nachgewiesener Fehlerpfad:** `moveWishToList()` zeigte nach `await load({afterBulk:true})` Erfolg bzw. Fehler allein aufgrund von Benutzerkonto und ausgewählter Liste an. Ein paralleler neuer Dashboard-Reload konnte dieselben Werte beibehalten, wodurch die ältere Verschiebung eine überholte Rückmeldung in den neueren UI-Zustand schrieb.
