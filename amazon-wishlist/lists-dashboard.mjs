@@ -352,7 +352,7 @@ actions.append(button('Duplizieren',async()=>{
    const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;
    try{await refresh}catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration)msg('Wunsch verschoben, aber Listen konnten nicht neu geladen werden: '+(e.message||'Ladefehler')+'. Bitte aktualisieren.');return}
    if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&refreshGeneration===loadGeneration&&membershipReady)msg('Wunsch nach „'+target.title+'“ verschoben. Die Ausgangsliste bleibt geöffnet.')
-  }catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId)msg('Verschieben fehlgeschlagen: '+(e.message||'Unbekannter Fehler'))}
+  }catch(e){if(current())msg('Verschieben fehlgeschlagen oder Zuordnungsstand unklar: '+(e.message||'Unbekannter Fehler')+'. Bitte beide Listen prüfen.')}
   finally{activeWishMutations.delete(uid+':'+wishId);if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId&&membershipReady&&!bulkBusy){const restoreFocus=hadFocus&&(!document.activeElement||document.activeElement===document.body);if(control.isConnected)control.disabled=false;renderWishCards();if(restoreFocus){const card=[...$('listWishCards').children].find(el=>el.dataset.wishId===String(wishId));const destination=card?.querySelector('.wish-move-actions select');(destination||$('listWishSearch')).focus({preventScroll:true})}}}
  }
  let compactWishView=false;
