@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listenlöschung: erfolgreichen Delete trotz zwischenzeitlichem Refresh abschließen)
+
+- **Nachgewiesener Race-Condition-Pfad:** Der Lösch-Handler verwarf nach erfolgreichem `wishlist_lists.delete()` den abschließenden Dashboard-Refresh, sobald `loadGeneration` zwischenzeitlich geändert wurde. Dadurch konnte die gelöschte Liste in der lokalen Ansicht verbleiben.
+- **Korrektur:** Nach erfolgreichem Delete wird der Abschluss nur noch bei Kontowechsel bzw. abweichendem geladenen Konto unterdrückt. Eine geänderte Ladegeneration allein verhindert die Aktualisierung nicht mehr.
+- **Prüfgrenzen:** Statische Quellcodeprüfung ohne authentifizierten Browser-E2E-Test. Duplizierung, Archivierung und lokale Speicherfehler sind nicht abschließend geprüft.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listenbearbeitung: erfolgreichen Save trotz Refresh abschließen)
 
 - **Nachgewiesener Race-Condition-Pfad:** Der `editListForm`-Handler verwarf nach einem erfolgreichen `wishlist_lists.update(...)` den Abschluss, wenn sich `loadGeneration` während des Schreibauftrags geändert hatte. Dadurch konnte die Liste bereits gespeichert sein, während die Bearbeitungsansicht offen blieb und keine abschließende Aktualisierung erfolgte.
