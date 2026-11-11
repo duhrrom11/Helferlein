@@ -90,3 +90,20 @@ export function membershipForSelectedList({membershipReady,membershipByList,list
  if(!membershipReady||!listId)return new Set();
  return new Set(membershipByList.get(listId)||[]);
 }
+
+/** Status is provisional when a post-write refresh cannot confirm membership. */
+export function bulkMoveRefreshStatus(summary,{refreshSucceeded,currentContext}={}) {
+ if(!currentContext)return null;
+ return refreshSucceeded?summary:'Sammelverschiebung beendet, aber der aktuelle Zuordnungsstand konnte nicht geladen werden. Vorläufiges Ergebnis: '+summary;
+}
+
+/** Distinguish errors before any write from uncertain outcomes after a write starts. */
+export function moveFailureState({writeStarted=false,contextValid=true}={}) {
+ return {uncertain:!!writeStarted,refreshRequired:!!writeStarted&&!!contextValid,mayPublish:!!contextValid};
+}
+
+/** Uncertain is an overlapping subset, not an extra number of processed wishes. */
+export function bulkMoveCounts({total,moved,failed,uncertain,stopped=false}) {
+ if(![total,moved,failed,uncertain].every(n=>Number.isSafeInteger(n)&&n>=0)||moved+failed>total||uncertain>total)throw new RangeError('Invalid bulk move counters');
+ return {total,moved,failed,uncertain,unfinished:stopped?total-moved-failed:0,overlapPossible:uncertain>0};
+}
