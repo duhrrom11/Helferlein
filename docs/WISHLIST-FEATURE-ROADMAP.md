@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (erneute GitHub-Actions-Prüfung)
+
+- Workflow `.github/workflows/wishlist-regression.yml` auf `main` erneut per GitHub-Connector abgerufen: Node.js 22, Syntaxprüfung, sieben isolierte Regressionstests und vier statische Dashboard-Integrationstests sind konfiguriert; `workflow_dispatch` vorhanden, `contents: read`, keine Supabase-Secrets oder Deployment-Schritte.
+- Für Commit `b76d2c5eceeb142dade979845571f8b2ac7bac29` meldeten die verfügbaren GitHub-Connector-Abfragen `workflow_runs: []` und `statuses: []`. Die Workflow-Lauf-Abfrage ist auf PR-getriggerte Läufe begrenzt; Push-/manuelle Läufe und tatsächliche Job-Logs konnten nicht verifiziert werden.
+- GitHub-Actions-Webansicht war über den verfügbaren Webzugriff nicht abrufbar; ein Tool zum manuellen `workflow_dispatch` steht nicht zur Verfügung. Manuelle Auslösung über GitHub-Oberfläche empfohlen: Actions → Wishlist isolated regression → Run workflow → main.
+- **Freigabeschranke:** Bis ein konkreter erfolgreicher CI-Job mit Logs bestätigt ist, kein Merge, Deployment oder Eingriff in Supabase-Produktivdaten. Keine nachgewiesenen neuen Fehler, daher keine spekulative Codekorrektur.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Produktionsfreigabe, CI-Verifikation blockiert)
 
 - **Freigabe des Auftraggebers:** Notwendige Produktivänderungen, Merge und Deployment grundsätzlich erlaubt; nur bei konkret begründetem Bedarf und nach Prüfung.
