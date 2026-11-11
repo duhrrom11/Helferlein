@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (historische Sammelaktions-Ergebnisse klar kennzeichnen)
+
+- **Nachgewiesene Irreführungsgefahr:** Im Sammelaktions-Verlauf standen `erfolgreich` und `offen` ohne zeitliche Einordnung. Nach parallelen Zuordnungsänderungen in anderen Tabs konnten historische Zähler als aktueller Mitgliedschaftsstatus missverstanden werden.
+- **Korrektur:** Verlaufseinträge kennzeichnen Erfolgszahlen ausdrücklich als damalige Ergebnisse, nennen unbearbeitete Aktionen `nicht bearbeitet` und ergänzen den Hinweis `kein aktueller Listenstatus`. Code: `18ebc2ddca9984b8de0ac7352dcfa9c3e747e3e7`.
+- **Grenzen:** Diese Änderung ist eine Klarstellung der Anzeige, keine technische Synchronisierung zwischen Tabs. Historische Zähler werden nicht rückwirkend aus der Datenbank neu berechnet. Bereits laufende Schreiboperationen bei Kontowechseln und nichtatomare Verschiebungen bleiben offene Risiken. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (veraltete Sammelaktionsmeldungen nach Reload)
 
 - **Nachgewiesener UI-Fehler:** `invalidateMembershipState()` verwarf beim Dashboard-Reload die aktive Sammelauswahl und Ergebnisübersicht, setzte aber `bulkStatus`, `bulkProgressText`, `bulkProgressDetails` und den Fortschrittsbalken nicht zurück. Dadurch konnten Statusinformationen einer alten Sammelaktion auf dem neu geladenen Dashboard verbleiben.
