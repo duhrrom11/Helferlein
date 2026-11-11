@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sammelzuordnungen bei Parallelaktionen)
+
+- **Nachgewiesener Konfliktpfad:** Die Sammelaktion wertete jeden INSERT-Fehler als gescheiterte Zuordnung. Bei parallelen Tabs kann die Zuordnung bereits existieren und ein Unique-Konflikt (`23505`) auftreten, obwohl der gewünschte Mitgliedschaftszustand vorhanden ist.
+- **Korrektur:** Beim Hinzufügen behandelt die Sammelaktion `23505` als bereits vorhandene Zuordnung. Vor jeder einzelnen Schreiboperation prüft sie erneut Konto, geladenen Besitzer, Dashboard-Generation und Sammelaktionskennung. Andere Datenbankfehler bleiben sichtbar. Code: `6f94ece81d996c97f97a938e01550d2e116ace17`.
+- **Grenzen:** Eine bereits gestartete Schreiboperation kann nicht rückwirkend gestoppt werden. Die Behandlung von `23505` setzt voraus, dass der Unique-Konflikt die erwartete Mitgliedschaft betrifft; die konkrete Constraint wurde nicht an der Produktivdatenbank geprüft. Weitere konkurrierende Listenbearbeitungen und atomare Wunsch-Verschiebungen bleiben offen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (doppelte Listenzuordnung und Kontowechsel während Insert)
 
 - **Nachgewiesene Fehlerpfade:** `assignWish` prüfte den aktiven Benutzer nur vor dem asynchronen INSERT und behandelte auch einen Unique-Konflikt für eine bereits bestehende Zuordnung als Fehler. Nach einem Kontowechsel während des INSERT fehlte die erneute Sitzungsprüfung.
