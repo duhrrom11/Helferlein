@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (offene Wunsch-Editoren nach Feed-Reload)
+
+- **Nachgewiesener Stale-Editor-Pfad:** Die Feed-Generation wurde bisher nur beim Öffnen aus einer Wunschkarte geprüft. Ein bereits geöffneter Editor konnte nach einem späteren Feed-Reload weiter speichern, ohne den veralteten UI-Stand zu erkennen.
+- **Korrektur:** Der Editor speichert die Feed-Generation beim Öffnen. Vor dem Update eines bestehenden Wunsches wird sie mit `feedRevision` verglichen; bei Abweichung wird die Speicherung abgebrochen und zum erneuten Öffnen aus dem aktuellen Feed aufgefordert. Der Editor-Reset verwirft die gespeicherte Generation. Code: `bb841d6edec2488b860753fbcabe6f9b31a16a65`.
+- **Grenzen:** Auch harmlose Feed-Reloads invalidieren den Editor (bewusst konservativ). Bereits laufende Schreiboperationen sind dadurch nicht rückwirkend abbrechbar. Wunsch-Verschiebungen bleiben ohne serverseitige Transaktion nicht atomar. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (veraltete Feed-Karten vor Editoröffnung abweisen)
 
 - **Nachgewiesener Stale-UI-Pfad:** Die Bearbeiten-Aktion einer gerenderten Wunschkarte übernahm Daten aus dem ursprünglichen Feed-Resultat, ohne vor dem Öffnen die aktuelle Feed-Generation oder das aktive Konto erneut zu prüfen. Während eines Feed-Reloads bzw. Kontowechsels konnte die alte Karte noch angeklickt werden.
