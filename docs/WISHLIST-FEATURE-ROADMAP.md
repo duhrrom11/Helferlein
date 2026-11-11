@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listenbearbeitung: erfolgreichen Save trotz Refresh abschließen)
+
+- **Nachgewiesener Race-Condition-Pfad:** Der `editListForm`-Handler verwarf nach einem erfolgreichen `wishlist_lists.update(...)` den Abschluss, wenn sich `loadGeneration` während des Schreibauftrags geändert hatte. Dadurch konnte die Liste bereits gespeichert sein, während die Bearbeitungsansicht offen blieb und keine abschließende Aktualisierung erfolgte.
+- **Korrektur:** Nach erfolgreichem Update wird nun geprüft, ob das ursprüngliche Konto noch geladen ist und dieselbe Listen-ID im Bearbeitungsformular steht. Ein zwischenzeitlicher Refresh allein verhindert den Abschluss nicht mehr; anschließend wird die Liste wie bisher neu geladen.
+- **Grenzen:** Statische Codeprüfung ohne authentifizierten Browser-E2E-Test; keine serverseitige Idempotenzgarantie. Weitere parallele Aktionen und lokale Speicherfehler sind nicht abschließend geprüft.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listen-Neuanlage: erfolgreiche Inserts trotz zwischenzeitlichem Refresh abschließen)
 
 - **Nachgewiesener Duplikat-Risikopfad:** Nach erfolgreichem `wishlist_lists.insert(payload)` brach der Erstellen-Handler bei jeder Änderung von `loadGeneration` ab. Eine zwischenzeitliche Dashboard-Aktualisierung konnte daher dazu führen, dass die Liste bereits in der Datenbank existierte, der unveränderte Formularinhalt aber stehen blieb und eine erneute Anlage möglich war.
