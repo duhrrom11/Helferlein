@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (überholte Authentifizierungsereignisse)
+
+- **Nachgewiesene Race Condition:** Der `onAuthStateChange`-Handler rief verzögert `auth()` und anschließend `refreshFeed()` auf. Bei rasch aufeinanderfolgenden Authentifizierungsereignissen konnten ältere Handler trotz neuerer Ereignisse die Feed-Aktualisierung starten oder verspätete Fehlermeldungen ausgeben.
+- **Korrektur:** `authEventGeneration` kennzeichnet den jüngsten Ereignis-Handler. Vor dem asynchronen Aufruf und nach `auth()` werden überholte Handler verworfen; Fehlermeldungen werden nur für den jüngsten Handler angezeigt. Code: `4d0aca79e1320dfa42cd10451940f5c557f1c31e`.
+- **Grenzen:** Bereits laufende Feed- und Datenbankabfragen werden hierdurch nicht aktiv abgebrochen; ihre eigenen Generation- und Konto-Prüfungen bleiben entscheidend. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Wunschdetaildialog bei Neuladen und Kontowechsel)
 
 - **Nachgewiesener veralteter UI-Zustand:** Der Wunschdetaildialog blieb beim Start eines neuen Dashboard-Ladevorgangs geöffnet, obwohl die bisherige Wunsch- und Zuordnungsansicht invalidiert wurde. Die Kategorie-Konflikt-Baseline und Wunschdetail-ID konnten dabei veraltet bleiben.
