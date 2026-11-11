@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Dashboard-Vorschau und sichere Fokusrückgabe)
+
+- **Dashboard-Vorschau:** In `gift-start.mjs` schaltete `saveLayoutChange` im `finally`-Block sämtliche Layoutbuttons frei, also auch `homeConfirmPreview` und `homePreviewUndo`, obwohl `endPreview` die Vorschau bereits beenden konnte. Diese beiden Aktionen bleiben nun deaktiviert, solange `previewSnapshot` nicht existiert. Bereits vorhandene Vorschaufunktionen und Speicherabfragen bleiben unverändert.
+- **Listen-Editor:** `finishListEditing` stellte den Fokus nach Speichern/Abbrechen auf das ursprünglich aktive Element zurück, sobald dieses noch mit dem DOM verbunden war und keinen `[hidden]`-Vorfahren besaß. Mit einer zusätzlichen Prüfung über `getClientRects()` und `:disabled` werden auch per CSS ausgeblendete oder inzwischen deaktivierte Auslöser erkannt. In diesen Fällen dient `listsContent` als barrierefrei fokussierbarer Rücksprungpunkt.
+- **Prüfung:** `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach den GitHub-Commits erneut geladen. Beide JavaScript-Module sowie zehn Inline-Skripte syntaktisch ohne Fehler geprüft; keine doppelten statischen HTML-IDs. Ein angemeldeter Browser-End-to-End-Test bleibt ausstehend.
+- **Produktionsschutz:** Ausschließlich clientseitige Button-Zustände und Fokusführung geändert. Keine Supabase-Connectoraufrufe, Migrationen, produktiven Schreibvorgänge oder Testdaten.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sichere Listenbearbeitung und Dashboard-Formularfokus)
 
 - **Listen-Editor:** Beim Speichern in `lists-dashboard.mjs` blieb der Button „Abbrechen“ aktiv, obwohl `listMutationBusy` gesetzt war und eine asynchrone Speicherung lief. Jetzt werden beide Formularaktionen während dieses Vorgangs gesperrt, ein formularnaher Live-Status meldet „Änderungen werden gespeichert …“, und beide Aktionen werden im `finally` wieder freigegeben. Der Abbruch-Handler ignoriert Klicks während der laufenden Listenänderung. Die bisherigen Datenbankoperationen bleiben unverändert.
