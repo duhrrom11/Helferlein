@@ -1,3 +1,21 @@
+## Feature-Paket 1 – 11.11.2026 (Geräteübergreifende Wunsch-Zusatzdaten: Bestandsaufnahme und sichere Vorbereitung)
+
+**Bestandsaufnahme:** Produktbild-URL, Wunschpreis, Menge und Status werden in `amazon-wishlist/app.mjs` unter `localStorage['helferlein-wish-extras:'+userId]` je Wunsch-ID gespeichert. `wishlist_wishes` besitzt laut lesender produktiver Supabase-Schemaabfrage derzeit `id,user_id,product_id,priority,note,created_at,visibility`, jedoch keine Spalten für diese vier Zusatzfelder. Das vorhandene Datenmodell hat RLS aktiviert. Ein lokaler Browserwert ist nicht automatisch öffentlich oder geräteübergreifend.
+
+**Sicher implementiert:** Neues reines Modul `amazon-wishlist/wish-extras-sync.mjs` mit `normalizeWishExtras` und `planWishExtrasImport`; dazu isolierte Node-Tests in `wish-extras-sync.test.mjs`. Der Importplan nimmt nur explizit als eigene bestätigte Wunsch-IDs übergebene Einträge auf, verwirft ungültige Werte und meldet bestehende Remote-Einträge als Konflikt, ohne sie zu überschreiben. Noch keine Anbindung an Live-Daten und keine automatischen Schreibvorgänge.
+
+**Konkreter rückwärtskompatibler Implementierungsplan:**
+1. Produktive Datenbank vor Änderungen erneut lesen: Tabellen-/Policy-/Grant-/Indexzustand, aktuelle Anzahl und Form bestehender Wünsche nur aggregiert prüfen; RLS-Eigentümerregeln und private/öffentliche Sichtbarkeit ausdrücklich erhalten.
+2. Additive, nullable Zusatzfelder vorzugsweise **auf `wishlist_wishes`** für `image_url`, `target_price`, `quantity`, `wish_status` vorsehen; Wertebereich, HTTPS-Bild-URL, `numeric`-Preis und Status-Check als Datenbank-Constraints. Keine Backfill-Updates vorhandener Wünsche und keine Änderung von Defaults der bisherigen Spalten. Alternativ eigene owner-only Tabelle erwägen, falls Zusatzfelder nicht öffentlich sichtbar werden sollen.
+3. Vor Schemafreigabe **Datenschutzentscheidung:** Welche Zusatzdaten dürfen bei öffentlichen Wünschen sichtbar werden? Eine direkte Spaltenerweiterung von `wishlist_wishes` kann über bestehende SELECT-Policies unbeabsichtigt Bild-/Preis-/Statusdaten öffentlich machen. Daher vor produktiver Migration sichere Zugriffstrennung prüfen und entscheiden; insbesondere private Metadaten nicht versehentlich über `select('*')` offenlegen.
+4. Frontend zunächst Cloud-Lesezugriff mit expliziter Spaltenauswahl, Eigentümerprüfung und lokalem Fallback ergänzen. Cloud-Schreibzugriff nur bei explizitem Speichern eines eigenen Wunsches und nach erfolgreicher Datenbankantwort aktivieren; bei Fehler lokale Werte unverändert erhalten.
+5. Bestehende lokale Daten **nicht automatisch hochladen**. Stattdessen eine überprüfbare Importvorschau je angemeldetem Nutzer mit Anzahl gültiger/ungültiger Einträge und Konflikten anbieten; nur nach ausdrücklicher Nutzerbestätigung importieren. Remote-Daten gewinnen bei Konflikten, bis der Nutzer anders entscheidet.
+6. Isolierte Unit- und UI-Tests ohne produktive Datensätze; anschließend lesende Produktionsprüfung, CI und Deployment. Keine Testkonten oder Testdaten.
+
+**Status:** Vorbereitungsmodul und Tests im GitHub-Repository; **Cloud-Speicherung noch nicht implementiert**. In dieser Runde keine Supabase-Schemaänderung, keine Migration, keine bestehenden Nutzerinhalte geändert.
+
+---
+
 ## Roadmap-Fortschritt – 11.11.2026 (Parallele Abrufe und Statusrücksetzung)
 
 - **Asynchroner Schutz:** `load()` erhöht `loadGeneration`; Ergebnisse der Basisabfrage, zusätzlichen Seiten und Listenzuordnungen werden mit `currentDashboardLoad` und der aktuellen Benutzer-ID abgeglichen. `showItems()` erhöht `itemsGeneration`, prüft den aktiven Listenbezug und rendert synchron aus dem bereits geladenen Zuordnungszustand. `openList()` verweigert Listenwechsel während Mutationen oder unvollständiger Zuordnungen.
