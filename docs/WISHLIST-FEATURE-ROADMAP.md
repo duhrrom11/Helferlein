@@ -1,3 +1,13 @@
+## Roadmap-Fortschritt – 11.11.2026 (Parallele Abrufe und Statusrücksetzung)
+
+- **Asynchroner Schutz:** `load()` erhöht `loadGeneration`; Ergebnisse der Basisabfrage, zusätzlichen Seiten und Listenzuordnungen werden mit `currentDashboardLoad` und der aktuellen Benutzer-ID abgeglichen. `showItems()` erhöht `itemsGeneration`, prüft den aktiven Listenbezug und rendert synchron aus dem bereits geladenen Zuordnungszustand. `openList()` verweigert Listenwechsel während Mutationen oder unvollständiger Zuordnungen.
+- **Nachgewiesener Statusfehler:** Im Zweig ohne aktive Liste kehrte `showItems()` zurück, ohne eine ältere Lade-/Fehlermeldung zu bereinigen. Nach erfolgreichem Laden mit `membershipReady=true` konnte so ein veralteter Status verbleiben.
+- **Fix:** Im Zweig ohne aktive Liste wird `setItemsFeedback('ready','')` nur bei erfolgreich geladenen Zuordnungen ausgeführt. Ein echter Fehler bei `membershipReady=false` bleibt sichtbar. Commit `bc2538787017acf9fa87b4417572130fc575c2d0`.
+- **Vorheriger Stand:** GitHub Pages und Release-Smoke-Checks für `a31ce0d` waren erfolgreich, Live-HTTP-Check ebenfalls. Deployment und Regressionstests des neuen Fixes separat prüfen.
+- **Grenzen:** Statische Codeprüfung, kein authentifizierter Browser-Test mit absichtlich verzögerten Antworten. Keine Supabase-Änderungen, keine Testdaten.
+
+---
+
 ## Roadmap-Fortschritt – 11.11.2026 (Asynchrone Ladezustände)
 
 - **Workflowkontrolle:** GitHub Pages und Release-Smoke-Checks für Commit `2007734c` erfolgreich; Live-HTTP-Check war zum Zeitpunkt der ersten Abfrage noch in Bearbeitung.
