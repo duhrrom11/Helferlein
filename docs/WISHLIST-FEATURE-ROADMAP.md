@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Wunschdetaildialog bei Neuladen und Kontowechsel)
+
+- **Nachgewiesener veralteter UI-Zustand:** Der Wunschdetaildialog blieb beim Start eines neuen Dashboard-Ladevorgangs geöffnet, obwohl die bisherige Wunsch- und Zuordnungsansicht invalidiert wurde. Die Kategorie-Konflikt-Baseline und Wunschdetail-ID konnten dabei veraltet bleiben.
+- **Korrektur:** `load()` schließt vor der asynchronen Datenabfrage einen offenen Wunschdetaildialog und löscht `detailWishId` sowie `detailCategoryBaseline`. `reset()` bereinigt dieselben Zustände bei der Rücksetzung der Listenverwaltung. Code: `bc9543f6b2570013c14707f176bbc20578873e19`.
+- **Grenzen:** Bereits laufende asynchrone Änderungen und sämtliche Authentifizierungsereignisse sind damit nicht vollständig geprüft; weitere statische und Browser-E2E-Prüfung erforderlich. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Konflikterkennung bei Kategorien in mehreren Tabs)
 
 - **Nachgewiesener Konflikt:** Ein geöffneter Wunschdetaildialog konnte eine im anderen Browser-Tab zwischenzeitlich geänderte Kategorie durch Speichern einer veralteten Auswahl überschreiben.
