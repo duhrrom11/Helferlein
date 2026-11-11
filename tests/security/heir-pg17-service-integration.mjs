@@ -68,11 +68,11 @@ async function main() {
     // Owner-only list: accepted invitation visible without revealing token or hash.
     const ownerList = await service.listInvitations('Bearer trusted-owner-token', { vaultId: VAULT });
     assert.equal(ownerList.ok, true, 'verified owner can inspect invitation metadata');
-    assert.equal(ownerList.invitations.length, 1);
-    assert.equal(ownerList.invitations[0].status, 'accepted');
-    assert.equal(ownerList.invitations[0].intendedUserId, OTHER);
-    assert.equal(typeof ownerList.invitations[0].invitationId, 'string');
-    assert.match(ownerList.invitations[0].expiresAt, /^\\d{4}-\\d\\d-/);
+    const ownInvitation = ownerList.invitations.find(item => item.invitationId === id);
+    assert.ok(ownInvitation, 'new invitation must be visible among other isolated fixtures');
+    assert.equal(ownInvitation.status, 'accepted');
+    assert.equal(ownInvitation.intendedUserId, OTHER);
+    assert.ok(Number.isFinite(Date.parse(ownInvitation.expiresAt)));
     assert.equal(JSON.stringify(ownerList).includes(created.token), false);
     assert.equal(JSON.stringify(ownerList).includes('token_hash'), false);
     assert.equal((await service.listInvitations('Bearer trusted-other-token',{vaultId:VAULT})).ok,false);
@@ -101,7 +101,7 @@ async function main() {
     assert.ok(rev.rows[0].revoked_at);
     const revokedList = await service.listInvitations('Bearer trusted-owner-token',{vaultId:VAULT});
     assert.equal(revokedList.ok,true);
-    assert.equal(revokedList.invitations[0].status,'revoked');
+    assert.equal(revokedList.invitations.find(item => item.invitationId === id)?.status,'revoked');
     const afterRevoke=await pool.query('SELECT revoked_at FROM heir_private.heir_envelopes WHERE owner_user_id=$1 AND heir_user_id=$2',[OWNER,OTHER]);
     assert.ok(afterRevoke.rows[0].revoked_at);
     assert.equal((await service.putEnvelope('Bearer trusted-owner-token',envelope)).ok,false);
