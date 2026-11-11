@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listen-Neuanlage: erfolgreiche Inserts trotz zwischenzeitlichem Refresh abschließen)
+
+- **Nachgewiesener Duplikat-Risikopfad:** Nach erfolgreichem `wishlist_lists.insert(payload)` brach der Erstellen-Handler bei jeder Änderung von `loadGeneration` ab. Eine zwischenzeitliche Dashboard-Aktualisierung konnte daher dazu führen, dass die Liste bereits in der Datenbank existierte, der unveränderte Formularinhalt aber stehen blieb und eine erneute Anlage möglich war.
+- **Korrektur:** Nach erfolgreichem Insert wird der Abschluss nicht mehr allein wegen einer neuen Ladegeneration verworfen. Stattdessen wird geprüft, ob das ursprüngliche Konto noch aktiv und im Dashboard geladen ist. Dann werden unveränderte Eingaben geleert und die Listen aktualisiert. Ein Kontowechsel verhindert weiterhin Änderungen an fremdem UI-Zustand.
+- **Grenzen:** Keine serverseitige Idempotenzgarantie für unabhängige oder geräteübergreifende Anlageversuche. Statische Codeprüfung ohne authentifizierten Browser-E2E-Test; keine Supabase-Schreibprobe.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listen-Neuanlage: Fokus nach asynchronem Speichern)
 
 - **Nachgewiesener Fokuspfad:** Der `createList`-Handler deaktivierte beim Start des Datenbank-Schreibauftrags die fokussierte Erstellen-Schaltfläche und aktivierte sie im `finally` wieder, ohne den Tastaturfokus zurückzuführen.
