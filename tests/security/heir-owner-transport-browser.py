@@ -81,7 +81,8 @@ def main():
                     assert len(calls)==1, 'no revoke before positive confirmation'
                     page.evaluate('window.ownerConfirm=true')
                     button.click()
-                    page.get_by_text('Widerrufen',exact=True).wait_for()
+                    page.locator('#host tbody td').get_by_text('Widerrufen',exact=True).wait_for()
+                    page.wait_for_function('() => window.ownerCalls >= 3')
                     assert len(calls)==3, calls
                     assert all(x['authorization']=='Bearer isolated_browser_token' for x in calls)
                     assert all(x['method']=='POST' and x['url'].startswith(origin+'/') for x in calls)
