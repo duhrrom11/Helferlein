@@ -18,7 +18,7 @@ def main():
             try:
                 page=browser.new_page(service_workers='block')
                 page.route('**/*',lambda route:route.continue_() if route.request.url.startswith(origin+'/') else route.abort())
-                page.add_init_script("""() => {
+                page.add_init_script("""(() => {
                   window.alert=()=>{};
                   window.__loginCalls=0;
                   window.firebase={apps:[{}],firestore:()=>({})};
@@ -28,7 +28,7 @@ def main():
                     async signOut(){return {error:null};},
                     async getUser(){return {data:{user:null},error:null};}
                   }})};
-                }""")
+                })()""")
                 page.goto(origin+'/tools/digitaler-nachlass/index.html',wait_until='domcontentloaded',timeout=20000)
                 assert page.locator('script:not([src])').count()==0
                 assert page.locator('[onclick],[onchange],[onsubmit],[onload]').count()==0
