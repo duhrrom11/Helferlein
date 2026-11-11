@@ -26,3 +26,9 @@ test('import prevents overlapping submissions and changes during upload',()=>{
  assert.match(app,/wishExtrasImportBusy=true/);
  assert.match(app,/finally\{wishExtrasImportBusy=false/);
 });
+
+test('network exceptions surface in import feedback and stop the batch',()=>{
+ assert.match(app,/Importvorschau wegen Verbindungs- oder Lesefehler fehlgeschlagen/);
+ assert.match(app,/Import wegen Netzwerk- oder Speicherfehler gestoppt/);
+ assert.match(app,/let latestRaw;try\{latestRaw=localStorage\.getItem/);
+});
