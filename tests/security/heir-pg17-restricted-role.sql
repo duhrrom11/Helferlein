@@ -8,7 +8,16 @@ GRANT USAGE ON SCHEMA heir_private TO heir_ci_backend;
 GRANT USAGE ON SCHEMA auth TO heir_ci_backend;
 GRANT SELECT(id,user_id) ON auth.sessions TO heir_ci_backend;
 CREATE POLICY heir_ci_active_sessions ON auth.sessions FOR SELECT TO heir_ci_backend USING (true);
-GRANT SELECT,INSERT,UPDATE ON ALL TABLES IN SCHEMA heir_private TO heir_ci_backend;
+-- Explicit allowlist; future private tables do not silently inherit grants.
+GRANT SELECT,INSERT,UPDATE ON
+  heir_private.heir_invitations,
+  heir_private.heir_assignments,
+  heir_private.heir_public_keys,
+  heir_private.heir_envelopes,
+  heir_private.heir_key_proofs,
+  heir_private.heir_release_cases,
+  heir_private.heir_http_limits
+TO heir_ci_backend;
 GRANT SELECT(owner_user_id,vault_id) ON public.vault_cloud_snapshots TO heir_ci_backend;
 -- SELECT FOR UPDATE requires UPDATE privileges. Only a non-secret bookkeeping
 -- column may be updated; no encrypted_data or keys can be modified by this role.
