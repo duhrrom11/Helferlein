@@ -56,16 +56,30 @@ async function main() {
       assert.equal(invitations.rows[0].token_hash.length,32);
       assert.ok(!invitations.rows[0].token_hash.includes(created.token));
     } finally {client.release()}
-    // Non-existent/foreign owner cannot revoke. Real revocation updates current
-    // assignment and blocks subsequent envelope operations via the same DB.
+    // Prepare a synthetic, verified recipient key in the isolated database.
+    // Actual private-key proof and HPKE correctness are covered by separate tests.
+    const keyId='77777777-7777-4777-8777-777777777777';
+    await pool.query(`INSERT INTO heir_private.heir_public_keys
+       (key_id,heir_user_id,suite,public_key,fingerprint,verified_at)
+       VALUES ($1,$2,'HPKE-v1-X25519-HKDF-SHA256-AES-256-GCM',decode(repeat('c',64),'hex'),decode(repeat('f',64),'hex'),clock_timestamp())`,[keyId,OTHER]);
+    const envelope={vaultId:VAULT,heirUserId:OTHER,keyId,
+      publicKeyFingerprintHex:'f'.repeat(64),encapsulatedKeyHex:'a'.repeat(64),
+      wrappedDekHex:'b'.repeat(96),suite:'HPKE-v1-X25519-HKDF-SHA256-AES-256-GCM'};
+    assert.equal((await service.putEnvelope('Bearer trusted-owner-token',{...envelope,publicKeyFingerprintHex:'e'.repeat(64)})).ok,false);
+    assert.equal((await service.putEnvelope('Bearer trusted-owner-token',envelope)).ok,true,
+      'active and fingerprint-verified recipient receives encrypted envelope');
+    const beforeRevoke=await pool.query('SELECT revoked_at,octet_length(wrapped_dek) AS size FROM heir_private.heir_envelopes WHERE owner_user_id=$1 AND heir_user_id=$2',[OWNER,OTHER]);
+    assert.equal(beforeRevoke.rowCount,1);
+    assert.equal(beforeRevoke.rows[0].revoked_at,null);
+    assert.equal(beforeRevoke.rows[0].size,48);
+    // Foreign identity may not revoke; current owner atomically revokes assignment + envelope.
     assert.equal((await service.revokeInvitation('Bearer trusted-other-token',{vaultId:VAULT,invitationId:id})).ok,false);
     assert.equal((await service.revokeInvitation('Bearer trusted-owner-token',{vaultId:VAULT,invitationId:id})).ok,true);
     const rev=await pool.query('SELECT status,revoked_at FROM heir_private.heir_assignments WHERE owner_user_id=$1 AND heir_user_id=$2',[OWNER,OTHER]);
     assert.equal(rev.rows[0].status,'revoked');
     assert.ok(rev.rows[0].revoked_at);
-    const envelope={vaultId:VAULT,heirUserId:OTHER,keyId:'55555555-5555-4555-8555-555555555555',
-      publicKeyFingerprintHex:'f'.repeat(64),encapsulatedKeyHex:'a'.repeat(64),
-      wrappedDekHex:'b'.repeat(96),suite:'HPKE-v1-X25519-HKDF-SHA256-AES-256-GCM'};
+    const afterRevoke=await pool.query('SELECT revoked_at FROM heir_private.heir_envelopes WHERE owner_user_id=$1 AND heir_user_id=$2',[OWNER,OTHER]);
+    assert.ok(afterRevoke.rows[0].revoked_at);
     assert.equal((await service.putEnvelope('Bearer trusted-owner-token',envelope)).ok,false);
     // Restrictive role MUST NOT gain write access to existing owner's snapshots.
     await assert.rejects(pool.query('UPDATE public.vault_cloud_snapshots SET encrypted_data=$1 WHERE owner_user_id=$2',[{},OWNER]), /permission denied|row-level security/i);
@@ -73,7 +87,7 @@ async function main() {
     const count=await pool.query('SELECT count(*)::int AS n FROM heir_private.heir_assignments WHERE status=$1',['active']);
     assert.equal(count.rows[0].n,0);
     console.log(JSON.stringify({status:'passed',engine:'PostgreSQL 17',service:'real TypeScript SqlBackend',
-      actual_supabase_jwt:'not tested (auth.getUser test double)',checks:['restricted role','owner-only create','recipient-only single-use redeem','real transactional revoke','revoked envelope denied','snapshot ciphertext not writable']}));
+      actual_supabase_jwt:'not tested (auth.getUser test double)',checks:['restricted role','owner-only create','recipient-only single-use redeem','real transactional revoke','verified envelope stored','revoked envelope denied','snapshot ciphertext not writable']}));
   } finally {await pool.end();}
 }
 main().catch(err=>{console.error(JSON.stringify({status:'failed',reason:String(err)}));process.exitCode=1;});
