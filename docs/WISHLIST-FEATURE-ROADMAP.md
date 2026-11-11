@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Wunschlöschung bei Kontowechsel)
+
+- **Nachgewiesene irreführende Fehlermeldung:** Die asynchrone Wunschlöschung warf nach erfolgreichem Datenbank-Delete bei einem zwischenzeitlichen Kontowechsel `Sitzung hat sich geändert`. Dadurch konnte eine bereits abgeschlossene Löschung fälschlich als fehlgeschlagen erscheinen.
+- **Korrektur:** Nach bestätigtem Delete wird bei einem Kontowechsel die alte Routine ohne Fehlermeldung beendet. Nach `refreshFeed()` und nach `dashboard.refresh()` wird die Kontozugehörigkeit jeweils erneut geprüft; weitere alte Folgeaktionen und Erfolgsmeldungen entfallen bei Kontowechsel. Code: `1ba85a90a27cd703e543b1ba72f088d5f8df0141`.
+- **Grenzen:** Die bereits gestartete Datenbanklöschung wird nicht abgebrochen. Weitere asynchrone Mutationen und Feed-Races benötigen Prüfung. Statische Codeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (überholte Authentifizierungsereignisse)
 
 - **Nachgewiesene Race Condition:** Der `onAuthStateChange`-Handler rief verzögert `auth()` und anschließend `refreshFeed()` auf. Bei rasch aufeinanderfolgenden Authentifizierungsereignissen konnten ältere Handler trotz neuerer Ereignisse die Feed-Aktualisierung starten oder verspätete Fehlermeldungen ausgeben.
