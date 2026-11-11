@@ -302,6 +302,9 @@ actions.append(button('Duplizieren',async()=>{
      const {error,data:removed}=await db.from('wishlist_list_items').delete().eq('list_id',sourceId).eq('wish_id',wishId).eq('user_id',uid).select('wish_id');
      if(!current()){stopped=true;partial++;break}
      if(error||!removed?.length){partial++;failed++;if(current())msg('Ursprungszuordnung konnte nicht eindeutig entfernt werden. Bitte beide Listen prüfen.');continue}
+     const finalTarget=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
+     if(!current()){stopped=true;partial++;break}
+     if(finalTarget.error||!finalTarget.data?.length){partial++;failed++;if(current())msg('Ursprungszuordnung entfernt, aber Zielzuordnung konnte anschließend nicht bestätigt werden. Bitte beide Listen prüfen.');continue}
      moved++;bulkIds.delete(wishId);
     }catch(e){failed++;if(current())msg('Ein Wunsch konnte nicht verschoben werden: '+(e.message||'Unbekannter Fehler'))}
     finally{if(current())reportBulk(moved+failed,targets.length,moved,failed)}
