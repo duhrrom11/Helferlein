@@ -492,7 +492,7 @@ actions.append(button('Duplizieren',async()=>{
   const origin=listEditReturnFocus;
   listEditReturnFocus=null;
   const fallback=$('listsContent');
-  const destination=origin?.isConnected&&!origin.closest('[hidden]')?origin:fallback;
+  const destination=origin?.isConnected&&!origin.closest('[hidden]')&&origin.getClientRects().length&&!origin.matches(':disabled')?origin:fallback;
   if(destination===fallback)fallback.tabIndex=-1;
   destination.focus({preventScroll:true});
   destination.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'nearest'});
