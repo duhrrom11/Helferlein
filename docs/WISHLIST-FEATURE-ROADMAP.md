@@ -1,3 +1,12 @@
+## Entwicklungsfortschritt – 11.11.2026 (Fokus bei dynamischen Wunschkarten und Dashboard-Live-Rückmeldungen)
+
+- **Wunschkarten-Markierungen:** `setMarker` zeichnet die gesamte Kartenansicht nach einer Favoriten-/Später-Markierung neu. Dabei verschwand der bisher fokussierte Button aus dem DOM. Neue `data-wish-marker`-Kennungen und die `restoreWishCardControl`-Hilfe setzen den Fokus auf die entsprechende neu gezeichnete Schaltfläche zurück, sofern die Aktion aus der Kartenansicht erfolgte. Die Detailansicht wird nicht unbeabsichtigt überfokussiert.
+- **Mehrfachauswahl:** Wenn „Nur ausgewählte“ aktiv ist und ein Wunsch per Checkbox abgewählt wird, verschwindet seine Karte. Die Fokusführung landet nun bei einem passenden neuen Auswahlfeld oder beim Wunschfilter beziehungsweise der Listenüberschrift, statt auf einem entfernten Element zu verbleiben.
+- **Kategoriebearbeitung:** Nach dem Speichern einer gerätelokalen Wunschkategorie und Schließen des Detaildialogs wird die zugehörige neu gezeichnete Wunschkarte wieder fokussiert, sofern sichtbar.
+- **Dashboard-Einstellungen:** Nach dem Verschieben eines Abschnitts nennt die vorhandene Live-Statusmeldung jetzt den Namen des Abschnitts und die neue Position von vier Bereichen statt einer allgemeinen Bestätigung.
+- **Prüfung:** Die aktualisierten `lists-dashboard.mjs`, `gift-start.mjs` sowie die unveränderte `index.html` aus GitHub neu geladen. Beide Module und zehn Inline-Skripte ohne Syntaxfehler isoliert geprüft; keine doppelten statischen HTML-IDs. Vollständiger authentifizierter Browser-E2E-Test bleibt offen.
+- **Produktionsschutz:** Ausschließlich DOM-Fokus und barrierefreie Statusmeldungen. Keine neuen oder geänderten Supabase-Abfragen, Migrationen, Testdaten oder Änderungen an bestehenden Produktivdatensätzen.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Dynamisch aktualisierte Favoriten und Dashboard-Validierung)
 
 - **Konkreter Fokusverlust beim Favoritenwechsel:** Die Favoritenaktion in `lists-dashboard.mjs` zeichnet mit `render()` sämtliche Listenkarten neu. Dabei wurde auch der gerade aktive Favoritenbutton entfernt, wodurch die Tastaturnavigation ihren Anker verlor. Listenkarten erhalten nun ein internes `data-list-id`; nach dem Neuzeichnen fokussiert die Aktion den entsprechenden neuen Favoritenbutton. Falls die Karte durch den aktuellen Filter nicht mehr sichtbar ist (z. B. beim Entfernen aus „Nur Favoriten“), wandert der Fokus zum weiterhin erreichbaren Listenfilter.
