@@ -105,10 +105,11 @@ $('previewWishExtrasImport').onclick=run(async()=>{
  const generation=wishExtrasImportGeneration;
  const ownerId=requireUser(),feedback=$('wishExtrasImportFeedback');
  feedback.textContent='Eigene Wünsche und vorhandene Cloud-Einträge werden geprüft …';
- const raw=localStorage.getItem(localWishExtrasKey(ownerId));
- let local;
+ let raw,local;
+ try{raw=localStorage.getItem(localWishExtrasKey(ownerId))}catch{feedback.textContent='Lokaler Speicher nicht lesbar. Kein Import.';return}
  try{local=raw?JSON.parse(raw):{};if(!local||typeof local!=='object'||Array.isArray(local))throw Error()}catch{feedback.textContent='Lokale Zusatzdaten sind beschädigt. Es wurde nichts übertragen.';return}
  const owned=[],remote={};
+ try{
  for(let from=0;;from+=500){
   const r=await db.from('wishlist_wishes').select('id').eq('user_id',ownerId).order('id',{ascending:true}).range(from,from+499);
   if(user?.id!==ownerId||generation!==wishExtrasImportGeneration)return;
@@ -135,12 +136,14 @@ $('previewWishExtrasImport').onclick=run(async()=>{
  $('wishExtrasImportPreview').hidden=false;
  pendingWishExtrasImport={ownerId,raw,entries};
  feedback.textContent='Nur Vorschau: Noch keine Daten übertragen.';
+ }catch(error){if(user?.id===ownerId&&generation===wishExtrasImportGeneration){clearWishExtrasImport();feedback.textContent='Importvorschau wegen Verbindungs- oder Lesefehler fehlgeschlagen. Kein Import. '+wishlistErrorMessage(error)}}
 });
 $('confirmWishExtrasImport').onclick=run(async()=>{
  if(wishExtrasImportBusy)return;
  const preview=pendingWishExtrasImport,feedback=$('wishExtrasImportFeedback');
  if(!preview||user?.id!==preview.ownerId){clearWishExtrasImport();feedback.textContent='Importvorschau abgelaufen. Bitte neu prüfen.';return}
- if(localStorage.getItem(localWishExtrasKey(preview.ownerId))!==preview.raw){clearWishExtrasImport();feedback.textContent='Lokale Daten wurden seit der Vorschau geändert. Bitte erneut prüfen.';return}
+ let latestRaw;try{latestRaw=localStorage.getItem(localWishExtrasKey(preview.ownerId))}catch{clearWishExtrasImport();feedback.textContent='Lokaler Speicher nicht lesbar. Kein Import.';return}
+ if(latestRaw!==preview.raw){clearWishExtrasImport();feedback.textContent='Lokale Daten wurden seit der Vorschau geändert. Bitte erneut prüfen.';return}
  if(!confirm(preview.entries.length+' neue gültige Zusatzdatensätze privat in die Cloud übertragen? Vorhandene Cloud-Daten werden niemals überschrieben.'))return;
  clearWishExtrasImport();
  wishExtrasImportBusy=true;
@@ -156,19 +159,20 @@ $('confirmWishExtrasImport').onclick=run(async()=>{
    const r=await db.from('wishlist_wish_extras').insert(payload).select('wish_id').single();
    if(r.error){if(r.error.code==='23505')conflicts++;else failed++}else imported++;
   }
-  feedback.textContent='Import beendet: '+imported+' neu übertragen, '+conflicts+' Cloud-Konflikte übersprungen, '+failed+' Fehler. Lokale Daten unverändert.';
- }finally{wishExtrasImportBusy=false;$('previewWishExtrasImport').disabled=false;$('confirmWishExtrasImport').disabled=false;$('cancelWishExtrasImport').disabled=false}
+  if(user?.id===preview.ownerId)feedback.textContent='Import beendet: '+imported+' neu übertragen, '+conflicts+' Cloud-Konflikte übersprungen, '+failed+' Fehler. Lokale Daten unverändert.';
+ }catch(error){if(user?.id===preview.ownerId)feedback.textContent='Import wegen Netzwerk- oder Speicherfehler gestoppt: '+imported+' neu übertragen, '+conflicts+' Konflikte übersprungen, '+failed+' Fehler. Bereits übertragene Einträge bleiben bestehen. '+wishlistErrorMessage(error)}finally{wishExtrasImportBusy=false;$('previewWishExtrasImport').disabled=false;$('confirmWishExtrasImport').disabled=false;$('cancelWishExtrasImport').disabled=false}
 });
+let wishExtrasCloudOperation=0;
 $('saveWishExtrasCloud').onclick=run(async()=>{
- const ownerId=requireUser(),wishId=editingWishId,revision=wishEditorRevision;
+ const ownerId=requireUser(),wishId=editingWishId,revision=wishEditorRevision,operation=++wishExtrasCloudOperation;
  if(!wishId||!editingWishBaseline||editingWishBaseline.id!==wishId)throw Error('Bitte zuerst einen vorhandenen eigenen Wunsch zur Bearbeitung öffnen.');
  const feedback=$('wishExtrasCloudFeedback');
  let extras;try{extras=readValidatedWishExtras()}catch(error){feedback.textContent=wishlistErrorMessage(error);return}
  feedback.textContent='Private Cloud-Speicherung läuft …';
  const payload={wish_id:wishId,user_id:ownerId,image_url:extras.imageUrl||null,target_price:extras.price,quantity:extras.quantity,wish_status:extras.status};
  // INSERT only: the primary key prevents overwriting any existing cloud record.
- const result=await db.from('wishlist_wish_extras').insert(payload).select('wish_id').single();
- if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision)return;
+ let result;try{result=await db.from('wishlist_wish_extras').insert(payload).select('wish_id').single()}catch(error){if(user?.id===ownerId&&editingWishId===wishId&&wishEditorRevision===revision&&operation===wishExtrasCloudOperation)feedback.textContent='Cloud-Speicherung wegen Netzwerkfehler fehlgeschlagen. Ob die Anfrage den Server erreicht hat, ist unklar; bitte Cloud-Stand prüfen, bevor du erneut speicherst. '+wishlistErrorMessage(error);return}
+ if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision||operation!==wishExtrasCloudOperation)return;
  if(result.error){
   if(result.error.code==='23505'){feedback.textContent='Für diesen Wunsch existieren bereits Cloud-Daten. Sie wurden nicht überschrieben. Bitte zuerst den Cloud-Stand prüfen.';return}
   feedback.textContent='Cloud-Speicherung fehlgeschlagen. Lokale Zusatzdaten bleiben unverändert. '+wishlistErrorMessage(result.error);return;
@@ -177,23 +181,23 @@ $('saveWishExtrasCloud').onclick=run(async()=>{
  report(feedback.textContent);
 });
 $('updateWishExtrasCloud').onclick=run(async()=>{
- const ownerId=requireUser(),wishId=editingWishId,revision=wishEditorRevision;
+ const ownerId=requireUser(),wishId=editingWishId,revision=wishEditorRevision,operation=++wishExtrasCloudOperation;
  if(!wishId||editingWishBaseline?.id!==wishId)throw Error('Bitte einen eigenen Wunsch zur Bearbeitung öffnen.');
  const feedback=$('wishExtrasCloudFeedback');
  let extras;try{extras=readValidatedWishExtras()}catch(error){feedback.textContent=wishlistErrorMessage(error);return}
  feedback.textContent='Aktueller Cloud-Stand wird geprüft …';
- const current=await db.from('wishlist_wish_extras').select('image_url,target_price,quantity,wish_status,version').eq('user_id',ownerId).eq('wish_id',wishId).maybeSingle();
- if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision)return;
+ let current;try{current=await db.from('wishlist_wish_extras').select('image_url,target_price,quantity,wish_status,version').eq('user_id',ownerId).eq('wish_id',wishId).maybeSingle()}catch(error){if(user?.id===ownerId&&editingWishId===wishId&&wishEditorRevision===revision&&operation===wishExtrasCloudOperation)feedback.textContent='Cloud-Stand wegen Netzwerkfehler nicht lesbar. Keine Aktualisierung gestartet. '+wishlistErrorMessage(error);return}
+ if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision||operation!==wishExtrasCloudOperation)return;
  if(current.error){feedback.textContent='Cloud-Daten konnten nicht geprüft werden. Es wurde nichts geändert. '+wishlistErrorMessage(current.error);return}
  if(!current.data){feedback.textContent='Noch keine Cloud-Daten vorhanden. Bitte zuerst die separate Aktion zum erstmaligen Cloud-Speichern verwenden.';return}
  const old=current.data;
  const details='Cloud-Stand: Bild '+(old.image_url||'–')+', Preis '+(old.target_price??'–')+' €, Menge '+old.quantity+', Status '+old.wish_status+'.';
  if(!confirm(details+'\\nDiese Cloud-Daten jetzt durch die Eingaben im Editor ersetzen?')){feedback.textContent='Cloud-Aktualisierung abgebrochen. Keine Daten geändert.';return}
- if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision)return;
+ if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision||operation!==wishExtrasCloudOperation)return;
  feedback.textContent='Cloud-Daten werden mit Versionsprüfung aktualisiert …';
  const payload={image_url:extras.imageUrl||null,target_price:extras.price,quantity:extras.quantity,wish_status:extras.status};
- const changed=await db.from('wishlist_wish_extras').update(payload).eq('user_id',ownerId).eq('wish_id',wishId).eq('version',old.version).select('wish_id,version');
- if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision)return;
+ let changed;try{changed=await db.from('wishlist_wish_extras').update(payload).eq('user_id',ownerId).eq('wish_id',wishId).eq('version',old.version).select('wish_id,version')}catch(error){if(user?.id===ownerId&&editingWishId===wishId&&wishEditorRevision===revision&&operation===wishExtrasCloudOperation)feedback.textContent='Cloud-Aktualisierung durch Netzwerkfehler unterbrochen. Ob sie gespeichert wurde, ist unklar; bitte den Cloud-Stand erneut prüfen. '+wishlistErrorMessage(error);return}
+ if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision||operation!==wishExtrasCloudOperation)return;
  if(changed.error){feedback.textContent='Cloud-Aktualisierung fehlgeschlagen. Lokale Daten unverändert. '+wishlistErrorMessage(changed.error);return}
  if(changed.data?.length!==1){feedback.textContent='Konflikt: Cloud-Daten wurden inzwischen geändert oder entfernt. Nichts überschrieben; bitte erneut prüfen.';return}
  feedback.textContent='Private Cloud-Zusatzdaten nach Bestätigung aktualisiert.';
