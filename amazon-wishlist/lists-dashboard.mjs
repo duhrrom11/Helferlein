@@ -312,10 +312,13 @@ actions.append(button('Duplizieren',async()=>{
   const current=()=>getUser()?.id===uid&&loadedOwner===uid&&generation===loadGeneration&&selected===sourceListId;
   const hadFocus=document.activeElement===control;activeWishMutations.add(uid+':'+wishId);control.disabled=true;
   try{
-   const alreadyThere=membershipByList.get(targetListId)?.has(wishId);
+   const targetMembership=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetListId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
+   if(targetMembership.error)throw targetMembership.error;
+   if(!current())return;
+   const alreadyThere=!!targetMembership.data?.length;
    if(!alreadyThere){
     const {error}=await db.from('wishlist_list_items').insert({list_id:targetListId,wish_id:wishId,user_id:uid});
-    if(error)throw error;
+    if(error&&!isUniqueViolation(error))throw error;
    }
    if(!current()){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceListId)msg('Zielzuordnung gespeichert. Bitte Listen neu laden, bevor du fortfährst.');return}
    const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceListId).eq('wish_id',wishId).eq('user_id',uid);
