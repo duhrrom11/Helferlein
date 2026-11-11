@@ -41,7 +41,7 @@ def check_isolation():
 def check_roles():
     with conn() as c:
         t = c.execute("""SELECT tablename FROM pg_tables WHERE schemaname='heir_private' ORDER BY tablename""").fetchall()
-        assert {v[0] for v in t} == {'heir_invitations','heir_assignments','heir_public_keys','heir_envelopes','heir_key_proofs','heir_release_cases'}
+        assert {v[0] for v in t} == {'heir_invitations','heir_assignments','heir_public_keys','heir_envelopes','heir_key_proofs','heir_release_cases','heir_http_limits'}
         for name, forced, enabled in c.execute("""SELECT c.relname,c.relforcerowsecurity,c.relrowsecurity FROM pg_class c
           JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='heir_private' AND c.relkind='r'"""):
             assert forced and enabled, (name, 'RLS not forced')
