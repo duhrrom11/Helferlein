@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Konflikterkennung bei Kategorien in mehreren Tabs)
+
+- **Nachgewiesener Konflikt:** Ein geöffneter Wunschdetaildialog konnte eine im anderen Browser-Tab zwischenzeitlich geänderte Kategorie durch Speichern einer veralteten Auswahl überschreiben.
+- **Korrektur:** Beim Öffnen der Wunschdetails wird die ursprüngliche Kategorie in `detailCategoryBaseline` gespeichert. Bei unverändertem Dialogfeld wird die Baseline durch Storage-Events synchronisiert. `saveCategory()` vergleicht vor dem Schreiben den aktuell gespeicherten Wert mit dieser Baseline; bei Abweichung wird die Änderung mit einem Konflikthinweis abgebrochen. Code: `f2f9624109bc0b1559d63fcde68fd43f14f76d48`.
+- **Grenzen:** Der Vergleich ist keine atomare Cross-Tab-Sperre. Kontowechsel und andere Detaildialog-Aktionen müssen weiter untersucht werden. Statische Quellcodeprüfung ohne authentifizierten Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (offene Wunschdetails: Kategorie-Synchronisierung)
 
 - **Nachgewiesener veralteter Dialogzustand:** Der `storage`-Listener aktualisierte `wishCategories` und die Wunschkarten, ließ aber das Kategorie-Auswahlfeld eines bereits geöffneten Wunschdetaildialogs unverändert. Änderungen aus anderen Tabs waren im offenen Formular daher nicht sichtbar.
