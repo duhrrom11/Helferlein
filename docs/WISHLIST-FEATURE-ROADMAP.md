@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (GitHub Actions CI und Dashboard-Integration)
+
+- GitHub-Actions-Workflow `.github/workflows/wishlist-regression.yml` veröffentlicht (Commit `e9c6abc`). Auslöser: relevante Pushes und manueller `workflow_dispatch`; Node.js 22, Syntaxprüfung von drei Modulen und isolierte Node-Tests; nur `contents: read`, keine Secrets, keine Datenbank- oder Deployment-Schritte.
+- Vier zusätzliche statische Dashboard-Integrationstests in `tests/wishlist-dashboard-integration.test.cjs` veröffentlicht (Commit `3a2498d`): Helper-Imports, vorläufige Reload-Rückmeldung, gestartete Einzel-Writes, überlappende Sammelzähler. Diese Tests sind statische Quelltextprüfungen, keine Browser-E2E-Tests.
+- **Tatsächlicher CI-Status:** Für Commit `3a2498d29c98a190e367889b84b29ea146af3ecb` meldete der GitHub-Connector bei der Abfrage der zugeordneten Workflow-Läufe `workflow_runs: []` und beim kombinierten Commit-Status `statuses: []`. Die Laufabfrage dieses Connectors ist auf PR-ausgelöste Läufe beschränkt; deshalb lässt sich daraus kein Push-Workflow-Ergebnis ableiten. Ein erfolgreicher GitHub-Actions-Lauf wurde **nicht verifiziert**. Die direkte GitHub-Actions-Webansicht war in dieser Sitzung nicht abrufbar.
+- **Offen:** Workflow in der GitHub-Actions-Oberfläche auf einen echten erfolgreichen Lauf prüfen und Logs/Job-Schritte kontrollieren; ggf. Fehler nach reproduzierbarem Befund korrigieren. Authentifizierte Browserabnahme bleibt offen.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten geändert, keine Datenbank-Testdaten angelegt, kein Merge und kein Deployment.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Regressionstests lokal ausgeführt)
 
 - **Ausführung:** Node.js v22.16.0, `node --test tests/wishlist-move-regression.test.cjs`; 7 bestanden, 0 fehlgeschlagen, ca. 99 ms. Isolierte Tests für Schreibfehler vor/nach Teiländerung, Kontextwechsel, vorläufige Ergebnisse, überlappende Sammelzähler und keine automatischen Retries.
