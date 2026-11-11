@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Listenfavoriten: lokaler Speicherfehler darf UI nicht verändern)
+
+- **Nachgewiesener Fehler:** Die Favoriten-Schaltfläche änderte `favoriteIds` vor `localStorage.setItem`. Bei verweigertem oder vollem Browserspeicher blieb die Änderung im Arbeitsspeicher sichtbar, obwohl sie nicht dauerhaft gespeichert wurde.
+- **Korrektur:** Der Handler berechnet `nextFavorites` als Kopie. `writeFavorites(id,next)` gibt den Erfolg des Schreibens zurück. Nur nach erfolgreichem `setItem` werden `favoriteIds` übernommen und die Favoritenansicht neu gerendert; andernfalls bleibt der vorherige Zustand erhalten und eine Fehlermeldung erscheint. Code: `60738616fb61f0a0dbf83507e521d411d1acb9e4`.
+- **Weitere Prüfung:** Kategorien und Markierungen schreiben bereits vor der Änderung des In-Memory-Zustands in `localStorage`. Die Liste zuletzt geöffneter Listen wird bewusst auch ohne dauerhafte Speicherung für die laufende Sitzung aktualisiert und warnt bei Speicherfehlern. Weitere Race Conditions und Speicherpfade bleiben prüfbar.
+- **Prüfgrenzen:** Statische Codeprüfung ohne authentifizierten Browser-E2E-Test. Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (lokale Wunsch-Zusatzdaten nach erfolgreichem Datenbank-Commit)
 
 - **Nachgewiesener Teilfehler:** `saveWishExtras()` warf bei `localStorage.setItem`-Fehlern eine Exception, obwohl der vorausgehende `wishlist_wishes.insert/update` bereits erfolgreich abgeschlossen war. Dadurch erschien der gesamte Speichervorgang als fehlgeschlagen und konnte zu unnötigen erneuten Datenbank-Schreibversuchen verleiten.
