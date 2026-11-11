@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Archivstatus-Konflikte zwischen Tabs)
+
+- **Nachgewiesener Konfliktpfad:** Archivieren/Reaktivieren setzte `wishlist_lists.archived` anhand eines zuvor geladenen Kartenstatus, ohne den ursprünglichen Archivwert in der Datenbankbedingung abzugleichen. Eine parallele Änderung in einem anderen Tab konnte so unbemerkt überschrieben werden.
+- **Korrektur:** Das Update verlangt nun zusätzlich `.eq('archived',list.archived)` und fordert per `.select('id')` die aktualisierten Zeilen an. Bei null Treffern wird ein Konflikthinweis angezeigt. Fehler werden für das noch aktive Ursprungskonto abgefangen. Code: `f11ee0b767368fa2aa64f4c0e6e2254352982dde`.
+- **Grenzen:** Weitere Listenfelder und Wunschänderungen benötigen eigene Konfliktprüfung; keine allgemeine tabübergreifende Sperre. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listenzuordnung vor Insert gegen Kontowechsel absichern)
 
 - **Nachgewiesene Lücke:** `assignWish(wishId,listId,uid)` führte den Insert in `wishlist_list_items` ohne Prüfung der aktuellen Konto-ID aus. Nach einem Kontowechsel zwischen Wunsch-Neuanlage und Listenzuordnung konnte dadurch ein verspäteter Zuordnungsversuch für das ursprüngliche Konto gestartet werden.
