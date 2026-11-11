@@ -19,3 +19,6 @@ CREATE POLICY heir_ci_envelopes ON heir_private.heir_envelopes TO heir_ci_backen
 CREATE POLICY heir_ci_key_proofs ON heir_private.heir_key_proofs TO heir_ci_backend USING(true) WITH CHECK(true);
 CREATE POLICY heir_ci_release_cases ON heir_private.heir_release_cases TO heir_ci_backend USING(true) WITH CHECK(true);
 -- The server role is not a login for clients, and cannot modify the RLS schema.
+
+-- CI-only API throttle privilege: private and RLS-enforced.
+CREATE POLICY heir_ci_http_limits ON heir_private.heir_http_limits TO heir_ci_backend USING(true) WITH CHECK(true);

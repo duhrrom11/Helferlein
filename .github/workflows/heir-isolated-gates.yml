@@ -6,9 +6,11 @@ on:
     paths:
       - '.github/workflows/heir-isolated-gates.yml'
       - 'tests/security/heir-pg17-*'
+      - 'tests/security/heir-http-*'
       - 'tests/security/heir-indexeddb-real-browser.py'
       - 'docs/sql-drafts/heir_private_backend_REVIEW_ONLY.sql'
       - 'docs/sql-drafts/heir_key_release_REVIEW_ONLY.sql'
+      - 'docs/sql-drafts/heir_http_limits_REVIEW_ONLY.sql'
       - 'supabase/functions/_shared/heir-*.ts'
       - 'tests/security/heir-pg17-restricted-role.sql'
       - 'tests/security/heir-pg17-service-integration.mjs'
@@ -53,17 +55,25 @@ jobs:
           psql -X -v ON_ERROR_STOP=1 -f tests/security/heir-pg17-fixture.sql
           psql -X -v ON_ERROR_STOP=1 -f docs/sql-drafts/heir_private_backend_REVIEW_ONLY.sql
           psql -X -v ON_ERROR_STOP=1 -f docs/sql-drafts/heir_key_release_REVIEW_ONLY.sql
+          psql -X -v ON_ERROR_STOP=1 -f docs/sql-drafts/heir_http_limits_REVIEW_ONLY.sql
       - name: Run two independent PostgreSQL 17 sessions, actual grants and races
         run: python tests/security/heir-pg17-two-session.py
       - name: Prepare restricted server principal for real adapter tests
         run: |
           psql -X -v ON_ERROR_STOP=1 -f tests/security/heir-pg17-restricted-role.sql
           npm install --no-save --ignore-scripts --no-package-lock pg@8.16.3
+      - name: Verify fail-closed HTTP dispatch and admission contracts
+        run: node --experimental-strip-types --test tests/security/heir-http-staging.test.mjs tests/security/heir-http-rate-limit-staging.test.mjs
       - name: Exercise actual TypeScript SqlBackend against PostgreSQL 17
         env:
           PGUSER: heir_ci_backend
           HEIR_CI_ROLE_PASSWORD: test-server-role-local-only
         run: node --experimental-strip-types tests/security/heir-pg17-service-integration.mjs
+      - name: Verify atomic PostgreSQL HTTP quotas under concurrency
+        env:
+          PGUSER: heir_ci_backend
+          HEIR_CI_ROLE_PASSWORD: test-server-role-local-only
+        run: node --experimental-strip-types tests/security/heir-http-pg17-limits.mjs
 
   real-chromium-indexeddb:
     runs-on: ubuntu-24.04
