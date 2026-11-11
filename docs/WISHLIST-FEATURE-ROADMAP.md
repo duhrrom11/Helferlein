@@ -1,3 +1,14 @@
+## Feature-Paket 1 – 11.11.2026 (Explizites privates Cloud-Speichern)
+
+- **Neue UI:** Beim Bearbeiten eines bestehenden Wunsches erscheint die separate Aktion `saveWishExtrasCloud`; die normale Wunsch-Speicherung behält das bisherige lokale Verhalten. Die Aktion wird beim Schließen/Zurücksetzen des Editors ausgeblendet.
+- **Schreibweg:** Nur nach Klick wird ein `INSERT` in `wishlist_wish_extras` mit `wish_id`, `user_id`, `image_url`, `target_price`, `quantity`, `wish_status` ausgeführt. Die produktive Tabelle hat RLS-Eigentümer-Policies und einen zusammengesetzten FK auf den eigenen Wunsch. Kein `UPSERT`, kein `UPDATE`, kein automatischer Import vorhandener Browserdaten.
+- **Konfliktschutz:** Primärschlüssel `wish_id` verhindert das Überschreiben bereits vorhandener Cloud-Einträge; SQLSTATE `23505` wird als ausdrücklicher Konflikt angezeigt. Andere Fehler werden im Editor gemeldet; lokale Zusatzdaten bleiben unverändert.
+- **Asynchroner UI-Schutz:** Meldungen werden nur im noch aktiven Benutzer-/Wunsch-/Editor-Revisionskontext angezeigt. Statusbereich `role=status`, `aria-live=polite`. Das bereits vorhandene reine Importplanungsmodul bleibt unangeschlossen.
+- **Tests:** Quellcode-Regressionstest `wish-extras-cloud-source.test.mjs` ergänzt; authentifizierter E2E-Test und tatsächliche private Cloud-Schreibprobe bewusst nicht ausgeführt, um keine produktiven Testdatensätze anzulegen.
+- **Offen:** Konfliktbewusste *Aktualisierung* bestehender Cloud-Daten, Rückmeldung bei Sessionwechsel während laufender Anfrage, opt-in Importvorschau und Kartenanzeige über mehrere Geräte. Aktuell können Cloud-Einträge nur einmalig angelegt werden; bestehende Werte werden nicht überschrieben.
+
+---
+
 ## Feature-Paket 1 – 11.11.2026 (Private Cloud-Zusatzdaten: erste produktive Stufe)
 
 - **RLS-Befund:** `wishlist_wishes` erlaubt `anon` und `authenticated` das Lesen öffentlicher Wünsche; eigene Wünsche sind zusätzlich für Eigentümer sichtbar. Daher werden persönliche Zusatzdaten **nicht** als öffentlich lesbare Wunschspalten angelegt.
