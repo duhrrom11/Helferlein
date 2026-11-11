@@ -90,6 +90,7 @@ for(const id of ['url','productTitle','wishNote','priority','wishVisibility','wi
 const run=fn=>async function(){const button=this instanceof HTMLButtonElement?this:null;if(button?.disabled)return;const isWishSave=button?.id==='saveWish',startedOwner=user?.id,startedRevision=wishEditorRevision,startedWish=editingWishId,saveRunGeneration=isWishSave?++wishSaveRunGeneration:null;if(button)button.disabled=true;if(isWishSave)$('wishSaveFeedback').textContent='';try{await fn()}catch(e){if(!isWishSave||(user?.id===startedOwner&&editingWishId===startedWish&&wishEditorRevision===startedRevision)){const message=wishlistErrorMessage(e);report(message);if(isWishSave)$('wishSaveFeedback').textContent=message}}finally{if(button?.isConnected&&(!isWishSave||(user?.id===startedOwner&&saveRunGeneration===wishSaveRunGeneration)))button.disabled=false}};
 let pendingWishExtrasImport=null;
 let wishExtrasImportGeneration=0;
+let wishExtrasImportBusy=false;
 function clearWishExtrasImport(){
  ++wishExtrasImportGeneration;
  pendingWishExtrasImport=null;
@@ -97,8 +98,9 @@ function clearWishExtrasImport(){
  $('wishExtrasImportDetails').replaceChildren();
  $('wishExtrasImportSummary').textContent='';
 }
-$('cancelWishExtrasImport').onclick=()=>{clearWishExtrasImport();$('wishExtrasImportFeedback').textContent='Import abgebrochen. Es wurde nichts übertragen.'};
+$('cancelWishExtrasImport').onclick=()=>{if(wishExtrasImportBusy)return;clearWishExtrasImport();$('wishExtrasImportFeedback').textContent='Import abgebrochen. Es wurde nichts übertragen.'};
 $('previewWishExtrasImport').onclick=run(async()=>{
+ if(wishExtrasImportBusy)return;
  clearWishExtrasImport();
  const generation=wishExtrasImportGeneration;
  const ownerId=requireUser(),feedback=$('wishExtrasImportFeedback');
@@ -135,12 +137,16 @@ $('previewWishExtrasImport').onclick=run(async()=>{
  feedback.textContent='Nur Vorschau: Noch keine Daten übertragen.';
 });
 $('confirmWishExtrasImport').onclick=run(async()=>{
+ if(wishExtrasImportBusy)return;
  const preview=pendingWishExtrasImport,feedback=$('wishExtrasImportFeedback');
  if(!preview||user?.id!==preview.ownerId){clearWishExtrasImport();feedback.textContent='Importvorschau abgelaufen. Bitte neu prüfen.';return}
  if(localStorage.getItem(localWishExtrasKey(preview.ownerId))!==preview.raw){clearWishExtrasImport();feedback.textContent='Lokale Daten wurden seit der Vorschau geändert. Bitte erneut prüfen.';return}
  if(!confirm(preview.entries.length+' neue gültige Zusatzdatensätze privat in die Cloud übertragen? Vorhandene Cloud-Daten werden niemals überschrieben.'))return;
  clearWishExtrasImport();
+ wishExtrasImportBusy=true;
  $('previewWishExtrasImport').disabled=true;
+ $('confirmWishExtrasImport').disabled=true;
+ $('cancelWishExtrasImport').disabled=true;
  let imported=0,conflicts=0,failed=0;
  try{
   for(const [wishId,extras] of preview.entries){
@@ -151,7 +157,7 @@ $('confirmWishExtrasImport').onclick=run(async()=>{
    if(r.error){if(r.error.code==='23505')conflicts++;else failed++}else imported++;
   }
   feedback.textContent='Import beendet: '+imported+' neu übertragen, '+conflicts+' Cloud-Konflikte übersprungen, '+failed+' Fehler. Lokale Daten unverändert.';
- }finally{$('previewWishExtrasImport').disabled=false}
+ }finally{wishExtrasImportBusy=false;$('previewWishExtrasImport').disabled=false;$('confirmWishExtrasImport').disabled=false;$('cancelWishExtrasImport').disabled=false}
 });
 $('saveWishExtrasCloud').onclick=run(async()=>{
  const ownerId=requireUser(),wishId=editingWishId,revision=wishEditorRevision;
