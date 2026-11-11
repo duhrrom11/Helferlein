@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (veralteter Listen-Update-Abschluss)
+
+- **Nachgewiesener Fehlerpfad:** Der Listeneditor prüfte vor dem UPDATE die Editor-/Dashboard-Generation, nach dem asynchronen UPDATE jedoch nur Benutzer-ID, geladenen Besitzer und Listen-ID. Ein zwischenzeitlicher Reload konnte dadurch trotz veraltetem Kontext noch den normalen Abschluss und weiteren Reload auslösen.
+- **Korrektur:** Unmittelbar nach dem Await werden Konto, geladener Besitzer, Dashboard-Generation, Listen-ID und Editor-Generation gemeinsam geprüft. Veraltete Ergebnisse beenden den UI-Abschluss, bevor Fehlermeldungen, Erfolgsverarbeitung oder Folge-Reload erfolgen. Code: `1d733c02d2880075724f03c9b97282b026902b73`.
+- **Grenzen:** Ein bereits gestartetes Datenbank-UPDATE kann trotz UI-Invalidierung erfolgreich geschrieben worden sein; die Änderung rollt es nicht zurück. Parallele Sammelaktionen über Tabs und nichtatomare Verschiebungen bleiben weitere Prüfbereiche. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listeneditor nach Dashboard-Reload invalidieren)
 
 - **Nachgewiesener Stale-Editor-Pfad:** Der geöffnete Listeneditor hielt Feld-Baselines für optimistische Datenbankkonfliktprüfungen, aber keine Dashboard-Generation. Nach einem Listen-Reload konnte er weiterhin versuchen, mit einem alten UI-Stand zu speichern.
