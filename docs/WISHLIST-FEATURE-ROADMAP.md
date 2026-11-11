@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: Kontextwechsel-Warnung absichern)
+
+- **Nachgewiesener Fehlerpfad:** Nach dem Ziel-INSERT und einem ungültigen Kontext zeigte `moveSelectedWishes()` eine Warnung bereits bei passender Benutzer-ID. Ein überholter Lauf konnte dadurch Rückmeldungen in einen neueren Listenstand schreiben. Die Aussage, die Ursprungsliste sei nicht verändert worden, berücksichtigte parallele Änderungen anderer Tabs nicht.
+- **Korrektur:** Die Warnung prüft nun zusätzlich Ursprungsliste, Ladegeneration und `bulkRunId`. Der Text sagt nur noch aus, dass diese Aktion die Ursprungszuordnung noch nicht gelöscht hat; Fremdänderungen bleiben möglich. Code: `b1a19bf89ffabef26bcc60b30c8d95934822d54f`.
+- **Fortschritt/Fehler:** Die bereits bestehende `partial`-Zählung für unklare Zuordnungsstände bleibt bestehen; diese Runde korrigiert die Warnung, nicht die Zählformel.
+- **Grenzen:** Keine atomare Verschiebung, keine automatische Wiederherstellung und kein authentifizierter Browser-E2E-Test.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: Fehler nach gestarteten Schreiboperationen als unklar markieren)
 
 - **Nachgewiesener Fehlerpfad:** Im `catch` von `moveSelectedWishes()` wurde bei Fehlern nach bereits gestartetem Ziel-INSERT oder Ursprungs-DELETE nur `failed` erhöht. Der Sammelstatus konnte dadurch unklare Zuordnungsstände unterschlagen.
