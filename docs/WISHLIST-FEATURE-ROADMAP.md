@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (parallele Sammelzuordnungen und Unique-Konflikte)
+
+- **Nachgewiesener Fehlerpfad:** Bei `applyBulk()` wurde ein PostgreSQL-Unique-Konflikt `23505` während des Hinzufügens von Listenzuordnungen als `{error:null}` zurückgegeben. Der Sammelaktionszähler konnte den kollidierten Schreibversuch daher als eigenen Erfolg ausweisen, obwohl ein anderer Tab die Zuordnung bereits angelegt hatte.
+- **Korrektur:** Die Sammelzuordnung meldet `23505` jetzt als Konflikt mit Hinweis auf Neuladen der Liste. Der Schritt wird im Sammelaktions-Ergebnis nicht als erfolgreiche neue Zuordnung gezählt. Code: `f8db0dbf983ea9e1753a303395bfb8c27ef36bf1`.
+- **Grenzen:** Die Behandlung setzt voraus, dass `23505` einen Zuordnungskonflikt betrifft; der Code ermittelt den konkreten Constraint nicht. Tabübergreifende Aktionen bleiben ohne gemeinsame Sperre, und bereits gestartete Schreiboperationen können nach Kontowechseln abgeschlossen werden. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (historische Sammelaktions-Ergebnisse klar kennzeichnen)
 
 - **Nachgewiesene Irreführungsgefahr:** Im Sammelaktions-Verlauf standen `erfolgreich` und `offen` ohne zeitliche Einordnung. Nach parallelen Zuordnungsänderungen in anderen Tabs konnten historische Zähler als aktueller Mitgliedschaftsstatus missverstanden werden.
