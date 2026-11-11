@@ -1,3 +1,14 @@
+## Feature-Paket 1 – 11.11.2026 (Serverseitige monotone Version)
+
+- **Deploymentkontrolle:** Für `d750b152` waren GitHub Pages, Release-Smoke-Checks und Live-HTTP-Check erfolgreich.
+- **Produktive additive Migration:** `wishlist_wish_extras.version bigint NOT NULL DEFAULT 1` mit positivem Check; `BEFORE INSERT OR UPDATE`-Trigger setzt bei Insert Version 1 und erhöht bei Update unabhängig vom übermittelten Clientwert auf `OLD.version+1`. Triggerfunktion `SECURITY INVOKER`, eingeschränkter `search_path`, keine öffentliche EXECUTE-Berechtigung. Keine vorhandenen Nutzerinhalte verändert.
+- **Verifikation:** `wishlist_wish_extras` enthielt weiterhin 0 Zeilen; ein Versionstrigger, vier Eigentümer-Policies, RLS aktiviert und `anon` ohne SELECT. Kein produktiver Testdatensatz angelegt.
+- **Frontend:** Die ausdrücklich bestätigte Cloud-Aktualisierung liest `version` und aktualisiert nur bei unveränderter `version` und passender `user_id`/`wish_id`; der Client setzt weder Version noch Zeitstempel. Null geänderte Zeilen werden als Konflikt gemeldet.
+- **Tests:** Quellcode-Regressionstest auf `version`-Bedingung und fehlenden clientseitigen Zeitstempel umgestellt. Authentifizierte konkurrierende Schreibtests ohne Testdaten weiterhin offen.
+- **Offen:** Neue Cloud-Daten auf Wunschkarten geräteübergreifend anzeigen; bestätigungspflichtige Importvorschau für lokale Browserdaten; reale Browser- und RLS-Rollentests. Keine automatische Migration lokaler Werte.
+
+---
+
 ## Feature-Paket 1 – 11.11.2026 (Cloud-Aktualisierung mit Versionsschutz)
 
 - **Deploymentkontrolle zu `bd0371e`:** Release-Smoke-Checks erfolgreich; Pages-Build bei der ersten Abfrage noch `in_progress`, Live-HTTP-Check `queued`. Nicht als erfolgreiches neues Deployment ausgegeben.
