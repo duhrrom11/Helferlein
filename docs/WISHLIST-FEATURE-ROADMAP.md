@@ -1,3 +1,23 @@
+## Feature-Paket 1 – 11.11.2026 (Nachweisbasierte Abschlussabnahme)
+
+**Abnahmestatus: Technische Teilabnahme bestanden; authentifizierte Laufzeit-Endabnahme offen.**
+
+| Prüffeld | Nachweis | Ergebnis |
+| --- | --- | --- |
+| Veröffentlichung | GitHub Actions zu `e06cc2d`: Pages build and deployment, Release smoke checks und Live GitHub Pages HTTP check jeweils `success` | Bestanden |
+| CI-Regression | Release-Smoke-Workflow erfolgreich; Quellcode-Regressionsdateien `wish-extras-import-source.test.mjs`, `wish-extras-cloud-source.test.mjs`, `lists-cloud-extras-source.test.mjs` im Repository vorhanden | Bestanden auf CI-/Quellcode-Ebene; kein Browser-E2E-Nachweis |
+| Cloud-RLS | Read-only Produktions-SQL: `relrowsecurity=true`, `anon` ohne SELECT, `authenticated` mit SELECT nur über Eigentümer-Policy; vier Policies für SELECT/INSERT/UPDATE/DELETE mit `auth.uid()=user_id` | Konfiguration geprüft |
+| Versionsschutz | Ein `wishlist_wish_extras_version_guard`-Trigger; Funktionsdefinition setzt INSERT-Version 1 und UPDATE-Version `OLD.version+1`. Frontend vergleicht `.eq('version',old.version)` | Konfiguration und Code geprüft, konkurrierender authentifizierter Schreibtest offen |
+| Importvorschau | `planWishExtrasImport`, owner-gefilterte Wünsche, Konflikte/ungültige/ausgeschlossene IDs, explizites `confirm()`, ausschließlich `INSERT`, Reentrancy-/Stale-/Netzwerk-Guards | Code und Regression geprüft, kein realer Import ausgeführt |
+| Geräteübergreifende Anzeige | Feed und Listenverwaltung lesen Extras für eigene Wunsch-IDs mit Eigentümerfilter, lokale Werte haben Vorrang; asynchrone Antwort-/Kontowechsel-Guards | Code geprüft, kein authentifizierter Zwei-Geräte-Test |
+| Datenintegrität | Read-only Produktionsabfrage: `wishlist_wish_extras` enthält 0 Datensätze | Keine Testdaten und keine produktiven Änderungen |
+
+**Restrisiken und Abnahmegrenzen:** Es wurde keine authentifizierte Browser-End-to-End-Prüfung ausgeführt. Insbesondere RLS zwischen zwei echten Konten, simultane Versionskonflikte, echte Netzwerkunterbrechungen, Teilimporte und Anzeige auf einem zweiten Gerät sind nur auf Konfigurations- bzw. Code-Ebene belegt. Ein erfolgreicher Live-HTTP-Check beweist keine authentifizierten Schreib-/Leseabläufe. Die Cloud-Extras-Tabelle ist derzeit leer; es liegen keine echten Zusatzdatensätze zur Laufzeitverifikation vor. Die UPDATE-Policy enthält eine Eigentümer-`USING`-Bedingung; PostgreSQL übernimmt diese bei fehlender expliziter `WITH CHECK`-Klausel auch für neue Zeilen. Keine neuen Probleme mit ausreichendem Nachweis für einen weiteren produktiven Codeeingriff festgestellt.
+
+**Nächstes konkretes Nutzerfeature (Feature-Paket 2):** Freigebbare Wunschlisten-Ansicht mit öffentlichem, nur lesbarem Link, eindeutiger Listenidentität und ausdrücklich kontrollierter Sichtbarkeit. Private Cloud-Zusatzdaten dürfen niemals über Freigabelinks ausgegeben werden. Zunächst bestehendes Listen-/Freigabemodell prüfen, dann additive Implementierung ohne Änderung vorhandener Nutzerinhalte.
+
+---
+
 ## Feature-Paket 1 – 11.11.2026 (Netzwerkfehler und veraltete Cloud-Antworten)
 
 - **Deploymentkontrolle:** `f55c5e6` hatte erfolgreiche GitHub-Pages-, Release-Smoke- und Live-HTTP-Checks.
