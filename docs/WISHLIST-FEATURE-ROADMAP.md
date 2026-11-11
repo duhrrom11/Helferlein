@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Mobile Schnellnavigation und sortierbare Dashboard-Abschnitte)
+
+- **Konkreter Sortierfehler im privaten Geschenk-Dashboard:** Nach dem Verschieben eines Abschnitts wählte die Tastaturfokuslogik stets den ersten aktiven Pfeilbutton. Wer wiederholt „Nach unten“ auslöste, konnte daher versehentlich mit „Nach oben“ die gerade ausgeführte Änderung umkehren. Der Fokus bleibt nun bei der gewählten Richtung, solange deren Button aktiv ist; an Listenrändern wird auf einen noch aktiven Button ausgewichen.
+- **Mobile Wunschlisten-Schnellnavigation:** „Favoriten ansehen“ (`homeFavorites`) und „Listen“ (`mobileMyLists`) fokussieren die Listenübersicht nach dem Sprung. Die bestehende `focusListRegion`-Hilfe übernimmt Fokus und Scrollbewegung; Filter- und Datenlogik bleibt unverändert.
+- **Wunschkarten:** Beim gezielten Navigieren zu einer Wunschkarte berücksichtigt `focusWishCard` die Systemeinstellung `prefers-reduced-motion` anstelle einer immer erzwungenen sanften Scrollbewegung.
+- **Prüfung:** Aktuelle `gift-start.mjs`, `lists-dashboard.mjs` und `index.html` nach Veröffentlichung von GitHub geladen. Beide Module und zehn Inline-Skripte syntaktisch geprüft, keine Fehler; keine doppelten statischen HTML-IDs. Die Auswahl aktivierter Sortierbuttons wurde zusätzlich mit beiden Bewegungsrichtungen und verschiedenen Deaktivierungszuständen durchgespielt. Ein authentifizierter End-to-End-Browsertest bleibt offen.
+- **Produktionsschutz:** Reine clientseitige Fokus-, Navigations- und Bewegungsanpassungen. Keine Supabase-Migration, keine Produktivdatenänderung, keine Testdaten.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Fokusführung für Wunschlisten-Navigation und Dashboard-Sortierung)
 
 - **Wunschlisten:** `openList` und der Button `listItemsBack` scrollten bislang ohne Tastaturfokuswechsel. Die neue clientseitige `focusListRegion`-Hilfe fokussiert die geöffnete Listenüberschrift bzw. beim Zurückspringen die Liste; sie berücksichtigt `prefers-reduced-motion`.
