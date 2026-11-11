@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (isolierte Regressionstests)
+
+- Neue Node-Testdatei: `tests/wishlist-move-regression.test.cjs` mit sieben isolierten Tests zu Fehlern vor/nach Schreibbeginn, Kontextwechsel, vorläufigen Sammelergebnissen, überlappenden Zählern, ungültiger Fortschrittsanzeige und fehlenden automatischen Wiederholungen.
+- Testbare Entscheidungsfunktionen in `amazon-wishlist/bulk-helpers.mjs` ergänzt: `moveFailureState`, `bulkMoveRefreshStatus`, `bulkMoveCounts`. Dashboard verwendet diese für Warntext, vorläufige Sammelergebnisse und Zählervalidierung.
+- Ausführung: `node --test tests/wishlist-move-regression.test.cjs`. Die Tests benötigen weder Supabase noch Zugangsdaten und erzeugen keine Datenbankeinträge.
+- **Einschränkung:** Testdatei auf GitHub veröffentlicht, aber in dieser Sitzung nicht gegen den veröffentlichten Repository-Stand ausgeführt. Kein Browser-E2E-Test und kein Deployment.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten geändert, keine Testdaten angelegt, kein Merge oder Deployment ausgelöst.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Sammelverschiebung: veraltete Ergebnisanzeige)
 
 - **Nachgewiesener UI-Fehler:** Nach einem fehlgeschlagenen Reload zeigte `bulkStatus` weiterhin die normale Abschlusszusammenfassung, ohne den nicht verifizierten Zuordnungsstand direkt im Ergebnistext zu kennzeichnen.
