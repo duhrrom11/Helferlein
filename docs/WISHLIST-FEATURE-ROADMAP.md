@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (veraltete Sammelaktionsmeldungen nach Reload)
+
+- **Nachgewiesener UI-Fehler:** `invalidateMembershipState()` verwarf beim Dashboard-Reload die aktive Sammelauswahl und Ergebnisübersicht, setzte aber `bulkStatus`, `bulkProgressText`, `bulkProgressDetails` und den Fortschrittsbalken nicht zurück. Dadurch konnten Statusinformationen einer alten Sammelaktion auf dem neu geladenen Dashboard verbleiben.
+- **Korrektur:** Die Invalidierung der Mitgliedschaftsdaten leert jetzt diese Status- und Fortschrittsanzeigen und setzt den Balken auf null. Code: `ae68087049aa8e06b8d49d07c86bbe6fc8085d70`.
+- **Grenzen:** Der historische Verlauf bleibt als Verlauf erhalten; seine Erfolgszahlen sind keine Live-Bestätigung aktueller Mitgliedschaften. Parallele Datenbankoperationen verschiedener Tabs werden nicht atomar koordiniert. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (veraltete Sammelaktionsanzeigen beim Kontowechsel)
 
 - **Nachgewiesener UI-Fehler:** `reset()` verwarf beim Kontowechsel Sammelaktions-Verlauf und Ergebnisübersicht, ließ jedoch `bulkStatus`, Fortschrittstexte, Fortschrittsbalken und den Stop-Button unverändert. Alte Statusinformationen konnten dadurch nach dem Sitzungswechsel sichtbar bleiben.
