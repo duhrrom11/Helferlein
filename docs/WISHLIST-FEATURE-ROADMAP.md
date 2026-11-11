@@ -1,3 +1,13 @@
+## Roadmap-Prüfung – 11.11.2026 (Dialogfokus und Deployment)
+
+- **Deployment verifiziert:** Pages-Lauf für `07b8498` wurde wegen nachfolgendem Commit abgebrochen; Pages-Lauf für `dc695624` erfolgreich abgeschlossen. Release-Smoke-Checks und Live-HTTP-Check für `dc695624` ebenfalls erfolgreich. Die neue Kontrastkorrektur ist in diesem neueren Stand enthalten.
+- **Statischer Dialog-Audit:** `bulkConfirmDialog` wird mit nativem `showModal()` geöffnet; `bulkConfirmCancel` schließt ihn und verwirft `pendingBulk`; `close`-Ereignis verwirft `pendingBulk` auch bei Escape. `applyBulk` schließt den Dialog vor der Ausführung; Fehlerhinweise gehen in `bulkStatus` (`role=status`, `aria-live=polite`). Fortschritt und Ergebnisse sind außerhalb des eingeklappten Bereichs angeordnet und verfügen über Statusmeldungen.
+- **Fokus-Bewertung:** Native modale Dialoge übernehmen grundsätzlich Fokusführung und Rückgabe; eine tatsächliche Rückkehr zum Auslöser nach asynchronen Listenänderungen ist statisch nicht beweisbar. Keine hypothetische JavaScript-Änderung vorgenommen, weil kein reproduzierbarer Fokusfehler belegt wurde.
+- **Offen:** Authentifizierter Tastatur-/Screenreader-Test für Öffnen, Escape, Abbrechen, Bestätigen und asynchrone Fehlerfälle sowie visuelle Prüfung auf 320/375 px. Ohne produktive Datenmutation oder Testdaten bislang nicht vollständig abnehmbar.
+- **Änderungsumfang:** Nur diese Roadmap-Dokumentation. Keine Supabase-Änderungen, keine Testdaten.
+
+---
+
 ## Roadmap-Fortschritt – 11.11.2026 (Deployment und Rückmeldungen)
 
 - **Deployment:** Der Pages-Lauf für CSS-Commit `217bbdd74` wurde durch einen nachfolgenden Lauf abgebrochen (`cancelled`). Der neuere Commit `36a361650` enthält den Fix und wurde erfolgreich über GitHub Pages veröffentlicht; Release-Smoke-Checks und Live-HTTP-Check ebenfalls erfolgreich. Dies ist kein Browser-E2E-Nachweis.
