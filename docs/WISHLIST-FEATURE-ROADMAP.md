@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (überholte Speicherabschlüsse nach Kontowechsel)
+
+- **Nachgewiesene Race Condition:** Der gemeinsame `run()`-Wrapper aktivierte `saveWish` im `finally`, wenn die aktuelle Konto-ID der Start-ID entsprach. Nach einem Wechsel A → B → A konnte dadurch ein alter Speichervorgang die Schaltfläche während eines neueren Speichervorgangs vorzeitig aktivieren.
+- **Korrektur:** `wishSaveRunGeneration` wird bei jedem Wunsch-Speicherstart und bei erkanntem Kontowechsel erhöht. Der `finally`-Block darf die Speicherschaltfläche nur bei unveränderter Konto-ID und identischer Generation aktivieren. Code: `23d115547e316e9977efef5a94e1afae36731080`.
+- **Grenzen:** Bereits gestartete Datenbankoperationen werden nicht abgebrochen. Weitere parallele Listenmutationen und Datenbank-Konflikte benötigen Prüfung. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Speichern nach Kontowechsel wieder freigeben)
 
 - **Nachgewiesener UI-Fehler:** Der gemeinsame `run()`-Wrapper deaktiviert während `saveWish` die Speicherschaltfläche. Sein `finally` aktiviert diese bei gewechselter Konto-ID absichtlich nicht mehr. `auth()` setzte zwar den Editor, aber nicht `saveWish.disabled` zurück. Dadurch konnte das neue Konto dauerhaft keine Wünsche speichern.
