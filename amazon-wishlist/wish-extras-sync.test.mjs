@@ -17,3 +17,12 @@ test('imports only owned wishes and preserves existing remote values',()=>{
  assert.deepEqual(result.invalid,['4']);
  assert.equal(remote['2'].price,99);
 });
+
+test('never treats an existing remote entry as a create candidate, including empty values',()=>{
+ const local={'7':{price:5,quantity:1,status:'open'}};
+ const remote={'7':{}};
+ assert.deepEqual(planWishExtrasImport(local,remote,['7']),{toCreate:{},conflicts:['7'],invalid:[]});
+});
+test('rejects foreign wish identifiers even if locally present',()=>{
+ assert.deepEqual(planWishExtrasImport({'123':{price:8}}, {}, ['456']),{toCreate:{},conflicts:[],invalid:[]});
+});
