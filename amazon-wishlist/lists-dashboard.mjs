@@ -313,7 +313,7 @@ actions.append(button('Duplizieren',async()=>{
     finally{if(current())reportBulk(moved+failed,targets.length,moved,failed)}
    }
    if(current()){
-    const summary=moved+' verschoben, '+failed+' fehlgeschlagen'+(skipped?', '+skipped+' nicht in dieser Liste – übersprungen':'')+(stopped?', Vorgang gestoppt; '+(targets.length-moved-failed)+' nicht abgeschlossen':'')+(partial?', davon '+partial+' Zuordnungsstände unklar – bitte beide Listen prüfen':'')+'.';
+    const summary=moved+' verschoben, '+failed+' fehlgeschlagen'+(skipped?', '+skipped+' nicht in dieser Liste – übersprungen':'')+(stopped?', Vorgang gestoppt; '+(targets.length-moved-failed)+' nicht abgeschlossen':'')+(partial?', bei '+partial+' Vorgängen Zuordnungsstand unklar (Überschneidung mit fehlgeschlagen/nicht abgeschlossen möglich) – bitte beide Listen prüfen':'')+'.';
     const refresh=load({afterBulk:true}),refreshGeneration=loadGeneration;
     try{await refresh;if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&run===bulkRunId&&refreshGeneration===loadGeneration&&membershipReady)$('bulkStatus').textContent=summary}
     catch(e){if(getUser()?.id===uid&&loadedOwner===uid&&selected===sourceId&&run===bulkRunId&&refreshGeneration===loadGeneration){msg('Bitte Listen neu laden: '+(e.message||'Ladefehler'));$('bulkStatus').textContent=summary}}
