@@ -8,7 +8,7 @@ on:
       - 'tests/security/heir-pg17-*'
       - 'tests/security/heir-http-*'
       - 'tests/security/heir-server-composition.test.mjs'
-      - 'tests/security/heir-owner-invitations-browser.py'
+      - 'tests/security/heir-owner-*.py'
       - 'assets/heir-owner-invitations-*.js'
       - 'tools/digitaler-nachlass/index.html'
       - 'tests/security/heir-indexeddb-real-browser.py'
@@ -102,4 +102,6 @@ jobs:
       - name: Run real Chromium with temporary IndexedDB and two tabs
         run: python tests/security/heir-indexeddb-real-browser.py
       - name: Verify disabled owner invitation UI and safe revocation in real Chromium
-        run: python tests/security/heir-owner-invitations-browser.py
+        run: |
+          python tests/security/heir-owner-invitations-browser.py
+          python tests/security/heir-owner-transport-browser.py

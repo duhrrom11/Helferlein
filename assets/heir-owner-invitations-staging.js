@@ -65,14 +65,16 @@
       if(!ready || working || !UUID.test(id) || !items.some(x=>x.invitationId===id && ['pending','accepted'].includes(x.status)))return;
       if(typeof options.confirm !== 'function' || options.confirm('Diese Einladung unwiderruflich sperren?')!==true)return;
       const seq=++epoch;working=true;refresh.disabled=true;status('Widerruf wird geprüft …');draw();
+      let completed=false;
       try {
         const result=await options.request('/v1/heirs/invitations/revoke',{vaultId:options.vaultId,invitationId:id});
         if(seq!==epoch)return;
         if(!result || result.ok!==true)throw Error('denied');
+        completed=true;
         status('Widerruf bestätigt. Liste wird aktualisiert …');
       } catch { if(seq===epoch) status('Widerruf nicht bestätigt. Berechtigung und Verbindung prüfen; Status erneut laden.'); }
       finally { if(seq===epoch){working=false;refresh.disabled=false;draw();} }
-      await load();
+      if(completed)await load();
     }
     refresh.addEventListener('click',load);
     if(!ready){refresh.disabled=true;status('Noch nicht freigeschaltet: keine geprüfte Serververbindung. Keine Einladung wird versendet oder freigegeben.');}
