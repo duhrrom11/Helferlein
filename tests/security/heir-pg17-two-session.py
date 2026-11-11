@@ -62,7 +62,7 @@ def check_roles():
                         p.proconfig,pg_get_userbyid(p.proowner)
                     FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
                     WHERE n.nspname='heir_private' AND p.prosecdef""").fetchall()
-        assert privileged == [('heir_lock_active_session', 2, '2950 2950', ['search_path='], 'postgres')], privileged
+        assert privileged == [('heir_lock_active_session', 2, '2950 2950', ['search_path=""'], 'postgres')], privileged
         for role in ('anon','authenticated'):
             assert c.execute('SELECT has_function_privilege(%s,%s,%s)',
                 (role,'heir_private.heir_lock_active_session(uuid,uuid)','EXECUTE')).fetchone()[0] is False
