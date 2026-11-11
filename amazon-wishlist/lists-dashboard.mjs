@@ -284,14 +284,22 @@ actions.append(button('Duplizieren',async()=>{
    for(const wishId of targets){
     if(!current()||bulkStopRequested){stopped=true;break}
     try{
-     if(!membershipByList.get(targetId)?.has(wishId)){
+     const targetState=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
+     if(!current()){stopped=true;break}
+     if(targetState.error)throw targetState.error;
+     if(!targetState.data?.length){
       const {error}=await db.from('wishlist_list_items').insert({list_id:targetId,wish_id:wishId,user_id:uid});
-      if(error)throw error;
+      if(error&&error.code!=='23505')throw error;
      }
-     if(!current()){stopped=true;partial++;if(getUser()?.id===uid&&loadedOwner===uid)msg('Zielzuordnung gespeichert, aber die Ursprungsliste wurde wegen eines Kontextwechsels nicht geändert. Bitte beide Listen prüfen.');break}
+     if(!current()){stopped=true;partial++;if(getUser()?.id===uid&&loadedOwner===uid)msg('Zielzuordnung möglicherweise gespeichert, aber die Ursprungsliste wurde wegen eines Kontextwechsels nicht geändert. Bitte beide Listen prüfen.');break}
+     const confirmed=await db.from('wishlist_list_items').select('wish_id').eq('list_id',targetId).eq('wish_id',wishId).eq('user_id',uid).limit(1);
+     if(!current()){stopped=true;partial++;break}
+     if(confirmed.error)throw confirmed.error;
+     if(!confirmed.data?.length){partial++;failed++;msg('Zielzuordnung fehlt inzwischen. Ursprungszuordnung bleibt erhalten; bitte beide Listen prüfen.');continue}
      // Complete the current source removal before honoring Stop on the next wish.
-     const {error}=await db.from('wishlist_list_items').delete().eq('list_id',sourceId).eq('wish_id',wishId).eq('user_id',uid);
-     if(error){partial++;failed++;if(current())msg('Zielzuordnung gespeichert, aber Entfernen aus der Ursprungsliste fehlgeschlagen. Bitte beide Listen prüfen.');continue}
+     const {error,data:removed}=await db.from('wishlist_list_items').delete().eq('list_id',sourceId).eq('wish_id',wishId).eq('user_id',uid).select('wish_id');
+     if(!current()){stopped=true;partial++;break}
+     if(error||!removed?.length){partial++;failed++;if(current())msg('Ursprungszuordnung konnte nicht eindeutig entfernt werden. Bitte beide Listen prüfen.');continue}
      moved++;bulkIds.delete(wishId);
     }catch(e){failed++;if(current())msg('Ein Wunsch konnte nicht verschoben werden: '+(e.message||'Unbekannter Fehler'))}
     finally{if(current())reportBulk(moved+failed,targets.length,moved,failed)}
