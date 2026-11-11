@@ -485,7 +485,7 @@ actions.append(button('Duplizieren',async()=>{
  for(const id of ['listWishSearch','listWishPriority','listWishCategory','listWishMarker','listWishAssignment','listWishSort'])$(id).addEventListener('input',()=>{if(listMutationBusy||listCopyBusy||bulkBusy||activeWishMutations.size||!membershipReady||getUser()?.id!==loadedOwner||!lists.some(l=>l.id===selected&&!l.archived))return;selectedOnlyView=false;visibleLimit=100;renderWishCards()});
  $('listTemplate').onchange=()=>{
   const template=LIST_TEMPLATES.find(t=>t.id===$('listTemplate').value)||LIST_TEMPLATES.at(-1);
-  $('listTitle').value=template.title;$('listDescription').value=template.description;$('listIcon').value=template.icon;$('listColor').value=template.color;$('listTitle').removeAttribute('aria-invalid');$('listTitle').removeAttribute('aria-describedby');
+  $('listTitle').value=template.title;$('listDescription').value=template.description;$('listIcon').value=template.icon;$('listColor').value=template.color;const wasInvalid=$('listTitle').getAttribute('aria-invalid')==='true';$('listTitle').removeAttribute('aria-invalid');$('listTitle').removeAttribute('aria-describedby');if(wasInvalid&&$('listsStatus').textContent==='Listenname muss 1 bis 80 Zeichen enthalten.')msg('Vorlage eingesetzt. Listennamen prüfen und Liste erstellen.');
  };
  let listEditReturnFocus=null;
  function finishListEditing(){
