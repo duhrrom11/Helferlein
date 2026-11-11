@@ -1,3 +1,11 @@
+## Entwicklungsfortschritt – 11.11.2026 (Prioritätsänderungen ohne gegenseitigen Fokusverlust)
+
+- **Konkreter Folgefehler:** Das bisherige vollständige `render()` nach einer Prioritätsänderung entfernte auch andere, noch deaktivierte und auf ihre Speicherantwort wartende Prioritätsfelder. Deren asynchrone Handler arbeiteten anschließend mit abgehängten DOM-Elementen. Jetzt wird nach erfolgreicher Speicherung nur das betroffene Prioritätskennzeichen aktualisiert beziehungsweise die Karte entfernt, falls sie nicht mehr zum aktiven Filter passt.
+- **Tastaturfokus:** Der Fokuszustand wird vor dem Deaktivieren des Select-Feldes erfasst. Nach der Antwort wird der Fokus nur zurückgegeben, wenn er inzwischen auf dem Dokumentkörper liegt; eine bewusste Fokusverlagerung wird nicht überschrieben. Bei einer durch den Filter entfernten Karte dient der Prioritätsfilter als Rücksprungziel.
+- **Sitzungs- und Fehlergrenzen:** Verspätete Antworten nach Kontowechsel oder nach Entfernen des Elements ändern keine sichtbaren Felder. Fehlgeschlagene Speicherungen setzen den Auswahlwert zurück; verbundene Selects werden im `finally` wieder aktiviert.
+- **Prüfumfang:** Statische Codeprüfung; keine authentifizierten Browser- oder Datenbank-Schreibtests. Insbesondere parallele Prioritätsänderungen und die Filterdarstellung sollten in einer isolierten Browser-Testumgebung nachgeprüft werden.
+- **Produktionsschutz:** Nur GitHub-Code und Roadmap geändert; keine Supabase-Produktivdaten und keine Testdatensätze angelegt oder verändert.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Geschenk-Dashboard: asynchrones Prioritätsspeichern)
 
 - **Nachgewiesener Fokusverlust:** Die Prioritätsauswahl in `gift-dashboard.mjs` rief nach erfolgreichem Speichern `render()` auf und ersetzte damit das fokussierte Select-Element. Der Handler merkt sich den Fokus und stellt ihn nach dem Rendern auf die Priorität desselben Geschenks zurück; wenn das Geschenk durch den aktiven Filter verschwindet, wird der Prioritätsfilter fokussiert.
