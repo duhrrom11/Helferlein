@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Sichere Listenbearbeitung und Dashboard-Formularfokus)
+
+- **Listen-Editor:** Beim Speichern in `lists-dashboard.mjs` blieb der Button „Abbrechen“ aktiv, obwohl `listMutationBusy` gesetzt war und eine asynchrone Speicherung lief. Jetzt werden beide Formularaktionen während dieses Vorgangs gesperrt, ein formularnaher Live-Status meldet „Änderungen werden gespeichert …“, und beide Aktionen werden im `finally` wieder freigegeben. Der Abbruch-Handler ignoriert Klicks während der laufenden Listenänderung. Die bisherigen Datenbankoperationen bleiben unverändert.
+- **Dashboard-Einstellungen:** Bei einer fehlerhaften Konfiguration in `gift-start.mjs` führte die Validierung bislang ausschließlich bei leerer Kennzahlenauswahl gezielt zum Feld. Jetzt wird je nach Fehler zuerst der betroffene Sortier- oder Auswahlbereich fokussiert und per `aria-describedby` mit der bestehenden Live-Statusmeldung verknüpft; die temporäre Verknüpfung wird beim Ändern entfernt. Auch reduzierte Bewegung wird beim Scrollen berücksichtigt.
+- **Prüfung:** Aktualisierte Dateien `lists-dashboard.mjs`, `gift-start.mjs` und unveränderte `index.html` erneut von GitHub geladen. Beide Module und zehn Inline-JavaScript-Blöcke syntaktisch ohne Fehler geprüft, keine doppelten statischen HTML-IDs. Vollständiger authentifizierter Mobilbrowser-End-to-End-Test weiterhin offen.
+- **Produktionsschutz:** Nur clientseitige Sperr-, Fokus- und Formularstatuslogik angepasst; keine Supabase-Abfragen, -Migrationen oder produktiven Daten verändert, keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Fokus bei Wunschfilter-Reset und Mehrfachauswahl)
 
 - **Leere Suchergebnisse:** In `lists-dashboard.mjs` erzeugt `renderWishCards` bei null Treffern einen eigenen Button „Filter zurücksetzen“. Dessen Klick entfernt den Button beim Neuzeichnen selbst. Nach dem Rücksetzen wird nun das sichtbare Wunsch-Suchfeld `listWishSearch` fokussiert; die reguläre Aktion `listWishClearFilters` erhält dieselbe konsistente Fokusführung.
