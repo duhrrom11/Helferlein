@@ -1,3 +1,9 @@
+## Entwicklungsfortschritt – 11.11.2026 (lokale Wunsch-Zusatzdaten: beschädigte Speicherinhalte nicht überschreiben)
+
+- **Nachgewiesenes Datenverlustrisiko:** `saveWishExtras()` ersetzte bei `localStorage.getItem`- oder JSON-Parsefehlern die bisherige Datenstruktur stillschweigend durch `{}` und konnte beim nächsten `setItem` vorhandene lokale Zusatzdaten überschreiben. Auch JSON-Werte mit unerwarteter Struktur wurden nicht ausreichend validiert.
+- **Korrektur:** Ein tatsächlich fehlender Storage-Eintrag (`null`) wird weiterhin als neue leere Sammlung behandelt. Bei Lesefehlern, ungültigem JSON sowie Nicht-Objekten oder Arrays bricht das lokale Schreiben mit `false` ab, ohne die bestehende Sammlung zu überschreiben. Die bereits eingeführte Teil-Erfolgsmeldung nach erfolgreichem Datenbank-Commit greift weiterhin. Code: `71bd8ff08d5f36265ac10b8c1b1252063f952057`.
+- **Grenzen:** Andere lokale Speicherpfade und parallele Browser-Tabs sind noch nicht umfassend abgesichert. Keine authentifizierten Browser-E2E-Tests. Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Listenfavoriten: lokaler Speicherfehler darf UI nicht verändern)
 
 - **Nachgewiesener Fehler:** Die Favoriten-Schaltfläche änderte `favoriteIds` vor `localStorage.setItem`. Bei verweigertem oder vollem Browserspeicher blieb die Änderung im Arbeitsspeicher sichtbar, obwohl sie nicht dauerhaft gespeichert wurde.
