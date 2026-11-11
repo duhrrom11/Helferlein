@@ -19,7 +19,7 @@ function fixture(overrides={}) {
   const calls = [];
   const service = name => async (...args) => { calls.push([name,...args]);return {ok:true, token, state:'grace'}; };
   const services = {
-    createInvitation:service('create'), redeemInvitation:service('redeem'), revokeInvitation:service('revoke'),
+    createInvitation:service('create'), redeemInvitation:service('redeem'), listInvitations: async (...args) => { calls.push(['list',...args]); return {ok:true,invitations:[],hasMore:false}; }, revokeInvitation:service('revoke'),
     putEnvelope:service('envelope'), beginEnrollment:service('keyBegin'), confirmEnrollment:service('keyConfirm'),
     raiseAlarm:service('raise'), cancelAlarm:service('cancel'), reviewStatus:service('status'),
   };
