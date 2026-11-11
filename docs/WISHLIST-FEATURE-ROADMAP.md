@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (veraltete Erfolgsmeldung nach Sammelverschiebung)
+
+- **Nachgewiesener Fehlerpfad:** `moveSelectedWishes()` veröffentlichte die Zusammenfassung nach `await load({afterBulk:true})` allein anhand von Benutzerkonto, ausgewählter Liste und `bulkRunId`. Ein zwischenzeitlicher zweiter Dashboard-Reload konnte dieselben Werte behalten und die ältere Zusammenfassung nachträglich in den neuen UI-Zustand schreiben.
+- **Korrektur:** Der von der Verschiebung ausgelöste Reload erfasst seine `loadGeneration`. Erfolg wird nur bei weiterhin passender Generation und `membershipReady` angezeigt; auch die Fehleranzeige ist an die Generation gebunden. Code: `f13bcacf5183674e61a164c89626daff9dee1b64`.
+- **Grenzen:** Die Korrektur verhindert veraltete UI-Rückmeldungen, nicht bereits gestartete Schreiboperationen oder konkurrierende Änderungen zwischen Zielbestätigung und Ursprungs-Löschung. Keine authentifizierten Browser-E2E-Tests ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (tabübergreifende Sammelkonflikte verständlich melden)
 
 - **Nachgewiesener Fehlerpfad:** `applyBulk()` gibt bei bereits parallel entfernter Mitgliedschaft einen spezifischen Fehlertext zurück, während `bulkErrorHint()` ihn bislang nur als generisches `Änderung fehlgeschlagen` zusammenfasste. Auch der neu eingeführte Konflikthinweis bei parallelem Hinzufügen erhielt keine eigene Klassifizierung.
