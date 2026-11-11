@@ -1,3 +1,10 @@
+## Entwicklungsfortschritt – 11.11.2026 (Zielzuordnung unmittelbar vor Quellenlöschung prüfen)
+
+- **Nachgewiesenes Race-Fenster:** Nach dem Lesen beziehungsweise Anlegen der Zielzuordnung konnte ein anderer Tab die Zielzuordnung entfernen, bevor die Ursprungszuordnung gelöscht wurde. Die bestehende Verschiebelogik prüfte den Zielzustand an dieser Stelle nicht erneut.
+- **Korrektur:** Unmittelbar vor dem Löschen der Ursprungszuordnung erfolgt eine erneute Datenbankabfrage der Zielmitgliedschaft. Bei inzwischen fehlender Zielzuordnung wird die Quellenlöschung nicht gestartet und ein Konflikthinweis angezeigt; die Konto- und Dashboard-Generation wird nach dem Await erneut geprüft. Code: `9ba5fe76ae2ebb87b3b44e623ec43a9adab5b4da`.
+- **Grenzen:** Der Vorgang ist weiterhin nicht atomar: Änderungen zwischen letzter Zielprüfung und Quellenlöschung sind möglich. Offene Wunsch-Editoren nach Feed-Reloads und weitere parallele Operationen bleiben gesondert zu prüfen. Kein authentifizierter Browser-E2E-Test ausgeführt.
+- **Produktionsschutz:** Keine Supabase-Produktivdaten verändert und keine Testdaten angelegt.
+
 ## Entwicklungsfortschritt – 11.11.2026 (Zielzuordnung beim Verschieben frisch prüfen)
 
 - **Nachgewiesener Stale-Membership-Pfad:** Beim Verschieben eines Wunsches entschied ausschließlich `membershipByList` aus dem letzten Dashboard-Reload, ob die Zielzuordnung bereits bestand. Wurde sie zwischenzeitlich in einem anderen Tab entfernt, konnte das Verschieben die Neuanlage überspringen und danach die Ursprungszuordnung löschen.
