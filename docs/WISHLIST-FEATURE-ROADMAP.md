@@ -1,3 +1,14 @@
+## Feature-Paket 1 – 11.11.2026 (Cloud-Aktualisierung mit Versionsschutz)
+
+- **Deploymentkontrolle zu `bd0371e`:** Release-Smoke-Checks erfolgreich; Pages-Build bei der ersten Abfrage noch `in_progress`, Live-HTTP-Check `queued`. Nicht als erfolgreiches neues Deployment ausgegeben.
+- **Explizite Aktualisierung:** Zusätzlich zur erstmaligen Cloud-`INSERT`-Aktion erscheint im Editor `updateWishExtrasCloud`. Sie liest die privaten Cloud-Werte samt `updated_at`, zeigt den vorhandenen Stand und verlangt eine ausdrückliche `confirm`-Bestätigung.
+- **Optimistischer Versionsschutz:** `UPDATE` nur mit `user_id`, `wish_id` und `updated_at` des zuvor gelesenen Datensatzes; die neue Version wird über `updated_at` gesetzt. Bei null aktualisierten Zeilen erscheint eine Konfliktmeldung; kein stilles Überschreiben. Die Datenbank-RLS bleibt die maßgebliche Eigentümerprüfung.
+- **Fehleranzeige:** Eingabevalidierungsfehler für beide Cloud-Aktionen werden direkt im eigenen Live-Statusbereich angezeigt. Cloud-Fehler verändern lokale Zusatzdaten nicht. Beim Konten-/Editorwechsel werden veraltete Ergebnisse nicht mehr im neuen Editor angezeigt.
+- **Tests:** Statische Regressionstests für ausdrückliche Bestätigung, Versionsbedingung und Konfliktprüfung ergänzt. Kein produktiver Cloud-Schreibtest, keine Testdatensätze und kein automatischer Import.
+- **Grenzen:** `updated_at` wird derzeit clientseitig gesetzt; eine serverseitig erzwungene monotone Version ist als zusätzliche Härtung zu prüfen. Tatsächliche parallele Browser-Updates und Rollentests stehen aus.
+
+---
+
 ## Feature-Paket 1 – 11.11.2026 (Explizites privates Cloud-Speichern)
 
 - **Neue UI:** Beim Bearbeiten eines bestehenden Wunsches erscheint die separate Aktion `saveWishExtrasCloud`; die normale Wunsch-Speicherung behält das bisherige lokale Verhalten. Die Aktion wird beim Schließen/Zurücksetzen des Editors ausgeblendet.
