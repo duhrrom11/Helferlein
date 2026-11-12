@@ -22,7 +22,8 @@ export function canCreateInvitation(
 ): boolean {
   if (!verifiedOwnerId || !UUID.test(verifiedOwnerId) || !ownership) return false;
   if (!VAULT_ID.test(request.vaultId) || !UUID.test(request.intendedUserId)) return false;
-  if (request.intendedUserId === verifiedOwnerId) return false;
+  // UUIDs are case-insensitive; reject self-invitation in either spelling.
+  if (request.intendedUserId.toLowerCase() === verifiedOwnerId.toLowerCase()) return false;
   return ownership.vault_id === request.vaultId &&
     ownership.owner_user_id === verifiedOwnerId;
 }
