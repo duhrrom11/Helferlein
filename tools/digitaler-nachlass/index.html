@@ -93,7 +93,7 @@
     <header class="b3-header"><div class="b3-header-inner">
 <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
 <span class="b3-tool-icon" aria-hidden="true">🏛️</span>
-<div class="b3-tool-title"><h1>Digitaler Nachlassverwalter</h1><p>Sicherheitsprüfung ausstehend – keine Passwörter, PINs oder Zugangsdaten speichern</p></div>
+<div class="b3-tool-title"><h1>Digitaler Nachlassverwalter</h1><p>Sicherheitsprüfung ausstehend – keine Passwörter, PINs oder Zugangsdaten speichern. Der lokale Tresorschlüssel liegt derzeit zusammen mit den verschlüsselten Daten im Browserspeicher; dies bietet keinen Schutz bei Zugriff auf das Browserprofil. Keine sensiblen Geheimnisse eingeben.</p></div>
 <button id="b3-nachlass-settings" type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button>
 </div></header>
 
@@ -108,7 +108,7 @@
 <button type="button" data-tab="kit" class="tab-btn">📄 Notfall-Kit</button>
 <button type="button" data-tab="settings" class="tab-btn">⚙️ Einstellungen</button>
 </div><details class="b3-more" id="b3-nachlass-more"><summary>☷ Weitere Tools</summary><div class="b3-more-content">
-<button id="manualSyncBtn" type="button" class="b3-more-item">☁️ Cloud-Synchronisation (bisheriger Weg)</button>
+<button id="manualSyncBtn" type="button" class="b3-more-item" disabled aria-disabled="true" title="Aus Sicherheitsgründen deaktiviert">☁️ Alte Firebase-Synchronisation – deaktiviert</button>
                 <button id="supabaseBackupBtn" type="button" class="b3-more-item">🔐 Verschlüsselten Tresor bei Supabase sichern</button>
                 <button id="supabaseBackupStatusBtn" type="button" class="b3-more-item">🔎 Supabase-Sicherungsstand prüfen</button>
                 <button id="supabaseRestorePreviewBtn" type="button" class="b3-more-item">🛡️ Cloud-Wiederherstellung sicher prüfen</button>
