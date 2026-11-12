@@ -126,6 +126,16 @@ Quellen: SQL-Migrationen 70000–70002, beide Edge Functions, gemeinsame Auth-/R
 
 **Entscheidung:** Alle vier P1-Issues bleiben **OFFEN / NO-GO**. Quellcode- und Metadatenbefunde ersetzen keine Sicherheits-, Betriebs- oder Restore-Abnahme. P0 bleibt ebenfalls offen; keine Freigabe für Migration, Merge, Deployment oder Aktivierung.
 
+## P2-Zwischenstand – formale Release-Freigabe (2026-11-12)
+
+**Issue:** [#277 – Freigabeverantwortliche, Release-Commit und Aktivierungsfenster](https://github.com/duhrrom11/Helferlein/issues/277). Nur GitHub-Dokumente und read-only Supabase-Projekt-/Migrations-/Edge-Metadaten geprüft; **keine SQL-Ausführung, keine Tests, keine Supabase-Schreiboperationen**.
+
+**Bestätigt:** Der Sicherheitsbranch existiert; sechs Zuständigkeitsrollen, G0–G3, drei Migrationsschritte, `verify_jwt=true`, die getrennten serverseitigen Opt-in-Flags, `BACKEND_APPROVED=false` und nicht-destruktive Notfallmaßnahmen sind beschrieben. Supabase meldet `ACTIVE_HEALTHY` (PostgreSQL 17.11), keine registrierten Erben-Migrationen und keine bereitgestellten Edge Functions. Der Projektstatus ist kein Freigabenachweis.
+
+**Nicht bestätigt:** namentliche Rollenzuweisungen, datierte Unterschriften, unabhängiges Review, fixierter und abgenommener Release-Commit, P0-/P1-Abnahmeprotokolle, Datenschutz-/DBA-/Security-/SRE-Freigaben, Wartungs-/Aktivierungs- und Rollbackfenster sowie die schriftliche GO-Entscheidung. Der Branchname und der letzte Dokumentations-Commit ersetzen keinen freigegebenen Release-Commit. Alle G0–G3-Freigabefelder bleiben offen.
+
+**Entscheidung: P2 OFFEN / NO-GO.** Keine Migration, Aktivierung, Merge oder Deployment, solange die vorgelagerten Gates und diese formalen Nachweise fehlen.
+
 ## Freigabeprotokoll (vor Aktivierung auszufüllen)
 
 | Feld | Erforderlicher Eintrag |
