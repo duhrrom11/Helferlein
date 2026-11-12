@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 kontrollierte Quota- und Speicherfehler (2026-11-13, isoliert)
+
+`tests/a10-browser-quota-faults.cjs` prueft in echtem Chromium auf localhost mit synthetischen Datensaetzen und einem wegwerfbaren Profil: einen gezielt an `IDBObjectStore.put` ausgeloesten browsernativen `QuotaExceededError`, einen echten `readwrite`-Transaktionsabbruch nach erfolgreichem `put`, danach einen gueltigen Stage-/Aktivierungsdurchlauf und erneut einen injizierten Quota-Fehler. Nach jeder Fehlersituation bleiben Revision, Aktivierungsmarker und V1 unveraendert. Ein Browser-Neustart prueft den zuletzt erfolgreich gespeicherten Zustand.
+
+**Testgrenzen:** Der `QuotaExceededError` wird **deterministisch injiziert**, nicht durch tatsaechlich erschoepften Browser-Speicherplatz verursacht. Der Abbruch erfolgt in einer echten IndexedDB-Transaktion, ist aber kein echter Datentraeger-I/O-Fehler. Keine Zusage ueber reale Disk-Full-, OS-Quota-, Stromausfall- oder physische Persistenzbedingungen. Das isolierte V1-Testobjekt enthaelt nur synthetische Schluessel. Unabhaengige sichere Backups und Freigabe fehlen weiterhin. **A10 bleibt NO-GO.**
+
+
 ## A10 echter Chromium-Prozessabbruch waehrend IndexedDB-Write (2026-11-13)
 
 Der isolierte CI-Test `tests/a10-browser-hardkill.cjs` startet Chromium mit einem kurzlebigen Browserprofil auf localhost. Nach dem Speichern eines **synthetischen** V1-aktiven Staging-Datensatzes startet er eine echte `readwrite`-Transaktion mit vielen Schreiboperationen, signalisiert einen Zwischenstand und beendet den Chromium-Hauptprozess mittels `SIGKILL`. Danach wird Chromium mit **demselben** Profil neu gestartet und der Zustand ohne automatische Reparaturschreibvorgaenge gelesen. Ein nicht abgeschlossener Schreibvorgang darf keinen halb aktivierten Datensatz hinterlassen. Das Profil wird nach dem Test geloescht.
