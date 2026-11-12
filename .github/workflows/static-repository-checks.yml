@@ -1,17 +1,14 @@
 name: Static repository checks
-
 on:
   pull_request:
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   repository-integrity:
-    name: Repository integrity
+    name: Repository integrity and changed-file syntax
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -34,4 +31,13 @@ jobs:
             echo "::error::Unresolved merge conflict markers found"
             exit 1
           fi
-          echo "Static repository checks passed"
+      - name: Validate changed HTML and JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            mapfile -d '' changed < <(git diff --name-only --diff-filter=ACMR -z "origin/${{ github.base_ref }}...HEAD" -- '*.html' '*.js' '*.mjs' '*.cjs')
+          else
+            mapfile -d '' changed < <(git diff --name-only --diff-filter=ACMR -z HEAD~1 HEAD -- '*.html' '*.js' '*.mjs' '*.cjs')
+          fi
+          python3 scripts/ci/validate_changed_web.py "${changed[@]}"
