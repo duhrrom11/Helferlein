@@ -2,6 +2,9 @@
 
 Stand: 2026-11-12. Diese Datei dokumentiert nur die Vorbereitung; keine Migration, kein Test und kein Deployment wurde durch diese Dokumentation ausgelöst.
 
+
+**Verbindlicher Ablaufplan:** [Produktionsfreigabeplan mit G0–G3, Verantwortlichkeiten, Abnahmekriterien und Notfallverfahren](./heir-invitations-production-release-plan.md). Dieser Plan ersetzt keine gesonderte Genehmigung; Status bleibt **NO-GO**.
+
 ## Reihenfolge und Abhängigkeiten
 
 1. Produktives Schema read-only abgleichen: `public.vault_cloud_snapshots(owner_user_id)` als UUID-Primärschlüssel, `auth.users(id)`, existierende Objekte im Schema `nachlass_private`, bestehende gleichnamige RPCs und Migrationshistorie. Die erste Migration verwendet bewusst `CREATE SCHEMA` und bricht bei Konflikt ab.
