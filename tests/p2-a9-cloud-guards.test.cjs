@@ -42,3 +42,70 @@ test('anonymous missing-session message is explained without masking account pro
   assert.match(source, /: prefix \+ ': ' \+ lastConflictMessage/);
   assert.match(source, /lastConflictMessage = error && error\.message/);
 });
+
+
+const vm = require('node:vm');
+const householdHtml = fs.readFileSync(path.join(__dirname, '..', 'tools', 'haushaltsbuch-kassenbon', 'index.html'), 'utf8');
+const guardStart = householdHtml.indexOf('function householdCloudSnapshot() {');
+const guardEnd = householdHtml.indexOf('function householdCloudChanged() {', guardStart);
+if (guardStart < 0 || guardEnd < 0) throw new Error('A9 household production guard block missing');
+const householdGuardCode = householdHtml.slice(guardStart, guardEnd);
+
+function runHouseholdGuard({owner = null, bridge = null, entries = '[]', budgets = '{}', goals = '[]'} = {}) {
+  const values = new Map([
+    ['kassenbon_data', entries],
+    ['budgetbuch_budgets', budgets],
+    ['budgetbuch_goals', goals]
+  ]);
+  if (owner !== null) values.set('helferlein_cloud_owner_haushaltsbuch-kassenbon', owner);
+  const alerts = [];
+  let writes = 0;
+  const context = {
+    window: bridge === null ? {} : {helferleinCloudBridge: bridge},
+    localStorage: {
+      getItem: key => values.has(key) ? values.get(key) : null,
+      setItem: () => { writes++; throw new Error('Unexpected write in guard test'); }
+    },
+    alert: message => alerts.push(message)
+  };
+  vm.runInNewContext(householdGuardCode, context, {timeout: 1000});
+  const allowed = vm.runInNewContext('householdCloudCanSave()', context, {timeout: 1000});
+  assert.equal(writes, 0, 'guard must never write to storage');
+  return {allowed, alerts};
+}
+
+test('A9 household guard permits unclaimed local-only use without cloud bridge', () => {
+  const result = runHouseholdGuard();
+  assert.equal(result.allowed, true);
+  assert.deepEqual(result.alerts, []);
+});
+
+test('A9 household guard blocks claimed account when protection bridge is missing', () => {
+  const result = runHouseholdGuard({owner:'synthetic-account'});
+  assert.equal(result.allowed, false);
+  assert.match(result.alerts[0], /Kontoschutz noch nicht geladen/);
+});
+
+test('A9 household guard blocks account switch or migration before local write', () => {
+  const result = runHouseholdGuard({owner:'synthetic-account', bridge:{canWriteLocal:()=>false}});
+  assert.equal(result.allowed, false);
+  assert.match(result.alerts[0], /Kontowechsel oder Cloud-Übernahme aktiv/);
+});
+
+test('A9 household guard permits valid account only when bridge explicitly allows writes', () => {
+  const result = runHouseholdGuard({owner:'synthetic-account', bridge:{canWriteLocal:()=>true}});
+  assert.equal(result.allowed, true);
+  assert.deepEqual(result.alerts, []);
+});
+
+test('A9 household guard refuses malformed local snapshot under active cloud protection', () => {
+  for (const scenario of [
+    {entries:'{ "not": "array" }'},
+    {budgets:'[]'},
+    {goals:'not-json'}
+  ]) {
+    const result = runHouseholdGuard({owner:'synthetic-account', bridge:{canWriteLocal:()=>true}, ...scenario});
+    assert.equal(result.allowed, false);
+    assert.match(result.alerts[0], /Speichern gesperrt/);
+  }
+});
