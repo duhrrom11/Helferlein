@@ -208,6 +208,9 @@ test('export progress only accepts nonnegative integers',()=>{
  assert.equal(exportProgressText(0),'0 Wünsche geladen …');
  assert.equal(exportProgressText(12,100),'12 von 100 Wünschen geladen …');
  for(const value of [-1,1.5,NaN,'12'])assert.throws(()=>exportProgressText(value));
+ assert.equal(exportProgressText(0,0),'0 von 0 Wünschen geladen …');
+ for(const total of [-1,1.5,NaN,'12',Infinity])assert.throws(()=>exportProgressText(1,total));
+ assert.throws(()=>exportProgressText(2,1));
 });
 
 test('read-only JSON backup preview validates exported backups',()=>{
