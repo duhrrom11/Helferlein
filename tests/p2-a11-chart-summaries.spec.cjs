@@ -12,6 +12,28 @@ for (const tool of ['wg-organisator', 'haushaltsbuch-kassenbon']) {
   if (start < 0 || end < 0) throw new Error('Missing production summary block: ' + tool);
   const productionSummaryCode = html.slice(start, end);
 
+  test(tool + ' – accessible chart descriptions reference live summary text', async ({page}) => {
+    const chartMarkup = ['categoryChart', 'cashflowChart'].map(id => {
+      const match = html.match(new RegExp('<canvas id="' + id + '"[^>]*><\\/canvas>'));
+      if (!match) throw new Error('Missing production canvas: ' + tool + '/' + id);
+      return match[0] + '<p id="' + id + 'Summary"></p>';
+    }).join('');
+    await page.goto('http://127.0.0.1:8765/index.html', {waitUntil:'domcontentloaded'});
+    await page.setContent('<main>' + chartMarkup + '</main>');
+    await page.evaluate(code => {
+      new Function('categoryExpenses', 'totalIncome', 'totalExpense', code)({Lebensmittel:12.5}, 20, 12.5);
+    }, productionSummaryCode);
+    for (const id of ['categoryChart', 'cashflowChart']) {
+      const canvas = page.locator('#' + id);
+      await expect(canvas).toHaveAttribute('role', 'img');
+      await expect(canvas).toHaveAttribute('aria-describedby', id + 'Summary');
+      await expect(canvas).toHaveAccessibleName(/Diagramm:/);
+      const summary = await page.locator('#' + id + 'Summary').textContent();
+      expect(summary.length).toBeGreaterThan(10);
+      await expect(canvas).toHaveAccessibleDescription(summary);
+    }
+  });
+
   test(tool + ' – isolated real chart summaries: zero, values, updates, injection', async ({page}) => {
     await page.goto('http://127.0.0.1:8765/index.html', {waitUntil:'domcontentloaded'});
     await page.setContent('<main><p id="categoryChartSummary"></p><p id="cashflowChartSummary"></p></main>');
