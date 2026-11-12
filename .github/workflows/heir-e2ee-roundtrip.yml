@@ -1,0 +1,29 @@
+name: Heir E2EE browser roundtrip
+on:
+  pull_request:
+    paths:
+      - 'assets/heir-e2ee-handoff.js'
+      - 'tools/digitaler-nachlass/erben-uebergabe.html'
+      - 'tests/heir-e2ee-roundtrip.cjs'
+      - '.github/workflows/heir-e2ee-roundtrip.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'assets/heir-e2ee-handoff.js'
+      - 'tools/digitaler-nachlass/erben-uebergabe.html'
+      - 'tests/heir-e2ee-roundtrip.cjs'
+      - '.github/workflows/heir-e2ee-roundtrip.yml'
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock playwright@1.58.2
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/heir-e2ee-roundtrip.cjs
