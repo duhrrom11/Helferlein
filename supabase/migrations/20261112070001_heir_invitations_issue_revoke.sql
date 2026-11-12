@@ -1,4 +1,4 @@
--- Versioned migration draft. NOT EXECUTED. Apply after 20261112070000_heir_invitations_private_schema.sql.
+-- Applied to Helferlein production Supabase on 2026-11-12. Depends on 20261112070000_heir_invitations_private_schema.sql.
 -- All RPCs restricted to service_role. Edge Function MUST verify caller JWT with auth.getUser.
 BEGIN;
 CREATE FUNCTION public.issue_heir_invitation_atomic(
