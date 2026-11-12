@@ -1,0 +1,32 @@
+name: Static repository checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repository-integrity:
+    name: Repository integrity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify repository structure and conflict markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s index.html
+          test -f .nojekyll
+          test -f AGENTS.md
+          git diff --check HEAD^ HEAD 2>/dev/null || git diff --check
+          if git grep -n -I -E '^(<<<<<<< |=======|>>>>>>> )' -- '*.html' '*.js' '*.css' '*.json' '*.sql' '*.yml' '*.yaml'; then
+            echo "::error::Unresolved merge conflict markers found"
+            exit 1
+          fi
+          echo "Static repository checks passed"
