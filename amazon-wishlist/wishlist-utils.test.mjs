@@ -227,3 +227,14 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('JSON backups remain previewable and reject invalid wish text before download',()=>{
+ const product={asin:'B012345678',marketplace:'amazon.de',title:'  Buch  '};
+ const row={wishlist_products:product,note:'  Geschenk  ',priority:2};
+ const backup=exportWishlistJson([row]);
+ assert.deepEqual(previewWishlistBackup(backup).wishes,[{asin:'B012345678',title:'Buch',note:'Geschenk',priority:2}]);
+ for(const title of ['', '  ', 'x'.repeat(251), null]){
+  assert.throws(()=>exportWishlistJson([{...row,wishlist_products:{...product,title}}]));
+ }
+ assert.throws(()=>exportWishlistJson([{...row,note:'x'.repeat(501)}]));
+});
