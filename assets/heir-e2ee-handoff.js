@@ -48,8 +48,16 @@
     const key = await derive(passphrase,salt);
     return JSON.parse(dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ciphertext)));
   };
+  let pendingPublicKey = null;
+  $('downloadPublicKey').addEventListener('click', () => {
+    if (!pendingPublicKey) return;
+    download('helferlein-erbe-oeffentlicher-schluessel.json',pendingPublicKey);
+    show('keyStatus','Öffentlicher Schlüssel heruntergeladen. Nur diese Datei an den Nachlassbesitzer weitergeben. Privaten Schlüssel und Passwort getrennt sicher aufbewahren.');
+  });
   $('createKey').addEventListener('click', async () => {
     $('createKey').disabled = true;
+    pendingPublicKey = null;
+    $('downloadPublicKey').disabled = true;
     try {
       const passphrase = $('keyPassphrase').value;
       const confirmation = $('keyPassphraseConfirm').value;
@@ -60,8 +68,9 @@
       const privateKey = await crypto.subtle.exportKey('jwk',pair.privateKey);
       const protectedPrivate = await protectPrivate(privateKey,passphrase);
       download('helferlein-erbe-privatschluessel-verschluesselt.json',protectedPrivate);
-      download('helferlein-erbe-oeffentlicher-schluessel.json',{kind:'helferlein-heir-public-key',version:1,algorithm:'RSA-OAEP-3072-SHA256',publicKey});
-      show('keyStatus','Zwei Dateien erstellt. Der private Schlüssel ist zusätzlich mit deinem Passwort verschlüsselt. Nur den öffentlichen Schlüssel weitergeben. Passwort getrennt und sicher aufbewahren.');
+      pendingPublicKey = {kind:'helferlein-heir-public-key',version:1,algorithm:'RSA-OAEP-3072-SHA256',publicKey};
+      $('downloadPublicKey').disabled = false;
+      show('keyStatus','Privater Schlüssel heruntergeladen. Jetzt den öffentlichen Schlüssel mit dem zweiten Button herunterladen. Beide Dateien sind für die Übergabe nötig.');
     } catch(e) { show('keyStatus',e instanceof Error ? e.message : 'Schlüsselerstellung fehlgeschlagen.'); }
     finally { $('keyPassphrase').value = ''; $('keyPassphraseConfirm').value = ''; $('createKey').disabled = false; }
   });
@@ -135,5 +144,5 @@
     } catch { show('openStatus','Entschlüsselung fehlgeschlagen. Bitte passenden privaten Schlüssel und Nachlassdatei prüfen.'); }
     finally { $('unlockPassphrase').value = ''; $('openEstate').disabled = false; }
   });
-  window.addEventListener('pagehide',() => $('estateOutput').replaceChildren());
+  window.addEventListener('pagehide',() => { pendingPublicKey = null; $('estateOutput').replaceChildren(); });
 })();
