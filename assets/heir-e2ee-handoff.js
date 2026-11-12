@@ -25,17 +25,44 @@
     obj.publicKey?.alg === 'RSA-OAEP-256' && obj.publicKey?.key_ops?.includes('encrypt') &&
     typeof obj.publicKey.n === 'string' && obj.publicKey.n.length >= 500 && obj.publicKey.n.length < 1500 &&
     obj.publicKey.e === 'AQAB';
+  const derive = async (passphrase, salt) => {
+    const material = await crypto.subtle.importKey('raw',enc.encode(passphrase),'PBKDF2',false,['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:600000,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+  };
+  const protectPrivate = async (jwk, passphrase) => {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await derive(passphrase,salt);
+    const ciphertext = await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(JSON.stringify(jwk)));
+    return {kind:'helferlein-heir-private-key-protected',version:2,algorithm:'PBKDF2-SHA256+AES-256-GCM',
+      iterations:600000,salt:B64(salt),iv:B64(iv),ciphertext:B64(new Uint8Array(ciphertext))};
+  };
+  const unlockPrivate = async (obj, passphrase) => {
+    if (obj?.kind !== 'helferlein-heir-private-key-protected' || obj.version !== 2 ||
+        obj.algorithm !== 'PBKDF2-SHA256+AES-256-GCM' || obj.iterations !== 600000)
+      throw Error('Ungültige private Schlüsseldatei.');
+    const salt=unb64(obj.salt),iv=unb64(obj.iv),ciphertext=unb64(obj.ciphertext);
+    if (salt.length !== 16 || iv.length !== 12 || ciphertext.length < 32 || ciphertext.length > 16384)
+      throw Error('Ungültige private Schlüsseldatei.');
+    const key = await derive(passphrase,salt);
+    return JSON.parse(dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ciphertext)));
+  };
   $('createKey').addEventListener('click', async () => {
     $('createKey').disabled = true;
     try {
+      const passphrase = $('keyPassphrase').value;
+      const confirmation = $('keyPassphraseConfirm').value;
+      if (passphrase.length < 16 || passphrase.length > 1024) throw Error('Mindestens 16 Zeichen Passwort erforderlich.');
+      if (passphrase !== confirmation) throw Error('Passwörter stimmen nicht überein.');
       const pair = await crypto.subtle.generateKey({name:'RSA-OAEP',modulusLength:3072,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['encrypt','decrypt']);
       const publicKey = await crypto.subtle.exportKey('jwk',pair.publicKey);
       const privateKey = await crypto.subtle.exportKey('jwk',pair.privateKey);
-      download('helferlein-erbe-privatschluessel-GEHEIM.json',{kind:'helferlein-heir-private-key',version:1,algorithm:'RSA-OAEP-3072-SHA256',privateKey});
+      const protectedPrivate = await protectPrivate(privateKey,passphrase);
+      download('helferlein-erbe-privatschluessel-verschluesselt.json',protectedPrivate);
       download('helferlein-erbe-oeffentlicher-schluessel.json',{kind:'helferlein-heir-public-key',version:1,algorithm:'RSA-OAEP-3072-SHA256',publicKey});
-      show('keyStatus','Zwei Dateien erstellt. Nur den öffentlichen Schlüssel an den Nachlassbesitzer geben. Den Privatschlüssel geheim und sicher aufbewahren; bei Verlust sind damit verschlüsselte Übergaben nicht mehr lesbar.');
-    } catch { show('keyStatus','Schlüsselerstellung fehlgeschlagen.'); }
-    finally { $('createKey').disabled = false; }
+      show('keyStatus','Zwei Dateien erstellt. Der private Schlüssel ist zusätzlich mit deinem Passwort verschlüsselt. Nur den öffentlichen Schlüssel weitergeben. Passwort getrennt und sicher aufbewahren.');
+    } catch(e) { show('keyStatus',e instanceof Error ? e.message : 'Schlüsselerstellung fehlgeschlagen.'); }
+    finally { $('keyPassphrase').value = ''; $('keyPassphraseConfirm').value = ''; $('createKey').disabled = false; }
   });
   $('exportEstate').addEventListener('click', async () => {
     $('exportEstate').disabled = true;
@@ -78,12 +105,15 @@
     try {
       const secret = await read($('privateKeyFile').files[0]);
       const pkg = await read($('estateFile').files[0]);
-      if (secret?.kind !== 'helferlein-heir-private-key' || secret.version !== 1 ||
-          secret.algorithm !== 'RSA-OAEP-3072-SHA256' || secret.privateKey?.kty !== 'RSA' ||
-          pkg?.kind !== 'helferlein-heir-estate-package' || pkg.version !== 1 ||
+      if (pkg?.kind !== 'helferlein-heir-estate-package' || pkg.version !== 1 ||
           pkg.algorithm !== 'RSA-OAEP-3072-SHA256+AES-256-GCM')
         throw Error('Schlüssel oder Nachlassdatei haben ein ungültiges Format.');
-      const privateKey = await crypto.subtle.importKey('jwk',secret.privateKey,{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
+      const passphrase = $('unlockPassphrase').value;
+      if (!passphrase) throw Error('Passwort fehlt.');
+      const privateJwk = await unlockPrivate(secret,passphrase);
+      if (privateJwk?.kty !== 'RSA' || privateJwk?.alg !== 'RSA-OAEP-256' || !privateJwk?.d)
+        throw Error('Ungültiger privater Schlüssel.');
+      const privateKey = await crypto.subtle.importKey('jwk',privateJwk,{name:'RSA-OAEP',hash:'SHA-256'},false,['decrypt']);
       const wrapped = unb64(pkg.wrappedKey), iv = unb64(pkg.iv), ciphertext = unb64(pkg.ciphertext);
       if (wrapped.length !== 384 || iv.length !== 12 || ciphertext.length > MAX) throw Error('Ungültiges Paket.');
       const rawKey = new Uint8Array(await crypto.subtle.decrypt({name:'RSA-OAEP'},privateKey,wrapped));
@@ -100,7 +130,7 @@
       $('estateOutput').append(pre);
       show('openStatus','Nachlass lokal entschlüsselt. Die Daten werden nicht in Supabase gespeichert.');
     } catch { show('openStatus','Entschlüsselung fehlgeschlagen. Bitte passenden privaten Schlüssel und Nachlassdatei prüfen.'); }
-    finally { $('openEstate').disabled = false; }
+    finally { $('unlockPassphrase').value = ''; $('openEstate').disabled = false; }
   });
   window.addEventListener('pagehide',() => $('estateOutput').replaceChildren());
 })();
