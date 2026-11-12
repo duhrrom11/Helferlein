@@ -22,3 +22,14 @@ for (const route of routes) {
 assert.match(home, /<title[^>]*>[^<]+<\/title>/i, 'Homepage title missing');
 checks++;
 console.log('Production route smoke OK: ' + routes.length + ' tools, ' + checks + ' assertions');
+
+// A11: Chart.js canvases must have an accessible name; camera preview is not a data chart.
+for (const tool of ['haushaltsbuch-kassenbon', 'wg-organisator']) {
+  const html = fs.readFileSync(path.join(root, 'tools', tool, 'index.html'), 'utf8');
+  for (const id of ['categoryChart', 'cashflowChart']) {
+    const match = html.match(new RegExp('<canvas\\b[^>]*\\bid="' + id + '"[^>]*>', 'i'));
+    assert.ok(match, 'Missing financial chart: ' + tool + '/' + id);
+    assert.match(match[0], /\\brole="img"/, 'Missing chart image semantics: ' + tool + '/' + id);
+    assert.match(match[0], /\\baria-label="[^"]+"/, 'Missing chart accessible name: ' + tool + '/' + id);
+  }
+}
