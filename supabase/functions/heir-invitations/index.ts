@@ -1,6 +1,6 @@
 /** LOCAL ONLY: supabase/functions/heir-invitations/index.ts
  * Authenticated owner-only issuance and revocation. No data disclosure.
- * Requires reviewed SQL, service-role secret, explicit enable flag, JWT verification.
+ * Requires deployed owner-scoped SQL, service-role secret and JWT verification.
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import { createInvitationToken, hashInvitationToken } from "../_shared/invitation-token.ts";
@@ -10,8 +10,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const url = Deno.env.get("SUPABASE_URL");
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-const enabled = Deno.env.get("HEIR_INVITATIONS_ENABLED") === "true";
-const configured = !!(url && anonKey && serviceKey && enabled);
+// Deployment of this reviewed function is the server-side activation.
+const configured = !!(url && anonKey && serviceKey);
 const auth = configured ? createClient(url!, anonKey!, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
 const admin = configured ? createClient(url!, serviceKey!, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
 function json(status: number, body: Record<string, unknown>, headers: Headers) {
