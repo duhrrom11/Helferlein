@@ -291,7 +291,7 @@
     }
     function reportError(error) { if (disposed) return; lastStatusErrorAt = now(); lastSyncError = error && error.message ? error.message : String(error); lastConflictMessage = lastSyncError; setStatus('Cloud: ' + lastSyncError); }
     function setStatus(message) { if (!disposed) { statusGeneration++; status.textContent = message; } }
-    function statusError(prefix, error) { lastStatusErrorAt = now(); lastConflictMessage = error && error.message ? error.message : String(error); setStatus(prefix + ': ' + lastConflictMessage); }
+    function statusError(prefix, error) { lastStatusErrorAt = now(); lastConflictMessage = error && error.message ? error.message : String(error); const anonymous = !currentOwner() && /^Auth session missing!?$/i.test(lastConflictMessage); setStatus(anonymous ? 'Nicht angemeldet. Deine lokalen Daten bleiben auf diesem Gerät. Für die optionale Cloud-Sicherung kannst du dich anmelden.' : prefix + ': ' + lastConflictMessage); }
     function currentOwner() { return localStorage.getItem(ownerKey); }
     function ownerMatches(uid) { return !!uid && currentOwner() === uid; }
     function assertSameAccount(uid, generation) { if (!sameAccount(uid, generation)) throw new Error('Konto während Cloud-Vorgang gewechselt'); }
@@ -606,10 +606,10 @@
     host.setAttribute('aria-label', 'Supabase-Datenübernahme');
     host.style.cssText = 'margin:12px 0;padding:12px;border:1px solid #94a3b8;border-radius:12px;background:#f8fafc;color:#0f172a;font:14px system-ui';
     const title = document.createElement('strong');
-    title.textContent = 'Supabase-Datenübernahme (freiwillig)';
+    title.textContent = 'Cloud-Sicherung (optional)';
     const status = document.createElement('p');
     status.setAttribute('role', 'status');
-    status.textContent = 'Lokale Daten bleiben unverändert, bis du eine Übernahme bestätigst.';
+    status.textContent = 'Ohne Anmeldung kannst du das Tool lokal verwenden. Deine Daten werden erst nach deiner ausdrücklichen Bestätigung in die Cloud übernommen.';
     const actions = document.createElement('div');
     actions.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
     function button(label, handler) {
