@@ -428,7 +428,8 @@ test('Wiederherstellungsschluessel-Upload stoppt bei aktivem Schluessel- oder Re
   const write = source.indexOf('.update({ recovery_key: recovery })');
   assert.ok(write > source.lastIndexOf('currentMasterKeyHex !== startingMasterKeyHex', write));
   assert.ok(write > source.lastIndexOf('localSaveRevision !== startingRevision', write));
-  assert.equal(source.split('currentMasterKeyHex !== startingMasterKeyHex').length - 1, 3);
+  // Includes the additional post-account-revalidation guard before cloud write.
+  assert.equal(source.split('currentMasterKeyHex !== startingMasterKeyHex').length - 1, 4);
 });
 
 test('Wiederherstellungsschluessel meldet Aenderungen waehrend des Cloud-Schreibens', () => {
