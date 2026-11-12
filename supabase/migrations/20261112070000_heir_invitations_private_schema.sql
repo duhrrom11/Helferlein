@@ -3,10 +3,11 @@
 -- Invitations are issued only for an EXISTING registered recipient UUID.
 -- No heir access to vault_cloud_snapshots is granted by this migration.
 BEGIN;
-CREATE SCHEMA IF NOT EXISTS nachlass_private;
+-- Fail closed on an unexpected existing schema instead of reusing unknown objects.
+CREATE SCHEMA nachlass_private;
 REVOKE ALL ON SCHEMA nachlass_private FROM PUBLIC, anon, authenticated;
 
-CREATE TABLE IF NOT EXISTS nachlass_private.heir_invitations (
+CREATE TABLE nachlass_private.heir_invitations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_user_id uuid NOT NULL REFERENCES public.vault_cloud_snapshots(owner_user_id) ON DELETE CASCADE,
   recipient_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -18,8 +19,8 @@ CREATE TABLE IF NOT EXISTS nachlass_private.heir_invitations (
   CHECK (owner_user_id <> recipient_user_id),
   CHECK (expires_at > created_at)
 );
-CREATE INDEX IF NOT EXISTS heir_invitations_owner_idx ON nachlass_private.heir_invitations(owner_user_id);
-CREATE TABLE IF NOT EXISTS nachlass_private.heir_assignments (
+CREATE INDEX heir_invitations_owner_idx ON nachlass_private.heir_invitations(owner_user_id);
+CREATE TABLE nachlass_private.heir_assignments (
   owner_user_id uuid NOT NULL REFERENCES public.vault_cloud_snapshots(owner_user_id) ON DELETE CASCADE,
   heir_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   invitation_id uuid NOT NULL UNIQUE REFERENCES nachlass_private.heir_invitations(id),
@@ -31,6 +32,8 @@ CREATE TABLE IF NOT EXISTS nachlass_private.heir_assignments (
 ALTER TABLE nachlass_private.heir_invitations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE nachlass_private.heir_assignments ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON ALL TABLES IN SCHEMA nachlass_private FROM PUBLIC, anon, authenticated;
+-- No direct client access to private tables. Service-role access is via
+-- the narrowly scoped RPCs below, not through the exposed Data API.
 
 -- One transaction: lock invitation, verify recipient, owner still exists,
 -- expiry and revocation, no previous assignment, insert and accept.
