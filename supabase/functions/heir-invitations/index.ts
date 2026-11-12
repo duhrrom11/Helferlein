@@ -65,7 +65,8 @@ Deno.serve(async (request: Request) => {
     return json(400,{error:"invalid_request"},headers);
    const token = createInvitationToken();
    const tokenHash = await hashInvitationToken(token);
-   const expiresAt = new Date(Date.now() + 7*24*60*60*1000).toISOString();
+   // Keep below the SQL seven-day maximum despite clock skew between runtimes.
+   const expiresAt = new Date(Date.now() + 6*24*60*60*1000).toISOString();
    const {data,error} = await admin.rpc("issue_heir_invitation_atomic",{
     p_owner_user_id:ownerId,p_recipient_user_id:input.recipientUserId,
     p_token_hash_hex:tokenHash,p_expires_at:expiresAt,
