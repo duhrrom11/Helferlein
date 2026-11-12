@@ -62,11 +62,19 @@ Die RPCs verwenden die Reihenfolge Eigentümerzeile (`FOR UPDATE`) vor Einladung
 ## Vorbereitete verteilte Limitierung (nicht aktiv)
 
 - Dritte, **noch nicht ausgeführte** Migration: `20261112070002_heir_rate_limits.sql`. Muss nach beiden bestehenden Migrationen und vor jeder Edge-Function-Aktivierung angewendet werden.
-- Atomarer PostgreSQL-Upsert auf `(actor_id, operation, window_start)` vermeidet isolat-lokale Zähler und serialisiert konkurrierende Verbrauchsversuche über einen eindeutigen Schlüssel. Festes Zeitfenster: 1 Stunde, nach Datenbankuhr.
-- Startquoten (vor Freigabe fachlich prüfen): `issue` 5/Stunde/Benutzer, `revoke` 20/Stunde/Benutzer, `redeem` 10/Stunde/Benutzer. Erfolgreiche und erfolglose autorisierte Versuche verbrauchen Kontingent. Überschreitung = generisches HTTP 429, Datenbank-/Transportfehler = HTTP 503 (fail closed).
+- Atomarer PostgreSQL-Upsert auf `(actor_id, operation, window_start)` vermeidet isolat-lokale Zähler und serialisiert konkurrierende Verbrauchsversuche über einen eindeutigen Schlüssel. Zwei feste Zeitfenster: 60 Sekunden und 1 Stunde, nach Datenbankuhr.
+- Startquoten (vor Freigabe fachlich prüfen): `issue` 2/Minute und 5/Stunde/Benutzer, `redeem` 3/Minute und 10/Stunde/Benutzer. Widerrufe sind absichtlich nicht quotiert. Erfolgreiche und erfolglose autorisierte Versuche verbrauchen Kontingent. Überschreitung = generisches HTTP 429, Datenbank-/Transportfehler = HTTP 503 (fail closed).
 - Die Limitierungs-RPC ist nur `service_role` zugänglich. Identität stammt aus `auth.getUser`, niemals aus einem Clientfeld. Es werden ausschließlich Benutzer-UUID, Operationsklasse, Zeitfenster und Zähler gespeichert; keine IP-Adresse, Tokens, Hashes oder Request-Inhalte.
 - **NO-GO:** Ohne ausgeführte und geprüfte dritte Migration würde die neue Edge-Function-Version bei Limitierungs-RPC-Fehlern mit 503 abbrechen. Die bestehende Aktivierung muss deshalb weiter ausgeschaltet bleiben.
 - **NO-GO:** Schutz gegen nicht authentifizierte Last, Botnetze und Konto-Rotation ist damit nicht abgedeckt. Vor Freigabe zusätzliche Gateway-/WAF-Quoten, Alarmierung, Abuse-Prozesse und datenschutzgerechte Aufbewahrung definieren.
-- **NO-GO:** Die Zählertabelle wächst ohne Aufräumverfahren dauerhaft. Vor Freigabe kontrollierte, separat genehmigte Löschung alter Zeitfenster (mit Retention- und Beobachtbarkeitsregeln) planen. Keine automatische Löschung in dieser Änderung.
-- Der Aufruf der Limitierungs-RPC erfolgt vor der jeweiligen fachlichen Mutation. Bei einem späteren Fehler wird der verbrauchte Zähler nicht rückgängig gemacht; das ist für einen Missbrauchsschutz beabsichtigt.
+- **NO-GO bis Betriebsabnahme:** Eine begrenzte Wartungsfunktion `nachlass_private.prune_heir_rate_limits` ist vorbereitet (maximal 1000 Einträge pro Aufruf, nur älter als 48 Stunden, `SKIP LOCKED`). Sie ist nicht für `service_role` freigegeben und wird nicht automatisch ausgeführt. Wartungsrolle, Intervall und Aufbewahrung separat genehmigen.
+- Der Aufruf der Limitierungs-RPC erfolgt vor Ausstellung oder Einlösung, aber nicht vor dem sicherheitskritischen Widerruf. Bei einem späteren Fehler wird der verbrauchte Zähler nicht rückgängig gemacht; das ist für einen Missbrauchsschutz beabsichtigt.
 - Ein Limit kann legitime Benutzer temporär blockieren. Quoten, Wiederholungsverhalten, Zugänglichkeit und Nutzerkommunikation vor Aktivierung gesondert abnehmen.
+
+## Ergänzende Sicherheitsabwägungen
+
+- Ein Widerruf wird nicht durch ein Kontingent blockiert. Er erfordert weiterhin ein geprüftes JWT und die atomare Eigentümerprüfung. Infrastrukturfehler können den Widerruf weiterhin verhindern.
+- Beide festen Zeitfenster begrenzen gewöhnliche Spitzen. Direkt an einer Minutengrenze sind weiterhin bis zu vier Ausstellungs- bzw. sechs Einlöseversuche in kurzer Folge möglich. Ein gleitendes Fenster oder Gateway-Schutz bleibt zu bewerten.
+- Die zwei Zähler werden in derselben PostgreSQL-Funktion nacheinander aktualisiert. Bei einer Überschreitung im Stundenfenster kann der Minutenzähler bereits erhöht sein; dies ist konservativ. Ein SQL-Fehler rollt die gesamte RPC-Transaktion zurück.
+- Die Wartungsfunktion ist ausschließlich für einen vertrauenswürdigen privilegierten Inhaber vorgesehen. Keine Freigabe an die Edge-Service-Role; kein Bereinigungsjob eingerichtet.
+- Keine Compilerprüfung durchgeführt. Die strukturelle RpcClient-Signatur muss vor Freigabe gegen die eingesetzte supabase-js-Version geprüft werden.
