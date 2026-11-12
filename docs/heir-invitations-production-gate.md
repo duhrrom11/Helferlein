@@ -27,3 +27,26 @@ Die RPCs verwenden die Reihenfolge Eigentümerzeile (`FOR UPDATE`) vor Einladung
 ## Freigabestatus
 
 **NO-GO** bis die obigen Nachweise vorliegen und eine ausdrückliche produktive Freigabe erteilt wurde.
+
+## Autorisierungsgrenze – verbindlicher Vertrauensvertrag
+
+- Der HTTP-Aufrufer darf ausschließlich ein Supabase-Bearer-Token und die erlaubten Aktionsdaten liefern. Weder Eigentümer-ID noch eingelöste Benutzer-ID werden aus JSON oder URL übernommen. `heir-invitations` bestimmt `ownerId` ausschließlich durch `auth.getUser(bearer)`; `heir-redemption` bestimmt die Benutzer-ID über denselben Auth-Dienst im gemeinsamen Helper.
+- Der Service-Role-Schlüssel ist ausschließlich in der Edge-Function-Laufzeit zulässig. Die SQL-RPCs akzeptieren privilegierte Identitätsparameter **nur aufgrund dieser serverseitigen Vertrauensgrenze**. Sie sind nicht als direkte Client-APIs freizugeben. Das JWT-Gateway (`verify_jwt=true`) und `auth.getUser` müssen beide aktiv bleiben.
+- `Origin` und CORS sind keine Authentifizierung. Aufrufe ohne Origin sind möglich; allein ein geprüftes JWT darf die Identität festlegen. Kein Client darf den Service-Role-Schlüssel oder den Opt-in-Schalter kontrollieren.
+- Privilegierte RPC-Ausführung darf weder an `PUBLIC`, `anon` noch `authenticated` vererbt werden. Zusätzlich müssen tatsächliche Eigentümer und `EXECUTE`-ACLs nach dem Ausrollen geprüft werden. Keine neuen RPC-Aufrufpfade ohne erneute Sicherheitsprüfung.
+- Ein registrierter Empfänger wird durch seine UUID identifiziert; die bloße Kenntnis einer UUID berechtigt nicht zur Einlösung. Der Empfänger muss zusätzlich das geheime Token und ein gültiges JWT des passenden Kontos besitzen.
+
+## Fehlerklassifikation und Beobachtbarkeit
+
+- `heir-invitations`: erwartete fachliche Ablehnung der Ausstellung = HTTP 409, nicht vorhandene bzw. fremde Einladung beim Widerruf = HTTP 404. Explizite RPC-Transport- oder Datenbankfehler = HTTP 503. Die HTTP-Antwort enthält weder SQL-Details noch Token.
+- `heir-redemption`: ungültige, fremde, abgelaufene oder bereits verwendete Einladungen erhalten dieselbe generische Ablehnung. **Derzeit werden auch RPC-Fehler als Ablehnung behandelt**; das verhindert Datenabfluss, erschwert aber die Erkennung von Ausfällen. Vor Produktivfreigabe ist eine datensparsame serverseitige Fehlerklassifikation mit neutralen Client-Antworten zu implementieren und abzunehmen.
+- Keine vollständigen Request-Bodys, Einladungs-Token, Token-Hashes, Bearer-Token oder Service-Role-Schlüssel protokollieren. Zulässige Betriebsmetriken: aggregierte HTTP-Statusklassen, technische Fehlerkategorien, begrenzte Anzahl fehlgeschlagener Versuche ohne personenbezogene Rohdaten.
+- Rate-Limits und Missbrauchsschutz für Ausstellungs- und Einlösungsversuche sind vor Aktivierung zu spezifizieren. Die CORS-Origin-Liste ist kein Ersatz dafür.
+
+## Datenbankabhängigkeiten und Migrationsvorbedingungen
+
+- Migration 1 erfordert `gen_random_uuid()`, `auth.users(id)` sowie `public.vault_cloud_snapshots(owner_user_id)` mit kompatiblem UUID-Typ und geeigneter Eindeutigkeit für den Fremdschlüssel.
+- Die neuen Tabellen referenzieren den Eigentümer mit `ON DELETE CASCADE`. Deshalb vor der Freigabe bestehende Löschpfade und deren Sperrreihenfolge prüfen.
+- Migration 1 erstellt `nachlass_private` neu; vorhandene gleichnamige Objekte führen absichtlich zum Abbruch. Migration 2 setzt die Tabellen und die erste RPC voraus. Beide Migrationen benötigen einen vertrauenswürdigen, ausreichend privilegierten Ausführungsinhaber.
+- `CREATE FUNCTION` statt `CREATE OR REPLACE FUNCTION` schützt gegen stilles Überschreiben, verhindert aber keine Konflikte mit anders signierten Überladungen. Vor der Freigabe gleichnamige Funktionen und exponierte Schemas auflisten.
+- Die Prüfung der tatsächlichen Rechte, RLS-Policies, Funktionsinhaber, bestehenden Trigger und Sperrketten ist eine **noch offene** Voraussetzung. Die statische Dateiprüfung bestätigt diese Eigenschaften nicht.
