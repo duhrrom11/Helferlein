@@ -20,8 +20,11 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-      - name: Validate agent
-        run: node --check scripts/openai-draft-pr-agent.cjs
+      - name: Validate agent and workflow guardrails
+        run: |
+          node --check scripts/openai-draft-pr-agent.cjs
+          node --check scripts/openai-draft-pr-agent-guardrails.cjs
+          node scripts/openai-draft-pr-agent-guardrails.cjs
       - name: Generate safe proposal
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
