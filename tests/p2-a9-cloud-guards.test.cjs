@@ -248,3 +248,44 @@ for (const [method,key] of [['budgets','budgetbuch_budgets'],['goals','budgetbuc
     assert.match(state.alerts[0],/Speichern fehlgeschlagen/);
   });
 }
+
+
+test('A9 household guard fails closed when bridge write permission throws', () => {
+  const state = runHouseholdSave({
+    owner:'synthetic-account',
+    bridge:{canWriteLocal:()=>{throw new Error('Synthetic guard failure');}}
+  });
+  assert.equal(state.result,false);
+  assert.equal(state.writes.length,0);
+  assert.equal(state.cloudChanges,0);
+  assert.match(state.alerts[0],/Synthetic guard failure/);
+});
+
+test('A9 household saveData blocks malformed existing data before any write', () => {
+  for (const malformed of [
+    {entries:'{"not":"array"}'},
+    {budgets:'[]'},
+    {goals:'invalid-json'}
+  ]) {
+    const state = runHouseholdSave({
+      owner:'synthetic-account',bridge:{canWriteLocal:()=>true},...malformed
+    });
+    assert.equal(state.result,false);
+    assert.equal(state.writes.length,0);
+    assert.equal(state.cloudChanges,0);
+    assert.match(state.alerts[0],/Speichern gesperrt/);
+  }
+});
+
+for (const method of ['budgets','goals']) {
+  test('A9 ' + method + ' save fails closed on throwing bridge guard', () => {
+    const state = runAdditionalHouseholdSave({
+      method,owner:'synthetic-account',
+      bridge:{canWriteLocal:()=>{throw new Error('Synthetic guard failure');}}
+    });
+    assert.equal(state.result,false);
+    assert.equal(state.writes.length,0);
+    assert.equal(state.cloudChanges,0);
+    assert.match(state.alerts[0],/Speichern gesperrt/);
+  });
+}
