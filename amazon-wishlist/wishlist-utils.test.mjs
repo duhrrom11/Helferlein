@@ -171,6 +171,19 @@ test('CSV export rejects malformed product references',()=>{
  assert.throws(()=>exportWishlistCsv([{wishlist_products:{asin:'B012345678',marketplace:'other'},priority:1}]));
 });
 
+test('CSV backup rejects invalid public fields and preserves valid text',()=>{
+ const row={wishlist_products:{asin:'B012345678',marketplace:'amazon.de',title:' Buch '},note:' Danke ',priority:2,created_at:'2026-11-10T00:00:00Z'};
+ const csv=exportWishlistCsv([row]);
+ assert.match(csv,/"Buch"/);
+ assert.match(csv,/"Danke"/);
+ for(const title of ['', '  ', 'x'.repeat(251),null]){
+  assert.throws(()=>exportWishlistCsv([{...row,wishlist_products:{...row.wishlist_products,title}}]));
+ }
+ assert.throws(()=>exportWishlistCsv([{...row,note:'x'.repeat(501)}]));
+ assert.throws(()=>exportWishlistCsv([{...row,priority:4}]));
+ assert.deepEqual(row.wishlist_products.title,' Buch ');
+});
+
 test('priority labels match German UI and reject unsupported values',()=>{
  assert.equal(priorityLabel(1),'Sehr wichtig');
  assert.equal(priorityLabel('2'),'Normal');
