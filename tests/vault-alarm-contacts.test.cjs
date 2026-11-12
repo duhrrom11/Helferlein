@@ -6,14 +6,14 @@ const path = require('node:path');
 const vm = require('node:vm');
 const {webcrypto} = require('node:crypto');
 
-const html = fs.readFileSync(path.join(__dirname, '../tools/digitaler-nachlass/index.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../assets/heir-owner-legacy.js'), 'utf8');
 function extract(startMarker, endMarker) {
   const start = html.indexOf(startMarker);
   const end = html.indexOf(endMarker, start);
   assert.ok(start >= 0 && end > start, 'Funktionscode fehlt: ' + startMarker);
   return html.slice(start, end);
 }
-const source = extract('        async function addAlarmPerson()', '        function sendEmailToPerson(');
+const source = extract('        async function addAlarmPerson()', '        async function saveVaultEntry()');
 
 function setup(initial = []) {
   let stored = { alarmPersons: structuredClone(initial) };
