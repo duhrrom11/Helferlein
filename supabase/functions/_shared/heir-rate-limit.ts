@@ -1,7 +1,7 @@
 /** Server-only, fail-closed limiter backed by a single atomic PostgreSQL RPC.
  * Never send an IP, bearer token, invitation token or digest as a limiter key.
  */
-export type HeirOperation = "issue" | "revoke" | "redeem";
+export type HeirOperation = "issue" | "redeem";
 export type RateDecision = "allowed" | "limited" | "unavailable";
 interface RateRpcClient {
   rpc(name: string, args: Record<string, string>): Promise<{ data: unknown; error: unknown }>;
@@ -10,7 +10,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 export async function consumeHeirRateLimit(
   client: RateRpcClient, actorId: string, operation: HeirOperation,
 ): Promise<RateDecision> {
-  if (!UUID.test(actorId) || !["issue", "revoke", "redeem"].includes(operation)) return "unavailable";
+  if (!UUID.test(actorId) || !["issue", "redeem"].includes(operation)) return "unavailable";
   try {
     const { data, error } = await client.rpc("consume_heir_rate_limit_atomic", {
       p_actor_id: actorId, p_operation: operation,
