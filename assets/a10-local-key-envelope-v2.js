@@ -36,7 +36,7 @@
     }
     function validate(envelope) {
         if (!envelope || typeof envelope !== 'object' || Array.isArray(envelope) ||
-            Object.keys(envelope).sort().join(',') !== 'ciphertext,iv,iterations,kdf,salt,version' ||
+            Object.keys(envelope).sort().join(',') !== 'ciphertext,iterations,iv,kdf,salt,version' ||
             envelope.version !== VERSION || envelope.kdf !== 'PBKDF2-SHA256' ||
             envelope.iterations !== ITERATIONS) throw new Error('Unbekanntes Schlüsselformat');
         return {
