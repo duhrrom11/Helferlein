@@ -1,5 +1,23 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10: Schluesseltrennung und rueckwaertskompatible Migration (2026-11-12, Entwurf, NO-GO)
+
+**Ist-Pfad (Codepruefung):** `initVault()` erzeugt einen zufaelligen 256-Bit-Schluessel und speichert `masterKeyHex` zusammen mit `encryptedData` und unverschluesselten lokalen Kontakt-/Check-in-Feldern in `localStorage.digital_estate_vault`. Bei jedem Start wird der Schluessel aus demselben Datensatz gelesen. `saveLocalConfig()` schreibt den Datensatz erneut. Die Supabase-Wiederherstellung schreibt den entschluesselten Schluessel wieder als `masterKeyHex` in denselben lokalen Datensatz. Das bedeutet: AES-GCM schuetzt derzeit nicht gegen einen Angreifer mit Zugriff auf den Browserspeicher. Cloud-Backups speichern dagegen den Schluessel nur in einer PBKDF2/AES-GCM-geschuetzten Schluesselhuelle, sofern diese bewusst vorbereitet wurde.
+
+**Unabhaengiger Befund zur Wiederherstellung:** Im aktiven `assets/heir-owner-legacy.js` existiert kein nachgewiesener verschluesselter lokaler Datei-Export/-Import. Hinweise auf eine bereits verfuegbare Offline-Sicherungsdatei duerfen deshalb nicht als funktionierende Wiederherstellungsgarantie gelten. Die Anleitung zum Geraetewechsel wurde entsprechend korrigiert.
+
+### Zielbild (noch nicht aktiviert)
+
+1. Neues versioniertes lokales Format, z. B. `formatVersion: 2`: verschluesselter Inhalt und verschluesselte Metadaten, zufaellige Salt-/Nonce-Werte und eine **passwortgeschuetzte lokale Schluesselhuelle**. Kein Klartext-`masterKeyHex` im dauerhaften Datensatz. Masterkey nur waehrend einer entsperrten Sitzung im Speicher. Authentifizierte Verschluesselung (AES-GCM), klar definierte KDF-Parameter und eindeutige Versionskennzeichnung; Passwortstaerke und KDF-Kosten gesondert pruefen.
+2. Beim Start zuerst Format erkennen. Legacy-v1-Datensaetze nur lesend und ohne automatische Umschreibung oeffnen; fehlende oder ungueltige Schluesselhuellen niemals durch einen neuen Tresor ersetzen. V2 erst nach erfolgreicher Passwortentsperrung laden.
+3. Migration ausschliesslich nach ausdruecklicher Einwilligung, erfolgreicher Entschluesselung des **alten** Tresors, validierter vollstaendiger Konfiguration und Nachweis eines funktionierenden Wiederherstellungswegs. Vor dem Umschalten einen **unabhaengig wiederherstellbaren** verschluesselten Rueckfallstand bereitstellen; keine Klartextschluessel in Exporten. Ein Browserprofil-Backup allein ist kein sicherer Rueckfallweg.
+4. Neue V2-Daten in einen **separaten Staging-Key** schreiben, wieder lesen und mit Passwort vollstaendig entschluesseln. Inhalte, Kontakte, Check-in und IDs vergleichen. Erst danach atomaren Aktivierungsmarker umstellen. Legacy-Datensatz bis zur bestaetigten Rueckfallfaehigkeit unangetastet lassen. Fehler, Tab-Konflikte, Abbruch und Speicherplatzmangel muessen fail-closed bleiben.
+5. Supabase-Backup und Cloud-Wiederherstellung muessen V1/V2 explizit unterscheiden. Keine ungueltige Kombination aus lokalem V2-Schluesselumschlag, Cloud-`recovery_key` und verschluesselten Cloud-Daten akzeptieren. Keine automatischen Cloud-Ueberschreibungen beim lokalen Formatwechsel; Schluesselidentitaet, Revision und Konto erneut pruefen.
+6. Browser-Sitzungen, Cross-Tab-Konflikte, Passwortverlust, KDF-Upgrade, Fehlversuche, Reload und Speicherfehler in **isolierten, synthetischen Tests** abdecken. Vor der Freigabe einen vollstaendigen Export-/Import- und Geraetewechsel-Roundtrip ohne Produktionsdaten nachweisen.
+
+**Freigabesperre:** Keine automatische V1-Migration, keine V2-Aktivierung, keine Freigabe fuer Passwoerter oder Zugangsdaten, solange der isolierte Roundtrip, Rueckfallweg und die Sicherheitspruefung fehlen. Bestehende lokale Datensaetze und produktive Supabase-Tabellen bleiben unveraendert.
+
+
 ## Aktualisierter A10-Release-Gate-Befund (2026-11-12, nur lesende Produktionsprüfung)
 
 **Dieser Befund ersetzt die veraltete Bestandsaufnahme vom 2026-11-08 oben, nicht die dort beschriebenen Sicherheitsanforderungen.**
