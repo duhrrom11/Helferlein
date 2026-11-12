@@ -48,3 +48,32 @@
 **Aktueller Gesamtentscheid: NO-GO.** Entscheidende Person: **offen** · Datum der formalen Freigabe: **offen** · Freigabenachweis: **fehlt** · G1-Change-GO: **nicht erteilt**.
 
 **Sicherheitsgrenze:** Ausschließlich GitHub-Dokumentation; keine SQL-Ausführung, keine Supabase-Schreiboperationen, keine Tests, kein Merge, keine Aktivierung und kein Deployment.
+
+
+## P0-Nachweisabgleich – GitHub-Quellenprüfung vom 2026-11-12 (keine Freigabe)
+
+**Prüfbasis:** [Issues #270](https://github.com/duhrrom11/Helferlein/issues/270), [#271](https://github.com/duhrrom11/Helferlein/issues/271), [#272](https://github.com/duhrrom11/Helferlein/issues/272), Migrationen `20261112070000`–`20261112070002` auf `security/heir-invitations-static-review`, sowie [Draft-PR #284](https://github.com/duhrrom11/Helferlein/pull/284) auf Code-Commit `d0838e4f21a7e0378027ba886ce357846529f51f`.
+
+**Verifizierter CI-Teilnachweis:** [GitHub Actions #43213520533](https://github.com/duhrrom11/Helferlein/actions/runs/43213520533), Job „Deno isolated authorization tests“, Ergebnis **success**. Der vorherige Lauf #43213321811 scheiterte an drei Tests; die Fehler wurden im genannten Code-Commit korrigiert. Die CI-Aussage gilt ausschließlich für die im Workflow ausgeführten Checks, nicht für PostgreSQL-Migrationsparser, Produktionsdatenbank, effektive ACLs oder die unabhängige Abnahme. Prüfer/Unterzeichner: **nicht benannt**.
+
+### #270 – Schema und Historie: verbindliche STOP-Punkte
+- [ ] DBA dokumentiert mit Datum und read-only Protokoll die tatsächliche Existenz von `nachlass_private`, sämtlichen gleichnamigen Tabellen, Funktionen und **Überladungen**; leere Tabellenlisten sind kein Negativnachweis für Funktionen.
+- [ ] DBA vergleicht die registrierten Migrationen `20261112070000`, `20261112070001`, `20261112070002` mit den tatsächlichen Objekten und ihren Definitionen. Fehlende Migrationshistorie beweist **nicht** Objektabwesenheit.
+- [ ] `CREATE SCHEMA nachlass_private` **ohne** `IF NOT EXISTS` wird vor einer späteren Ausführung auf Konflikte geprüft; unbekannte Bestandsobjekte bedeuten STOP, nicht blindes Wiederholen.
+- [ ] UUID-/FK-Bezüge `public.vault_cloud_snapshots(owner_user_id)` und `auth.users(id)`, `gen_random_uuid()`, Trigger, Löschkaskaden und Constraints werden unabhängig bestätigt.
+- [ ] Versionierter Soll/Ist-Vergleich, Abweichungsliste, DBA-Unterschrift und unabhängige Gegenprüfung liegen vor.
+
+### #271 – Rechte und RLS: verbindliche STOP-Punkte
+- [ ] Für die vier operativen `public.*_heir_*_atomic`-RPCs bzw. `public.consume_heir_rate_limit_atomic` werden **exakte Signaturen**, tatsächliche Eigentümer, `SECURITY DEFINER`, `search_path`, direkte und vererbte `EXECUTE`-Rechte nachgewiesen.
+- [ ] `PUBLIC`, `anon`, `authenticated`, `service_role`, Schema-`USAGE`, Tabellenrechte, Default Privileges und überladene Funktionen werden getrennt geprüft. SQL-`REVOKE`-Text ist **kein** Ist-Nachweis.
+- [ ] Für alle drei privaten Tabellen werden effektive RLS-Aktivierung und Policies erfasst; die Wartungsfunktion `nachlass_private.prune_heir_rate_limits(integer)` benötigt eine gesondert genehmigte Betreiberrolle.
+- [ ] Vor-G1-Ist-Prüfung und Nach-G1-Rechteabnahme bleiben zwei getrennte, schriftlich freizugebende Schritte.
+
+### #272 – SQL, TypeScript und RPC: verbindliche STOP-Punkte
+- [x] **Teilnachweis, keine Abnahme:** Isolierter Deno-GitHub-Actions-Job für Code-SHA `d0838e4f21a7e0378027ba886ce357846529f51f` erfolgreich; [Protokoll](https://github.com/duhrrom11/Helferlein/actions/runs/43213520533).
+- [ ] Alle drei SQL-Dateien in einer separat genehmigten **nichtproduktiven** PostgreSQL-Parser-/Compilerumgebung mit Version, Ergebnis und Log nachweisen; hier wurde **kein SQL ausgeführt**.
+- [ ] Supabase-JS `2.57.0`, RPC-`PromiseLike`-Typen, Deno-Imports, exakte Argument-/Rückgabetypen und `NULL`/`false`/SQL-Fehler-zu-HTTP-Klassifikation unabhängig gegenprüfen.
+- [ ] Vor G2 isolierte RPC-Laufzeit-, Fehler- und Parallelitätstests gesondert freigeben; ein grüner Deno-Job beweist diese nicht.
+- [ ] Freigabeprotokoll enthält fixierten Release-Code-SHA, Umgebung, Datum, Prüfer, unabhängige Bestätigung und schriftliche Entscheidung.
+
+**Gesamtentscheidung: NO-GO.** Keine Person benannt oder Freigabe erteilt. Diese Ergänzung ist ausschließlich ein GitHub-Dokumentationsnachweis; kein Produktionszugriff, keine SQL-Ausführung, kein Merge und kein Deployment.
