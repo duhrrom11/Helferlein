@@ -6,6 +6,8 @@
 
 **G0-Übergabe an die Rollen:** [Rollenbasierte G0-Übergabeübersicht für #270–#272, #274 und #275](./heir-invitations-g0-handover.md) mit Nachweisen, Abhängigkeiten, STOP-Kriterien und offenem Übergabeprotokoll. Dies ist keine Freigabe.
 
+**G0-Entscheidungsvorlage:** [Rollenbezogene G0-Freigabecheckliste mit NO-GO-Übergabeentscheidungen](./heir-invitations-g0-release-decision-checklist.md). Alle sechs Rollenentscheidungen und das Gesamt-G0 sind derzeit **NO-GO**; diese Vorlage ist keine Genehmigung für G1.
+
 ## Verantwortlichkeiten und verbindliche Freigaben
 
 | Rolle | Verantwortlich für | Nachweis |
