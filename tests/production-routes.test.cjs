@@ -41,6 +41,6 @@ for (const tool of ['haushaltsbuch-kassenbon', 'wg-organisator']) {
     assert.match(html, new RegExp('id="' + id + 'Summary"'), 'Missing chart text summary: ' + tool + '/' + id);
     assert.match(html, new RegExp("getElementById\\('" + id + "Summary'\\)\\.textContent"), 'Summary must be updated safely: ' + tool + '/' + id);
   }
-  assert.match(html, /Object\\.entries\\(categoryExpenses\\)/, 'Category summary must derive from real chart values: ' + tool);
-  assert.match(html, /formatChartAmount\\(totalIncome - totalExpense\\)/, 'Cashflow summary must include calculated balance: ' + tool);
+  assert.match(html, /Object\.entries\(categoryExpenses\)/, 'Category summary must derive from real chart values: ' + tool);
+  assert.match(html, /formatChartAmount\(totalIncome - totalExpense\)/, 'Cashflow summary must include calculated balance: ' + tool);
 }
