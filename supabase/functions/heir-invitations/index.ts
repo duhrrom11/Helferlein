@@ -71,7 +71,9 @@ Deno.serve(async (request: Request) => {
     p_owner_user_id:ownerId,p_recipient_user_id:input.recipientUserId,
     p_token_hash_hex:tokenHash,p_expires_at:expiresAt,
    });
-   if (error || typeof data !== "string" || !UUID.test(data)) return json(409,{error:"not_available"},headers);
+   // Infrastructure failures must not masquerade as expected business conflicts.
+   if (error) return json(503,{error:"unavailable"},headers);
+   if (typeof data !== "string" || !UUID.test(data)) return json(409,{error:"not_available"},headers);
    // Token returned ONCE; never log, store in URL, or put into analytics.
    return json(201,{invitationId:data,token,expiresAt},headers);
   }
@@ -81,7 +83,8 @@ Deno.serve(async (request: Request) => {
    const {data,error} = await admin.rpc("revoke_heir_invitation_atomic",{
     p_owner_user_id:ownerId,p_invitation_id:input.invitationId,
    });
-   return !error && data === true ? json(200,{status:"revoked"},headers) : json(404,{error:"not_found"},headers);
+   if (error) return json(503,{error:"unavailable"},headers);
+   return data === true ? json(200,{status:"revoked"},headers) : json(404,{error:"not_found"},headers);
   }
   return json(400,{error:"invalid_request"},headers);
  } catch { return json(503,{error:"unavailable"},headers); }
