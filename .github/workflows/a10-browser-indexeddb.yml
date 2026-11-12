@@ -6,6 +6,7 @@ on:
       - 'assets/a10-atomic-idb-store.js'
       - 'tests/a10-browser-indexeddb.cjs'
       - 'tests/a10-browser-persistent-restart.cjs'
+      - 'tests/a10-browser-hardkill.cjs'
       - '.github/workflows/a10-browser-indexeddb.yml'
   workflow_dispatch:
 
@@ -30,3 +31,4 @@ jobs:
         run: |
           node tests/a10-browser-indexeddb.cjs
           node tests/a10-browser-persistent-restart.cjs
+          node tests/a10-browser-hardkill.cjs
