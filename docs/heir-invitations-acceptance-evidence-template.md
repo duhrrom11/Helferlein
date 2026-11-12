@@ -2,6 +2,8 @@
 
 **Status: NO-GO.** Diese Vorlage ist eine dokumentarische Arbeitshilfe für die [GO/NO-GO-Matrix](./heir-invitations-go-no-go-matrix.md) und den [Produktionsfreigabeplan](./heir-invitations-production-release-plan.md). Sie ist **kein** Nachweis einer erfolgten Prüfung, keine Freigabe und keine Anweisung zur Ausführung. Stand: 2026-11-12.
 
+**G0-Detailchecklisten für #270–#272, #274 und #275:** [Quellenbezogene G0-Nachweise](./heir-invitations-g0-evidence-checklists.md). Sämtliche Kontrollpunkte bleiben offen und ersetzen keine Abnahme.
+
 ## Einheitlicher Nachweisdatensatz (pro Gate und Issue separat)
 
 | Pflichtfeld | Eintrag |
