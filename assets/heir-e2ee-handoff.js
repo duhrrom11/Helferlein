@@ -49,16 +49,17 @@
     return JSON.parse(dec.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,ciphertext)));
   };
   let pendingPublicKey = null;
+  let publicKeySaved = false;
   $('downloadPublicKey').addEventListener('click', () => {
     if (!pendingPublicKey) return;
     download('helferlein-erbe-oeffentlicher-schluessel.json',pendingPublicKey);
+    publicKeySaved = true;
     show('keyStatus','Öffentlicher Schlüssel heruntergeladen. Nur diese Datei an den Nachlassbesitzer weitergeben. Privaten Schlüssel und Passwort getrennt sicher aufbewahren.');
   });
   $('createKey').addEventListener('click', async () => {
     $('createKey').disabled = true;
-    pendingPublicKey = null;
-    $('downloadPublicKey').disabled = true;
     try {
+      if (pendingPublicKey && !publicKeySaved) throw Error('Bitte zuerst den öffentlichen Schlüssel herunterladen, bevor du ein neues Schlüsselpaar erstellst.');
       const passphrase = $('keyPassphrase').value;
       const confirmation = $('keyPassphraseConfirm').value;
       if (passphrase.length < 16 || passphrase.length > 1024) throw Error('Mindestens 16 Zeichen Passwort erforderlich.');
@@ -69,6 +70,7 @@
       const protectedPrivate = await protectPrivate(privateKey,passphrase);
       download('helferlein-erbe-privatschluessel-verschluesselt.json',protectedPrivate);
       pendingPublicKey = {kind:'helferlein-heir-public-key',version:1,algorithm:'RSA-OAEP-3072-SHA256',publicKey};
+      publicKeySaved = false;
       $('downloadPublicKey').disabled = false;
       show('keyStatus','Privater Schlüssel heruntergeladen. Jetzt den öffentlichen Schlüssel mit dem zweiten Button herunterladen. Beide Dateien sind für die Übergabe nötig.');
     } catch(e) { show('keyStatus',e instanceof Error ? e.message : 'Schlüsselerstellung fehlgeschlagen.'); }
@@ -144,5 +146,5 @@
     } catch { show('openStatus','Entschlüsselung fehlgeschlagen. Bitte passenden privaten Schlüssel und Nachlassdatei prüfen.'); }
     finally { $('unlockPassphrase').value = ''; $('openEstate').disabled = false; }
   });
-  window.addEventListener('pagehide',() => { pendingPublicKey = null; $('estateOutput').replaceChildren(); });
+  window.addEventListener('pagehide',() => { pendingPublicKey = null; publicKeySaved = false; $('estateOutput').replaceChildren(); });
 })();
