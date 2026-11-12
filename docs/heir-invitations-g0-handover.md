@@ -33,7 +33,7 @@ Die Schritte 3–6 können vorbereitend parallel laufen, sobald ihre Quellenbase
 - **STOP bei Datenbankabweichung:** Bereits vorhandenes `nachlass_private`, unerwartete RPC-Überladung/Trigger/FK, nicht geklärte Migrationshistorie, unsichere Rechte oder RLS.
 - **STOP bei Sicherheitslücke:** Unklare Authentisierungsgrenze, privilegierter Clientzugriff, unzureichender Gateway-/Abuse-Schutz, Secret-/Token-Leak oder unzulässige Logdaten.
 - **STOP bei Betriebsrisiko:** Nicht nachgewiesene Backup-/PITR-Wiederherstellbarkeit, fehlendes RPO/RTO, ungeklärter Wartungszugriff, fehlender Incident-/Rollbackplan oder fehlende SRE-Bereitschaft.
-- **STOP bei Freigabemangel:** Unbenannte Verantwortliche, fehlende Datenschutz-/DBA-/Security-/SRE-Nachweise, nicht freigegebene Prüfung oder fehlende gesonderte Change-Genehmigung.
+- **STOP bei Freigabemangel:** Unbenannte Verantwortliche, fehlende Datenschutz-/DBA-/Security-/SRE-Nachweise oder nicht freigegebene Prüfung verhindern G0. Eine fehlende gesonderte G1-Change-Genehmigung verhindert **G1**, ist aber nicht selbst Voraussetzung für den Abschluss von G0.
 
 ## Übergabeprotokoll – vollständig offen
 
