@@ -16,3 +16,9 @@ Status: **Vorbereitung / NICHT mergefähig**.
 5. GitHub-Pages-Projektpfad und absolute HTTPS-Gateway-URL in der produktiven Frontend-Konfiguration berücksichtigen; keine Vercel-Abhängigkeit annehmen.
 
 Keine Änderungen an Supabase, keine Testdaten und kein Deployment im Rahmen dieser Übergabe.
+
+## Gezielte lokale Prüfung (12.11.2026)
+- Der isolierte Integrationspatch `Helferlein-PR292-Amazon-Integrationspatch.zip` enthält 100 Dateien unter `amazon-import-integration/`, einen neuen Browser-Importer und einen minimalen Diff für `amazon-wishlist/app.mjs`.
+- Alle `.mjs`-Dateien im Patch haben `node --check` erfolgreich bestanden (Syntaxprüfung; keine Laufzeit-/Sicherheitsfreigabe).
+- Zielseite: `https://duhrrom11.github.io/Helferlein/amazon-wishlist/index.html`; Gateway-CORS-Origin: `https://duhrrom11.github.io`.
+- Die Dateien sind **noch nicht in diesem PR enthalten**. Ein Merge oder Deployment ist bis zur vollständigen Übertragung und Backend-Prüfung ausdrücklich gesperrt.
