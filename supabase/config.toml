@@ -2,3 +2,14 @@
 # Die Funktion prueft das Token zusaetzlich mit auth.getUser().
 [functions.vault-api]
 verify_jwt = true
+
+# Erbeneinladungen: JWT-Gateway aktiv. Zusaetzliche auth.getUser-Pruefung
+# in den Edge Functions. Ohne explizite serverseitige Opt-in-Secrets
+# HEIR_INVITATIONS_ENABLED=true bzw. HEIR_REDEMPTION_ENABLED=true
+# antworten die Endpunkte mit 503 und fuehren keine RPCs aus.
+# Diese Konfiguration allein deployed oder aktiviert nichts.
+[functions.heir-invitations]
+verify_jwt = true
+
+[functions.heir-redemption]
+verify_jwt = true
