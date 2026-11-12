@@ -27,6 +27,8 @@ for (const width of [320, 375, 768]) for (const route of routes) {
     if (await settings.count()) {
       await expect(settings).toBeVisible();
       await expect(settings).toHaveAttribute('role','dialog');
+      await expect(settings.locator('input[type="email"]')).toHaveAccessibleName(/E-Mail/i);
+      await expect(settings.locator('input[type="password"]')).toHaveAccessibleName(/Passwort/i);
       expect(await settings.evaluate(el=>el.contains(document.activeElement))).toBe(true);
       // Traverse both wrap boundaries, rather than only testing the opening focus.
       await page.keyboard.press('Shift+Tab');
