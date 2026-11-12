@@ -11,6 +11,12 @@ assert.match(workflow,/issues: write/);
 assert.doesNotMatch(workflow,/contents: write|deployments: write|pull-requests: write/);
 assert.match(workflow,/persist-credentials: false/);
 assert.match(workflow,/cancel-in-progress: false/);
+// Keep the continuous coordinator read-only and bounded even as tasks expand.
+assert.match(workflow,/timeout-minutes: 4/);
+assert.match(workflow,/node --check scripts\/night-coordinator\.cjs/);
+assert.match(workflow,/node --check scripts\/night-coordinator-guardrails\.cjs/);
+assert.doesNotMatch(workflow,/\b(?:actions|id-token|packages|checks|statuses): write\b/);
+assert.doesNotMatch(workflow,/\b(?:gh pr merge|git push|supabase db push|supabase functions deploy)\b/);
 assert.match(script,/timeZone: 'Europe\/Berlin'/);
 assert.doesNotMatch(script,/Outside Berlin night window/);
 assert.match(script,/hour>=6 && !manual && state.lastReportDay!==localDay/);
