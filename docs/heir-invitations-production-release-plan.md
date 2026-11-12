@@ -8,6 +8,8 @@
 
 **G0-Entscheidungsvorlage:** [Rollenbezogene G0-Freigabecheckliste mit NO-GO-Übergabeentscheidungen](./heir-invitations-g0-release-decision-checklist.md). Alle sechs Rollenentscheidungen und das Gesamt-G0 sind derzeit **NO-GO**; diese Vorlage ist keine Genehmigung für G1.
 
+**Priorisierte offene G0-Nachweise:** [Nach Verantwortlichkeit und Freigabeabhängigkeit geordnete G0-Nachweislücken](./heir-invitations-g0-open-evidence-priorities.md). Alle tatsächlichen Teilabnahmen bleiben offen; **NO-GO**.
+
 ## Verantwortlichkeiten und verbindliche Freigaben
 
 | Rolle | Verantwortlich für | Nachweis |
