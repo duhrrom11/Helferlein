@@ -1,0 +1,38 @@
+name: P2 accessibility and mobile navigation
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'tools/**/index.html'
+      - 'assets/helferlein-accessibility.*'
+      - 'tests/p2-accessibility.spec.cjs'
+      - 'tests/helpers/p2-browser-safety.cjs'
+      - '.github/workflows/p2-accessibility.yml'
+permissions:
+  contents: read
+jobs:
+  mobile-accessibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser checks
+        run: |
+          npm install --no-save --no-package-lock @playwright/test@1.56.1 @axe-core/playwright@4.11.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/p2-server.log 2>&1 &
+      - name: Check all eleven tools at 320, 375 and 768 pixels
+        run: npx playwright test tests/p2-accessibility.spec.cjs --reporter=line --workers=2
+      - name: Preserve screenshots and WCAG observations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-mobile-accessibility-evidence
+          path: test-results/
+          retention-days: 14

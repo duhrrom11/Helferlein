@@ -1,0 +1,20 @@
+/* Small shared accessibility corrections, scoped to the existing B3 UI. */
+body.b3 :is(a,button,input,select,textarea,summary,[tabindex]):focus-visible,
+body.b3-home :is(a,button,input,select,textarea,summary,[tabindex]):focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 3px;
+}
+body.b3.b3-dark :focus-visible,body.b3-home.b3-dark :focus-visible {outline-color:#93c5fd}
+body.b3 .b3-brand {min-height:24px}
+/* Empty-state copy must remain legible on the white dashboard cards. */
+body.b3:not(.b3-dark) main .text-gray-400 {color:#64748b}
+body.b3-home:not(.b3-dark) {--hub-muted:#526479}
+body.b3:not(.b3-dark) main button.bg-amber-600 {background-color:#92400e}
+body.b3:not(.b3-dark) main button.bg-teal-600 {background-color:#0f766e}
+body.b3:not(.b3-dark) main button.bg-lime-600 {background-color:#4d7c0f}
+/* Chart.js otherwise keeps its intrinsic canvas width on narrow WG cards. */
+body.b3-wg #b3-analysis canvas {max-width:100%;min-width:0}
+@media (prefers-reduced-motion:reduce) {
+  body.b3,body.b3-home {scroll-behavior:auto}
+  body.b3 *,body.b3-home * {scroll-behavior:auto!important;transition:none!important}
+}

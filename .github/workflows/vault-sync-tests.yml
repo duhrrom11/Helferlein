@@ -5,6 +5,7 @@ on:
     paths:
       - 'tools/notizen/index.html'
       - 'tools/digitaler-nachlass/index.html'
+      - 'assets/heir-owner-legacy.js'
       - 'tests/vault-sync-queue.test.cjs'
       - 'tests/vault-local-save.test.cjs'
       - 'tests/vault-config-update.test.cjs'
@@ -20,6 +21,7 @@ on:
     paths:
       - 'tools/notizen/index.html'
       - 'tools/digitaler-nachlass/index.html'
+      - 'assets/heir-owner-legacy.js'
       - 'tests/vault-sync-queue.test.cjs'
       - 'tests/vault-local-save.test.cjs'
       - 'tests/vault-config-update.test.cjs'

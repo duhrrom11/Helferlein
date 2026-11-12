@@ -57,13 +57,15 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
 
     <!-- Header -->
     <header class="b3-header"><div class="b3-header-inner">
-  <span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+  <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
   <span class="b3-tool-icon" aria-hidden="true">⚡</span>
   <div class="b3-tool-title"><h1>Zählerstände erfassen: Strom, Gas & Wasser</h1>
     <p>Verbrauch erfassen, Kosten auswerten und Ablesetermine im Blick behalten</p></div>
@@ -144,20 +146,20 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="p-4 bg-sky-50 rounded-xl border border-sky-100 space-y-2">
                     <h3 class="font-bold text-sm text-sky-900">⚡ Strom (HT / NT)</h3>
-                    <div><label class="block text-[11px] text-gray-600">HT-Preis (€ / kWh):</label><input type="number" step="0.001" id="tariffStromPriceHT" placeholder="0.38" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
-                    <div><label class="block text-[11px] text-gray-600">NT-Preis (€ / kWh):</label><input type="number" step="0.001" id="tariffStromPriceNT" placeholder="0.28" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
-                    <div><label class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffStromAbschlag" placeholder="80" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffStromPriceHT" class="block text-[11px] text-gray-600">HT-Preis (€ / kWh):</label><input type="number" step="0.001" id="tariffStromPriceHT" placeholder="0.38" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffStromPriceNT" class="block text-[11px] text-gray-600">NT-Preis (€ / kWh):</label><input type="number" step="0.001" id="tariffStromPriceNT" placeholder="0.28" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffStromAbschlag" class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffStromAbschlag" placeholder="80" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
                 </div>
                 <div class="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-2">
                     <h3 class="font-bold text-sm text-blue-900">💧 Wasser</h3>
-                    <div><label class="block text-[11px] text-gray-600">Arbeitspreis (€ / m³):</label><input type="number" step="0.001" id="tariffWasserPrice" placeholder="4.50" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
-                    <div><label class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffWasserAbschlag" placeholder="30" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffWasserPrice" class="block text-[11px] text-gray-600">Arbeitspreis (€ / m³):</label><input type="number" step="0.001" id="tariffWasserPrice" placeholder="4.50" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffWasserAbschlag" class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffWasserAbschlag" placeholder="30" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
                 </div>
                 <div class="p-4 bg-orange-50 rounded-xl border border-orange-100 space-y-2">
                     <h3 class="font-bold text-sm text-orange-900">♨️ Gas</h3>
-                    <div><label class="block text-[11px] text-gray-600">Arbeitspreis (€ / kWh):</label><input type="number" step="0.001" id="tariffGasPrice" placeholder="0.12" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
-                    <div><label class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffGasAbschlag" placeholder="100" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
-                    <div><label class="block text-[11px] text-gray-600">Brennwertfaktor (kWh/m³):</label><input type="number" step="0.01" id="tariffGasCalib" placeholder="11.2" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffGasPrice" class="block text-[11px] text-gray-600">Arbeitspreis (€ / kWh):</label><input type="number" step="0.001" id="tariffGasPrice" placeholder="0.12" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffGasAbschlag" class="block text-[11px] text-gray-600">Monatlicher Abschlag (€):</label><input type="number" id="tariffGasAbschlag" placeholder="100" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
+                    <div><label for="tariffGasCalib" class="block text-[11px] text-gray-600">Brennwertfaktor (kWh/m³):</label><input type="number" step="0.01" id="tariffGasCalib" placeholder="11.2" class="w-full p-2 border rounded-lg text-xs bg-white"></div>
                 </div>
             </div>
         </div>
@@ -171,7 +173,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zähler-Typ:</label>
+                    <label for="meterType" class="block text-xs font-semibold text-gray-600 mb-1">Zähler-Typ:</label>
                     <select id="meterType" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="toggleTarifSelect()">
                         <option value="Strom">⚡ Strom (HT / Einzeltarif)</option>
                         <option value="Strom-NT">🌙 Strom (NT / Nachttarif)</option>
@@ -181,11 +183,11 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zählername / Nummer:</label>
+                    <label for="meterName" class="block text-xs font-semibold text-gray-600 mb-1">Zählername / Nummer:</label>
                     <input type="text" id="meterName" placeholder="z.B. Hauptzähler #12345" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Standort / Bereich:</label>
+                    <label for="meterLocation" class="block text-xs font-semibold text-gray-600 mb-1">Standort / Bereich:</label>
                     <select id="meterLocation" class="w-full p-3 border rounded-xl text-sm bg-white">
                         <option value="Hauptwohnung">🏠 Hauptwohnung / Keller</option>
                         <option value="Garage">🚗 Garage / Carport</option>
@@ -195,22 +197,22 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Ablesedatum:</label>
+                    <label for="meterDate" class="block text-xs font-semibold text-gray-600 mb-1">Ablesedatum:</label>
                     <input type="date" id="meterDate" class="w-full p-3 border rounded-xl text-sm">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zählerstand:</label>
+                    <label for="meterValue" class="block text-xs font-semibold text-gray-600 mb-1">Zählerstand:</label>
                     <input type="number" step="0.001" id="meterValue" placeholder="z.B. 45230.5" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zählerfoto-Nachweis:</label>
+                    <label for="meterPhotoInput" class="block text-xs font-semibold text-gray-600 mb-1">Zählerfoto-Nachweis:</label>
                     <input type="file" id="meterPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-50 file:text-sky-700">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
+                    <label for="meterNote" class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
                     <input type="text" id="meterNote" placeholder="z.B. Nach Jahresabrechnung" class="w-full p-3 border rounded-xl text-sm">
                 </div>
             </div>
@@ -247,7 +249,7 @@
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <h3 class="font-bold text-lg">📋 Zählerstände & Verlauf</h3>
                 <div class="flex gap-2">
-                    <select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                    <select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verlauf nach Zählertyp filtern">
                         <option value="All">Alle Zähler anzeigen</option>
                         <option value="Strom">⚡ Strom (HT)</option>
                         <option value="Strom-NT">🌙 Strom (NT)</option>

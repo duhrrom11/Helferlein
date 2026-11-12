@@ -1,12 +1,12 @@
 // Ausfuehren: node --test tests/vault-sync-queue.test.cjs
-// Testet den tatsaechlichen Warteschlangen-Code aus der HTML-Datei ohne Firebase-Zugriff.
+// Testet den tatsaechlichen Warteschlangen-Code aus der ausgelagerten Besitzerdatei ohne Firebase-Zugriff.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const html = fs.readFileSync(path.join(__dirname, '../tools/digitaler-nachlass/index.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '../assets/heir-owner-legacy.js'), 'utf8');
 const start = html.indexOf('        let vaultSyncQueue = Promise.resolve();');
 const end = html.indexOf('        async function performVaultSync(', start);
 assert.ok(start >= 0 && end > start, 'Warteschlangen-Code muss vorhanden sein');

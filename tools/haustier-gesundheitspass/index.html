@@ -65,6 +65,8 @@
         });
       });
     </script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -72,7 +74,7 @@
     <!-- Header mit ausklappbarer Anleitung -->
     <header class="b3-header">
   <div class="b3-header-inner">
-    <span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+    <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
     <span class="b3-tool-icon" aria-hidden="true">🐾</span>
     <div class="b3-tool-title">
       <h1>Digitaler Impfpass & Gesundheitspass für Haustiere</h1>
@@ -112,24 +114,24 @@
             <!-- 1. Haustier anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🐕 1. Haustier-Profil & Tierarzt-Praxis</h2>
-                <input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm">
+                <input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm" aria-label="Name des Haustiers (z.B. Luna)">
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm">
-                    <input type="text" id="petChip" placeholder="Chip-Nummer" class="p-3 border rounded-xl text-sm">
+                    <input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm" aria-label="Tierart / Rasse (z.B. Hund / Labrador)">
+                    <input type="text" id="petChip" placeholder="Chip-Nummer" class="p-3 border rounded-xl text-sm" aria-label="Chip-Nummer">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="petFood" placeholder="Futtermarke & Sorte" class="p-3 border rounded-xl text-xs">
-                    <input type="text" id="petAllergies" placeholder="Allergien / Unverträglichkeiten" class="p-3 border rounded-xl text-xs">
+                    <input type="text" id="petFood" placeholder="Futtermarke & Sorte" class="p-3 border rounded-xl text-xs" aria-label="Futtermarke &amp; Sorte">
+                    <input type="text" id="petAllergies" placeholder="Allergien / Unverträglichkeiten" class="p-3 border rounded-xl text-xs" aria-label="Allergien / Unverträglichkeiten">
                 </div>
                 
                 <div class="border-t pt-2 space-y-2">
                     <p class="text-xs font-bold text-gray-700">🏥 Tierarzt & Praxis-Verzeichnis:</p>
-                    <input type="text" id="petVetName" placeholder="Praxisname & Tierarzt" class="w-full p-2.5 border rounded-xl text-xs">
+                    <input type="text" id="petVetName" placeholder="Praxisname & Tierarzt" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Praxisname &amp; Tierarzt">
                     <div class="grid grid-cols-2 gap-2">
-                        <input type="text" id="petVetTel" placeholder="Telefon / Notfall-Nr." class="p-2.5 border rounded-xl text-xs">
-                        <input type="email" id="petVetEmail" placeholder="E-Mail-Adresse" class="p-2.5 border rounded-xl text-xs">
+                        <input type="text" id="petVetTel" placeholder="Telefon / Notfall-Nr." class="p-2.5 border rounded-xl text-xs" aria-label="Telefon / Notfall-Nr.">
+                        <input type="email" id="petVetEmail" placeholder="E-Mail-Adresse" class="p-2.5 border rounded-xl text-xs" aria-label="E-Mail-Adresse">
                     </div>
-                    <input type="text" id="petVetAddress" placeholder="Straße, PLZ & Ort der Praxis" class="w-full p-2.5 border rounded-xl text-xs">
+                    <input type="text" id="petVetAddress" placeholder="Straße, PLZ & Ort der Praxis" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Straße, PLZ &amp; Ort der Praxis">
                 </div>
                 
                 <div class="flex items-center space-x-2 pt-1">
@@ -139,11 +141,11 @@
 
                 <div class="grid grid-cols-2 gap-2 text-xs pt-1">
                     <div>
-                        <label class="block font-semibold text-gray-600 mb-1">Profilbild:</label>
+                        <label for="petPhotoInput" class="block font-semibold text-gray-600 mb-1">Profilbild:</label>
                         <input type="file" id="petPhotoInput" accept="image/*" class="w-full text-[11px] p-1.5 border rounded-xl file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-teal-50 file:text-teal-700">
                     </div>
                     <div>
-                        <label class="block font-semibold text-gray-600 mb-1">EU-Heimtierausweis:</label>
+                        <label for="petPassportInput" class="block font-semibold text-gray-600 mb-1">EU-Heimtierausweis:</label>
                         <input type="file" id="petPassportInput" accept="image/*" class="w-full text-[11px] p-1.5 border rounded-xl file:mr-1 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-gray-100 file:text-gray-700">
                     </div>
                 </div>
@@ -153,11 +155,11 @@
             <!-- 2. Gesundheits-Eintrag hinzufügen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">💉 2. Gesundheits-Eintrag & Tagebuch</h2>
-                <select id="eventPetSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()">
+                <select id="eventPetSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Haustier für den Eintrag">
                     <option value="">-- Haustier wählen --</option>
                 </select>
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()">
+                    <select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags">
                         <option value="Impfung">💉 Impfung</option>
                         <option value="Entwurmung">🪱 Entwurmung / Parasiten</option>
                         <option value="Medikament">💊 Medikament / Behandlung</option>
@@ -166,22 +168,22 @@
                         <option value="Tagebuch">📓 Tagebuch / Notiz</option>
                         <option value="Sonstiges">📝 Sonstiges</option>
                     </select>
-                    <input type="date" id="eventDate" class="p-3 border rounded-xl text-sm">
+                    <input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags">
                 </div>
-                <input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm">
+                <input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)">
                 
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="eventCost" placeholder="Kosten in € (optional)" class="p-3 border rounded-xl text-sm">
+                    <input type="text" id="eventCost" placeholder="Kosten in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Kosten in € (optional)">
                     <input type="text" id="eventWeight" placeholder="Gewicht in kg (optional)" class="p-3 border rounded-xl text-sm hidden">
                 </div>
 
                 <div id="vaccineExpiryBox" class="hidden">
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Impfung gültig bis / Nächste Auffrischung:</label>
+                    <label for="eventExpiryDate" class="block text-xs font-semibold text-gray-600 mb-1">Impfung gültig bis / Nächste Auffrischung:</label>
                     <input type="date" id="eventExpiryDate" class="w-full p-3 border rounded-xl text-sm">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Beleg / Rechnung (Foto optional):</label>
+                    <label for="eventReceiptInput" class="block text-xs font-semibold text-gray-600 mb-1">Beleg / Rechnung (Foto optional):</label>
                     <input type="file" id="eventReceiptInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-teal-50 file:text-teal-700">
                 </div>
 
@@ -194,8 +196,8 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                 <h3 class="font-bold text-lg">💊 Haustier-Apotheke & Medikamenten-Vorrat</h3>
                 <div class="flex gap-2 w-full sm:w-auto">
-                    <input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs">
-                    <input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28">
+                    <input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs" aria-label="Medikament / Vorrat (z.B. Zeckenschutz)">
+                    <input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)">
                     <button onclick="saveMedication()" class="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl text-xs">Hinzufügen</button>
                 </div>
             </div>
@@ -218,7 +220,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                     <h3 class="font-bold text-lg">📋 Kalender & Kosten</h3>
-                    <select id="filterPetSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
+                    <select id="filterPetSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Verlauf nach Haustier filtern">
                         <option value="">Alle Haustiere anzeigen</option>
                     </select>
                 </div>

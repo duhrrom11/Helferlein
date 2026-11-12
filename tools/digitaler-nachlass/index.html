@@ -27,6 +27,8 @@
     <script defer src="../../assets/heir-owner-invitations-bootstrap-staging.js"></script>
     <script defer src="../../assets/heir-owner-management.js"></script>
     <script defer src="../../assets/heir-redemption-ui.js"></script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -89,7 +91,7 @@
 
     <!-- HEADER MIT ZURÜCK-BUTTON -->
     <header class="b3-header"><div class="b3-header-inner">
-<span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+<a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
 <span class="b3-tool-icon" aria-hidden="true">🏛️</span>
 <div class="b3-tool-title"><h1>Digitaler Nachlassverwalter</h1><p>Sicherheitsprüfung ausstehend – keine Passwörter, PINs oder Zugangsdaten speichern</p></div>
 <button id="b3-nachlass-settings" type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button>
@@ -121,11 +123,11 @@
                 <h2 class="text-sm font-bold text-slate-100">✍️ Neuen Nachlass-Eintrag erfassen</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                     <div>
-                        <label class="block text-slate-400 mb-1">Titel *:</label>
+                        <label for="entryTitle" class="block text-slate-400 mb-1">Titel *:</label>
                         <input type="text" id="entryTitle" placeholder="z. B. Sparkasse Konto" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1">Kategorie *:</label>
+                        <label for="entryCategory" class="block text-slate-400 mb-1">Kategorie *:</label>
                         <select id="entryCategory" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 font-semibold">
                             <option value="Finanzen">💳 Finanzen & Krypto</option>
                             <option value="Verträge">📜 Verträge & Abos</option>
@@ -135,12 +137,12 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1">Vertragspartner:</label>
+                        <label for="entryPartner" class="block text-slate-400 mb-1">Vertragspartner:</label>
                         <input type="text" id="entryPartner" placeholder="z. B. Bank GmbH" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-slate-400 text-xs mb-1">Inhalt / Zugangsdaten *:</label>
+                    <label for="entryContent" class="block text-slate-400 text-xs mb-1">Inhalt / Zugangsdaten *:</label>
                     <textarea id="entryContent" rows="3" placeholder="IBAN, PINs, Logins..." class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-xs font-mono"></textarea>
                 </div>
                 <button id="saveEntryBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg">
@@ -376,11 +378,11 @@
 
                 <div class="space-y-3 pt-2 text-xs">
                     <div>
-                        <label class="block text-slate-400 mb-1">E-Mail-Adresse</label>
+                        <label for="auth-email" class="block text-slate-400 mb-1">E-Mail-Adresse</label>
                         <input type="email" id="auth-email" placeholder="name@beispiel.de" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1">Passwort</label>
+                        <label for="auth-password" class="block text-slate-400 mb-1">Passwort</label>
                         <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div class="grid grid-cols-2 gap-3 pt-2">
@@ -398,11 +400,11 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div>
-                        <label class="block text-slate-400 mb-1">Dein Name:</label>
+                        <label for="ownerNameInput" class="block text-slate-400 mb-1">Dein Name:</label>
                         <input type="text" id="ownerNameInput" placeholder="Dein Vor- und Nachname" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
                     </div>
                     <div>
-                        <label class="block text-slate-400 mb-1">Deine E-Mail-Adresse (für Alarme):</label>
+                        <label for="ownerEmailInput" class="block text-slate-400 mb-1">Deine E-Mail-Adresse (für Alarme):</label>
                         <input type="email" id="ownerEmailInput" placeholder="name@beispiel.de" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100">
                     </div>
                 </div>

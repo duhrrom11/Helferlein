@@ -2,6 +2,8 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const html=fs.readFileSync(path.join(root,'tools/digitaler-nachlass/index.html'),'utf8');
+const owner=fs.readFileSync(path.join(root,'assets/heir-owner-legacy.js'),'utf8');
+const heir=fs.readFileSync(path.join(root,'tools/digitaler-nachlass/erben.html'),'utf8');
 const js=fs.readFileSync(path.join(root,'assets/helferlein-b3-nachlass.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'assets/helferlein-b3-nachlass.css'),'utf8');
 test('B3 Nachlass keeps the prominent existing security warning',()=>{
@@ -21,8 +23,9 @@ test('B3 navigation preserves original tab and security-critical IDs',()=>{
 });
 test('Existing encryption, sync, alarm and account functions remain unchanged',()=>{
  for(const fn of ['getCryptoKeyFromHex','encryptVaultPayload','decryptVaultPayload','initVault','syncVaultToFirebase','checkIncomingAlarms','performCheckIn','saveVaultEntry','supabaseLogin','supabaseLogout','renderPrintableKit'])
- assert.ok(html.includes('function '+fn+'(')||html.includes('async function '+fn+'('),fn);
- assert.ok(html.includes('digital_estate_vault'));
+ assert.ok(owner.includes('function '+fn+'(')||owner.includes('async function '+fn+'('),fn);
+ assert.ok(owner.includes('digital_estate_vault'));
+ assert.match(html,/src="..\/..\/assets\/heir-owner-legacy\.js"/);
  assert.doesNotMatch(js,/digital_estate_vault|supabaseClient|firebase|encryptVaultPayload|checkIncomingAlarms|saveVaultEntry\(/i);
 });
 test('Theme, editable navigation and Ko-fi are isolated UI preferences',()=>{
@@ -34,61 +37,50 @@ test('Theme, editable navigation and Ko-fi are isolated UI preferences',()=>{
  assert.ok(css.includes('body.b3-nachlass.b3-dark')&&css.includes('body.b3-nachlass.b3-light'));
 });
 
-test('heir portal discloses client-only access and does not render raw cloud errors',()=>{
- const heir=fs.readFileSync(path.join(root,'tools/digitaler-nachlass/erben.html'),'utf8');
- assert.match(heir,/keine serverseitig durchgesetzte Zugriffssperre/);
- assert.match(heir,/Schlüssel/);
- assert.match(heir,/\^\[a-fA-F0-9\]\{64\}\$/);
- assert.match(heir,/Ungültiges Schlüsselformat/);
- assert.doesNotMatch(heir,/Fehler beim Laden: \$\{e\.message\}/);
- assert.doesNotMatch(heir,/feedback\.innerText = `Fehler: \$\{e\.message\}/);
+test('legacy heir portal is fail closed and removes secret URLs before rendering',()=>{
+ assert.match(heir,/Erben-Portal derzeit gesperrt/);
+ assert.match(heir,/Dieses Portal gibt derzeit keine Nachlassdaten frei/);
+ assert.match(heir,/connect-src 'none'/);
+ assert.match(heir,/history\.replaceState\(null, '', location\.pathname\)/);
+ assert.doesNotMatch(heir,/URLSearchParams|fetch\(|firebase\.|crypto\.subtle|<script[^>]+src=/);
 });
-
-test('heir links remain hidden in the preview and copy feedback is awaited',()=>{
- assert.match(html,/Erben-Link mit geheimem Schlüssel/);
- const kitStart=html.indexOf('function renderPrintableKit()');
- const kitEnd=html.indexOf('async function generatePrintableKitPDF()',kitStart);
- assert.ok(kitStart>=0 && kitEnd>kitStart,'printable kit functions exist');
- const preview=html.slice(kitStart,kitEnd);
- assert.doesNotMatch(preview,/\$\{escapeHtml\(personLink\)\}/,'secret heir URL must not render as plaintext in kit preview');
- assert.match(preview,/Der QR-Code enthält einen geheimen Schlüssel/);
- assert.match(preview,/text: personLink/,'existing QR recovery path remains intact');
- assert.match(html,/navigator\.clipboard\.writeText\(link\)\s*\.then\(/);
- assert.match(html,/Kopieren fehlgeschlagen/);
+test('notfall preview and PDF no longer emit raw-key recovery links',()=>{
+ const start=owner.indexOf('function renderPrintableKit()');
+ const end=owner.indexOf('async function generatePrintableKitPDF()',start);
+ assert.ok(start>=0 && end>start);
+ const preview=owner.slice(start,end);
+ assert.match(preview,/aus Sicherheitsgründen deaktiviert/);
+ assert.doesNotMatch(preview,/new QRCode|text: personLink|masterKeyHex/);
+ assert.match(owner.slice(end),/Notfall-PDFs mit Entschlüsselungsschlüsseln.*deaktiviert/);
+ assert.doesNotMatch(owner,/#key=\$\{|navigator\.clipboard\.writeText\(link\)/);
 });
-test('owner and heir validate exactly 256-bit hexadecimal AES keys',()=>{
- const heir=fs.readFileSync(path.join(root,'tools/digitaler-nachlass/erben.html'),'utf8');
- for(const source of [html,heir]){
-  assert.match(source,/Ungültiges Schlüsselformat/);
-  assert.match(source,/\^\[a-fA-F0-9\]\{64\}\$/);
- }
+test('owner validates exactly 256-bit hexadecimal AES keys; blocked portal never parses them',()=>{
+ assert.match(owner,/Ungültiges Schlüsselformat/);
+ assert.match(owner,/\^\[a-fA-F0-9\]\{64\}\$/);
+ assert.doesNotMatch(heir,/getCryptoKeyFromHex|decryptVaultPayload/);
 });
-
-test('Nachlass release v2 is documented as a gated design, not an active authorization path',()=>{
+test('Nachlass release remains gated without reviving legacy raw-key URLs',()=>{
  const design=fs.readFileSync(path.join(root,'docs/nachlass-cloud-freigabe-v2.md'),'utf8');
- const heir=fs.readFileSync(path.join(root,'tools/digitaler-nachlass/erben.html'),'utf8');
  assert.match(design,/nicht produktiv implementiert/);
- assert.match(design,/Firestore Security Rules/);
  assert.match(design,/LOCKED -> ALARM_PENDING -> RELEASED/);
- assert.match(design,/produktive serverseitige Erben-Freigabe einschalten/);
- assert.match(heir,/keine serverseitig durchgesetzte Zugriffssperre/);
- assert.match(html,/#key=\$\{encodeURIComponent\(cfg\.masterKeyHex\)\}/);
+ assert.match(heir,/noch nicht abgeschlossen/);
+ assert.doesNotMatch(owner,/#key=\$\{encodeURIComponent\(cfg\.masterKeyHex\)\}/);
 });
 
 test('new vault and heir IDs use CSPRNG without exposing names or timestamps',()=>{
- assert.match(html,/const vaultId = "v_" \+ Array\.from\(crypto\.getRandomValues\(new Uint8Array\(16\)\)/);
- assert.match(html,/const personId = "p_" \+ Array\.from\(crypto\.getRandomValues\(new Uint8Array\(16\)\)/);
- assert.doesNotMatch(html,/Math\.random\(\)/);
- assert.match(html,/if \(storedVault === null\)/,'existing vault records must be loaded rather than regenerated');
+ assert.match(owner,/const vaultId = "v_" \+ Array\.from\(crypto\.getRandomValues\(new Uint8Array\(16\)\)/);
+ assert.match(owner,/const personId = "p_" \+ Array\.from\(crypto\.getRandomValues\(new Uint8Array\(16\)\)/);
+ assert.doesNotMatch(owner,/Math\.random\(\)/);
+ assert.match(owner,/if \(storedVault === null\)/,'existing vault records must be loaded rather than regenerated');
 });
 
 test('heir link secrets are not embedded in rendered person list DOM attributes',()=>{
- const start=html.indexOf('function renderAlarmPersons()');
- const end=html.indexOf('async function saveSettings()',start);
+ const start=owner.indexOf('function renderAlarmPersons()');
+ const end=owner.indexOf('async function saveSettings()',start);
  assert.ok(start>=0 && end>start);
- const list=html.slice(start,end);
+ const list=owner.slice(start,end);
  assert.doesNotMatch(list,/data-link=/);
  assert.doesNotMatch(list,/#key=/);
  assert.match(list,/data-idx="\$\{idx\}"/);
- assert.match(html,/Never persist the full decryption URL in HTML attributes or DOM/);
+ assert.doesNotMatch(list,/masterKeyHex|personLink/);
 });

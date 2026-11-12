@@ -57,6 +57,8 @@
         });
       });
     </script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-full flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -64,7 +66,7 @@
     <!-- Header mit Titel, Untertitel, Zurück-Button, Anleitung & Einstellungen -->
     <header class="b3-header">
 <div class="b3-header-inner">
-  <span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+  <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
   <span class="b3-tool-icon" aria-hidden="true">🍰</span>
   <div class="b3-tool-title"><h1>Backform-Umrechner & Rezeptrechner</h1><p>Backformen umrechnen, Zutatenmengen anpassen und Backzeiten abschätzen</p></div>
   <button type="button" class="b3-settings-trigger" onclick="openSettings()" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button>
@@ -104,15 +106,15 @@
                     
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Zeit laut Rezept (Min.)</label>
+                            <label for="base-time" class="block text-xs font-medium text-slate-600 mb-1">Zeit laut Rezept (Min.)</label>
                             <input type="number" id="base-time" value="45" oninput="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Temperatur laut Rezept (°C)</label>
+                            <label for="base-temp" class="block text-xs font-medium text-slate-600 mb-1">Temperatur laut Rezept (°C)</label>
                             <input type="number" id="base-temp" value="180" oninput="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Ofen-Modus</label>
+                            <label for="oven-mode" class="block text-xs font-medium text-slate-600 mb-1">Ofen-Modus</label>
                             <select id="oven-mode" onchange="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm">
                                 <option value="unterhitze" selected>Ober-/Unterhitze</option>
                                 <option value="heissluft">Heißluft / Umluft (-20°C)</option>
@@ -122,7 +124,7 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Rezept gilt für Material der Zielform</label>
+                            <label for="recipe-material" class="block text-xs font-medium text-slate-600 mb-1">Rezept gilt für Material der Zielform</label>
                             <select id="recipe-material" onchange="calculateAll()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
                                 <option value="silikon">Silikon</option>
                                 <option value="blech" selected>Metall / Blech</option>
@@ -139,7 +141,7 @@
 
                     <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
                         <div class="flex items-center space-x-3">
-                            <input type="checkbox" id="use-oven-factor" checked class="w-4 h-4 text-orange-600 rounded border-slate-300" onchange="toggleOvenFactor()">
+                            <input type="checkbox" id="use-oven-factor" checked class="w-4 h-4 text-orange-600 rounded border-slate-300" onchange="toggleOvenFactor()" aria-label="Meinen Ofenfaktor nutzen">
                             <span class="text-xs font-medium text-slate-700">Meinen Ofenfaktor nutzen</span>
                         </div>
                         <div class="text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-lg">
@@ -155,7 +157,7 @@
                             <i data-lucide="file-text" class="w-5 h-5 text-orange-500"></i> Rezept einfügen & Einheiten
                         </h2>
                         <div>
-                            <label class="text-xs font-medium text-slate-600 mr-2">Einheit:</label>
+                            <label for="unit-system" class="text-xs font-medium text-slate-600 mr-2">Einheit:</label>
                             <select id="unit-system" onchange="calculateRecipe()" class="px-2.5 py-1 rounded-lg border border-slate-200 text-xs font-medium">
                                 <option value="metric" selected>Metrisch (g / ml)</option>
                                 <option value="imperial">US Cups / Ounces</option>
@@ -163,8 +165,8 @@
                         </div>
                     </div>
                     <div>
-                        <input type="text" id="recipe-name" placeholder="Name des Rezepts (z.B. Omas Apfelkuchen)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mb-3">
-                        <textarea id="recipe-input" rows="4" placeholder="Füge hier deine Zutaten ein (z.B. &#10;250g Mehl&#10;200g Zucker&#10;3 Eier&#10;100ml Milch)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono"></textarea>
+                        <input type="text" id="recipe-name" placeholder="Name des Rezepts (z.B. Omas Apfelkuchen)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm mb-3" aria-label="Name des Rezepts (z.B. Omas Apfelkuchen)">
+                        <textarea id="recipe-input" rows="4" placeholder="Füge hier deine Zutaten ein (z.B. &#10;250g Mehl&#10;200g Zucker&#10;3 Eier&#10;100ml Milch)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-mono" aria-label="Zutaten des Rezepts"></textarea>
                     </div>
                     <button onclick="calculateRecipe()" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl transition shadow-md shadow-orange-500/20 text-sm flex items-center justify-center gap-2">
                         <i data-lucide="calculator" class="w-4 h-4"></i> Rezept umrechnen & Analysieren
@@ -181,7 +183,7 @@
                         <div class="space-y-3 p-4 rounded-xl bg-slate-50 border border-slate-100">
                             <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Original-Form im Rezept</h3>
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Formtyp</label>
+                                <label for="orig-shape" class="block text-xs font-medium text-slate-600 mb-1">Formtyp</label>
                                 <select id="orig-shape" onchange="updateShapeInputs('orig')" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
                                     <option value="round">Rund (Springform)</option>
                                     <option value="rect">Kastenform / Eckig</option>
@@ -189,16 +191,16 @@
                                 </select>
                             </div>
                             <div id="orig-dims-round">
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Durchmesser (cm)</label>
+                                <label for="orig-d" class="block text-xs font-medium text-slate-600 mb-1">Durchmesser (cm)</label>
                                 <input type="number" id="orig-d" value="26" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
                             </div>
                             <div id="orig-dims-rect" class="hidden grid grid-cols-2 gap-2">
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-600 mb-1">Länge (cm)</label>
+                                    <label for="orig-l" class="block text-xs font-medium text-slate-600 mb-1">Länge (cm)</label>
                                     <input type="number" id="orig-l" value="30" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-600 mb-1">Breite (cm)</label>
+                                    <label for="orig-w" class="block text-xs font-medium text-slate-600 mb-1">Breite (cm)</label>
                                     <input type="number" id="orig-w" value="10" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
                                 </div>
                             </div>
@@ -208,7 +210,7 @@
                         <div class="space-y-3 p-4 rounded-xl bg-orange-50/50 border border-orange-100">
                             <h3 class="text-xs font-bold uppercase tracking-wider text-orange-600">Zielform (Einzel oder 2er-Mix)</h3>
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Modus</label>
+                                <label for="combinator-mode" class="block text-xs font-medium text-slate-600 mb-1">Modus</label>
                                 <select id="combinator-mode" onchange="toggleCombinator()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
                                     <option value="single" selected>1 Zielform</option>
                                     <option value="double">2 Formen gleichzeitig kombinieren</option>
@@ -217,7 +219,7 @@
                             <div id="single-target-box">
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Typ</label>
+                                        <label for="target-shape" class="block text-xs font-medium text-slate-600 mb-1">Typ</label>
                                         <select id="target-shape" onchange="updateShapeInputs('target')" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
                                             <option value="round" selected>Rund</option>
                                             <option value="rect">Kasten</option>
@@ -225,17 +227,17 @@
                                         </select>
                                     </div>
                                     <div id="target-dims-round">
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Ø (cm)</label>
+                                        <label for="target-d" class="block text-xs font-medium text-slate-600 mb-1">Ø (cm)</label>
                                         <input type="number" id="target-d" value="20" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
                                     </div>
                                 </div>
                                 <div id="target-dims-rect" class="hidden grid grid-cols-2 gap-2 mt-2">
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Länge (cm)</label>
+                                        <label for="target-l" class="block text-xs font-medium text-slate-600 mb-1">Länge (cm)</label>
                                         <input type="number" id="target-l" value="25" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Breite (cm)</label>
+                                        <label for="target-w" class="block text-xs font-medium text-slate-600 mb-1">Breite (cm)</label>
                                         <input type="number" id="target-w" value="11" oninput="calculateAll()" class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm">
                                     </div>
                                 </div>
@@ -243,11 +245,11 @@
                             <div id="double-target-box" class="hidden space-y-2">
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
-                                        <label class="block text-[11px] font-medium text-slate-600">Form 1 Ø (cm)</label>
+                                        <label for="combo-d1" class="block text-[11px] font-medium text-slate-600">Form 1 Ø (cm)</label>
                                         <input type="number" id="combo-d1" value="20" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
                                     </div>
                                     <div>
-                                        <label class="block text-[11px] font-medium text-slate-600">Form 2 Ø (cm)</label>
+                                        <label for="combo-d2" class="block text-[11px] font-medium text-slate-600">Form 2 Ø (cm)</label>
                                         <input type="number" id="combo-d2" value="16" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
                                     </div>
                                 </div>
@@ -264,7 +266,7 @@
                             <i data-lucide="pie-chart" class="w-4 h-4 text-orange-500"></i> Torte teilen
                         </h3>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Gewünschte Stücke</label>
+                            <label for="slice-count" class="block text-xs font-medium text-slate-600 mb-1">Gewünschte Stücke</label>
                             <input type="number" id="slice-count" value="12" oninput="updateSlices()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
                         </div>
                         <p id="slice-info" class="text-xs text-slate-500">Stückbreite am Rand.</p>
@@ -276,7 +278,7 @@
                         </h3>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Sorte</label>
+                                <label for="glaze-type" class="block text-xs font-medium text-slate-600 mb-1">Sorte</label>
                                 <select id="glaze-type" onchange="calculateGlaze()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
                                     <option value="schoko">Schoko</option>
                                     <option value="fondant">Fondant</option>
@@ -357,11 +359,11 @@
                     </h2>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Haushaltszucker (g)</label>
+                            <label for="sugar-input" class="block text-xs font-medium text-slate-600 mb-1">Haushaltszucker (g)</label>
                             <input type="number" id="sugar-input" value="200" oninput="calculateSugar()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Alternative</label>
+                            <label for="sugar-type" class="block text-xs font-medium text-slate-600 mb-1">Alternative</label>
                             <select id="sugar-type" onchange="calculateSugar()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
                                 <option value="xylit">Erythrit / Xylit (1:1)</option>
                                 <option value="honey">Honig / Ahornsirup</option>
@@ -385,19 +387,19 @@
                     </h2>
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         <div>
-                            <label class="block text-[11px] font-medium text-slate-600">Mehl (€/kg)</label>
+                            <label for="price-mehl" class="block text-[11px] font-medium text-slate-600">Mehl (€/kg)</label>
                             <input type="number" step="0.05" id="price-mehl" value="0.65" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-medium text-slate-600">Butter (€/250g)</label>
+                            <label for="price-butter" class="block text-[11px] font-medium text-slate-600">Butter (€/250g)</label>
                             <input type="number" step="0.05" id="price-butter" value="2.40" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-medium text-slate-600">Zucker (€/kg)</label>
+                            <label for="price-zucker" class="block text-[11px] font-medium text-slate-600">Zucker (€/kg)</label>
                             <input type="number" step="0.05" id="price-zucker" value="1.20" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-medium text-slate-600">Ei (€/Stück)</label>
+                            <label for="price-ei" class="block text-[11px] font-medium text-slate-600">Ei (€/Stück)</label>
                             <input type="number" step="0.05" id="price-ei" value="0.30" oninput="calculateAll()" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-sm">
                         </div>
                     </div>
@@ -421,7 +423,7 @@
                             <i data-lucide="thermometer" class="w-4 h-4 text-orange-500"></i> Teig-Klimatologie & Raumtemperatur
                         </h3>
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Aktuelle Raumtemperatur (°C)</label>
+                            <label for="room-temp" class="block text-xs font-medium text-slate-600 mb-1">Aktuelle Raumtemperatur (°C)</label>
                             <input type="number" id="room-temp" value="21" oninput="checkClimate()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
                         </div>
                         <p id="climate-result" class="text-xs text-slate-500">Perfektes Backklima. Keine Anpassung nötig.</p>
@@ -573,7 +575,7 @@
 
             <!-- Ofenprofil Einstellungen -->
             <div class="border-t border-slate-100 pt-3 space-y-3">
-                <label class="block text-xs font-medium text-slate-600">Individueller Ofenfaktor</label>
+                <label for="user-oven-factor" class="block text-xs font-medium text-slate-600">Individueller Ofenfaktor</label>
                 <input type="number" step="0.05" id="user-oven-factor" value="1.0" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm">
             </div>
 
