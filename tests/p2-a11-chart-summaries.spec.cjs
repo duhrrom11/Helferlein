@@ -20,17 +20,32 @@ for (const tool of ['wg-organisator', 'haushaltsbuch-kassenbon']) {
     }).join('');
     await page.goto('http://127.0.0.1:8765/index.html', {waitUntil:'domcontentloaded'});
     await page.setContent('<main>' + chartMarkup + '</main>');
-    await page.evaluate(code => {
-      new Function('categoryExpenses', 'totalIncome', 'totalExpense', code)({Lebensmittel:12.5}, 20, 12.5);
-    }, productionSummaryCode);
-    for (const id of ['categoryChart', 'cashflowChart']) {
-      const canvas = page.locator('#' + id);
-      await expect(canvas).toHaveAttribute('role', 'img');
-      await expect(canvas).toHaveAttribute('aria-describedby', id + 'Summary');
-      await expect(canvas).toHaveAccessibleName(/Diagramm:/);
-      const summary = await page.locator('#' + id + 'Summary').textContent();
-      expect(summary.length).toBeGreaterThan(10);
-      await expect(canvas).toHaveAccessibleDescription(summary);
+    const scenarios = [
+      {categories:{}, income:0, expense:0},
+      {categories:{Lebensmittel:12.5}, income:20, expense:12.5},
+      {categories:{Wohnen:99.99}, income:30, expense:99.99},
+      {categories:{}, income:0, expense:0}
+    ];
+    let previousDescriptions = null;
+    for (const scenario of scenarios) {
+      await page.evaluate(({code, scenario}) => {
+        new Function('categoryExpenses', 'totalIncome', 'totalExpense', code)(
+          scenario.categories, scenario.income, scenario.expense
+        );
+      }, {code:productionSummaryCode, scenario});
+      const descriptions = [];
+      for (const id of ['categoryChart', 'cashflowChart']) {
+        const canvas = page.locator('#' + id);
+        await expect(canvas).toHaveAttribute('role', 'img');
+        await expect(canvas).toHaveAttribute('aria-describedby', id + 'Summary');
+        await expect(canvas).toHaveAccessibleName(/Diagramm:/);
+        const summary = await page.locator('#' + id + 'Summary').textContent();
+        expect(summary.length).toBeGreaterThan(10);
+        await expect(canvas).toHaveAccessibleDescription(summary);
+        descriptions.push(summary);
+      }
+      if (previousDescriptions) expect(descriptions).not.toEqual(previousDescriptions);
+      previousDescriptions = descriptions;
     }
   });
 
