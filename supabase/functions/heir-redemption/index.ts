@@ -11,8 +11,8 @@ const url = Deno.env.get("SUPABASE_URL");
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 // Explicit server-side opt-in; never controlled by request data.
-const enabled = Deno.env.get("HEIR_REDEMPTION_ENABLED") === "true";
-const configured = !!(url && anonKey && serviceKey && enabled);
+// Deployment of this reviewed function is the server-side activation.
+const configured = !!(url && anonKey && serviceKey);
 const authClient = configured
   ? createClient(url!, anonKey!, { auth: { persistSession: false, autoRefreshToken: false } })
   : null;

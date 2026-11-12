@@ -257,7 +257,7 @@
      LOCAL ONLY: backend must be deployed and explicitly enabled before use. -->
 <section id="heirInvitationManagement" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirInvitationManagementTitle">
   <h3 id="heirInvitationManagementTitle" class="font-bold text-slate-100">Erbeneinladungen verwalten</h3>
-  <p class="text-sm text-amber-200">Einladungen erteilen keinen Zugriff auf Tresordaten. Diese Funktion bleibt gesperrt, bis das geprüfte Backend aktiviert ist.</p>
+  <p class="text-sm text-amber-200">Einladungen erteilen keinen Zugriff auf Tresordaten. Zum Erstellen und Widerrufen ist eine Cloud-Anmeldung erforderlich.</p>
   <form id="heirIssueForm" class="space-y-2">
     <label for="heirRecipientUserId" class="block text-sm">Supabase-Benutzer-ID des bereits registrierten Erben (UUID)</label>
     <input id="heirRecipientUserId" type="text" required maxlength="36" autocomplete="off" spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
@@ -276,7 +276,7 @@
   </form>
   <button id="heirListButton" type="button" disabled class="rounded-lg bg-slate-700 px-4 py-2 disabled:opacity-50">Einladungen anzeigen</button>
   <div id="heirLiveList" class="text-sm text-slate-200" role="status" aria-live="polite"></div>
-  <p id="heirInvitationStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Backend nicht aktiviert.</p>
+  <p id="heirInvitationStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte mit deinem Cloud-Konto anmelden.</p>
 </section>
 <section id="heirAcceptInvitation" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirAcceptTitle">
   <h3 id="heirAcceptTitle" class="font-bold text-slate-100">Erbeneinladung annehmen</h3>
@@ -286,7 +286,7 @@
     <input id="heirAcceptToken" type="password" required minlength="64" maxlength="64" autocomplete="off" spellcheck="false" autocapitalize="off" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
     <button id="heirAcceptButton" type="submit" class="rounded-lg bg-indigo-700 px-4 py-2">Einladung annehmen</button>
   </form>
-  <p id="heirAcceptStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Die Serverfreischaltung wird noch vorbereitet.</p>
+  <p id="heirAcceptStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte mit deinem eigenen Cloud-Konto anmelden.</p>
 </section>
 
         </div>
