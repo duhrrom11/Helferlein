@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 isoliertes Staging-/Aktivierungsprotokoll (2026-11-13, NICHT produktiv)
+
+Das ungenutzte Modul `assets/a10-migration-protocol.js` modelliert **ausschliesslich im Arbeitsspeicher** die Schritte `initial`, `stage`, `activate` und `recoverAfterCrash`. Es prueft Revisionsnummern, laesst den V1-Rueckfallstand unveraendert und aktiviert V2 nur mit einem **synthetischen Test-Flag**. Ein Absturz vor Aktivierung laesst V1 als aktiven Zustand; nach Aktivierung wird nicht automatisch auf V1 zurueckgeschaltet. Die Tests simulieren Unterbrechungen mittels Serialisierung, ohne Browser- oder Produktivdaten zu verwenden.
+
+**Wichtige Grenze:** Dieses Modell ist **noch kein absturzsicheres persistentes Protokoll**. Ein Revisionsvergleich im Arbeitsspeicher ersetzt keine atomare Compare-and-Swap-Operation zwischen Browser-Tabs; das Flag `verified=true` ist kein unabhaengiger Sicherungs- oder Sicherheitsnachweis. Vor jeglicher produktiven Nutzung braucht es ein nachweislich atomares, dauerhaftes Speicherkonzept, einen extern wiederherstellbaren verschluesselten V1-Rueckfallstand, echte Recovery-Pruefungen, Konflikt-/Quota-/Crash-Tests im isolierten Browser und eine gesonderte Freigabe. Weder Legacy-Daten loeschen noch den Aktivierungsmarker im Produktivpfad umstellen. **A10 bleibt NO-GO.**
+
+
 ## A10: Schluesseltrennung und rueckwaertskompatible Migration (2026-11-12, Entwurf, NO-GO)
 
 **Ist-Pfad (Codepruefung):** `initVault()` erzeugt einen zufaelligen 256-Bit-Schluessel und speichert `masterKeyHex` zusammen mit `encryptedData` und unverschluesselten lokalen Kontakt-/Check-in-Feldern in `localStorage.digital_estate_vault`. Bei jedem Start wird der Schluessel aus demselben Datensatz gelesen. `saveLocalConfig()` schreibt den Datensatz erneut. Die Supabase-Wiederherstellung schreibt den entschluesselten Schluessel wieder als `masterKeyHex` in denselben lokalen Datensatz. Das bedeutet: AES-GCM schuetzt derzeit nicht gegen einen Angreifer mit Zugriff auf den Browserspeicher. Cloud-Backups speichern dagegen den Schluessel nur in einer PBKDF2/AES-GCM-geschuetzten Schluesselhuelle, sofern diese bewusst vorbereitet wurde.
