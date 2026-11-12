@@ -135,7 +135,7 @@ jobs:
           npx playwright test tests/b3-nachlass.spec.cjs --reporter=line --workers=1 | tee /tmp/nachlass-browser-tests.log
       - name: Preserve Nachlass test evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nachlass-test-evidence
           if-no-files-found: warn
