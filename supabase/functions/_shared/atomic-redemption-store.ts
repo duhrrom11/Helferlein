@@ -2,7 +2,7 @@
  * No RPC invocation outside trusted server-side Edge Function.
  */
 import type { AtomicRedemptionStore } from "./atomic-invitation-redemption.ts";
-interface RpcClient { rpc(name: string, args: Record<string, string>): Promise<{data: unknown; error: unknown}> }
+interface RpcClient { rpc(name: string, args: Record<string, string>): PromiseLike<{data: unknown; error: unknown}> }
 const HASH = /^[a-f0-9]{64}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export function createAtomicRedemptionStore(client: RpcClient): AtomicRedemptionStore {
