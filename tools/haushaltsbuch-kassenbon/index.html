@@ -178,10 +178,12 @@
                     <div>
                         <p class="text-xs font-semibold text-gray-500 text-center mb-2">Ausgaben nach Kategorie</p>
                         <div class="h-48 flex justify-center"><canvas id="categoryChart" role="img" aria-label="Diagramm: Haushaltsausgaben nach Kategorie"></canvas></div>
+                        <p id="categoryChartSummary" class="text-xs text-gray-600 mt-2" aria-live="off"></p>
                     </div>
                     <div>
                         <p class="text-xs font-semibold text-gray-500 text-center mb-2">Monatsverlauf (Cashflow)</p>
                         <div class="h-48 flex justify-center"><canvas id="cashflowChart" role="img" aria-label="Diagramm: monatlicher Cashflow im Haushaltsbuch"></canvas></div>
+                        <p id="cashflowChartSummary" class="text-xs text-gray-600 mt-2" aria-live="off"></p>
                     </div>
                 </div>
             </div>
@@ -1311,6 +1313,18 @@
                 cashflowChartInstance.data.datasets[0].data = [totalIncome, totalExpense];
                 cashflowChartInstance.update();
             }
+
+            // Text alternatives share the exact calculated values used by the charts.
+            // textContent prevents category names from becoming executable markup.
+            const formatChartAmount = value => Number(value).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+            const categoryChartSummary = Object.entries(categoryExpenses)
+                .filter(([, amount]) => amount > 0)
+                .map(([category, amount]) => category + ': ' + formatChartAmount(amount))
+                .join('; ');
+            document.getElementById('categoryChartSummary').textContent = categoryChartSummary || 'Keine Ausgaben in diesem Monat.';
+            document.getElementById('cashflowChartSummary').textContent =
+                'Einnahmen: ' + formatChartAmount(totalIncome) + '; Ausgaben: ' + formatChartAmount(totalExpense) +
+                '; Saldo: ' + formatChartAmount(totalIncome - totalExpense) + '.';
 
             const budgetContainer = document.getElementById('budgetProgressList');
             budgetContainer.innerHTML = defaultCategories.map(cat => {
