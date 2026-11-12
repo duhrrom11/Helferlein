@@ -1,5 +1,5 @@
--- NOT EXECUTED. Apply only after migrations 20261112070000 and 20261112070001.
--- This migration has never been applied; edit in place only before first deployment.
+-- Applied to Helferlein production Supabase on 2026-11-12, after migrations 20261112070000 and 20261112070001.
+-- Already applied in production: do not modify SQL semantics; create a new migration for future changes.
 BEGIN;
 CREATE TABLE nachlass_private.heir_rate_limits (
   actor_id uuid NOT NULL,

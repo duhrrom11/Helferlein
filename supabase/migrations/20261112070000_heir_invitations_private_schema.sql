@@ -1,4 +1,4 @@
--- Versioned migration draft. NOT EXECUTED; deployment requires separate approval.
+-- Applied to Helferlein production Supabase on 2026-11-12; retain as migration history.
 -- Existing verified production anchor: public.vault_cloud_snapshots(owner_user_id uuid PK).
 -- Invitations are issued only for an EXISTING registered recipient UUID.
 -- No heir access to vault_cloud_snapshots is granted by this migration.
