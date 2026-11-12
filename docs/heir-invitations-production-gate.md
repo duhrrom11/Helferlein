@@ -39,7 +39,7 @@ Die RPCs verwenden die Reihenfolge Eigentümerzeile (`FOR UPDATE`) vor Einladung
 ## Fehlerklassifikation und Beobachtbarkeit
 
 - `heir-invitations`: erwartete fachliche Ablehnung der Ausstellung = HTTP 409, nicht vorhandene bzw. fremde Einladung beim Widerruf = HTTP 404. Explizite RPC-Transport- oder Datenbankfehler = HTTP 503. Die HTTP-Antwort enthält weder SQL-Details noch Token.
-- `heir-redemption`: ungültige, fremde, abgelaufene oder bereits verwendete Einladungen erhalten dieselbe generische Ablehnung. **Derzeit werden auch RPC-Fehler als Ablehnung behandelt**; das verhindert Datenabfluss, erschwert aber die Erkennung von Ausfällen. Vor Produktivfreigabe ist eine datensparsame serverseitige Fehlerklassifikation mit neutralen Client-Antworten zu implementieren und abzunehmen.
+- `heir-redemption`: ungültige, fremde, abgelaufene oder bereits verwendete Einladungen erhalten dieselbe generische Ablehnung. Explizite RPC-Fehler, unerwartete RPC-Ergebnisse und interne Hashingfehler liefern nun HTTP 503 mit neutralem Fehlercode; fachliche Ablehnungen bleiben HTTP 404. Vor Produktivfreigabe sind die Pfade technisch abzunehmen.
 - Keine vollständigen Request-Bodys, Einladungs-Token, Token-Hashes, Bearer-Token oder Service-Role-Schlüssel protokollieren. Zulässige Betriebsmetriken: aggregierte HTTP-Statusklassen, technische Fehlerkategorien, begrenzte Anzahl fehlgeschlagener Versuche ohne personenbezogene Rohdaten.
 - Rate-Limits und Missbrauchsschutz für Ausstellungs- und Einlösungsversuche sind vor Aktivierung zu spezifizieren. Die CORS-Origin-Liste ist kein Ersatz dafür.
 
@@ -50,3 +50,11 @@ Die RPCs verwenden die Reihenfolge Eigentümerzeile (`FOR UPDATE`) vor Einladung
 - Migration 1 erstellt `nachlass_private` neu; vorhandene gleichnamige Objekte führen absichtlich zum Abbruch. Migration 2 setzt die Tabellen und die erste RPC voraus. Beide Migrationen benötigen einen vertrauenswürdigen, ausreichend privilegierten Ausführungsinhaber.
 - `CREATE FUNCTION` statt `CREATE OR REPLACE FUNCTION` schützt gegen stilles Überschreiben, verhindert aber keine Konflikte mit anders signierten Überladungen. Vor der Freigabe gleichnamige Funktionen und exponierte Schemas auflisten.
 - Die Prüfung der tatsächlichen Rechte, RLS-Policies, Funktionsinhaber, bestehenden Trigger und Sperrketten ist eine **noch offene** Voraussetzung. Die statische Dateiprüfung bestätigt diese Eigenschaften nicht.
+
+## Missbrauchsschutz – statische Grenzen und noch fehlende Infrastruktur
+
+- Bereits umgesetzt: JWT-Gateway und serverseitige `auth.getUser`-Prüfung, strikt begrenzte JSON-Eingaben, Body-Größenlimits (Ausstellung 1024 Byte, Einlösung 512 Byte), Tokenformatprüfung, CORS-Whitelist, neutrale Fehlermeldungen, kein Token-Logging und serverseitige Opt-in-Schalter.
+- Ein `404` bei fachlicher Einlöseablehnung verrät nicht, ob Token unbekannt, abgelaufen, fremd oder widerrufen ist. Technische Ausfälle sind als `503` erkennbar; diese Unterscheidung darf keine personenbezogenen Details enthalten.
+- **Noch nicht umgesetzt:** verteiltes, persistentes Rate-Limiting je verifiziertem Benutzer und nach geeigneten Missbrauchssignalen. Ein lokaler In-Memory-Zähler pro Edge-Isolat wäre bei mehreren Instanzen nicht zuverlässig und darf nicht als Schutz behauptet werden.
+- Vor Aktivierung muss ein zentraler, atomarer Limitierungsmechanismus mit sicheren Ausfallregeln, Quoten, Zeitfenstern und Datenschutzkonzept ausdrücklich freigegeben werden. Bis dahin beide Opt-in-Schalter deaktiviert lassen.
+- Keine Geheimnisse, Token, Hashes, JWTs oder vollständige Request-Bodys in Telemetrie. Statusklassen und technische Fehlerkategorien können aggregiert werden, nachdem die Betriebsüberwachung gesondert genehmigt wurde.
