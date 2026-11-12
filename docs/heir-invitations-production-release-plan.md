@@ -67,7 +67,7 @@ Keine Tests in der Produktion ohne ausdrücklich separat genehmigten sicheren Pl
 - [ ] Frontend `BACKEND_APPROVED=false` bis zur gesonderten finalen UI-Freigabe; kein automatischer Merge oder Release.
 - [ ] Nach Aktivierung aggregierte 4xx/5xx-Raten, Quotenüberschreitungen, RPC-Latenz, Fehler und Datenbanklast überwachen; keine Einladungs- oder Authentisierungstoken protokollieren.
 
-**GO** erst, wenn G0–G3 vollständig dokumentiert und ausdrücklich genehmigt sind. Sonst **NO-GO**.
+**Gate-Entscheidungen getrennt halten:** G0-Vorabfreigabe und gesondertes Change-GO sind vor G1 erforderlich; G1- und G2-Abnahmen sind vor der inaktiven G3-Bereitstellung erforderlich. Nach Prüfung der inaktiven G3-Konfiguration muss eine **schriftliche Aktivierungs-GO-Entscheidung vor Aktivierung** erfolgen. Erst danach sind eine separat autorisierte Aktivierung und nachgelagerte Überwachungs-/Abschlussnachweise möglich. Vollständig dokumentiertes G3 bedeutet deshalb nicht, dass die Aktivierung schon vor ihrer eigenen Freigabe erfolgt sein müsste. Bis zum jeweiligen schriftlichen GO gilt **NO-GO**.
 
 ## Rollback, Stoppschalter und Notfallverfahren
 
@@ -101,7 +101,7 @@ Die folgenden Issues sind die verbindliche Arbeitsliste; ein geschlossenes Issue
 | P1 | [#276 – Authentisierung, Tokens und Quoten](https://github.com/duhrrom11/Helferlein/issues/276) | G2 | Sicherheits-/Funktionsabnahme |
 | P2 | [#277 – Verantwortliche und Release-Freigaben](https://github.com/duhrrom11/Helferlein/issues/277) | G3 | Unterschriebene GO-Entscheidung |
 
-**Bearbeitungsreihenfolge:** zuerst #270–#272, anschließend #273–#276, abschließend #277. P1-Aufgaben dürfen parallel vorbereitet werden; kein produktiver Schritt darf einen noch offenen Gate-Nachweis umgehen.
+**Bearbeitungsreihenfolge:** zuerst G0-Vorprüfungen aus #270–#272 sowie #274 (Gateway-/Monitoring-Konzept) und #275 (Backup-/Notfall-Vorbereitung), dann ausschließlich nach separatem Change-GO G1 mit erneuter Rechteprüfung (#271), anschließend die G2-Abnahmen aus #272, #273, #275 und #276, schließlich inaktive G3-Bereitstellung und #274-Betriebsprüfung, danach schriftliches Aktivierungs-GO aus #277. #277 kann organisatorisch parallel vorbereitet werden. Die Issues bleiben bis zu sämtlichen jeweils erforderlichen Teilnachweisen offen; eine dokumentierte Teil-Gate-Freigabe ist kein vollständiger Issue-Abschluss. Kein produktiver Schritt darf einen noch offenen Gate-Nachweis umgehen.
 
 ## P0-Zwischenstand – rein lesende Metadatenprüfung (2026-11-12)
 
@@ -137,6 +137,14 @@ Quellen: SQL-Migrationen 70000–70002, beide Edge Functions, gemeinsame Auth-/R
 **Nicht bestätigt:** namentliche Rollenzuweisungen, datierte Unterschriften, unabhängiges Review, fixierter und abgenommener Release-Commit, P0-/P1-Abnahmeprotokolle, Datenschutz-/DBA-/Security-/SRE-Freigaben, Wartungs-/Aktivierungs- und Rollbackfenster sowie die schriftliche GO-Entscheidung. Der Branchname und der letzte Dokumentations-Commit ersetzen keinen freigegebenen Release-Commit. Alle G0–G3-Freigabefelder bleiben offen.
 
 **Entscheidung: P2 OFFEN / NO-GO.** Keine Migration, Aktivierung, Merge oder Deployment, solange die vorgelagerten Gates und diese formalen Nachweise fehlen.
+
+## Gate-Nachweise ohne Zirkelschluss
+
+- **G0 vor G1:** #270 Schema, #271 bestehende Rechte, #272 Parser/Compiler, #274 WAF-/Abuse-/Monitoring-Konzept, #275 Backup-/PITR-/Notfall-Voraussetzungen und namentliche Rollen. Eine spätere G2-Abnahme ersetzt diese Vorprüfung nicht.
+- **G1 nach gesonderter Change-Freigabe:** Migrationen nur durch autorisierte Betreiber; nach jedem Schritt Ist-Objekte, ACLs und RLS nachweisen. #271 bleibt bis zur Nachprüfung offen.
+- **G2:** #273 und #276 technisch isoliert abnehmen; #272 RPC-/Laufzeitkompatibilität und #275 Restore-/Wartungsnachweise vervollständigen.
+- **G3:** zuerst inaktive Bereitstellung und wirksame Security-/SRE-Prüfung (#274), dann datiertes schriftliches Aktivierungs-GO (#277), erst danach gesondert autorisierte Aktivierung und nachgelagerte Überwachung. Der GO-Beschluss darf nicht voraussetzen, dass die Aktivierung bereits erfolgt ist.
+- **Baseline:** Ein freigegebener Code-Release-Commit mit unabhängigem Review ist erforderlich. Die hier erzeugten Dokumentations-Commits sind keine Code- oder Betriebsfreigaben.
 
 ## Freigabeprotokoll (vor Aktivierung auszufüllen)
 
