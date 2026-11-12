@@ -27,7 +27,7 @@
     <script defer src="../../assets/heir-owner-invitations-bootstrap-staging.js"></script>
     <script defer src="../../assets/heir-owner-management.js"></script>
     <script defer src="../../assets/heir-redemption-ui.js"></script>
-    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-2">
     <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
@@ -203,8 +203,8 @@
                 <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
                     <h4 class="text-xs font-bold text-indigo-400">👥 Personen für 24h-Notfall-Trigger & E-Mail-Versand</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                        <input type="text" id="newAlarmPersonName" placeholder="Name (z.B. Isabelle)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
-                        <input type="email" id="newAlarmPersonContact" placeholder="E-Mail-Adresse" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200">
+                        <label class="helferlein-field" for="newAlarmPersonName"><span class="helferlein-field-label">Name</span><input type="text" id="newAlarmPersonName" placeholder="Name (z.B. Isabelle)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200"></label>
+                        <label class="helferlein-field" for="newAlarmPersonContact"><span class="helferlein-field-label">E-Mail-Adresse</span><input type="email" id="newAlarmPersonContact" placeholder="E-Mail-Adresse" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200"></label>
                         <button id="addAlarmPersonBtn" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md">
                             ➕ Person anlegen
                         </button>

@@ -25,7 +25,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <script defer src="../../assets/helferlein-b3.js"></script>
-    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-2">
     <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
@@ -170,9 +170,9 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <input type="text" id="plantName" placeholder="Name (z.B. Tomate Harzfeuer)" class="p-3 border rounded-xl text-sm" aria-label="Name (z.B. Tomate Harzfeuer)">
-                <input type="text" id="plantSpecies" placeholder="Art / Sorte (z.B. Tomate)" class="p-3 border rounded-xl text-sm" onblur="checkCompanionPlanting(this.value)" aria-label="Art / Sorte (z.B. Tomate)">
-                <input type="text" id="plantLocation" placeholder="Standort / Beet (z.B. Gewächshaus)" class="p-3 border rounded-xl text-sm" aria-label="Standort / Beet (z.B. Gewächshaus)">
+                <label class="helferlein-field" for="plantName"><span class="helferlein-field-label">Name</span><input type="text" id="plantName" placeholder="Name (z.B. Tomate Harzfeuer)" class="p-3 border rounded-xl text-sm" aria-label="Name (z.B. Tomate Harzfeuer)"></label>
+                <label class="helferlein-field" for="plantSpecies"><span class="helferlein-field-label">Art / Sorte</span><input type="text" id="plantSpecies" placeholder="Art / Sorte (z.B. Tomate)" class="p-3 border rounded-xl text-sm" onblur="checkCompanionPlanting(this.value)" aria-label="Art / Sorte (z.B. Tomate)"></label>
+                <label class="helferlein-field" for="plantLocation"><span class="helferlein-field-label">Standort / Beet</span><input type="text" id="plantLocation" placeholder="Standort / Beet (z.B. Gewächshaus)" class="p-3 border rounded-xl text-sm" aria-label="Standort / Beet (z.B. Gewächshaus)"></label>
             </div>
 
             <div id="companionAlertBox" class="hidden text-xs bg-amber-50 p-3 rounded-xl border border-amber-200 text-amber-900"></div>
@@ -225,7 +225,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <textarea id="plantNote" placeholder="Wichtige Anmerkungen &amp; Pflegehinweise..." class="w-full p-3 border rounded-xl text-sm h-20 resize-none" aria-label="Wichtige Anmerkungen &amp; Pflegehinweise..."></textarea>
+                <label class="helferlein-field" for="plantNote"><span class="helferlein-field-label">Wichtige Anmerkungen &amp; Pflegehinweise...</span><textarea id="plantNote" placeholder="Wichtige Anmerkungen &amp; Pflegehinweise..." class="w-full p-3 border rounded-xl text-sm h-20 resize-none" aria-label="Wichtige Anmerkungen &amp; Pflegehinweise..."></textarea></label>
                 <div>
                     <label for="plantPhotoInput" class="block text-xs font-semibold text-gray-600 mb-1">Pflanzenfoto (Initial):</label>
                     <input type="file" id="plantPhotoInput" accept="image/*" class="text-xs p-2 border rounded-xl w-full file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-lime-50 file:text-lime-700">
@@ -239,9 +239,9 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="plants" data-b3-size="l" id="b3-plants">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
                 <h3 class="font-bold text-lg">📋 Meine Pflanzen &amp; Vermehrung</h3>
-                <select id="filterLocation" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Pflanzen nach Standort filtern">
+                <label class="helferlein-field" for="filterLocation"><span class="helferlein-field-label">Pflanzen nach Standort filtern</span><select id="filterLocation" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Pflanzen nach Standort filtern">
                     <option value="">Alle Standorte / Räume</option>
-                </select>
+                </select></label>
             </div>
             <div id="plantsList" class="space-y-3">
                 <p class="text-sm text-gray-400 text-center py-4">Keine Pflanzen erfasst.</p>

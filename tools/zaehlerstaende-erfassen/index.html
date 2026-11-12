@@ -57,7 +57,7 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
-    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-2">
     <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
@@ -249,14 +249,14 @@
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <h3 class="font-bold text-lg">📋 Zählerstände & Verlauf</h3>
                 <div class="flex gap-2">
-                    <select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verlauf nach Zählertyp filtern">
+                    <label class="helferlein-field" for="filterType"><span class="helferlein-field-label">Verlauf nach Zählertyp filtern</span><select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Verlauf nach Zählertyp filtern">
                         <option value="All">Alle Zähler anzeigen</option>
                         <option value="Strom">⚡ Strom (HT)</option>
                         <option value="Strom-NT">🌙 Strom (NT)</option>
                         <option value="Kaltwasser">💧 Kaltwasser</option>
                         <option value="Warmwasser">🔥 Warmwasser</option>
                         <option value="Gas">♨️ Gas</option>
-                    </select>
+                    </select></label>
                 </div>
             </div>
             <div id="readingsList" class="space-y-3">
@@ -334,8 +334,8 @@
                         Nicht angemeldet
                     </div>
 
-                    <input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
-                    <input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
+                    <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail</span><input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
 
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">

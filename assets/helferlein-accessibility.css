@@ -14,6 +14,31 @@ body.b3:not(.b3-dark) main button.bg-teal-600 {background-color:#0f766e}
 body.b3:not(.b3-dark) main button.bg-lime-600 {background-color:#4d7c0f}
 /* Chart.js otherwise keeps its intrinsic canvas width on narrow WG cards. */
 body.b3-wg #b3-analysis canvas {max-width:100%;min-width:0}
+/* Keep semantic colours while meeting normal-text contrast on pale cards. */
+body.b3:not(.b3-dark) main .text-emerald-600 {color:#047857}
+body.b3:not(.b3-dark) main .text-teal-600 {color:#0f766e}
+body.b3:not(.b3-dark) main .text-amber-600 {color:#92400e}
+body.b3-backform:not(.b3-dark) main .text-orange-600 {color:#9a3412}
+body.b3-backform:not(.b3-dark) main .text-slate-400 {color:#526176}
+body.b3-backform:not(.b3-dark) :is(main,#settings-modal,#cook-modal) .bg-orange-600 {background-color:#9a3412}
+body.b3-home .b3-faq a {color:#0369a1}
+body.b3-home .b3-footer .text-emerald-600 {color:#6ee7b7}
+body.b3 #frostBanner .opacity-90 {opacity:1}
+/* The cloud warning must not depend on the body colour through transparency. */
+body.b3-nachlass [role="status"].bg-amber-950\/50 {background:#451a03;color:#fef3c7}
+body.b3-nachlass main a.bg-amber-500 {background-color:#92400e;color:#fff}
+body.b3-wg.b3-wg-unconfigured main.b3-dashboard>[data-b3-panel] {opacity:1}
+body.b3-wg :is(#receiptIsFixkosten,#receiptIsTax) {width:24px;height:24px;flex-shrink:0}
+.helferlein-field {display:flex;flex-direction:column;gap:.3rem;min-width:0;flex:1 1 0%}
+.helferlein-field-label {font-size:.75rem;line-height:1.4;font-weight:650;color:var(--b3-ink,var(--hub-ink,#203047))}
+.helferlein-field>input,.helferlein-field>select,.helferlein-field>textarea {min-width:0;max-width:100%;width:100%}
+.helferlein-field:has(>.hidden),.helferlein-field:has(>[hidden]) {display:none}
+body.b3-backform.b3-dark main #volume-warning-box {background:#223854!important;color:#e2edff!important}
+body.b3-backform.b3-dark main #volume-warning-box.bg-red-50 {background:#4b2530!important;color:#ffdce1!important}
+body.b3-backform.b3-dark main #volume-warning-box :is(strong,p) {color:inherit!important}
+body.b3-backform.b3-dark main .bg-emerald-50\/60 {background:#204539!important;color:#daf8e7!important}
+body.b3-backform.b3-dark main .bg-amber-50\/70 {background:#483b24!important;color:#ffedc7!important}
+body.b3-backform.b3-dark main .bg-amber-50\/70 .text-amber-800 {color:#ffedc7!important}
 @media (prefers-reduced-motion:reduce) {
   body.b3,body.b3-home {scroll-behavior:auto}
   body.b3 *,body.b3-home * {scroll-behavior:auto!important;transition:none!important}

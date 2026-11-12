@@ -69,7 +69,7 @@
         });
       });
     </script>
-    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-2">
     <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
@@ -125,7 +125,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">📍 1. Standort anlegen</h2>
                 <div class="flex gap-2">
-                    <select id="locIcon" class="p-3 border rounded-xl text-sm bg-white" aria-label="Symbol des Standorts">
+                    <label class="helferlein-field" for="locIcon"><span class="helferlein-field-label">Symbol des Standorts</span><select id="locIcon" class="p-3 border rounded-xl text-sm bg-white" aria-label="Symbol des Standorts">
                         <option value="📦">📦 Karton</option>
                         <option value="🏠">🏠 Haus</option>
                         <option value="🚪">🚪 Keller</option>
@@ -133,8 +133,8 @@
                         <option value="🚗">🚗 Garage</option>
                         <option value="🏢">🏢 Büro</option>
                         <option value="⛺">⛺ Schuppen</option>
-                    </select>
-                    <input type="text" id="locName" placeholder="Standort Name" class="w-full p-3 border rounded-xl text-sm" aria-label="Standort Name">
+                    </select></label>
+                    <label class="helferlein-field" for="locName"><span class="helferlein-field-label">Standort Name</span><input type="text" id="locName" placeholder="Standort Name" class="w-full p-3 border rounded-xl text-sm" aria-label="Standort Name"></label>
                 </div>
                 <button onclick="saveLocation()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Standort speichern</button>
             </div>
@@ -142,28 +142,28 @@
             <!-- Kiste hinzufügen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">📦 2. Kiste / Karton hinzufügen</h2>
-                <select id="boxLocationSelect" class="w-full p-3 border rounded-xl text-sm bg-white" aria-label="Standort der Kiste">
+                <label class="helferlein-field" for="boxLocationSelect"><span class="helferlein-field-label">Standort der Kiste</span><select id="boxLocationSelect" class="w-full p-3 border rounded-xl text-sm bg-white" aria-label="Standort der Kiste">
                     <option value="">-- Standort wählen --</option>
-                </select>
+                </select></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="boxName" placeholder="Kisten-Name (z.B. Karton #3)" class="p-3 border rounded-xl text-sm" aria-label="Kisten-Name (z.B. Karton #3)">
-                    <input type="text" id="boxValue" placeholder="Wert in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Wert in € (optional)">
+                    <label class="helferlein-field" for="boxName"><span class="helferlein-field-label">Kisten-Name</span><input type="text" id="boxName" placeholder="Kisten-Name (z.B. Karton #3)" class="p-3 border rounded-xl text-sm" aria-label="Kisten-Name (z.B. Karton #3)"></label>
+                    <label class="helferlein-field" for="boxValue"><span class="helferlein-field-label">Wert in € (optional)</span><input type="text" id="boxValue" placeholder="Wert in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Wert in € (optional)"></label>
                 </div>
-                <input type="text" id="boxDesc" placeholder="Inhalt / Beschreibung (z.B. Lichterketten)" class="w-full p-3 border rounded-xl text-sm" aria-label="Inhalt / Beschreibung (z.B. Lichterketten)">
+                <label class="helferlein-field" for="boxDesc"><span class="helferlein-field-label">Inhalt / Beschreibung</span><input type="text" id="boxDesc" placeholder="Inhalt / Beschreibung (z.B. Lichterketten)" class="w-full p-3 border rounded-xl text-sm" aria-label="Inhalt / Beschreibung (z.B. Lichterketten)"></label>
                 
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="boxBarcode" placeholder="Barcode / EAN (optional)" class="p-3 border rounded-xl text-sm font-mono" aria-label="Barcode / EAN (optional)">
-                    <input type="date" id="boxExpiry" class="p-3 border rounded-xl text-sm bg-white" title="Garantie / Ablaufdatum" aria-label="Garantie- oder Ablaufdatum">
+                    <label class="helferlein-field" for="boxBarcode"><span class="helferlein-field-label">Barcode / EAN (optional)</span><input type="text" id="boxBarcode" placeholder="Barcode / EAN (optional)" class="p-3 border rounded-xl text-sm font-mono" aria-label="Barcode / EAN (optional)"></label>
+                    <label class="helferlein-field" for="boxExpiry"><span class="helferlein-field-label">Garantie- oder Ablaufdatum</span><input type="date" id="boxExpiry" class="p-3 border rounded-xl text-sm bg-white" title="Garantie / Ablaufdatum" aria-label="Garantie- oder Ablaufdatum"></label>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="boxTag" class="p-3 border rounded-xl text-sm bg-white" aria-label="Kennzeichnung der Kiste">
+                    <label class="helferlein-field" for="boxTag"><span class="helferlein-field-label">Kennzeichnung der Kiste</span><select id="boxTag" class="p-3 border rounded-xl text-sm bg-white" aria-label="Kennzeichnung der Kiste">
                         <option value="Standard">🏷️ Standard</option>
                         <option value="Zerbrechlich">⚠️ Zerbrechlich</option>
                         <option value="Wertvoll">💎 Wertvoll</option>
                         <option value="Saison">❄️ Saison / Deko</option>
-                    </select>
-                    <input type="file" id="boxPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Foto der Kiste auswählen">
+                    </select></label>
+                    <label class="helferlein-field" for="boxPhotoInput"><span class="helferlein-field-label">Foto der Kiste auswählen</span><input type="file" id="boxPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Foto der Kiste auswählen"></label>
                 </div>
                 <button onclick="saveBox()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Kiste speichern & QR-Code</button>
             </div>
@@ -174,19 +174,19 @@
             <div class="flex flex-col md:flex-row justify-between items-center gap-3">
                 <h3 class="font-bold text-lg">🗄️ Vollständiges Inventar</h3>
                 <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                    <select id="tagFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar nach Kennzeichnung filtern">
+                    <label class="helferlein-field" for="tagFilter"><span class="helferlein-field-label">Inventar nach Kennzeichnung filtern</span><select id="tagFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar nach Kennzeichnung filtern">
                         <option value="">Alle Tags</option>
                         <option value="Standard">Standard</option>
                         <option value="Zerbrechlich">Zerbrechlich</option>
                         <option value="Wertvoll">Wertvoll</option>
                         <option value="Saison">Saison</option>
-                    </select>
-                    <select id="sortFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar sortieren">
+                    </select></label>
+                    <label class="helferlein-field" for="sortFilter"><span class="helferlein-field-label">Inventar sortieren</span><select id="sortFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar sortieren">
                         <option value="name">Sortierung: Name</option>
                         <option value="value-desc">Höchster Wert zuerst</option>
                         <option value="value-asc">Geringster Wert zuerst</option>
-                    </select>
-                    <input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Suchen (Kiste, Artikel, Barcode)..." class="p-2 border rounded-xl text-sm flex-grow md:w-56" aria-label="🔍 Suchen (Kiste, Artikel, Barcode)...">
+                    </select></label>
+                    <label class="helferlein-field" for="searchBox"><span class="helferlein-field-label">🔍 Suchen (Kiste, Artikel, Barcode)...</span><input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Suchen (Kiste, Artikel, Barcode)..." class="p-2 border rounded-xl text-sm flex-grow md:w-56" aria-label="🔍 Suchen (Kiste, Artikel, Barcode)..."></label>
                 </div>
             </div>
             <div id="inventoryContainer" class="space-y-4">
@@ -285,8 +285,8 @@
                         Nicht angemeldet
                     </div>
 
-                    <input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
-                    <input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
+                    <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail</span><input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
 
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">

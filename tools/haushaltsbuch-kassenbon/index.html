@@ -87,7 +87,7 @@
         });
       });
     </script>
-    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-2">
     <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
@@ -314,7 +314,7 @@
                     <button type="button" onclick="runOCR()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">🔍 Text automatisch erkennen (OCR)</button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
-                    <input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen">
+                    <label class="helferlein-field" for="receiptPhotoInput"><span class="helferlein-field-label">Belegfoto auswählen</span><input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen"></label>
                     <div id="ocrStatus" class="text-xs text-emerald-800 font-semibold hidden">🔍 Scanne Kassenbon... Bitte warten.</div>
                 </div>
 
@@ -347,14 +347,14 @@
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <h3 class="font-bold text-lg text-gray-900">📋 Buchungshistorie & Kassenbons</h3>
                 <div class="flex gap-2 flex-wrap">
-                    <select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Buchungen nach Typ filtern">
+                    <label class="helferlein-field" for="filterType"><span class="helferlein-field-label">Buchungen nach Typ filtern</span><select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Buchungen nach Typ filtern">
                         <option value="All">Alle Typen</option>
                         <option value="ausgabe">🔻 Nur Ausgaben</option>
                         <option value="einnahme">🔺 Nur Einnahmen</option>
                         <option value="fixkosten">🔄 Nur Fixkosten/Abos</option>
                         <option value="garantie">🛡️ Nur mit Aktiver Garantie</option>
-                    </select>
-                    <select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
+                    </select></label>
+                    <label class="helferlein-field" for="filterCategory"><span class="helferlein-field-label">Nach Kategorie filtern</span><select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
                         <option value="All">Alle Kategorien</option>
                         <option value="Lebensmittel">🛒 Lebensmittel</option>
                         <option value="Wohnen">🏠 Wohnen</option>
@@ -366,7 +366,7 @@
                         <option value="Verträge">📜 Verträge</option>
                         <option value="Einnahme">💶 Einnahmen</option>
                         <option value="Sonstiges">📦 Sonstiges</option>
-                    </select>
+                    </select></label>
                 </div>
             </div>
             <div id="receiptsList" class="space-y-3">
@@ -476,8 +476,8 @@
                         Nicht angemeldet
                     </div>
 
-                    <input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
-                    <input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
+                    <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail</span><input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
 
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">
