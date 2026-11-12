@@ -113,6 +113,19 @@ Die folgenden Issues sind die verbindliche Arbeitsliste; ein geschlossenes Issue
 
 **Entscheidung:** #270, #271 und #272 bleiben **P0 OFFEN / NO-GO**. Die P0-Nachweise dürfen erst nach unabhängiger Prüfung und dokumentierter Freigabe als erledigt markiert werden. Keine produktiven Tests oder SQL-Ausführung ohne separate Genehmigung.
 
+## P1-Zwischenstand – rein lesende Sicherheitsprüfung (2026-11-12)
+
+Quellen: SQL-Migrationen 70000–70002, beide Edge Functions, gemeinsame Auth-/Rate-Limit-/HTTP-Module, `supabase/config.toml`, Supabase-Projekt-, Migrations- und Edge-Function-Metadaten. **Keine SQL-Ausführung, keine Tests und keine Betriebsprüfung.** Projekt meldet PostgreSQL 17.11 und `ACTIVE_HEALTHY`; keine registrierten Erben-Migrationen und `list_edge_functions` meldet **keine bereitgestellten Funktionen**. Dies beweist keine vollständige Abwesenheit anderweitig erreichbarer Dienste.
+
+| Issue | Bestätigter statischer Teilnachweis | Offener Abnahmeblocker |
+| --- | --- | --- |
+| [#273 – Parallelität](https://github.com/duhrrom11/Helferlein/issues/273) | Eigentümerzeile vor Einladung gesperrt; Empfänger `FOR KEY SHARE`; Zuordnungs-PK und Unique-/FK-Regeln vorgesehen. | Parallelitäts-/Deadlock-Verhalten, Löschpfade, Trigger, Integrität und Konfliktfehler nicht technisch abgenommen. |
+| [#274 – Gateway und Monitoring](https://github.com/duhrrom11/Helferlein/issues/274) | `verify_jwt=true`, `auth.getUser`, Request- und Origin-Prüfung, serverseitige Opt-in-Flags und benutzerbezogene Quoten im Code. | WAF/Abuse-Schutz über Konten hinweg, effektive Gateway-/Log-/Alarm-/Secret-Konfiguration nicht belegt. |
+| [#275 – Backup und Notfall](https://github.com/duhrrom11/Helferlein/issues/275) | Wartungs-RPC mit maximal 1.000 Zeilen, 48h-Altersgrenze, `SKIP LOCKED`; dokumentierter nicht-destruktiver Rückfall. | Tatsächliche PITR-/Restore-Fähigkeit, RPO/RTO, Betreiberrolle, Wartungsintervall, Retention und Notfallfreigabe nicht nachgewiesen. |
+| [#276 – Authentisierung und Quoten](https://github.com/duhrrom11/Helferlein/issues/276) | Verifizierte Benutzeridentität, Token-Hash, Empfängerbindung, Widerruf ohne Quote, 2/5-Ausstellung und 3/10-Einlösung sowie neutrale HTTP-Fehlerbehandlung im Entwurf. | Isolierte technische Abnahme von JWT-/Token-/Quota-/Fehlerpfaden, Compiler- und Laufzeitkompatibilität ausstehend. |
+
+**Entscheidung:** Alle vier P1-Issues bleiben **OFFEN / NO-GO**. Quellcode- und Metadatenbefunde ersetzen keine Sicherheits-, Betriebs- oder Restore-Abnahme. P0 bleibt ebenfalls offen; keine Freigabe für Migration, Merge, Deployment oder Aktivierung.
+
 ## Freigabeprotokoll (vor Aktivierung auszufüllen)
 
 | Feld | Erforderlicher Eintrag |
