@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 isoliertes verschluesseltes portables V1-Backup (2026-11-13, KEINE Aktivierung)
+
+`assets/a10-v1-portable-backup.js` stellt ausschliesslich `create(legacy,password)`, `restore(backup,password)` und Formatvalidierung bereit. Das komplette synthetische V1-Objekt einschliesslich des Legacy-Masterkeys wird mit einem separaten Passwort via PBKDF2-SHA256 (600.000 Iterationen, zufaelliges 16-Byte-Salt) und AES-256-GCM (zufaelliger 12-Byte-IV, versionsgebundenes AAD) verschluesselt. Das exportierte Objekt enthaelt nur Ciphertext und KDF-Metadaten. Die Wiederherstellung liefert ein V1-Objekt **nur im Speicher**; sie speichert, importiert, aktiviert oder ueberschreibt nichts. Format und Groesse sind begrenzt, unbekannte Versionen und manipulierte Daten werden abgewiesen.
+
+Der echte Chromium-Test `tests/a10-browser-portable-v1-backup.cjs` erstellt ein synthetisches verschluesseltes V1-Objekt, exportiert die verschluesselte Sicherung, **loescht das Quell-Browserprofil**, oeffnet ein frisches Profil und prueft exakte Wiederherstellung, falsches Passwort, manipulierten Ciphertext, ungueltiges Format und Unveraenderlichkeit des Originals. Es werden keine produktiven Daten, Browserprofile oder Konten verwendet.
+
+**Grenzen:** Keine echte Benutzerexport-/Importoberflaeche, kein dauerhaftes externes Backup-Medium, kein realer Wiederherstellungspfad in der App und keine Freigabe des Legacy-Schluessels im Produktivbetrieb. Die synthetischen Tests beweisen keine reale V1-Schema-Kompatibilitaet, keine unabhaengige Sicherungsaufbewahrung und keine Verfuegbarkeit bei vergessenem Passwort. Das Passwort muss separat und sicher aufbewahrt werden; ohne Passwort ist das Backup nicht wiederherstellbar. **A10 bleibt NO-GO.**
+
+
 ## A10 kontrollierte Quota- und Speicherfehler (2026-11-13, isoliert)
 
 `tests/a10-browser-quota-faults.cjs` prueft in echtem Chromium auf localhost mit synthetischen Datensaetzen und einem wegwerfbaren Profil: einen gezielt an `IDBObjectStore.put` ausgeloesten browsernativen `QuotaExceededError`, einen echten `readwrite`-Transaktionsabbruch nach erfolgreichem `put`, danach einen gueltigen Stage-/Aktivierungsdurchlauf und erneut einen injizierten Quota-Fehler. Nach jeder Fehlersituation bleiben Revision, Aktivierungsmarker und V1 unveraendert. Ein Browser-Neustart prueft den zuletzt erfolgreich gespeicherten Zustand.
