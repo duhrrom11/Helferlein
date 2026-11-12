@@ -4,6 +4,8 @@
 
 **Konsolidierte Entscheidungsgrundlage:** [GO/NO-GO-Nachweismatrix für Issues #270–#277](./heir-invitations-go-no-go-matrix.md) mit Abhängigkeiten, Rollen und Freigabereihenfolge. Alle acht Issues sind weiterhin offen; **NO-GO**.
 
+**G0-Übergabe an die Rollen:** [Rollenbasierte G0-Übergabeübersicht für #270–#272, #274 und #275](./heir-invitations-g0-handover.md) mit Nachweisen, Abhängigkeiten, STOP-Kriterien und offenem Übergabeprotokoll. Dies ist keine Freigabe.
+
 ## Verantwortlichkeiten und verbindliche Freigaben
 
 | Rolle | Verantwortlich für | Nachweis |
