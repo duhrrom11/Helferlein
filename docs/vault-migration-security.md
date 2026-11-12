@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 isolierter IndexedDB-Transaktionsadapter (2026-11-13, KEINE Aktivierung)
+
+`assets/a10-atomic-idb-store.js` stellt eine **nicht eingebundene** IndexedDB-Transaktionsschnittstelle bereit. Der Adapter liest und schreibt einen Zustand pro Tresor-ID in **einer** `readwrite`-Transaktion; der Revisionsvergleich erfolgt innerhalb derselben Transaktion. Erst das `complete`-Ereignis bestaetigt den Commit, `abort`/`error` fuehren zu einem Fehler. Staging und simulierter Aktivierungsmarker bleiben Teil desselben Datensatzes, V1 wird bei diesen Schritten nicht geloescht. Die Datenbank darf nur explizit mit einem `a10-isolated-...`-Namen geoeffnet werden; kein produktiver Aufrufer existiert.
+
+**Testgrenze:** Die automatisierten Tests verwenden einen synthetischen, serialisierenden Transaktions-Treiber fuer konkurrierende Revisionen, Quota-Fehler und Abbrueche vor Commit. Sie sind **kein realer Browser-IndexedDB-Test** fuer Browser-Absturz, Dauerhaftigkeit, mehrere Tabs oder Stromausfall. Ein IndexedDB-`complete` allein garantiert nicht in allen Browsern die physische Persistenz nach einem Stromausfall. Ein echter isolierter Browser-Test mit Fault Injection und unabhaengig geprueftem Recovery ist vor Aktivierung Pflicht.
+
+**Vertraulichkeitsgrenze:** Der Adapter bewahrt den unveraenderten V1-Datensatz inklusive `masterKeyHex` auf. Damit bleibt das bisherige Klartextschluessel-Risiko waehrend einer Migration bestehen. V1 darf erst nach einem nachweislich unabhaengig wiederherstellbaren, geschuetzten Rueckfallweg entfernt werden. Es gibt **keine** produktive Migration, keine Datenbankmigration und **keine A10-Freigabe**.
+
+
 ## A10 isoliertes Staging-/Aktivierungsprotokoll (2026-11-13, NICHT produktiv)
 
 Das ungenutzte Modul `assets/a10-migration-protocol.js` modelliert **ausschliesslich im Arbeitsspeicher** die Schritte `initial`, `stage`, `activate` und `recoverAfterCrash`. Es prueft Revisionsnummern, laesst den V1-Rueckfallstand unveraendert und aktiviert V2 nur mit einem **synthetischen Test-Flag**. Ein Absturz vor Aktivierung laesst V1 als aktiven Zustand; nach Aktivierung wird nicht automatisch auf V1 zurueckgeschaltet. Die Tests simulieren Unterbrechungen mittels Serialisierung, ohne Browser- oder Produktivdaten zu verwenden.
