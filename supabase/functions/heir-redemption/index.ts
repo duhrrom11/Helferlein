@@ -5,6 +5,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import { handleRedemptionRequest } from "../_shared/redemption-http-handler.ts";
 import { createAtomicRedemptionStore } from "../_shared/atomic-redemption-store.ts";
+import { consumeHeirRateLimit } from "../_shared/heir-rate-limit.ts";
 
 const url = Deno.env.get("SUPABASE_URL");
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
@@ -25,5 +26,8 @@ const deniedStore = { async redeemAtomically(): Promise<"denied"> { return "deni
 Deno.serve((request: Request) => handleRedemptionRequest(request, {
   auth: authClient ?? deniedAuth,
   store: serviceClient ? createAtomicRedemptionStore(serviceClient) : deniedStore,
+  rateLimit: (verifiedUserId: string) => serviceClient
+    ? consumeHeirRateLimit(serviceClient, verifiedUserId, "redeem")
+    : Promise.resolve("unavailable" as const),
   enabled: configured,
 }));
