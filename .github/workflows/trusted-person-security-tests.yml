@@ -7,6 +7,8 @@ on:
       - "supabase/functions/_shared/**"
       - "supabase/functions/trusted-person-invite-test/**"
       - ".github/workflows/trusted-person-security-tests.yml"
+      - "supabase/migrations/**"
+      - "supabase/config.toml"
   pull_request:
     paths:
       - "supabase/functions/_shared/**"
@@ -15,6 +17,11 @@ on:
 
 permissions:
   contents: read
+
+# Cancel superseded checks for the same PR; never cancel another branch's job.
+concurrency:
+  group: trusted-person-security-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   unit-tests:
