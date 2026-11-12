@@ -167,7 +167,9 @@ export function invitationViews(
       recipient: invitation.intendedUserId,
       expiresAt: invitation.expiresAt,
       status,
-      canRevoke: status === "pending" && Number.isFinite(expiryMs) && expiryMs > nowMs,
+      // Revocation remains available for accepted and expired invitations;
+      // only an already revoked invitation cannot be revoked again.
+      canRevoke: status !== "revoked",
     };
   }).sort((a, b) => {
     const aPending = a.status === "pending" ? 0 : 1;
