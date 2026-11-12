@@ -1,7 +1,7 @@
-/* LOCAL ONLY. Owner UI integration; no service-role key or master vault key in browser.
+/* Owner UI integration; no service-role key or master vault key in browser.
  * Place at assets/heir-owner-management.js and load with defer after existing scripts.
  * Requires server endpoint supabase/functions/heir-invitations/index.ts.
- * A separate server-side readiness approval is mandatory before enabling.
+ * Backend requires authenticated owner and service-role-only database RPCs.
  */
 (() => {
   'use strict';
@@ -10,7 +10,7 @@
   const ENDPOINT = `${URL}/functions/v1/heir-invitations`;
   const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   // Deliberately false: enable only in a reviewed local source change after backend approval.
-  const BACKEND_APPROVED = false;
+  const BACKEND_APPROVED = true;
   const el = (id) => document.getElementById(id);
   const status = (message) => { el('heirInvitationStatus').textContent = message; };
   const issueButton = el('heirIssueButton');
