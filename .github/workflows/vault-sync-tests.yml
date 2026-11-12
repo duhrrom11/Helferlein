@@ -7,6 +7,8 @@ on:
       - 'tools/digitaler-nachlass/index.html'
       - 'assets/heir-owner-legacy.js'
       - 'assets/a10-local-key-envelope-v2.js'
+      - 'assets/a10-migration-preflight.js'
+      - 'tests/a10-migration-preflight.test.cjs'
       - 'tests/a10-local-key-envelope-v2.test.cjs'
       - 'tests/vault-sync-queue.test.cjs'
       - 'tests/vault-local-save.test.cjs'
@@ -25,6 +27,8 @@ on:
       - 'tools/digitaler-nachlass/index.html'
       - 'assets/heir-owner-legacy.js'
       - 'assets/a10-local-key-envelope-v2.js'
+      - 'assets/a10-migration-preflight.js'
+      - 'tests/a10-migration-preflight.test.cjs'
       - 'tests/a10-local-key-envelope-v2.test.cjs'
       - 'tests/vault-sync-queue.test.cjs'
       - 'tests/vault-local-save.test.cjs'
@@ -55,4 +59,4 @@ jobs:
         with:
           node-version: '22'
       - name: Run isolated queue tests
-        run: node --test tests/vault-sync-queue.test.cjs tests/vault-local-save.test.cjs tests/vault-config-update.test.cjs tests/vault-alarm-contacts.test.cjs tests/vault-entries-checkin.test.cjs tests/vault-local-failure.test.cjs tests/vault-entry-failure.test.cjs tests/vault-entry-rollback.test.cjs tests/vault-api-security.test.cjs tests/a10-local-key-envelope-v2.test.cjs
+        run: node --test tests/vault-sync-queue.test.cjs tests/vault-local-save.test.cjs tests/vault-config-update.test.cjs tests/vault-alarm-contacts.test.cjs tests/vault-entries-checkin.test.cjs tests/vault-local-failure.test.cjs tests/vault-entry-failure.test.cjs tests/vault-entry-rollback.test.cjs tests/vault-api-security.test.cjs tests/a10-local-key-envelope-v2.test.cjs tests/a10-migration-preflight.test.cjs
