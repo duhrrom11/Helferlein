@@ -65,7 +65,7 @@
         });
       });
     </script>
-    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-2">
     <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
@@ -114,24 +114,24 @@
             <!-- 1. Haustier anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🐕 1. Haustier-Profil & Tierarzt-Praxis</h2>
-                <input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm" aria-label="Name des Haustiers (z.B. Luna)">
+                <label class="helferlein-field" for="petName"><span class="helferlein-field-label">Name des Haustiers</span><input type="text" id="petName" placeholder="Name des Haustiers (z.B. Luna)" class="w-full p-3 border rounded-xl text-sm" aria-label="Name des Haustiers (z.B. Luna)"></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm" aria-label="Tierart / Rasse (z.B. Hund / Labrador)">
-                    <input type="text" id="petChip" placeholder="Chip-Nummer" class="p-3 border rounded-xl text-sm" aria-label="Chip-Nummer">
+                    <label class="helferlein-field" for="petSpecies"><span class="helferlein-field-label">Tierart / Rasse</span><input type="text" id="petSpecies" placeholder="Tierart / Rasse (z.B. Hund / Labrador)" class="p-3 border rounded-xl text-sm" aria-label="Tierart / Rasse (z.B. Hund / Labrador)"></label>
+                    <label class="helferlein-field" for="petChip"><span class="helferlein-field-label">Chip-Nummer</span><input type="text" id="petChip" placeholder="Chip-Nummer" class="p-3 border rounded-xl text-sm" aria-label="Chip-Nummer"></label>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="petFood" placeholder="Futtermarke & Sorte" class="p-3 border rounded-xl text-xs" aria-label="Futtermarke &amp; Sorte">
-                    <input type="text" id="petAllergies" placeholder="Allergien / Unverträglichkeiten" class="p-3 border rounded-xl text-xs" aria-label="Allergien / Unverträglichkeiten">
+                    <label class="helferlein-field" for="petFood"><span class="helferlein-field-label">Futtermarke &amp; Sorte</span><input type="text" id="petFood" placeholder="Futtermarke & Sorte" class="p-3 border rounded-xl text-xs" aria-label="Futtermarke &amp; Sorte"></label>
+                    <label class="helferlein-field" for="petAllergies"><span class="helferlein-field-label">Allergien / Unverträglichkeiten</span><input type="text" id="petAllergies" placeholder="Allergien / Unverträglichkeiten" class="p-3 border rounded-xl text-xs" aria-label="Allergien / Unverträglichkeiten"></label>
                 </div>
                 
                 <div class="border-t pt-2 space-y-2">
                     <p class="text-xs font-bold text-gray-700">🏥 Tierarzt & Praxis-Verzeichnis:</p>
-                    <input type="text" id="petVetName" placeholder="Praxisname & Tierarzt" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Praxisname &amp; Tierarzt">
+                    <label class="helferlein-field" for="petVetName"><span class="helferlein-field-label">Praxisname &amp; Tierarzt</span><input type="text" id="petVetName" placeholder="Praxisname & Tierarzt" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Praxisname &amp; Tierarzt"></label>
                     <div class="grid grid-cols-2 gap-2">
-                        <input type="text" id="petVetTel" placeholder="Telefon / Notfall-Nr." class="p-2.5 border rounded-xl text-xs" aria-label="Telefon / Notfall-Nr.">
-                        <input type="email" id="petVetEmail" placeholder="E-Mail-Adresse" class="p-2.5 border rounded-xl text-xs" aria-label="E-Mail-Adresse">
+                        <label class="helferlein-field" for="petVetTel"><span class="helferlein-field-label">Telefon / Notfall-Nr.</span><input type="text" id="petVetTel" placeholder="Telefon / Notfall-Nr." class="p-2.5 border rounded-xl text-xs" aria-label="Telefon / Notfall-Nr."></label>
+                        <label class="helferlein-field" for="petVetEmail"><span class="helferlein-field-label">E-Mail-Adresse</span><input type="email" id="petVetEmail" placeholder="E-Mail-Adresse" class="p-2.5 border rounded-xl text-xs" aria-label="E-Mail-Adresse"></label>
                     </div>
-                    <input type="text" id="petVetAddress" placeholder="Straße, PLZ & Ort der Praxis" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Straße, PLZ &amp; Ort der Praxis">
+                    <label class="helferlein-field" for="petVetAddress"><span class="helferlein-field-label">Straße, PLZ &amp; Ort der Praxis</span><input type="text" id="petVetAddress" placeholder="Straße, PLZ & Ort der Praxis" class="w-full p-2.5 border rounded-xl text-xs" aria-label="Straße, PLZ &amp; Ort der Praxis"></label>
                 </div>
                 
                 <div class="flex items-center space-x-2 pt-1">
@@ -155,11 +155,11 @@
             <!-- 2. Gesundheits-Eintrag hinzufügen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">💉 2. Gesundheits-Eintrag & Tagebuch</h2>
-                <select id="eventPetSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Haustier für den Eintrag">
+                <label class="helferlein-field" for="eventPetSelect"><span class="helferlein-field-label">Haustier für den Eintrag</span><select id="eventPetSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Haustier für den Eintrag">
                     <option value="">-- Haustier wählen --</option>
-                </select>
+                </select></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags">
+                    <label class="helferlein-field" for="eventType"><span class="helferlein-field-label">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags">
                         <option value="Impfung">💉 Impfung</option>
                         <option value="Entwurmung">🪱 Entwurmung / Parasiten</option>
                         <option value="Medikament">💊 Medikament / Behandlung</option>
@@ -167,14 +167,14 @@
                         <option value="Tierarzt">🏥 Tierarztbesuch / Rechnung</option>
                         <option value="Tagebuch">📓 Tagebuch / Notiz</option>
                         <option value="Sonstiges">📝 Sonstiges</option>
-                    </select>
-                    <input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags">
+                    </select></label>
+                    <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags"></label>
                 </div>
-                <input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)">
+                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Tollwut-Impfung oder Auffälligkeit)"></label>
                 
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="eventCost" placeholder="Kosten in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Kosten in € (optional)">
-                    <input type="text" id="eventWeight" placeholder="Gewicht in kg (optional)" class="p-3 border rounded-xl text-sm hidden">
+                    <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label">Kosten in € (optional)</span><input type="text" id="eventCost" placeholder="Kosten in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Kosten in € (optional)"></label>
+                    <label class="helferlein-field" for="eventWeight"><span class="helferlein-field-label">Gewicht in kg (optional)</span><input type="text" id="eventWeight" placeholder="Gewicht in kg (optional)" class="p-3 border rounded-xl text-sm hidden"></label>
                 </div>
 
                 <div id="vaccineExpiryBox" class="hidden">
@@ -196,8 +196,8 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                 <h3 class="font-bold text-lg">💊 Haustier-Apotheke & Medikamenten-Vorrat</h3>
                 <div class="flex gap-2 w-full sm:w-auto">
-                    <input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs" aria-label="Medikament / Vorrat (z.B. Zeckenschutz)">
-                    <input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)">
+                    <label class="helferlein-field" for="medName"><span class="helferlein-field-label">Medikament / Vorrat</span><input type="text" id="medName" placeholder="Medikament / Vorrat (z.B. Zeckenschutz)" class="p-2 border rounded-xl text-xs" aria-label="Medikament / Vorrat (z.B. Zeckenschutz)"></label>
+                    <label class="helferlein-field" for="medStock"><span class="helferlein-field-label">Stück / Packung</span><input type="text" id="medStock" placeholder="Stück / Packung (z.B. 2)" class="p-2 border rounded-xl text-xs w-28" aria-label="Stück / Packung (z.B. 2)"></label>
                     <button onclick="saveMedication()" class="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-xl text-xs">Hinzufügen</button>
                 </div>
             </div>
@@ -220,9 +220,9 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                     <h3 class="font-bold text-lg">📋 Kalender & Kosten</h3>
-                    <select id="filterPetSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Verlauf nach Haustier filtern">
+                    <label class="helferlein-field" for="filterPetSelect"><span class="helferlein-field-label">Verlauf nach Haustier filtern</span><select id="filterPetSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Verlauf nach Haustier filtern">
                         <option value="">Alle Haustiere anzeigen</option>
-                    </select>
+                    </select></label>
                 </div>
                 <div id="eventsList" class="space-y-3">
                     <p class="text-sm text-gray-400 text-center py-4">Keine Termine erfasst.</p>
@@ -257,8 +257,8 @@
                         Nicht angemeldet
                     </div>
 
-                    <input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
-                    <input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
+                    <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail</span><input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
 
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">

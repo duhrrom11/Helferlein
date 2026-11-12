@@ -64,7 +64,7 @@
         });
       });
     </script>
-    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-2">
     <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
@@ -113,14 +113,14 @@
             <!-- 1. Fahrzeug anlegen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🚗 1. Fahrzeug-Profil & Bordmappe</h2>
-                <input type="text" id="carName" placeholder="Fahrzeugname (z.B. Familien-Golf)" class="w-full p-3 border rounded-xl text-sm" aria-label="Fahrzeugname (z.B. Familien-Golf)">
+                <label class="helferlein-field" for="carName"><span class="helferlein-field-label">Fahrzeugname</span><input type="text" id="carName" placeholder="Fahrzeugname (z.B. Familien-Golf)" class="w-full p-3 border rounded-xl text-sm" aria-label="Fahrzeugname (z.B. Familien-Golf)"></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="carPlate" placeholder="Kennzeichen (z.B. B-AB 1234)" class="p-3 border rounded-xl text-sm" aria-label="Kennzeichen (z.B. B-AB 1234)">
-                    <input type="text" id="carKm" placeholder="KM-Stand (z.B. 125000)" class="p-3 border rounded-xl text-sm" aria-label="KM-Stand (z.B. 125000)">
+                    <label class="helferlein-field" for="carPlate"><span class="helferlein-field-label">Kennzeichen</span><input type="text" id="carPlate" placeholder="Kennzeichen (z.B. B-AB 1234)" class="p-3 border rounded-xl text-sm" aria-label="Kennzeichen (z.B. B-AB 1234)"></label>
+                    <label class="helferlein-field" for="carKm"><span class="helferlein-field-label">KM-Stand</span><input type="text" id="carKm" placeholder="KM-Stand (z.B. 125000)" class="p-3 border rounded-xl text-sm" aria-label="KM-Stand (z.B. 125000)"></label>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="carInsurance" placeholder="Versicherung & Pol.-Nr." class="p-3 border rounded-xl text-xs" aria-label="Versicherung &amp; Pol.-Nr.">
-                    <input type="text" id="carEmergency" placeholder="Notfall- / Pannen-Tel." class="p-3 border rounded-xl text-xs" aria-label="Notfall- / Pannen-Tel.">
+                    <label class="helferlein-field" for="carInsurance"><span class="helferlein-field-label">Versicherung &amp; Pol.-Nr.</span><input type="text" id="carInsurance" placeholder="Versicherung & Pol.-Nr." class="p-3 border rounded-xl text-xs" aria-label="Versicherung &amp; Pol.-Nr."></label>
+                    <label class="helferlein-field" for="carEmergency"><span class="helferlein-field-label">Notfall- / Pannen-Tel.</span><input type="text" id="carEmergency" placeholder="Notfall- / Pannen-Tel." class="p-3 border rounded-xl text-xs" aria-label="Notfall- / Pannen-Tel."></label>
                 </div>
                 <div class="grid grid-cols-2 gap-2 text-xs">
                     <div>
@@ -138,11 +138,11 @@
             <!-- 2. Wartung / Tanken / Reifen erfassen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">🛠️ 2. Eintrag, Kosten & Belege</h2>
-                <select id="eventCarSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Fahrzeug für den Eintrag">
+                <label class="helferlein-field" for="eventCarSelect"><span class="helferlein-field-label">Fahrzeug für den Eintrag</span><select id="eventCarSelect" class="w-full p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Fahrzeug für den Eintrag">
                     <option value="">-- Fahrzeug wählen --</option>
-                </select>
+                </select></label>
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags">
+                    <label class="helferlein-field" for="eventType"><span class="helferlein-field-label">Art des Eintrags</span><select id="eventType" class="p-3 border rounded-xl text-sm bg-white" onchange="updateEventFormFields()" aria-label="Art des Eintrags">
                         <option value="TÜV / HU">🔍 TÜV / Hauptuntersuchung</option>
                         <option value="Inspektion">⚙️ Inspektion & Service</option>
                         <option value="Versicherung">🛡️ Versicherung (Fixkosten)</option>
@@ -152,16 +152,16 @@
                         <option value="Ölwechsel">🛢️ Ölwechsel</option>
                         <option value="Reparatur">🔧 Reparatur</option>
                         <option value="Tanken">⛽ Tanken / Kraftstoff</option>
-                    </select>
-                    <input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags">
+                    </select></label>
+                    <label class="helferlein-field" for="eventDate"><span class="helferlein-field-label">Datum des Eintrags</span><input type="date" id="eventDate" class="p-3 border rounded-xl text-sm" aria-label="Datum des Eintrags"></label>
                 </div>
-                <input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Vollkasko Jahresbeitrag)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Vollkasko Jahresbeitrag)">
+                <label class="helferlein-field" for="eventTitle"><span class="helferlein-field-label">Bezeichnung</span><input type="text" id="eventTitle" placeholder="Bezeichnung (z.B. Vollkasko Jahresbeitrag)" class="w-full p-3 border rounded-xl text-sm" aria-label="Bezeichnung (z.B. Vollkasko Jahresbeitrag)"></label>
                 
                 <div class="grid grid-cols-3 gap-2">
-                    <input type="text" id="eventCost" placeholder="Kosten in €" class="p-3 border rounded-xl text-sm" aria-label="Kosten in €">
-                    <input type="text" id="eventTread" placeholder="Profil (mm)" class="p-3 border rounded-xl text-sm hidden">
-                    <input type="text" id="eventKm" placeholder="KM-Stand" class="p-3 border rounded-xl text-sm hidden" title="Aktueller KM-Stand beim Tanken">
-                    <input type="text" id="eventLitres" placeholder="Liter" class="p-3 border rounded-xl text-sm hidden" title="Getankte Liter">
+                    <label class="helferlein-field" for="eventCost"><span class="helferlein-field-label">Kosten in €</span><input type="text" id="eventCost" placeholder="Kosten in €" class="p-3 border rounded-xl text-sm" aria-label="Kosten in €"></label>
+                    <label class="helferlein-field" for="eventTread"><span class="helferlein-field-label">Profil (mm)</span><input type="text" id="eventTread" placeholder="Profil (mm)" class="p-3 border rounded-xl text-sm hidden"></label>
+                    <label class="helferlein-field" for="eventKm"><span class="helferlein-field-label">KM-Stand</span><input type="text" id="eventKm" placeholder="KM-Stand" class="p-3 border rounded-xl text-sm hidden" title="Aktueller KM-Stand beim Tanken"></label>
+                    <label class="helferlein-field" for="eventLitres"><span class="helferlein-field-label">Liter</span><input type="text" id="eventLitres" placeholder="Liter" class="p-3 border rounded-xl text-sm hidden" title="Getankte Liter"></label>
                 </div>
 
                 <div>
@@ -189,17 +189,17 @@
                 <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" id="b3-tires">
                     <h3 class="font-bold text-lg">🛞 Reifensatz-Lagerverwaltung</h3>
                     <div class="grid grid-cols-2 gap-2">
-                        <select id="tireCarSelect" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Fahrzeug für den Reifensatz"></select>
-                        <select id="tireType" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Reifentyp">
+                        <label class="helferlein-field" for="tireCarSelect"><span class="helferlein-field-label">Fahrzeug für den Reifensatz</span><select id="tireCarSelect" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Fahrzeug für den Reifensatz"></select></label>
+                        <label class="helferlein-field" for="tireType"><span class="helferlein-field-label">Reifentyp</span><select id="tireType" class="p-2.5 border rounded-xl text-xs bg-white" aria-label="Reifentyp">
                             <option value="Sommerreifen">☀️ Sommerreifen</option>
                             <option value="Winterreifen">❄️ Winterreifen</option>
                             <option value="Ganzjahresreifen">🌤️ Ganzjahresreifen</option>
-                        </select>
+                        </select></label>
                     </div>
                     <div class="grid grid-cols-3 gap-2">
-                        <input type="text" id="tireLocation" placeholder="Lagerort (z.B. Keller Ecke 2)" class="p-2.5 border rounded-xl text-xs" aria-label="Lagerort (z.B. Keller Ecke 2)">
-                        <input type="text" id="tireDot" placeholder="DOT / Jahr (z.B. 2223)" class="p-2.5 border rounded-xl text-xs" aria-label="DOT / Jahr (z.B. 2223)">
-                        <input type="text" id="tireTread" placeholder="Profil mm" class="p-2.5 border rounded-xl text-xs" aria-label="Profil mm">
+                        <label class="helferlein-field" for="tireLocation"><span class="helferlein-field-label">Lagerort</span><input type="text" id="tireLocation" placeholder="Lagerort (z.B. Keller Ecke 2)" class="p-2.5 border rounded-xl text-xs" aria-label="Lagerort (z.B. Keller Ecke 2)"></label>
+                        <label class="helferlein-field" for="tireDot"><span class="helferlein-field-label">DOT / Jahr</span><input type="text" id="tireDot" placeholder="DOT / Jahr (z.B. 2223)" class="p-2.5 border rounded-xl text-xs" aria-label="DOT / Jahr (z.B. 2223)"></label>
+                        <label class="helferlein-field" for="tireTread"><span class="helferlein-field-label">Profil mm</span><input type="text" id="tireTread" placeholder="Profil mm" class="p-2.5 border rounded-xl text-xs" aria-label="Profil mm"></label>
                     </div>
                     <button onclick="saveTireSet()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2 rounded-xl text-xs">Reifensatz speichern</button>
                     <div id="tiresList" class="space-y-2 pt-2"></div>
@@ -210,9 +210,9 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" id="b3-history">
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                     <h3 class="font-bold text-lg">📋 Historie, Kosten & Kalender</h3>
-                    <select id="filterCarSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Historie nach Fahrzeug filtern">
+                    <label class="helferlein-field" for="filterCarSelect"><span class="helferlein-field-label">Historie nach Fahrzeug filtern</span><select id="filterCarSelect" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Historie nach Fahrzeug filtern">
                         <option value="">Alle Fahrzeuge anzeigen</option>
-                    </select>
+                    </select></label>
                 </div>
                 <!-- Monatliche Sprit-Statistik -->
                 <div id="fuelStatsBox" class="bg-red-50 border border-red-200 p-3 rounded-xl text-xs space-y-1 hidden">
@@ -284,8 +284,8 @@
                         Nicht angemeldet
                     </div>
 
-                    <input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
-                    <input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs">
+                    <label class="helferlein-field" for="loginEmail"><span class="helferlein-field-label">E-Mail</span><input type="email" id="loginEmail" placeholder="E-Mail" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
+                    <label class="helferlein-field" for="loginPassword"><span class="helferlein-field-label">Passwort</span><input type="password" id="loginPassword" placeholder="Passwort" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs"></label>
 
                     <div class="grid grid-cols-3 gap-2">
                         <button type="button" onclick="registerUser()" class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs font-semibold">

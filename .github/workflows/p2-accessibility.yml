@@ -27,7 +27,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Start local site
         run: python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/p2-server.log 2>&1 &
-      - name: Check all eleven tools at 320, 375 and 768 pixels
+      - name: Check mobile widths, dark contrast and field interactions
         run: npx playwright test tests/p2-accessibility.spec.cjs --reporter=line --workers=2
       - name: Preserve screenshots and WCAG observations
         if: always()
