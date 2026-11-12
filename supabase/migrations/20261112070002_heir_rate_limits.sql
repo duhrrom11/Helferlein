@@ -12,7 +12,7 @@ CREATE TABLE nachlass_private.heir_rate_limits (
 ALTER TABLE nachlass_private.heir_rate_limits ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON nachlass_private.heir_rate_limits FROM PUBLIC, anon, authenticated;
 
--- One transaction for both windows; an exception rolls back both increments.
+-- One RPC transaction for both windows; SQL errors roll back both increments.
 -- Every consumer must call this RPC with a server-verified actor UUID.
 CREATE FUNCTION public.consume_heir_rate_limit_atomic(
   p_actor_id uuid, p_operation text
