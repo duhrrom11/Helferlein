@@ -258,6 +258,14 @@
 <section id="heirInvitationManagement" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirInvitationManagementTitle">
   <h3 id="heirInvitationManagementTitle" class="font-bold text-slate-100">Erbeneinladungen verwalten</h3>
   <p class="text-sm text-amber-200">Einladungen erteilen keinen Zugriff auf Tresordaten. Zum Erstellen und Widerrufen ist eine Cloud-Anmeldung erforderlich.</p>
+  <div class="rounded-lg border border-slate-700 p-3 space-y-2">
+  <p class="text-sm text-slate-300">Jeder Erbe benötigt ein eigenes Cloud-Konto. Der Erbe kann seine Benutzer-ID hier ablesen und dem Nachlassbesitzer mitteilen.</p>
+  <label for="heirMyUserId" class="block text-sm">Meine Cloud-Benutzer-ID</label>
+  <input id="heirMyUserId" type="text" readonly autocomplete="off" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 font-mono text-xs" placeholder="Bitte zuerst anmelden" />
+  <button id="heirLoadMyUserId" type="button" class="rounded-lg bg-slate-700 px-4 py-2">Meine Benutzer-ID anzeigen</button>
+  <button id="heirCopyMyUserId" type="button" disabled class="rounded-lg border border-slate-600 px-4 py-2 disabled:opacity-50">ID kopieren</button>
+  <p id="heirMyUserIdStatus" class="text-sm text-slate-300" role="status" aria-live="polite"></p>
+</div>
   <form id="heirIssueForm" class="space-y-2">
     <label for="heirRecipientUserId" class="block text-sm">Supabase-Benutzer-ID des bereits registrierten Erben (UUID)</label>
     <input id="heirRecipientUserId" type="text" required maxlength="36" autocomplete="off" spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
