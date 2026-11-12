@@ -55,6 +55,18 @@ Die RPCs verwenden die Reihenfolge Eigentümerzeile (`FOR UPDATE`) vor Einladung
 
 - Bereits umgesetzt: JWT-Gateway und serverseitige `auth.getUser`-Prüfung, strikt begrenzte JSON-Eingaben, Body-Größenlimits (Ausstellung 1024 Byte, Einlösung 512 Byte), Tokenformatprüfung, CORS-Whitelist, neutrale Fehlermeldungen, kein Token-Logging und serverseitige Opt-in-Schalter.
 - Ein `404` bei fachlicher Einlöseablehnung verrät nicht, ob Token unbekannt, abgelaufen, fremd oder widerrufen ist. Technische Ausfälle sind als `503` erkennbar; diese Unterscheidung darf keine personenbezogenen Details enthalten.
-- **Noch nicht umgesetzt:** verteiltes, persistentes Rate-Limiting je verifiziertem Benutzer und nach geeigneten Missbrauchssignalen. Ein lokaler In-Memory-Zähler pro Edge-Isolat wäre bei mehreren Instanzen nicht zuverlässig und darf nicht als Schutz behauptet werden.
+- **Im Sicherheitsbranch vorbereitet, nicht ausgerollt:** verteiltes Rate-Limiting pro verifiziertem Benutzer und Operation über eine atomare PostgreSQL-RPC. Schutz gegen anonyme Angriffe, verteilte Konten und großflächige Missbrauchsmuster bleibt separat erforderlich.
 - Vor Aktivierung muss ein zentraler, atomarer Limitierungsmechanismus mit sicheren Ausfallregeln, Quoten, Zeitfenstern und Datenschutzkonzept ausdrücklich freigegeben werden. Bis dahin beide Opt-in-Schalter deaktiviert lassen.
 - Keine Geheimnisse, Token, Hashes, JWTs oder vollständige Request-Bodys in Telemetrie. Statusklassen und technische Fehlerkategorien können aggregiert werden, nachdem die Betriebsüberwachung gesondert genehmigt wurde.
+
+## Vorbereitete verteilte Limitierung (nicht aktiv)
+
+- Dritte, **noch nicht ausgeführte** Migration: `20261112070002_heir_rate_limits.sql`. Muss nach beiden bestehenden Migrationen und vor jeder Edge-Function-Aktivierung angewendet werden.
+- Atomarer PostgreSQL-Upsert auf `(actor_id, operation, window_start)` vermeidet isolat-lokale Zähler und serialisiert konkurrierende Verbrauchsversuche über einen eindeutigen Schlüssel. Festes Zeitfenster: 1 Stunde, nach Datenbankuhr.
+- Startquoten (vor Freigabe fachlich prüfen): `issue` 5/Stunde/Benutzer, `revoke` 20/Stunde/Benutzer, `redeem` 10/Stunde/Benutzer. Erfolgreiche und erfolglose autorisierte Versuche verbrauchen Kontingent. Überschreitung = generisches HTTP 429, Datenbank-/Transportfehler = HTTP 503 (fail closed).
+- Die Limitierungs-RPC ist nur `service_role` zugänglich. Identität stammt aus `auth.getUser`, niemals aus einem Clientfeld. Es werden ausschließlich Benutzer-UUID, Operationsklasse, Zeitfenster und Zähler gespeichert; keine IP-Adresse, Tokens, Hashes oder Request-Inhalte.
+- **NO-GO:** Ohne ausgeführte und geprüfte dritte Migration würde die neue Edge-Function-Version bei Limitierungs-RPC-Fehlern mit 503 abbrechen. Die bestehende Aktivierung muss deshalb weiter ausgeschaltet bleiben.
+- **NO-GO:** Schutz gegen nicht authentifizierte Last, Botnetze und Konto-Rotation ist damit nicht abgedeckt. Vor Freigabe zusätzliche Gateway-/WAF-Quoten, Alarmierung, Abuse-Prozesse und datenschutzgerechte Aufbewahrung definieren.
+- **NO-GO:** Die Zählertabelle wächst ohne Aufräumverfahren dauerhaft. Vor Freigabe kontrollierte, separat genehmigte Löschung alter Zeitfenster (mit Retention- und Beobachtbarkeitsregeln) planen. Keine automatische Löschung in dieser Änderung.
+- Der Aufruf der Limitierungs-RPC erfolgt vor der jeweiligen fachlichen Mutation. Bei einem späteren Fehler wird der verbrauchte Zähler nicht rückgängig gemacht; das ist für einen Missbrauchsschutz beabsichtigt.
+- Ein Limit kann legitime Benutzer temporär blockieren. Quoten, Wiederholungsverhalten, Zugänglichkeit und Nutzerkommunikation vor Aktivierung gesondert abnehmen.
