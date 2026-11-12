@@ -1,0 +1,33 @@
+name: Agent response timeout regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/openai-draft-pr-agent.cjs'
+      - 'scripts/openai-readonly-agent.cjs'
+      - 'tests/agent-response-timeout.test.cjs'
+      - '.github/workflows/agent-response-timeout.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/openai-draft-pr-agent.cjs'
+      - 'scripts/openai-readonly-agent.cjs'
+      - 'tests/agent-response-timeout.test.cjs'
+      - '.github/workflows/agent-response-timeout.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-timeout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Check agent syntax
+        run: |
+          node --check scripts/openai-draft-pr-agent.cjs
+          node --check scripts/openai-readonly-agent.cjs
+          node --check tests/agent-response-timeout.test.cjs
+      - name: Run focused offline timeout regression
+        run: node --test tests/agent-response-timeout.test.cjs
