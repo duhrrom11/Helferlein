@@ -83,6 +83,7 @@ export async function handleRedemptionRequest(
     return response(400, "invalid_request", headers);
   }
   const result = await redeemVerifiedInvitation(dependencies.auth, dependencies.store, authHeader, token);
+  if (result === "unavailable") return response(503, "unavailable", headers);
   if (result !== "accepted") return response(404, "not_found", headers);
   return new Response(JSON.stringify({ status: "accepted" }), { status: 200, headers });
 }
