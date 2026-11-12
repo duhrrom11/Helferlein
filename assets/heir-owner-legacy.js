@@ -501,6 +501,20 @@
                     restored.trustees = recoveredConfig.trustees;
                     restored.alarmPersons = recoveredConfig.alarmPersons;
                 }
+                // A10: the authenticated account may change while crypto or dialogs await.
+                // Never apply a cloud result under a different signed-in account.
+                const { data: verifiedAuth, error: verifiedAuthError } = await supabaseClient.auth.getUser();
+                if (verifiedAuthError || verifiedAuth?.user?.id !== user.id) {
+                    return alert('Cloud-Konto während des Vorgangs gewechselt. Vorgang abgebrochen.');
+                }
+                if (localStorage.getItem('digital_estate_vault') !== localSnapshot ||
+                    localSaveRevision !== startingRevision ||
+                    lastPersistedRevision !== localSaveRevision ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    !currentDecryptedVault || !Array.isArray(currentDecryptedVault.entries) ||
+                    currentDecryptedVault.entries.length !== 0) {
+                    return alert('Lokaler Tresor während der Kontoprüfung geändert. Wiederherstellung abgebrochen.');
+                }
                 localStorage.setItem('digital_estate_vault', JSON.stringify(restored));
                 alert('Cloud-Tresor wiederhergestellt. Die Seite wird neu geladen. ' +
                     (recoveredConfig ? 'Bitte Kontakte und Check-in-Einstellungen kontrollieren. ' :
@@ -587,6 +601,18 @@
                     localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Tresor während der Vorbereitung geändert. Bitte erneut versuchen.');
+                }
+                // A10: the authenticated account may change while crypto or dialogs await.
+                // Never apply a cloud result under a different signed-in account.
+                const { data: verifiedAuth, error: verifiedAuthError } = await supabaseClient.auth.getUser();
+                if (verifiedAuthError || verifiedAuth?.user?.id !== user.id) {
+                    return alert('Cloud-Konto während des Vorgangs gewechselt. Vorgang abgebrochen.');
+                }
+                if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    localSaveRevision !== startingRevision ||
+                    lastPersistedRevision !== localSaveRevision) {
+                    return alert('Lokaler Tresor während der Kontoprüfung geändert.');
                 }
                 const { data: saved, error: saveError } = await supabaseClient
                     .from('vault_cloud_snapshots').update({ recovery_key: recovery })
@@ -849,6 +875,18 @@
                     localSaveRevision !== startingRevision ||
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Lokaler Tresor wurde inzwischen geändert. Bitte erneut sichern.');
+                }
+                // A10: the authenticated account may change while crypto or dialogs await.
+                // Never apply a cloud result under a different signed-in account.
+                const { data: verifiedAuth, error: verifiedAuthError } = await supabaseClient.auth.getUser();
+                if (verifiedAuthError || verifiedAuth?.user?.id !== user.id) {
+                    return alert('Cloud-Konto während des Vorgangs gewechselt. Vorgang abgebrochen.');
+                }
+                if (localStorage.getItem('digital_estate_vault') !== snapshot ||
+                    currentMasterKeyHex !== startingMasterKeyHex ||
+                    localSaveRevision !== startingRevision ||
+                    lastPersistedRevision !== localSaveRevision) {
+                    return alert('Lokaler Tresor wurde während der Kontoprüfung geändert.');
                 }
                 const record = { owner_user_id: user.id, vault_id: cfg.vaultId,
                     encrypted_data: cfg.encryptedData, encrypted_config: encryptedConfig };
