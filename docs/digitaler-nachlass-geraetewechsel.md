@@ -8,8 +8,8 @@
 2. Über **„Verschlüsselten Tresor bei Supabase sichern“** die aktuelle Version bewusst sichern. Dazu im richtigen Supabase-Konto angemeldet sein.
 3. **„Supabase-Sicherungsstand prüfen“** ausführen. Nur fortfahren, wenn Inhalt und verschlüsselte Konfiguration übereinstimmen.
 4. **„Cloud-Wiederherstellung mit Passwort vorbereiten“** auswählen. Ein eigenes Passwort mit mindestens 16 Zeichen festlegen und sicher getrennt vom Gerät aufbewahren. Das Supabase-Anmeldepasswort allein reicht nicht.
-5. Zusätzlich eine **verschlüsselte lokale Sicherungsdatei** an einem sicheren Ort aufbewahren. Nicht unverschlüsselt exportieren oder versenden.
-6. Das bisherige Gerät und seine lokalen Tresordaten **nicht löschen**, bevor die Wiederherstellung auf dem neuen Gerät kontrolliert wurde.
+5. **Wichtig:** Im untersuchten produktiven Tresor-Client ist derzeit **kein funktionsfähiger verschlüsselter lokaler Datei-Export oder -Import nachgewiesen**. Die bisherige Empfehlung, eine solche Sicherungsdatei zu erstellen, ist daher **keine verfügbare Wiederherstellungsoption**. Keine unverschlüsselten Browserdaten oder Schlüssel exportieren. Vor einem Gerätewechsel eine tatsächlich vorhandene, entschlüsselbare und unabhängig geprüfte Wiederherstellungsmöglichkeit sicherstellen; andernfalls den Wechsel verschieben.
+6. Das bisherige Gerät und seine lokalen Tresordaten **nicht löschen**, bevor die Wiederherstellung auf dem neuen Gerät kontrolliert wurde. Die Cloud-Wiederherstellung ist noch nicht Ende-zu-Ende in einer isolierten Umgebung freigegeben.
 
 ## Auf dem neuen Gerät
 
@@ -18,7 +18,7 @@
 3. Mit **demselben Supabase-Konto** anmelden, in dem die Sicherung gespeichert wurde.
 4. **„Tresor aus Supabase wiederherstellen“** auswählen, das separat aufbewahrte Wiederherstellungspasswort eingeben und die angezeigten Sicherheitsbestätigungen sorgfältig lesen.
 5. Nach erfolgreicher Wiederherstellung die Anzahl und den Inhalt der Einträge, Vertrauenspersonen, Alarmkontakte und Check-in-Einstellungen mit dem bisherigen Gerät vergleichen.
-6. Erst nach einer erfolgreichen Kontrolle entscheiden, ob das bisherige Gerät außer Betrieb genommen werden soll. Die verschlüsselte Offline-Sicherung weiter aufbewahren.
+6. Erst nach einer erfolgreichen Kontrolle entscheiden, ob das bisherige Gerät außer Betrieb genommen werden soll. Eine vorhandene, unabhängig geprüfte Sicherung weiter aufbewahren; einen Offline-Export nicht als bereits implementiert voraussetzen.
 
 ## Bei Problemen
 
