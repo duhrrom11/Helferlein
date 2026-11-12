@@ -2,9 +2,7 @@
 // Isolated synthetic-only tests; never touches localStorage or network.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { webcrypto } = require('node:crypto');
 const path = require('node:path');
-globalThis.crypto = webcrypto;
 const { wrapKey, unwrapKey, validate } = require(path.join(__dirname, '../assets/a10-local-key-envelope-v2.js'));
 const key = 'a4'.repeat(32);
 const password = 'synthetic-test-password-not-real';
