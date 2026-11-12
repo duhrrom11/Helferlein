@@ -63,10 +63,12 @@ const server = createServer(async (req, res) => {
     await page.locator('#estateFile').setInputFiles(await estateDownload.path());
     await page.locator('#unlockPassphrase').fill('WRONG-PASSWORD');
     await page.locator('#openEstate').click();
+    await page.locator('#openStatus').getByText(/Entschlüsselung fehlgeschlagen/).waitFor();
     assert.match(await page.locator('#openStatus').innerText(), /Entschlüsselung fehlgeschlagen/);
     assert.equal(await page.locator('#estateOutput').innerText(),'');
     await page.locator('#unlockPassphrase').fill(password);
     await page.locator('#openEstate').click();
+    await page.locator('#openStatus').getByText(/Nachlass lokal entschlüsselt/).waitFor();
     assert.match(await page.locator('#openStatus').innerText(), /Nachlass lokal entschlüsselt/);
     assert.match(await page.locator('#estateOutput').innerText(), /Synthetic release test/);
     assert.match(await page.locator('#estateOutput').innerText(), /TEST ONLY/);
