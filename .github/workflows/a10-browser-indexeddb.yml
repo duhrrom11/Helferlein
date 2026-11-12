@@ -1,0 +1,29 @@
+name: A10 isolated real-browser IndexedDB tests
+
+on:
+  pull_request:
+    paths:
+      - 'assets/a10-atomic-idb-store.js'
+      - 'tests/a10-browser-indexeddb.cjs'
+      - '.github/workflows/a10-browser-indexeddb.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chromium-idb:
+    name: Real Chromium IndexedDB
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser test dependency
+        run: npm install --no-save --no-package-lock playwright@1.58.2
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run real IndexedDB tests against localhost only
+        run: node tests/a10-browser-indexeddb.cjs
