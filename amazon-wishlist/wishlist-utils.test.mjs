@@ -227,3 +227,22 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('backup preview rejects missing or non-string public wish texts',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:2}]};
+ for(const patch of [{title:undefined},{title:42},{title:null},{note:undefined},{note:null},{note:123},{note:{text:'private'}}]){
+  assert.throws(()=>previewWishlistBackup(JSON.stringify({...base,wishes:[{...base.wishes[0],...patch}]})),/Ungültige Wunschtexte/);
+ }
+ assert.equal(previewWishlistBackup(JSON.stringify(base)).wishes[0].note,'');
+});
+
+test('backup preview validates Amazon URL and allows legacy URL-free backups',()=>{
+ const row={asin:'B012345678',amazon_url:'https://www.amazon.de/dp/B012345678',title:'Buch',note:'',priority:1};
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[row]};
+ assert.equal(previewWishlistBackup(JSON.stringify(base)).count,1);
+ for(const amazon_url of ['https://www.amazon.de/dp/B099999999','https://amazon.com/dp/B012345678','https://evil.example/dp/B012345678','javascript:alert(1)',null,42,'https://www.amazon.de/dp/B012345678?tag=other']){
+  assert.throws(()=>previewWishlistBackup(JSON.stringify({...base,wishes:[{...row,amazon_url}]})),/Ungültiger Amazon-Link/);
+ }
+ const legacy={...row};delete legacy.amazon_url;
+ assert.equal(previewWishlistBackup(JSON.stringify({...base,wishes:[legacy]})).count,1);
+});
