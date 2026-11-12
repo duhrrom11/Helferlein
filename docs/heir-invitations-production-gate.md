@@ -7,14 +7,15 @@ Stand: 2026-11-12. Diese Datei dokumentiert nur die Vorbereitung; keine Migratio
 1. Produktives Schema read-only abgleichen: `public.vault_cloud_snapshots(owner_user_id)` als UUID-Primärschlüssel, `auth.users(id)`, existierende Objekte im Schema `nachlass_private`, bestehende gleichnamige RPCs und Migrationshistorie. Die erste Migration verwendet bewusst `CREATE SCHEMA` und bricht bei Konflikt ab.
 2. Separat genehmigt: `supabase/migrations/20261112070000_heir_invitations_private_schema.sql`.
 3. Separat genehmigt: `supabase/migrations/20261112070001_heir_invitations_issue_revoke.sql`.
-4. Effektive Rechte und Funktionseigentümer nach der Migration prüfen: `SECURITY DEFINER`-RPCs nur für `service_role` ausführbar, keine Rechte für `PUBLIC`, `anon`, `authenticated`; RLS beider privaten Tabellen aktiv, private Schemazugriffe ausgeschlossen. Funktionen dürfen nur von einem vertrauenswürdigen privilegierten Migrationsinhaber erstellt werden.
-5. Edge Functions mit `verify_jwt = true` bereitstellen, aber serverseitige Opt-ins nicht aktivieren. `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` ausschließlich im vorgesehenen Serverkontext konfigurieren; niemals Schlüssel in GitHub ablegen.
-6. Separat genehmigte technische Abnahme: JWT-Prüfung, abgelaufene/fremde/widerrufene Token, parallele Ausstellung/Einlösung/Widerruf, fehlende Berechtigungen, Datenbankfehler und sichere Fehlermeldungen.
-7. Erst nach Abnahme separat freigeben: `HEIR_INVITATIONS_ENABLED=true` und `HEIR_REDEMPTION_ENABLED=true`. Frontend `BACKEND_APPROVED=false` bis zum letzten gesonderten Freigabeschritt beibehalten.
+4. Separat genehmigt: `supabase/migrations/20261112070002_heir_rate_limits.sql` (nach beiden Vorgängern, vor jeder Edge-Function-Aktivierung).
+5. Effektive Rechte und Funktionseigentümer nach der Migration prüfen: `SECURITY DEFINER`-RPCs nur für `service_role` ausführbar, keine Rechte für `PUBLIC`, `anon`, `authenticated`; RLS beider privaten Tabellen aktiv, private Schemazugriffe ausgeschlossen. Funktionen dürfen nur von einem vertrauenswürdigen privilegierten Migrationsinhaber erstellt werden.
+6. Edge Functions mit `verify_jwt = true` bereitstellen, aber serverseitige Opt-ins nicht aktivieren. `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` ausschließlich im vorgesehenen Serverkontext konfigurieren; niemals Schlüssel in GitHub ablegen.
+7. Separat genehmigte technische Abnahme: JWT-Prüfung, abgelaufene/fremde/widerrufene Token, parallele Ausstellung/Einlösung/Widerruf, fehlende Berechtigungen, Datenbankfehler und sichere Fehlermeldungen.
+8. Erst nach Abnahme separat freigeben: `HEIR_INVITATIONS_ENABLED=true` und `HEIR_REDEMPTION_ENABLED=true`. Frontend `BACKEND_APPROVED=false` bis zum letzten gesonderten Freigabeschritt beibehalten.
 
 ## Sperr- und Widerrufskonzept
 
-Die RPCs verwenden die Reihenfolge Eigentümerzeile (`FOR UPDATE`) vor Einladungszeile (`FOR UPDATE`). Die Einlösung liest die Eigentümer-ID zunächst ohne Sperre und validiert nach beiden Sperren den vollständigen Einladungszustand erneut. Der Widerruf markiert auch bereits angenommene Zuordnungen als widerrufen. Eine bereits widerrufene Zuordnung blockiert bewusst eine neue Einladung für dasselbe Paar. Kein Erbenzugriff auf Tresordaten wird eingerichtet.
+Die RPCs verwenden die Reihenfolge Eigentümerzeile (`FOR UPDATE`) vor Einladungszeile (`FOR UPDATE`). Die Einlösung liest die Eigentümer-ID zunächst ohne Sperre in die separate skalare Variable `v_owner_user_id` und sperrt danach die Eigentümerzeile vor der Einladungszeile. Die Einladungszeile wird unter Sperre erneut mit dieser unveränderten Eigentümer-ID verglichen und erst danach ausgewertet. Die Zeilenvariable `v_inv` dient ausschließlich dem erneut geladenen Einladungsdatensatz. Der Widerruf markiert auch bereits angenommene Zuordnungen als widerrufen. Eine bereits widerrufene Zuordnung blockiert bewusst eine neue Einladung für dasselbe Paar. Kein Erbenzugriff auf Tresordaten wird eingerichtet.
 
 ## Verbleibende Risiken und Stoppschalter
 
@@ -47,7 +48,7 @@ Die RPCs verwenden die Reihenfolge Eigentümerzeile (`FOR UPDATE`) vor Einladung
 
 - Migration 1 erfordert `gen_random_uuid()`, `auth.users(id)` sowie `public.vault_cloud_snapshots(owner_user_id)` mit kompatiblem UUID-Typ und geeigneter Eindeutigkeit für den Fremdschlüssel.
 - Die neuen Tabellen referenzieren den Eigentümer mit `ON DELETE CASCADE`. Deshalb vor der Freigabe bestehende Löschpfade und deren Sperrreihenfolge prüfen.
-- Migration 1 erstellt `nachlass_private` neu; vorhandene gleichnamige Objekte führen absichtlich zum Abbruch. Migration 2 setzt die Tabellen und die erste RPC voraus. Beide Migrationen benötigen einen vertrauenswürdigen, ausreichend privilegierten Ausführungsinhaber.
+- Migration 1 erstellt `nachlass_private` neu; vorhandene gleichnamige Objekte führen absichtlich zum Abbruch. Migration 2 setzt die Tabellen und die erste RPC voraus. Migration 3 setzt das private Schema und die verifizierte Service-Role-Vertrauensgrenze voraus. Alle drei Migrationen benötigen einen vertrauenswürdigen, ausreichend privilegierten Ausführungsinhaber.
 - `CREATE FUNCTION` statt `CREATE OR REPLACE FUNCTION` schützt gegen stilles Überschreiben, verhindert aber keine Konflikte mit anders signierten Überladungen. Vor der Freigabe gleichnamige Funktionen und exponierte Schemas auflisten.
 - Die Prüfung der tatsächlichen Rechte, RLS-Policies, Funktionsinhaber, bestehenden Trigger und Sperrketten ist eine **noch offene** Voraussetzung. Die statische Dateiprüfung bestätigt diese Eigenschaften nicht.
 
