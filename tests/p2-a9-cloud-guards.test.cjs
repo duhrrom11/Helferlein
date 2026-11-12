@@ -289,3 +289,44 @@ for (const method of ['budgets','goals']) {
     assert.match(state.alerts[0],/Speichern gesperrt/);
   });
 }
+
+
+// Evaluate the actual shared bridge write gate, not a reimplementation.
+const sharedGateStart = source.indexOf('function canWriteLocal() {');
+const sharedGateEnd = source.indexOf('    return { store, host, changed, canWriteLocal',sharedGateStart);
+if (sharedGateStart < 0 || sharedGateEnd < 0)
+  throw new Error('A9 shared cloud bridge write gate missing');
+const sharedGateCode = source.slice(sharedGateStart,sharedGateEnd);
+
+function runSharedWriteGate({disposed=false,accountSwitchInProgress=false,blocked=false,
+  accountCheck=false,activeOperation=null,owner=null,verifiedOwner=null} = {}) {
+  const context = {
+    disposed,accountSwitchInProgress,blocked,activeOperation,verifiedOwner,
+    document:{documentElement:{classList:{contains:key=>key === 'helferlein-account-check' && accountCheck}}},
+    currentOwner:()=>owner
+  };
+  vm.runInNewContext(sharedGateCode,context,{timeout:1000});
+  return vm.runInNewContext('canWriteLocal()',context,{timeout:1000});
+}
+
+test('A9 shared bridge permits only unclaimed or verified local owner', () => {
+  assert.equal(runSharedWriteGate(),true);
+  assert.equal(runSharedWriteGate({owner:'synthetic-account',verifiedOwner:'synthetic-account'}),true);
+  assert.equal(runSharedWriteGate({owner:'synthetic-account'}),false);
+  assert.equal(runSharedWriteGate({owner:'synthetic-account',verifiedOwner:'different-account'}),false);
+});
+
+for (const state of [
+  {disposed:true},
+  {accountSwitchInProgress:true},
+  {blocked:true},
+  {accountCheck:true},
+  {activeOperation:'import'},
+  {activeOperation:'upload'},
+  {activeOperation:'refresh'}
+]) {
+  test('A9 shared bridge blocks protected state ' + JSON.stringify(state), () => {
+    assert.equal(runSharedWriteGate({...state,owner:'synthetic-account',verifiedOwner:'synthetic-account'}),false);
+    assert.equal(runSharedWriteGate(state),false);
+  });
+}
