@@ -12,6 +12,13 @@
       dialog.setAttribute('aria-labelledby', title.id);
     } else dialog.setAttribute('aria-label', 'Einstellungen');
     dialog.tabIndex = -1;
+    // Several legacy login forms use placeholders without associated labels.
+    // Keep existing labels and ARIA names authoritative.
+    for (const input of dialog.querySelectorAll('input[type="email"], input[type="password"]')) {
+      if (!input.labels.length && !input.hasAttribute('aria-label') && !input.hasAttribute('aria-labelledby')) {
+        input.setAttribute('aria-label', input.type === 'email' ? 'E-Mail-Adresse' : 'Passwort');
+      }
+    }
     for (const button of dialog.querySelectorAll('button')) {
       if (/^[×✕✖]$/.test(button.textContent.trim()) && !button.hasAttribute('aria-label')) {
         button.setAttribute('aria-label', 'Einstellungen schließen');
