@@ -902,6 +902,23 @@
         }
 
         async function performVaultSync(silent = false) {
+            // A10 release gate: the legacy Firestore path uploads contact and
+            // check-in metadata without vault encryption. Never write it while
+            // the secure migration and ownership review are incomplete.
+            if (!silent) {
+                const message = 'Die alte Firebase-Tresorsynchronisierung ist aus Sicherheitsgründen deaktiviert. Lokale Daten bleiben erhalten. Bitte die verschlüsselte lokale Sicherung verwenden.';
+                const errorText = document.getElementById('syncErrorMessage');
+                if (errorText) errorText.textContent = message;
+                const loading = document.getElementById('syncStatusLoading');
+                if (loading) loading.classList.add('hidden');
+                const success = document.getElementById('syncStatusSuccess');
+                if (success) success.classList.add('hidden');
+                const failure = document.getElementById('syncStatusError');
+                if (failure) failure.classList.remove('hidden');
+                const overlay = document.getElementById('syncModalOverlay');
+                if (overlay) overlay.classList.remove('hidden');
+            }
+            return false;
             if (!vaultReady) {
                 if (!silent) alert('Tresor ist nicht entsperrt. Es wurden keine Daten synchronisiert.');
                 return false;
