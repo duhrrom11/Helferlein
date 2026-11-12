@@ -77,7 +77,9 @@ Deno.serve(async (request: Request) => {
    });
    // Infrastructure failures must not masquerade as expected business conflicts.
    if (error) return json(503,{error:"unavailable"},headers);
-   if (typeof data !== "string" || !UUID.test(data)) return json(409,{error:"not_available"},headers);
+   if (data === null) return json(409,{error:"not_available"},headers);
+   // Only a UUID is a successful issuance; other shapes violate the RPC contract.
+   if (typeof data !== "string" || !UUID.test(data)) return json(503,{error:"unavailable"},headers);
    // Token returned ONCE; never log, store in URL, or put into analytics.
    return json(201,{invitationId:data,token,expiresAt},headers);
   }
