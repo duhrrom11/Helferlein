@@ -35,7 +35,11 @@ export async function redeemWithAtomicStore(
     return "denied";
   }
   try {
-    return await store.redeemAtomically({ verifiedUserId, tokenHashHex });
+    const result = await store.redeemAtomically({ verifiedUserId, tokenHashHex });
+    // Runtime adapters can violate TypeScript contracts; never classify an
+    // unexpected result as an ordinary invitation denial.
+    if (result === "accepted" || result === "denied") return result;
+    return "unavailable";
   } catch {
     // Do not leak database details or distinguish unknown/foreign invitations.
     return "unavailable";
