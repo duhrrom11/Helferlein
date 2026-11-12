@@ -7,8 +7,8 @@ const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '..', 'shared', 'helferlein-cloud-migration.js'), 'utf8');
 
 test('anonymous entry exposes optional migration and does not start an upload', () => {
-  assert.match(source, /Supabase-Datenübernahme \(freiwillig\)/);
-  assert.match(source, /Lokale Daten bleiben unverändert, bis du eine Übernahme bestätigst/);
+  assert.match(source, /Cloud-Sicherung \(optional\)/);
+  assert.match(source, /Ohne Anmeldung kannst du das Tool lokal verwenden/);
   assert.match(source, /if \(!data \|\| !data\.user \|\| !data\.user\.id\) throw new Error\('Bitte zuerst anmelden'\)/);
   assert.match(source, /button\('Lokale Daten in Supabase übernehmen', async \(\) => \{/);
   assert.match(source, /await authenticated\(\);[\s\S]*?ensureOnline\(\);/);
@@ -34,4 +34,11 @@ test('account changes and offline writes cannot silently enable cloud upload', (
   assert.match(source, /if \(!uid \|\| owner !== uid\) throw new Error/);
   assert.match(source, /ensureOnline\(\)/);
   assert.match(source, /if \(!await isEnabled\(\)\) throw new Error/);
+});
+
+test('anonymous missing-session message is explained without masking account protection errors', () => {
+  assert.match(source, /!currentOwner\(\) && \/\^Auth session missing!/);
+  assert.match(source, /Nicht angemeldet\. Deine lokalen Daten bleiben auf diesem Gerät/);
+  assert.match(source, /: prefix \+ ': ' \+ lastConflictMessage/);
+  assert.match(source, /lastConflictMessage = error && error\.message/);
 });
