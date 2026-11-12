@@ -83,6 +83,17 @@ Deno.serve(async (request: Request) => {
    // Token returned ONCE; never log, store in URL, or put into analytics.
    return json(201,{invitationId:data,token,expiresAt},headers);
   }
+  if (input.action === "list" && Object.keys(input).length === 1) {
+   const {data,error} = await admin.rpc("list_heir_invitations_atomic",{
+    p_owner_user_id:ownerId,
+   });
+   if (error || !Array.isArray(data) || data.length > 50) return json(503,{error:"unavailable"},headers);
+   const invitations = data.map((item: Record<string,unknown>) => ({
+    invitationId:item.invitation_id, recipientUserId:item.recipient_user_id,
+    status:item.status, expiresAt:item.expires_at,
+   }));
+   return json(200,{invitations},headers);
+  }
   if (input.action === "revoke" && Object.keys(input).sort().join(",") === "action,invitationId") {
    if (typeof input.invitationId !== "string" || !UUID.test(input.invitationId))
     return json(400,{error:"invalid_request"},headers);

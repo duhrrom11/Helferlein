@@ -69,6 +69,46 @@
     } catch (error) { status(error instanceof Error ? error.message : 'Aktion fehlgeschlagen.'); }
     finally { issueButton.disabled = !BACKEND_APPROVED; }
   });
+  const listButton = el('heirListButton');
+  const listHost = el('heirLiveList');
+  async function loadInvitations() {
+    if (!BACKEND_APPROVED || !listButton || !listHost) return;
+    listButton.disabled = true;
+    listHost.textContent = 'Einladungen werden geladen …';
+    try {
+      const result = await invoke({action:'list'});
+      if (!Array.isArray(result.invitations) || result.invitations.length > 50)
+        throw new Error('Ungültige Serverantwort.');
+      const list = document.createElement('ul');
+      const labels = {pending:'Ausstehend',accepted:'Angenommen',expired:'Abgelaufen',revoked:'Widerrufen'};
+      for (const item of result.invitations) {
+        if (!UUID.test(item.invitationId) || !UUID.test(item.recipientUserId) ||
+            !Object.hasOwn(labels,item.status) || !Number.isFinite(Date.parse(item.expiresAt)))
+          throw new Error('Ungültige Serverantwort.');
+        const entry = document.createElement('li');
+        entry.className = 'py-2 border-b border-slate-700';
+        entry.textContent = labels[item.status] + ' · Empfänger ' + item.recipientUserId +
+          ' · bis ' + new Date(item.expiresAt).toLocaleString('de-DE') + ' · ID ' + item.invitationId;
+        if (item.status === 'pending' || item.status === 'accepted') {
+          const choose = document.createElement('button');
+          choose.type = 'button';
+          choose.className = 'ml-2 underline';
+          choose.textContent = 'Für Widerruf auswählen';
+          choose.addEventListener('click',() => { el('heirInvitationId').value = item.invitationId; });
+          entry.append(choose);
+        }
+        list.append(entry);
+      }
+      listHost.replaceChildren();
+      if (result.invitations.length) listHost.append(list);
+      else listHost.textContent = 'Noch keine Einladungen vorhanden.';
+    } catch { listHost.textContent = 'Einladungen konnten nicht geladen werden.'; }
+    finally { listButton.disabled = !BACKEND_APPROVED; }
+  }
+  if (listButton) {
+    listButton.disabled = !BACKEND_APPROVED;
+    listButton.addEventListener('click',loadInvitations);
+  }
   el('heirRevokeForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     clearToken();
@@ -80,6 +120,7 @@
       const data = await invoke({ action: 'revoke', invitationId });
       if (data.status !== 'revoked') throw new Error('Widerruf nicht bestätigt.');
       status('Einladung widerrufen. Es werden keine Tresordaten freigegeben.');
+      void loadInvitations();
     } catch (error) { status(error instanceof Error ? error.message : 'Widerruf fehlgeschlagen.'); }
     finally { revokeButton.disabled = !BACKEND_APPROVED; }
   });
