@@ -10,7 +10,7 @@ BEGIN
  IF p_owner_user_id IS NULL OR p_recipient_user_id IS NULL OR p_owner_user_id = p_recipient_user_id
     OR p_token_hash_hex IS NULL OR p_token_hash_hex !~ '^[a-f0-9]{64}$'
     OR p_expires_at IS NULL OR p_expires_at <= clock_timestamp()
-    OR p_expires_at > clock_timestamp() + interval '30 days' THEN RETURN NULL; END IF;
+    OR p_expires_at > clock_timestamp() + interval '7 days' THEN RETURN NULL; END IF;
  -- Serialize issuance by locking the owner row once (no lock upgrade).
  PERFORM 1 FROM public.vault_cloud_snapshots WHERE owner_user_id = p_owner_user_id FOR UPDATE;
  IF NOT FOUND THEN RETURN NULL; END IF;
