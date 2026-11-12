@@ -19,5 +19,5 @@ export function createBoundStagingRedemptionStore(
   _constructClient: (verifiedUrl: string) => InternalRpcClient,
   _enabled = false,
 ): AtomicRedemptionStore {
-  return { async redeemAtomically() { return false; } };
+  return { async redeemAtomically() { return "denied"; } };
 }
