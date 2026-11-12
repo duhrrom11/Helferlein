@@ -109,3 +109,71 @@ test('A9 household guard refuses malformed local snapshot under active cloud pro
     assert.match(result.alerts[0], /Speichern gesperrt/);
   }
 });
+
+
+// Run the real saveData implementation as well: the guard alone cannot prove
+// that the write entry point honors its false return value.
+const saveStart = householdHtml.indexOf('function saveData(data) {', guardEnd);
+const saveEnd = householdHtml.indexOf('function getBudgets() {', saveStart);
+if (saveStart < 0 || saveEnd < 0) throw new Error('A9 household saveData production block missing');
+const householdSaveCode = householdHtml.slice(saveStart, saveEnd);
+
+function runHouseholdSave({owner = null, bridge = null, entries = '[]', budgets = '{}', goals = '[]', failWrite = false} = {}) {
+  const values = new Map([
+    ['kassenbon_data', entries],
+    ['budgetbuch_budgets', budgets],
+    ['budgetbuch_goals', goals]
+  ]);
+  if (owner !== null) values.set('helferlein_cloud_owner_haushaltsbuch-kassenbon', owner);
+  const writes = [], alerts = [];
+  let cloudChanges = 0;
+  const context = {
+    window: bridge === null ? {} : {helferleinCloudBridge: bridge},
+    localStorage: {
+      getItem: key => values.has(key) ? values.get(key) : null,
+      setItem: (key, value) => {
+        if (failWrite) throw new Error('Synthetic storage quota exceeded');
+        writes.push({key, value});
+        values.set(key, value);
+      }
+    },
+    householdCloudChanged: () => {cloudChanges++;},
+    alert: message => alerts.push(message),
+    console: {error:()=>{}}
+  };
+  vm.runInNewContext(householdGuardCode + '\n' + householdSaveCode, context, {timeout:1000});
+  const result = vm.runInNewContext("saveData([{id:'synthetic-only'}])", context, {timeout:1000});
+  return {result, writes, alerts, cloudChanges};
+}
+
+test('A9 actual saveData blocks writes and cloud notification during account switch', () => {
+  const state = runHouseholdSave({owner:'synthetic-account',bridge:{canWriteLocal:()=>false}});
+  assert.equal(state.result, false);
+  assert.equal(state.writes.length, 0);
+  assert.equal(state.cloudChanges, 0);
+  assert.match(state.alerts[0], /Speichern gesperrt/);
+});
+
+test('A9 actual saveData blocks writes if claimed account protection is unavailable', () => {
+  const state = runHouseholdSave({owner:'synthetic-account'});
+  assert.equal(state.result, false);
+  assert.equal(state.writes.length, 0);
+  assert.equal(state.cloudChanges, 0);
+});
+
+test('A9 actual saveData allows exactly one local write after account guard approves', () => {
+  const state = runHouseholdSave({owner:'synthetic-account',bridge:{canWriteLocal:()=>true}});
+  assert.equal(state.result, true);
+  assert.equal(state.writes.length, 1);
+  assert.equal(state.writes[0].key, 'kassenbon_data');
+  assert.equal(JSON.parse(state.writes[0].value)[0].id, 'synthetic-only');
+  assert.equal(state.cloudChanges, 1);
+});
+
+test('A9 actual saveData handles storage failure without cloud notification', () => {
+  const state = runHouseholdSave({owner:'synthetic-account',bridge:{canWriteLocal:()=>true},failWrite:true});
+  assert.equal(state.result, false);
+  assert.equal(state.writes.length, 0);
+  assert.equal(state.cloudChanges, 0);
+  assert.match(state.alerts[0], /Speichern fehlgeschlagen/);
+});
