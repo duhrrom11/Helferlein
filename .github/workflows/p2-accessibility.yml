@@ -7,6 +7,8 @@ on:
       - 'assets/helferlein-accessibility.*'
       - 'tests/p2-accessibility.spec.cjs'
       - 'tests/p2-dialogs.spec.cjs'
+      - 'tests/p2-a9-cloud-guards.test.cjs'
+      - 'shared/helferlein-cloud-migration.js'
       - 'tests/helpers/p2-dialog-cases.cjs'
       - 'tests/helpers/p2-browser-safety.cjs'
       - '.github/workflows/p2-accessibility.yml'
@@ -23,6 +25,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check isolated A9 cloud entry and account safety contracts
+        run: node --test tests/p2-a9-cloud-guards.test.cjs
       - name: Install isolated browser checks
         run: |
           npm install --no-save --no-package-lock @playwright/test@1.56.1 @axe-core/playwright@4.11.0
