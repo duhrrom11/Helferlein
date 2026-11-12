@@ -101,6 +101,18 @@ Die folgenden Issues sind die verbindliche Arbeitsliste; ein geschlossenes Issue
 
 **Bearbeitungsreihenfolge:** zuerst #270–#272, anschließend #273–#276, abschließend #277. P1-Aufgaben dürfen parallel vorbereitet werden; kein produktiver Schritt darf einen noch offenen Gate-Nachweis umgehen.
 
+## P0-Zwischenstand – rein lesende Metadatenprüfung (2026-11-12)
+
+**Projekt:** `avapuibsidubuzxjtyld` (Helferlein), Status `ACTIVE_HEALTHY`, PostgreSQL 17.11. Die Prüfung verwendete nur Supabase-Projekt-/Tabellen-/Migrations-/Extension-Metadaten und GitHub-Dateiinhalte, **keine SQL-Ausführung**. Der Projektstatus ist kein Sicherheitsfreigabenachweis.
+
+| Issue | Positiv nachgewiesen | Noch offen / Freigabeblocker |
+| --- | --- | --- |
+| [#270](https://github.com/duhrrom11/Helferlein/issues/270) | `public.vault_cloud_snapshots(owner_user_id)`: UUID-PK, RLS aktiv, FK auf `auth.users(id)`; `auth.users` vorhanden. Drei Erben-Migrationsversionen fehlen in der registrierten Migrationshistorie; Tabellenauflistung `nachlass_private` leer. | Schemaexistenz, gleichnamige Funktionen/Überladungen, Trigger, tatsächliche Definitionen und Löschpfade nicht vollständig inventarisiert. Fehlende Migrationsversionen beweisen nicht die Abwesenheit manueller Objekte. |
+| [#271](https://github.com/duhrrom11/Helferlein/issues/271) | Migrationstext enthält `SECURITY DEFINER`, eingeschränkten `search_path`, `REVOKE`/`GRANT` und RLS-Vorgaben für die privaten Tabellen. | Effektive Funktionsinhaber, ACLs, vererbte Rollen, Schema-USAGE, Default Privileges und RLS-Policies nicht aus den verfügbaren Metadaten bestätigt. Nicht ausgeführter SQL-Text ist kein produktiver Rechtenachweis. |
+| [#272](https://github.com/duhrrom11/Helferlein/issues/272) | RPC-Namen, `PromiseLike`-Adapter, `verify_jwt=true`, SQLSTATE 22023 bei ungültigen Limiter-Argumenten und installiertes `plpgsql` statisch/über Metadaten bestätigt. | Keine SQL-Parserprüfung, kein Deno-/TypeScript-Compilerlauf, keine tatsächliche Supabase-JS-Typkompatibilitätsprüfung und keine Laufzeit-/Parallelitätsabnahme. |
+
+**Entscheidung:** #270, #271 und #272 bleiben **P0 OFFEN / NO-GO**. Die P0-Nachweise dürfen erst nach unabhängiger Prüfung und dokumentierter Freigabe als erledigt markiert werden. Keine produktiven Tests oder SQL-Ausführung ohne separate Genehmigung.
+
 ## Freigabeprotokoll (vor Aktivierung auszufüllen)
 
 | Feld | Erforderlicher Eintrag |
