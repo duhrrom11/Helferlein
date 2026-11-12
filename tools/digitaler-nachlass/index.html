@@ -274,6 +274,8 @@
     <input id="heirInvitationId" type="text" required maxlength="36" autocomplete="off" spellcheck="false" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
     <button id="heirRevokeButton" type="submit" disabled class="rounded-lg bg-red-800 px-4 py-2 disabled:opacity-50">Einladung widerrufen</button>
   </form>
+  <button id="heirListButton" type="button" disabled class="rounded-lg bg-slate-700 px-4 py-2 disabled:opacity-50">Einladungen anzeigen</button>
+  <div id="heirLiveList" class="text-sm text-slate-200" role="status" aria-live="polite"></div>
   <p id="heirInvitationStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Backend nicht aktiviert.</p>
 </section>
 <section id="heirAcceptInvitation" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirAcceptTitle">
