@@ -43,7 +43,7 @@
 - [ ] #275-Backup-/PITR-/RPO-/RTO-/Notfallvoraussetzungen für **G0** nachgewiesen; isolierter G2-Restore bleibt offen.
 - [ ] Alle sechs Rollen namentlich bestätigt, ihre unabhängigen Gegenprüfungen dokumentiert und Teil-Gate-Entscheidungen unterschrieben.
 - [ ] Datenschutz, Secrets/Logs, fachliche Quoten und Widerrufssemantik mit eindeutiger STOP-/Abweichungsbehandlung bewertet.
-- [ ] Separate G1-Change-Genehmigung **erst nach** vollständigem G0 und unabhängig von dieser Vorlage entschieden.
+- [ ] Für die **nachgelagerte** G1-Change-Entscheidung sind zuständige Personen und ein eigener Freigabeprozess benannt; die tatsächliche G1-Change-Genehmigung ist **keine G0-Abnahmevoraussetzung**, sondern erfolgt erst nach G0-Gesamt-GO.
 
 **Aktueller Gesamtentscheid: NO-GO.** Entscheidende Person: **offen** · Datum der formalen Freigabe: **offen** · Freigabenachweis: **fehlt** · G1-Change-GO: **nicht erteilt**.
 
