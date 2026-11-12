@@ -29,7 +29,7 @@ for (const tool of ['haushaltsbuch-kassenbon', 'wg-organisator']) {
   for (const id of ['categoryChart', 'cashflowChart']) {
     const match = html.match(new RegExp('<canvas\\b[^>]*\\bid="' + id + '"[^>]*>', 'i'));
     assert.ok(match, 'Missing financial chart: ' + tool + '/' + id);
-    assert.match(match[0], /\\brole="img"/, 'Missing chart image semantics: ' + tool + '/' + id);
-    assert.match(match[0], /\\baria-label="[^"]+"/, 'Missing chart accessible name: ' + tool + '/' + id);
+    assert.match(match[0], /\brole="img"/, 'Missing chart image semantics: ' + tool + '/' + id);
+    assert.match(match[0], /\baria-label="[^"]+"/, 'Missing chart accessible name: ' + tool + '/' + id);
   }
 }
