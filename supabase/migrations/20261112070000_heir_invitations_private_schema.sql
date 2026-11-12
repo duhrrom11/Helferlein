@@ -36,27 +36,29 @@ REVOKE ALL ON ALL TABLES IN SCHEMA nachlass_private FROM PUBLIC, anon, authentic
 -- No direct client access to private tables. Service-role access is via
 -- the narrowly scoped RPCs below, not through the exposed Data API.
 
--- One transaction: lock invitation, verify recipient, owner still exists,
--- expiry and revocation, no previous assignment, insert and accept.
+-- One transaction: discover owner without a lock, lock owner then invitation,
+-- revalidate recipient, expiry and revocation, insert assignment and accept.
 -- This function must be owned by a trusted migration role; only service_role may EXECUTE.
 CREATE FUNCTION public.redeem_heir_invitation_atomic(
   p_token_hash_hex text, p_verified_user_id uuid
 ) RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
-DECLARE v_inv nachlass_private.heir_invitations%ROWTYPE;
+DECLARE
+  v_owner_user_id uuid;
+  v_inv nachlass_private.heir_invitations%ROWTYPE;
 BEGIN
   IF p_verified_user_id IS NULL OR p_token_hash_hex IS NULL
      OR p_token_hash_hex !~ '^[a-f0-9]{64}$' THEN RETURN false; END IF;
   -- Discover owner without a row lock; never trust this preliminary read.
-  SELECT owner_user_id INTO v_inv.owner_user_id FROM nachlass_private.heir_invitations
+  SELECT owner_user_id INTO v_owner_user_id FROM nachlass_private.heir_invitations
    WHERE token_hash_hex = p_token_hash_hex;
   IF NOT FOUND THEN RETURN false; END IF;
   -- Consistent order across issue/redeem/revoke: owner, then invitation.
   PERFORM 1 FROM public.vault_cloud_snapshots
-   WHERE owner_user_id = v_inv.owner_user_id FOR UPDATE;
+   WHERE owner_user_id = v_owner_user_id FOR UPDATE;
   IF NOT FOUND THEN RETURN false; END IF;
   SELECT * INTO v_inv FROM nachlass_private.heir_invitations
-   WHERE token_hash_hex = p_token_hash_hex AND owner_user_id = v_inv.owner_user_id FOR UPDATE;
+   WHERE token_hash_hex = p_token_hash_hex AND owner_user_id = v_owner_user_id FOR UPDATE;
   IF NOT FOUND OR v_inv.recipient_user_id <> p_verified_user_id
      OR v_inv.revoked_at IS NOT NULL OR v_inv.accepted_at IS NOT NULL
      OR v_inv.expires_at <= clock_timestamp() THEN RETURN false; END IF;
