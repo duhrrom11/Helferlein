@@ -1,0 +1,27 @@
+# Helferlein – Offene tatsächliche G0-Nachweise (priorisierte Arbeitsübersicht)
+
+**Stand 2026-11-12 · G0: NO-GO · ausschließlich Dokumentation.** Diese Übersicht priorisiert **fehlende Nachweise**, nicht bereits ausgeführte Prüfungen. Alle fünf G0-Issues [#270](https://github.com/duhrrom11/Helferlein/issues/270), [#271](https://github.com/duhrrom11/Helferlein/issues/271), [#272](https://github.com/duhrrom11/Helferlein/issues/272), [#274](https://github.com/duhrrom11/Helferlein/issues/274), [#275](https://github.com/duhrrom11/Helferlein/issues/275) sind offen. Quelle: [G0-Freigabecheckliste](./heir-invitations-g0-release-decision-checklist.md), [Rollenübergabe](./heir-invitations-g0-handover.md), [GO/NO-GO-Matrix](./heir-invitations-go-no-go-matrix.md), [Detailnachweise](./heir-invitations-g0-evidence-checklists.md), [Abnahmevorlage](./heir-invitations-acceptance-evidence-template.md).
+
+## Priorisierte Nachweislücken
+
+| Priorität / Zeitpunkt | Federführung (Mitprüfung) | Noch fehlender **tatsächlicher** Nachweis | Abhängigkeit / Übergabe | STOP bis |
+| --- | --- | --- | --- | --- |
+| **0 – G0-Startvoraussetzung** | **Produkt + Entwicklung** (alle Rollen) | Namentliche Verantwortliche, unabhängige Prüfer, Stellvertretung; fixierter **Code-Release-SHA** mit Reviewbasis, Datum und Prüfumgebung | Voraussetzung für nachvollziehbare Teilabnahmen aller fünf Issues; Dokumentationscommit ist kein Code-Release-SHA | Personen und Codebasis schriftlich bestätigt |
+| **1 – zuerst #270** | **DBA** | Read-only Ist-Inventar von `public.vault_cloud_snapshots`, `auth.users`, `nachlass_private` (Schema/Tabellen/Funktionen/Überladungen/Policies), Migrationen 70000–70002, FK/Trigger/Löschpfaden, Soll/Ist-Differenzen und Konfliktbewertung | Basis für #271 und #272, für #275 mit DBA abzustimmen; fehlende registrierte Migration ≠ nachgewiesene Objektabwesenheit | Schema-/Migrationskonflikte und unbekannte Objekte geklärt |
+| **2 – nach #270 #271** | **DBA + Security** | Tatsächliche Owner/SECURITY-DEFINER-Definitionen, effektive EXECUTE-ACL inkl. PUBLIC/Vererbung/Default Privileges, Schema-USAGE, Tabellenrechte und RLS/Policies; Wartungsrolle | #270-Baseline; unabhängiges Security-Review; erneute **G1**-Ist-Prüfung bleibt später erforderlich | Privilegien und Eigentümer unabhängig als sicher bewertet |
+| **2 – nach #270 #272** | **Entwicklung + DBA** | Separat autorisierte SQL-Parser-/Deno-/TypeScript-Compilerprotokolle und Review; RPC-Namen, Parameter/Rückgaben, `PromiseLike`, Supabase-JS-Version, Fehlerklassifikation, JWT-/Secret-/Import-Review | Fixierter Code-SHA und #270-Baseline; **G2**-Laufzeitprüfung bleibt später erforderlich | Protokolle/Verträge ohne ungeklärte Fehler freigegeben |
+| **2 – parallel vorbereiten #275** | **SRE + DBA + Datenschutz** | Beleg tatsächlicher Backup-/PITR-Verfügbarkeit und Wiederherstellbarkeit, RPO/RTO, Retention, Wartungsrolle/-intervall, Incident-/Rollback-/Vier-Augen-Plan | #270-Baseline für Datenbankbezüge; **vor G1** erforderlich; isolierter Restore-/Wartungsnachweis erst nach separater Autorisierung in **G2** | Backup/Recovery und Notfallfähigkeit bestätigt |
+| **2 – parallel vorbereiten #274** | **Security + SRE** (Datenschutz für Logs) | Schriftlich abgenommenes WAF-/Gateway-Abuse-Konzept gegen anonyme Last/Konto-Rotation, datensparsame Log-/Secret-Regeln, Alarm-/Stoppschwellen, Bereitschaft | #272-Code-/JWT-Baseline; **vor G1** erforderlich; tatsächliche Gateway-/Monitoring-Wirksamkeit später in **G3** | Schutzkonzept, Monitoring und Verantwortlichkeiten freigegeben |
+| **3 – G0-Gesamtentscheidung** | **Produkt** (DBA, Security, Entwicklung, SRE, Datenschutz) | Für jede Rolle datierter Soll/Ist-Befund, redigierter Evidenzlink, unabhängige Gegenprüfung und schriftliches G0-Teil-GO; fachliche Quoten-/Widerrufsfreigabe; explizite Gesamtentscheidung | Alle obigen G0-Teilnachweise; erst danach **separate** G1-Change-Entscheidung möglich | Alle sechs Rollen bestätigt und G0 schriftlich entschieden |
+
+**Reihenfolge:** Priorität 0 und #270 sind die ersten Übergaben. #271/#272 bauen auf #270 auf; #274/#275 können fachlich parallel vorbereitet werden, ohne die Abnahmevoraussetzungen zu umgehen. Priorität ist **keine** Ausführungserlaubnis. G1-Change-GO gehört **nicht** zu den G0-Abnahmekriterien; es wird erst nach G0 gesondert entschieden.
+
+## Einheitliche Evidenzanforderungen und STOP
+
+- [ ] Je Nachweis: namentlich prüfende und **unabhängig** freigebende Person, Datum, Umgebung, fixierter Code-SHA, konkrete Soll/Ist-Feststellung, redigierter Beleglink, Abweichungen und ausdrückliche Teil-Gate-Entscheidung.
+- [ ] Keine Secrets, JWTs, Einladungstoken, Hashes oder personenbezogenen Rohdaten in GitHub-Nachweisen.
+- [ ] Fehlende oder widersprüchliche Nachweise, unbekannte ACL/RLS/Objekte, fehlende Backup-/PITR-Bestätigung, unbewerteter Abuse-Schutz oder fehlende Personen: **STOP / NO-GO**.
+- [ ] Dokumentarische Quellenbelege nicht als Compiler-/Runtime-/Restore-/Produktiv-Ist-Abnahme umdeuten.
+- [ ] Spätere #273/#276 (**G2**) und #277 (**G3/finales Aktivierungs-GO**) bleiben offen; Aktivierung nur nach separatem schriftlichem GO, nicht durch diese Übersicht.
+
+**Aktueller Befund:** Keine der aufgeführten tatsächlichen G0-Abnahmen ist belegt; sämtliche Checkboxen offen. **Gesamt: NO-GO.** Keine SQL-Ausführung, keine Supabase-Schreiboperationen, keine Tests, kein Merge, keine Aktivierung und kein Deployment.
