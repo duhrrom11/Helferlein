@@ -84,9 +84,8 @@ Deno.serve(async (request: Request) => {
   if (input.action === "revoke" && Object.keys(input).sort().join(",") === "action,invitationId") {
    if (typeof input.invitationId !== "string" || !UUID.test(input.invitationId))
     return json(400,{error:"invalid_request"},headers);
-   const decision = await consumeHeirRateLimit(admin, ownerId, "revoke");
-   if (decision === "unavailable") return json(503,{error:"unavailable"},headers);
-   if (decision === "limited") return json(429,{error:"rate_limited"},headers);
+   // Security-critical revocation must never be blocked by a quota.
+   // Ownership is checked atomically by revoke_heir_invitation_atomic.
    const {data,error} = await admin.rpc("revoke_heir_invitation_atomic",{
     p_owner_user_id:ownerId,p_invitation_id:input.invitationId,
    });
