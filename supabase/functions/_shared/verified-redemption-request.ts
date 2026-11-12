@@ -24,7 +24,7 @@ export async function redeemVerifiedInvitation(
     const digest = await hashInvitationToken(rawToken);
     return await redeemWithAtomicStore(store, userId, digest);
   } catch {
-    // Malformed tokens and any backend failure have the same generic denial.
-    return "denied";
+    // Internal hashing failure: no token or diagnostic details leave this boundary.
+    return "unavailable";
   }
 }
