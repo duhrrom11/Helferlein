@@ -177,3 +177,74 @@ test('A9 actual saveData handles storage failure without cloud notification', ()
   assert.equal(state.cloudChanges, 0);
   assert.match(state.alerts[0], /Speichern fehlgeschlagen/);
 });
+
+
+// Apply the same real-entrypoint check to the remaining two persisted household
+// collections; a protected saveData alone would not guard budgets and goals.
+const budgetSaveStart = householdHtml.indexOf('function saveBudgets(budgets) {', saveEnd);
+const budgetSaveEnd = householdHtml.indexOf('function getSavingsGoals() {', budgetSaveStart);
+const goalSaveStart = householdHtml.indexOf('function saveSavingsGoals(goals) {', budgetSaveEnd);
+const goalSaveEnd = householdHtml.indexOf('function updateFormUI() {', goalSaveStart);
+if (budgetSaveStart < 0 || budgetSaveEnd < 0 || goalSaveStart < 0 || goalSaveEnd < 0)
+  throw new Error('A9 household budget or goal save entrypoint missing');
+const otherHouseholdSaves = householdHtml.slice(budgetSaveStart, budgetSaveEnd)
+  + '\n' + householdHtml.slice(goalSaveStart, goalSaveEnd);
+
+function runAdditionalHouseholdSave({method, owner = null, bridge = null, failWrite = false}) {
+  const values = new Map([
+    ['kassenbon_data','[]'], ['budgetbuch_budgets','{}'], ['budgetbuch_goals','[]']
+  ]);
+  if (owner !== null) values.set('helferlein_cloud_owner_haushaltsbuch-kassenbon',owner);
+  const writes = [], alerts = [];
+  let cloudChanges = 0;
+  const context = {
+    window:bridge === null ? {} : {helferleinCloudBridge:bridge},
+    localStorage:{
+      getItem:key => values.has(key) ? values.get(key) : null,
+      setItem:(key,value) => {
+        if (failWrite) throw new Error('Synthetic storage failure');
+        writes.push({key,value});
+        values.set(key,value);
+      }
+    },
+    householdCloudChanged:()=>{cloudChanges++;},
+    alert:message=>alerts.push(message),
+    console:{error:()=>{}}
+  };
+  vm.runInNewContext(householdGuardCode + '\n' + otherHouseholdSaves,context,{timeout:1000});
+  const expression = method === 'budgets'
+    ? 'saveBudgets({Wohnen:12})'
+    : "saveSavingsGoals([{name:'synthetic-goal'}])";
+  const result = vm.runInNewContext(expression,context,{timeout:1000});
+  return {result,writes,alerts,cloudChanges};
+}
+
+for (const [method,key] of [['budgets','budgetbuch_budgets'],['goals','budgetbuch_goals']]) {
+  test('A9 ' + method + ' entrypoint blocks writes on account switch', () => {
+    const state = runAdditionalHouseholdSave({method,owner:'synthetic-account',bridge:{canWriteLocal:()=>false}});
+    assert.equal(state.result,false);
+    assert.equal(state.writes.length,0);
+    assert.equal(state.cloudChanges,0);
+    assert.match(state.alerts[0],/Speichern gesperrt/);
+  });
+  test('A9 ' + method + ' entrypoint blocks writes if claimed bridge missing', () => {
+    const state = runAdditionalHouseholdSave({method,owner:'synthetic-account'});
+    assert.equal(state.result,false);
+    assert.equal(state.writes.length,0);
+    assert.equal(state.cloudChanges,0);
+  });
+  test('A9 ' + method + ' entrypoint writes only when guard allows', () => {
+    const state = runAdditionalHouseholdSave({method,owner:'synthetic-account',bridge:{canWriteLocal:()=>true}});
+    assert.equal(state.result,true);
+    assert.equal(state.writes.length,1);
+    assert.equal(state.writes[0].key,key);
+    assert.equal(state.cloudChanges,1);
+  });
+  test('A9 ' + method + ' entrypoint handles storage failure without cloud notification', () => {
+    const state = runAdditionalHouseholdSave({method,owner:'synthetic-account',bridge:{canWriteLocal:()=>true},failWrite:true});
+    assert.equal(state.result,false);
+    assert.equal(state.writes.length,0);
+    assert.equal(state.cloudChanges,0);
+    assert.match(state.alerts[0],/Speichern fehlgeschlagen/);
+  });
+}
