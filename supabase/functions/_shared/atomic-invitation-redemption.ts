@@ -5,7 +5,8 @@
  *
  * Do not implement the adapter with separate Supabase REST requests.
  */
-export type RedemptionOutcome = "accepted" | "denied";
+export type RedemptionOutcome = "accepted" | "denied" | "unavailable";
+export type AtomicRedemptionResult = "accepted" | "denied" | "unavailable";
 
 export interface AtomicRedemptionStore {
   /**
@@ -17,7 +18,7 @@ export interface AtomicRedemptionStore {
   redeemAtomically(args: {
     tokenHashHex: string;
     verifiedUserId: string;
-  }): Promise<boolean>;
+  }): Promise<AtomicRedemptionResult>;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -33,11 +34,9 @@ export async function redeemWithAtomicStore(
     return "denied";
   }
   try {
-    return await store.redeemAtomically({ verifiedUserId, tokenHashHex })
-      ? "accepted"
-      : "denied";
+    return await store.redeemAtomically({ verifiedUserId, tokenHashHex });
   } catch {
     // Do not leak database details or distinguish unknown/foreign invitations.
-    return "denied";
+    return "unavailable";
   }
 }
