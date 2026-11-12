@@ -16,6 +16,36 @@
   const issueButton = el('heirIssueButton');
   const revokeButton = el('heirRevokeButton');
   if (!issueButton || !revokeButton) return;
+  const myIdField = el('heirMyUserId');
+  const myIdCopy = el('heirCopyMyUserId');
+  const myIdStatus = el('heirMyUserIdStatus');
+  const clearMyId = () => {
+    if (myIdField) myIdField.value = '';
+    if (myIdCopy) myIdCopy.disabled = true;
+  };
+  if (el('heirLoadMyUserId')) el('heirLoadMyUserId').addEventListener('click', async () => {
+    clearMyId();
+    try {
+      const client = existingAuthClient();
+      if (!client) throw new Error('Cloud-Anmeldung nicht verfügbar.');
+      const {data,error} = await client.auth.getUser();
+      if (error || !data?.user || !UUID.test(data.user.id))
+        throw new Error('Bitte zuerst mit deinem Cloud-Konto anmelden.');
+      myIdField.value = data.user.id;
+      myIdCopy.disabled = false;
+      myIdStatus.textContent = 'Deine Benutzer-ID ist bereit. Gib sie nur an die Person weiter, die dich einladen soll.';
+    } catch (error) {
+      myIdStatus.textContent = error instanceof Error ? error.message : 'ID nicht verfügbar.';
+    }
+  });
+  if (myIdCopy) myIdCopy.addEventListener('click', async () => {
+    if (!UUID.test(myIdField.value)) return;
+    try {
+      await navigator.clipboard.writeText(myIdField.value);
+      myIdStatus.textContent = 'Benutzer-ID kopiert.';
+    } catch { myIdStatus.textContent = 'Kopieren nicht möglich. Bitte die ID manuell markieren.'; }
+  });
+  window.addEventListener('pagehide', clearMyId);
   const tokenArea = el('heirIssuedTokenArea');
   const tokenInput = el('heirIssuedToken');
   const clearToken = () => { tokenInput.value = ''; tokenArea.hidden = true; };
