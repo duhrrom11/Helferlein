@@ -7,6 +7,7 @@
 import type { AuthUserLookup } from "./verified-user.ts";
 import type { AtomicRedemptionStore } from "./atomic-invitation-redemption.ts";
 import { redeemVerifiedInvitation } from "./verified-redemption-request.ts";
+import type { RateDecision } from "./heir-rate-limit.ts";
 
 const ORIGIN = "https://duhrrom11.github.io";
 const MAX_BYTES = 512;
@@ -15,7 +16,7 @@ function response(status: number, error: string, headers: Headers): Response {
 }
 export async function handleRedemptionRequest(
   request: Request,
-  dependencies: { auth: AuthUserLookup; store: AtomicRedemptionStore; enabled?: boolean },
+  dependencies: { auth: AuthUserLookup; store: AtomicRedemptionStore; rateLimit: (verifiedUserId: string) => Promise<RateDecision>; enabled?: boolean },
 ): Promise<Response> {
   const origin = request.headers.get("Origin");
   const headers = new Headers({
@@ -82,7 +83,8 @@ export async function handleRedemptionRequest(
   if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) {
     return response(400, "invalid_request", headers);
   }
-  const result = await redeemVerifiedInvitation(dependencies.auth, dependencies.store, authHeader, token);
+  const result = await redeemVerifiedInvitation(dependencies.auth, dependencies.store, authHeader, token, dependencies.rateLimit);
+  if (result === "limited") return response(429, "rate_limited", headers);
   if (result === "unavailable") return response(503, "unavailable", headers);
   if (result !== "accepted") return response(404, "not_found", headers);
   return new Response(JSON.stringify({ status: "accepted" }), { status: 200, headers });
