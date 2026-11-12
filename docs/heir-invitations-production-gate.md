@@ -62,7 +62,7 @@ Die RPCs verwenden die Reihenfolge Eigentümerzeile (`FOR UPDATE`) vor Einladung
 ## Vorbereitete verteilte Limitierung (nicht aktiv)
 
 - Dritte, **noch nicht ausgeführte** Migration: `20261112070002_heir_rate_limits.sql`. Muss nach beiden bestehenden Migrationen und vor jeder Edge-Function-Aktivierung angewendet werden.
-- Atomarer PostgreSQL-Upsert auf `(actor_id, operation, window_start)` vermeidet isolat-lokale Zähler und serialisiert konkurrierende Verbrauchsversuche über einen eindeutigen Schlüssel. Zwei feste Zeitfenster: 60 Sekunden und 1 Stunde, nach Datenbankuhr.
+- Atomarer PostgreSQL-Upsert auf `(actor_id, operation, window_seconds, window_start)` vermeidet isolat-lokale Zähler und serialisiert konkurrierende Verbrauchsversuche über einen eindeutigen Schlüssel. Zwei feste Zeitfenster: 60 Sekunden und 1 Stunde, nach Datenbankuhr.
 - Startquoten (vor Freigabe fachlich prüfen): `issue` 2/Minute und 5/Stunde/Benutzer, `redeem` 3/Minute und 10/Stunde/Benutzer. Widerrufe sind absichtlich nicht quotiert. Erfolgreiche und erfolglose autorisierte Versuche verbrauchen Kontingent. Überschreitung = generisches HTTP 429, Datenbank-/Transportfehler = HTTP 503 (fail closed).
 - Die Limitierungs-RPC ist nur `service_role` zugänglich. Identität stammt aus `auth.getUser`, niemals aus einem Clientfeld. Es werden ausschließlich Benutzer-UUID, Operationsklasse, Zeitfenster und Zähler gespeichert; keine IP-Adresse, Tokens, Hashes oder Request-Inhalte.
 - **NO-GO:** Ohne ausgeführte und geprüfte dritte Migration würde die neue Edge-Function-Version bei Limitierungs-RPC-Fehlern mit 503 abbrechen. Die bestehende Aktivierung muss deshalb weiter ausgeschaltet bleiben.
@@ -77,4 +77,10 @@ Die RPCs verwenden die Reihenfolge Eigentümerzeile (`FOR UPDATE`) vor Einladung
 - Beide festen Zeitfenster begrenzen gewöhnliche Spitzen. Direkt an einer Minutengrenze sind weiterhin bis zu vier Ausstellungs- bzw. sechs Einlöseversuche in kurzer Folge möglich. Ein gleitendes Fenster oder Gateway-Schutz bleibt zu bewerten.
 - Die zwei Zähler werden in derselben PostgreSQL-Funktion nacheinander aktualisiert. Bei einer Überschreitung im Stundenfenster kann der Minutenzähler bereits erhöht sein; dies ist konservativ. Ein SQL-Fehler rollt die gesamte RPC-Transaktion zurück.
 - Die Wartungsfunktion ist ausschließlich für einen vertrauenswürdigen privilegierten Inhaber vorgesehen. Keine Freigabe an die Edge-Service-Role; kein Bereinigungsjob eingerichtet.
-- Keine Compilerprüfung durchgeführt. Die strukturelle RpcClient-Signatur muss vor Freigabe gegen die eingesetzte supabase-js-Version geprüft werden.
+- Keine Compilerprüfung durchgeführt. Die RPC-Adapter verwenden jetzt `PromiseLike` für Supabase-PostgREST-Builder; die tatsächliche Typkompatibilität muss vor Freigabe weiterhin durch eine separat genehmigte Compilerprüfung nachgewiesen werden.
+
+## Statische Nachbesserung: RPC-Vertrag und interne Argumentfehler
+
+- `heir-rate-limit.ts` und `atomic-redemption-store.ts` erwarten für RPC-Aufrufe `PromiseLike` statt ausschließlich `Promise`. Das ermöglicht Promise-ähnliche Supabase-RPC-Builder ohne Typumwandlung; keine Compilerprüfung wurde ausgeführt.
+- `consume_heir_rate_limit_atomic` wirft bei fehlender Benutzer-ID oder ungültiger Operationsklasse SQLSTATE `22023`, statt `false` zurückzugeben. Der serverseitige Adapter klassifiziert den RPC-Fehler als `unavailable` (HTTP 503); `false` bleibt für tatsächlich ausgeschöpfte Kontingente reserviert (HTTP 429).
+- SQL-Fehlerdetails dürfen ausschließlich intern verbleiben. Die RPC ist weiterhin nur für `service_role` freizugeben. Produktive Berechtigungen und reale TypeScript-Typen bleiben separate Abnahmevoraussetzungen.
