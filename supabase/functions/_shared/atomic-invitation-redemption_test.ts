@@ -7,20 +7,20 @@ Deno.test("valid verified input delegates once to atomic adapter", async () => {
   const store: AtomicRedemptionStore = { async redeemAtomically(args) {
     calls++;
     assert(args.verifiedUserId === uid && args.tokenHashHex === hash, "incorrect args");
-    return true;
+    return "accepted" as const;
   } };
   assert(await redeemWithAtomicStore(store, uid, hash) === "accepted", "valid request rejected");
   assert(calls === 1, "unexpected adapter calls");
 });
 Deno.test("invalid identity or digest never reaches database adapter", async () => {
   let calls = 0;
-  const store: AtomicRedemptionStore = { async redeemAtomically() { calls++; return true; } };
+  const store: AtomicRedemptionStore = { async redeemAtomically() { calls++; return "accepted" as const; } };
   for (const [id, digest] of [[null, hash], ["bad", hash], [uid, ""], [uid, "G".repeat(64)] ] as const) {
     assert(await redeemWithAtomicStore(store, id, digest) === "denied", "invalid input accepted");
   }
   assert(calls === 0, "invalid input reached adapter");
 });
 Deno.test("adapter denial and failures are fail-closed", async () => {
-  assert(await redeemWithAtomicStore({ async redeemAtomically() { return false; } }, uid, hash) === "denied", "denial leaked");
-  assert(await redeemWithAtomicStore({ async redeemAtomically() { throw Error("private db details"); } }, uid, hash) === "denied", "error leaked");
+  assert(await redeemWithAtomicStore({ async redeemAtomically() { return "denied" as const; } }, uid, hash) === "denied", "denial leaked");
+  assert(await redeemWithAtomicStore({ async redeemAtomically() { throw Error("private db details"); } }, uid, hash) === "unavailable", "error leaked");
 });

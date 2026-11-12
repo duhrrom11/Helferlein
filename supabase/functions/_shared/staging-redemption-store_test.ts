@@ -9,7 +9,7 @@ Deno.test("legacy RPC adapter always denies and never invokes RPC", async () => 
     for (const ref of [null, "ojfoijljykjhveejvkfx", "avapuibsidubuzxjtyld"]) {
       const store = createStagingRedemptionStore(client, enabled, ref);
       for (const user of [uid, "bad"]) {
-        assert(!await store.redeemAtomically({ verifiedUserId: user, tokenHashHex: hash }), "legacy adapter accepted");
+        assert(await store.redeemAtomically({ verifiedUserId: user, tokenHashHex: hash }) === "denied", "legacy adapter accepted");
       }
     }
   }

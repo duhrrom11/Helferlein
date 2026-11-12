@@ -26,6 +26,8 @@ export async function redeemVerifiedInvitation(
     const decision = await rateLimit(userId);
     if (decision === "limited") return "limited";
     if (decision !== "allowed") return "unavailable";
+    // Malformed bearer tokens are denied; operational failures remain unavailable.
+    if (typeof rawToken !== "string" || !/^[a-f0-9]{64}$/.test(rawToken)) return "denied";
     const digest = await hashInvitationToken(rawToken);
     return await redeemWithAtomicStore(store, userId, digest);
   } catch {

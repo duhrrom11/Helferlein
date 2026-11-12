@@ -27,7 +27,7 @@ Deno.test("valid verified user is denied until secure DB gateway exists", async 
     constructed++;
     return { async rpc() { throw Error("forbidden"); } };
   }, true);
-  const response = await handleRedemptionRequest(request(), { auth, store, enabled: true });
+  const response = await handleRedemptionRequest(request(), { auth, store, enabled: true, rateLimit: async () => "allowed" as const });
   assert(response.status === 404, "locked store unexpectedly accepted redemption");
   assert(constructed === 0, "privileged client was constructed");
   assert(!(await response.text()).includes(token), "token leaked");
@@ -38,7 +38,7 @@ Deno.test("invalid JWT is denied without constructing privileged client", async 
     constructed++;
     return { async rpc() { throw Error("forbidden"); } };
   }, true);
-  const response = await handleRedemptionRequest(request("Bearer wrong.jwt"), { auth, store, enabled: true });
+  const response = await handleRedemptionRequest(request("Bearer wrong.jwt"), { auth, store, enabled: true, rateLimit: async () => "allowed" as const });
   assert(response.status === 404 && constructed === 0, "invalid JWT reached privileged client");
 });
 Deno.test("production destination is denied without constructing a client", async () => {
@@ -47,6 +47,6 @@ Deno.test("production destination is denied without constructing a client", asyn
     "https://avapuibsidubuzxjtyld.supabase.co",
     () => { constructed++; return { async rpc() { throw Error("forbidden"); } }; }, true,
   );
-  const response = await handleRedemptionRequest(request(), { auth, store, enabled: true });
+  const response = await handleRedemptionRequest(request(), { auth, store, enabled: true, rateLimit: async () => "allowed" as const });
   assert(response.status === 404 && constructed === 0, "production destination was used");
 });

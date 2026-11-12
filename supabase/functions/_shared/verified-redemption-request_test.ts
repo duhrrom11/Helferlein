@@ -11,21 +11,21 @@ Deno.test("verified user and valid token delegate only digest to store", async (
     calls++;
     assert(args.verifiedUserId === uid, "incorrect user");
     assert(args.tokenHashHex !== token && /^[a-f0-9]{64}$/.test(args.tokenHashHex), "raw token forwarded");
-    return true;
+    return "accepted" as const;
   } };
-  assert(await redeemVerifiedInvitation(auth, store, "Bearer test.token", token) === "accepted", "valid denied");
+  assert(await redeemVerifiedInvitation(auth, store, "Bearer test.token", token, async () => "allowed") === "accepted", "valid denied");
   assert(calls === 1, "wrong call count");
 });
 Deno.test("missing auth and invalid token never reach database", async () => {
   let calls = 0;
-  const store: AtomicRedemptionStore = { async redeemAtomically() { calls++; return true; } };
-  assert(await redeemVerifiedInvitation(auth, store, null, token) === "denied", "anonymous accepted");
-  assert(await redeemVerifiedInvitation(auth, store, "Bearer test.token", "invalid") === "denied", "invalid token accepted");
+  const store: AtomicRedemptionStore = { async redeemAtomically() { calls++; return "accepted" as const; } };
+  assert(await redeemVerifiedInvitation(auth, store, null, token, async () => "allowed") === "denied", "anonymous accepted");
+  assert(await redeemVerifiedInvitation(auth, store, "Bearer test.token", "invalid", async () => "allowed") === "denied", "invalid token accepted");
   assert(calls === 0, "store called");
 });
 Deno.test("auth lookup errors and store failures fail closed", async () => {
   const broken: AuthUserLookup = { auth: { async getUser() { throw Error("auth unavailable"); } } };
   const store: AtomicRedemptionStore = { async redeemAtomically() { throw Error("private database error"); } };
-  assert(await redeemVerifiedInvitation(broken, store, "Bearer test.token", token) === "denied", "auth error accepted");
-  assert(await redeemVerifiedInvitation(auth, store, "Bearer test.token", token) === "denied", "db error accepted");
+  assert(await redeemVerifiedInvitation(broken, store, "Bearer test.token", token, async () => "allowed") === "denied", "auth error accepted");
+  assert(await redeemVerifiedInvitation(auth, store, "Bearer test.token", token, async () => "allowed") === "unavailable", "db error accepted");
 });

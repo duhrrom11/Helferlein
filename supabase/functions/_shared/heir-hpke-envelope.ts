@@ -8,6 +8,12 @@ const KEM = new Uint8Array([0, 0x20]);
 const KDF = new Uint8Array([0, 1]);
 const AEAD = new Uint8Array([0, 2]);
 const encoder = new TextEncoder();
+// WebCrypto requires an ArrayBuffer-backed BufferSource (not SharedArrayBuffer).
+const cryptoBuffer = (bytes: Uint8Array): ArrayBuffer => {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+};
 const ascii = (x: string) => encoder.encode(x);
 const concat = (...v: Uint8Array[]) => {
   const out = new Uint8Array(v.reduce((n, a) => n + a.length, 0));
@@ -24,8 +30,8 @@ const HEX = /^[0-9a-f]+$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const VAULT = /^v_[A-Za-z0-9_-]{8,80}$/;
 async function hmac(key: Uint8Array, data: Uint8Array) {
-  const k = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  return new Uint8Array(await crypto.subtle.sign('HMAC', k, data));
+  const k = await crypto.subtle.importKey('raw', cryptoBuffer(key), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  return new Uint8Array(await crypto.subtle.sign('HMAC', k, cryptoBuffer(data)));
 }
 async function extract(salt: Uint8Array, input: Uint8Array) {
   return hmac(salt.length ? salt : new Uint8Array(32), input);
@@ -79,14 +85,14 @@ export async function sealHeirDek(dek: Uint8Array, recipientPublicHex: string, c
       !/^[0-9a-f]{64}$/.test(recipientPublicHex)) throw new Error('invalid_key');
   const associated = aad(context);
   const pk = unhex(recipientPublicHex);
-  const recipientKey = await crypto.subtle.importKey('raw', pk, 'X25519', false, []);
+  const recipientKey = await crypto.subtle.importKey('raw', cryptoBuffer(pk), 'X25519', false, []);
   const ephemeral = await crypto.subtle.generateKey({ name: 'X25519' }, true, ['deriveBits']) as CryptoKeyPair;
   const enc = new Uint8Array(await crypto.subtle.exportKey('raw', ephemeral.publicKey));
   const dh = await crypto.subtle.deriveBits({ name: 'X25519', public: recipientKey }, ephemeral.privateKey, 256);
   const secret = await kemShared(dh, enc, pk);
   const { key, nonce } = await deriveKeyAndNonce(secret);
-  const aeadKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['encrypt']);
-  const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce, additionalData: associated, tagLength: 128 }, aeadKey, dek));
+  const aeadKey = await crypto.subtle.importKey('raw', cryptoBuffer(key), 'AES-GCM', false, ['encrypt']);
+  const ciphertext = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: cryptoBuffer(nonce), additionalData: cryptoBuffer(associated), tagLength: 128 }, aeadKey, cryptoBuffer(dek)));
   return { suite: HEIR_HPKE_SUITE, encapsulatedKeyHex: hex(enc), wrappedDekHex: hex(ciphertext) };
 }
 /** Only run on heir-owned device with nonextractable private key, after server authorization. */
@@ -99,10 +105,10 @@ export async function openHeirDek(envelope: { encapsulatedKeyHex: string; wrappe
   }
   const associated = aad(context);
   const enc = unhex(envelope.encapsulatedKeyHex);
-  const senderPublic = await crypto.subtle.importKey('raw', enc, 'X25519', false, []);
+  const senderPublic = await crypto.subtle.importKey('raw', cryptoBuffer(enc), 'X25519', false, []);
   const dh = await crypto.subtle.deriveBits({ name: 'X25519', public: senderPublic }, privateKey, 256);
   const secret = await kemShared(dh, enc, unhex(ownPublicHex));
   const { key, nonce } = await deriveKeyAndNonce(secret);
   const aeadKey = await crypto.subtle.importKey('raw', key, 'AES-GCM', false, ['decrypt']);
-  return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: nonce, additionalData: associated, tagLength: 128 }, aeadKey, unhex(envelope.wrappedDekHex)));
+  return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: nonce, additionalData: associated, tagLength: 128 }, aeadKey, cryptoBuffer(unhex(envelope.wrappedDekHex))));
 }

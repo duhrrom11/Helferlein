@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 /**
  * NON-DEPLOYED browser staging: per-account X25519 device key enrollment.
  * This module has NO network access and never serializes a private key.

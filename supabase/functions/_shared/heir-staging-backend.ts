@@ -44,7 +44,9 @@ function hex(input: Uint8Array): string {
   return Array.from(input, x => x.toString(16).padStart(2, '0')).join('');
 }
 async function sha256(bytes: Uint8Array): Promise<string> {
-  return hex(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)));
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return hex(new Uint8Array(await crypto.subtle.digest('SHA-256', buffer)));
 }
 function randomToken(): { token: string; bytes: Uint8Array } {
   const bytes = crypto.getRandomValues(new Uint8Array(32));

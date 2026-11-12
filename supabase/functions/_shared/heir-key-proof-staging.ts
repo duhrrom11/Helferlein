@@ -8,15 +8,20 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-
 const HEX32 = /^[0-9a-f]{64}$/;
 const SUITE = 'HPKE-v1-X25519-HKDF-SHA256-AES-256-GCM';
 const encoder = new TextEncoder();
+const cryptoBuffer = (bytes: Uint8Array): ArrayBuffer => {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+};
 const hex = (value: Uint8Array) => Array.from(value, b => b.toString(16).padStart(2, '0')).join('');
 const unhex = (value: string) => Uint8Array.from(value.match(/../g) ?? [], x => parseInt(x, 16));
 const denied = Object.freeze({ ok: false as const });
 function fail(): never { throw new Error('denied'); }
-async function hash(data: Uint8Array) { return new Uint8Array(await crypto.subtle.digest('SHA-256', data)); }
+async function hash(data: Uint8Array) { return new Uint8Array(await crypto.subtle.digest('SHA-256', cryptoBuffer(data))); }
 async function proofFor(shared: ArrayBuffer, salt: Uint8Array, userId: string, keyId: string, publicHex: string) {
   const hkdfKey = await crypto.subtle.importKey('raw', shared, 'HKDF', false, ['deriveBits']);
   const info = encoder.encode(`Helferlein/heir-key-proof/v1/${userId}/${keyId}/${publicHex}`);
-  return new Uint8Array(await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt, info }, hkdfKey, 256));
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256', salt: cryptoBuffer(salt), info: cryptoBuffer(info) }, hkdfKey, 256));
 }
 export function createHeirKeyProofStaging(db: SqlBackend, verifyUser: VerifyUser) {
   async function actor(header: string | null) {
@@ -28,7 +33,7 @@ export function createHeirKeyProofStaging(db: SqlBackend, verifyUser: VerifyUser
       const uid = await actor(auth);
       if (!uid || typeof publicKeyHex !== 'string' || !HEX32.test(publicKeyHex)) return denied;
       try {
-        const publicKey = await crypto.subtle.importKey('raw', unhex(publicKeyHex), 'X25519', false, []);
+        const publicKey = await crypto.subtle.importKey('raw', cryptoBuffer(unhex(publicKeyHex)), 'X25519', false, []);
         const ephemeral = await crypto.subtle.generateKey({ name: 'X25519' }, true, ['deriveBits']) as CryptoKeyPair;
         const ephemeralPublic = new Uint8Array(await crypto.subtle.exportKey('raw', ephemeral.publicKey));
         const shared = await crypto.subtle.deriveBits({ name: 'X25519', public: publicKey }, ephemeral.privateKey, 256);
