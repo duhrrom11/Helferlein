@@ -2,6 +2,7 @@
 const {test, expect} = require('./helpers/p2-browser-safety.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
+const AxeBuilder = require('@axe-core/playwright').default;
 
 // Execute the unchanged production summary calculation in a detached browser DOM.
 // No app initialization, login, network API, localStorage writes or production records.
@@ -48,6 +49,13 @@ for (const tool of ['wg-organisator', 'haushaltsbuch-kassenbon']) {
         await expect(canvas).toHaveAccessibleDescription(summary);
         descriptions.push(summary);
       }
+      // Audit the actual chart/summary pair in each dynamic state, not only
+      // its computed accessible description.
+      const audit = await new AxeBuilder({page})
+        .include('main')
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+        .analyze();
+      expect(audit.violations.map(item => item.id)).toEqual([]);
       if (previousDescriptions) expect(descriptions).not.toEqual(previousDescriptions);
       previousDescriptions = descriptions;
     }
