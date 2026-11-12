@@ -13,7 +13,7 @@ export interface AtomicRedemptionStore {
    * Must execute as ONE DB transaction with locked invitation/ownership rows,
    * database-clock expiry, matching verified user, non-revocation, no existing
    * trusted-person assignment, INSERT + acceptance UPDATE, and rollback on
-   * any failure. Return false for denial; never return secret data.
+   * any failure. Return 'denied' for a business rejection and 'unavailable'\n   * for infrastructure failures; never return secret data.
    */
   redeemAtomically(args: {
     tokenHashHex: string;
