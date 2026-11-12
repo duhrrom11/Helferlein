@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 echter Chromium-Prozessabbruch waehrend IndexedDB-Write (2026-11-13)
+
+Der isolierte CI-Test `tests/a10-browser-hardkill.cjs` startet Chromium mit einem kurzlebigen Browserprofil auf localhost. Nach dem Speichern eines **synthetischen** V1-aktiven Staging-Datensatzes startet er eine echte `readwrite`-Transaktion mit vielen Schreiboperationen, signalisiert einen Zwischenstand und beendet den Chromium-Hauptprozess mittels `SIGKILL`. Danach wird Chromium mit **demselben** Profil neu gestartet und der Zustand ohne automatische Reparaturschreibvorgaenge gelesen. Ein nicht abgeschlossener Schreibvorgang darf keinen halb aktivierten Datensatz hinterlassen. Das Profil wird nach dem Test geloescht.
+
+**Grenzen:** Ein `SIGKILL` ist kein Stromausfall und simuliert keine Festplatten- oder Controller-Cache-Verluste. Ein CI-Lauf belegt weder alle moeglichen Crash-Zeitpunkte noch die Haltbarkeit auf jedem Browser/Dateisystem. Eine echte Quota-/Disk-Full-Injektion ist nicht enthalten. Die synthetischen V1-Schluessel bleiben im Test absichtlich sichtbar; produktive V1-Daten sind nicht betroffen. Ein extern wiederherstellbares verschluesseltes Backup und die Sicherheitsfreigabe fehlen. **A10 bleibt NO-GO.**
+
+
 ## A10 Chromium-Neustart mit persistentem Testprofil (2026-11-13, isoliert)
 
 `tests/a10-browser-persistent-restart.cjs` verwendet echtes Headless Chromium und dasselbe **temporaere** Browserprofil ueber zwei vollstaendige Browser-Neustarts hinweg. Geprueft werden der dauerhafte Staging-Datensatz, ein spaeterer simulierter V2-Aktivierungsmarker, unveraendertes V1, ein Revisionskonflikt nach Neustart und zwei kontrollierte Transaktionsfehler: eine Ausnahme vor dem Schreiben sowie `abort()` **nach erfolgreichem `put`**, aber vor dem Commit. Beide duerfen den gespeicherten Zustand nicht veraendern. Das temporaere Profil wird nach dem Test geloescht.
