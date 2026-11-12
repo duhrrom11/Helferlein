@@ -36,6 +36,11 @@ test('production dashboard toolbar stays inside a 320px viewport',async({page})=
  await page.evaluate(()=>{
   const root=document.getElementById('listsDashboard');
   for(let node=root;node&&node!==document.body;node=node.parentElement)node.hidden=false;
+  // The production mobile toolbar lives inside a collapsed <details> disclosure.
+  // Open it before measuring visible button bounds at 320px.
+  const toolbar=root.querySelector('[role="group"][aria-label="Sammelaktionen für Wünsche"]');
+  const disclosure=toolbar?.closest('details');
+  if(disclosure)disclosure.open=true;
  });
  const bar=page.getByRole('group',{name:'Sammelaktionen für Wünsche'});
  await expect(bar).toBeVisible();
