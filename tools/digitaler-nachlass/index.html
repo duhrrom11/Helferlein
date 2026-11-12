@@ -25,6 +25,7 @@
     <script defer src="../../assets/helferlein-b3-nachlass.js"></script>
     <script defer src="../../assets/heir-owner-invitations-staging.js"></script>
     <script defer src="../../assets/heir-owner-invitations-bootstrap-staging.js"></script>
+    <script defer src="../../assets/heir-owner-management.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -251,6 +252,29 @@
             </section>
             <!-- Non-deployed owner list: deliberately disabled until reviewed HTTP transport exists. -->
             <section id="heirOwnerInvitationStaging" class="bg-slate-950 p-6 rounded-2xl border border-amber-700/70 space-y-3" aria-label="Besitzer-Einladungsliste (Vorbereitung)"></section>
+<!-- Insert immediately AFTER the existing heirOwnerInvitationStaging section, not inside it.
+     LOCAL ONLY: backend must be deployed and explicitly enabled before use. -->
+<section id="heirInvitationManagement" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirInvitationManagementTitle">
+  <h3 id="heirInvitationManagementTitle" class="font-bold text-slate-100">Erbeneinladungen verwalten</h3>
+  <p class="text-sm text-amber-200">Einladungen erteilen keinen Zugriff auf Tresordaten. Diese Funktion bleibt gesperrt, bis das geprüfte Backend aktiviert ist.</p>
+  <form id="heirIssueForm" class="space-y-2">
+    <label for="heirRecipientUserId" class="block text-sm">Supabase-Benutzer-ID des bereits registrierten Erben (UUID)</label>
+    <input id="heirRecipientUserId" type="text" required maxlength="36" autocomplete="off" spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
+    <button id="heirIssueButton" type="submit" disabled class="rounded-lg bg-indigo-700 px-4 py-2 disabled:opacity-50">Einladung erstellen</button>
+  </form>
+  <div id="heirIssuedTokenArea" hidden class="rounded-lg border border-amber-700 p-3 space-y-2">
+    <p class="text-sm text-amber-200">Einmalcode: nur jetzt sichtbar. Nicht in Links oder E-Mails einfügen. Über einen getrennten sicheren Kanal weitergeben.</p>
+    <label for="heirIssuedToken" class="block text-sm">Einmalcode</label>
+    <input id="heirIssuedToken" readonly type="text" autocomplete="off" class="w-full rounded-lg bg-slate-900 p-2 font-mono text-xs" />
+    <button id="heirClearToken" type="button" class="rounded-lg border border-slate-600 px-3 py-2">Code ausblenden</button>
+  </div>
+  <form id="heirRevokeForm" class="space-y-2">
+    <label for="heirInvitationId" class="block text-sm">Einladungs-ID für Widerruf (UUID)</label>
+    <input id="heirInvitationId" type="text" required maxlength="36" autocomplete="off" spellcheck="false" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
+    <button id="heirRevokeButton" type="submit" disabled class="rounded-lg bg-red-800 px-4 py-2 disabled:opacity-50">Einladung widerrufen</button>
+  </form>
+  <p id="heirInvitationStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Backend nicht aktiviert.</p>
+</section>
 
         </div>
 
