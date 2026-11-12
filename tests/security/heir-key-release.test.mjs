@@ -44,6 +44,10 @@ function dbFor(s) {
           throw Error('unexpected exec ' + sql);
         },
         async one(sql, v) {
+          if (sql.includes('pg_advisory_xact_lock')) return { locked: null };
+          if (sql.includes('count(*)::int AS n FROM heir_private.heir_key_proofs')) {
+            return { n: [...s.challenges.values()].filter(c => c.uid === v[0] && !c.consumed).length };
+          }
           if (sql.includes('FROM heir_private.heir_public_keys')) {
             const k = s.keys.get(v[0]); return k?.uid === v[1] ? { verified_at: k.verified_at, revoked_at: k.revoked_at } : null;
           }
@@ -143,4 +147,17 @@ test('RFC 9180 Appendix A.1 X25519 KEM known-answer vector', async () => {
   const publicKey = await webcrypto.subtle.importKey('raw', pkR, 'X25519', false, []);
   const dh = await webcrypto.subtle.deriveBits({ name: 'X25519', public: publicKey }, privateKey, 256);
   assert.equal(asHex(await kemShared(dh, enc, pkR)), expected);
+});
+
+
+test('enrollment rejects fourth outstanding challenge per heir', async () => {
+  const state = record();
+  const service = createHeirKeyProofStaging(dbFor(state), verify);
+  for (let i = 0; i < 4; i++) {
+    const keys = await webcrypto.subtle.generateKey('X25519', false, ['deriveBits']);
+    const publicHex = asHex(await webcrypto.subtle.exportKey('raw', keys.publicKey));
+    const result = await service.beginEnrollment('Bearer heir', publicHex);
+    assert.equal(result.ok, i < 3);
+  }
+  assert.equal(state.challenges.size, 3);
 });

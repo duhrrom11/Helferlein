@@ -39,6 +39,13 @@ export function createHeirKeyProofStaging(db: SqlBackend, verifyUser: VerifyUser
         const expectedHash = hex(await hash(proof));
         const fingerprint = hex(await hash(unhex(publicKeyHex)));
         const result = await db.transaction(async tx => {
+          // Serialize enrollment per verified user, including across server instances.
+          // Fixed namespace prevents accidental overlap with unrelated advisory locks.
+          await tx.one(`SELECT pg_advisory_xact_lock(hashtextextended($1::text, 41027)) AS locked`, [uid]);
+          const pending = await tx.one<{ n: number }>(
+            `SELECT count(*)::int AS n FROM heir_private.heir_key_proofs
+             WHERE heir_user_id=$1 AND consumed_at IS NULL AND expires_at>clock_timestamp()`, [uid]);
+          if (!pending || !Number.isInteger(pending.n) || pending.n >= 3) fail();
           // Unique (heir_user_id,fingerprint) disallows silent key reuse/re-enrollment.
           const inserted = await tx.exec(`INSERT INTO heir_private.heir_public_keys
               (key_id,heir_user_id,suite,public_key,fingerprint)
