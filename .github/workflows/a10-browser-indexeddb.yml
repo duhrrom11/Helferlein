@@ -10,6 +10,8 @@ on:
       - 'tests/a10-browser-hardkill.cjs'
       - 'tests/a10-browser-quota-faults.cjs'
       - 'tests/a10-browser-portable-v1-backup.cjs'
+      - 'tests/a10-browser-v1-schema-contract.cjs'
+      - 'assets/heir-owner-legacy.js'
       - '.github/workflows/a10-browser-indexeddb.yml'
   workflow_dispatch:
 
@@ -37,3 +39,4 @@ jobs:
           node tests/a10-browser-hardkill.cjs
           node tests/a10-browser-quota-faults.cjs
           node tests/a10-browser-portable-v1-backup.cjs
+          node tests/a10-browser-v1-schema-contract.cjs
