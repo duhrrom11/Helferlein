@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 echte Browser-IndexedDB-Pruefung (2026-11-13, isoliert)
+
+Die separate PR-CI `.github/workflows/a10-browser-indexeddb.yml` startet echtes Headless Chromium gegen einen kurzlebigen lokalen HTTP-Server. `tests/a10-browser-indexeddb.cjs` testet mit synthetischem V1-Datensatz: zwei Tabs desselben Origins mit konkurrierendem Revisionsstand, eine explizit abgebrochene IndexedDB-Transaktion ohne persistierten Zwischenstand, Wiederlesen nach Seiten-Reload und Erhalt des V1-Rueckfallstands. Kein produktiver Origin, keine produktiven Konten oder Datenbanken.
+
+**Grenzen:** Reload ist kein Stromausfall; ein neuer isolierter Browserkontext hat absichtlich einen anderen Speicherbereich. Ein echter Kill/Restart mit demselben persistenten Browserprofil, Quota-/Disk-Fault-Injection und unabhaengige kryptografische Wiederherstellung sind separate Freigabevoraussetzungen. Der produktive V1-Klartextschluessel bleibt ungeschuetzt, bis ein sicherer externer Rueckfallweg existiert. A10 bleibt NO-GO.
+
+
 ## A10 isolierter IndexedDB-Transaktionsadapter (2026-11-13, KEINE Aktivierung)
 
 `assets/a10-atomic-idb-store.js` stellt eine **nicht eingebundene** IndexedDB-Transaktionsschnittstelle bereit. Der Adapter liest und schreibt einen Zustand pro Tresor-ID in **einer** `readwrite`-Transaktion; der Revisionsvergleich erfolgt innerhalb derselben Transaktion. Erst das `complete`-Ereignis bestaetigt den Commit, `abort`/`error` fuehren zu einem Fehler. Staging und simulierter Aktivierungsmarker bleiben Teil desselben Datensatzes, V1 wird bei diesen Schritten nicht geloescht. Die Datenbank darf nur explizit mit einem `a10-isolated-...`-Namen geoeffnet werden; kein produktiver Aufrufer existiert.
