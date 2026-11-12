@@ -90,7 +90,10 @@ Deno.serve(async (request: Request) => {
     p_owner_user_id:ownerId,p_invitation_id:input.invitationId,
    });
    if (error) return json(503,{error:"unavailable"},headers);
-   return data === true ? json(200,{status:"revoked"},headers) : json(404,{error:"not_found"},headers);
+   if (data === true) return json(200,{status:"revoked"},headers);
+   if (data === false) return json(404,{error:"not_found"},headers);
+   // Unexpected RPC results are infrastructure/contract failures, not business denials.
+   return json(503,{error:"unavailable"},headers);
   }
   return json(400,{error:"invalid_request"},headers);
  } catch { return json(503,{error:"unavailable"},headers); }
