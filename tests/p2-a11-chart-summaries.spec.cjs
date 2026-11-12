@@ -16,7 +16,11 @@ for (const tool of ['wg-organisator', 'haushaltsbuch-kassenbon']) {
     const chartMarkup = ['categoryChart', 'cashflowChart'].map(id => {
       const match = html.match(new RegExp('<canvas id="' + id + '"[^>]*><\\/canvas>'));
       if (!match) throw new Error('Missing production canvas: ' + tool + '/' + id);
-      return match[0] + '<p id="' + id + 'Summary"></p>';
+      // Use the actual production summary element, not a fabricated test-only node.
+      // A missing or renamed element must fail this accessibility regression.
+      const summary = html.match(new RegExp('<p id="' + id + 'Summary"[^>]*><\\/p>'));
+      if (!summary) throw new Error('Missing production summary: ' + tool + '/' + id);
+      return match[0] + summary[0];
     }).join('');
     await page.goto('http://127.0.0.1:8765/index.html', {waitUntil:'domcontentloaded'});
     await page.setContent('<main>' + chartMarkup + '</main>');
