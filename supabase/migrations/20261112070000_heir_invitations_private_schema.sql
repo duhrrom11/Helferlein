@@ -24,7 +24,9 @@ CREATE INDEX heir_invitations_owner_idx ON nachlass_private.heir_invitations(own
 CREATE TABLE nachlass_private.heir_assignments (
   owner_user_id uuid NOT NULL REFERENCES public.vault_cloud_snapshots(owner_user_id) ON DELETE CASCADE,
   heir_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  invitation_id uuid NOT NULL UNIQUE REFERENCES nachlass_private.heir_invitations(id),
+  -- Deleting an invitation must also delete its dependent assignment; revocation
+  -- remains a separate soft-delete path and does not trigger this cascade.
+  invitation_id uuid NOT NULL UNIQUE REFERENCES nachlass_private.heir_invitations(id) ON DELETE CASCADE,
   created_at timestamptz NOT NULL DEFAULT now(),
   revoked_at timestamptz,
   PRIMARY KEY (owner_user_id, heir_user_id),
