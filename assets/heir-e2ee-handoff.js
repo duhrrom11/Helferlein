@@ -4,6 +4,7 @@
   const $ = id => document.getElementById(id);
   const enc = new TextEncoder(), dec = new TextDecoder('utf-8', {fatal:true});
   const MAX = 5 * 1024 * 1024;
+  const MAX_PLAINTEXT = 5 * 1024 * 1024;
   const B64 = bytes => btoa(Array.from(bytes, b => String.fromCharCode(b)).join(''));
   const unb64 = value => {
     if (typeof value !== 'string' || value.length > 8_000_000 || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) throw Error('Ungültiges Dateiformat.');
@@ -81,6 +82,7 @@
       const master = await crypto.subtle.importKey('raw',masterBytes,{name:'AES-GCM'},false,['decrypt']);
       masterBytes.fill(0);
       const plaintext = await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(cfg.encryptedData.iv)},master,unb64(cfg.encryptedData.ciphertext));
+      if (plaintext.byteLength > MAX_PLAINTEXT) throw Error('Tresorinhalt zu groß.');
       const vault = JSON.parse(dec.decode(plaintext));
       if (!Array.isArray(vault.entries)) throw Error('Tresorinhalt ungültig.');
       const payload = enc.encode(JSON.stringify({version:1,createdAt:new Date().toISOString(),entries:vault.entries}));
@@ -121,6 +123,7 @@
       const aes = await crypto.subtle.importKey('raw',rawKey,{name:'AES-GCM'},false,['decrypt']);
       rawKey.fill(0);
       const plaintext = await crypto.subtle.decrypt({name:'AES-GCM',iv},aes,ciphertext);
+      if (plaintext.byteLength > MAX_PLAINTEXT) throw Error('Nachlassinhalt zu groß.');
       const vault = JSON.parse(dec.decode(plaintext));
       if (vault.version !== 1 || !Array.isArray(vault.entries)) throw Error('Nachlassinhalt ungültig.');
       // Show text only; never inject untrusted estate contents as HTML.
