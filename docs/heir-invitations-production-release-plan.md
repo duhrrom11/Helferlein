@@ -2,6 +2,8 @@
 
 **Status: NO-GO.** Stand: 2026-11-12. Ausschließlich statische Planung; dieses Dokument führt keine Migration, Prüfung, Freischaltung oder Datenänderung aus. Ergänzt [heir-invitations-production-gate.md](./heir-invitations-production-gate.md). Eine Rolle ist eine Zuständigkeit, keine bereits benannte oder zustimmende Person.
 
+**Konsolidierte Entscheidungsgrundlage:** [GO/NO-GO-Nachweismatrix für Issues #270–#277](./heir-invitations-go-no-go-matrix.md) mit Abhängigkeiten, Rollen und Freigabereihenfolge. Alle acht Issues sind weiterhin offen; **NO-GO**.
+
 ## Verantwortlichkeiten und verbindliche Freigaben
 
 | Rolle | Verantwortlich für | Nachweis |
