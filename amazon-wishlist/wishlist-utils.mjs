@@ -197,6 +197,7 @@ export function previewWishlistBackup(raw) {
  const wishes=data.wishes.map((row,index)=>{
   if(!row||Array.isArray(row)||typeof row!=='object')throw Error('Ungültiger Wunsch in Zeile '+(index+1)+'.');
   if(typeof row.asin!=='string'||!/^[A-Z0-9]{10}$/.test(row.asin))throw Error('Ungültige ASIN in Zeile '+(index+1)+'.');
+  if(typeof row.title!=='string'||typeof row.note!=='string')throw Error('Ungültige Wunschtexte in Zeile '+(index+1)+'.');
   const {title,note}=validateWishFields(row.title,row.note);
   const priority=validatePriority(row.priority);
   if(seen.has(row.asin))throw Error('Doppelte ASIN in der Sicherung: '+row.asin);

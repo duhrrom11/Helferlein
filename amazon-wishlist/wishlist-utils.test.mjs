@@ -227,3 +227,12 @@ test('backup preview drops unexpected IDs and private fields',()=>{
  const parsed=previewWishlistBackup(JSON.stringify({format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:1,user_id:'secret',email:'secret@example.org'}]}));
  assert.doesNotMatch(JSON.stringify(parsed),/secret|email|user_id/);
 });
+
+test('backup preview rejects missing or non-string public wish texts',()=>{
+ const base={format:'helferlein-wishlist-backup',version:1,profile:null,wishes:[{asin:'B012345678',title:'Buch',note:'',priority:2}]};
+ for(const patch of [{title:undefined},{title:42},{title:null},{note:undefined},{note:null},{note:123},{note:{text:'private'}}]){
+  const row={...base.wishes[0],...patch};
+  assert.throws(()=>previewWishlistBackup(JSON.stringify({...base,wishes:[row]})),/Ungültige Wunschtexte/);
+ }
+ assert.equal(previewWishlistBackup(JSON.stringify(base)).wishes[0].note,'');
+});
