@@ -45,4 +45,6 @@ Die GitHub-Action `.github/workflows/amazon-wishlist.yml` soll die Prüfungen au
 
 Arbeiten ausschließlich am Wunschlisten-Tool. `main` ist der aktuelle Produktivstand. Die ältere PR #166 ist ein historischer Draft und **nicht** die Quelle für neue Änderungen. Keine anderen Helferlein-Tools bearbeiten. Vor riskanten Schemaänderungen einen RLS-, Backup- und Rollback-Plan prüfen.
 
-Die JSON-Vorschau akzeptiert nur das Format `helferlein-wishlist-backup` in Version 1, prüft ASIN, Priorität, Textlängen, Duplikate und eine maximale Dateigröße von 2 MB. Die ausgewählte Datei wird ausschließlich im Browser gelesen; sie löst keine Datenbankänderung aus. Für echte Wiederherstellung ist ein separates, sicherheitsgeprüftes Importkonzept nötig.\n\nWeitere Aufgaben: `50-SCHRITTE.md`, `RELEASE-CHECKLIST.md`, `SECURITY-ABUSE-PLAN.md`.
+Die JSON-Vorschau akzeptiert nur das Format `helferlein-wishlist-backup` in Version 1, prüft ASIN, Priorität, Textlängen, Duplikate und eine maximale Dateigröße von 2 MB. Die ausgewählte Datei wird ausschließlich im Browser gelesen; sie löst keine Datenbankänderung aus. Für echte Wiederherstellung ist ein separates, sicherheitsgeprüftes Importkonzept nötig.
+
+Weitere Aufgaben: `50-SCHRITTE.md`, `RELEASE-CHECKLIST.md`, `SECURITY-ABUSE-PLAN.md`.
