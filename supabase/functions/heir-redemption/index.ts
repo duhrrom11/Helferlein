@@ -21,7 +21,7 @@ const serviceClient = configured
 const deniedAuth = { auth: { async getUser(_token: string) {
   return { data: { user: null }, error: new Error("disabled") };
 } } };
-const deniedStore = { async redeemAtomically() { return false; } };
+const deniedStore = { async redeemAtomically(): Promise<"denied"> { return "denied"; } };
 Deno.serve((request: Request) => handleRedemptionRequest(request, {
   auth: authClient ?? deniedAuth,
   store: serviceClient ? createAtomicRedemptionStore(serviceClient) : deniedStore,
