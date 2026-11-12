@@ -87,6 +87,8 @@
         });
       });
     </script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -94,7 +96,7 @@
     <!-- Header -->
     <header class="b3-header">
   <div class="b3-header-inner">
-    <span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+    <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
     <span class="b3-tool-icon" aria-hidden="true">🧾</span>
     <div class="b3-tool-title">
       <h1>Haushaltsbuch mit Kassenbon-Scanner</h1>
@@ -190,7 +192,7 @@
                     <h3 class="font-bold text-base text-gray-900">🎯 Monats-Budgets & Limite</h3>
                     <button onclick="openBudgetModal()" class="px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold">⚙️ Budgets anpassen</button>
                 </div>
-                <div id="budgetProgressList" class="space-y-3 max-h-56 overflow-y-auto pr-1">
+                <div id="budgetProgressList" tabindex="0" role="region" aria-label="Monatsbudgets" tabindex="0" role="region" aria-label="Monatsbudgets" class="space-y-3 max-h-56 overflow-y-auto pr-1">
                     <p class="text-xs text-gray-400 text-center py-4">Lade Budgets...</p>
                 </div>
             </div>
@@ -226,26 +228,26 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Titel / Artikel / Zweck *:</label>
+                    <label for="receiptTitle" class="block text-xs font-semibold text-gray-600 mb-1">Titel / Artikel / Zweck *:</label>
                     <input type="text" id="receiptTitle" placeholder="z.B. Waschmaschine, Supermarkt, Gehalt" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Händler / Partner / Quelle:</label>
+                    <label for="receiptStore" class="block text-xs font-semibold text-gray-600 mb-1">Händler / Partner / Quelle:</label>
                     <input type="text" id="receiptStore" placeholder="z.B. MediaMarkt, Rewe, Arbeitgeber" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kaufdatum *:</label>
+                    <label for="receiptDate" class="block text-xs font-semibold text-gray-600 mb-1">Kaufdatum *:</label>
                     <input type="date" id="receiptDate" class="w-full p-3 border rounded-xl text-sm">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Betrag (€) *:</label>
+                    <label for="receiptPrice" class="block text-xs font-semibold text-gray-600 mb-1">Betrag (€) *:</label>
                     <input type="number" step="0.01" id="receiptPrice" placeholder="299.99" class="w-full p-3 border rounded-xl text-sm font-bold">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
+                    <label for="receiptCategory" class="block text-xs font-semibold text-gray-600 mb-1">Kategorie:</label>
                     <select id="receiptCategory" class="w-full p-3 border rounded-xl text-sm bg-white">
                         <option value="Lebensmittel">🛒 Lebensmittel & Haushalt</option>
                         <option value="Wohnen">🏠 Wohnen & Miete</option>
@@ -260,7 +262,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Zahlungsart:</label>
+                    <label for="receiptPaymentMethod" class="block text-xs font-semibold text-gray-600 mb-1">Zahlungsart:</label>
                     <select id="receiptPaymentMethod" class="w-full p-3 border rounded-xl text-sm bg-white">
                         <option value="EC-Karte">💳 EC / Bankkarte</option>
                         <option value="Bargeld">💵 Bargeld</option>
@@ -270,15 +272,15 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Garantie (Monate):</label>
+                    <label for="receiptWarranty" class="block text-xs font-semibold text-gray-600 mb-1">Garantie (Monate):</label>
                     <input type="number" id="receiptWarranty" value="0" placeholder="24" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Rückgabe (Tage):</label>
+                    <label for="receiptReturnDays" class="block text-xs font-semibold text-gray-600 mb-1">Rückgabe (Tage):</label>
                     <input type="number" id="receiptReturnDays" value="14" placeholder="14" class="w-full p-3 border rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nutzung (Jahre):</label>
+                    <label for="receiptLifespan" class="block text-xs font-semibold text-gray-600 mb-1">Nutzung (Jahre):</label>
                     <input type="number" id="receiptLifespan" value="5" placeholder="5" class="w-full p-3 border rounded-xl text-sm" title="Erforderlich für den Hausrat-Zeitwert">
                 </div>
             </div>
@@ -286,11 +288,11 @@
             <!-- Seriennummer, Lagerort & Checkboxen -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Seriennummer / S/N:</label>
+                    <label for="receiptSN" class="block text-xs font-semibold text-gray-600 mb-1">Seriennummer / S/N:</label>
                     <input type="text" id="receiptSN" placeholder="z.B. SN-987456123" class="w-full p-2.5 border rounded-lg text-xs bg-white">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Lagerort Karton / Zubehör:</label>
+                    <label for="receiptLocation" class="block text-xs font-semibold text-gray-600 mb-1">Lagerort Karton / Zubehör:</label>
                     <input type="text" id="receiptLocation" placeholder="z.B. Keller Kiste #2" class="w-full p-2.5 border rounded-lg text-xs bg-white">
                 </div>
                 <div class="flex flex-col justify-center space-y-2 pt-1">
@@ -312,7 +314,7 @@
                     <button type="button" onclick="runOCR()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-sm">🔍 Text automatisch erkennen (OCR)</button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
-                    <input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full">
+                    <input type="file" id="receiptPhotoInput" accept="image/*" multiple onchange="loadPhotosToCanvas(event)" class="text-xs p-2 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen">
                     <div id="ocrStatus" class="text-xs text-emerald-800 font-semibold hidden">🔍 Scanne Kassenbon... Bitte warten.</div>
                 </div>
 
@@ -333,7 +335,7 @@
             </div>
 
             <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
+                <label for="receiptNote" class="block text-xs font-semibold text-gray-600 mb-1">Notiz / Bemerkung:</label>
                 <input type="text" id="receiptNote" placeholder="z.B. Inkl. 3 Jahre Garantie-Erweiterung" class="w-full p-3 border rounded-xl text-sm">
             </div>
 
@@ -345,14 +347,14 @@
             <div class="flex justify-between items-center flex-wrap gap-2">
                 <h3 class="font-bold text-lg text-gray-900">📋 Buchungshistorie & Kassenbons</h3>
                 <div class="flex gap-2 flex-wrap">
-                    <select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                    <select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Buchungen nach Typ filtern">
                         <option value="All">Alle Typen</option>
                         <option value="ausgabe">🔻 Nur Ausgaben</option>
                         <option value="einnahme">🔺 Nur Einnahmen</option>
                         <option value="fixkosten">🔄 Nur Fixkosten/Abos</option>
                         <option value="garantie">🛡️ Nur mit Aktiver Garantie</option>
                     </select>
-                    <select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                    <select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
                         <option value="All">Alle Kategorien</option>
                         <option value="Lebensmittel">🛒 Lebensmittel</option>
                         <option value="Wohnen">🏠 Wohnen</option>
@@ -397,15 +399,15 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">Bezeichnung des Zieles *:</label>
+                    <label for="goalTitle" class="block font-semibold mb-1">Bezeichnung des Zieles *:</label>
                     <input type="text" id="goalTitle" placeholder="z.B. Urlaub, Notgroschen" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Zielbetrag (€) *:</label>
+                    <label for="goalTarget" class="block font-semibold mb-1">Zielbetrag (€) *:</label>
                     <input type="number" step="0.01" id="goalTarget" placeholder="1500" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Bereits gespart (€):</label>
+                    <label for="goalCurrent" class="block font-semibold mb-1">Bereits gespart (€):</label>
                     <input type="number" step="0.01" id="goalCurrent" value="0" class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>

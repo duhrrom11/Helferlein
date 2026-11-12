@@ -75,6 +75,8 @@
       };
     </script>
     <script defer src="../../assets/helferlein-b3-core.js"></script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -82,7 +84,7 @@
     <!-- Header im exakten Mini-HomeBox-Stil -->
     <header class="b3-header">
   <div class="b3-header-inner">
-    <span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+    <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
     <span class="b3-tool-icon" aria-hidden="true">🏠</span>
     <div class="b3-tool-title">
       <h1>WG-Organisator mit Haushaltsbuch</h1>
@@ -111,11 +113,11 @@
 
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-gray-500 mb-1">E-Mail-Adresse</label>
+                    <label for="auth-email" class="block text-gray-500 mb-1">E-Mail-Adresse</label>
                     <input type="email" id="auth-email" placeholder="name@beispiel.de" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-gray-500 mb-1">Passwort</label>
+                    <label for="auth-password" class="block text-gray-500 mb-1">Passwort</label>
                     <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
                 </div>
                 <div class="grid grid-cols-2 gap-2 pt-1">
@@ -291,26 +293,26 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Titel / Artikel *:</label>
+                    <label for="receiptTitle" class="block font-semibold text-gray-600 mb-1">Titel / Artikel *:</label>
                     <input type="text" id="receiptTitle" placeholder="z. B. Spülmittel, Miete, Gehalt" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Händler / Partner / Quelle (optional):</label>
+                    <label for="receiptStore" class="block font-semibold text-gray-600 mb-1">Händler / Partner / Quelle (optional):</label>
                     <input type="text" id="receiptStore" placeholder="z. B. Rewe, MediaMarkt, Arbeitgeber" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Kaufdatum *:</label>
+                    <label for="receiptDate" class="block font-semibold text-gray-600 mb-1">Kaufdatum *:</label>
                     <input type="date" id="receiptDate" required class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Betrag (€) *:</label>
+                    <label for="receiptPrice" class="block font-semibold text-gray-600 mb-1">Betrag (€) *:</label>
                     <input type="number" step="0.01" id="receiptPrice" placeholder="29.90" required class="w-full p-2.5 border rounded-xl font-bold">
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Kategorie:</label>
+                    <label for="receiptCategory" class="block font-semibold text-gray-600 mb-1">Kategorie:</label>
                     <select id="receiptCategory" class="w-full p-2.5 border rounded-xl bg-white">
                         <option value="Lebensmittel">🛒 Lebensmittel & Haushalt</option>
                         <option value="Wohnen">🏠 Wohnen & Miete</option>
@@ -325,30 +327,30 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Bezahlt von:</label>
+                    <label for="receiptPaymentPayer" class="block font-semibold text-gray-600 mb-1">Bezahlt von:</label>
                     <select id="receiptPaymentPayer" class="w-full p-2.5 border rounded-xl bg-white"></select>
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Garantie (Monate):</label>
+                    <label for="receiptWarranty" class="block font-semibold text-gray-600 mb-1">Garantie (Monate):</label>
                     <input type="number" id="receiptWarranty" value="0" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Rückgabe (Tage):</label>
+                    <label for="receiptReturnDays" class="block font-semibold text-gray-600 mb-1">Rückgabe (Tage):</label>
                     <input type="number" id="receiptReturnDays" value="14" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Nutzung (Jahre):</label>
+                    <label for="receiptLifespan" class="block font-semibold text-gray-600 mb-1">Nutzung (Jahre):</label>
                     <input type="number" id="receiptLifespan" value="5" class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-3.5 bg-gray-50 rounded-xl border border-gray-200 text-xs">
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Seriennummer / S/N (optional):</label>
+                    <label for="receiptSN" class="block font-semibold text-gray-600 mb-1">Seriennummer / S/N (optional):</label>
                     <input type="text" id="receiptSN" placeholder="z. B. SN-987456123" class="w-full p-2 border rounded-lg bg-white">
                 </div>
                 <div>
-                    <label class="block font-semibold text-gray-600 mb-1">Lagerort Karton (optional):</label>
+                    <label for="receiptLocation" class="block font-semibold text-gray-600 mb-1">Lagerort Karton (optional):</label>
                     <input type="text" id="receiptLocation" placeholder="z. B. Keller Regal 2" class="w-full p-2 border rounded-lg bg-white">
                 </div>
                 <div class="flex flex-col justify-center space-y-1.5 pt-1">
@@ -374,7 +376,7 @@
                         <label class="block font-bold text-emerald-900">📷 Belegfoto & OCR Scanner</label>
                         <button type="button" onclick="runOCR()" class="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold">🔍 Texterkennung</button>
                     </div>
-                    <input type="file" id="receiptPhotoInput" accept="image/*" class="text-xs p-1.5 border rounded-xl bg-white w-full">
+                    <input type="file" id="receiptPhotoInput" accept="image/*" class="text-xs p-1.5 border rounded-xl bg-white w-full" aria-label="Belegfoto auswählen">
                     <p id="ocrStatus" class="text-emerald-800 font-semibold hidden"></p>
                 </div>
             </div>
@@ -398,14 +400,14 @@
                 <div class="flex justify-between items-center flex-wrap gap-2">
                     <h3 class="font-bold text-base text-gray-900">📋 Transaktionen & Kassenbons</h3>
                     <div class="flex gap-2 flex-wrap">
-                        <select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                        <select id="filterType" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Buchungen nach Typ filtern">
                             <option value="All">Alle Typen</option>
                             <option value="ausgabe">🔻 Nur Ausgaben</option>
                             <option value="einnahme">🔺 Nur Einnahmen</option>
                             <option value="fixkosten">🔄 Nur Fixkosten</option>
                             <option value="garantie">🛡️ Nur Garantie aktiv</option>
                         </select>
-                        <select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white">
+                        <select id="filterCategory" onchange="renderApp()" class="p-2 border rounded-xl text-xs bg-white" aria-label="Nach Kategorie filtern">
                             <option value="All">Alle Kategorien</option>
                             <option value="Lebensmittel">🛒 Lebensmittel</option>
                             <option value="Wohnen">🏠 Wohnen</option>
@@ -471,7 +473,7 @@
                     <span class="text-xs text-gray-500">Inkl. Amazon-Link & Kassen-Sync</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Spülmittel, Tabs" class="flex-grow p-2.5 border rounded-xl text-xs">
+                    <input type="text" id="newShoppingItem" placeholder="z. B. Hafermilch, Spülmittel, Tabs" class="flex-grow p-2.5 border rounded-xl text-xs" aria-label="z. B. Hafermilch, Spülmittel, Tabs">
                     <button onclick="addShoppingItem()" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-sm">Hinzufügen</button>
                 </div>
                 <div id="shoppingList" class="space-y-2 max-h-52 overflow-y-auto pr-1"></div>
@@ -548,20 +550,20 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">Titel / Betreff *:</label>
+                    <label for="noteTitleInput" class="block font-semibold mb-1">Titel / Betreff *:</label>
                     <input type="text" id="noteTitleInput" placeholder="z. B. Paket im Flur, Handwerker kommt" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Nachricht / Notiz (optional):</label>
+                    <label for="noteContentInput" class="block font-semibold mb-1">Nachricht / Notiz (optional):</label>
                     <textarea id="noteContentInput" rows="3" placeholder="Notiere hier wichtige Infos für die WG..." class="w-full p-2.5 border rounded-xl resize-none"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block font-semibold mb-1">Erstellt von:</label>
+                        <label for="noteAuthorInput" class="block font-semibold mb-1">Erstellt von:</label>
                         <select id="noteAuthorInput" class="w-full p-2.5 border rounded-xl bg-white"></select>
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1">Zettel-Farbe:</label>
+                        <label for="noteColorInput" class="block font-semibold mb-1">Zettel-Farbe:</label>
                         <select id="noteColorInput" class="w-full p-2.5 border rounded-xl bg-white font-semibold">
                             <option value="yellow">🨨 Gelb</option>
                             <option value="pink">🌸 Rosa</option>
@@ -594,7 +596,7 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">Kategorie / Typ *:</label>
+                    <label for="eventType" class="block font-semibold mb-1">Kategorie / Typ *:</label>
                     <select id="eventType" class="w-full p-2.5 border rounded-xl bg-white font-bold">
                         <option value="Waschmaschine">🧺 Waschmaschine buchen</option>
                         <option value="Trockner">💨 Trockner buchen</option>
@@ -604,25 +606,25 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Titel / Bezeichnung *:</label>
+                    <label for="eventTitle" class="block font-semibold mb-1">Titel / Bezeichnung *:</label>
                     <input type="text" id="eventTitle" placeholder="z. B. Kochwäsche 60°, Besuch von Anna" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div class="grid grid-cols-3 gap-2">
                     <div>
-                        <label class="block font-semibold mb-1">Datum *:</label>
+                        <label for="eventDate" class="block font-semibold mb-1">Datum *:</label>
                         <input type="date" id="eventDate" required class="w-full p-2 border rounded-xl bg-white">
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1">Startzeit (opt.):</label>
+                        <label for="eventTimeStart" class="block font-semibold mb-1">Startzeit (opt.):</label>
                         <input type="time" id="eventTimeStart" class="w-full p-2 border rounded-xl bg-white">
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1">Endzeit (opt.):</label>
+                        <label for="eventTimeEnd" class="block font-semibold mb-1">Endzeit (opt.):</label>
                         <input type="time" id="eventTimeEnd" class="w-full p-2 border rounded-xl bg-white">
                     </div>
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Gebucht von / Wer:</label>
+                    <label for="eventOwner" class="block font-semibold mb-1">Gebucht von / Wer:</label>
                     <select id="eventOwner" class="w-full p-2.5 border rounded-xl bg-white"></select>
                 </div>
             </div>
@@ -642,21 +644,21 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">Gegenstand / Titel *:</label>
+                    <label for="invTitle" class="block font-semibold mb-1">Gegenstand / Titel *:</label>
                     <input type="text" id="invTitle" placeholder="z. B. Mikrowelle, Kaffeemaschine" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block font-semibold mb-1">Kaufpreis (€) *:</label>
+                        <label for="invPrice" class="block font-semibold mb-1">Kaufpreis (€) *:</label>
                         <input type="number" step="0.01" id="invPrice" placeholder="250.00" required class="w-full p-2.5 border rounded-xl">
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1">Kaufdatum *:</label>
+                        <label for="invDate" class="block font-semibold mb-1">Kaufdatum *:</label>
                         <input type="date" id="invDate" required class="w-full p-2.5 border rounded-xl">
                     </div>
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Nutzungsdauer (Jahre):</label>
+                    <label for="invLifespan" class="block font-semibold mb-1">Nutzungsdauer (Jahre):</label>
                     <input type="number" id="invLifespan" value="5" class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>
@@ -706,15 +708,15 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">Titel / Bezeichnung *:</label>
+                    <label for="goalTitle" class="block font-semibold mb-1">Titel / Bezeichnung *:</label>
                     <input type="text" id="goalTitle" placeholder="z. B. Urlaub, Kaution-Reserve" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Zielbetrag (€) *:</label>
+                    <label for="goalTarget" class="block font-semibold mb-1">Zielbetrag (€) *:</label>
                     <input type="number" step="0.01" id="goalTarget" placeholder="1500" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Bereits gespart (€):</label>
+                    <label for="goalCurrent" class="block font-semibold mb-1">Bereits gespart (€):</label>
                     <input type="number" step="0.01" id="goalCurrent" value="0" class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>
@@ -747,19 +749,19 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">📶 WLAN-Passwort:</label>
+                    <label for="editWifi" class="block font-semibold mb-1">📶 WLAN-Passwort:</label>
                     <input type="text" id="editWifi" class="w-full p-2.5 border rounded-xl font-mono">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">🏠 Vermieter Contact:</label>
+                    <label for="editLandlord" class="block font-semibold mb-1">🏠 Vermieter Contact:</label>
                     <input type="text" id="editLandlord" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">🛠️ Hausmeister / Notdienst:</label>
+                    <label for="editCaretaker" class="block font-semibold mb-1">🛠️ Hausmeister / Notdienst:</label>
                     <input type="text" id="editCaretaker" class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">🗑️ Müllabfuhr-Zeiten:</label>
+                    <label for="editTrash" class="block font-semibold mb-1">🗑️ Müllabfuhr-Zeiten:</label>
                     <input type="text" id="editTrash" class="w-full p-2.5 border rounded-xl">
                 </div>
             </div>
@@ -825,11 +827,11 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">Aufgabe / Bereich *:</label>
+                    <label for="cleanTaskTitle" class="block font-semibold mb-1">Aufgabe / Bereich *:</label>
                     <input type="text" id="cleanTaskTitle" placeholder="z. B. Badezimmer wischen" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Zuständig gestartet mit:</label>
+                    <label for="cleanTaskAssignee" class="block font-semibold mb-1">Zuständig gestartet mit:</label>
                     <select id="cleanTaskAssignee" class="w-full p-2.5 border rounded-xl bg-white"></select>
                 </div>
             </div>
@@ -864,19 +866,19 @@
             </div>
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block font-semibold mb-1">Vertragsname / Titel *:</label>
+                    <label for="contractName" class="block font-semibold mb-1">Vertragsname / Titel *:</label>
                     <input type="text" id="contractName" placeholder="z. B. Vodafone, GEZ" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Monatliche Kosten (€) *:</label>
+                    <label for="contractPrice" class="block font-semibold mb-1">Monatliche Kosten (€) *:</label>
                     <input type="number" step="0.01" id="contractPrice" placeholder="39.99" required class="w-full p-2.5 border rounded-xl">
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Hauptzahler:</label>
+                    <label for="contractPayer" class="block font-semibold mb-1">Hauptzahler:</label>
                     <select id="contractPayer" class="w-full p-2.5 border rounded-xl bg-white"></select>
                 </div>
                 <div>
-                    <label class="block font-semibold mb-1">Kündigungsfrist Datum (optional):</label>
+                    <label for="contractNoticeDate" class="block font-semibold mb-1">Kündigungsfrist Datum (optional):</label>
                     <input type="date" id="contractNoticeDate" class="w-full p-2.5 border rounded-xl bg-white">
                 </div>
             </div>

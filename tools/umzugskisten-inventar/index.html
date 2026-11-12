@@ -69,6 +69,8 @@
         });
       });
     </script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -76,7 +78,7 @@
     <!-- Header mit ausklappbarer Anleitung -->
     <header class="b3-header">
   <div class="b3-header-inner">
-    <span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+    <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
     <span class="b3-tool-icon" aria-hidden="true">📦</span>
     <div class="b3-tool-title">
       <h1>Umzugskisten-App & Inventarliste</h1>
@@ -123,7 +125,7 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">📍 1. Standort anlegen</h2>
                 <div class="flex gap-2">
-                    <select id="locIcon" class="p-3 border rounded-xl text-sm bg-white">
+                    <select id="locIcon" class="p-3 border rounded-xl text-sm bg-white" aria-label="Symbol des Standorts">
                         <option value="📦">📦 Karton</option>
                         <option value="🏠">🏠 Haus</option>
                         <option value="🚪">🚪 Keller</option>
@@ -132,7 +134,7 @@
                         <option value="🏢">🏢 Büro</option>
                         <option value="⛺">⛺ Schuppen</option>
                     </select>
-                    <input type="text" id="locName" placeholder="Standort Name" class="w-full p-3 border rounded-xl text-sm">
+                    <input type="text" id="locName" placeholder="Standort Name" class="w-full p-3 border rounded-xl text-sm" aria-label="Standort Name">
                 </div>
                 <button onclick="saveLocation()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-medium py-2.5 rounded-xl text-sm">Standort speichern</button>
             </div>
@@ -140,28 +142,28 @@
             <!-- Kiste hinzufügen -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-3">
                 <h2 class="text-lg font-bold">📦 2. Kiste / Karton hinzufügen</h2>
-                <select id="boxLocationSelect" class="w-full p-3 border rounded-xl text-sm bg-white">
+                <select id="boxLocationSelect" class="w-full p-3 border rounded-xl text-sm bg-white" aria-label="Standort der Kiste">
                     <option value="">-- Standort wählen --</option>
                 </select>
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="boxName" placeholder="Kisten-Name (z.B. Karton #3)" class="p-3 border rounded-xl text-sm">
-                    <input type="text" id="boxValue" placeholder="Wert in € (optional)" class="p-3 border rounded-xl text-sm">
+                    <input type="text" id="boxName" placeholder="Kisten-Name (z.B. Karton #3)" class="p-3 border rounded-xl text-sm" aria-label="Kisten-Name (z.B. Karton #3)">
+                    <input type="text" id="boxValue" placeholder="Wert in € (optional)" class="p-3 border rounded-xl text-sm" aria-label="Wert in € (optional)">
                 </div>
-                <input type="text" id="boxDesc" placeholder="Inhalt / Beschreibung (z.B. Lichterketten)" class="w-full p-3 border rounded-xl text-sm">
+                <input type="text" id="boxDesc" placeholder="Inhalt / Beschreibung (z.B. Lichterketten)" class="w-full p-3 border rounded-xl text-sm" aria-label="Inhalt / Beschreibung (z.B. Lichterketten)">
                 
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="boxBarcode" placeholder="Barcode / EAN (optional)" class="p-3 border rounded-xl text-sm font-mono">
-                    <input type="date" id="boxExpiry" class="p-3 border rounded-xl text-sm bg-white" title="Garantie / Ablaufdatum">
+                    <input type="text" id="boxBarcode" placeholder="Barcode / EAN (optional)" class="p-3 border rounded-xl text-sm font-mono" aria-label="Barcode / EAN (optional)">
+                    <input type="date" id="boxExpiry" class="p-3 border rounded-xl text-sm bg-white" title="Garantie / Ablaufdatum" aria-label="Garantie- oder Ablaufdatum">
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
-                    <select id="boxTag" class="p-3 border rounded-xl text-sm bg-white">
+                    <select id="boxTag" class="p-3 border rounded-xl text-sm bg-white" aria-label="Kennzeichnung der Kiste">
                         <option value="Standard">🏷️ Standard</option>
                         <option value="Zerbrechlich">⚠️ Zerbrechlich</option>
                         <option value="Wertvoll">💎 Wertvoll</option>
                         <option value="Saison">❄️ Saison / Deko</option>
                     </select>
-                    <input type="file" id="boxPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700">
+                    <input type="file" id="boxPhotoInput" accept="image/*" capture="environment" class="text-xs p-2 border rounded-xl file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Foto der Kiste auswählen">
                 </div>
                 <button onclick="saveBox()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Kiste speichern & QR-Code</button>
             </div>
@@ -172,19 +174,19 @@
             <div class="flex flex-col md:flex-row justify-between items-center gap-3">
                 <h3 class="font-bold text-lg">🗄️ Vollständiges Inventar</h3>
                 <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                    <select id="tagFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white">
+                    <select id="tagFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar nach Kennzeichnung filtern">
                         <option value="">Alle Tags</option>
                         <option value="Standard">Standard</option>
                         <option value="Zerbrechlich">Zerbrechlich</option>
                         <option value="Wertvoll">Wertvoll</option>
                         <option value="Saison">Saison</option>
                     </select>
-                    <select id="sortFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white">
+                    <select id="sortFilter" onchange="renderInventory()" class="p-2 border rounded-xl text-sm bg-white" aria-label="Inventar sortieren">
                         <option value="name">Sortierung: Name</option>
                         <option value="value-desc">Höchster Wert zuerst</option>
                         <option value="value-asc">Geringster Wert zuerst</option>
                     </select>
-                    <input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Suchen (Kiste, Artikel, Barcode)..." class="p-2 border rounded-xl text-sm flex-grow md:w-56">
+                    <input type="text" id="searchBox" oninput="renderInventory()" placeholder="🔍 Suchen (Kiste, Artikel, Barcode)..." class="p-2 border rounded-xl text-sm flex-grow md:w-56" aria-label="🔍 Suchen (Kiste, Artikel, Barcode)...">
                 </div>
             </div>
             <div id="inventoryContainer" class="space-y-4">
@@ -199,22 +201,22 @@
             <h3 class="text-lg font-bold">Kiste & Artikel bearbeiten</h3>
             <input type="hidden" id="editBoxId">
             <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Standort (Verschieben):</label>
+                <label for="editBoxLocSelect" class="block text-xs font-semibold text-gray-600 mb-1">Standort (Verschieben):</label>
                 <select id="editBoxLocSelect" class="w-full p-3 border rounded-xl text-sm bg-white"></select>
             </div>
             <div class="grid grid-cols-2 gap-2">
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Kisten-Name:</label><input type="text" id="editBoxName" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tag (Kategorie):</label><select id="editBoxTag" class="w-full p-3 border rounded-xl text-sm bg-white"><option value="Standard">Standard</option><option value="Zerbrechlich">Zerbrechlich</option><option value="Wertvoll">Wertvoll</option><option value="Saison">Saison</option></select></div>
+                <div><label for="editBoxName" class="block text-xs font-semibold text-gray-600 mb-1">Kisten-Name:</label><input type="text" id="editBoxName" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label for="editBoxTag" class="block text-xs font-semibold text-gray-600 mb-1">Tag (Kategorie):</label><select id="editBoxTag" class="w-full p-3 border rounded-xl text-sm bg-white"><option value="Standard">Standard</option><option value="Zerbrechlich">Zerbrechlich</option><option value="Wertvoll">Wertvoll</option><option value="Saison">Saison</option></select></div>
             </div>
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Beschreibung / Inhalt:</label><input type="text" id="editBoxDesc" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div><label for="editBoxDesc" class="block text-xs font-semibold text-gray-600 mb-1">Beschreibung / Inhalt:</label><input type="text" id="editBoxDesc" class="w-full p-3 border rounded-xl text-sm"></div>
             
             <div class="grid grid-cols-3 gap-2">
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Wert (€):</label><input type="text" id="editBoxValue" class="w-full p-3 border rounded-xl text-sm"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Barcode / EAN:</label><input type="text" id="editBoxBarcode" class="w-full p-3 border rounded-xl text-sm font-mono"></div>
-                <div><label class="block text-xs font-semibold text-gray-600 mb-1">Ablauf:</label><input type="date" id="editBoxExpiry" class="w-full p-3 border rounded-xl text-sm bg-white"></div>
+                <div><label for="editBoxValue" class="block text-xs font-semibold text-gray-600 mb-1">Wert (€):</label><input type="text" id="editBoxValue" class="w-full p-3 border rounded-xl text-sm"></div>
+                <div><label for="editBoxBarcode" class="block text-xs font-semibold text-gray-600 mb-1">Barcode / EAN:</label><input type="text" id="editBoxBarcode" class="w-full p-3 border rounded-xl text-sm font-mono"></div>
+                <div><label for="editBoxExpiry" class="block text-xs font-semibold text-gray-600 mb-1">Ablauf:</label><input type="date" id="editBoxExpiry" class="w-full p-3 border rounded-xl text-sm bg-white"></div>
             </div>
 
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Ausgeliehen an (leer = im Regal):</label><input type="text" id="editBoxLentTo" placeholder="z.B. Max" class="w-full p-3 border rounded-xl text-sm"></div>
+            <div><label for="editBoxLentTo" class="block text-xs font-semibold text-gray-600 mb-1">Ausgeliehen an (leer = im Regal):</label><input type="text" id="editBoxLentTo" placeholder="z.B. Max" class="w-full p-3 border rounded-xl text-sm"></div>
 
             <div class="border-t pt-3 space-y-2">
                 <label class="block text-xs font-bold text-gray-700">🔎 Unterartikel in dieser Kiste:</label>

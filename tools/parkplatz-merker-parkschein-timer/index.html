@@ -58,13 +58,15 @@
         });
       });
     </script>
+    <link rel="stylesheet" href="../../assets/helferlein-accessibility.css">
+    <script src="../../assets/helferlein-accessibility.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
 
     <!-- Header im exakten Mini-HomeBox-Stil -->
     <header class="b3-header"><div class="b3-header-inner">
-  <span class="b3-brand"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</span>
+  <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
   <span class="b3-tool-icon" aria-hidden="true">🅿️</span>
   <div class="b3-tool-title"><h1>Parkplatz-Merker & Parkschein-Timer</h1>
     <p>Parkplatz per GPS merken, Parkzeit im Blick behalten und Parkkosten erfassen</p></div>
@@ -89,11 +91,11 @@
 
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-gray-500 mb-1">E-Mail-Adresse</label>
+                    <label for="auth-email" class="block text-gray-500 mb-1">E-Mail-Adresse</label>
                     <input type="email" id="auth-email" placeholder="name@beispiel.de" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
                 </div>
                 <div>
-                    <label class="block text-gray-500 mb-1">Passwort</label>
+                    <label for="auth-password" class="block text-gray-500 mb-1">Passwort</label>
                     <input type="password" id="auth-password" placeholder="••••••••" class="w-full p-2.5 rounded-xl border text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500">
                 </div>
                 <div class="grid grid-cols-2 gap-2 pt-1">
@@ -188,13 +190,13 @@
                     </div>
                 </div>
 
-                <input type="text" id="parkDesc" placeholder="Standort / Parkhaus (z.B. P2 Innenstadt)" class="w-full p-2.5 border rounded-xl text-sm">
+                <input type="text" id="parkDesc" placeholder="Standort / Parkhaus (z.B. P2 Innenstadt)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Standort / Parkhaus (z.B. P2 Innenstadt)">
                 <!-- Tiefgaragen-Ebene & Sektor -->
-                <input type="text" id="parkSector" placeholder="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" class="w-full p-2.5 border rounded-xl text-sm">
+                <input type="text" id="parkSector" placeholder="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)" class="w-full p-2.5 border rounded-xl text-sm" aria-label="Parkebene / Sektor (z.B. Deck 2, Reihe B, Platz 42)">
 
                 <div class="grid grid-cols-2 gap-2">
-                    <input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm">
-                    <input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700">
+                    <input type="text" id="parkCost" placeholder="Gebühr in € (z.B. 2.50)" class="p-2.5 border rounded-xl text-sm" aria-label="Gebühr in € (z.B. 2.50)">
+                    <input type="file" id="parkPhotoInput" accept="image/*" capture="environment" class="text-xs p-1.5 border rounded-xl file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700" aria-label="Parkplatzfoto auswählen">
                 </div>
                 <button onclick="saveParkingSession()" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">GPS-Standort ermitteln & speichern</button>
             </div>
@@ -204,7 +206,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-sm border space-y-4" data-b3-panel="history" id="b3-history">
             <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
                 <h3 class="font-bold text-lg">📋 Parkhistorie & Standorte</h3>
-                <select id="timeFilter" onchange="renderParkingList()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto">
+                <select id="timeFilter" onchange="renderParkingList()" class="p-2 border rounded-xl text-xs bg-white w-full sm:w-auto" aria-label="Parkhistorie nach Zeitraum filtern">
                     <option value="all">Gesamte Historie anzeigen</option>
                     <option value="month">Aktueller Monat</option>
                     <option value="year">Aktuelles Jahr</option>
