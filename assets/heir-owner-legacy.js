@@ -1063,6 +1063,9 @@
 
         async function clearEmergencyAlarm() {
             if (!vaultReady) { alert('Tresor ist nicht entsperrt.'); return; }
+            // A10: never write plaintext check-in metadata to the retired Firestore vault.
+            alert('Die alte Firebase-Entwarnung ist aus Sicherheitsgründen deaktiviert. Es wurde kein Alarm zurückgesetzt und keine lokale Check-in-Zeit verändert.');
+            return;
             if (!confirm("Möchtest du Entwarnung geben und den Alarm zurücksetzen?")) return;
 
             try {
