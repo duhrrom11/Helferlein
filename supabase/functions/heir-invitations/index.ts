@@ -4,6 +4,7 @@
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import { createInvitationToken, hashInvitationToken } from "../_shared/invitation-token.ts";
+import { consumeHeirRateLimit } from "../_shared/heir-rate-limit.ts";
 const ORIGIN = "https://duhrrom11.github.io";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const url = Deno.env.get("SUPABASE_URL");
@@ -63,6 +64,9 @@ Deno.serve(async (request: Request) => {
   if (input.action === "issue" && Object.keys(input).sort().join(",") === "action,recipientUserId") {
    if (typeof input.recipientUserId !== "string" || !UUID.test(input.recipientUserId) || input.recipientUserId === ownerId)
     return json(400,{error:"invalid_request"},headers);
+   const decision = await consumeHeirRateLimit(admin, ownerId, "issue");
+   if (decision === "unavailable") return json(503,{error:"unavailable"},headers);
+   if (decision === "limited") return json(429,{error:"rate_limited"},headers);
    const token = createInvitationToken();
    const tokenHash = await hashInvitationToken(token);
    // Keep below the SQL seven-day maximum despite clock skew between runtimes.
@@ -80,6 +84,9 @@ Deno.serve(async (request: Request) => {
   if (input.action === "revoke" && Object.keys(input).sort().join(",") === "action,invitationId") {
    if (typeof input.invitationId !== "string" || !UUID.test(input.invitationId))
     return json(400,{error:"invalid_request"},headers);
+   const decision = await consumeHeirRateLimit(admin, ownerId, "revoke");
+   if (decision === "unavailable") return json(503,{error:"unavailable"},headers);
+   if (decision === "limited") return json(429,{error:"rate_limited"},headers);
    const {data,error} = await admin.rpc("revoke_heir_invitation_atomic",{
     p_owner_user_id:ownerId,p_invitation_id:input.invitationId,
    });
