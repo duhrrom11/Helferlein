@@ -1,5 +1,19 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## Aktualisierter A10-Release-Gate-Befund (2026-11-12, nur lesende Produktionsprüfung)
+
+**Dieser Befund ersetzt die veraltete Bestandsaufnahme vom 2026-11-08 oben, nicht die dort beschriebenen Sicherheitsanforderungen.**
+
+- In Supabase ist `public.vault_cloud_snapshots` bereits vorhanden; RLS ist aktiv. Vier Richtlinien für `authenticated` begrenzen SELECT, INSERT, UPDATE und DELETE anhand von `auth.uid() = owner_user_id`; UPDATE hat sowohl USING als auch WITH CHECK. Die Tabelle war zum Prüfzeitpunkt leer. Das ist ein begrenzter, rein lesend bestätigter Befund, kein autorisierter End-to-End-Zugriffstest.
+- Die Edge Functions `heir-invitations` und `heir-redemption` sind aktiv und haben `verify_jwt=true`. Das ist **kein** Nachweis für eine bereitgestellte `vault-api` oder eine Freigabe von Tresorinhalten an Erben.
+- Eine Edge Function `vault-api` war in der Produktionsliste **nicht** vorhanden. Die öffentliche Nachlass-Seite lädt weiterhin Firebase-Kompatibilitätsskripte und zeigt die ausdrückliche Warnung, keine Passwörter, PINs oder Zugangsdaten zu speichern. Ein vollständiger, überprüfter neuer Cloud-Tresorpfad ist damit nicht nachgewiesen.
+- Die privaten `nachlass_private.heir_*`-Tabellen sind durch RLS ohne direkte Policies geschlossen; dies ist für einen serverseitig kontrollierten Zugriff nicht automatisch ein Fehler. Die Security Advisors melden außerdem mehrere `SECURITY DEFINER`-RPCs im Wunschlistenbereich sowie deaktivierten Schutz gegen kompromittierte Auth-Passwörter. Diese Befunde benötigen separate fachliche Prüfung; hier wurden keine Produktiveinstellungen verändert.
+
+**Release-Entscheidung: A10 NO-GO für die Speicherung sensibler Geheimnisse und für eine Freigabe des Cloud-Tresors.** Die allgemeine Webseite darf die bestehende Warnung weiter anzeigen; eine grüne CI oder das Vorhandensein der Tabelle hebt diese Einschränkung nicht auf.
+
+**Noch erforderliche Freigaben, ohne Testkonten in Produktion:** (1) den tatsächlich genutzten Client-/Server-Speicherpfad und dessen Autorisierung vollständig im Code prüfen, (2) Verschlüsselung und Wiederherstellung in einer isolierten Nichtproduktionsumgebung nachweisen, (3) Migration bestehender Tresore nur nach Eigentumsnachweis und Rollback-Konzept erlauben, (4) Monitoring, Schlüssel-/Revisionskonflikte und Ausfallverhalten vor dem Aktivieren bewerten. Bis dahin weder Firestore-Regeln öffnen noch unsichere Tresorfunktionen freischalten.
+
+
 Status: Vorbereitung. **Nicht automatisch ausfuehren.** Firestore-Regeln fuer `vaults` bleiben `allow read, write: if false`.
 
 ## Freigabe und aktueller Produktionsbefund (2026-11-08)
