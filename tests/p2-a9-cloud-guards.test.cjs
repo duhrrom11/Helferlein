@@ -141,7 +141,7 @@ function runHouseholdSave({owner = null, bridge = null, entries = '[]', budgets 
     alert: message => alerts.push(message),
     console: {error:()=>{}}
   };
-  vm.runInNewContext(householdGuardCode + '\\n' + householdSaveCode, context, {timeout:1000});
+  vm.runInNewContext(householdGuardCode + '\n' + householdSaveCode, context, {timeout:1000});
   const result = vm.runInNewContext("saveData([{id:'synthetic-only'}])", context, {timeout:1000});
   return {result, writes, alerts, cloudChanges};
 }
