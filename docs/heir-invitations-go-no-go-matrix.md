@@ -37,6 +37,8 @@
 - **Verantwortung:** #277 nennt Produkt/Security/SRE als finale Entscheidungsrollen; DBA, Entwicklung und Datenschutz sind trotzdem verpflichtende fachliche Zulieferer mit datierten Freigaben. Keine Rolle ist bisher namentlich bestätigt.
 - **Metadatengrenze:** Nicht registrierte Erben-Migrationen und eine leere Edge-Function-Liste beweisen keine vollständige Abwesenheit manuell angelegter Objekte oder alternativer Endpunkte. Es gibt keine produktive Laufzeitabnahme.
 
+**Vorlage für spätere Prüfer:innen:** [Einheitliches Abnahmeprotokoll je Issue und Teil-Gate](./heir-invitations-acceptance-evidence-template.md). Die Vorlage ist leer und keine erteilte Freigabe.
+
 ## Mindestanforderungen an jeden Abnahmenachweis
 
 - Datum, namentliche prüfende und freigebende Person, zugehörige Rolle, Git-Commit bzw. Migrationsversion und Umgebung.
