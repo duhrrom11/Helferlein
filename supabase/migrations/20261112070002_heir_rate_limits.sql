@@ -24,8 +24,10 @@ DECLARE
   v_attempts integer;
   v_now timestamptz;
 BEGIN
-  IF p_actor_id IS NULL OR p_operation NOT IN ('issue','redeem') OR p_operation IS NULL
-  THEN RETURN false; END IF;
+  -- Invalid internal arguments are infrastructure/programming errors, not quota denials.
+  -- PostgREST exposes the error to the trusted Edge adapter; it returns neutral 503.
+  IF p_actor_id IS NULL OR p_operation IS NULL OR p_operation NOT IN ('issue','redeem')
+  THEN RAISE EXCEPTION 'invalid_rate_limit_arguments' USING ERRCODE = '22023'; END IF;
   v_now := clock_timestamp();
   -- Stable order for concurrent calls: short window before long window.
   FOREACH v_seconds IN ARRAY ARRAY[60, 3600] LOOP
