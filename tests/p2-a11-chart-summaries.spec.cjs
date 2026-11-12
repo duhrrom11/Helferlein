@@ -50,7 +50,6 @@ for (const tool of ['wg-organisator', 'haushaltsbuch-kassenbon']) {
   });
 
   test(tool + ' – isolated real chart summaries: zero, values, updates, injection', async ({page}) => {
-  test(tool + ' – isolated real chart summaries: zero, values, updates, injection', async ({page}) => {
     await page.goto('http://127.0.0.1:8765/index.html', {waitUntil:'domcontentloaded'});
     await page.setContent('<main><p id="categoryChartSummary"></p><p id="cashflowChartSummary"></p></main>');
     const scenarios = [
