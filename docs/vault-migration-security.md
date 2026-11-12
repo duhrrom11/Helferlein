@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 Chromium-Neustart mit persistentem Testprofil (2026-11-13, isoliert)
+
+`tests/a10-browser-persistent-restart.cjs` verwendet echtes Headless Chromium und dasselbe **temporaere** Browserprofil ueber zwei vollstaendige Browser-Neustarts hinweg. Geprueft werden der dauerhafte Staging-Datensatz, ein spaeterer simulierter V2-Aktivierungsmarker, unveraendertes V1, ein Revisionskonflikt nach Neustart und zwei kontrollierte Transaktionsfehler: eine Ausnahme vor dem Schreiben sowie `abort()` **nach erfolgreichem `put`**, aber vor dem Commit. Beide duerfen den gespeicherten Zustand nicht veraendern. Das temporaere Profil wird nach dem Test geloescht.
+
+**Keine vollstaendige Absturz- oder Quota-Garantie:** Der Test nutzt geordnete Browser-Neustarts, keinen erzwungenen Prozessabsturz waehrend eines Schreibvorgangs, keinen Stromausfall und keine echte Disk-Full-/Quota-Injektion. Die Test-Aktivierung ist kein Produktiv-Go. Ein unabhaengig wiederherstellbares, geschuetztes V1-Backup und weitere Security-Pruefungen fehlen. **A10 bleibt NO-GO.**
+
+
 ## A10 echte Browser-IndexedDB-Pruefung (2026-11-13, isoliert)
 
 Die separate PR-CI `.github/workflows/a10-browser-indexeddb.yml` startet echtes Headless Chromium gegen einen kurzlebigen lokalen HTTP-Server. `tests/a10-browser-indexeddb.cjs` testet mit synthetischem V1-Datensatz: zwei Tabs desselben Origins mit konkurrierendem Revisionsstand, eine explizit abgebrochene IndexedDB-Transaktion ohne persistierten Zwischenstand, Wiederlesen nach Seiten-Reload und Erhalt des V1-Rueckfallstands. Kein produktiver Origin, keine produktiven Konten oder Datenbanken.

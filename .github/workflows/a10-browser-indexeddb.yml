@@ -5,6 +5,7 @@ on:
     paths:
       - 'assets/a10-atomic-idb-store.js'
       - 'tests/a10-browser-indexeddb.cjs'
+      - 'tests/a10-browser-persistent-restart.cjs'
       - '.github/workflows/a10-browser-indexeddb.yml'
   workflow_dispatch:
 
@@ -26,4 +27,6 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Run real IndexedDB tests against localhost only
-        run: node tests/a10-browser-indexeddb.cjs
+        run: |
+          node tests/a10-browser-indexeddb.cjs
+          node tests/a10-browser-persistent-restart.cjs
