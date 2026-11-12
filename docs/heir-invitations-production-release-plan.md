@@ -84,6 +84,23 @@ Keine Tests in der Produktion ohne ausdrücklich separat genehmigten sicheren Pl
 
 **Auslöser für sofortiges STOP:** ungeklärte Rechte-/RLS-Abweichung, unautorisierte Annahme/Widerruf, Token-/Secret-Leak, wiederholte 503/Deadlocks, unerwartete FK-Kaskaden, stark erhöhte Datenbanklast oder fehlerhafte Zählerbereinigung.
 
+## GitHub-Abnahmeaufgaben (alle offen)
+
+Die folgenden Issues sind die verbindliche Arbeitsliste; ein geschlossenes Issue allein ist **kein** Freigabenachweis. Jede Abnahme erfordert ein datiertes, versionsbezogenes Protokoll und die Zustimmung der benannten Rolle.
+
+| Priorität | Issue | Gate | Nachweis |
+| --- | --- | --- | --- |
+| P0 | [#270 – Produktionsschema und Migrationshistorie](https://github.com/duhrrom11/Helferlein/issues/270) | G0 | Schema-/Historienabgleich |
+| P0 | [#271 – SECURITY DEFINER, Rollen und RLS](https://github.com/duhrrom11/Helferlein/issues/271) | G0/G1 | Rechte-/Owner-Audit |
+| P0 | [#272 – SQL- und TypeScript-Verträge](https://github.com/duhrrom11/Helferlein/issues/272) | G0/G2 | Compiler-/SQL-Abnahme |
+| P1 | [#273 – Parallelität und Datenintegrität](https://github.com/duhrrom11/Helferlein/issues/273) | G2 | Isolierte Parallelitätsabnahme |
+| P1 | [#274 – Gateway-Schutz und Monitoring](https://github.com/duhrrom11/Helferlein/issues/274) | G0/G3 | Security-/Betriebsfreigabe |
+| P1 | [#275 – Backup, Wartung und Notfallverfahren](https://github.com/duhrrom11/Helferlein/issues/275) | G0/G2 | Restore-/Wartungsnachweise |
+| P1 | [#276 – Authentisierung, Tokens und Quoten](https://github.com/duhrrom11/Helferlein/issues/276) | G2 | Sicherheits-/Funktionsabnahme |
+| P2 | [#277 – Verantwortliche und Release-Freigaben](https://github.com/duhrrom11/Helferlein/issues/277) | G3 | Unterschriebene GO-Entscheidung |
+
+**Bearbeitungsreihenfolge:** zuerst #270–#272, anschließend #273–#276, abschließend #277. P1-Aufgaben dürfen parallel vorbereitet werden; kein produktiver Schritt darf einen noch offenen Gate-Nachweis umgehen.
+
 ## Freigabeprotokoll (vor Aktivierung auszufüllen)
 
 | Feld | Erforderlicher Eintrag |
