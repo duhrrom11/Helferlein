@@ -4,6 +4,7 @@
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import { createInvitationToken, hashInvitationToken } from "../_shared/invitation-token.ts";
+import { consumeHeirRateLimit } from "../_shared/heir-rate-limit.ts";
 const ORIGIN = "https://duhrrom11.github.io";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const url = Deno.env.get("SUPABASE_URL");
@@ -63,24 +64,38 @@ Deno.serve(async (request: Request) => {
   if (input.action === "issue" && Object.keys(input).sort().join(",") === "action,recipientUserId") {
    if (typeof input.recipientUserId !== "string" || !UUID.test(input.recipientUserId) || input.recipientUserId === ownerId)
     return json(400,{error:"invalid_request"},headers);
+   const decision = await consumeHeirRateLimit(admin, ownerId, "issue");
+   if (decision === "unavailable") return json(503,{error:"unavailable"},headers);
+   if (decision === "limited") return json(429,{error:"rate_limited"},headers);
    const token = createInvitationToken();
    const tokenHash = await hashInvitationToken(token);
-   const expiresAt = new Date(Date.now() + 7*24*60*60*1000).toISOString();
+   // Keep below the SQL seven-day maximum despite clock skew between runtimes.
+   const expiresAt = new Date(Date.now() + 6*24*60*60*1000).toISOString();
    const {data,error} = await admin.rpc("issue_heir_invitation_atomic",{
     p_owner_user_id:ownerId,p_recipient_user_id:input.recipientUserId,
     p_token_hash_hex:tokenHash,p_expires_at:expiresAt,
    });
-   if (error || typeof data !== "string" || !UUID.test(data)) return json(409,{error:"not_available"},headers);
+   // Infrastructure failures must not masquerade as expected business conflicts.
+   if (error) return json(503,{error:"unavailable"},headers);
+   if (data === null) return json(409,{error:"not_available"},headers);
+   // Only a UUID is a successful issuance; other shapes violate the RPC contract.
+   if (typeof data !== "string" || !UUID.test(data)) return json(503,{error:"unavailable"},headers);
    // Token returned ONCE; never log, store in URL, or put into analytics.
    return json(201,{invitationId:data,token,expiresAt},headers);
   }
   if (input.action === "revoke" && Object.keys(input).sort().join(",") === "action,invitationId") {
    if (typeof input.invitationId !== "string" || !UUID.test(input.invitationId))
     return json(400,{error:"invalid_request"},headers);
+   // Security-critical revocation must never be blocked by a quota.
+   // Ownership is checked atomically by revoke_heir_invitation_atomic.
    const {data,error} = await admin.rpc("revoke_heir_invitation_atomic",{
     p_owner_user_id:ownerId,p_invitation_id:input.invitationId,
    });
-   return !error && data === true ? json(200,{status:"revoked"},headers) : json(404,{error:"not_found"},headers);
+   if (error) return json(503,{error:"unavailable"},headers);
+   if (data === true) return json(200,{status:"revoked"},headers);
+   if (data === false) return json(404,{error:"not_found"},headers);
+   // Unexpected RPC results are infrastructure/contract failures, not business denials.
+   return json(503,{error:"unavailable"},headers);
   }
   return json(400,{error:"invalid_request"},headers);
  } catch { return json(503,{error:"unavailable"},headers); }

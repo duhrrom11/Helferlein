@@ -6,6 +6,7 @@
  */
 import { getVerifiedUserId, type AuthUserLookup } from "./verified-user.ts";
 import { hashInvitationToken } from "./invitation-token.ts";
+import type { RateDecision } from "./heir-rate-limit.ts";
 import {
   redeemWithAtomicStore,
   type AtomicRedemptionStore,
@@ -17,14 +18,20 @@ export async function redeemVerifiedInvitation(
   store: AtomicRedemptionStore,
   authorizationHeader: string | null,
   rawToken: string,
-): Promise<RedemptionOutcome> {
+  rateLimit: (verifiedUserId: string) => Promise<RateDecision>,
+): Promise<RedemptionOutcome | "limited"> {
   const userId = await getVerifiedUserId(authClient, authorizationHeader);
   if (!userId) return "denied";
   try {
+    const decision = await rateLimit(userId);
+    if (decision === "limited") return "limited";
+    if (decision !== "allowed") return "unavailable";
+    // Malformed bearer tokens are denied; operational failures remain unavailable.
+    if (typeof rawToken !== "string" || !/^[a-f0-9]{64}$/.test(rawToken)) return "denied";
     const digest = await hashInvitationToken(rawToken);
     return await redeemWithAtomicStore(store, userId, digest);
   } catch {
-    // Malformed tokens and any backend failure have the same generic denial.
-    return "denied";
+    // Internal hashing failure: no token or diagnostic details leave this boundary.
+    return "unavailable";
   }
 }

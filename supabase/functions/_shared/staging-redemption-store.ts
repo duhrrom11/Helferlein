@@ -26,5 +26,5 @@ export function createStagingRedemptionStore(
   _enabled = false,
   _projectRef: string | null = null,
 ): AtomicRedemptionStore {
-  return { async redeemAtomically() { return false; } };
+  return { async redeemAtomically() { return "denied"; } };
 }

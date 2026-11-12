@@ -49,7 +49,7 @@ export type TrustedPersonOverview = Readonly<{
 export type InvitationDraft = Readonly<{
   vaultId: string;
   intendedUserId: string;
-  durationDays: 1 | 3 | 7 | 14;
+  durationDays: 1 | 3 | 7;
 }>;
 
 export type InvitationDraftValidation =
@@ -74,7 +74,7 @@ export function validateInvitationDraft(
   if (intendedUserId.toLowerCase() === ownerUserId.toLowerCase()) {
     return { ok: false, reason: "self_invitation" };
   }
-  if (durationDays !== 1 && durationDays !== 3 && durationDays !== 7 && durationDays !== 14) {
+  if (durationDays !== 1 && durationDays !== 3 && durationDays !== 7) {
     return { ok: false, reason: "invalid_duration" };
   }
   return { ok: true, draft: { vaultId: vaultId.toLowerCase(), intendedUserId: intendedUserId.toLowerCase(), durationDays } };
@@ -110,7 +110,7 @@ export function validateInvitationCreationResult(value: unknown): value is Invit
     typeof result.expiresAt === "string" &&
     Number.isFinite(Date.parse(result.expiresAt)) &&
     Date.parse(result.expiresAt) > now &&
-    Date.parse(result.expiresAt) <= now + 14 * 86400000;
+    Date.parse(result.expiresAt) <= now + 7 * 86400000;
 }
 
 export type InvitationGateway = Readonly<{
@@ -167,7 +167,9 @@ export function invitationViews(
       recipient: invitation.intendedUserId,
       expiresAt: invitation.expiresAt,
       status,
-      canRevoke: status === "pending" && Number.isFinite(expiryMs) && expiryMs > nowMs,
+      // Revocation remains available for accepted and expired invitations;
+      // only an already revoked invitation cannot be revoked again.
+      canRevoke: status !== "revoked",
     };
   }).sort((a, b) => {
     const aPending = a.status === "pending" ? 0 : 1;

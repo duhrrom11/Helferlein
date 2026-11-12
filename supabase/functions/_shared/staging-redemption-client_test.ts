@@ -17,7 +17,7 @@ Deno.test("privileged RPC client is never constructed, even when enabled", async
   for (const url of [staging, null, "https://avapuibsidubuzxjtyld.supabase.co"]) {
     for (const enabled of [false, true]) {
       const store = createBoundStagingRedemptionStore(url, factory, enabled);
-      assert(!await store.redeemAtomically({ verifiedUserId: uid, tokenHashHex: hash }), "unsafe redemption accepted");
+      assert(await store.redeemAtomically({ verifiedUserId: uid, tokenHashHex: hash }) === "denied", "unsafe redemption accepted");
     }
   }
   assert(constructed === 0, "privileged client constructed");

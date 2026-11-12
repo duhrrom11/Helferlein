@@ -13,13 +13,14 @@ const disabledAuth: AuthUserLookup = {
   auth: { async getUser() { return { data: { user: null }, error: "disabled" }; } },
 };
 const disabledStore: AtomicRedemptionStore = {
-  async redeemAtomically() { return false; },
+  async redeemAtomically() { return "denied" as const; },
 };
 
 Deno.serve((request: Request) =>
   handleRedemptionRequest(request, {
     auth: disabledAuth,
     store: disabledStore,
+    rateLimit: async () => "unavailable" as const,
     enabled: false,
   })
 );

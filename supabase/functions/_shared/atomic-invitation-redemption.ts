@@ -5,19 +5,21 @@
  *
  * Do not implement the adapter with separate Supabase REST requests.
  */
-export type RedemptionOutcome = "accepted" | "denied";
+export type RedemptionOutcome = "accepted" | "denied" | "unavailable";
+export type AtomicRedemptionResult = "accepted" | "denied" | "unavailable";
 
 export interface AtomicRedemptionStore {
   /**
    * Must execute as ONE DB transaction with locked invitation/ownership rows,
    * database-clock expiry, matching verified user, non-revocation, no existing
    * trusted-person assignment, INSERT + acceptance UPDATE, and rollback on
-   * any failure. Return false for denial; never return secret data.
+   * any failure. Return 'denied' for a business rejection and 'unavailable'
+   * for infrastructure failures; never return secret data.
    */
   redeemAtomically(args: {
     tokenHashHex: string;
     verifiedUserId: string;
-  }): Promise<boolean>;
+  }): Promise<AtomicRedemptionResult>;
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -33,11 +35,13 @@ export async function redeemWithAtomicStore(
     return "denied";
   }
   try {
-    return await store.redeemAtomically({ verifiedUserId, tokenHashHex })
-      ? "accepted"
-      : "denied";
+    const result = await store.redeemAtomically({ verifiedUserId, tokenHashHex });
+    // Runtime adapters can violate TypeScript contracts; never classify an
+    // unexpected result as an ordinary invitation denial.
+    if (result === "accepted" || result === "denied") return result;
+    return "unavailable";
   } catch {
     // Do not leak database details or distinguish unknown/foreign invitations.
-    return "denied";
+    return "unavailable";
   }
 }
