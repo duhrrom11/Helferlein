@@ -8,6 +8,7 @@ on:
       - 'tests/p2-accessibility.spec.cjs'
       - 'tests/p2-dialogs.spec.cjs'
       - 'tests/p2-a9-cloud-guards.test.cjs'
+      - 'tests/p2-a11-chart-summaries.spec.cjs'
       - 'shared/helferlein-cloud-migration.js'
       - 'tests/helpers/p2-dialog-cases.cjs'
       - 'tests/helpers/p2-browser-safety.cjs'
@@ -34,7 +35,7 @@ jobs:
       - name: Start local site
         run: python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/p2-server.log 2>&1 &
       - name: Check mobile widths, dark contrast, dialogs and field interactions
-        run: npx playwright test tests/p2-accessibility.spec.cjs tests/p2-dialogs.spec.cjs --reporter=line --workers=2
+        run: npx playwright test tests/p2-accessibility.spec.cjs tests/p2-dialogs.spec.cjs tests/p2-a11-chart-summaries.spec.cjs --reporter=line --workers=2
       - name: Preserve screenshots and WCAG observations
         if: always()
         uses: actions/upload-artifact@v4
