@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 V1-Quellcode-Schemaabgleich (2026-11-13, isoliert)
+
+`tests/a10-browser-v1-schema-contract.cjs` untersucht den Quelltext von `assets/heir-owner-legacy.js` **ohne ihn auszufuehren**. Der Test prueft die in `initVault()` erzeugten V1-Felder (`vaultId`, `masterKeyHex`, `encryptedData`, `ownerName`, `ownerEmail`, `checkInIntervalDays`, `lastCheckIn`, `trustees`, `alarmPersons`), die drei Standard-Vertrauenspersonen und die AES-GCM-Struktur `{ciphertext,iv}`. Eine synthetische Fixture mit diesem Schema wird in echtem Chromium verschluesselt, als passwortgeschuetztes V1-Backup exportiert, wiederhergestellt und der Payload erneut entschluesselt. Negativtests pruefen fehlenden Schluessel, falsche ID, IV/Ciphertext, Intervall, Kontakte, Zeitstempel, falsches Passwort und manipuliertes Backup. Die Original-Fxture bleibt unveraendert.
+
+**Festgestellte Kompatibilitaetsgrenze:** Der Legacy-Initialisierungspfad akzeptiert vorhandene V1-Datensaetze mit einem gueltigen Masterkey und `encryptedData`, auch wenn andere Konfigurationsfelder fehlen; er fuellt insbesondere fehlende `alarmPersons` nur im Arbeitsspeicher nach. Der portable Backup-Validator verlangt dagegen alle genannten Konfigurationsfelder. Der Test beweist daher **nur Kompatibilitaet mit dem aktuell erzeugten vollstaendigen V1-Schema**, nicht mit allen historisch gespeicherten Varianten. Es wird nichts automatisch migriert, importiert oder normalisiert. Vor Produktivfreigabe sind historische Varianten, Kontakt-Schema und eine verlustfreie, explizit bestaetigte Normalisierung gesondert zu pruefen. **A10 bleibt NO-GO.**
+
+
 ## A10 isoliertes verschluesseltes portables V1-Backup (2026-11-13, KEINE Aktivierung)
 
 `assets/a10-v1-portable-backup.js` stellt ausschliesslich `create(legacy,password)`, `restore(backup,password)` und Formatvalidierung bereit. Das komplette synthetische V1-Objekt einschliesslich des Legacy-Masterkeys wird mit einem separaten Passwort via PBKDF2-SHA256 (600.000 Iterationen, zufaelliges 16-Byte-Salt) und AES-256-GCM (zufaelliger 12-Byte-IV, versionsgebundenes AAD) verschluesselt. Das exportierte Objekt enthaelt nur Ciphertext und KDF-Metadaten. Die Wiederherstellung liefert ein V1-Objekt **nur im Speicher**; sie speichert, importiert, aktiviert oder ueberschreibt nichts. Format und Groesse sind begrenzt, unbekannte Versionen und manipulierte Daten werden abgewiesen.
