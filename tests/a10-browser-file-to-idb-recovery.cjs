@@ -20,7 +20,8 @@ const http = require('node:http');
     'a10-v2-indexeddb-driver.js',
     'a10-backup-file-handoff.js',
     'a10-backup-file-integrity.js',
-    'a10-attested-file-staging.js'
+    'a10-attested-file-staging.js',
+    'a10-staged-readback.js'
   ];
   const server = http.createServer(async (req, res) => {
     if (req.url === '/') {
@@ -181,6 +182,37 @@ const http = require('node:http');
       HelferleinA10V2IndexedDB.driver(indexedDB,
         'a10-isolated-v2-file-to-idb-synthetic').read(vaultId), credentials.vaultId);
     assert.deepEqual(after, result.stored);
+    const readback = await receiver.evaluate(async ({ credentials, envelope }) => {
+      const { vaultId, v2Password } = credentials;
+      const driver = HelferleinA10V2IndexedDB.driver(indexedDB,
+        'a10-isolated-v2-file-to-idb-synthetic');
+      const options = { explicitConsent: true, confirmStagingOnly: true, confirmVaultId: vaultId };
+      const verified = await HelferleinA10StagedReadback.verify(
+        driver, vaultId, envelope, v2Password, options);
+      let wrongPasswordRejected = false;
+      try { await HelferleinA10StagedReadback.verify(
+        driver, vaultId, envelope, 'wrong-readback-password', options); }
+      catch (_) { wrongPasswordRejected = true; }
+      let substitutedRejected = false;
+      try {
+        await HelferleinA10StagedReadback.verify(
+          { read: async () => ({ ...(await driver.read(vaultId)), revision: 1 }) },
+          vaultId, envelope, v2Password, options);
+      } catch (_) { substitutedRejected = true; }
+      let wrongEnvelopeRejected = false;
+      try {
+        await HelferleinA10StagedReadback.verify(
+          { read: async () => ({ ...(await driver.read(vaultId)),
+            envelope: { ...envelope, iv: btoa('0123456789ab') } }) },
+          vaultId, envelope, v2Password, options);
+      } catch (_) { wrongEnvelopeRejected = true; }
+      return { verified, wrongPasswordRejected, substitutedRejected, wrongEnvelopeRejected };
+    }, { credentials, envelope: prepared.artifacts.envelope });
+    assert.equal(readback.verified.status, 'PERSISTED_RECOVERY_VERIFIED_NOT_ACTIVE');
+    assert.equal(readback.verified.active, false);
+    assert.equal(readback.wrongPasswordRejected, true);
+    assert.equal(readback.substitutedRejected, true);
+    assert.equal(readback.wrongEnvelopeRejected, true);
     await fresh.close();
     console.log('A10 attested real browser file -> fresh-context verified encrypted IDB staging: PASS');
   } finally {
