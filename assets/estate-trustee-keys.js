@@ -46,8 +46,35 @@
       if (!key) {
         const notice = document.createElement('span');
         notice.className = 'text-amber-200 text-sm';
-        notice.textContent = 'Für diesen alten Kontakt gibt es noch keinen Schlüssel. Bitte erneut anlegen.';
+        notice.textContent = 'Noch kein Schlüssel vorhanden.';
         actions.append(notice);
+        const makeKey = document.createElement('button');
+        makeKey.type = 'button';
+        makeKey.textContent = '🔑 Schlüssel erstellen';
+        makeKey.className = 'px-3 py-2 rounded-lg bg-indigo-700 text-white';
+        makeKey.addEventListener('click', async () => {
+          if (!vaultReady) return;
+          makeKey.disabled = true;
+          try {
+            const saved = await updateLocalConfig(cfg => {
+              if (!cfg.alarmPersons?.some(item => item.id === person.id)) throw new Error('Person nicht mehr vorhanden.');
+              if (!currentDecryptedVault.trusteeKeys) currentDecryptedVault.trusteeKeys = {};
+              if (!currentDecryptedVault.trusteeKeys[person.id]) {
+                const bytes = crypto.getRandomValues(new Uint8Array(32));
+                currentDecryptedVault.trusteeKeys[person.id] =
+                  Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+              }
+            });
+            if (!saved) throw new Error('Speichern fehlgeschlagen.');
+            const backedUp = await syncVaultToFirebase(true);
+            if (!backedUp) alert('Schlüssel nur auf diesem Gerät gespeichert. Bitte online sichern.');
+            renderAlarmPersons();
+          } catch (_) {
+            alert('Schlüssel konnte nicht gespeichert werden.');
+            makeKey.disabled = false;
+          }
+        });
+        actions.append(makeKey);
       } else {
         [['✉️ E-Mail', 'email'], ['💬 WhatsApp', 'whatsapp'], ['🖨️ Drucken', 'print']].forEach(([label, action]) => {
           const button = document.createElement('button');
