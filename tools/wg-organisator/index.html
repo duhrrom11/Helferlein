@@ -1199,7 +1199,7 @@
                     // data while an unconfirmed local write could be overwritten.
                     const saved = await speichereWGinCloud();
                     if (!saved || secureWgDirty) {
-                        alert('WG-Änderungen sind noch nicht in Supabase gespeichert. Lokale Daten bleiben erhalten.');
+                        alert('Deine Änderungen sind auf diesem Gerät gespeichert. Die Online-Sicherung steht noch aus.');
                         return;
                     }
                 }
@@ -1208,7 +1208,7 @@
                 const loaded = await ladeWGausCloud();
                 if (!loaded) throw new Error('Cloud-Daten konnten nicht geladen werden');
                 renderApp();
-                alert("✅ Erfolgreich mit der Cloud synchronisiert!");
+                alert("Gespeichert");
             } catch (e) {
                 alert("❌ Synchronisation fehlgeschlagen.");
             }
