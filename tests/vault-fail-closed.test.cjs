@@ -6,7 +6,7 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'tools', 'digitaler-nach
 const legacy = fs.readFileSync(path.join(__dirname, '..', 'assets', 'heir-owner-legacy.js'), 'utf8');
 const controller = fs.readFileSync(path.join(__dirname, '..', 'assets', 'a10-consent-ui.js'), 'utf8');
 assert.match(controller, /const PRODUCTION_RELEASE_ENABLED = false/);
-assert.match(controller, /elements\\.forEach\\(el => \\{ el\\.disabled = true/);
+assert.ok(controller.includes('elements.forEach(el => { el.disabled = true'), 'controller must hard-disable all controls');
 const checks = [
   ['read stored vault', /const storedVault = localStorage\.getItem\('digital_estate_vault'\)/],
   ['create only when absent', /if \(storedVault === null\)/],
