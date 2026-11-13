@@ -1,5 +1,10 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 echte manipulierte Dateiauswahl vor IDB-Staging ablehnen (2026-11-13)
+
+Der isolierte Chromium-Integrationstest waehlt jetzt zusaetzlich eine **tatsaechlich veraenderte** Backup-Datei (gleicher Dateiname und JSON-MIME-Typ, aber ein zusaetzliches Leerzeichen im Dateiinhalt). Trotz gueltigem JSON muss die SHA-256-Pruefung vor jeder IndexedDB-Schreibtransaktion ablehnen. Erst die danach erneut ausgewaehlte unveraenderte Datei darf nach kryptografischer Recovery inaktiv gestaged werden. Keine produktive Einbindung, kein echter Geraetewechsel, keine Supabase-Daten und keine Aktivierung. **A10 bleibt NO-GO.**
+
+
 ## A10 SHA-256-attestierter echter Browser-Datei-Handoff (2026-11-13)
 
 Der bestehende isolierte Chromium-Ende-zu-Ende-Test `tests/a10-browser-file-to-idb-recovery.cjs` fuehrt jetzt auch das Integritaetsattest aus PR #367 und die Single-Snapshot-Recovery aus PR #368 **im selben echten Browser-Datei-Handoff** aus. Synthetischer Export, tatsaechlicher Download, Dateiauswahl in einem frischen Browserkontext, SHA-256-Abgleich, kryptografische V1/V2-Recovery, inaktives verschluesseltes IndexedDB-Staging und Reload werden gemeinsam geprueft. Ein manipuliertes Attest und ein falsches Backup-Passwort muessen vor dem Schreiben scheitern. Keine produktive A10-Einbindung, kein echter Geraetewechsel, keine Supabase-Daten. **A10 bleibt NO-GO.**
