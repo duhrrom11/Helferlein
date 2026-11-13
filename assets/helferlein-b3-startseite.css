@@ -127,3 +127,37 @@ body.b3-home .b3-quickstart-empty{margin-top:.55rem;color:#fff;font-size:.9rem;l
 body.b3-home .tool-card p{font-size:.9rem;line-height:1.65;margin-top:.7rem}
 body.b3-home .tool-card>div:last-child{display:flex;justify-content:flex-end}
 @media(max-width:790px){body.b3-home .b3-hero-preview{display:block}}
+
+/* Der Kontostatus ist eine große, klar erkennbare Schaltfläche. */
+body.b3-home .b3-hub-nav .b3-auth-status{
+  color:#fff!important;
+  border:2px solid #ffffff80!important;
+  border-radius:999px!important;
+  padding:.65rem 1rem!important;
+  font-weight:850!important;
+  letter-spacing:.01em;
+  text-align:center;
+  cursor:pointer;
+  white-space:nowrap;
+  animation:b3-auth-pulse 2.6s ease-in-out infinite;
+}
+body.b3-home .b3-hub-nav .b3-auth-status.b3-auth-signed-in{
+  background:#15803d!important;
+  --b3-auth-glow:rgba(34,197,94,.53);
+}
+body.b3-home .b3-hub-nav .b3-auth-status.b3-auth-signed-out{
+  background:#b45309!important;
+  --b3-auth-glow:rgba(245,158,11,.52);
+}
+body.b3-home .b3-hub-nav .b3-auth-status:hover{filter:brightness(1.12)}
+body.b3-home .b3-hub-nav .b3-auth-status:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@keyframes b3-auth-pulse{
+  0%,100%{box-shadow:0 0 0 0 var(--b3-auth-glow)}
+  50%{box-shadow:0 0 0 8px transparent}
+}
+@media(prefers-reduced-motion:reduce){
+  body.b3-home .b3-hub-nav .b3-auth-status{animation:none}
+}
+@media(max-width:450px){
+  body.b3-home .b3-hub-nav .b3-auth-status{font-size:.72rem!important;padding:.55rem .7rem!important;white-space:normal}
+}
