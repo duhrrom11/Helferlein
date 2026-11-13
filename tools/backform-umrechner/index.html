@@ -558,7 +558,7 @@
             <!-- Cloud-Konto Status & Login -->
             <div class="space-y-3">
                 <div id="cloud-status-box" class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 flex items-center justify-between">
-                    <span id="cloud-status-text">Status: Nicht angemeldet</span>
+                    <span id="cloud-status-text">Nicht angemeldet</span>
                     <span id="cloud-user-email" class="font-bold text-slate-900"></span>
                 </div>
 
@@ -694,7 +694,7 @@
                 userEmailSpan.innerText = user.email;
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Status: Nicht angemeldet";
+                statusText.innerText = "Nicht angemeldet";
                 userEmailSpan.innerText = "";
                 btnLogout.classList.add('hidden');
             }
