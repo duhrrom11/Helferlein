@@ -807,7 +807,7 @@
                 lastPersistedRevision !== localSaveRevision) {
                 return alert('Bitte warten, bis alle lokalen Änderungen gespeichert sind.');
             }
-            if (!silent && !confirm('Den aktuell lokal verschlüsselten Tresor einschließlich verschlüsselter Kontakte und Check-in-Einstellungen im angemeldeten Supabase-Konto sichern? Ein unverschlüsselter Tresorschlüssel wird nicht hochgeladen. Für den Gerätewechsel muss zusätzlich ein Wiederherstellungspasswort vorbereitet werden; eine verschlüsselte lokale Sicherungsdatei bleibt empfohlen.')) return;
+            if (!silent && !confirm('Den aktuell lokal verschlüsselten Tresor einschließlich verschlüsselter Kontakte und Check-in-Einstellungen im angemeldeten Supabase-Konto sichern? Ein unverschlüsselter Tresorschlüssel wird nicht hochgeladen. Für den Gerätewechsel muss zusätzlich ein Wiederherstellungspasswort vorbereitet werden; eine verschlüsselte lokale Sicherungsdatei bleibt empfohlen.')) return false;
             const button = document.getElementById('supabaseBackupBtn');
             if (button) button.disabled = true;
             try {
