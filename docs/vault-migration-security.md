@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 Dateigebundene Wiederherstellung vor isoliertem Staging (2026-11-13)
+
+`assets/a10-file-bound-recovery-staging.js` akzeptiert ausschliesslich eine explizit ausgewaehlte verschluesselte V1-Backup-Datei. Name, Groesse, Dateityp und kryptografisches Backup-Format werden vor der weiteren Verarbeitung geprueft. Das Backup aus dem Arbeitsspeicher wird absichtlich **nicht** als Ersatz akzeptiert: Die ausgewaehlte Datei wird zusammen mit der V2-Huelle durch die bestehende unabhaengige Recovery-Pruefung gefuehrt. Ein gueltiges, aber **inhaltlich fremdes** V1-Backup derselben Tresor-ID muss vor jedem Schreibversuch scheitern. Der gezielte synthetische Test prueft diese Bindung, fehlende Zustimmung, fehlerhafte Dateien, unveraendertes V1 und inaktives verschluesseltes Staging.
+
+**Release-Grenze:** Der Test verwendet eine synthetische `File`-Instanz in Node, nicht zwei echte Geraete; der echte Chromium-Dateidownload ist separat getestet. Keine produktive UI, keine persistente Backup-Garantie, keine Aktivierung, kein Supabase-Zugriff und keine produktive Migration. **A10 bleibt NO-GO.**
+
+
 ## A10 verifizierte V1-Wiederherstellung vor isoliertem V2-Staging (2026-11-13)
 
 `assets/a10-recovery-verified-staging.js` verbindet die bestehende kryptografische Wiederherstellungspruefung des unabhaengig verschluesselten V1-Backups mit dem vorhandenen V2-Staging-Gate. Separate Passwoerter, ausdrueckliche Einwilligung, bestaetigte Tresor-ID und `confirmStagingOnly` sind Pflicht. Erst nach erfolgreich erneut gepruefter V1- und V2-Entschluesselung darf der Aufrufer den isolierten Staging-Treiber verwenden. Fehler vor der Staging-Phase verursachen keinen Schreibversuch; bereits belegte V2-Ziele werden atomar abgewiesen. Der fokussierte synthetische Test prueft die Fehlergrenzen, unveraendertes V1, keine Klartextschluessel im gespeicherten Staging-Datensatz und kein Ueberschreiben.
