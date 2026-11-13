@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## Isolierter echter verschluesselter Backup-Dateitransfer (2026-11-13)
+
+`assets/a10-backup-file-handoff.js` stellt nur fuer einen ausdruecklich bestaetigten Browser-Download eine verschluesselte V1-Backup-JSON-Datei bereit; der Aufruf muss aus einer Nutzerinteraktion erfolgen. `previewSelectedFile` liest eine ausgewaehlte Datei mit Groessen-, Namens- und Formatpruefung und gibt sie ausschliesslich an den bestehenden read-only Import-Preview weiter. Der Download-Status `DOWNLOAD_REQUESTED_NOT_VERIFIED` bestaetigt **nicht**, dass ein Nutzer die Datei dauerhaft aufbewahrt hat. Ein fokussierter Chromium-Test laedt eine echte Datei auf die Test-Festplatte herunter und waehlt diese in einem **frischen Browserkontext** erneut aus; Entschluesselung, Originalgleichheit, falsches Passwort, vorhandenes Ziel und ausbleibende Browser-Speicherung werden kontrolliert.
+
+**Grenze:** Das ist ein synthetischer, lokaler Datei-Rundlauf, keine Wiederherstellung auf einem physisch anderen Geraet, kein produktiver V1→V2-Import, keine atomare Tresoraktivierung und keine sichere Ablagegarantie. Weder das Modul noch der Test sind in die produktive UI eingebunden. **A10 bleibt NO-GO.**
+
+
 ## Isolierte V1-zu-V2-Migrationsvorbereitung mit unabhaengigem Backup (2026-11-13)
 
 `assets/a10-v1-v2-migration-preflight.js` verlangt ausdrueckliche Zustimmung, bestaetigte Tresor-ID, bestaetigtes separates Backup und **verschiedene** Backup- und V2-Passwoerter. Die bestehende V1-Normalisierung authentifiziert den inneren V1-AES-GCM-Ciphertext. Das **unveraenderte Original** wird als unabhaengiges verschluesseltes V1-Backup erstellt und testweise entschluesselt und verglichen; anschliessend wird das normalisierte V1 in einer separaten verschluesselten V2-Huelle vorbereitet und erneut authentifiziert und verglichen. `verifyRecovery` nimmt nur die verschluesselten Artefakte und beide Passwoerter an und bestaetigt den erneuten unabhaengigen Rundlauf, ohne entschluesselte Tresordaten zurueckzugeben. Ein gezielter synthetischer Node/WebCrypto-Test prueft Rundlauf, historisch fehlendes `alarmPersons`, Passwortfehler, ID-Konflikt und unveraendertes V1-Objekt.
