@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 manuell bestaetigte atomare Bereinigung verwaister Reservierungen (isoliert, 2026-11-13)
+
+`assets/a10-orphan-cleanup.js` ist **nicht produktiv eingebunden**. `cleanup(indexedDB,dbName,vaultId,expectedFingerprint,{explicitConsent:true,confirmVaultId,confirmFingerprint})` entfernt ausschliesslich einen exakt passenden `RESERVED_NO_IMPORT`-Marker, dessen Tresor-ID, SHA-256-Fingerabdruck, Format, Revision und Inaktivitaet in derselben IndexedDB-`readwrite`-Transaktion geprueft werden. Abweichungen, zwischenzeitliche Belegung, falsche Bestaetigungen und V1-Datensaetze fuehren zum Abbruch ohne Loeschung. Ein fehlendes Datenbankziel wird nicht angelegt. Keine automatische Bereinigung, kein echter Import, keine Aktivierung.
+
+`tests/a10-browser-orphan-cleanup.cjs` prueft synthetisch in zwei echten Chromium-Tabs genau einen erfolgreichen Bereinigungsversuch, Konflikte fuer den zweiten Tab, manipulierte Fingerabdruecke, fehlende Zustimmung und den nach Reload unveraenderten V1-Rueckfallstand. Ein fremder Reservierungsmarker bleibt erhalten.
+
+**Grenzen:** Der Marker-Fingerabdruck beweist keine Herkunft und ersetzt keine manuelle Pruefung. Bereinigung kann eine alte Reservierung entfernen, erlaubt aber **keine** automatische Wiederherstellung oder Aktivierung. Keine produktiven Datenbanken oder Konten. **A10 bleibt NO-GO.**
+
+
 ## A10 Abbruch, SIGKILL und verwaiste Import-Reservierungen (isoliert, 2026-11-13)
 
 `assets/a10-reservation-recovery.js` ist **nicht produktiv eingebunden** und bietet ausschliesslich die schreibgeschuetzte Entscheidung `inspect(indexedDB,dbName,vaultId)`. Eine leere Stelle wird als `EMPTY_NO_RESERVATION` eingestuft, eine bestehende V1-Konfiguration als `EXISTING_V1_KEEP_UNCHANGED` und ein gueltiger isolierter Reservierungsmarker als `ORPHANED_RESERVATION_MANUAL_REVIEW`. Beschaedigte oder fremde Marker werden abgewiesen. Keine automatische Bereinigung, kein Resume, keine Freigabe belegter Ziele, kein Import und keine Aktivierung.
