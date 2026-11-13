@@ -1191,7 +1191,7 @@
                     <div>
                         <span class="font-bold text-slate-100">${escapeHtml(p.name)}</span>
                         ${p.contact ? `<span class="text-slate-400 text-[11px] ml-2">(${escapeHtml(p.contact)})</span>` : ''}
-                        <p class="text-amber-300 text-[11px]">Noch keine Erbenberechtigung: Der Versand von Tresorschlüsseln ist gesperrt.</p>
+                        
                     </div>
                     <button data-idx="${idx}" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px] delete-person-btn">Kontakt entfernen</button>
                 </div>
@@ -1390,20 +1390,67 @@
             alert(trusteesCloudSaved ? "Gespeichert" : "Nur auf diesem Gerät gespeichert. Der Notfallzugang ist gerade nicht verfügbar.");
         }
 
-        // Render Notfall-Kit Vorschau mit QR-Codes (Zuverlässig für alle Personen)
+        // Emergency contact sheet: no secret keys, passwords or access links.
         function renderPrintableKit() {
             const container = document.getElementById('kitSharesPreview');
             if (!container) return;
-            container.innerHTML = '<p class="text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-3 col-span-full">Die Ausgabe von Notfall-Links und QR-Codes mit dem Tresorschlüssel wurde aus Sicherheitsgründen deaktiviert. Bestehende Unterlagen bleiben vertraulich und müssen nach Einführung der neuen Schlüsselübergabe ersetzt werden.</p>';
+            const contacts = getVaultConfig()?.alarmPersons || [];
+            container.replaceChildren();
+            const intro = document.createElement('p');
+            intro.className = 'text-sm text-slate-300 col-span-full';
+            intro.textContent = contacts.length
+                ? 'Diese Kontakte stehen auf deinem Ausdruck. Passwörter und geheime Schlüssel werden nicht mitgedruckt.'
+                : 'Noch keine Notfallkontakte eingetragen. Du kannst sie unter „Vertrauenspersonen“ hinzufügen.';
+            container.append(intro);
+            for (const person of contacts) {
+                const card = document.createElement('div');
+                card.className = 'rounded-xl border border-slate-700 p-3 text-sm text-slate-100';
+                const name = document.createElement('strong');
+                name.textContent = person.name || 'Kontakt';
+                const detail = document.createElement('p');
+                detail.textContent = person.contact || '';
+                card.append(name, detail);
+                container.append(card);
+            }
         }
 
-        async function generatePrintableKitPDF() {
-            alert('Notfall-PDFs mit Entschlüsselungsschlüsseln sind bis zur sicheren serverseitigen Erbenfreigabe deaktiviert.');
-            return false;
+        function generatePrintableKitPDF() {
+            const contacts = getVaultConfig()?.alarmPersons || [];
+            if (!contacts.length) {
+                alert('Bitte lege zuerst einen Notfallkontakt an.');
+                return false;
+            }
+            const printable = window.open('', '_blank');
+            if (!printable) {
+                alert('Bitte erlaube das Öffnen eines neuen Fensters und versuche es erneut.');
+                return false;
+            }
+            const doc = printable.document;
+            doc.title = 'Meine Notfallkontakte';
+            const style = doc.createElement('style');
+            style.textContent = 'body{font:18px/1.5 system-ui,sans-serif;color:#17223d;max-width:750px;margin:40px auto;padding:0 20px}h1{font-size:28px}li{margin:18px 0;break-inside:avoid}small{color:#555}@media print{body{margin:15mm auto}}';
+            doc.head.append(style);
+            const title = doc.createElement('h1');
+            title.textContent = 'Meine Notfallkontakte';
+            const note = doc.createElement('p');
+            note.textContent = 'Diese Liste enthält keine Passwörter oder Zugangsschlüssel.';
+            const list = doc.createElement('ol');
+            for (const person of contacts) {
+                const item = doc.createElement('li');
+                const name = doc.createElement('strong');
+                name.textContent = person.name || 'Kontakt';
+                const detail = doc.createElement('div');
+                detail.textContent = person.contact || '';
+                item.append(name, detail);
+                list.append(item);
+            }
+            doc.body.append(title, note, list);
+            printable.focus();
+            printable.print();
+            return true;
         }
 
-    
-// Replace legacy inline event attributes with delegated, explicit listeners.
+    // Replace legacy inline event attributes with delegated, explicit listeners.
 document.querySelector('[data-heir-auth-action="login"]')?.addEventListener('click',()=>supabaseLogin());
 document.querySelector('[data-heir-auth-action="register"]')?.addEventListener('click',()=>supabaseRegister());
 document.getElementById('btn-logout')?.addEventListener('click',()=>supabaseLogout());
