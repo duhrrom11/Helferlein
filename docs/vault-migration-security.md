@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 historische V1-Konfiguration: explizite Normalisierung (2026-11-13, isoliert)
+
+Der inaktive Baustein `assets/a10-historical-v1-normalizer.js` nimmt nur bei `explicitConsent: true` ein synthetisches V1-Objekt entgegen. Er validiert Tresor-ID, Masterkey, erforderliche Konfiguration, Kontaktstrukturen sowie die **tatsaechliche AES-GCM-Authentizitaet** des verschluesselten `entries`-Payloads. Nur das im Legacy-`initVault()` optional nachgetragene Feld `alarmPersons` wird bei Abwesenheit explizit mit `[]` ergaenzt. Alle unbekannten Zusatzfelder werden unveraendert uebernommen; vorhandene Werte werden nicht ersetzt. Der Aufruf gibt eine separate Kopie und die Liste der Ergaenzungen zurueck. Keine lokalen Schreibvorgaenge, keine Aktivierung und keine Aenderung am Original.
+
+`tests/a10-browser-historical-v1.cjs` prueft in echtem Chromium mit rein synthetischen Daten: fehlendes `alarmPersons`, vorhandenes optionales Feld, unbekannte verschachtelte Zusatzfelder, verweigerte Einwilligung, beschaedigte IV/Ciphertext- oder Masterkey-Daten, fehlende erforderliche Felder, ungueltige Kontakte und Datumswerte sowie verschluesseltes Backup mit Wiederherstellung und Negativfaellen. Der bereits bestehende portable Backup-Test prueft separat die Wiederherstellung nach Loeschen des urspruenglichen Browserprofils.
+
+**Bewusste Grenzen:** Fehlende Besitzerangaben, Vertrauenspersonen, IDs, Check-in-Daten und sonstige unbekannte historische Varianten werden **nicht** stillschweigend erfunden oder repariert. Historische Produktivdaten wurden nicht eingesehen; Vollstaendigkeit der realen Varianten ist nicht bewiesen. Die Normalisierung ist nicht in der App verdrahtet und darf keine automatische Migration ausloesen. Ein Benutzer-Export-/Importprozess und Sicherheitsfreigabe fehlen. **A10 bleibt NO-GO.**
+
+
 ## A10 V1-Quellcode-Schemaabgleich (2026-11-13, isoliert)
 
 `tests/a10-browser-v1-schema-contract.cjs` untersucht den Quelltext von `assets/heir-owner-legacy.js` **ohne ihn auszufuehren**. Der Test prueft die in `initVault()` erzeugten V1-Felder (`vaultId`, `masterKeyHex`, `encryptedData`, `ownerName`, `ownerEmail`, `checkInIntervalDays`, `lastCheckIn`, `trustees`, `alarmPersons`), die drei Standard-Vertrauenspersonen und die AES-GCM-Struktur `{ciphertext,iv}`. Eine synthetische Fixture mit diesem Schema wird in echtem Chromium verschluesselt, als passwortgeschuetztes V1-Backup exportiert, wiederhergestellt und der Payload erneut entschluesselt. Negativtests pruefen fehlenden Schluessel, falsche ID, IV/Ciphertext, Intervall, Kontakte, Zeitstempel, falsches Passwort und manipuliertes Backup. Die Original-Fxture bleibt unveraendert.
