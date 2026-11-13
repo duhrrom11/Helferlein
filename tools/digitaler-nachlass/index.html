@@ -196,6 +196,17 @@ body{background:#f1f5f9!important;color:#12253f!important}
                     </div>
                 </div>
 
+                <section id="estateEmergencyOwner" class="p-5 bg-slate-900 border border-slate-700 rounded-2xl space-y-3" aria-labelledby="estateEmergencyTitle">
+                  <h4 id="estateEmergencyTitle" class="text-lg font-bold text-white">⏰ Notfallalarm</h4>
+                  <p class="text-slate-200">Du kannst deine Schlüssel für die Alarmprüfung hinterlegen und nachsehen, ob ein Alarm läuft.</p>
+                  <p class="text-amber-200">Die Benachrichtigung per E-Mail und die Tresoröffnung sind noch nicht aktiv.</p>
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" id="estateRegisterKeys" class="px-4 py-3 bg-indigo-700 text-white rounded-xl">🔑 Schlüssel hinterlegen</button>
+                    <button type="button" id="estateRefreshAlarm" class="px-4 py-3 bg-slate-700 text-white rounded-xl">Alarm prüfen</button>
+                    <button type="button" id="estateCancelAlarm" class="px-4 py-3 bg-emerald-700 text-white rounded-xl">❤️ Ich lebe noch – Alarm beenden</button>
+                  </div>
+                  <p id="estateEmergencyStatus" role="status" aria-live="polite" class="text-slate-200">Noch kein Alarmstatus abgefragt.</p>
+                </section>
                 <!-- PERSONEN FÜR NOTFALL-TRIGGER & EMAIL -->
                 <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
                     <p class="estate-subtitle">Für jede neue Person wird ein persönlicher Schlüssel erstellt. Du kannst ihn per E-Mail oder WhatsApp weitergeben oder ausdrucken.</p><h4 class="text-xs font-bold text-indigo-400">Meine Vertrauenspersonen (bis zu 10)</h4>
@@ -311,5 +322,6 @@ body{background:#f1f5f9!important;color:#12253f!important}
     <script src="../../assets/heir-owner-legacy.js"></script>
 <script defer src="../../assets/estate-simple-ui.js"></script>
 <script defer src="../../assets/estate-trustee-keys.js"></script>
+<script defer src="../../assets/estate-emergency-owner.js"></script>
 </body>
 </html>
