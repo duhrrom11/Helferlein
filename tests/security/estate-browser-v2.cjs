@@ -37,7 +37,7 @@ const root=path.resolve(__dirname,'../..');
   }
   if(u.pathname.includes('/functions/v1/estate-emergency')){
    // Browser origin checks remain production-exact in the actual handler.
-   const headers={...req.headers(),Origin:'https://duhrrom11.github.io'};
+   const headers={...req.headers(),origin:'https://duhrrom11.github.io'};
    const response=await handler(new Request(req.url(),{method,headers,body:JSON.stringify(body)}));return route.fulfill({status:response.status,headers:{...Object.fromEntries(response.headers),'access-control-allow-origin':origin},body:await response.text()});
   }
   if(u.pathname==='/rest/v1/vault_cloud_snapshots'){

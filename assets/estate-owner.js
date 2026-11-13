@@ -6,7 +6,7 @@
  const $=id=>document.getElementById(id);
  let user=null,key=null,payload=null,config=null,record=null,stamp=null,version=0,mailReady=false,busy=false,ownRaw=null,editId=null,idle=null;
  function message(text,error=false){$('message').hidden=false;$('message').textContent=text;$('message').classList.toggle('error',error);}
- const errors={conflict:'Der Tresor wurde auf einem anderen Gerät geändert. Schließe ihn und melde dich erneut an. Deine Änderungen auf diesem Gerät bleiben verschlüsselt erhalten.',login_required:'Bitte melde dich erneut an.',backup_required:'Bitte sichere zuerst deinen Tresor online.',rate_limited:'Zu viele Versuche. Bitte warte eine Minute.',notification_unavailable:'Die Alarm-E-Mail ist noch nicht eingerichtet. Es wurde kein Alarm gestartet.',reauthenticate:'Bitte bestätige dein Konto-Passwort erneut.'};
+ const errors={conflict:'Der Tresor wurde auf einem anderen Gerät geändert. Nutze zunächst das Gerät mit dem aktuellen Stand. Deine Änderungen hier bleiben verschlüsselt erhalten.',login_required:'Bitte melde dich erneut an.',backup_required:'Bitte sichere zuerst deinen Tresor online.',rate_limited:'Zu viele Versuche. Bitte warte eine Minute.',notification_unavailable:'Die Alarm-E-Mail ist noch nicht eingerichtet. Es wurde kein Alarm gestartet.',reauthenticate:'Bitte bestätige dein Konto-Passwort erneut.'};
  function errorText(e){return errors[e.message] || (e.message?.startsWith('Bitte ')||e.message?.startsWith('Deine ')||e.message?.startsWith('Dieser ')||e.message?.startsWith('Die ')||e.message?.startsWith('Vorhandene ')||e.message?.startsWith('Kein ') ? e.message : 'Das hat nicht geklappt. Prüfe deine Verbindung und deine Passwörter. Vorhandene Daten bleiben erhalten.');}
  async function run(fn){if(busy)return;busy=true;document.querySelectorAll('button').forEach(b=>{if(!b.closest('dialog'))b.disabled=true;});try{await fn();}catch(e){message(errorText(e),true);}finally{busy=false;document.querySelectorAll('button').forEach(b=>b.disabled=false);}}
  function node(tag,text,cls){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(cls)el.className=cls;return el;}
@@ -41,7 +41,7 @@
    }
   }else if(local){
    if(!/^[a-f0-9]{64}$/i.test(local.masterKeyHex||'')||!local.vaultId)throw Error('Vorhandene Gerätedaten sind unvollständig. Sie wurden nicht verändert.');
-   if(local.ownerEmail&&local.ownerEmail.toLowerCase()!==user.email.toLowerCase())throw Error('Dieser Gerätetresor nennt eine andere E-Mail-Adresse. Bitte melde dich mit dem dazugehörigen Konto an.');
+   if(local.ownerEmail&&local.ownerEmail.toLowerCase()!==user.email.toLowerCase()&&remote?.vault_id!==local.vaultId)throw Error('Dieser Gerätetresor nennt eine andere E-Mail-Adresse. Bitte melde dich mit dem dazugehörigen Konto an.');
    if(remote&&remote.vault_id!==local.vaultId)throw Error('Dieser Gerätetresor und deine Online-Sicherung sind unterschiedlich. Bitte öffne die Online-Sicherung in einem anderen Browserprofil. Beide Stände bleiben erhalten.');
    workingKey=local.masterKeyHex;workingPayload=validatePayload(await C.decrypt(local.encryptedData,workingKey));workingConfig=normalizeConfig(local);stamp=remote?.updated_at||null;
    if(remote&&JSON.stringify(remote.encrypted_data)!==JSON.stringify(local.encryptedData)){
@@ -63,7 +63,7 @@
   key=workingKey;payload=workingPayload;config=workingConfig;payload.trusteeKeys||={};
   // Existing preparation keys remain valid; only contacts without a key receive one.
   for(const p of config.alarmPersons){p.id=String(p.id||('p_'+C.random().slice(0,32)));if(!/^[a-f0-9]{64}$/.test(payload.trusteeKeys[p.id]||''))payload.trusteeKeys[p.id]=C.random();}
-  config.ownerEmail=user.email;
+  config.ownerEmail=user.email;config.vaultId=local?.vaultId||remote?.vault_id||config.vaultId;
   const encryptedData=await C.encrypt(payload,key),encryptedConfig=await C.encrypt(config,key);
   // Check the replacement before atomically replacing the legacy plaintext-key record.
   validatePayload(await C.decrypt(encryptedData,key));await C.unwrap(recovery,vaultPassword);await authenticated();
