@@ -115,13 +115,6 @@
                 const el = document.getElementById(id);
                 if (el) el.addEventListener('click', handler);
             };
-
-            bindClick('manualSyncBtn', () => syncVaultToFirebase(false));
-            bindClick('supabaseBackupBtn', () => backupVaultToSupabase());
-            bindClick('supabaseBackupStatusBtn', () => checkSupabaseVaultBackup());
-            bindClick('supabaseRestorePreviewBtn', () => previewSupabaseVaultRecovery());
-            bindClick('supabaseRecoveryKeyBtn', () => prepareSupabaseRecoveryKey());
-            bindClick('supabaseRestoreBtn', () => restoreVaultFromSupabase());
             bindClick('closeModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             bindClick('closeSuccessModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             bindClick('clearAlarmBtn', clearEmergencyAlarm);
