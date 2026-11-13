@@ -25,7 +25,7 @@ const http = require('node:http');
   const server = http.createServer(async (req, res) => {
     if (req.url === '/') {
       res.writeHead(200, { 'Content-Type': 'text/html' });
-      res.end('<!doctype html><title>A10 isolated</title><input type="file" id="backup">');
+      res.end('<!doctype html><title>A10 isolated</title><input type="file" id="backup"><input type="file" id="attestation">');
       return;
     }
     const name = req.url.slice(1);
@@ -80,10 +80,15 @@ const http = require('node:http');
     const exportedPath = path.join(temp, download.suggestedFilename());
     await download.saveAs(exportedPath);
     assert.equal((await fs.readFile(exportedPath, 'utf8')).includes(prepared.legacy.masterKeyHex), false);
+    // The attestation is retained as an independent sidecar file, rather than
+    // transferred as an in-memory token from the exporting browser context.
+    const sidecarPath = path.join(temp, 'a10-backup-sha256-attestation.json');
+    await fs.writeFile(sidecarPath, JSON.stringify(prepared.attestation), { flag: 'wx', mode: 0o600 });
     await origin.close();
     const fresh = await browser.newContext();
     const receiver = await setup(fresh);
     await receiver.locator('#backup').setInputFiles(exportedPath);
+    await receiver.locator('#attestation').setInputFiles(sidecarPath);
     // The attacker changes the actual selected file bytes while preserving its
     // expected name and JSON MIME type. Attestation must reject before any IDB write.
     const exportedBytes = await fs.readFile(exportedPath);
@@ -92,7 +97,8 @@ const http = require('node:http');
       name: 'helferlein-a10-v1-encrypted-backup.json',
       mimeType: 'application/json', buffer: tamperedBytes
     });
-    const tamperedFileResult = await receiver.evaluate(async ({ artifacts, attestation, credentials }) => {
+    const tamperedFileResult = await receiver.evaluate(async ({ artifacts, credentials }) => {
+      const attestation = JSON.parse(await document.querySelector('#attestation').files[0].text());
       const { vaultId, backupPassword, v2Password } = credentials;
       const driver = HelferleinA10V2IndexedDB.driver(indexedDB,
         'a10-isolated-v2-file-to-idb-synthetic');
@@ -105,11 +111,12 @@ const http = require('node:http');
           backupPassword, v2Password, options);
       } catch (_) { rejected = true; }
       return { rejected, stored: await driver.read(vaultId) };
-    }, { artifacts: prepared.artifacts, attestation: prepared.attestation, credentials });
+    }, { artifacts: prepared.artifacts, credentials });
     assert.equal(tamperedFileResult.rejected, true, 'modified selected file must be rejected');
     assert.equal(tamperedFileResult.stored, undefined, 'tampered file must not stage');
     await receiver.locator('#backup').setInputFiles(exportedPath);
-    const result = await receiver.evaluate(async ({ artifacts, attestation, credentials }) => {
+    const result = await receiver.evaluate(async ({ artifacts, credentials }) => {
+      const attestation = JSON.parse(await document.querySelector('#attestation').files[0].text());
       const { vaultId, backupPassword, v2Password } = credentials;
       const file = document.querySelector('#backup').files[0];
       const dbName = 'a10-isolated-v2-file-to-idb-synthetic';
