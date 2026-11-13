@@ -29,7 +29,7 @@
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
             const { error } = await supabaseClient.auth.signUp({ email, password });
-            if(error) alert(error.message);
+            if(error) alert('Das hat leider nicht geklappt. Bitte prüfe deine Angaben und versuche es erneut.');
             else { alert('Registrierung erfolgreich!'); checkUserSession(); }
         }
 
@@ -38,7 +38,7 @@
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-            if(error) alert(error.message);
+            if(error) alert('Das hat leider nicht geklappt. Bitte prüfe deine Angaben und versuche es erneut.');
             else { alert('Erfolgreich angemeldet!'); checkUserSession(); }
         }
 
@@ -908,7 +908,7 @@
                 return true;
             } catch (error) {
                 console.error('Online-Sicherung fehlgeschlagen:', error);
-                if (!silent) alert('Online-Sicherung nicht bestätigt: ' + (error?.message || 'Unbekannter Fehler') + '. Lokale Daten bleiben erhalten.');
+                if (!silent) alert('Deine Daten konnten gerade nicht online gespeichert werden. Sie bleiben auf diesem Gerät erhalten.');
                 return false;
             } finally {
                 if (button) button.disabled = false;
@@ -923,7 +923,7 @@
             }).catch(error => {
                 console.error('Supabase-Synchronisierung fehlgeschlagen:', error);
                 showVaultSyncResult(false);
-                if (!silent) alert('Online-Sicherung fehlgeschlagen: ' + error.message);
+                if (!silent) alert('Online-Sicherung gerade nicht möglich. Deine Daten bleiben auf diesem Gerät erhalten.');
                 return false;
             });
             vaultSyncQueue = operation.then(() => undefined);
