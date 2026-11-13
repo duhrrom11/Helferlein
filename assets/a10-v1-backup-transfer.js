@@ -32,7 +32,10 @@
         if (!options || options.explicitConsent !== true) fail('A10_TRANSFER_EXPORT_CONFIRMATION_REQUIRED');
         const api = globalThis.HelferleinA10V1Backup;
         if (!api || typeof api.create !== 'function') fail('A10_TRANSFER_DEPENDENCY_MISSING');
-        const envelope = await api.create(legacy, password);
+        const normalizer = globalThis.HelferleinA10HistoricalV1;
+        if (!normalizer || typeof normalizer.normalize !== 'function') fail('A10_TRANSFER_DEPENDENCY_MISSING');
+        const checked = await normalizer.normalize(legacy, { explicitConsent: true });
+        const envelope = await api.create(checked.normalized, password);
         const text = JSON.stringify({ format: 'Helferlein-A10-Encrypted-V1', version: 1, backup: envelope });
         if (enc.encode(text).length > MAX_FILE_BYTES) fail('A10_TRANSFER_FILE_INVALID');
         return Object.freeze({ filename: 'helferlein-a10-v1-encrypted.json', mime: 'application/json', text });
