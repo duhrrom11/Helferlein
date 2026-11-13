@@ -42,9 +42,7 @@ body.b3-home .b3-filter{border:1px solid var(--hub-border);border-radius:999px;p
 body.b3-home .b3-filter:hover{border-color:#2eaaa7;color:var(--hub-ink)}
 body.b3-home .b3-filter[aria-pressed="true"]{background:#0b6c79;border-color:#0b6c79;color:#fff}
 body.b3-home #searchEmptyState{background:var(--hub-surface);border-color:var(--hub-border);color:var(--hub-muted)}
-body.b3-home #favoritesSection{padding:.9rem 0 .1rem}
-body.b3-home #favoritesSection h2{color:var(--hub-ink);font-weight:800;font-size:1rem;letter-spacing:0;text-transform:none;margin-bottom:1rem}
-body.b3-home #toolsGrid,body.b3-home #favoritesGrid{gap:1rem;align-items:stretch}
+body.b3-home #toolsGrid{gap:1rem;align-items:stretch}
 body.b3-home .tool-card{--card-accent:#087f86;--card-soft:#e5f8f4;position:relative;background:var(--hub-surface)!important;border:1px solid var(--hub-border)!important;border-radius:19px;padding:1.2rem;box-shadow:var(--hub-shadow)!important;overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s}
 body.b3-home .tool-card::before{height:4px!important;opacity:1!important;top:0;left:0;right:0;background:var(--card-accent)!important}
 body.b3-home .tool-card:hover{transform:translateY(-4px);border-color:var(--card-accent)!important;box-shadow:0 18px 34px #203a5822!important}
