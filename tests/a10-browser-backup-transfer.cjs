@@ -85,7 +85,7 @@ async function main() {
         assert.equal(results.storageUnchanged, true);
         assert.equal(results.preview.requiresSeparateCommit, true);
         assert.equal(results.preview.vaultId, exported.legacy.vaultId);
-        assert.deepEqual(results.preview.added, ['alarmPersons']);
+        assert.deepEqual(results.preview.added, []); // already normalized in detached export copy
         assert.deepEqual(results.preview.preview, { ...exported.legacy, alarmPersons: [] });
         console.log('PASS synthetic confirmed export and read-only import: lost profile, bad file/password, foreign ID, conflicts, original intact');
     } finally {
