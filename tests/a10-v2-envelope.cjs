@@ -1,8 +1,7 @@
 /* Focused isolated V2 envelope contract. No browser storage, production accounts or Supabase. */
 'use strict';
 const assert = require('node:assert/strict');
-const { webcrypto } = require('node:crypto');
-globalThis.crypto = webcrypto;
+// Node.js 22 exposes WebCrypto on globalThis.crypto; do not overwrite its getter.
 globalThis.btoa = text => Buffer.from(text, 'binary').toString('base64');
 globalThis.atob = text => Buffer.from(text, 'base64').toString('binary');
 const { seal, unlock } = require('../assets/a10-v2-encrypted-envelope.js');
