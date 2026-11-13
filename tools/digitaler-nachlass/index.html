@@ -372,6 +372,18 @@
                 </div>
             </div>
 
+            <section class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-3" aria-label="Cloud-Synchronisierung">
+                <h3 class="text-sm font-bold text-slate-100">☁️ Verschlüsselte Cloud-Synchronisierung</h3>
+                <p class="text-xs text-slate-400">Änderungen werden nach dem Speichern mit deinem angemeldeten Supabase-Konto synchronisiert. Der Tresorschlüssel bleibt lokal. Für die Wiederherstellung auf einem anderen Gerät benötigst du ein separat festgelegtes Wiederherstellungspasswort.</p>
+                <button id="supabaseBackupBtn" type="button" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white font-bold text-xs">Jetzt mit Cloud synchronisieren</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <button id="supabaseBackupStatusBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Cloud-Stand prüfen</button>
+                    <button id="supabaseRecoveryKeyBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Wiederherstellungspasswort einrichten</button>
+                    <button id="supabaseRestorePreviewBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Wiederherstellung prüfen</button>
+                    <button id="supabaseRestoreBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Aus Cloud wiederherstellen</button>
+                </div>
+            </section>
+
             <!-- Eigene Daten (Tresor-Inhaber) -->
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
                 <h3 class="text-sm font-bold text-slate-100">⚙️ Eigene Daten (Tresor-Inhaber)</h3>
