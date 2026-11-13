@@ -26,8 +26,8 @@ test('Nachlass original vault tabs and more actions are reachable',async({page})
  await expect(page.locator('#section-vault')).toBeHidden();
  await page.locator('.tab-btn[data-tab="trustees"]').click();
  await expect(page.locator('#section-trustees')).toBeVisible();
- await page.locator('#b3-nachlass-more>summary').click();
- await expect(page.locator('#manualSyncBtn')).toBeVisible();
+ await expect(page.locator('#b3-nachlass-more')).toHaveCount(0);
+ await expect(page.locator('#a10-migration-panel')).toHaveCount(0);
  await page.locator('.tab-btn[data-tab="kit"]').click();
  await expect(page.locator('#section-kit')).toBeVisible();
 });
