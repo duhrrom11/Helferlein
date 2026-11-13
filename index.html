@@ -88,10 +88,6 @@
    <span class="b3-hero-eyebrow">✦ Dein digitaler Werkzeugkasten</span>
    <h1>Mehr Alltag.<br><span>Weniger Aufwand.</span></h1>
    <p>Zwölf praktische Helfer für Finanzen, Zuhause, Organisation und unterwegs. Kostenlos im Browser – die meisten Funktionen auch ohne Konto.</p>
-   <div class="b3-hero-actions">
-    <a class="b3-hero-primary" href="#toolDiscovery">🔍 Tools entdecken</a>
-    <a class="b3-hero-secondary" href="#b3-quickstart-list">⭐ Mein Schnellstart</a>
-   </div>
    <p class="b3-hero-status">✓ 12 kostenlose Web-Apps &nbsp;·&nbsp; ✓ Ohne Installation</p>
   </div>
   <aside class="b3-hero-preview" aria-label="Dein Schnellstart">
@@ -99,7 +95,7 @@
    <div class="b3-preview-list" id="b3-quickstart-list" aria-live="polite">
     <p class="b3-quickstart-empty">Markiere unten ein Tool mit ⭐, damit es hier erscheint.</p>
    </div>
-   <p class="b3-preview-hint">Deine Favoriten erscheinen automatisch hier.</p>
+   <p class="b3-preview-hint">Hier erscheinen deine ersten drei Favoriten.</p>
   </aside>
  </div>
 </header>
@@ -112,9 +108,6 @@
  <div class="b3-discovery-top">
   <div><h2 class="b3-section-heading">Finde dein Helferlein</h2>
     <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">12 von 12 Tools</p></div>
-  <div class="b3-search-wrap"><span class="b3-search-icon" aria-hidden="true">⌕</span>
-   <label class="helferlein-field" for="searchBox"><span class="helferlein-field-label">Alltagstools durchsuchen</span><input type="search" id="searchBox" inputmode="search" autocomplete="off" aria-label="Alltagstools durchsuchen" oninput="filterTools()" placeholder="Tool oder Aufgabe suchen…"></label>
-  </div>
  </div>
  <div class="b3-categories" role="group" aria-label="Tool-Kategorien">
   <button type="button" class="b3-filter" data-b3-category-filter="alle" aria-pressed="true">Alle 12</button>
@@ -125,7 +118,7 @@
   <button type="button" class="b3-filter" data-b3-category-filter="tiere" aria-pressed="false">🐾 Tiere</button>
  </div>
 </section>
-<p id="searchEmptyState" class="hidden text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-4" role="status" aria-live="polite">Keine passenden Tools gefunden. Bitte Suche oder Kategorie ändern.</p>
+<p id="searchEmptyState" class="hidden text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-4" role="status" aria-live="polite">Keine Tools in dieser Kategorie gefunden.</p>
 
 <!-- Tools Grid (Alle 12 Tools) -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -451,7 +444,7 @@
    <option value="auto">Automatisch</option><option value="light">Hell</option><option value="dark">Dunkel</option>
   </select>
  </label>
- <p>Deine Designauswahl gilt auch für die elf B3-Tools. Favoriten, Cloud-Konto und Backups bleiben davon unberührt.</p>
+
 </section>
 <div class="b3-hub-settings-footer">
  <a href="https://ko-fi.com/duhrrom" rel="noopener noreferrer" target="_blank">☕ Kaffee spendieren</a>
@@ -625,7 +618,7 @@
             const quickstart = document.getElementById('b3-quickstart-list');
             if (quickstart) {
                 quickstart.replaceChildren();
-                const favorites = favs.map(id => document.querySelector('#toolsGrid .tool-card[data-id="' + id + '"]')).filter(Boolean);
+                const favorites = favs.map(id => document.querySelector('#toolsGrid .tool-card[data-id="' + id + '"]')).filter(Boolean).slice(0, 3);
                 if (!favorites.length) {
                     const empty = document.createElement('p');
                     empty.className = 'b3-quickstart-empty';
@@ -660,18 +653,11 @@
         }
 
         function filterTools() {
-            const searchBox = document.getElementById('searchBox');
-            if (!searchBox) return;
-            const normalize = value => String(value || '').normalize('NFKD')
-                .replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('de')
-                .replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, ' ').trim();
-            const words = normalize(searchBox.value).split(' ').filter(Boolean);
             const category = document.querySelector('[data-b3-category-filter][aria-pressed="true"]')?.getAttribute('data-b3-category-filter') || 'alle';
             let matches = 0;
             document.querySelectorAll('#toolsGrid .tool-card').forEach(card => {
-                const searchable = normalize((card.getAttribute('data-name') || '') + ' ' + card.innerText);
                 const categoryMatches = category === 'alle' || card.getAttribute('data-category') === category;
-                const visible = categoryMatches && words.every(word => searchable.includes(word));
+                const visible = categoryMatches;
                 card.style.display = visible ? 'flex' : 'none';
                 if (visible) matches++;
             });
