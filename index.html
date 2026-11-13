@@ -665,7 +665,7 @@
                         const icon = document.createElement('span');
                         icon.className = 'b3-preview-icon';
                         icon.setAttribute('aria-hidden', 'true');
-                        icon.textContent = card.querySelector('.tool-card > div:first-child > div:first-child > div:first-child')?.textContent?.trim() || '⭐';
+                        icon.textContent = card.firstElementChild?.firstElementChild?.firstElementChild?.textContent?.trim() || '⭐';
                         const text = document.createElement('span');
                         text.textContent = card.querySelector('h3')?.textContent?.trim() || 'Mein Tool';
                         link.append(icon, text);
@@ -1051,7 +1051,6 @@
         window.closeSettings = closeSettings;
         window.toggleFavorite = toggleFavorite;
         window.filterTools = filterTools;
-        window.loadStats = loadStats;
         window.initFavorites = initFavorites;
         window.exportGlobalBackup = exportGlobalBackup;
         window.importGlobalBackup = importGlobalBackup;
