@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 kryptografisch gepruefte Vorschau und atomare Reservierung (2026-11-13, isoliert)
+
+`assets/a10-preview-bound-reservation.js` ist ein **nicht eingebundener** Testbaustein. `preview(fileText,password,{explicitConsent:true,expectedVaultId})` entschluesselt ueber die bestehende V1-Backup-Importvorschau, authentifiziert den AES-GCM-Backup-Inhalt und bindet das Ergebnis an SHA-256 ueber die **exakten JSON-Dateibytes**. `reserveAfterPreview(...)` verlangt dieselbe bestaetigte Tresor-ID und denselben Datei-Fingerabdruck, prueft die Datei und das Passwort **erneut** und ruft erst danach die atomare, fail-closed IndexedDB-Reservierung auf. Veraenderungen zwischen Vorschau und Reservierung werden abgewiesen; parallele Tabs konkurrieren um denselben Zielschluessel und koennen nicht beide reservieren. Es gibt keine Speicherung entschluesselter V1-Daten und keine Aktivierung.
+
+`tests/a10-browser-preview-bound-reservation.cjs` verwendet nur synthetische Chromium-/IndexedDB-Daten und prueft Dateiaenderungen, falsche Passwoerter, fremde IDs, fehlende Zustimmung, manipulierte Fingerabdruecke, zwei parallele Tabs und unveraenderte bestehende V1-Daten nach Reload.
+
+**Grenzen:** Die Hashbindung beweist nur die Identitaet der geprueften Dateibytes, nicht die Vertrauenswuerdigkeit der Quelle. Die Vorschau und die spaetere Reservierung liegen **nicht in einer einzigen Transaktion**; nur die Zielbelegungspruefung und Reservierung sind atomar. Es existiert absichtlich kein echter Import-Commit, kein Download-/Upload-UI, keine Aktivierung und keine produktive Datenbankanbindung. **A10 bleibt NO-GO.**
+
+
 ## A10 atomare Import-Reservierung in zwei Tabs (2026-11-13, isoliert)
 
 `assets/a10-atomic-import-reservation.js` ist **nicht produktiv eingebunden**. Eine ausdruecklich bestaetigte `reserve(driver,vaultId,{vaultId,backupFingerprint},{explicitConsent:true})`-Operation verwendet den isolierten IndexedDB-Transaktionsadapter fuer eine **einzige atomare Pruefung und Reservierung**. Nur ein leerer Zielschluessel darf den Marker `RESERVED_NO_IMPORT` erhalten. Jeder vorhandene Datensatz, auch derselbe Tresor oder eine vorherige Reservierung, wird ohne Ueberschreiben abgewiesen. Die Reservierung enthaelt nur Tresor-ID und synthetischen Backup-Fingerabdruck, keinen Klartextschluessel oder entschluesselte Eintraege. **Es gibt weder Datenimport noch Aktivierung.**
