@@ -177,12 +177,12 @@ body{background:#f1f5f9!important;color:#12253f!important}
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
-                        <p class="text-xs text-slate-400">Nächstes Lebenszeichen in</p>
+                        <p class="text-xs text-slate-400">Meine 30-Tage-Erinnerung</p>
                         <h4 id="deadmanCountdown" class="text-2xl font-black text-emerald-400">30 Tage</h4>
                         <p id="deadmanLastCheck" class="text-[10px] text-slate-500">Letzter Check-in: -</p>
                     </div>
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
-                        <p class="text-xs text-slate-400">Erinnerungsabstand</p>
+                        <p class="text-xs text-slate-400">Erinnerung alle</p>
                         <select id="deadmanIntervalSelect" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-slate-200">
                             <option value="30">Alle 30 Tage</option>
                             <option value="60">Alle 60 Tage</option>
@@ -198,7 +198,7 @@ body{background:#f1f5f9!important;color:#12253f!important}
 
                 <!-- PERSONEN FÜR NOTFALL-TRIGGER & EMAIL -->
                 <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
-                    <h4 class="text-xs font-bold text-indigo-400">Meine Vertrauenspersonen (höchstens 10)</h4>
+                    <p class="estate-subtitle">Hier speicherst du die Menschen, denen du vertraust. Ein Schlüssel wird noch nicht erzeugt.</p><h4 class="text-xs font-bold text-indigo-400">Meine Vertrauenspersonen (bis zu 10)</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
                         <label class="helferlein-field" for="newAlarmPersonName"><span class="helferlein-field-label">Name</span><input type="text" id="newAlarmPersonName" placeholder="Zum Beispiel: Anna" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200"></label>
                         <label class="helferlein-field" for="newAlarmPersonContact"><span class="helferlein-field-label">E-Mail-Adresse</span><input type="email" id="newAlarmPersonContact" placeholder="E-Mail-Adresse" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200"></label>
@@ -218,8 +218,8 @@ body{background:#f1f5f9!important;color:#12253f!important}
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="text-sm font-bold text-slate-100">Meine Liste für die Familie</h3>
-                        <p class="text-xs text-slate-400">Drucke deine gespeicherten Kontakte aus. Persönliche Tresorschlüssel können derzeit noch nicht gedruckt werden.</p>
+                        <h3 class="text-sm font-bold text-slate-100">Meine Kontaktliste</h3>
+                        <p class="text-xs text-slate-400">Drucke deine gespeicherten Kontakte aus. Schlüssel und QR-Codes sind noch nicht verfügbar.</p>
                     </div>
                     <button id="generatePdfBtn" title="Notfallkontakte ausdrucken" class="px-4 py-2.5 bg-slate-700 text-slate-300 font-bold rounded-xl text-xs shadow-lg whitespace-nowrap cursor-not-allowed">
                         Kontaktliste drucken
