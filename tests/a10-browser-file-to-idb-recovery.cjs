@@ -25,6 +25,7 @@ const http = require('node:http');
     'a10-offline-preview.js',
     'a10-preview-workflow.js',
     'a10-authenticated-import.js',
+    'a10-activation-preflight.js',
     'a10-migration-flow.js'
   ];
   const server = http.createServer(async (req, res) => {
@@ -278,6 +279,81 @@ const http = require('node:http');
     assert.equal(importGate.conflictRejected, true);
     assert.equal(importGate.localStorageCount, 0);
     assert.equal(JSON.stringify(importGate).includes(prepared.legacy.masterKeyHex), false);
+    // Gate 3: atomic, isolated activation preparation; never active.
+    // Preserve the encrypted staged source across prepare, conflict and rollback.
+    const gate3 = await receiver.evaluate(async ({ credentials }) => {
+      const { vaultId, v2Password } = credentials;
+      const stage = HelferleinA10V2IndexedDB.driver(indexedDB,
+        'a10-isolated-v2-authenticated-import-gate');
+      const journal = HelferleinA10ActivationPreflight.journal(indexedDB,
+        'a10-isolated-v2-activation-gate3-synthetic');
+      const before = await stage.read(vaultId);
+      const envelope = before.envelope;
+      const bytes = new TextEncoder().encode(JSON.stringify(envelope));
+      const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))]
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+      const opts = { explicitConsent: true, confirmIndependentBackup: true,
+        confirmStagingOnly: true, confirmVaultId: vaultId,
+        confirmPrepareNotActivate: true, confirmEnvelopeSha256: hash };
+      let noConsentRejected = false;
+      try { await HelferleinA10ActivationPreflight.prepare(stage, journal,
+        vaultId, envelope, v2Password, { ...opts, explicitConsent: false }); }
+      catch (_) { noConsentRejected = true; }
+      let wrongHashRejected = false;
+      try { await HelferleinA10ActivationPreflight.prepare(stage, journal,
+        vaultId, envelope, v2Password, { ...opts, confirmEnvelopeSha256: '0'.repeat(64) }); }
+      catch (_) { wrongHashRejected = true; }
+      let wrongPasswordRejected = false;
+      try { await HelferleinA10ActivationPreflight.prepare(stage, journal,
+        vaultId, envelope, 'wrong-gate3-password', opts); }
+      catch (_) { wrongPasswordRejected = true; }
+      const empty = await journal.read(vaultId);
+      const prepared = await HelferleinA10ActivationPreflight.prepare(stage, journal,
+        vaultId, envelope, v2Password, opts);
+      let conflictRejected = false;
+      try { await HelferleinA10ActivationPreflight.prepare(stage, journal,
+        vaultId, envelope, v2Password, opts); }
+      catch (_) { conflictRejected = true; }
+      let noRollbackConsentRejected = false;
+      try { await HelferleinA10ActivationPreflight.rollback(stage, journal,
+        vaultId, envelope, v2Password,
+        { ...opts, confirmRollback: false }); }
+      catch (_) { noRollbackConsentRejected = true; }
+      const rolled = await HelferleinA10ActivationPreflight.rollback(stage, journal,
+        vaultId, envelope, v2Password, { ...opts, confirmRollback: true });
+      let replayRejected = false;
+      try { await HelferleinA10ActivationPreflight.rollback(stage, journal,
+        vaultId, envelope, v2Password, { ...opts, confirmRollback: true }); }
+      catch (_) { replayRejected = true; }
+      let reprepareRejected = false;
+      try { await HelferleinA10ActivationPreflight.prepare(stage, journal,
+        vaultId, envelope, v2Password, opts); }
+      catch (_) { reprepareRejected = true; }
+      const after = await stage.read(vaultId);
+      const persistedJournal = await journal.read(vaultId);
+      return { before, after, empty, prepared, rolled, persistedJournal,
+        noConsentRejected, wrongHashRejected, wrongPasswordRejected,
+        conflictRejected, noRollbackConsentRejected, replayRejected,
+        reprepareRejected, localStorageCount: localStorage.length };
+    }, { credentials });
+    assert.equal(gate3.empty, undefined);
+    assert.equal(gate3.noConsentRejected, true);
+    assert.equal(gate3.wrongHashRejected, true);
+    assert.equal(gate3.wrongPasswordRejected, true);
+    assert.equal(gate3.conflictRejected, true);
+    assert.equal(gate3.noRollbackConsentRejected, true);
+    assert.equal(gate3.replayRejected, true);
+    assert.equal(gate3.reprepareRejected, true);
+    assert.equal(gate3.prepared.status, 'PREPARED_NOT_ACTIVE');
+    assert.equal(gate3.prepared.revision, 0);
+    assert.equal(gate3.prepared.activationAllowed, false);
+    assert.equal(gate3.rolled.status, 'ROLLED_BACK_NOT_ACTIVE');
+    assert.equal(gate3.rolled.revision, 1);
+    assert.equal(gate3.rolled.activationAllowed, false);
+    assert.deepEqual(gate3.persistedJournal, gate3.rolled);
+    assert.deepEqual(gate3.after, gate3.before);
+    assert.equal(gate3.localStorageCount, 0);
+    assert.equal(JSON.stringify(gate3).includes(prepared.legacy.masterKeyHex), false);
     const result = await receiver.evaluate(async ({ artifacts, credentials }) => {
       const attestation = JSON.parse(await document.querySelector('#attestation').files[0].text());
       const { vaultId, backupPassword, v2Password } = credentials;
