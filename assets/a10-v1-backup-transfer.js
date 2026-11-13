@@ -2,10 +2,10 @@
  * Every action requires explicit consent. Import is a read-only decision, never a commit.
  */
 (function (root, factory) {
-    const api = factory();
+    const api = factory(root);
     if (typeof module === 'object' && module.exports) module.exports = api;
     else root.HelferleinA10BackupTransfer = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
     'use strict';
     const MAX_FILE_BYTES = 1500000;
     const own = (obj, name) => Object.prototype.hasOwnProperty.call(obj, name);
