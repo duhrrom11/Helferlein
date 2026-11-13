@@ -34,16 +34,17 @@ async function deliverOne() {
  const portal='https://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/erben.html';
  const ownerPortal='https://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/index.html#lebenszeichen';
  const format=(date:string)=>new Date(date).toLocaleString('de-DE',{timeZone:'Europe/Paris',timeZoneName:'short'});
+ const review=job.kind==='update-reminder';
  const alarm=job.kind==='alarm',started=job.kind==='reporter-started';
  if(reporter&&(!Number.isFinite(Date.parse(job.eventTime))||(started&&!Number.isFinite(Date.parse(job.deadline)))))return;
- const subject=reporter?(started?'Helferlein: Dein Notfallalarm wurde gestartet':'Helferlein: Entwarnung – dein Notfallalarm wurde beendet'):(alarm?'Helferlein: Bitte gib jetzt ein Lebenszeichen':'Helferlein: Zeit für dein Lebenszeichen');
+ const subject=reporter?(started?'Helferlein: Dein Notfallalarm wurde gestartet':'Helferlein: Entwarnung – dein Notfallalarm wurde beendet'):(review?'Helferlein: Sind deine Nachlassangaben noch aktuell?':alarm?'Helferlein: Bitte gib jetzt ein Lebenszeichen':'Helferlein: Zeit für dein Lebenszeichen');
  const text=reporter
   ?(started?'Du hast einen Notfall gemeldet. Der Besitzer wurde per E-Mail benachrichtigt. Die 24-Stunden-Frist hat am '+format(job.eventTime)+' begonnen.\n\nFrühester Zugang mit einem Schlüssel: '+format(job.deadline)+'. Das gilt nur, wenn der Besitzer nicht vorher Entwarnung gibt.\n\nDen aktuellen Countdown und Alarmstatus findest du im Portal. Gib dort deinen persönlichen Schlüssel ein. Eine E-Mail kann keinen zuverlässig laufenden Countdown anzeigen.':
     'Der Besitzer hat deinen Notfallalarm am '+format(job.eventTime)+' beendet. Für neue Zugriffe sind wieder zwei verschiedene persönliche Schlüssel erforderlich. Bereits gelesene oder gespeicherte Kopien bleiben erhalten.')
     +'\n\nAktuellen Status im Portal prüfen:\n'+portal+'\n\nDiese Nachricht bestätigt den genannten Zeitpunkt. Maßgeblich ist der aktuelle Status im Portal. Dein persönlicher Schlüssel steht nicht in dieser Nachricht.'
-  :(alarm?'Eine deiner Vertrauenspersonen hat einen Notfall gemeldet. Ohne Entwarnung kann nach 24 Stunden eine Vertrauensperson deine Unterlagen lesen.':'Deine regelmäßige Erinnerung. Sie löst keinen Notfallalarm aus.')
+  :review?'Bitte prüfe bei Gelegenheit deine Unterlagen, Wünsche und Vertrauenspersonen. Öffne deinen Tresor und wähle nach der Prüfung „Alles geprüft“. Diese Erinnerung löst keinen Notfallalarm aus und verändert keine Zugangsfreigabe.\n\n'+ownerPortal.replace('#lebenszeichen','#unterlagen')+'\n\nDeine vertraulichen Angaben stehen nicht in dieser Nachricht.':(alarm?'Eine deiner Vertrauenspersonen hat einen Notfall gemeldet. Ohne Entwarnung kann nach 24 Stunden eine Vertrauensperson deine Unterlagen lesen.':'Deine regelmäßige Erinnerung. Sie löst keinen Notfallalarm aus.')
     +'\n\nÖffne Helferlein, melde dich an und wähle „❤️ Ich lebe noch“:\n'+ownerPortal+'\n\nDeine Unterlagen und Schlüssel stehen nicht in dieser Nachricht.';
- const link=reporter?portal:ownerPortal;
+ const link=reporter?portal:review?ownerPortal.replace('#lebenszeichen','#unterlagen'):ownerPortal;
  let response:Response;
  if(mailProvider==='brevo') {
   const escaped=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -51,7 +52,7 @@ async function deliverOne() {
    method:'POST',signal:AbortSignal.timeout(15000),
    headers:{'api-key':BREVO_KEY!,'Content-Type':'application/json','Accept':'application/json'},
    body:JSON.stringify({sender:{email:MAIL_FROM,name:'Helferlein'},to:[{email:recipient}],subject,textContent:text,
-    htmlContent:'<!doctype html><html lang="de"><body><p>'+escaped.replace(/\n/g,'<br>')+'</p><p><a href="'+link+'">'+(reporter?'Aktuellen Countdown und Status öffnen':'Helferlein öffnen und Lebenszeichen geben')+'</a></p></body></html>',
+    htmlContent:'<!doctype html><html lang="de"><body><p>'+escaped.replace(/\n/g,'<br>')+'</p><p><a href="'+link+'">'+(reporter?'Aktuellen Countdown und Status öffnen':review?'Unterlagen und Wünsche prüfen':'Helferlein öffnen und Lebenszeichen geben')+'</a></p></body></html>',
     // Brevo expects a UUID in the JSON headers. The outbox job ID stays stable across retries.
     headers:{idempotencyKey:job.id}})
   });
@@ -95,7 +96,7 @@ export async function handler(req:Request):Promise<Response> {
   // Only platform proxy headers are used; database limits stay authoritative across instances.
   if(!(await rpc('limit',null,{bucket:'ip:'+await hash(ip)})).allowed)return reply(429,{error:'rate_limited'});
   if(action==='worker') {await deliverOne();return reply(200,{ok:true});}
-  if(['publish','status','cancel'].includes(action)) {
+  if(['publish','status','cancel','review'].includes(action)) {
    const token=/^Bearer (\S+)$/.exec(req.headers.get('Authorization')||'')?.[1];
    if(!token)return reply(401,{error:'login_required'});
    const {data,error}=await admin.auth.getUser(token);
@@ -106,11 +107,18 @@ export async function handler(req:Request):Promise<Response> {
    const result=await rpc(action,data.user.id,{...b,session:claims.session_id});
    return reply(result.error?409:200,{...result,notifications:mailReady});
   }
-  if(!['open','alarm','trustee-status'].includes(action)||typeof b.key!=='string'||!hex.test(b.key) || (b.secondKey!==undefined && (typeof b.secondKey!=='string'||!hex.test(b.secondKey))))return reply(400,{error:'invalid_keys'});
+  if(!['open','file','alarm','trustee-status'].includes(action)||typeof b.key!=='string'||!hex.test(b.key) || (b.secondKey!==undefined && (typeof b.secondKey!=='string'||!hex.test(b.secondKey))))return reply(400,{error:'invalid_keys'});
+  if(action==='file'&&(typeof b.fileId!=='string'||! /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(b.fileId)))return reply(400,{error:'file_unavailable'});
   if(action==='alarm'&&!mailReady)return reply(503,{error:'notification_unavailable'});
   const keyHash=await hash(b.key);
   if(!(await rpc('limit',null,{bucket:'key:'+keyHash})).allowed)return reply(429,{error:'rate_limited'});
-  const result=await rpc(action,null,{hash:keyHash,...(b.secondKey?{secondHash:await hash(b.secondKey)}:{})});
+  const result=await rpc(action,null,{hash:keyHash,...(action==='file'?{fileId:b.fileId}:{}),...(b.secondKey?{secondHash:await hash(b.secondKey)}:{})});
+  if(action==='file'&&!result.error){
+   if(typeof result.path!=='string'||! /^[a-f0-9-]{36}\/[a-f0-9-]{36}$/.test(result.path))return reply(503,{error:'file_unavailable'});
+   const {data,error}=await admin.storage.from('estate-documents').createSignedUrl(result.path,60);
+   if(error||!data?.signedUrl)return reply(503,{error:'file_unavailable'});
+   return reply(200,{url:data.signedUrl});
+  }
   if(action==='alarm'&&!result.error){await deliverOne();const status=await rpc('trustee-status',null,{hash:keyHash});return reply(200,status);}
   return reply(result.error?403:200,result);
  }catch{return reply(503,{error:'unavailable'});}

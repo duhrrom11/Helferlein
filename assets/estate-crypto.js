@@ -15,11 +15,11 @@
  async function wrap(key,password){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));return {version:1,kdf:'PBKDF2-SHA256',iterations:600000,salt:b64(salt),iv:b64(iv),ciphertext:b64(await crypto.subtle.encrypt({name:'AES-GCM',iv},await passwordKey(password,salt),unhex(key)))};}
  async function unwrap(w,password){if(w?.version!==1||w.kdf!=='PBKDF2-SHA256'||w.iterations!==600000||decode(w.salt).length!==16||decode(w.iv).length!==12||decode(w.ciphertext).length!==48)throw Error('invalid_recovery');return hex(new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:decode(w.iv)},await passwordKey(password,decode(w.salt)),decode(w.ciphertext))));}
  const normalize=s=>String(s).replace(/[\s-]/g,'').toLowerCase();
- async function readReplica(entries,people,keys){
+ async function readReplica(entries,people,keys,extra={}){
   const readKey=random();
   const guardians=[];
   for(const person of people){const token=keys[person.id];unhex(token);guardians.push({id:String(person.id),hash:await hash(token),envelope:await encrypt({readKey},await hash('Helferlein read envelope v2:'+token))});}
-  return {content:await encrypt({entries},readKey),guardians};
+  return {content:await encrypt({...((typeof extra.funeralWishes==='string'&&extra.funeralWishes)?{funeralWishes:extra.funeralWishes}:{}),entries},readKey),guardians};
  }
  async function openReplica(result,token){const {readKey}=await decrypt(result.envelope,await hash('Helferlein read envelope v2:'+token));return decrypt(result.content,readKey);}
  root.EstateCrypto={random,encrypt,decrypt,hash,wrap,unwrap,normalize,readReplica,openReplica};
