@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 isolierter bestaetigter V1-Dateiexport und Importvorschau (2026-11-13)
+
+`assets/a10-v1-backup-transfer.js` ist ein **nicht eingebundener** Protokollbaustein. `exportFile(legacy,password,{explicitConsent:true})` gibt einen JSON-Dateinamen und den ausschliesslich verschluesselten Backup-Inhalt als Text zurueck; es wird keine Datei geschrieben. `previewImport(fileText,password,options)` verlangt eine ausdrueckliche Bestaetigung, einen als leer bestaetigten Zielzustand (`destinationEmpty:true`, `currentVaultId:null`) und die vorab erwartete Tresor-ID. Das Dateiformat ist versionsgebunden und groessenbegrenzt; entschluesselte V1-Daten werden ueber den isolierten historischen Normalizer authentifiziert. Das Ergebnis ist **nur eine abgetrennte Vorschau**, keine Persistenz und kein Import-Commit. Bestehende Tresore werden auch bei gleicher ID stets als Konflikt abgewiesen.
+
+Der reale Chromium-Test `tests/a10-browser-backup-transfer.cjs` verwendet synthetische AES-GCM-Daten, loescht das Quellprofil und prueft die Vorschau im frischen Profil, fehlende Export-/Importbestaetigung, defekte Datei, manipulierten Ciphertext, falsches Passwort, fremde Tresor-ID, belegtes Ziel mit gleicher oder anderer ID, unbekannte Formate, zu grosse Dateien und unveraenderten lokalen Speicher. Unbekannte Legacy-Zusatzfelder bleiben erhalten; das optional fehlende `alarmPersons` wird ausschliesslich in der Vorschau ergaenzt.
+
+**Sicherheitsgrenzen:** Die Angaben zum leeren Ziel und zur erwarteten Tresor-ID sind vom aufrufenden Test explizit vorgegeben, **nicht** atomar gegen einen echten Speicherdienst verifiziert. Es existiert absichtlich kein produktiver Import-/Export-Button, kein Dateidownload, kein Commit, kein Konfliktloesungsdialog und keine automatische Aktivierung. Vor einem echten Import waeren ein unabhaengig gesicherter V1-Rueckfallstand, eine erneute atomare Konfliktpruefung sowie eine vollstaendige Sicherheitsfreigabe erforderlich. **A10 bleibt NO-GO.**
+
+
 ## A10 historische V1-Konfiguration: explizite Normalisierung (2026-11-13, isoliert)
 
 Der inaktive Baustein `assets/a10-historical-v1-normalizer.js` nimmt nur bei `explicitConsent: true` ein synthetisches V1-Objekt entgegen. Er validiert Tresor-ID, Masterkey, erforderliche Konfiguration, Kontaktstrukturen sowie die **tatsaechliche AES-GCM-Authentizitaet** des verschluesselten `entries`-Payloads. Nur das im Legacy-`initVault()` optional nachgetragene Feld `alarmPersons` wird bei Abwesenheit explizit mit `[]` ergaenzt. Alle unbekannten Zusatzfelder werden unveraendert uebernommen; vorhandene Werte werden nicht ersetzt. Der Aufruf gibt eine separate Kopie und die Liste der Ergaenzungen zurueck. Keine lokalen Schreibvorgaenge, keine Aktivierung und keine Aenderung am Original.
