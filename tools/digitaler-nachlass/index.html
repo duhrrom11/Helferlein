@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://cdn.tailwindcss.com https://www.gstatic.com https://cdn.jsdelivr.net; script-src-attr 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; connect-src 'self' https://avapuibsidubuzxjtyld.supabase.co wss://avapuibsidubuzxjtyld.supabase.co https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com; img-src 'self' data: blob: https:; font-src 'self' data: https:; style-src 'self' 'unsafe-inline'">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digitaler Nachlassverwalter | Helferlein</title>
-    <meta name="description" content="Digitalen Nachlass und Dokumente organisieren. Achtung: Die Sicherheitsprüfung der Verschlüsselung steht aus. Keine Passwörter, PINs oder Zugangsdaten eingeben.">
+    <title>Mein Tresor und meine Vertrauenspersonen | Helferlein</title>
+    <meta name="description" content="Deine Unterlagen, deine Vertrauenspersonen und dein Lebenszeichen – einfach an einem Ort.">
     <link rel="canonical" href="https://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/index.html">
     
     <!-- Tailwind CSS -->
@@ -23,12 +23,33 @@
     <link rel="stylesheet" href="../../assets/helferlein-b3.css">
     <link rel="stylesheet" href="../../assets/helferlein-b3-nachlass.css">
     <script defer src="../../assets/helferlein-b3-nachlass.js"></script>
-    <script defer src="../../assets/heir-owner-management.js"></script>
-    <script defer src="../../assets/heir-redemption-ui.js"></script>
     <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-3">
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
 <script defer src="../../assets/helferlein-settings-popups.js"></script>
+<style>
+/* Aufgeräumte, gut lesbare Oberfläche. Die vorhandenen Speicherfunktionen bleiben erhalten. */
+:root{font-size:17px}
+body{background:#f1f5f9!important;color:#12253f!important}
+.b3-vault-nav{position:sticky;top:0;z-index:20;background:#f1f5f9;padding:12px 0}
+.b3-vault-nav-links{display:flex!important;gap:10px!important;flex-wrap:wrap}
+.b3-vault-nav .tab-btn{background:#fff!important;border:2px solid #cbd5e1!important;color:#12324b!important;min-height:50px!important;border-radius:14px!important;padding:10px 18px!important;font-size:1rem!important;font-weight:700!important}
+.b3-vault-nav .tab-btn.active{background:#155e75!important;color:#fff!important;border-color:#155e75!important}
+#main-content>.tab-section>div,#main-content>.tab-section>section{border-radius:20px!important}
+#main-content input,#main-content select,#main-content textarea{font-size:1rem!important;min-height:44px}
+#main-content button{font-size:.98rem}
+#main-content h2,#main-content h3{font-size:1.2rem!important}
+#main-content p{font-size:.96rem}
+.estate-intro{background:#fff;color:#12324b;padding:26px;border-radius:24px;border:1px solid #d9e5ea;box-shadow:0 5px 20px #13293d0b}
+.estate-intro h2{font-size:clamp(1.4rem,4vw,2rem);margin:0 0 8px}
+.estate-intro p{font-size:1rem;margin:0 0 14px;line-height:1.6}
+.estate-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.estate-step{padding:14px;border-radius:14px;background:#eff6fa;color:#17465d;text-decoration:none;border:1px solid #cadde9;min-height:74px;font-weight:700}
+.estate-step:hover,.estate-step:focus-visible{outline:3px solid #0891b2;outline-offset:2px}
+.estate-warning{padding:14px;border:1px solid #f59e0b;background:#fffbeb;color:#78350f;border-radius:12px;margin-top:16px;font-size:.95rem}
+#section-deadman .estate-subtitle{color:#dbeafe;font-size:1rem}
+@media(max-width:640px){#main-content{padding:12px!important}.estate-intro{padding:18px}.b3-vault-nav-links .tab-btn{flex:1 1 44%}}
+</style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -61,6 +82,7 @@
         </div>
     </div>
 
+    <!-- Alte Notfallanzeige bleibt ausgeblendet, bis eine geprüfte Server-Freigabe existiert. -->
     <!-- NOTFALL-ALARM BANNER -->
     <div id="emergencyAlarmBanner" class="hidden bg-red-950 border-b border-red-800 p-4 shadow-2xl">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3">
@@ -81,7 +103,7 @@
     <header class="b3-header"><div class="b3-header-inner">
 <a class="b3-brand" href="../../index.html" aria-label="Helferlein Startseite"><span class="b3-brand-mark" aria-hidden="true">✳</span> Helferlein</a>
 <span class="b3-tool-icon" aria-hidden="true">🏛️</span>
-<div class="b3-tool-title"><h1>Digitaler Nachlassverwalter</h1><p>Dokumente, Kontakte und persönliche Vorsorge übersichtlich verwalten.</p></div>
+<div class="b3-tool-title"><h1>Mein sicherer Tresor</h1><p>Meine Unterlagen. Meine Menschen. Meine Entscheidungen.</p></div>
 <button id="b3-nachlass-settings" type="button" class="b3-settings-trigger" aria-label="Einstellungen öffnen" title="Einstellungen">⚙</button>
 </div></header>
 
@@ -89,17 +111,27 @@
     <main id="main-content" tabindex="-1" class="flex-grow container mx-auto p-4 max-w-7xl space-y-6">
 
         <!-- B3-Navigation; data-tab handlers remain unchanged -->
-<nav class="b3-vault-nav" aria-label="Nachlassverwaltung"><div class="b3-vault-nav-links">
-<button type="button" data-tab="vault" class="tab-btn active">🔐 Tresor</button>
-<button type="button" data-tab="deadman" class="tab-btn">⏰ Totmannschalter</button>
-<button type="button" data-tab="trustees" class="tab-btn">👥 Vertrauenspersonen</button>
-<button type="button" data-tab="kit" class="tab-btn">📄 Notfall-Kit</button>
-<button type="button" data-tab="settings" class="tab-btn">⚙️ Einstellungen</button>
+<section class="estate-intro" aria-labelledby="estate-welcome">
+<h2 id="estate-welcome">Alles Wichtige an einem Ort</h2>
+<p>Hier verwaltest du deine Unterlagen und die Menschen, denen du vertraust.</p>
+<div class="estate-steps">
+<a class="estate-step" href="#section-vault" data-estate-go="vault">🔐 1. Meine Unterlagen</a>
+<a class="estate-step" href="#section-deadman" data-estate-go="deadman">👨‍👩‍👧 2. Meine Vertrauenspersonen</a>
+<a class="estate-step" href="#section-kit" data-estate-go="kit">🖨️ 3. Liste ausdrucken</a>
+<a class="estate-step" href="#section-settings" data-estate-go="settings">👤 Mein Konto</a>
+</div>
+<div class="estate-warning" role="note"><strong>Wichtig:</strong> Die Öffnung mit zwei Schlüsseln und der automatische 24-Stunden-Notfallzugang sind noch nicht eingerichtet. Deine Unterlagen werden dadurch nicht freigegeben.</div>
+</section>
+<nav class="b3-vault-nav" aria-label="Mein Tresor"><div class="b3-vault-nav-links">
+<button type="button" data-tab="vault" class="tab-btn active">🔐 Unterlagen</button>
+<button type="button" data-tab="deadman" class="tab-btn">❤️ Menschen & Lebenszeichen</button>
+<button type="button" data-tab="kit" class="tab-btn">🖨️ Drucken</button>
+<button type="button" data-tab="settings" class="tab-btn">⚙️ Mein Konto</button>
 </div></nav>
 <!-- TAB 1: TRESOR -->
         <div id="section-vault" class="tab-section space-y-6">
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
-                <h2 class="text-sm font-bold text-slate-100">✍️ Neuen Nachlass-Eintrag erfassen</h2>
+                <h2 class="text-sm font-bold text-slate-100">Neuen Eintrag hinzufügen</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
                     <div>
                         <label for="entryTitle" class="block text-slate-400 mb-1">Titel *:</label>
@@ -121,31 +153,17 @@
                     </div>
                 </div>
                 <div>
-                    <label for="entryContent" class="block text-slate-400 text-xs mb-1">Inhalt / Zugangsdaten *:</label>
-                    <textarea id="entryContent" rows="3" placeholder="IBAN, PINs, Logins..." class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-xs font-mono"></textarea>
+                    <label for="entryContent" class="block text-slate-400 text-xs mb-1">Das möchte ich festhalten *:</label>
+                    <textarea id="entryContent" rows="3" placeholder="Notizen zu diesem Eintrag" class="w-full p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-100 text-xs font-mono"></textarea>
                 </div>
                 <button id="saveEntryBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs shadow-lg">
-                    🔒 Verschlüsseln & speichern
+                    Eintrag speichern
                 </button>
-            </div>
-
-            <!-- Affiliate Empfehlung im Tresor -->
-            <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4">
-                <div class="flex items-center space-x-3">
-                    <span class="text-2xl">🔐</span>
-                    <div>
-                        <h4 class="font-bold text-xs text-slate-100">Sichere Passwörter & Hardware-Wallets</h4>
-                        <p class="text-[11px] text-slate-400">Verwalte deine Krypto-Assets und digitalen Schlüssel absolut sicher mit einer Hardware-Wallet.</p>
-                    </div>
-                </div>
-                <a href="https://www.amazon.de/s?k=hardware+wallet+krypto&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-sm whitespace-nowrap">
-                    🛒 Hardware-Wallets auf Amazon
-                </a>
             </div>
 
             <!-- Einträge Liste -->
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
-                <h3 class="font-bold text-slate-100 text-sm">📋 Gespeicherte Einträge</h3>
+                <h3 class="font-bold text-slate-100 text-sm">Meine Unterlagen</h3>
                 <div id="vaultEntriesList" class="space-y-3">
                     <p class="text-xs text-slate-500 text-center py-4">Keine Einträge vorhanden.</p>
                 </div>
@@ -155,16 +173,16 @@
         <!-- TAB 2: TOTMANNSCHALTER -->
         <div id="section-deadman" class="tab-section hidden space-y-6">
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-                <h3 class="text-sm font-bold text-slate-100">⏰ Totmannschalter & 24h-Notfall-Trigger</h3>
+                <h3 class="text-sm font-bold text-slate-100">Meine Vertrauenspersonen und mein Lebenszeichen</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
-                        <p class="text-xs text-slate-400">Verbleibende Zeit</p>
+                        <p class="text-xs text-slate-400">Nächstes Lebenszeichen in</p>
                         <h4 id="deadmanCountdown" class="text-2xl font-black text-emerald-400">30 Tage</h4>
                         <p id="deadmanLastCheck" class="text-[10px] text-slate-500">Letzter Check-in: -</p>
                     </div>
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl space-y-2">
-                        <p class="text-xs text-slate-400">Prüf-Intervall</p>
+                        <p class="text-xs text-slate-400">Erinnerungsabstand</p>
                         <select id="deadmanIntervalSelect" class="w-full p-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-bold text-slate-200">
                             <option value="30">Alle 30 Tage</option>
                             <option value="60">Alle 60 Tage</option>
@@ -173,19 +191,19 @@
                     </div>
                     <div class="p-4 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col justify-center">
                         <button id="checkInBtn" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg">
-                            ✅ "Ich lebe noch!"
+                            ❤️ Ich lebe noch
                         </button>
                     </div>
                 </div>
 
                 <!-- PERSONEN FÜR NOTFALL-TRIGGER & EMAIL -->
                 <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
-                    <h4 class="text-xs font-bold text-indigo-400">👥 Personen für 24h-Notfall-Trigger & E-Mail-Versand</h4>
+                    <h4 class="text-xs font-bold text-indigo-400">Meine Vertrauenspersonen (höchstens 10)</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                        <label class="helferlein-field" for="newAlarmPersonName"><span class="helferlein-field-label">Name</span><input type="text" id="newAlarmPersonName" placeholder="Name (z.B. Isabelle)" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200"></label>
+                        <label class="helferlein-field" for="newAlarmPersonName"><span class="helferlein-field-label">Name</span><input type="text" id="newAlarmPersonName" placeholder="Zum Beispiel: Anna" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200"></label>
                         <label class="helferlein-field" for="newAlarmPersonContact"><span class="helferlein-field-label">E-Mail-Adresse</span><input type="email" id="newAlarmPersonContact" placeholder="E-Mail-Adresse" class="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-slate-200"></label>
                         <button id="addAlarmPersonBtn" class="py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md">
-                            ➕ Person anlegen
+                            Person hinzufügen
                         </button>
                     </div>
                     <div id="alarmPersonsList" class="space-y-2 pt-2">
@@ -195,126 +213,22 @@
             </div>
         </div>
 
-        <!-- TAB 3: VERTRAUENSPERSONEN -->
-        <div id="section-trustees" class="tab-section hidden space-y-6">
-            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-                <h3 class="text-sm font-bold text-slate-100">👥 Vertrauenspersonen verwalten</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs" id="trusteesGrid"></div>
-                <button id="saveTrusteesBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg">
-                    💾 Vertrauenspersonen speichern
-                </button>
-            </div>
-            <p class="text-sm text-slate-300">Hier kannst du festlegen, wer später einmal Zugang zu deinen Unterlagen bekommen soll. Eine Einladung allein gibt noch keinen Zugriff.</p>
-            <p class="my-3"><a class="inline-block rounded-xl bg-indigo-700 px-4 py-3 font-semibold text-white" href="./erben-uebergabe.html">🔐 Unterlagen sicher übergeben</a></p>
-            <details class="rounded-2xl border border-slate-700 bg-slate-950 p-4 space-y-3">
-              <summary class="cursor-pointer font-bold text-slate-100 py-2">✉️ Einladungen verwalten</summary>
-              <div class="pt-4 space-y-4">
-<section id="heirInvitationManagement" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirInvitationManagementTitle">
-  <h3 id="heirInvitationManagementTitle" class="font-bold text-slate-100">Person einladen</h3>
-  <p class="text-sm text-amber-200">Du kannst eine Person einladen oder eine Einladung zurücknehmen.</p>
-  <div class="rounded-lg border border-slate-700 p-3 space-y-2">
-  <p class="text-sm text-slate-300">Die andere Person braucht ein eigenes Helferlein-Konto. Sie kann dir ihre Kennung geben.</p>
-  <label for="heirMyUserId" class="block text-sm">Meine Kennung</label>
-  <input id="heirMyUserId" type="text" readonly autocomplete="off" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 font-mono text-xs" placeholder="Bitte zuerst anmelden" />
-  <button id="heirLoadMyUserId" type="button" class="rounded-lg bg-slate-700 px-4 py-2">Meine Kennung anzeigen</button>
-  <button id="heirCopyMyUserId" type="button" disabled class="rounded-lg border border-slate-600 px-4 py-2 disabled:opacity-50">Kennung kopieren</button>
-  <p id="heirMyUserIdStatus" class="text-sm text-slate-300" role="status" aria-live="polite"></p>
-</div>
-  <form id="heirIssueForm" class="space-y-2">
-    <label for="heirRecipientUserId" class="block text-sm">Kennung der Person</label>
-    <input id="heirRecipientUserId" type="text" required maxlength="36" autocomplete="off" spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
-    <button id="heirIssueButton" type="submit" disabled class="rounded-lg bg-indigo-700 px-4 py-2 disabled:opacity-50">Einladung erstellen</button>
-  </form>
-  <div id="heirIssuedTokenArea" hidden class="rounded-lg border border-amber-700 p-3 space-y-2">
-    <p class="text-sm text-amber-200">Gib diesen Code nur persönlich oder auf einem sicheren Weg an die eingeladene Person weiter.</p>
-    <label for="heirIssuedToken" class="block text-sm">Einmalcode</label>
-    <input id="heirIssuedToken" readonly type="text" autocomplete="off" class="w-full rounded-lg bg-slate-900 p-2 font-mono text-xs" />
-    <button id="heirClearToken" type="button" class="rounded-lg border border-slate-600 px-3 py-2">Code ausblenden</button>
-  </div>
-  <form id="heirRevokeForm" class="space-y-2">
-    <label for="heirInvitationId" class="block text-sm">Nummer der Einladung</label>
-    <input id="heirInvitationId" type="text" required maxlength="36" autocomplete="off" spellcheck="false" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
-    <button id="heirRevokeButton" type="submit" disabled class="rounded-lg bg-red-800 px-4 py-2 disabled:opacity-50">Einladung zurücknehmen</button>
-  </form>
-  <button id="heirListButton" type="button" disabled class="rounded-lg bg-slate-700 px-4 py-2 disabled:opacity-50">Einladungen anzeigen</button>
-  <div id="heirLiveList" class="text-sm text-slate-200" role="status" aria-live="polite"></div>
-  <p id="heirInvitationStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte melde dich an.</p>
-</section>
-
-<section id="heirAcceptInvitation" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirAcceptTitle">
-  <h3 id="heirAcceptTitle" class="font-bold text-slate-100">Einladung erhalten?</h3>
-  <p class="text-sm text-slate-300">Melde dich an und gib deinen Einladungscode ein. Deine Unterlagen werden dadurch noch nicht freigegeben.</p>
-  <form id="heirAcceptForm" class="space-y-2">
-    <label for="heirAcceptToken" class="block text-sm">Einladungscode</label>
-    <input id="heirAcceptToken" type="password" required minlength="64" maxlength="64" autocomplete="off" spellcheck="false" autocapitalize="off" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
-    <button id="heirAcceptButton" type="submit" class="rounded-lg bg-indigo-700 px-4 py-2">Einladung annehmen</button>
-  </form>
-  <p id="heirAcceptStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte melde dich an.</p>
-</section>
-              </div>
-            </details>
-
-        </div>
-
         <!-- TAB 4: PAPIER NOTFALL-KIT MIT QR-CODES -->
         <div id="section-kit" class="tab-section hidden space-y-6">
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="text-sm font-bold text-slate-100">📄 Unterlagen für den Notfall</h3>
-                        <p class="text-xs text-slate-400">Hier kannst du eine Liste deiner Notfallkontakte ausdrucken. Geheime Zugangsdaten stehen nicht darauf.</p>
+                        <h3 class="text-sm font-bold text-slate-100">Meine Liste für die Familie</h3>
+                        <p class="text-xs text-slate-400">Drucke deine gespeicherten Kontakte aus. Persönliche Tresorschlüssel können derzeit noch nicht gedruckt werden.</p>
                     </div>
                     <button id="generatePdfBtn" title="Notfallkontakte ausdrucken" class="px-4 py-2.5 bg-slate-700 text-slate-300 font-bold rounded-xl text-xs shadow-lg whitespace-nowrap cursor-not-allowed">
-                        🖨️ Notfallkontakte drucken
+                        Kontaktliste drucken
                     </button>
                 </div>
                 <div id="kitSharesPreview" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                    <p class="text-xs text-slate-500">Bitte lege zuerst Personen im Tab "Totmannschalter" an, um personalisierte QR-Kits zu erhalten.</p>
+                    <p class="text-xs text-slate-500">Füge zuerst unter „Menschen & Lebenszeichen“ eine Person hinzu.</p>
                 </div>
             </div>
-
-            <!-- Affiliate Empfehlung für Notfall-Kit & Dokumente -->
-            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
-                <h3 class="font-bold text-sm text-slate-100">🛡️ Empfohlenes Zubehör für das physische Notfall-Kit</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <a href="https://www.amazon.de/s?k=feuerfester+dokumentenordner+tresor&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
-                        <span class="text-2xl">🔥</span>
-                        <div>
-                            <p class="text-xs font-bold text-slate-100">Feuerfeste Dokumententasche</p>
-                            <p class="text-[10px] text-amber-400">Schützt Papier-Keys & Passwörter vor Brand →</p>
-                        </div>
-                    </a>
-                    <a href="https://www.amazon.de/s?k=lammiergeraet+set+a4&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
-                        <span class="text-2xl">📃</span>
-                        <div>
-                            <p class="text-xs font-bold text-slate-100">Laminiergerät-Set</p>
-                            <p class="text-[10px] text-amber-400">Notfall-Kit wasserdicht & reißfest laminieren →</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Zusätzliches Vorsorge- & USB-Stick Affiliate Widget -->
-            <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
-                <h3 class="font-bold text-sm text-slate-100">🛡️ Empfohlene Vorsorge- & Sicherheits-Produkte</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                    <a href="https://www.amazon.de/s?k=vorsorgemappe+patientenverfügung+vollmacht&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
-                        <span class="text-2xl">📘</span>
-                        <div>
-                            <p class="font-bold text-slate-100">Offizielle Vorsorgemappen</p>
-                            <p class="text-[10px] text-amber-400">Inkl. Vollmachten & Verfügungen →</p>
-                        </div>
-                    </a>
-                    <a href="https://www.amazon.de/s?k=hardware+verschlüsselter+usb+stick&tag=duhrrom-21" target="_blank" rel="noopener noreferrer" class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center space-x-3 transition-colors">
-                        <span class="text-2xl">💾</span>
-                        <div>
-                            <p class="font-bold text-slate-100">Verschlüsselte USB-Sticks</p>
-                            <p class="text-[10px] text-amber-400">Für eine Sicherung auf deinem Gerät →</p>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
 
         <!-- TAB 5: EINSTELLUNGEN & SUPABASE ANMELDUNG -->
         <div id="section-settings" class="tab-section hidden space-y-6">
@@ -361,8 +275,8 @@
 
             <!-- Eigene Daten (Tresor-Inhaber) -->
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-                <h3 class="text-sm font-bold text-slate-100">⚙️ Eigene Daten (Tresor-Inhaber)</h3>
-                <p class="text-xs text-slate-400">Diese Kontaktdaten benötigen wir, um dich im Notfall per E-Mail zu benachrichtigen, falls eine Vertrauensperson den Alarm auslöst.</p>
+                <h3 class="text-sm font-bold text-slate-100">Meine Kontaktdaten</h3>
+                <p class="text-xs text-slate-400">Hier kannst du deinen Namen und deine E-Mail-Adresse speichern. Automatische Alarmnachrichten sind noch nicht verfügbar.</p>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div>
@@ -395,5 +309,6 @@
     </main>
 
     <script src="../../assets/heir-owner-legacy.js"></script>
+<script defer src="../../assets/estate-simple-ui.js"></script>
 </body>
 </html>
