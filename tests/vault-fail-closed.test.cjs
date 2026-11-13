@@ -4,6 +4,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '..', 'tools', 'digitaler-nachlass', 'index.html'), 'utf8');
 const legacy = fs.readFileSync(path.join(__dirname, '..', 'assets', 'heir-owner-legacy.js'), 'utf8');
+const controller = fs.readFileSync(path.join(__dirname, '..', 'assets', 'a10-consent-ui.js'), 'utf8');
+assert.match(controller, /const PRODUCTION_RELEASE_ENABLED = false/);
+assert.ok(controller.includes('elements.forEach(el => { el.disabled = true'), 'controller must hard-disable all controls');
 const checks = [
   ['read stored vault', /const storedVault = localStorage\.getItem\('digital_estate_vault'\)/],
   ['create only when absent', /if \(storedVault === null\)/],
@@ -19,6 +22,8 @@ const checks = [
   ['visible error message', /Tresor gesperrt:/],
   ['accessible alert', /notice\.setAttribute\('role', 'alert'\)/],
   ['A10 migration UI explicitly disabled', /id="a10-migration-panel"[^>]*data-a10-release="disabled"/],
+  ['A10 consent disabled', /id="a10-migration-consent"[^>]*disabled/],
+  ['A10 controller loaded', /a10-consent-ui[.]js/],
   ['A10 backup file disabled', /id="a10-backup-file"[^>]*disabled/],
   ['A10 attestation file disabled', /id="a10-attestation-file"[^>]*disabled/],
   ['A10 preview disabled', /id="a10-migration-preview"[^>]*disabled/],
