@@ -22,6 +22,7 @@ const http = require('node:http');
     'a10-backup-file-integrity.js',
     'a10-attested-file-staging.js',
     'a10-staged-readback.js',
+    'a10-offline-preview.js',
     'a10-migration-flow.js'
   ];
   const server = http.createServer(async (req, res) => {
@@ -139,6 +140,16 @@ const http = require('node:http');
     assert.equal(badSidecarResult.rejected, true);
     assert.equal(badSidecarResult.stored, undefined);
     await receiver.locator('#attestation').setInputFiles(sidecarPath);
+    const preview = await receiver.evaluate(async () => {
+      return HelferleinA10OfflinePreview.preview(
+        document.querySelector('#backup').files[0],
+        document.querySelector('#attestation').files[0],
+        { explicitConsent: true, confirmIndependentStorage: true });
+    });
+    assert.equal(preview.status, 'OFFLINE_ENCRYPTED_BACKUP_PREVIEW_ONLY_NO_WRITE');
+    assert.equal(preview.activationAllowed, false);
+    assert.equal(preview.sha256, prepared.attestation.sha256);
+    assert.equal(JSON.stringify(preview).includes(prepared.legacy.masterKeyHex), false);
     const result = await receiver.evaluate(async ({ artifacts, credentials }) => {
       const attestation = JSON.parse(await document.querySelector('#attestation').files[0].text());
       const { vaultId, backupPassword, v2Password } = credentials;
