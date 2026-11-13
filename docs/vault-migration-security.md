@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 bestaetigter Backup-Export und sicherer Import-Vorabcheck (2026-11-13, isoliert)
+
+`assets/a10-v1-backup-transfer.js` ist ein **nicht eingebundener**, rein speicherbasierter Prototyp. `prepareExport(legacy,password,{explicitConsent:true})` erstellt den verschluesselten JSON-Dateiinhalt und einen Dateinamen, fuehrt jedoch **keinen Download** aus. `previewImport(fileText,password,{explicitConsent:true,expectedVaultId,existing})` prueft Dateigroesse/JSON/Backupformat, authentifiziert das Passwort und verlangt die vorher festgelegte Tresor-ID. Bereits vorhandene Tresore werden ausnahmslos vor Ueberschreiben geschuetzt (gleiche und andere ID). Das Ergebnis `PREVIEW_ONLY_NO_WRITE` ist eine entschluesselte Kopie **im Arbeitsspeicher**, kein Import, keine Freigabe fuer einen anschliessenden Schreibvorgang und keine Migration.
+
+`tests/a10-browser-backup-transfer.cjs` prueft in isoliertem Chromium ausschliesslich synthetische Daten: fehlende Bestaetigung, falsches Passwort, Dateibeschneidung, manipulierten Ciphertext, Uebergroesse, fremde Tresor-ID, vorhandene gleiche/fremde ID, ungueltigen Bestand, unbekannte Backup-Version, unveraenderte Original-/Bestandsdaten und keine Klartextschluessel im Export. Die bereits vorhandenen Tests fuer Verlust des Quellprofils und Wiederherstellung im frischen Profil bleiben aktiv.
+
+**Grenzen:** Kein produktiver Dateidialog, keine Benutzeroberflaeche, kein persistierender Import, keine externe Backup-Ablage, keine atomare Schreibfreigabe und keine Sicherheitsgarantie fuer alle historischen V1-Schemata. Der Import-Vorabcheck gibt bei erfolgreicher Entschluesselung sensible Daten im Arbeitsspeicher zurueck; ein spaeterer Produktivpfad muss diese streng begrenzen. **A10 bleibt NO-GO.**
+
+
 ## A10 historische V1-Konfiguration: explizite Normalisierung (2026-11-13, isoliert)
 
 Der inaktive Baustein `assets/a10-historical-v1-normalizer.js` nimmt nur bei `explicitConsent: true` ein synthetisches V1-Objekt entgegen. Er validiert Tresor-ID, Masterkey, erforderliche Konfiguration, Kontaktstrukturen sowie die **tatsaechliche AES-GCM-Authentizitaet** des verschluesselten `entries`-Payloads. Nur das im Legacy-`initVault()` optional nachgetragene Feld `alarmPersons` wird bei Abwesenheit explizit mit `[]` ergaenzt. Alle unbekannten Zusatzfelder werden unveraendert uebernommen; vorhandene Werte werden nicht ersetzt. Der Aufruf gibt eine separate Kopie und die Liste der Ergaenzungen zurueck. Keine lokalen Schreibvorgaenge, keine Aktivierung und keine Aenderung am Original.
