@@ -131,7 +131,7 @@
 
             bindClick('addAlarmPersonBtn', addAlarmPerson);
             bindClick('saveTrusteesBtn', saveTrustees);
-            bindClick('generatePdfBtn', generatePrintableKitPDF);
+            bindClick('generatePdfBtn', () => window.estatePrintKeys?.());
             bindClick('saveSettingsBtn', saveSettings);
 
             document.addEventListener('click', (e) => {
@@ -275,14 +275,14 @@
             const operation = localConfigUpdateQueue.then(async () => {
                 if (!vaultReady) throw new Error('Tresor ist nicht entsperrt.');
                 const cfg = getVaultConfig();
-                const previousEntries = typeof currentDecryptedVault !== 'undefined' ? currentDecryptedVault?.entries?.slice() : undefined;
+                const previousVault = JSON.parse(JSON.stringify(currentDecryptedVault));
                 try {
                     mutate(cfg);
                     const saved = await saveLocalConfig(cfg);
-                    if (!saved && previousEntries) currentDecryptedVault.entries = previousEntries;
+                    if (!saved) currentDecryptedVault = previousVault;
                     return saved;
                 } catch (error) {
-                    if (previousEntries) currentDecryptedVault.entries = previousEntries;
+                    currentDecryptedVault = previousVault;
                     throw error;
                 }
             });
@@ -1196,6 +1196,7 @@
                     <button data-idx="${idx}" class="px-2 py-1.5 bg-slate-800 text-slate-300 rounded-lg text-[11px] delete-person-btn">Kontakt entfernen</button>
                 </div>
             `).join('');
+            window.dispatchEvent(new Event('estate:people-updated'));
         }
 
         async function saveSettings() {
@@ -1245,6 +1246,10 @@
                     if (!cfg.alarmPersons) cfg.alarmPersons = [];
                     if (cfg.alarmPersons.length >= 10) throw new Error("Maximal 10 Vertrauenspersonen.");
                     cfg.alarmPersons.push({ id: personId, name, contact });
+                    const keyBytes = crypto.getRandomValues(new Uint8Array(32));
+                    const keyCode = Array.from(keyBytes, b => b.toString(16).padStart(2, '0')).join('');
+                    if (!currentDecryptedVault.trusteeKeys) currentDecryptedVault.trusteeKeys = {};
+                    currentDecryptedVault.trusteeKeys[personId] = keyCode;
                 });
             } catch (error) {
                 console.error("Lokales Speichern des Notfallkontakts fehlgeschlagen:", error);
@@ -1272,6 +1277,7 @@
                 const personIndex = (cfg.alarmPersons || []).findIndex(person => person.id === personId);
                 if (personIndex === -1) throw new Error("Notfallkontakt wurde bereits geändert.");
                 cfg.alarmPersons.splice(personIndex, 1);
+                if (currentDecryptedVault.trusteeKeys) delete currentDecryptedVault.trusteeKeys[personId];
             }).catch(error => {
                 alert("Notfallkontakt konnte nicht gelöscht werden: " + error.message);
                 return false;
@@ -1403,6 +1409,7 @@
             if (!container) return;
             const contacts = getVaultConfig()?.alarmPersons || [];
             container.replaceChildren();
+            if (window.estateRenderPrintChoices) { window.estateRenderPrintChoices(); return; }
             const intro = document.createElement('p');
             intro.className = 'text-sm text-slate-300 col-span-full';
             intro.textContent = contacts.length
