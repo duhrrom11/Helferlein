@@ -79,7 +79,6 @@
   <a class="b3-hub-logo" href="index.html" aria-label="Helferlein Startseite"><span class="b3-hub-logo-mark" aria-hidden="true">✳</span> Helferlein</a>
   <nav class="b3-hub-nav" aria-label="Hauptnavigation">
    <a href="#toolsGrid">Alle Tools</a>
-   <a href="#favoritesSection">⭐ Favoriten</a>
    <span id="userInfo" class="b3-hub-account" role="status" aria-live="polite">Nicht angemeldet</span>
    <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Einstellungen öffnen">⚙ Einstellungen</button>
   </nav>
@@ -91,7 +90,7 @@
    <p>Zwölf praktische Helfer für Finanzen, Zuhause, Organisation und unterwegs. Kostenlos im Browser – die meisten Funktionen auch ohne Konto.</p>
    <div class="b3-hero-actions">
     <a class="b3-hero-primary" href="#toolDiscovery">🔍 Tools entdecken</a>
-    <a class="b3-hero-secondary" href="#favoritesSection">⭐ Meine Favoriten</a>
+    <a class="b3-hero-secondary" href="#b3-quickstart-list">⭐ Mein Schnellstart</a>
    </div>
    <p class="b3-hero-status">✓ 12 kostenlose Web-Apps &nbsp;·&nbsp; ✓ Ohne Installation</p>
   </div>
@@ -107,12 +106,6 @@
 
 <!-- Main Content -->
     <main id="main-content" tabindex="-1" class="b3-hub-main flex-grow container mx-auto p-4 md:p-8 max-w-7xl space-y-6">
-
-        <!-- Favoriten-Sektion -->
-        <div id="favoritesSection" class="hidden space-y-3">
-            <h2 class="text-xs font-bold text-sky-700 uppercase tracking-wider flex items-center gap-1.5">⭐ Deine Favoriten</h2>
-            <div id="favoritesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        </div>
 
         <!-- B3 Kategorie- und Suchbereich: rein lokale Filterung der vorhandenen Karten -->
 <section class="b3-discovery" id="toolDiscovery" aria-label="Werkzeugfinder">
@@ -144,8 +137,7 @@
                         <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl font-bold border border-rose-200 shadow-inner" aria-hidden="true">♡</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('wishlist', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wishlist" aria-label="Wishlist zu Favoriten hinzufügen oder entfernen">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md border border-rose-200">Wünsche</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Wishlist – Wunschlisten &amp; Geschenke</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erstelle persönliche Wunschlisten, teile deine Wünsche mit Familie und Freunden, entdecke Geschenkideen und plane Geschenke für Geburtstage und andere Anlässe.</p>
@@ -162,8 +154,7 @@
                         <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold border border-emerald-200 shadow-inner" aria-hidden="true">🧾</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('kassenbon', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kassenbon">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Pro</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Haushaltsbuch mit Kassenbon-Scanner</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte dein Geld im Blick: Erfasse Einnahmen und Ausgaben, plane Budgets, scanne Kassenbons und finde wichtige Belege oder Garantiefristen schnell wieder.</p>
@@ -181,8 +172,7 @@
                         <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold border border-blue-200 shadow-inner" aria-hidden="true">📦</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('kisten', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kisten">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Lager</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Umzugskisten-App & Inventarliste</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte beim Umzug oder im Lager den Überblick: Erfasse den Inhalt jeder Kiste, suche nach Gegenständen und finde mit QR-Code-Etiketten alles leichter wieder.</p>
@@ -200,8 +190,7 @@
                         <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl font-bold border border-amber-200 shadow-inner" aria-hidden="true">💶</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('wg-kasse', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wg-kasse">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Budget</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">WG-Organisator mit Haushaltsbuch</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Organisiert euren gemeinsamen Alltag: Teilt Ausgaben gerecht auf, führt ein Haushaltsbuch und verwaltet Putzplan, Kalender und Notizen an einem Ort.</p>
@@ -238,8 +227,7 @@
                         <div class="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center text-xl font-bold border border-red-200 shadow-inner" aria-hidden="true">🚗</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('kfz', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="kfz">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Tracker</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Autokosten-Rechner & Reifenwechsel</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Tankkosten, Reparaturen, TÜV-Termine und Reifenwechsel dokumentieren. Fahrzeugkosten im Blick behalten.</p>
@@ -257,8 +245,7 @@
                         <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-xl font-bold border border-teal-200 shadow-inner" aria-hidden="true">🐾</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('haustier', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="haustier">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Care</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Digitaler Impfpass für Hund & Katze</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Impfungen, Tierarztbesuche, Medikamente, Gewicht und Kosten im digitalen Haustier-Gesundheitspass erfassen.</p>
@@ -276,8 +263,7 @@
                         <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-xl font-bold border border-sky-200 shadow-inner" aria-hidden="true">🅿️</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('parken', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="parken">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Timer</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Parkplatz-Merker & Parkschein-Timer</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Parkplatz per GPS merken, Parkzeit im Blick behalten und Parkgebühren und Parkvorgänge verwalten.</p>
@@ -295,8 +281,7 @@
                         <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold border border-indigo-200 shadow-inner" aria-hidden="true">🤝</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('verleih', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="verleih">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Share</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Verliehene Gegenstände verwalten</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Werkzeuge, Bücher und andere Leihgaben erfassen, Rückgaben verfolgen und Erinnerungen vorbereiten.</p>
@@ -314,8 +299,7 @@
                         <div class="w-12 h-12 bg-lime-50 text-lime-600 rounded-xl flex items-center justify-center text-xl font-bold border border-lime-200 shadow-inner" aria-hidden="true">🌱</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('pflanzen', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="pflanzen">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Green</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Pflanzenpflege-App mit Gießplan</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Zimmer- und Gartenpflanzen organisieren, Gießintervalle und Düngen dokumentieren und Pflege planen.</p>
@@ -333,8 +317,7 @@
                         <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-xl font-bold border border-orange-200 shadow-inner" aria-hidden="true">⚡</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('energie', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="energie">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Energy</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Zählerstände erfassen: Strom, Gas & Wasser</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Strom-, Wasser- und Gaszählerstände dokumentieren, Verbrauch auswerten und Kosten vergleichen.</p>
@@ -352,8 +335,7 @@
                         <div class="w-12 h-12 bg-pink-50 text-pink-600 rounded-xl flex items-center justify-center text-xl font-bold border border-pink-200 shadow-inner" aria-hidden="true">🍰</div>
                         <div class="flex items-center gap-2">
                             <button type="button" onclick="toggleFavorite('backform', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="backform">⭐</button>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600 px-2.5 py-1 rounded-md border border-gray-200">Küche</span>
-                        </div>
+                            </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Backform-Umrechner & Rezeptrechner</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Du hast eine andere Backform als im Rezept? Rechne Zutaten und Teigmengen passend um und erhalte eine Orientierung für die neue Backzeit.</p>
@@ -626,27 +608,6 @@
 
         function initFavorites() {
             const favs = readFavorites();
-            const section = document.getElementById('favoritesSection');
-            const grid = document.getElementById('favoritesGrid');
-            if (!grid || !section) return;
-            grid.innerHTML = '';
-            // Stored favorites may reference tools that have since been removed.
-            // Show the section only when at least one matching tool card exists.
-            favs.forEach(id => {
-                if (!/^[a-z0-9-]+$/.test(id)) return;
-                const card = document.querySelector(`#toolsGrid .tool-card[data-id="${id}"]`);
-                if (card) {
-                    const clone = card.cloneNode(true);
-                    const btn = clone.querySelector('.fav-btn');
-                    if(btn) {
-                        btn.style.color = '#f59e0b';
-                        btn.setAttribute('aria-pressed', 'true');
-                        btn.setAttribute('aria-label', 'Aus Favoriten entfernen');
-                        btn.onclick = (e) => toggleFavorite(id, e);
-                    }
-                    grid.appendChild(clone);
-                }
-            });
             const quickstart = document.getElementById('b3-quickstart-list');
             if (quickstart) {
                 quickstart.replaceChildren();
@@ -673,7 +634,6 @@
                     });
                 }
             }
-            section.classList.toggle('hidden', grid.children.length === 0);
             document.querySelectorAll('#toolsGrid .tool-card').forEach(c => {
                 const btn = c.querySelector('.fav-btn');
                 if (btn) {
