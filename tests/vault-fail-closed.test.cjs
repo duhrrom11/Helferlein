@@ -17,6 +17,13 @@ const checks = [
   ['retain decrypted vault', /currentDecryptedVault = dec;/],
   ['visible error message', /Tresor gesperrt:/],
   ['accessible alert', /notice\.setAttribute\('role', 'alert'\)/],
+  ['A10 migration UI explicitly disabled', /id="a10-migration-panel"[^>]*data-a10-release="disabled"/],
+  ['A10 backup file disabled', /id="a10-backup-file"[^>]*disabled/],
+  ['A10 attestation file disabled', /id="a10-attestation-file"[^>]*disabled/],
+  ['A10 preview disabled', /id="a10-migration-preview"[^>]*disabled/],
+  ['A10 staging disabled', /id="a10-migration-stage"[^>]*disabled/],
+  ['A10 activation disabled', /id="a10-migration-activate"[^>]*disabled/],
+  ['A10 no production migration script', /<script[^>]+src="[^"]*a10-migration-flow\\.js"/, true],
   ['no silent empty fallback', /currentDecryptedVault = \(dec && dec\.entries\) \? dec : \{ entries: \[\] \};/, true],
 ];
 for (const [label, pattern, absent] of checks) {
