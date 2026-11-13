@@ -122,3 +122,10 @@ body.b3-home .b3-clear-search[hidden]{display:none!important}
 /* Accessible reset action for an empty search result. */
 .b3-reset-filters{display:inline-block;margin-left:.5rem;padding:.4rem .7rem;border-radius:.65rem;border:1px solid currentColor;font-weight:700;cursor:pointer;background:transparent;color:inherit}
 .b3-reset-filters:hover,.b3-reset-filters:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+
+/* Shared favorites / quickstart: let explanations breathe. */
+body.b3-home .b3-preview-hint{margin-top:.9rem;font-size:.78rem;color:#e7f8f4}
+body.b3-home .b3-quickstart-empty{margin-top:.55rem;color:#fff;font-size:.9rem;line-height:1.5}
+body.b3-home .tool-card p{font-size:.9rem;line-height:1.65;margin-top:.7rem}
+body.b3-home .tool-card>div:last-child{display:flex;justify-content:flex-end}
+@media(max-width:790px){body.b3-home .b3-hero-preview{display:block}}
