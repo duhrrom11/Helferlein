@@ -21,7 +21,8 @@ const http = require('node:http');
     'a10-backup-file-handoff.js',
     'a10-backup-file-integrity.js',
     'a10-attested-file-staging.js',
-    'a10-staged-readback.js'
+    'a10-staged-readback.js',
+    'a10-migration-flow.js'
   ];
   const server = http.createServer(async (req, res) => {
     if (req.url === '/') {
@@ -213,6 +214,29 @@ const http = require('node:http');
     assert.equal(readback.wrongPasswordRejected, true);
     assert.equal(readback.substitutedRejected, true);
     assert.equal(readback.wrongEnvelopeRejected, true);
+    // Functional migration flow: one explicit consent -> independent encrypted
+    // backup -> recovered V2 -> atomic inactive IDB stage -> authenticated readback.
+    const functional = await receiver.evaluate(async ({ legacy, credentials }) => {
+      const { vaultId, backupPassword, v2Password } = credentials;
+      const driver = HelferleinA10V2IndexedDB.driver(indexedDB,
+        'a10-isolated-v2-functional-migration');
+      const options = { explicitConsent: true, confirmIndependentBackup: true,
+        confirmStagingOnly: true, confirmVaultId: vaultId };
+      const completed = await HelferleinA10MigrationFlow.prepareAndStage(
+        driver, legacy, backupPassword, v2Password, options);
+      const stored = await driver.read(vaultId);
+      let repeatRejected = false;
+      try { await HelferleinA10MigrationFlow.prepareAndStage(
+        driver, legacy, backupPassword, v2Password, options); }
+      catch (_) { repeatRejected = true; }
+      return { completed, stored, repeatRejected };
+    }, { legacy: prepared.legacy, credentials });
+    assert.equal(functional.completed.status, 'BACKUP_READY_V2_STAGED_VERIFIED_NOT_ACTIVE');
+    assert.equal(functional.completed.active, false);
+    assert.equal(functional.stored.status, 'STAGED_NOT_ACTIVE');
+    assert.equal(functional.stored.active, null);
+    assert.equal(functional.repeatRejected, true);
+    assert.equal(JSON.stringify(functional).includes(prepared.legacy.masterKeyHex), false);
     await fresh.close();
     console.log('A10 attested real browser file -> fresh-context verified encrypted IDB staging: PASS');
   } finally {
