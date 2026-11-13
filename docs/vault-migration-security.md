@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 Gate 2 – authentifizierte lokale Importvorbereitung (2026-11-13)
+
+`assets/a10-authenticated-import.js` stellt einen zusammenhaengenden isolierten Workflow bereit: echte ausgewaehlte verschluesselte V1-Backup- und SHA-256-Sidecar-Dateien einmalig in einen begrenzten Snapshot lesen, Dateiintegritaet pruefen, Backup mit dem Backup-Passwort authentifiziert entschluesseln, historisches V1 inklusive AES-GCM-Inhalt validieren, V2 mit einem **anderen** Passwort verschluesseln und unmittelbar wieder authentifiziert pruefen. Die Vorbereitung gibt nur einen verschluesselten V2-Umschlag, Datei-Hash und Vault-ID zurueck; vor der separaten Bestaetigung wird **nichts geschrieben**. Eine nur intern gueltige einmalige Vorbereitungssitzung (WeakMap) verhindert den Import frei konstruierter Vorbereitungsobjekte.
+
+Die zweite Aktion verlangt ausdrueckliche Zustimmung, exakte Vault-ID, Datei-Hash-Bestaetigung und `confirmStage`; sie authentifiziert den V2-Umschlag erneut und schreibt ihn ausschliesslich in die dedizierte `a10-isolated-v2-*`-IndexedDB mit atomarer Konfliktverweigerung. Danach folgt authentifiziertes Persistenz-Readback. Eine fehlgeschlagene authentifizierte Bestaetigung verbraucht die Sitzung; erneute Vorbereitung ist erforderlich. Der Chromium-End-to-End-Test deckt fehlende Zustimmung, falsche Passwoerter, fehlende Bestaetigung, falschen Hash, Replay, Konflikte, keinen V1-/localStorage-Schreibzugriff und inaktive Persistenz ab.
+
+**Grenzen:** Ein SHA-256-Sidecar beweist Integritaet gegen seinen Vergleichswert, nicht die Herkunft des Backups. Dies ist keine atomare produktive Aktivierung und kein produktiver Import. Der neue Baustein wird **nicht** von der echten Tresorseite geladen. Der produktive UI-Controller bleibt hart deaktiviert. Vor Aktivierung fehlen produktive sichere Datenmigration, Rollback, Cloud-Owner-/RLS-/Edge-Autorisierungsabnahme und Release-Freigabe. Keine Supabase-Testdaten. **A10 NO-GO.**
+
+
 ## Gate 2: zustimmungsgebundene Datei-Vorschau (synthetische Browser-Abnahme)
 
 `assets/a10-preview-workflow.js` verbindet ausdrueckliche Zustimmung, bestaetigte separate Backup-Aufbewahrung und die **tatsaechlich im Browser ausgewaehlten** Backup-/SHA-256-Dateien mit dem bestehenden kryptografischen Offline-Vorschau-Service. Es gibt nur nicht-geheime Format-/Hash-Metadaten zurueck; ohne Consent, bei fehlenden Dateien oder beim produktiven Panel-Status `disabled` wird abgebrochen. Der integrierte Chromium-Test prueft erfolgreichen synthetischen Ablauf, fehlende Zustimmung und gesperrtes Produktions-Panel. **Der Adapter wird nicht auf der produktiven Seite geladen**; nur ein explizites `synthetic-preview-only`-Panel im Test kann ihn nutzen. Eine spaetere Produktfreigabe erfordert die gesonderte Sicherheitsabnahme und ein kontrolliertes Feature-Gate. A10 NO-GO.
