@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 Integritaetsattest und Recovery vor Staging verbinden (2026-11-13)
+
+`assets/a10-attested-file-staging.js` verknuepft die exakte SHA-256-Bytepruefung der extern ausgewaehlten verschluesselten V1-Datei mit der vorhandenen kryptografischen V1/V2-Recovery und dem inaktiven V2-Staging. Die Datei wird **nur einmal** eingelesen; beide Pruefungen verwenden denselben unveraenderlichen Byte-Snapshot, um eine Veraenderung zwischen Pruefung und Verwendung auszuschliessen. Synthetische Tests pruefen abweichende Bytes, manipulierten Hash, fehlende Einwilligung, nur einen Datei-Lesevorgang, keine Writes vor Freigabe, Inaktivitaet und keinen Klartextschluessel im Staging.
+
+**Grenzen:** Ein SHA-256-Attest ist ohne getrennte vertrauenswuerdige Aufbewahrung kein Herkunftsnachweis. Kein echter Geraetewechsel, keine Produktionsanbindung, keine A10-Aktivierung und keine Supabase-Testdaten. **A10 bleibt NO-GO.**
+
+
 ## A10 exakte Backup-Datei-Integritaetspruefung (2026-11-13)
 
 `assets/a10-backup-file-integrity.js` erstellt ausschliesslich nach expliziter Zustimmung einen SHA-256-Fingerabdruck der verschluesselten Exportdatei und vergleicht diesen mit den **exakten Bytes** einer spaeter ausgewaehlten Datei. Dateiname, Typ, Laenge, Attestationsschema und SHA-256 werden fail-closed geprueft; ein einzelnes abweichendes Byte wird abgewiesen. Ein synthetischer Node-Test prueft Gleichheit, veraenderte Bytes, falschen Namen, manipulierten Fingerabdruck, fehlende Zustimmung und Groessenlimits.
