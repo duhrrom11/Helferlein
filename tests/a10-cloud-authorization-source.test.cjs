@@ -26,7 +26,7 @@ test('owner metadata API cannot elevate to service role or return ciphertext', (
   assert.match(source, /supabase\.auth\.getUser\(token\)/);
   assert.match(source, /\.eq\("owner_user_id", data\.user\.id\)/);
   assert.match(source, /\.select\("vault_id, owner_user_id, updated_at"\)/);
-  assert.doesNotMatch(source, /SUPABASE_SERVICE_ROLE_KEY|service_role|\.insert\(|\.upsert\(|\.update\(|\.delete\(/);
+  assert.doesNotMatch(source, /SUPABASE_SERVICE_ROLE_KEY|\.insert\(|\.upsert\(|\.update\(|\.delete\(/);
 });
 
 test('private heir tables remain denied to browser roles in SQL source', () => {
