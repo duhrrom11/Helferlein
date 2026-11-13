@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 V2 isoliertes verschluesseltes Staging (2026-11-13)
+
+`assets/a10-v2-staging.js` fuegt ein **nicht produktiv eingebundenes** Staging-Gate hinzu. `stage(driver,vaultId,envelope,password,{explicitConsent:true,confirmVaultId})` authentifiziert die V2-Huelle und bindet die Tresor-ID vor dem Schreibversuch. Ausschliesslich die verschluesselte Huelle wird an den atomaren, dedizierten Staging-Transaktionsadapter weitergegeben; existierende Zielschluessel werden nicht ueberschrieben. Der Datensatz ist stets `STAGED_NOT_ACTIVE`, `active:null`, Revision 0. `inspect` liefert ausschliesslich den Status ohne Tresordaten. Ein synthetischer Test prueft fehlende Zustimmung, falsches Passwort, konfliktbehaftete Wiederholung und das Fehlen von Klartextschluesseln im Datensatz.
+
+**Freigabegrenze:** Der Driver ist eine bewusst abstrakte Schnittstelle; es gibt **noch keinen** produktiven IndexedDB-Adapter, keine Browser-Persistenz, keine Transaktions-/Tab-Race-Abnahme, keine V1-Migration, keine Cloud-Anbindung und keine Aktivierung. Die atomare Wirkung muss ein spaeterer realer Treiber garantieren; der synchrone Mock-Test beweist dies nicht. Die aktuelle `unlock`-API gibt den entschluesselten Payload temporaer an den Staging-Helper zurueck; es gibt keine garantierte Speicherloeschung von JS-Objekten. **A10 bleibt NO-GO.**
+
+
 ## A10 V2 verschluesselte Huelle und Passwortentsperrung (isoliert, 2026-11-13)
 
 `assets/a10-v2-encrypted-envelope.js` ist ein **nicht produktiv eingebundener** Baustein fuer eine V2-Huelle. `seal(payload,password,{explicitConsent:true})` verschluesselt den gesamten validierten V1-kompatiblen Payload inklusive Masterkey und Metadaten mit PBKDF2-SHA256 (600.000 Iterationen, zufaelliges Salt) und AES-256-GCM (zufaelliger IV, versionsgebundenes AAD). `unlock(envelope,password,{explicitConsent:true})` prueft Format, Authentizitaet und Payload vor Rueckgabe einer ausschliesslich im Arbeitsspeicher befindlichen Kopie. Das persistierbare Huelle-Objekt enthaelt keine Klartextmetadaten oder Klartextschluessel. Falsche Passwoerter, Manipulation und fehlende Zustimmung werden fail-closed abgewiesen.

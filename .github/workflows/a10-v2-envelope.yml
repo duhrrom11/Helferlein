@@ -4,7 +4,9 @@ on:
   pull_request:
     paths:
       - 'assets/a10-v2-encrypted-envelope.js'
+      - 'assets/a10-v2-staging.js'
       - 'tests/a10-v2-envelope.cjs'
+      - 'tests/a10-v2-staging.cjs'
       - '.github/workflows/a10-v2-envelope.yml'
   workflow_dispatch:
 
@@ -21,4 +23,6 @@ jobs:
         with:
           node-version: '22'
       - name: Verify V2 encryption and unlock (isolated, synthetic only)
-        run: node tests/a10-v2-envelope.cjs
+        run: |
+          node tests/a10-v2-envelope.cjs
+          node tests/a10-v2-staging.cjs
