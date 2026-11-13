@@ -119,6 +119,11 @@
             bindClick('closeSuccessModalBtn', () => document.getElementById('syncModalOverlay').classList.add('hidden'));
             bindClick('clearAlarmBtn', clearEmergencyAlarm);
             bindClick('saveEntryBtn', saveVaultEntry);
+            bindClick('supabaseBackupBtn', () => syncVaultToFirebase(false));
+            bindClick('supabaseBackupStatusBtn', checkSupabaseVaultBackup);
+            bindClick('supabaseRestorePreviewBtn', previewSupabaseVaultRecovery);
+            bindClick('supabaseRecoveryKeyBtn', prepareSupabaseRecoveryKey);
+            bindClick('supabaseRestoreBtn', restoreVaultFromSupabase);
             bindClick('checkInBtn', performCheckIn);
             
             const intervalSel = document.getElementById('deadmanIntervalSelect');
@@ -786,11 +791,11 @@
         // Explicit, account-bound encrypted cloud copy. No key or plaintext
         // metadata is uploaded. Existing remote vaults are never overwritten
         // unless their vault_id matches the local vault exactly.
-        async function backupVaultToSupabase() {
-            if (!vaultReady) return alert('Der lokale Tresor ist nicht bereit.');
+        async function backupVaultToSupabase(silent = false) {
+            if (!vaultReady) { if (!silent) alert('Der lokale Tresor ist nicht bereit.'); return false; }
             const { data: authData, error: authError } = await supabaseClient.auth.getUser();
             const user = authData?.user;
-            if (authError || !user) return alert('Bitte zuerst bei Supabase anmelden.');
+            if (authError || !user) { if (!silent) alert('Bitte zuerst bei Supabase anmelden.'); return false; }
             const startingMasterKeyHex = currentMasterKeyHex;
             const startingRevision = localSaveRevision;
             const snapshot = localStorage.getItem('digital_estate_vault');
@@ -802,7 +807,7 @@
                 lastPersistedRevision !== localSaveRevision) {
                 return alert('Bitte warten, bis alle lokalen Änderungen gespeichert sind.');
             }
-            if (!confirm('Den aktuell lokal verschlüsselten Tresor einschließlich verschlüsselter Kontakte und Check-in-Einstellungen im angemeldeten Supabase-Konto sichern? Ein unverschlüsselter Tresorschlüssel wird nicht hochgeladen. Für den Gerätewechsel muss zusätzlich ein Wiederherstellungspasswort vorbereitet werden; eine verschlüsselte lokale Sicherungsdatei bleibt empfohlen.')) return;
+            if (!silent && !confirm('Den aktuell lokal verschlüsselten Tresor einschließlich verschlüsselter Kontakte und Check-in-Einstellungen im angemeldeten Supabase-Konto sichern? Ein unverschlüsselter Tresorschlüssel wird nicht hochgeladen. Für den Gerätewechsel muss zusätzlich ein Wiederherstellungspasswort vorbereitet werden; eine verschlüsselte lokale Sicherungsdatei bleibt empfohlen.')) return;
             const button = document.getElementById('supabaseBackupBtn');
             if (button) button.disabled = true;
             try {
@@ -902,34 +907,30 @@
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Der vorherige Stand wurde gesichert, aber inzwischen gibt es neuere lokale Änderungen. Bitte erneut sichern.');
                 }
-                alert('Verschlüsselter Tresor erfolgreich bei Supabase gespeichert. Den lokalen Sicherungsexport weiterhin aufbewahren.');
+                if (!silent) alert('Verschlüsselter Tresor erfolgreich bei Supabase gespeichert. Den lokalen Sicherungsexport weiterhin aufbewahren.');
+                return true;
             } catch (error) {
                 console.error('Supabase-Tresorsicherung fehlgeschlagen:', error);
-                alert('Cloud-Sicherung nicht bestätigt. Lokale Daten bleiben erhalten. Bitte später erneut versuchen.');
+                if (!silent) alert('Cloud-Sicherung nicht bestätigt: ' + (error?.message || 'Unbekannter Fehler') + '. Lokale Daten bleiben erhalten.');
+                return false;
             } finally {
                 if (button) button.disabled = false;
             }
         }
 
         function syncVaultToFirebase(silent = false) {
-            const operation = vaultSyncQueue.then(() => performVaultSync(silent)).catch(error => {
-                console.error("Unerwarteter Fehler bei der Cloud-Synchronisierung:", error);
-                if (!silent) {
-                    document.getElementById('syncErrorMessage').innerText =
-                        "Die Cloud-Synchronisierung konnte nicht abgeschlossen werden.";
-                    document.getElementById('syncStatusLoading').classList.add('hidden');
-                    document.getElementById('syncStatusSuccess').classList.add('hidden');
-                    document.getElementById('syncStatusError').classList.remove('hidden');
-                    document.getElementById('syncModalOverlay').classList.remove('hidden');
-                }
+            const operation = vaultSyncQueue.then(async () => {
+                const saved = await backupVaultToSupabase(silent);
+                showVaultSyncResult(saved === true);
+                return saved === true;
+            }).catch(error => {
+                console.error('Supabase-Synchronisierung fehlgeschlagen:', error);
+                showVaultSyncResult(false);
+                if (!silent) alert('Cloud-Synchronisierung fehlgeschlagen: ' + error.message);
                 return false;
             });
-            // Ein fehlgeschlagener Auftrag blockiert spätere Synchronisierungen nicht.
             vaultSyncQueue = operation.then(() => undefined);
-            return operation.then(success => {
-                showVaultSyncResult(success);
-                return success;
-            });
+            return operation;
         }
 
         async function performVaultSync(silent = false) {
