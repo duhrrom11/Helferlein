@@ -1352,7 +1352,13 @@
             }
             renderApp();
             const cloudCheckInSaved = await syncVaultToFirebase(true);
-            alert(cloudCheckInSaved ? "Gespeichert" : "Nur auf diesem Gerät gespeichert. Die Notfallüberwachung ist gerade nicht zuverlässig verfügbar.");
+            // A local check-in never counts as server-side emergency cancellation.
+            const canceled = await (window.estateOwnerCancelAlarm?.() ?? Promise.resolve(false));
+            if (canceled) {
+                alert("Lebenszeichen gespeichert. Ein laufender Notfallalarm wurde beendet.");
+            } else {
+                alert("Lebenszeichen lokal gespeichert. Die Entwarnung auf dem Server ist noch offen – bitte melde dich an und versuche es erneut.");
+            }
         }
 
         async function updateDeadmanInterval() {
