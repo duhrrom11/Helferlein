@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 exakte Backup-Datei-Integritaetspruefung (2026-11-13)
+
+`assets/a10-backup-file-integrity.js` erstellt ausschliesslich nach expliziter Zustimmung einen SHA-256-Fingerabdruck der verschluesselten Exportdatei und vergleicht diesen mit den **exakten Bytes** einer spaeter ausgewaehlten Datei. Dateiname, Typ, Laenge, Attestationsschema und SHA-256 werden fail-closed geprueft; ein einzelnes abweichendes Byte wird abgewiesen. Ein synthetischer Node-Test prueft Gleichheit, veraenderte Bytes, falschen Namen, manipulierten Fingerabdruck, fehlende Zustimmung und Groessenlimits.
+
+**Sicherheitsgrenze:** Der Fingerabdruck beweist **weder** Herkunft noch sichere dauerhafte Aufbewahrung; SHA-256 ersetzt keine kryptografische Entschluesselungs-/Authentizitaetspruefung. Die Attestation muss unabhaengig und vertrauenswuerdig aufbewahrt werden, sonst kann ein Angreifer Datei und Hash gemeinsam ersetzen. Dieser Baustein ist nicht in den bestehenden Import- oder Produktivpfad eingebunden, schreibt nichts und aktiviert nichts. Keine echte Geraetewechselabnahme, keine Supabase-Daten. **A10 bleibt NO-GO.**
+
+
 ## A10 Ende-zu-Ende Browser-Datei-zu-IndexedDB-Staging-Gate (2026-11-13)
 
 `tests/a10-browser-file-to-idb-recovery.cjs` verbindet erstmals die zuvor separat getesteten isolierten Schritte in einem Chromium-Integrationstest: synthetisches V1 mit gueltiger innerer AES-GCM-Verschluesselung, unabhaengig verschluesseltes V1-Backup, realer Browser-Download auf den Testdatentraeger, neues leeres Browserprofil im frischen Kontext, Dateiauswahl, erneute kryptografische V1/V2-Recovery-Pruefung und ausschliesslich verschluesseltes V2-Staging in einer dedizierten IndexedDB. Der Test kontrolliert Passwortfehler vor dem Schreiben, Wiederholungsablehnung, Inaktivitaet, fehlende Klartextschluessel und Persistenz nach Reload. Kein produktiver Code wird eingebunden oder aktiviert.
