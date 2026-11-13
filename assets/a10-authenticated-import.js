@@ -17,6 +17,7 @@
   function (integrity, backupApi, historical, envelopeApi, staging, readback) {
     'use strict';
     const reject = () => { throw new Error('A10_AUTHENTICATED_IMPORT_REJECTED'); };
+    const sessions = new WeakMap();
     const validId = id => typeof id === 'string' && /^v_[A-Za-z0-9_-]{8,80}$/.test(id);
     const required = options => options?.explicitConsent === true &&
       options?.confirmIndependentStorage === true && options?.confirmIndependentBackup === true &&
@@ -55,11 +56,14 @@
         const envelope = await envelopeApi.seal(normalized, v2Password, { explicitConsent: true });
         const verified = await envelopeApi.unlock(envelope, v2Password, { explicitConsent: true });
         if (JSON.stringify(verified) !== JSON.stringify(normalized)) reject();
-        return Object.freeze({
+        const prepared = Object.freeze({
           status: 'AUTHENTICATED_LOCAL_PREVIEW_NO_WRITE', vaultId: legacy.vaultId,
           bytes: bytes.length, sha256: await sha256(bytes), envelope: Object.freeze(envelope),
           active: false
         });
+        // Only a preparation in this runtime can authorize the subsequent write.
+        sessions.set(prepared, { consumed: false });
+        return prepared;
       } finally {
         bytes.fill(0); sidecar.fill(0);
         legacy = undefined; normalized = undefined;
@@ -77,6 +81,10 @@
           !Number.isSafeInteger(prepared.bytes) || prepared.bytes < 1 ||
           prepared.bytes > 1500000 || !driver ||
           typeof driver.read !== 'function' || typeof driver.transact !== 'function') reject();
+      const session = sessions.get(prepared);
+      if (!session || session.consumed) reject();
+      // One-shot confirmation; failure cannot silently retry a write.
+      session.consumed = true;
       // Authenticate again before the first write. The driver enforces atomic no-overwrite.
       const decrypted = await envelopeApi.unlock(prepared.envelope, v2Password, { explicitConsent: true });
       if (decrypted.vaultId !== prepared.vaultId) reject();
