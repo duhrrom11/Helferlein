@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 Abbruch, SIGKILL und verwaiste Import-Reservierungen (isoliert, 2026-11-13)
+
+`assets/a10-reservation-recovery.js` ist **nicht produktiv eingebunden** und bietet ausschliesslich die schreibgeschuetzte Entscheidung `inspect(indexedDB,dbName,vaultId)`. Eine leere Stelle wird als `EMPTY_NO_RESERVATION` eingestuft, eine bestehende V1-Konfiguration als `EXISTING_V1_KEEP_UNCHANGED` und ein gueltiger isolierter Reservierungsmarker als `ORPHANED_RESERVATION_MANUAL_REVIEW`. Beschaedigte oder fremde Marker werden abgewiesen. Keine automatische Bereinigung, kein Resume, keine Freigabe belegter Ziele, kein Import und keine Aktivierung.
+
+`tests/a10-browser-reservation-recovery.cjs` verwendet ausschliesslich synthetische lokale Chromium-/IndexedDB-Daten und ein persistentes Wegwerfprofil: authentifizierte Vorschau ohne Reservierung, kontrollierter Neustart, ausdruecklich bestaetigte erneute Authentifizierung und Reservierung, danach **echter SIGKILL des Chromium-Hauptprozesses** und Wiederanlauf mit demselben Profil. Der verwaiste Marker wird nach dem Absturz nur als manuell zu pruefen erkannt; erneute Reservierung scheitert. Der vorhandene V1-Rueckfallstand bleibt unveraendert.
+
+**Grenzen:** Der Test erzwingt keinen Stromausfall und beweist keine dauerhafte Festplattensynchronisation. Die Klassifikation eines verwaisten Markers beweist nicht, ob ein externes Backup vorhanden ist. Die Implementierung ist bewusst konservativ und enthaelt keinen automatischen Reparatur- oder Importpfad. **A10 bleibt NO-GO.**
+
+
 ## A10 kryptografisch gepruefte Vorschau und atomare Reservierung (2026-11-13, isoliert)
 
 `assets/a10-preview-bound-reservation.js` ist ein **nicht eingebundener** Testbaustein. `preview(fileText,password,{explicitConsent:true,expectedVaultId})` entschluesselt ueber die bestehende V1-Backup-Importvorschau, authentifiziert den AES-GCM-Backup-Inhalt und bindet das Ergebnis an SHA-256 ueber die **exakten JSON-Dateibytes**. `reserveAfterPreview(...)` verlangt dieselbe bestaetigte Tresor-ID und denselben Datei-Fingerabdruck, prueft die Datei und das Passwort **erneut** und ruft erst danach die atomare, fail-closed IndexedDB-Reservierung auf. Veraenderungen zwischen Vorschau und Reservierung werden abgewiesen; parallele Tabs konkurrieren um denselben Zielschluessel und koennen nicht beide reservieren. Es gibt keine Speicherung entschluesselter V1-Daten und keine Aktivierung.
