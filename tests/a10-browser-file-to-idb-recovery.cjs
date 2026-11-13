@@ -115,6 +115,28 @@ const http = require('node:http');
     assert.equal(tamperedFileResult.rejected, true, 'modified selected file must be rejected');
     assert.equal(tamperedFileResult.stored, undefined, 'tampered file must not stage');
     await receiver.locator('#backup').setInputFiles(exportedPath);
+    // A separately selected but altered sidecar must also fail before writes.
+    const badSidecar = { ...prepared.attestation, sha256: '0'.repeat(64) };
+    await receiver.locator('#attestation').setInputFiles({
+      name: 'a10-backup-sha256-attestation.json', mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(badSidecar))
+    });
+    const badSidecarResult = await receiver.evaluate(async ({ artifacts, credentials }) => {
+      const attestation = JSON.parse(await document.querySelector('#attestation').files[0].text());
+      const { vaultId, backupPassword, v2Password } = credentials;
+      const driver = HelferleinA10V2IndexedDB.driver(indexedDB,
+        'a10-isolated-v2-file-to-idb-synthetic');
+      let rejected = false;
+      try { await HelferleinA10AttestedFileStaging.stageAttested(driver,
+        document.querySelector('#backup').files[0], attestation, artifacts,
+        backupPassword, v2Password, { explicitConsent: true, confirmIndependentStorage: true,
+          confirmIndependentBackup: true, confirmStagingOnly: true, confirmVaultId: vaultId }); }
+      catch (_) { rejected = true; }
+      return { rejected, stored: await driver.read(vaultId) };
+    }, { artifacts: prepared.artifacts, credentials });
+    assert.equal(badSidecarResult.rejected, true);
+    assert.equal(badSidecarResult.stored, undefined);
+    await receiver.locator('#attestation').setInputFiles(sidecarPath);
     const result = await receiver.evaluate(async ({ artifacts, credentials }) => {
       const attestation = JSON.parse(await document.querySelector('#attestation').files[0].text());
       const { vaultId, backupPassword, v2Password } = credentials;
@@ -143,7 +165,7 @@ const http = require('node:http');
       catch (_) { repeatRejected = true; }
       return { wrongPasswordRejected, tamperedRejected, before, staged, stored, repeatRejected,
         localStorageCount: localStorage.length };
-    }, { artifacts: prepared.artifacts, attestation: prepared.attestation, credentials });
+    }, { artifacts: prepared.artifacts, credentials });
     assert.equal(result.wrongPasswordRejected, true);
     assert.equal(result.tamperedRejected, true);
     assert.equal(result.before, undefined);
