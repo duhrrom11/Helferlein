@@ -1,0 +1,27 @@
+name: A10 browser file to encrypted IDB recovery
+
+on:
+  pull_request:
+    paths:
+      - 'tests/a10-browser-file-to-idb-recovery.cjs'
+      - '.github/workflows/a10-browser-file-to-idb-recovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  file-to-idb:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Chromium runner
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Verify actual browser download, fresh context and inactive encrypted IDB
+        run: node tests/a10-browser-file-to-idb-recovery.cjs
