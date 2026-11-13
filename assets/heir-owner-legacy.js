@@ -1228,7 +1228,13 @@
             const nameInput = document.getElementById('newAlarmPersonName');
             const contactInput = document.getElementById('newAlarmPersonContact');
             const name = nameInput.value.trim();
-            if (!name) { alert("Bitte Namen eingeben!"); return; }
+            if (!name) { alert("Bitte Namen eingeben."); return; }
+            const existingPeople = getVaultConfig()?.alarmPersons || [];
+            if (existingPeople.length >= 10) { alert("Du hast bereits 10 Vertrauenspersonen."); return; }
+            const contactEmail = contactInput.value.trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+                alert("Bitte gib eine gültige E-Mail-Adresse ein."); return;
+            }
 
             // Names must not leak into identifiers; legacy person IDs remain readable.
             const personId = "p_" + Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2, '0')).join('');
@@ -1237,6 +1243,7 @@
             try {
                 locallySaved = await updateLocalConfig(cfg => {
                     if (!cfg.alarmPersons) cfg.alarmPersons = [];
+                    if (cfg.alarmPersons.length >= 10) throw new Error("Maximal 10 Vertrauenspersonen.");
                     cfg.alarmPersons.push({ id: personId, name, contact });
                 });
             } catch (error) {
