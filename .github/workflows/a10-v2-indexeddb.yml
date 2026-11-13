@@ -1,0 +1,29 @@
+name: A10 V2 isolated IndexedDB staging
+
+on:
+  pull_request:
+    paths:
+      - 'assets/a10-v2-indexeddb-driver.js'
+      - 'assets/a10-v2-staging.js'
+      - 'tests/a10-browser-v2-staging-idb.cjs'
+      - '.github/workflows/a10-v2-indexeddb.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chromium-staging:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated Chromium dependency
+        run: npm install --no-save --no-package-lock playwright@1.58.2
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test isolated V2 staging only
+        run: node tests/a10-browser-v2-staging-idb.cjs
