@@ -8,8 +8,8 @@
 }
 .helferlein-gear:hover{background:#075c72}
 .helferlein-gear:focus-visible{outline:3px solid #f59e0b;outline-offset:3px}
-.helferlein-gear-symbol{display:inline-block;animation:helferlein-turn 9s linear infinite;transform-origin:center}
-.helferlein-gear:hover .helferlein-gear-symbol{animation-duration:2s}
+.helferlein-gear-symbol{display:inline-block;animation:helferlein-turn 3.5s linear infinite!important;transform-origin:center;will-change:transform}
+.helferlein-gear:hover .helferlein-gear-symbol{animation-duration:1.8s!important}
 @keyframes helferlein-turn{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.helferlein-gear-symbol{animation:none!important}}
 .helferlein-common-section{margin:16px 0 0;padding:14px;border:1px solid #cbd5e1;border-radius:12px;background:#f8fafc;color:#122439}
