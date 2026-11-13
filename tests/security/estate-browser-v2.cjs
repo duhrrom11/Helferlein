@@ -10,7 +10,7 @@ const root=path.resolve(__dirname,'../..');
 (async()=>{
  const pg=new Client({connectionString:url});await pg.connect();
  await pg.query('alter table vault_cloud_snapshots add column if not exists encrypted_config jsonb, add column if not exists recovery_key jsonb, add column if not exists updated_at timestamptz default now()');
- const owner=crypto.randomUUID(),session=crypto.randomUUID(),password='Synthetic account password only',email='synthetic@example.invalid';
+ const owner=crypto.randomUUID(),session=crypto.randomUUID(),password='Abcd1!',email='synthetic@example.invalid';
  await pg.query('insert into auth.users values($1)',[owner]);await pg.query('insert into auth.sessions values($1,$2)',[session,owner]);
  const user={id:owner,email,email_confirmed_at:new Date().toISOString(),aud:'authenticated',role:'authenticated',app_metadata:{provider:'email'},user_metadata:{}};
  const jwt=()=>['eyJhbGciOiJIUzI1NiJ9',Buffer.from(JSON.stringify({sub:owner,session_id:session,exp:Math.floor(Date.now()/1000)+3600,amr:[{method:'password',timestamp:Math.floor(Date.now()/1000)}]})).toString('base64url'),'synthetic-signature'].join('.');
