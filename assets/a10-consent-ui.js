@@ -13,12 +13,14 @@
   function bind(documentRef, previewService, options) {
     const panel = documentRef?.getElementById('a10-migration-panel');
     if (!panel || panel.dataset.a10Release !== 'disabled') fail();
-    const ids = ['a10-backup-file', 'a10-attestation-file', 'a10-migration-preview',
+    const ids = ['a10-migration-consent', 'a10-backup-file', 'a10-attestation-file', 'a10-migration-preview',
       'a10-migration-stage', 'a10-migration-activate'];
     const elements = ids.map(id => documentRef.getElementById(id));
     if (elements.some(el => !el)) fail();
     // Fail closed even if the markup was accidentally edited to remove disabled.
     elements.forEach(el => { el.disabled = true; el.setAttribute('aria-disabled', 'true'); });
+    const consent = documentRef.getElementById('a10-migration-consent');
+    if (consent.checked) consent.checked = false;
     const status = documentRef.getElementById('a10-migration-status');
     if (status) status.textContent = 'A10 nicht freigegeben – kein Import, keine Aktivierung.';
     // No caller-supplied flag may override the production release decision.
