@@ -6,6 +6,15 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 const http = require('node:http');
+const { execFileSync } = require('node:child_process');
+function chromiumPid(profile) {
+    const matches = execFileSync('ps', ['-eo', 'pid=,args='], { encoding: 'utf8' }).split('\n').map(line => {
+        const m = /^\s*(\d+)\s+(.*)$/.exec(line);
+        return m && m[2].includes('--user-data-dir=' + profile) && !m[2].includes('--type=') ? Number(m[1]) : null;
+    }).filter(Boolean);
+    assert.equal(matches.length, 1, 'Expected one isolated Chromium browser process');
+    return matches[0];
+}
 async function main() {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'a10-orphan-recovery-'));
     const scripts = {
@@ -78,7 +87,9 @@ async function main() {
                 { explicitConsent: true, expectedVaultId: vaultId });
         }, { dbName, vaultId, ...fixture });
         assert.equal(reserved.status, 'RESERVED_NO_IMPORT');
-        await stop(); // interrupted after reservation, before any import (which does not exist)
+        // Kill the actual Chromium process after a committed reservation; same persistent profile on restart.
+        process.kill(chromiumPid(profile), 'SIGKILL');
+        browser = null;
         page = await launch();
         const result = await page.evaluate(async ({ dbName, vaultId, existingId, fileText, preview }) => {
             const api = HelferleinA10ReservationRecovery;
