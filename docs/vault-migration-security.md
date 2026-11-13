@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 SIGKILL waehrend und nach simuliertem Import-Commit (isoliert, 2026-11-13)
+
+`tests/a10-browser-simulated-commit-hardkill.cjs` testet in einem ausschliesslich synthetischen, persistenten Chromium-Profil einen echten `SIGKILL` des Chromium-Hauptprozesses waehrend einer offenen IndexedDB-`readwrite`-Transaktion. Nach Neustart mit demselben Profil muss der isolierte Importmarker entweder vollstaendig `RESERVED_NO_IMPORT` oder vollstaendig `SIMULATED_NO_DATA` sein. Zwischenzustaende sind verboten. Ein erneuter ausdruecklich bestaetigter Commit gelingt nur im ersten Fall; im zweiten wird er fail-closed abgewiesen. Zwei konkurrierende Tabs koennen denselben Marker nicht zweimal committen. Ein weiterer echter `SIGKILL` nach abgeschlossenem Commit prueft den wiederhergestellten Endmarker. Der synthetische V1-Rueckfallstand wird vor und nach beiden Neustarts unveraendert verglichen.
+
+**Grenzen:** Der Crash-Test nutzt die reale IndexedDB-Transaktionsmechanik, aber die in-flight-Testtransaktion schreibt nur synthetische Simulationsmarker; sie ruft nicht den synchronen `commit()`-Helper selbst auf. Dieser wird separat fuer die Wiederholung und das Tab-Rennen verwendet. Ein Stromausfall und dauerhafte Plattensynchronisation sind nicht abgedeckt. Keine entschluesselten Tresordaten, kein echter Import, keine Aktivierung, keine Produktivanbindung. **A10 bleibt NO-GO.**
+
+
 ## A10 transaktionale Import-Commit-Simulation (isoliert, 2026-11-13)
 
 `assets/a10-simulated-import-commit.js` ist **nicht produktiv eingebunden**. `commit(driver,vaultId,fingerprint,{explicitConsent:true,confirmVaultId,confirmFingerprint})` verlangt eine separate ausdrueckliche Bestaetigung und transformiert in genau einer isolierten IndexedDB-`readwrite`-Transaktion ausschliesslich einen passenden `RESERVED_NO_IMPORT`-Marker in `SIMULATED_NO_DATA`. Das Ergebnis ist **kein Tresor**, enthaelt keine importierten Daten und bleibt `active:null`. Bestehende V1-Datensaetze, andere Fingerabdruecke, manipulierte Marker und Wiederholungen werden fail-closed abgewiesen.
