@@ -24,6 +24,29 @@ on:
       - 'supabase/functions/_shared/heir-*.ts'
       - 'tests/security/heir-pg17-restricted-role.sql'
       - 'tests/security/heir-pg17-service-integration.mjs'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/heir-isolated-gates.yml'
+      - 'tests/security/heir-pg17-*'
+      - 'tests/security/heir-browser-pg17-*'
+      - 'tests/security/heir-http-*'
+      - 'tests/security/heir-server-composition.test.mjs'
+      - 'tests/security/heir-session-revocation-pg17.mjs'
+      - 'tests/security/heir-owner-*.py'
+      - 'assets/heir-owner-invitations-*.js'
+      - 'assets/heir-owner-session-staging.js'
+      - 'assets/heir-owner-legacy.js'
+      - 'assets/heir-owner-legacy.css'
+      - 'tools/digitaler-nachlass/index.html'
+      - 'tests/security/heir-indexeddb-real-browser.py'
+      - 'docs/sql-drafts/heir_private_backend_REVIEW_ONLY.sql'
+      - 'docs/sql-drafts/heir_key_release_REVIEW_ONLY.sql'
+      - 'docs/sql-drafts/heir_http_limits_REVIEW_ONLY.sql'
+      - 'docs/sql-drafts/heir_session_lock_REVIEW_ONLY.sql'
+      - 'supabase/functions/_shared/heir-*.ts'
+      - 'tests/security/heir-pg17-restricted-role.sql'
+      - 'tests/security/heir-pg17-service-integration.mjs'
   workflow_dispatch:
 
 permissions:
