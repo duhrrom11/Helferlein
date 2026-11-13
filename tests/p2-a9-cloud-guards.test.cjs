@@ -38,8 +38,8 @@ test('account changes and offline writes cannot silently enable cloud upload', (
 
 test('anonymous missing-session message is explained without masking account protection errors', () => {
   assert.match(source, /!currentOwner\(\) && \/\^Auth session missing!/);
-  assert.match(source, /Nicht angemeldet\. Deine lokalen Daten bleiben auf diesem Gerät/);
-  assert.match(source, /: prefix \+ ': ' \+ lastConflictMessage/);
+  assert.match(source, /Bitte melde dich an, wenn du deine Daten online sichern möchtest/);
+  assert.match(source, /: 'Das hat nicht geklappt\. Bitte versuche es erneut\.'/);
   assert.match(source, /lastConflictMessage = error && error\.message/);
 });
 

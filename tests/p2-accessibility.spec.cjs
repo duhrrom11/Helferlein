@@ -27,6 +27,13 @@ for (const width of [320, 375, 768]) for (const route of routes) {
       .map(node => node.id));
     expect(missingVisibleLabels).toEqual([]);
     await page.screenshot({path:testInfo.outputPath('entry.png'),fullPage:true});
+    if (route === 'tools/digitaler-nachlass/index.html') {
+      await expect(page.locator('#login-panel')).toBeVisible();
+      await expect(page.locator('#owner-app')).toBeHidden();
+      await page.locator('header').getByRole('link', {name:'Helferlein Startseite'}).click();
+      await expect(page.locator('#toolsGrid .tool-card')).toHaveCount(11);
+      return; // Owner settings require a password; the authenticated estate suite covers them.
+    }
     await page.getByRole('button', {name:'Einstellungen öffnen',exact:true}).click();
     const settings = page.locator('#settingsModal, #settings-modal');
     if (await settings.count()) {

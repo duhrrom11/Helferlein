@@ -1,0 +1,63 @@
+name: Estate release v2 security and browser
+on:
+  pull_request:
+    paths: ['assets/estate-*', 'assets/vendor/estate-*', 'assets/vendor/supabase-*', 'supabase/functions/estate-emergency/**', 'supabase/migrations/*estate*', 'tools/digitaler-nachlass/*.html', 'tests/security/estate-*', '.github/workflows/estate-release-v2.yml']
+  push:
+    branches: [main]
+    paths: ['assets/estate-*', 'supabase/functions/estate-emergency/**', 'supabase/migrations/*estate*', 'tools/digitaler-nachlass/*.html', 'tests/security/estate-*', '.github/workflows/estate-release-v2.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  estate-isolated:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: estate
+          POSTGRES_PASSWORD: isolated-only
+          POSTGRES_DB: estate_synthetic
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U estate -d estate_synthetic"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      ESTATE_TEST_DATABASE_URL: postgres://estate:isolated-only@127.0.0.1:5432/estate_synthetic
+      NODE_PATH: /tmp/estate-ci/node_modules
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned isolated test tools
+        run: |
+          npm install --prefix /tmp/estate-ci pg@8.16.3 esbuild@0.25.12 playwright@1.56.1
+          /tmp/estate-ci/node_modules/.bin/playwright install --with-deps chromium
+      - name: Check real PostgreSQL 17 gate and two-session revocation
+        run: node tests/security/estate-release-v2.test.cjs
+      - name: Check actual owner and trustee pages through actual Edge handler and PostgreSQL
+        run: node tests/security/estate-browser-v2.cjs
+      - name: Verify one personal key on each PDF page
+        run: |
+          python3 -m pip install pypdf==6.1.1
+          python3 - <<'PY'
+          from pypdf import PdfReader
+          pdf=PdfReader('/tmp/estate-keys-isolated.pdf')
+          assert len(pdf.pages)==2, len(pdf.pages)
+          for page in pdf.pages:
+              text=page.extract_text()
+              assert text.count('Dein persönlicher Helferlein-Schlüssel')==1
+              assert text.count('Nur für ')==1
+          print('PASS: exactly two A4 pages, one person and key per page')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: estate-isolated-browser-evidence
+          path: |
+            /tmp/estate-owner-isolated.png
+            /tmp/estate-trustee-isolated.png
+            /tmp/estate-keys-isolated.pdf
+          retention-days: 7

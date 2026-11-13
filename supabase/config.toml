@@ -13,3 +13,7 @@ verify_jwt = true
 
 [functions.heir-redemption]
 verify_jwt = true
+
+# Public trustee bearer keys are verified by estate-emergency; owners additionally require a live Auth session.
+[functions.estate-emergency]
+verify_jwt = false

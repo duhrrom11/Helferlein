@@ -1,0 +1,41 @@
+# Digitaler Nachlass: nutzbarer Freigabeweg v2
+
+Dieser Stand ersetzt die Oberflächen aus PR 394/395 und den reinen Alarm-Entwurf.
+Die alten A10-/HPKE-Entwürfe sind keine Aktivierungsanleitung für diesen Freigabeweg.
+
+## Vertrauensgrenze
+
+- Besitzer: bestehendes Supabase-Konto, bestätigte E-Mail, aktive Auth-Session.
+- Hauptschlüssel wird im Browser mit PBKDF2-SHA256 (600000), 16-Byte-Salt und AES-256-GCM geschützt. Er liegt nach expliziter Übernahme eines vorhandenen Gerätetresors nicht mehr unverschlüsselt in localStorage. Offen bleibt er nur im Arbeitsspeicher; Schließen, Kontowechsel, Fremdfensteränderung oder zehn Minuten Inaktivität sperren den Tresor.
+- Bestehendes Backupformat `vault_cloud_snapshots` bleibt kompatibel. Daten und Kontaktkonfiguration sind getrennt verschlüsselt; die Recovery-Hülle bleibt im bisherigen Format. Ein Konto-Passwortreset ersetzt kein verlorenes Tresorpasswort.
+- Vertrauenspersonen bekommen ausschließlich eine **separate Lesekopie der Einträge**. Niemals Besitzerhauptschlüssel, Kontaktdaten, Recovery-Hülle oder `trusteeKeys`. Jede Veröffentlichung erzeugt einen neuen Leseschlüssel. Je Kontakt ist dieser unter einer aus dem persönlichen Zufallsschlüssel abgeleiteten AES-Hülle verschlüsselt.
+- Die vertrauenswürdige zeitgesteuerte Komponente ist PostgreSQL hinter der Edge Function `estate-emergency`. Sie hält diese Hüllen in einem nicht exponierten Schema zurück. Zwei unterschiedliche aktive Schlüsselhashes desselben Tresors reichen sofort. Ein Schlüssel reicht nur nach serverseitiger, nicht widerrufener Frist. Das ist eine serververmittelte Freigabe, kein vom Server unabhängiges Shamir-Verfahren. Der Server erhält bei Einlösung persönliche Schlüssel und muss vertrauenswürdig betrieben werden.
+- Ein kompromittierter Besitzerbrowser, gestohlene Besitzerzugangsdaten plus Tresorpasswort oder zwei gestohlene Personenschlüssel bleiben außerhalb dieses Schutzes. Bereits ausgehändigte Klartexte/Hüllen lassen sich nicht zurückholen.
+
+## Autorisierung und Parallelität
+
+`estate_release_v2` ist ausschließlich für `service_role` ausführbar. Keine direkten Rechte für `anon`/`authenticated` im privaten Schema; RLS ist zusätzlich aktiviert. Die Edge Function setzt die Besitzeridentität aus `auth.getUser`, nie aus dem Request. Sensible Besitzer-RPCs prüfen eine noch existierende `auth.sessions`-Zeile. Entwarnung verlangt eine weniger als zwei Minuten alte Passwortbestätigung im verifizierten Token.
+
+Publizieren, Entwarnen, Freigeben und Widerruf serialisieren am Besitzer-Datensatz. Widerruf wird nach dem Sperrerwerb erneut geprüft. Besitzerupdates verwenden einen Versionsvergleich; Online-Backups vergleichen zusätzlich den letzten Cloudzeitstempel. Es gibt keine stillschweigende Überschreibung eines anderen Tresors. Kontakte/Schlüsseländerungen heben einen bisherigen Ein-Personen-Alarm auf. Alte Vorbereitungsschlüssel werden beim ersten Öffnen weiterverwendet und registriert; das erfordert die Anmeldung des jeweiligen Besitzers und kann nicht ohne dessen Tresorpasswort serverseitig erfolgen.
+
+## E-Mail und 24 Stunden
+
+Erforderliche Supabase-Edge-Secrets:
+
+- `RESEND_API_KEY`: gültiger Resend-API-Schlüssel für den Versand.
+- `ESTATE_MAIL_FROM`: verifizierte Absenderadresse bei Resend.
+
+Ohne beide Voraussetzungen antwortet der Alarm mit `notification_unavailable`; es wird keine Alarmzeile erstellt. Die Zwei-Schlüssel-Freigabe ist unabhängig davon nutzbar. Die Healthantwort zeigt nur die Konfigurationsbereitschaft, niemals Geheimnisse.
+
+Ein Alarm stellt einen idempotenten Zustellauftrag ein. **Erst nach Annahme durch den E-Mail-Anbieter** setzt der Server `alarm_started_at=now()` und `alarm_deadline=now()+24 hours`. Providerannahme garantiert keine Zustellung in den Posteingang; auch Spamfilter/Bounces sind möglich. Ohne bestätigte Providerannahme gibt es keine Ein-Schlüssel-Freigabe. Ein Widerruf oder Lebenszeichen kann durch einen verspäteten Zustellcallback nicht rückgängig gemacht werden. Wiederholte Alarme verlängern keine laufende Frist. Nach Entwarnung gilt eine zehnminütige Alarmsperre.
+
+`pg_cron` ruft minütlich den öffentlichen Worker auf. Dieser nimmt keine Empfänger, Texte oder Fristen an und bearbeitet ausschließlich bereits autorisierte Datenbankaufträge mit Lease, Versuchslimit und Idempotenzschlüssel. Die 30-Tage-Erinnerung ist eine getrennte, standardmäßig deaktivierte Einwilligung; sie verändert nie einen Alarmzustand.
+
+Keine produktiven Testkonten, Einträge, Kontakte oder Alarme zum Release anlegen. Realversand erfordert einen ausdrücklich autorisierten Empfänger. Ohne Mailkonfiguration keinen vollständigen Notfallbetrieb behaupten.
+
+## Verifikation
+
+- `tests/security/estate-release-v2.test.cjs`: echte isolierte PostgreSQL-17-Datenbank, zwei Sessions, Frist, Schlüsselprüfung, Berechtigungen, Widerruf, Zustellcallback, Erinnerung.
+- `tests/security/estate-browser-v2.cjs`: tatsächliche HTML/JS-Dateien und tatsächlicher Edge-Handler gegen PostgreSQL, ausschließlich künstliche Auth-/Mailadapter. Es geht keine Anfrage an produktives Supabase oder einen realen E-Mail-Empfänger.
+- CI `estate-release-v2.yml`: beide Prüfungen, Screenshots und PDF-Prüfung.
+- Migrationen sind additiv. Keine bestehenden Nutzer-/Tresordaten werden serverseitig umgeschrieben oder gelöscht. Lokale Übernahme schützt den alten Hauptschlüssel erst nach erfolgreicher Entschlüsselungsprüfung und ausdrücklicher Besitzerbestätigung.

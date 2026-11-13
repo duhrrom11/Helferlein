@@ -60,7 +60,7 @@ permissions:
 
 jobs:
   vault-sync-queue:
-    name: Test vault sync queue
+    name: Retained recovery and vault API contracts
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -70,5 +70,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Run isolated queue tests
-        run: node --test tests/vault-sync-queue.test.cjs tests/vault-local-save.test.cjs tests/vault-config-update.test.cjs tests/vault-alarm-contacts.test.cjs tests/vault-entries-checkin.test.cjs tests/vault-local-failure.test.cjs tests/vault-entry-failure.test.cjs tests/vault-entry-rollback.test.cjs tests/vault-api-security.test.cjs tests/a10-local-key-envelope-v2.test.cjs tests/a10-migration-preflight.test.cjs tests/a10-recovery-rollback.test.cjs tests/a10-migration-protocol.test.cjs tests/a10-atomic-idb-store.test.cjs
+      # The retired owner snippet/VM suites are superseded by estate-release-v2.yml,
+      # which checks the actual new pages, handler, backup and PostgreSQL concurrently.
+      - name: Run retained recovery and API tests
+        run: node --test tests/vault-api-security.test.cjs tests/a10-local-key-envelope-v2.test.cjs tests/a10-migration-preflight.test.cjs tests/a10-recovery-rollback.test.cjs tests/a10-migration-protocol.test.cjs tests/a10-atomic-idb-store.test.cjs
