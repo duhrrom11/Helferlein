@@ -70,7 +70,7 @@
   localWrite({version:2,ownerId:user.id,vaultId:config.vaultId,recoveryKey:recovery,encryptedData,encryptedConfig,cloudStamp:stamp,pending:!restore,releaseVersion:local?.releaseVersion||0});
   $('login-panel').hidden=true;$('owner-app').hidden=false;$('lock').hidden=false;$('logout').hidden=false;$('account-label').textContent=user.email;
   $('password').value='';$('vault-password').value='';render();resetIdle();
-  await refreshStatus();await sync();message('Dein Tresor ist geöffnet und online gesichert.');
+  await refreshStatus();await sync();const reviewDays=[90,180,365].includes(Number(config.reviewDays))?Number(config.reviewDays):180;const reviewDue=!config.lastReviewed||Date.now()-new Date(config.lastReviewed).getTime()>=reviewDays*86400000;message(reviewDue?'Dein Tresor ist geöffnet und online gesichert. Bitte überprüfe deine Unterlagen und Vertrauenspersonen unter „Lebenszeichen“.':'Dein Tresor ist geöffnet und online gesichert.');
   if(location.hash==='#lebenszeichen')tab('alarm');
  }
  $('login-form').onsubmit=e=>{e.preventDefault();run(async()=>{const email=$('email').value.trim(),password=$('password').value,vp=$('vault-password').value||password;const {data,error}=await db.auth.signInWithPassword({email,password});if(error||!data.user)throw Error('Bitte prüfe deine E-Mail-Adresse und dein Konto-Passwort.');await openOwner(data.user,password,vp);});};
