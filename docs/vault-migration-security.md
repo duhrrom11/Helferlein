@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 V2 verschluesselte Huelle und Passwortentsperrung (isoliert, 2026-11-13)
+
+`assets/a10-v2-encrypted-envelope.js` ist ein **nicht produktiv eingebundener** Baustein fuer eine V2-Huelle. `seal(payload,password,{explicitConsent:true})` verschluesselt den gesamten validierten V1-kompatiblen Payload inklusive Masterkey und Metadaten mit PBKDF2-SHA256 (600.000 Iterationen, zufaelliges Salt) und AES-256-GCM (zufaelliger IV, versionsgebundenes AAD). `unlock(envelope,password,{explicitConsent:true})` prueft Format, Authentizitaet und Payload vor Rueckgabe einer ausschliesslich im Arbeitsspeicher befindlichen Kopie. Das persistierbare Huelle-Objekt enthaelt keine Klartextmetadaten oder Klartextschluessel. Falsche Passwoerter, Manipulation und fehlende Zustimmung werden fail-closed abgewiesen.
+
+`tests/a10-v2-envelope.cjs` ist ein gezielter synthetischer Node/WebCrypto-Vertragstest ohne Browserdaten, Netzwerk, Supabase oder produktive Konten. Die separate PR-CI `.github/workflows/a10-v2-envelope.yml` fuehrt nur diesen Test aus.
+
+**Freigabegrenze:** Dies ist noch **kein** produktiver V2-Speicherpfad: keine lokale Persistenz, keine UI, kein automatisches Entsperren, kein Import, kein Cloud-Backup, keine Migration und keine Aktivierung. Das Payload-Schema prueft derzeit nur die minimale kryptografische Struktur, nicht alle historischen V1-Varianten und keine vollstaendige Entschluesselbarkeit des inneren V1-Ciphertexts. Der entschluesselte Masterkey existiert beim Unlock im Arbeitsspeicher; der Aufrufer muss die Lebensdauer begrenzen. A10 bleibt **NO-GO**.
+
+
 ## A10 SIGKILL waehrend und nach simuliertem Import-Commit (isoliert, 2026-11-13)
 
 `tests/a10-browser-simulated-commit-hardkill.cjs` testet in einem ausschliesslich synthetischen, persistenten Chromium-Profil einen echten `SIGKILL` des Chromium-Hauptprozesses waehrend einer offenen IndexedDB-`readwrite`-Transaktion. Nach Neustart mit demselben Profil muss der isolierte Importmarker entweder vollstaendig `RESERVED_NO_IMPORT` oder vollstaendig `SIMULATED_NO_DATA` sein. Zwischenzustaende sind verboten. Ein erneuter ausdruecklich bestaetigter Commit gelingt nur im ersten Fall; im zweiten wird er fail-closed abgewiesen. Zwei konkurrierende Tabs koennen denselben Marker nicht zweimal committen. Ein weiterer echter `SIGKILL` nach abgeschlossenem Commit prueft den wiederhergestellten Endmarker. Der synthetische V1-Rueckfallstand wird vor und nach beiden Neustarts unveraendert verglichen.
