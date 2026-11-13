@@ -23,6 +23,7 @@ const http = require('node:http');
     'a10-attested-file-staging.js',
     'a10-staged-readback.js',
     'a10-offline-preview.js',
+    'a10-preview-workflow.js',
     'a10-migration-flow.js'
   ];
   const server = http.createServer(async (req, res) => {
@@ -146,6 +147,53 @@ const http = require('node:http');
         document.querySelector('#attestation').files[0],
         { explicitConsent: true, confirmIndependentStorage: true });
     });
+    const consentPreview = await receiver.evaluate(async () => {
+      const panel = document.createElement('section');
+      panel.id = 'a10-migration-panel';
+      panel.dataset.a10Release = 'synthetic-preview-only';
+      const consent = document.createElement('input');
+      consent.id = 'a10-migration-consent';
+      consent.type = 'checkbox';
+      consent.checked = true;
+      panel.appendChild(consent);
+      // Reuse the genuine browser-selected file inputs from the synthetic receiver.
+      document.body.appendChild(panel);
+      const selected = document.querySelector('#backup');
+      const selectedAttestation = document.querySelector('#attestation');
+      selected.id = 'a10-backup-file';
+      selectedAttestation.id = 'a10-attestation-file';
+      const result = await HelferleinA10PreviewWorkflow.previewFromConsentUI(
+        document, HelferleinA10OfflinePreview, {
+          explicitConsent: true, confirmIndependentStorage: true,
+          isolatedSyntheticHarness: true
+        });
+      consent.checked = false;
+      let noConsentRejected = false;
+      try {
+        await HelferleinA10PreviewWorkflow.previewFromConsentUI(
+          document, HelferleinA10OfflinePreview, {
+            explicitConsent: true, confirmIndependentStorage: true,
+            isolatedSyntheticHarness: true
+          });
+      } catch (_) { noConsentRejected = true; }
+      panel.dataset.a10Release = 'disabled';
+      consent.checked = true;
+      let productionGateRejected = false;
+      try {
+        await HelferleinA10PreviewWorkflow.previewFromConsentUI(
+          document, HelferleinA10OfflinePreview, {
+            explicitConsent: true, confirmIndependentStorage: true,
+            isolatedSyntheticHarness: true
+          });
+      } catch (_) { productionGateRejected = true; }
+      selected.id = 'backup';
+      selectedAttestation.id = 'attestation';
+      panel.remove();
+      return { result, noConsentRejected, productionGateRejected };
+    });
+    assert.equal(consentPreview.result.sha256, prepared.attestation.sha256);
+    assert.equal(consentPreview.noConsentRejected, true);
+    assert.equal(consentPreview.productionGateRejected, true);
     assert.equal(preview.status, 'OFFLINE_ENCRYPTED_BACKUP_PREVIEW_ONLY_NO_WRITE');
     assert.equal(preview.activationAllowed, false);
     assert.equal(preview.sha256, prepared.attestation.sha256);
