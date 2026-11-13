@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 atomare Import-Reservierung in zwei Tabs (2026-11-13, isoliert)
+
+`assets/a10-atomic-import-reservation.js` ist **nicht produktiv eingebunden**. Eine ausdruecklich bestaetigte `reserve(driver,vaultId,{vaultId,backupFingerprint},{explicitConsent:true})`-Operation verwendet den isolierten IndexedDB-Transaktionsadapter fuer eine **einzige atomare Pruefung und Reservierung**. Nur ein leerer Zielschluessel darf den Marker `RESERVED_NO_IMPORT` erhalten. Jeder vorhandene Datensatz, auch derselbe Tresor oder eine vorherige Reservierung, wird ohne Ueberschreiben abgewiesen. Die Reservierung enthaelt nur Tresor-ID und synthetischen Backup-Fingerabdruck, keinen Klartextschluessel oder entschluesselte Eintraege. **Es gibt weder Datenimport noch Aktivierung.**
+
+`tests/a10-browser-import-reservation-race.cjs` prueft zwei gleichzeitige Chromium-Tabs auf demselben lokalen IndexedDB-Ursprung: genau eine Reservierung gewinnt, der zweite Versuch und Wiederholungen scheitern, fehlende Zustimmung und fremde IDs werden abgewiesen. Ein bereits bestehender synthetischer V1-Datensatz bleibt auch bei parallelen Importversuchen und nach Browser-Reload byte-/strukturgleich und weiterhin aktiv als V1.
+
+**Grenzen:** Dies ist ein isoliertes Transaktionsmodell, **keine** vollstaendige sichere Importpipeline. Die Reservierung prueft nicht die Echtheit des Fingerabdrucks und ist nicht atomar mit der vorgelagerten Backup-Entschluesselung, einer echten Importvorschau oder einem spaeteren Commit verbunden. Andere Speicherorte und Browserprofile werden nicht gesperrt; IndexedDB garantiert keine Festplatten-Dauerhaftigkeit bei Stromausfall. Kein Produktivzugriff, keine Aktivierung. **A10 bleibt NO-GO.**
+
+
 ## A10 bestaetigter Backup-Export und sicherer Import-Vorabcheck (2026-11-13, isoliert)
 
 `assets/a10-v1-backup-transfer.js` ist ein **nicht eingebundener**, rein speicherbasierter Prototyp. `prepareExport(legacy,password,{explicitConsent:true})` erstellt den verschluesselten JSON-Dateiinhalt und einen Dateinamen, fuehrt jedoch **keinen Download** aus. `previewImport(fileText,password,{explicitConsent:true,expectedVaultId,existing})` prueft Dateigroesse/JSON/Backupformat, authentifiziert das Passwort und verlangt die vorher festgelegte Tresor-ID. Bereits vorhandene Tresore werden ausnahmslos vor Ueberschreiben geschuetzt (gleiche und andere ID). Das Ergebnis `PREVIEW_ONLY_NO_WRITE` ist eine entschluesselte Kopie **im Arbeitsspeicher**, kein Import, keine Freigabe fuer einen anschliessenden Schreibvorgang und keine Migration.
