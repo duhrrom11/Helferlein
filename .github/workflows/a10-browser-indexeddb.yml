@@ -8,6 +8,7 @@ on:
       - 'assets/a10-historical-v1-normalizer.js'
       - 'assets/a10-v1-backup-transfer.js'
       - 'assets/a10-atomic-import-reservation.js'
+      - 'assets/a10-preview-bound-reservation.js'
       - 'tests/a10-browser-indexeddb.cjs'
       - 'tests/a10-browser-persistent-restart.cjs'
       - 'tests/a10-browser-hardkill.cjs'
@@ -17,6 +18,7 @@ on:
       - 'tests/a10-browser-historical-v1.cjs'
       - 'tests/a10-browser-backup-transfer.cjs'
       - 'tests/a10-browser-import-reservation-race.cjs'
+      - 'tests/a10-browser-preview-bound-reservation.cjs'
       - 'assets/heir-owner-legacy.js'
       - '.github/workflows/a10-browser-indexeddb.yml'
   workflow_dispatch:
@@ -49,3 +51,4 @@ jobs:
           node tests/a10-browser-historical-v1.cjs
           node tests/a10-browser-backup-transfer.cjs
           node tests/a10-browser-import-reservation-race.cjs
+          node tests/a10-browser-preview-bound-reservation.cjs
