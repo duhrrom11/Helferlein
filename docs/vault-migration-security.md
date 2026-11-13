@@ -1,5 +1,14 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 transaktionale Import-Commit-Simulation (isoliert, 2026-11-13)
+
+`assets/a10-simulated-import-commit.js` ist **nicht produktiv eingebunden**. `commit(driver,vaultId,fingerprint,{explicitConsent:true,confirmVaultId,confirmFingerprint})` verlangt eine separate ausdrueckliche Bestaetigung und transformiert in genau einer isolierten IndexedDB-`readwrite`-Transaktion ausschliesslich einen passenden `RESERVED_NO_IMPORT`-Marker in `SIMULATED_NO_DATA`. Das Ergebnis ist **kein Tresor**, enthaelt keine importierten Daten und bleibt `active:null`. Bestehende V1-Datensaetze, andere Fingerabdruecke, manipulierte Marker und Wiederholungen werden fail-closed abgewiesen.
+
+`tests/a10-browser-simulated-import-commit.cjs` prueft in zwei echten Chromium-Tabs genau einen Gewinner, einen Transaktionsabbruch ohne Zustandsaenderung, falsche Fingerabdruecke, fehlende Bestaetigung und den nach Reload unveraenderten synthetischen V1-Rueckfallstand.
+
+**Grenzen:** Dies ist ausschliesslich ein Marker-Zustandsautomat und kein echter Import-Commit. Insbesondere sind entschluesselte Backups nicht Teil der Transaktion; ein SHA-256-Fingerabdruck allein authentifiziert kein Backup. Keine produktiven Konten, keine Datenbankanbindung, keine Aktivierung. **A10 bleibt NO-GO.**
+
+
 ## A10 manuell bestaetigte atomare Bereinigung verwaister Reservierungen (isoliert, 2026-11-13)
 
 `assets/a10-orphan-cleanup.js` ist **nicht produktiv eingebunden**. `cleanup(indexedDB,dbName,vaultId,expectedFingerprint,{explicitConsent:true,confirmVaultId,confirmFingerprint})` entfernt ausschliesslich einen exakt passenden `RESERVED_NO_IMPORT`-Marker, dessen Tresor-ID, SHA-256-Fingerabdruck, Format, Revision und Inaktivitaet in derselben IndexedDB-`readwrite`-Transaktion geprueft werden. Abweichungen, zwischenzeitliche Belegung, falsche Bestaetigungen und V1-Datensaetze fuehren zum Abbruch ohne Loeschung. Ein fehlendes Datenbankziel wird nicht angelegt. Keine automatische Bereinigung, kein echter Import, keine Aktivierung.
