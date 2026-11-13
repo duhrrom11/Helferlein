@@ -1,0 +1,24 @@
+name: A10 recovery verified staging gate
+
+on:
+  pull_request:
+    paths:
+      - 'assets/a10-recovery-verified-staging.js'
+      - 'tests/a10-recovery-verified-staging.cjs'
+      - '.github/workflows/a10-recovery-verified-staging.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recovery-staging:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify recovery proof before encrypted staging
+        run: node tests/a10-recovery-verified-staging.cjs
