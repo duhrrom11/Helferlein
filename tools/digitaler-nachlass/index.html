@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="../../assets/helferlein-accessibility.css?v=20261112-3">
     <script src="../../assets/helferlein-accessibility.js?v=20261112-3" defer></script>
 <script defer src="../../assets/helferlein-dialogs.js"></script>
+<script defer src="../../assets/helferlein-settings-popups.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-gray-900 focus:px-4 focus:py-3 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-sky-600">Direkt zum Inhalt springen</a>
@@ -348,11 +349,11 @@
             <!-- Supabase Cloud-Konto Anmeldung -->
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-5 shadow-xl">
                 <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
-                    <span class="text-indigo-400">☁️</span> Cloud-Konto (Supabase Auth)
+                    <span class="text-indigo-400">☁️</span> Mein Konto
                 </h3>
                 
                 <div id="cloud-status-box" class="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 flex items-center justify-between">
-                    <span id="cloud-status-text">Status: Nicht angemeldet</span>
+                    <span id="cloud-status-text">Nicht angemeldet</span>
                     <span id="cloud-user-email" class="font-bold text-indigo-400"></span>
                 </div>
 
@@ -374,14 +375,14 @@
             </div>
 
             <section class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-3" aria-label="Cloud-Synchronisierung">
-                <h3 class="text-sm font-bold text-slate-100">☁️ Verschlüsselte Cloud-Synchronisierung</h3>
-                <p class="text-xs text-slate-400">Änderungen werden nach dem Speichern mit deinem angemeldeten Supabase-Konto synchronisiert. Der Tresorschlüssel bleibt lokal. Für die Wiederherstellung auf einem anderen Gerät benötigst du ein separat festgelegtes Wiederherstellungspasswort.</p>
-                <button id="supabaseBackupBtn" type="button" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white font-bold text-xs">Jetzt mit Cloud synchronisieren</button>
+                <h3 class="text-sm font-bold text-slate-100">☁️ Online-Sicherung</h3>
+                <p class="text-xs text-slate-400">Änderungen werden nach dem Speichern mit deinem Konto synchronisiert. Der Tresorschlüssel bleibt lokal. Für einen Gerätewechsel kannst du ein Wiederherstellungspasswort festlegen.</p>
+                <button id="supabaseBackupBtn" type="button" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white font-bold text-xs">Jetzt online sichern</button>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <button id="supabaseBackupStatusBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Cloud-Stand prüfen</button>
-                    <button id="supabaseRecoveryKeyBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Wiederherstellungspasswort einrichten</button>
-                    <button id="supabaseRestorePreviewBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Wiederherstellung prüfen</button>
-                    <button id="supabaseRestoreBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Aus Cloud wiederherstellen</button>
+                    <button id="supabaseBackupStatusBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Sicherung prüfen</button>
+                    <button id="supabaseRecoveryKeyBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Passwort für Gerätewechsel festlegen</button>
+                    <button id="supabaseRestorePreviewBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Sicherung ansehen</button>
+                    <button id="supabaseRestoreBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Sicherung wiederherstellen</button>
                 </div>
             </section>
 
@@ -401,7 +402,7 @@
                     </div>
                 </div>
                 <button id="saveSettingsBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs shadow-lg">
-                    💾 Daten speichern & Synchronisieren
+                    💾 Daten speichern
                 </button>
             </div>
 <section id="b3-nachlass-preferences" class="b3-nachlass-preferences" aria-label="Darstellung und Dashboard">
