@@ -6,6 +6,7 @@ on:
       - 'assets/a10-atomic-idb-store.js'
       - 'assets/a10-v1-portable-backup.js'
       - 'assets/a10-historical-v1-normalizer.js'
+      - 'assets/a10-v1-backup-transfer.js'
       - 'tests/a10-browser-indexeddb.cjs'
       - 'tests/a10-browser-persistent-restart.cjs'
       - 'tests/a10-browser-hardkill.cjs'
@@ -13,6 +14,7 @@ on:
       - 'tests/a10-browser-portable-v1-backup.cjs'
       - 'tests/a10-browser-v1-schema-contract.cjs'
       - 'tests/a10-browser-historical-v1.cjs'
+      - 'tests/a10-browser-backup-transfer.cjs'
       - 'assets/heir-owner-legacy.js'
       - '.github/workflows/a10-browser-indexeddb.yml'
   workflow_dispatch:
@@ -43,3 +45,4 @@ jobs:
           node tests/a10-browser-portable-v1-backup.cjs
           node tests/a10-browser-v1-schema-contract.cjs
           node tests/a10-browser-historical-v1.cjs
+          node tests/a10-browser-backup-transfer.cjs
