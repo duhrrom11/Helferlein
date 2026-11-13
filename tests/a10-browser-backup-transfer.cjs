@@ -84,6 +84,8 @@ async function main() {
         for (const [name, pass] of Object.entries(results.tests)) assert.equal(pass, true, name);
         assert.equal(results.storageUnchanged, true);
         assert.equal(results.preview.requiresSeparateCommit, true);
+        assert.equal(exported.file.mime, 'application/json');
+        assert.equal(exported.file.filename, 'helferlein-a10-v1-encrypted.json');
         assert.equal(results.preview.vaultId, exported.legacy.vaultId);
         assert.deepEqual(results.preview.added, []); // already normalized in detached export copy
         assert.deepEqual(results.preview.preview, { ...exported.legacy, alarmPersons: [] });
