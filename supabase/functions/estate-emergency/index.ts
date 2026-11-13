@@ -3,9 +3,13 @@ const ORIGIN = 'https://duhrrom11.github.io';
 const URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const admin = createClient(URL, SERVICE, {auth:{persistSession:false,autoRefreshToken:false}});
-const MAIL_KEY = Deno.env.get('RESEND_API_KEY');
-const MAIL_FROM = Deno.env.get('ESTATE_MAIL_FROM');
-const mailReady = Boolean(MAIL_KEY && MAIL_FROM);
+const BREVO_KEY = Deno.env.get('BREVO_API_KEY')?.trim();
+const RESEND_KEY = Deno.env.get('RESEND_API_KEY')?.trim();
+const MAIL_FROM = Deno.env.get('ESTATE_MAIL_FROM')?.trim();
+// Choose one provider before sending. Never retry a rejected Brevo send via another provider.
+const mailProvider = BREVO_KEY ? 'brevo' : 'resend';
+const mailReady = Boolean(MAIL_FROM && (BREVO_KEY || RESEND_KEY))
+ && (!BREVO_KEY || /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(MAIL_FROM!));
 const hex = /^[a-f0-9]{64}$/;
 async function hash(s:string) { return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))),b=>b.toString(16).padStart(2,'0')).join(''); }
 async function rpc(action:string, owner:string|null, data:Record<string,unknown>={}) {
@@ -20,14 +24,36 @@ async function deliverOne() {
  const {data,error}=await admin.auth.admin.getUserById(job.owner);
  if(error || !data.user?.email || !data.user.email_confirmed_at) return;
  const alarm=job.kind==='alarm';
- const response=await fetch('https://api.resend.com/emails',{
-  method:'POST',signal:AbortSignal.timeout(15000),
-  headers:{Authorization:'Bearer '+MAIL_KEY,'Content-Type':'application/json','Idempotency-Key':'estate-'+job.id},
-  body:JSON.stringify({from:MAIL_FROM,to:[data.user.email],subject:alarm?'Helferlein: Bitte gib jetzt ein Lebenszeichen':'Helferlein: Zeit für dein Lebenszeichen',
-   text:(alarm?'Eine deiner Vertrauenspersonen hat einen Notfall gemeldet. Ohne Entwarnung kann nach 24 Stunden eine Vertrauensperson deine Unterlagen lesen.':'Deine regelmäßige Erinnerung. Sie löst keinen Notfallalarm aus.')
-    +'\n\nÖffne Helferlein, melde dich an und wähle „❤️ Ich lebe noch“:\nhttps://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/index.html#lebenszeichen\n\nDeine Unterlagen und Schlüssel stehen nicht in dieser Nachricht.'})
- });
- if(response.ok) await rpc('delivered',null,{id:job.id});
+ const subject=alarm?'Helferlein: Bitte gib jetzt ein Lebenszeichen':'Helferlein: Zeit für dein Lebenszeichen';
+ const text=(alarm?'Eine deiner Vertrauenspersonen hat einen Notfall gemeldet. Ohne Entwarnung kann nach 24 Stunden eine Vertrauensperson deine Unterlagen lesen.':'Deine regelmäßige Erinnerung. Sie löst keinen Notfallalarm aus.')
+  +'\n\nÖffne Helferlein, melde dich an und wähle „❤️ Ich lebe noch“:\nhttps://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/index.html#lebenszeichen\n\nDeine Unterlagen und Schlüssel stehen nicht in dieser Nachricht.';
+ let response:Response;
+ if(mailProvider==='brevo') {
+  const escaped=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  response=await fetch('https://api.brevo.com/v3/smtp/email',{
+   method:'POST',signal:AbortSignal.timeout(15000),
+   headers:{'api-key':BREVO_KEY!,'Content-Type':'application/json','Accept':'application/json'},
+   body:JSON.stringify({sender:{email:MAIL_FROM,name:'Helferlein'},to:[{email:data.user.email}],subject,textContent:text,
+    htmlContent:'<!doctype html><html lang="de"><body><p>'+escaped.replace(/\n/g,'<br>')+'</p><p><a href="https://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/index.html#lebenszeichen">Helferlein öffnen und Lebenszeichen geben</a></p></body></html>',
+    // Brevo expects a UUID in the JSON headers. The outbox job ID stays stable across retries.
+    headers:{idempotencyKey:job.id}})
+  });
+ }else{
+  response=await fetch('https://api.resend.com/emails',{
+   method:'POST',signal:AbortSignal.timeout(15000),
+   headers:{Authorization:'Bearer '+RESEND_KEY,'Content-Type':'application/json','Idempotency-Key':'estate-'+job.id},
+   body:JSON.stringify({from:MAIL_FROM,to:[data.user.email],subject,text})
+  });
+ }
+ // Quota, sender-verification, authentication, malformed and duplicate-key errors
+ // never start the 24h clock. A retry can notify again after the provider's deduplication TTL.
+ if(!response.ok)return;
+ const receipt=await response.json();
+ const accepted=mailProvider==='brevo'
+  ?response.status===201&&typeof receipt.messageId==='string'&&receipt.messageId.length>0
+  :typeof receipt.id==='string'&&receipt.id.length>0;
+ if(accepted)await rpc('delivered',null,{id:job.id});
+
 }
 export async function handler(req:Request):Promise<Response> {
  const headers=new Headers({'Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin','X-Content-Type-Options':'nosniff'});
@@ -47,7 +73,7 @@ export async function handler(req:Request):Promise<Response> {
   const b=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
   if(!b||typeof b!=='object'||Array.isArray(b))return reply(400,{error:'invalid_request'});
   const action=b.action;
-  if(action==='health')return reply(200,{ready:true,notifications:mailReady});
+  if(action==='health')return reply(200,{ready:true,notifications:mailReady,mailProvider:mailReady?mailProvider:null});
   const ip=req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
   // Only platform proxy headers are used; database limits stay authoritative across instances.
   if(!(await rpc('limit',null,{bucket:'ip:'+await hash(ip)})).allowed)return reply(429,{error:'rate_limited'});

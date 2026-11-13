@@ -22,14 +22,16 @@ Publizieren, Entwarnen, Freigeben und Widerruf serialisieren am Besitzer-Datensa
 
 Erforderliche Supabase-Edge-Secrets:
 
-- `RESEND_API_KEY`: gültiger Resend-API-Schlüssel für den Versand.
-- `ESTATE_MAIL_FROM`: verifizierte Absenderadresse bei Resend.
+- `BREVO_API_KEY`: regulärer Brevo-API-Schlüssel (kein SMTP- oder MCP-Schlüssel).
+- `ESTATE_MAIL_FROM`: in Brevo bestätigte Absenderadresse als reine E-Mail-Adresse. Für dieses Projekt: `duhrrom@gmail.com`; Anzeigename ist Helferlein.
 
-Ohne beide Voraussetzungen antwortet der Alarm mit `notification_unavailable`; es wird keine Alarmzeile erstellt. Die Zwei-Schlüssel-Freigabe ist unabhängig davon nutzbar. Die Healthantwort zeigt nur die Konfigurationsbereitschaft, niemals Geheimnisse.
+Brevo wird verwendet, sobald `BREVO_API_KEY` gesetzt ist. Alternativ bleibt `RESEND_API_KEY` mit einer bei Resend verifizierten Absenderadresse unterstützt. Bei einem Brevo-Fehler wird nicht automatisch auf Resend gewechselt. Geheimnisse ausschließlich im Supabase-Dashboard unter Edge Functions → Secrets speichern, nie im Repository oder Chat. Die Healthantwort zeigt nur Providername und Konfigurationsbereitschaft; sie bestätigt keine erfolgreiche Zustellung. Freemail-Absender können von Brevo umgeschrieben werden und brauchen eine tatsächliche Zustellprüfung sowie gegebenenfalls Kontofreigabe.
+
+Ohne passenden API-Schlüssel und Absender antwortet der Alarm mit `notification_unavailable`; es wird keine Alarmzeile erstellt. Die Zwei-Schlüssel-Freigabe ist unabhängig davon nutzbar. Die Healthantwort zeigt nur die Konfigurationsbereitschaft, niemals Geheimnisse.
 
 Ein Alarm stellt einen idempotenten Zustellauftrag ein. **Erst nach Annahme durch den E-Mail-Anbieter** setzt der Server `alarm_started_at=now()` und `alarm_deadline=now()+24 hours`. Providerannahme garantiert keine Zustellung in den Posteingang; auch Spamfilter/Bounces sind möglich. Ohne bestätigte Providerannahme gibt es keine Ein-Schlüssel-Freigabe. Ein Widerruf oder Lebenszeichen kann durch einen verspäteten Zustellcallback nicht rückgängig gemacht werden. Wiederholte Alarme verlängern keine laufende Frist. Nach Entwarnung gilt eine zehnminütige Alarmsperre.
 
-`pg_cron` ruft minütlich den öffentlichen Worker auf. Dieser nimmt keine Empfänger, Texte oder Fristen an und bearbeitet ausschließlich bereits autorisierte Datenbankaufträge mit Lease, Versuchslimit und Idempotenzschlüssel. Die 30-Tage-Erinnerung ist eine getrennte, standardmäßig deaktivierte Einwilligung; sie verändert nie einen Alarmzustand.
+`pg_cron` ruft minütlich den öffentlichen Worker auf. Dieser nimmt keine Empfänger, Texte oder Fristen an und bearbeitet ausschließlich bereits autorisierte Datenbankaufträge mit Lease, Versuchslimit und Idempotenzschlüssel. Brevo dedupliziert denselben UUID-Schlüssel nur 30 Minuten; nach längeren Unterbrechungen können Wiederholungsmails entstehen. Fehlermeldungen wie `duplicate_parameter` gelten nicht als Zustellbestätigung und geben keinen Schlüssel frei. Die 30-Tage-Erinnerung ist eine getrennte, standardmäßig deaktivierte Einwilligung; sie verändert nie einen Alarmzustand.
 
 Keine produktiven Testkonten, Einträge, Kontakte oder Alarme zum Release anlegen. Realversand erfordert einen ausdrücklich autorisierten Empfänger. Ohne Mailkonfiguration keinen vollständigen Notfallbetrieb behaupten.
 

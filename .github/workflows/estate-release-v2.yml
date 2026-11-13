@@ -35,6 +35,8 @@ jobs:
         run: |
           npm install --prefix /tmp/estate-ci pg@8.16.3 esbuild@0.25.12 playwright@1.56.1
           /tmp/estate-ci/node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify isolated Brevo and Resend delivery acknowledgements and failures
+        run: node tests/security/estate-mail-v2.test.cjs
       - name: Check real PostgreSQL 17 gate and two-session revocation
         run: node tests/security/estate-release-v2.test.cjs
       - name: Check actual owner and trustee pages through actual Edge handler and PostgreSQL
