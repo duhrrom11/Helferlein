@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## Gate 2: Offline-Dateivorschau als funktionaler Baustein (2026-11-13)
+
+`assets/a10-offline-preview.js` verarbeitet zwei explizit ausgewaehlte Dateien: verschluesseltes V1-Backup und separaten SHA-256-Pruefnachweis. Die Vorschau prueft Groessen- und Formatgrenzen, den exakten Dateihash sowie das Schema des verschluesselten Backups. Sie gibt ausschliesslich Format, Dateigroesse, SHA-256 und einen nicht-aktivierenden Status zurueck; sie fordert kein Passwort an, entschluesselt nicht und schreibt nichts. Die bestehende synthetische Chromium-Integration prueft den Ablauf mit echten ausgewaehlten Dateien. Ein unbeglaubigter SHA-256-Sidecar ist kein Herkunftsnachweis.
+
+**Wichtig:** Der Baustein ist noch nicht an die gesperrten Produktionsbuttons gebunden und wird auf der produktiven Seite nicht geladen. Eine Freigabe setzt einen separat geprueften UI-Controller mit Consent-/Import-Bestaetigung voraus. **A10 NO-GO.**
+
+
 ## A10 Gate 2 – produktive Tresor-Oberflaeche, weiterhin deaktiviert (2026-11-13)
 
 Die tatsaechliche Seite `tools/digitaler-nachlass/index.html` zeigt jetzt einen eigenen A10-Migrationsbereich mit Auswahlfeldern fuer verschluesseltes V1-Backup und SHA-256-Attest sowie Vorschau-, Staging- und Aktivierungsaktionen. **Alle Eingaben und Aktionen sind per HTML `disabled` gesperrt; `data-a10-release="disabled"` dokumentiert den NO-GO-Zustand.** Es wird kein A10-Migrationsskript produktiv geladen und keine V1-/V2-/Supabase-Datenaktion ausgelöst. Die bestehenden Sicherheitswarnungen bleiben sichtbar. Die bestehende Fail-Closed-Testdatei prueft die UI-Sperren.
