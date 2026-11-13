@@ -47,7 +47,7 @@
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                 </div>
-                <h3 class="font-bold text-slate-100 text-sm">Verschlüsselung & Cloud-Sync...</h3>
+                <h3 class="font-bold text-slate-100 text-sm">Daten werden gespeichert …</h3>
             </div>
             <div id="syncStatusSuccess" class="space-y-3 hidden">
                 <div class="inline-block p-4 bg-emerald-950/80 rounded-full text-emerald-400 border border-emerald-800"><span class="text-3xl">✅</span></div>
@@ -240,17 +240,17 @@
      LOCAL ONLY: backend must be deployed and explicitly enabled before use. -->
 <section id="heirInvitationManagement" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirInvitationManagementTitle">
   <h3 id="heirInvitationManagementTitle" class="font-bold text-slate-100">Erbeneinladungen verwalten</h3>
-  <p class="text-sm text-amber-200">Einladungen erteilen keinen Zugriff auf Tresordaten. Zum Erstellen und Widerrufen ist eine Cloud-Anmeldung erforderlich.</p>
+  <p class="text-sm text-amber-200">Eine Einladung allein gibt noch keinen Zugriff auf deine Daten. Melde dich an, um Einladungen zu verwalten.</p>
   <div class="rounded-lg border border-slate-700 p-3 space-y-2">
-  <p class="text-sm text-slate-300">Jeder Erbe benötigt ein eigenes Cloud-Konto. Der Erbe kann seine Benutzer-ID hier ablesen und dem Nachlassbesitzer mitteilen.</p>
-  <label for="heirMyUserId" class="block text-sm">Meine Cloud-Benutzer-ID</label>
+  <p class="text-sm text-slate-300">Jede eingeladene Person braucht ein eigenes Konto. Die benötigte Kennung kann sie hier kopieren und weitergeben.</p>
+  <label for="heirMyUserId" class="block text-sm">Meine Kennung</label>
   <input id="heirMyUserId" type="text" readonly autocomplete="off" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 font-mono text-xs" placeholder="Bitte zuerst anmelden" />
   <button id="heirLoadMyUserId" type="button" class="rounded-lg bg-slate-700 px-4 py-2">Meine Benutzer-ID anzeigen</button>
   <button id="heirCopyMyUserId" type="button" disabled class="rounded-lg border border-slate-600 px-4 py-2 disabled:opacity-50">ID kopieren</button>
   <p id="heirMyUserIdStatus" class="text-sm text-slate-300" role="status" aria-live="polite"></p>
 </div>
   <form id="heirIssueForm" class="space-y-2">
-    <label for="heirRecipientUserId" class="block text-sm">Supabase-Benutzer-ID des bereits registrierten Erben (UUID)</label>
+    <label for="heirRecipientUserId" class="block text-sm">Kennung der eingeladenen Person</label>
     <input id="heirRecipientUserId" type="text" required maxlength="36" autocomplete="off" spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
     <button id="heirIssueButton" type="submit" disabled class="rounded-lg bg-indigo-700 px-4 py-2 disabled:opacity-50">Einladung erstellen</button>
   </form>
@@ -267,18 +267,18 @@
   </form>
   <button id="heirListButton" type="button" disabled class="rounded-lg bg-slate-700 px-4 py-2 disabled:opacity-50">Einladungen anzeigen</button>
   <div id="heirLiveList" class="text-sm text-slate-200" role="status" aria-live="polite"></div>
-  <p id="heirInvitationStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte mit deinem Cloud-Konto anmelden.</p>
+  <p id="heirInvitationStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte melde dich an.</p>
 </section>
 <p class="my-4 text-sm"><a class="underline text-indigo-300" href="./erben-uebergabe.html">Verschlüsselte Nachlassdatei ausdrücklich an einen Erben übergeben (unwiderruflich)</a></p>
 <section id="heirAcceptInvitation" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirAcceptTitle">
   <h3 id="heirAcceptTitle" class="font-bold text-slate-100">Erbeneinladung annehmen</h3>
-  <p class="text-sm text-slate-300">Mit deinem eigenen Cloud-Konto anmelden und den Einmalcode der einladenden Person eingeben. Die Annahme allein gibt keine Tresordaten frei.</p>
+  <p class="text-sm text-slate-300">Melde dich an und gib den erhaltenen Einladungscode ein. Die Annahme allein gibt keine Tresordaten frei.</p>
   <form id="heirAcceptForm" class="space-y-2">
     <label for="heirAcceptToken" class="block text-sm">Einmalcode (64 Zeichen)</label>
     <input id="heirAcceptToken" type="password" required minlength="64" maxlength="64" autocomplete="off" spellcheck="false" autocapitalize="off" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
     <button id="heirAcceptButton" type="submit" class="rounded-lg bg-indigo-700 px-4 py-2">Einladung annehmen</button>
   </form>
-  <p id="heirAcceptStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte mit deinem eigenen Cloud-Konto anmelden.</p>
+  <p id="heirAcceptStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte melde dich mit deinem Konto an.</p>
 </section>
 
         </div>
@@ -288,7 +288,7 @@
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="text-sm font-bold text-slate-100">📄 Papier-Notfall-Kit mit QR-Codes (Cold Storage)</h3>
+                        <h3 class="text-sm font-bold text-slate-100">📄 Unterlagen für den Notfall</h3>
                         <p class="text-xs text-slate-400">Notfallkontakte können verwaltet werden. Schlüssel-Links und QR-Zugänge sind bis zur sicheren serverseitigen Freigabe deaktiviert.</p>
                     </div>
                     <button id="generatePdfBtn" disabled aria-disabled="true" title="Schlüsselhaltige Notfall-PDFs sind aus Sicherheitsgründen deaktiviert." class="px-4 py-2.5 bg-slate-700 text-slate-300 font-bold rounded-xl text-xs shadow-lg whitespace-nowrap cursor-not-allowed">
@@ -336,7 +336,7 @@
                         <span class="text-2xl">💾</span>
                         <div>
                             <p class="font-bold text-slate-100">Verschlüsselte USB-Sticks</p>
-                            <p class="text-[10px] text-amber-400">Für lokale Offline-Backups →</p>
+                            <p class="text-[10px] text-amber-400">Für eine Sicherung auf deinem Gerät →</p>
                         </div>
                     </a>
                 </div>
@@ -374,9 +374,9 @@
                 </div>
             </div>
 
-            <section class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-3" aria-label="Cloud-Synchronisierung">
+            <section class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-3" aria-label="Online-Sicherung">
                 <h3 class="text-sm font-bold text-slate-100">☁️ Online-Sicherung</h3>
-                <p class="text-xs text-slate-400">Änderungen werden nach dem Speichern mit deinem Konto synchronisiert. Der Tresorschlüssel bleibt lokal. Für einen Gerätewechsel kannst du ein Wiederherstellungspasswort festlegen.</p>
+                <p class="text-xs text-slate-400">Deine Daten können zusätzlich online gesichert werden. Für einen Gerätewechsel kannst du ein eigenes Passwort festlegen.</p>
                 <button id="supabaseBackupBtn" type="button" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white font-bold text-xs">Jetzt online sichern</button>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <button id="supabaseBackupStatusBtn" type="button" class="p-3 rounded-xl bg-slate-800 text-xs">Sicherung prüfen</button>
@@ -406,12 +406,12 @@
                 </button>
             </div>
 <section id="b3-nachlass-preferences" class="b3-nachlass-preferences" aria-label="Darstellung und Dashboard">
-<h3>🎨 Darstellung & Dashboard</h3>
-<label for="b3-nachlass-theme">Designmodus
-<select id="b3-nachlass-theme" aria-label="Globaler Designmodus">
+<h3>🎨 Aussehen und Anordnung</h3>
+<label for="b3-nachlass-theme">Darstellung
+<select id="b3-nachlass-theme" aria-label="Globaler Darstellung">
 <option value="auto">Automatisch</option><option value="light">Hell</option><option value="dark">Dunkel</option>
 </select></label>
-<button type="button" id="b3-nachlass-edit">✎ Dashboard bearbeiten</button>
+<button type="button" id="b3-nachlass-edit">✎ Startseite anpassen</button>
 <div id="b3-nachlass-editor" hidden aria-label="Dashboard-Einstellungen"></div>
 <p class="text-xs">Tresor, Totmannschalter und Vertrauenspersonen bleiben aus Sicherheitsgründen immer erreichbar.</p></section>
 <div class="b3-settings-footer">
