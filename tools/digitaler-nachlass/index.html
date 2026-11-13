@@ -206,80 +206,54 @@
                     💾 Vertrauenspersonen speichern
                 </button>
             </div>
-            <section id="heirInvitePreparation" aria-labelledby="heirInviteTitle" class="bg-slate-950 p-6 rounded-2xl border border-amber-700/70 space-y-4 shadow-xl">
-                <div class="flex items-start gap-3">
-                    <span aria-hidden="true" class="text-xl">🔒</span>
-                    <div class="space-y-2">
-                        <h3 id="heirInviteTitle" class="text-sm font-bold text-slate-100">Sichere Erbeneinladungen</h3>
-                        <p role="status" class="text-amber-200 text-xs font-semibold">Noch nicht freigeschaltet – es wird keine Einladung versendet.</p>
-                        <p class="text-slate-300 text-xs leading-relaxed">Gespeicherte Vertrauenspersonen sind <strong>keine</strong> berechtigten Erben. Eine Einladung wird erst nach Anmeldung, Prüfung des Erbenkontos und Verfügbarkeit des geprüften Servers möglich. Dein bestehender Tresor bleibt unverändert.</p>
-                    </div>
-                </div>
-                <fieldset disabled aria-describedby="heirInviteHelp" class="grid gap-3 rounded-xl border border-slate-700 p-4 opacity-75">
-                    <legend class="px-2 text-xs font-semibold text-slate-200">Einladung vorbereiten</legend>
-                    <label for="heirInviteRecipient" class="text-xs text-slate-300">Erbenkonto auswählen</label>
-                    <select id="heirInviteRecipient" class="w-full rounded-lg bg-slate-900 border border-slate-700 p-2 text-slate-200">
-                        <option>Erst nach sicherer Anmeldung verfügbar</option>
-                    </select>
-                    <label for="heirInviteExpiry" class="text-xs text-slate-300">Gültigkeit der Einladung</label>
-                    <select id="heirInviteExpiry" class="w-full rounded-lg bg-slate-900 border border-slate-700 p-2 text-slate-200">
-                        <option>24 Stunden</option>
-                    </select>
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" disabled aria-disabled="true" class="rounded-lg bg-slate-700 px-4 py-2 text-xs font-bold text-slate-300 cursor-not-allowed">Einladung erstellen – gesperrt</button>
-                        <button type="button" disabled aria-disabled="true" class="rounded-lg bg-slate-800 border border-slate-700 px-4 py-2 text-xs text-slate-300 cursor-not-allowed">Einladung widerrufen – gesperrt</button>
-                    </div>
-                </fieldset>
-                <p id="heirInviteHelp" class="text-xs leading-relaxed text-slate-400">Späterer Ablauf: Erbenkonto auswählen → Einladung mit zeitlich begrenztem Einmalcode erstellen → Erbe bestätigt seinen eigenen Schlüssel → Zugriff nur nach gesonderter, rechtlich geprüfter Freigabe. Keine Master-Keys, Links mit Schlüsseln oder automatischen E-Mails.</p>
-                <p class="text-xs text-slate-400" role="note">Die Einladungsübersicht wird unten vorbereitet. Ohne freigegebenen Server zeigt sie nur ihren gesperrten Zustand. Lokale Vertrauenspersonen sind keine freigeschalteten Erben.</p>
-                <p class="text-xs text-slate-400" role="note">Einladungsstatus: ausstehend, angenommen, abgelaufen oder widerrufen. Widerrufe sind erst nach Authentifizierung und sicherer Serveranbindung möglich. Einmalcodes werden weder in dieser Liste noch in Links angezeigt.</p>
-            </section>
-            <!-- Non-deployed owner list: deliberately disabled until reviewed HTTP transport exists. -->
-            <section id="heirOwnerInvitationStaging" class="bg-slate-950 p-6 rounded-2xl border border-amber-700/70 space-y-3" aria-label="Besitzer-Einladungsliste (Vorbereitung)"></section>
-<!-- Insert immediately AFTER the existing heirOwnerInvitationStaging section, not inside it.
-     LOCAL ONLY: backend must be deployed and explicitly enabled before use. -->
+            <p class="text-sm text-slate-300">Hier kannst du festlegen, wer später einmal Zugang zu deinen Unterlagen bekommen soll. Eine Einladung allein gibt noch keinen Zugriff.</p>
+            <details class="rounded-2xl border border-slate-700 bg-slate-950 p-4 space-y-3">
+              <summary class="cursor-pointer font-bold text-slate-100 py-2">✉️ Einladungen verwalten</summary>
+              <div class="pt-4 space-y-4">
 <section id="heirInvitationManagement" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirInvitationManagementTitle">
-  <h3 id="heirInvitationManagementTitle" class="font-bold text-slate-100">Erbeneinladungen verwalten</h3>
-  <p class="text-sm text-amber-200">Eine Einladung allein gibt noch keinen Zugriff auf deine Daten. Melde dich an, um Einladungen zu verwalten.</p>
+  <h3 id="heirInvitationManagementTitle" class="font-bold text-slate-100">Person einladen</h3>
+  <p class="text-sm text-amber-200">Du kannst eine Person einladen oder eine Einladung zurücknehmen.</p>
   <div class="rounded-lg border border-slate-700 p-3 space-y-2">
-  <p class="text-sm text-slate-300">Jede eingeladene Person braucht ein eigenes Konto. Die benötigte Kennung kann sie hier kopieren und weitergeben.</p>
+  <p class="text-sm text-slate-300">Die andere Person braucht ein eigenes Helferlein-Konto. Sie kann dir ihre Kennung geben.</p>
   <label for="heirMyUserId" class="block text-sm">Meine Kennung</label>
   <input id="heirMyUserId" type="text" readonly autocomplete="off" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 font-mono text-xs" placeholder="Bitte zuerst anmelden" />
-  <button id="heirLoadMyUserId" type="button" class="rounded-lg bg-slate-700 px-4 py-2">Meine Benutzer-ID anzeigen</button>
-  <button id="heirCopyMyUserId" type="button" disabled class="rounded-lg border border-slate-600 px-4 py-2 disabled:opacity-50">ID kopieren</button>
+  <button id="heirLoadMyUserId" type="button" class="rounded-lg bg-slate-700 px-4 py-2">Meine Kennung anzeigen</button>
+  <button id="heirCopyMyUserId" type="button" disabled class="rounded-lg border border-slate-600 px-4 py-2 disabled:opacity-50">Kennung kopieren</button>
   <p id="heirMyUserIdStatus" class="text-sm text-slate-300" role="status" aria-live="polite"></p>
 </div>
   <form id="heirIssueForm" class="space-y-2">
-    <label for="heirRecipientUserId" class="block text-sm">Kennung der eingeladenen Person</label>
+    <label for="heirRecipientUserId" class="block text-sm">Kennung der Person</label>
     <input id="heirRecipientUserId" type="text" required maxlength="36" autocomplete="off" spellcheck="false" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
     <button id="heirIssueButton" type="submit" disabled class="rounded-lg bg-indigo-700 px-4 py-2 disabled:opacity-50">Einladung erstellen</button>
   </form>
   <div id="heirIssuedTokenArea" hidden class="rounded-lg border border-amber-700 p-3 space-y-2">
-    <p class="text-sm text-amber-200">Einmalcode: nur jetzt sichtbar. Nicht in Links oder E-Mails einfügen. Über einen getrennten sicheren Kanal weitergeben.</p>
+    <p class="text-sm text-amber-200">Gib diesen Code nur persönlich oder auf einem sicheren Weg an die eingeladene Person weiter.</p>
     <label for="heirIssuedToken" class="block text-sm">Einmalcode</label>
     <input id="heirIssuedToken" readonly type="text" autocomplete="off" class="w-full rounded-lg bg-slate-900 p-2 font-mono text-xs" />
     <button id="heirClearToken" type="button" class="rounded-lg border border-slate-600 px-3 py-2">Code ausblenden</button>
   </div>
   <form id="heirRevokeForm" class="space-y-2">
-    <label for="heirInvitationId" class="block text-sm">Einladungs-ID für Widerruf (UUID)</label>
+    <label for="heirInvitationId" class="block text-sm">Nummer der Einladung</label>
     <input id="heirInvitationId" type="text" required maxlength="36" autocomplete="off" spellcheck="false" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
-    <button id="heirRevokeButton" type="submit" disabled class="rounded-lg bg-red-800 px-4 py-2 disabled:opacity-50">Einladung widerrufen</button>
+    <button id="heirRevokeButton" type="submit" disabled class="rounded-lg bg-red-800 px-4 py-2 disabled:opacity-50">Einladung zurücknehmen</button>
   </form>
   <button id="heirListButton" type="button" disabled class="rounded-lg bg-slate-700 px-4 py-2 disabled:opacity-50">Einladungen anzeigen</button>
   <div id="heirLiveList" class="text-sm text-slate-200" role="status" aria-live="polite"></div>
   <p id="heirInvitationStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte melde dich an.</p>
 </section>
-<p class="my-4 text-sm"><a class="underline text-indigo-300" href="./erben-uebergabe.html">Verschlüsselte Nachlassdatei ausdrücklich an einen Erben übergeben (unwiderruflich)</a></p>
+<p class="my-4 text-sm"><a class="underline text-indigo-300" href="./erben-uebergabe.html">Unterlagen endgültig an eine Person übergeben</a></p>
 <section id="heirAcceptInvitation" class="bg-slate-950 p-6 rounded-2xl border border-indigo-700 space-y-3" aria-labelledby="heirAcceptTitle">
-  <h3 id="heirAcceptTitle" class="font-bold text-slate-100">Erbeneinladung annehmen</h3>
-  <p class="text-sm text-slate-300">Melde dich an und gib den erhaltenen Einladungscode ein. Die Annahme allein gibt keine Tresordaten frei.</p>
+  <h3 id="heirAcceptTitle" class="font-bold text-slate-100">Einladung erhalten?</h3>
+  <p class="text-sm text-slate-300">Melde dich an und gib deinen Einladungscode ein. Deine Unterlagen werden dadurch noch nicht freigegeben.</p>
   <form id="heirAcceptForm" class="space-y-2">
-    <label for="heirAcceptToken" class="block text-sm">Einmalcode (64 Zeichen)</label>
+    <label for="heirAcceptToken" class="block text-sm">Einladungscode</label>
     <input id="heirAcceptToken" type="password" required minlength="64" maxlength="64" autocomplete="off" spellcheck="false" autocapitalize="off" class="w-full rounded-lg bg-slate-900 border border-slate-600 p-2 text-slate-100" />
     <button id="heirAcceptButton" type="submit" class="rounded-lg bg-indigo-700 px-4 py-2">Einladung annehmen</button>
   </form>
-  <p id="heirAcceptStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte melde dich mit deinem Konto an.</p>
+  <p id="heirAcceptStatus" role="status" aria-live="polite" class="text-sm text-slate-200">Bitte melde dich an.</p>
 </section>
+              </div>
+            </details>
 
         </div>
 
