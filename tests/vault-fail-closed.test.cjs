@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const html = fs.readFileSync(path.join(__dirname, '..', 'tools', 'digitaler-nachlass', 'index.html'), 'utf8');
+const legacy = fs.readFileSync(path.join(__dirname, '..', 'assets', 'heir-owner-legacy.js'), 'utf8');
 const checks = [
   ['read stored vault', /const storedVault = localStorage\.getItem\('digital_estate_vault'\)/],
   ['create only when absent', /if \(storedVault === null\)/],
@@ -17,9 +18,17 @@ const checks = [
   ['retain decrypted vault', /currentDecryptedVault = dec;/],
   ['visible error message', /Tresor gesperrt:/],
   ['accessible alert', /notice\.setAttribute\('role', 'alert'\)/],
+  ['A10 migration UI explicitly disabled', /id="a10-migration-panel"[^>]*data-a10-release="disabled"/],
+  ['A10 backup file disabled', /id="a10-backup-file"[^>]*disabled/],
+  ['A10 attestation file disabled', /id="a10-attestation-file"[^>]*disabled/],
+  ['A10 preview disabled', /id="a10-migration-preview"[^>]*disabled/],
+  ['A10 staging disabled', /id="a10-migration-stage"[^>]*disabled/],
+  ['A10 activation disabled', /id="a10-migration-activate"[^>]*disabled/],
+  ['A10 no production migration script', /<script[^>]+src="[^"]*a10-migration-flow\\.js"/, true],
   ['no silent empty fallback', /currentDecryptedVault = \(dec && dec\.entries\) \? dec : \{ entries: \[\] \};/, true],
 ];
 for (const [label, pattern, absent] of checks) {
-  assert.equal(pattern.test(html), !absent, label);
+  const source = label.startsWith('A10 ') ? html : legacy;
+  assert.equal(pattern.test(source), !absent, label);
 }
 console.log('Vault fail-closed policy: ' + checks.length + ' assertions passed');
