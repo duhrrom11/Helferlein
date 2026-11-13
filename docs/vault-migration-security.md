@@ -1,5 +1,10 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## Gate 2: fail-closed UI-Controller und Zustimmung (2026-11-13)
+
+Die echte Tresorseite bindet `assets/a10-consent-ui.js` ein. Der Controller erzwingt bei jeder Initialisierung den deaktivierten Zustand aller A10-Eingaben einschliesslich der neuen expliziten Backup-/Vorschau-Zustimmung, setzt eine etwaige vorbefuellte Zustimmung zurueck und zeigt den NO-GO-Status. Das Produktions-Release-Gate ist im Controller konstant `false` und kann nicht ueber UI-Parameter umgangen werden. Keine A10-Import-, Staging- oder Aktivierungsaktion wird ausgefuehrt, und kein Passwort oder Tresorinhalt wird gelesen. Dies ist die sichere Grundlage fuer einen spaeteren zustimmungsgebundenen Vorschau-Controller, **noch keine aktivierte Vorschau**. Vor Freigabe sind der echte Zustimmungs-/Datei-Workflow und die produktive Migration separat zu implementieren und abzunehmen. **A10 NO-GO.**
+
+
 ## Gate 2: Offline-Dateivorschau als funktionaler Baustein (2026-11-13)
 
 `assets/a10-offline-preview.js` verarbeitet zwei explizit ausgewaehlte Dateien: verschluesseltes V1-Backup und separaten SHA-256-Pruefnachweis. Die Vorschau prueft Groessen- und Formatgrenzen, den exakten Dateihash sowie das Schema des verschluesselten Backups. Sie gibt ausschliesslich Format, Dateigroesse, SHA-256 und einen nicht-aktivierenden Status zurueck; sie fordert kein Passwort an, entschluesselt nicht und schreibt nichts. Die bestehende synthetische Chromium-Integration prueft den Ablauf mit echten ausgewaehlten Dateien. Ein unbeglaubigter SHA-256-Sidecar ist kein Herkunftsnachweis.
