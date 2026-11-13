@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 verifizierte V1-Wiederherstellung vor isoliertem V2-Staging (2026-11-13)
+
+`assets/a10-recovery-verified-staging.js` verbindet die bestehende kryptografische Wiederherstellungspruefung des unabhaengig verschluesselten V1-Backups mit dem vorhandenen V2-Staging-Gate. Separate Passwoerter, ausdrueckliche Einwilligung, bestaetigte Tresor-ID und `confirmStagingOnly` sind Pflicht. Erst nach erfolgreich erneut gepruefter V1- und V2-Entschluesselung darf der Aufrufer den isolierten Staging-Treiber verwenden. Fehler vor der Staging-Phase verursachen keinen Schreibversuch; bereits belegte V2-Ziele werden atomar abgewiesen. Der fokussierte synthetische Test prueft die Fehlergrenzen, unveraendertes V1, keine Klartextschluessel im gespeicherten Staging-Datensatz und kein Ueberschreiben.
+
+**Grenzen:** Der Test nutzt einen synchronen Speichertreiber; die separate Chromium-IndexedDB-Testsuite prueft den echten Treiber. Die Backup-Datei wird hier nicht vom physischen Datentraeger gelesen, sondern als verschluesseltes Artefakt uebergeben. Kein automatischer Import, kein V1-Loeschen, keine Aktivierung, keine Cloud- oder Supabase-Anbindung und keine reale Geraetewechselabnahme. **A10 bleibt NO-GO.**
+
+
 ## Isolierter echter verschluesselter Backup-Dateitransfer (2026-11-13)
 
 `assets/a10-backup-file-handoff.js` stellt nur fuer einen ausdruecklich bestaetigten Browser-Download eine verschluesselte V1-Backup-JSON-Datei bereit; der Aufruf muss aus einer Nutzerinteraktion erfolgen. `previewSelectedFile` liest eine ausgewaehlte Datei mit Groessen-, Namens- und Formatpruefung und gibt sie ausschliesslich an den bestehenden read-only Import-Preview weiter. Der Download-Status `DOWNLOAD_REQUESTED_NOT_VERIFIED` bestaetigt **nicht**, dass ein Nutzer die Datei dauerhaft aufbewahrt hat. Ein fokussierter Chromium-Test laedt eine echte Datei auf die Test-Festplatte herunter und waehlt diese in einem **frischen Browserkontext** erneut aus; Entschluesselung, Originalgleichheit, falsches Passwort, vorhandenes Ziel und ausbleibende Browser-Speicherung werden kontrolliert.
