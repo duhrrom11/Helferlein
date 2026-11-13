@@ -13,11 +13,13 @@ test('B3 Nachlass omits removed top notice banners',()=>{
  assert.doesNotMatch(html,/Zurück zur Startseite/);
 });
 test('B3 navigation preserves original tab and security-critical IDs',()=>{
- for(const id of ['section-vault','section-deadman','section-trustees','section-kit','section-settings','entryTitle','entryContent','saveEntryBtn','vaultEntriesList','deadmanCountdown','checkInBtn','trusteesGrid','generatePdfBtn','cloud-status-text','auth-email','auth-password','manualSyncBtn'])
+ for(const id of ['section-vault','section-deadman','section-trustees','section-kit','section-settings','entryTitle','entryContent','saveEntryBtn','vaultEntriesList','deadmanCountdown','checkInBtn','trusteesGrid','generatePdfBtn','cloud-status-text','auth-email','auth-password'])
  assert.ok(html.includes('id="'+id+'"'),id);
  for(const tab of ['vault','deadman','trustees','kit','settings'])
  assert.ok(html.includes('data-tab="'+tab+'"'),tab);
- assert.equal((html.match(/id="manualSyncBtn"/g)||[]).length,1);
+ assert.equal((html.match(/id="manualSyncBtn"/g)||[]).length,0);
+ assert.doesNotMatch(html,/id="b3-nachlass-more"/);
+ assert.doesNotMatch(html,/id="a10-migration-panel"/);
  assert.equal((html.match(/<h1\b/g)||[]).length,1);
 });
 test('Existing encryption, sync, alarm and account functions remain unchanged',()=>{
