@@ -21,20 +21,37 @@ async function deliverOne() {
  if(!mailReady) return;
  const job=await rpc('claim',null);
  if(!job.id) return;
- const {data,error}=await admin.auth.admin.getUserById(job.owner);
- if(error || !data.user?.email || !data.user.email_confirmed_at) return;
- const alarm=job.kind==='alarm';
- const subject=alarm?'Helferlein: Bitte gib jetzt ein Lebenszeichen':'Helferlein: Zeit für dein Lebenszeichen';
- const text=(alarm?'Eine deiner Vertrauenspersonen hat einen Notfall gemeldet. Ohne Entwarnung kann nach 24 Stunden eine Vertrauensperson deine Unterlagen lesen.':'Deine regelmäßige Erinnerung. Sie löst keinen Notfallalarm aus.')
-  +'\n\nÖffne Helferlein, melde dich an und wähle „❤️ Ich lebe noch“:\nhttps://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/index.html#lebenszeichen\n\nDeine Unterlagen und Schlüssel stehen nicht in dieser Nachricht.';
+ const reporter=job.kind==='reporter-started'||job.kind==='reporter-stopped';
+ let recipient:string;
+ if(reporter){
+  if(typeof job.recipient!=='string'||job.recipient.length>254||!/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(job.recipient))return;
+  recipient=job.recipient;
+ }else{
+  const {data,error}=await admin.auth.admin.getUserById(job.owner);
+  if(error || !data.user?.email || !data.user.email_confirmed_at) return;
+  recipient=data.user.email;
+ }
+ const portal='https://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/erben.html';
+ const ownerPortal='https://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/index.html#lebenszeichen';
+ const format=(date:string)=>new Date(date).toLocaleString('de-DE',{timeZone:'Europe/Paris',timeZoneName:'short'});
+ const alarm=job.kind==='alarm',started=job.kind==='reporter-started';
+ if(reporter&&(!Number.isFinite(Date.parse(job.eventTime))||(started&&!Number.isFinite(Date.parse(job.deadline)))))return;
+ const subject=reporter?(started?'Helferlein: Dein Notfallalarm wurde gestartet':'Helferlein: Entwarnung – dein Notfallalarm wurde beendet'):(alarm?'Helferlein: Bitte gib jetzt ein Lebenszeichen':'Helferlein: Zeit für dein Lebenszeichen');
+ const text=reporter
+  ?(started?'Du hast einen Notfall gemeldet. Der Besitzer wurde per E-Mail benachrichtigt. Die 24-Stunden-Frist hat am '+format(job.eventTime)+' begonnen.\n\nFrühester Zugang mit einem Schlüssel: '+format(job.deadline)+'. Das gilt nur, wenn der Besitzer nicht vorher Entwarnung gibt.\n\nDen aktuellen Countdown und Alarmstatus findest du im Portal. Gib dort deinen persönlichen Schlüssel ein. Eine E-Mail kann keinen zuverlässig laufenden Countdown anzeigen.':
+    'Der Besitzer hat deinen Notfallalarm am '+format(job.eventTime)+' beendet. Für neue Zugriffe sind wieder zwei verschiedene persönliche Schlüssel erforderlich. Bereits gelesene oder gespeicherte Kopien bleiben erhalten.')
+    +'\n\nAktuellen Status im Portal prüfen:\n'+portal+'\n\nDiese Nachricht bestätigt den genannten Zeitpunkt. Maßgeblich ist der aktuelle Status im Portal. Dein persönlicher Schlüssel steht nicht in dieser Nachricht.'
+  :(alarm?'Eine deiner Vertrauenspersonen hat einen Notfall gemeldet. Ohne Entwarnung kann nach 24 Stunden eine Vertrauensperson deine Unterlagen lesen.':'Deine regelmäßige Erinnerung. Sie löst keinen Notfallalarm aus.')
+    +'\n\nÖffne Helferlein, melde dich an und wähle „❤️ Ich lebe noch“:\n'+ownerPortal+'\n\nDeine Unterlagen und Schlüssel stehen nicht in dieser Nachricht.';
+ const link=reporter?portal:ownerPortal;
  let response:Response;
  if(mailProvider==='brevo') {
   const escaped=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   response=await fetch('https://api.brevo.com/v3/smtp/email',{
    method:'POST',signal:AbortSignal.timeout(15000),
    headers:{'api-key':BREVO_KEY!,'Content-Type':'application/json','Accept':'application/json'},
-   body:JSON.stringify({sender:{email:MAIL_FROM,name:'Helferlein'},to:[{email:data.user.email}],subject,textContent:text,
-    htmlContent:'<!doctype html><html lang="de"><body><p>'+escaped.replace(/\n/g,'<br>')+'</p><p><a href="https://duhrrom11.github.io/Helferlein/tools/digitaler-nachlass/index.html#lebenszeichen">Helferlein öffnen und Lebenszeichen geben</a></p></body></html>',
+   body:JSON.stringify({sender:{email:MAIL_FROM,name:'Helferlein'},to:[{email:recipient}],subject,textContent:text,
+    htmlContent:'<!doctype html><html lang="de"><body><p>'+escaped.replace(/\n/g,'<br>')+'</p><p><a href="'+link+'">'+(reporter?'Aktuellen Countdown und Status öffnen':'Helferlein öffnen und Lebenszeichen geben')+'</a></p></body></html>',
     // Brevo expects a UUID in the JSON headers. The outbox job ID stays stable across retries.
     headers:{idempotencyKey:job.id}})
   });
@@ -42,7 +59,7 @@ async function deliverOne() {
   response=await fetch('https://api.resend.com/emails',{
    method:'POST',signal:AbortSignal.timeout(15000),
    headers:{Authorization:'Bearer '+RESEND_KEY,'Content-Type':'application/json','Idempotency-Key':'estate-'+job.id},
-   body:JSON.stringify({from:MAIL_FROM,to:[data.user.email],subject,text})
+   body:JSON.stringify({from:MAIL_FROM,to:[recipient],subject,text})
   });
  }
  // Quota, sender-verification, authentication, malformed and duplicate-key errors

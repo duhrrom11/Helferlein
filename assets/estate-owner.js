@@ -88,6 +88,7 @@
   stamp=result.data[0].updated_at;localWrite({...record,cloudStamp:stamp,pending:false});
   try{
    const replica=await C.readReplica(payload.entries,config.alarmPersons,payload.trusteeKeys);
+   replica.guardians=replica.guardians.map(g=>({...g,email:config.alarmPersons.find(p=>p.id===g.id).contact}));
    const out=await access('publish',{...replica,vaultId:config.vaultId,version,reminderDays:config.checkInIntervalDays,remindersEnabled:config.remindersEnabled===true});version=out.version;
    localWrite({...record,releaseVersion:version,releasePending:false});$('backup-state').textContent='Online gesichert. Der Lesezugang ist auf dem aktuellen Stand.';
   }catch(e){localWrite({...record,releasePending:true});throw Error(e.message==='conflict'?'conflict':'Deine Unterlagen sind online gesichert. Der Lesezugang und Schlüsseländerungen wurden noch nicht bestätigt. Wähle „Jetzt online sichern“ erneut.');}
