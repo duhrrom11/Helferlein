@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 Gate 2 – produktive Tresor-Oberflaeche, weiterhin deaktiviert (2026-11-13)
+
+Die tatsaechliche Seite `tools/digitaler-nachlass/index.html` zeigt jetzt einen eigenen A10-Migrationsbereich mit Auswahlfeldern fuer verschluesseltes V1-Backup und SHA-256-Attest sowie Vorschau-, Staging- und Aktivierungsaktionen. **Alle Eingaben und Aktionen sind per HTML `disabled` gesperrt; `data-a10-release="disabled"` dokumentiert den NO-GO-Zustand.** Es wird kein A10-Migrationsskript produktiv geladen und keine V1-/V2-/Supabase-Datenaktion ausgelöst. Die bestehenden Sicherheitswarnungen bleiben sichtbar. Die bestehende Fail-Closed-Testdatei prueft die UI-Sperren.
+
+Dies ist nur der erste, absichtlich gesperrte UI-Integrationsschritt. Fuer eine Freigabe fehlen insbesondere der authentifizierte Vorschau-/Bestaetigungscontroller, die sichere produktive V2-Persistenz und Aktivierung sowie Cloud-Sicherheitsnachweise. **A10 NO-GO.**
+
+
 ## A10 funktionaler lokaler Migrationsablauf – Gate 1 (2026-11-13)
 
 `assets/a10-migration-flow.js` verknuepft die vorhandenen, isolierten Bausteine zu einem **funktionalen** Ablauf: ausdrueckliche Zustimmung und Tresor-ID-Bindung, unabhhaengiges verschluesseltes V1-Backup mit Wiederherstellungspruefung, authentifizierte V2-Erzeugung, atomare nicht ueberschreibende IndexedDB-Staging-Transaktion und anschliessenden erneuten kryptografischen Readback. Zurueckgegeben werden nur der inaktive Erfolgsstatus und das verschluesselte V1-Backup; der Aufrufer muss dessen separate Sicherung vor einer spaeteren Aktivierung eigenstaendig nachweisen. Wiederholter Import oder vorhandenes Ziel wird abgewiesen. Der bestehende integrierte synthetische Chromium-Test durchlaeuft den neuen Ablauf in einer separaten Staging-Datenbank.
