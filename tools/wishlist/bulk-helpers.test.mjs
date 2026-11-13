@@ -1,0 +1,265 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {eligibleBulkTargets,summarizeBulk,bulkContextValid,bulkErrorHint,fetchAllPages,bulkControlsEnabled,currentDashboardLoad,fetchDashboardBase,fetchDashboardMembership,membershipForSelectedList} from './bulk-helpers.mjs';
+import {filterListWishes} from './list-features.mjs';
+
+const items=[
+ {id:'a',priority:1,created_at:'2026-01-01',wishlist_products:{title:'Äpfel'},note:'rot'},
+ {id:'b',priority:2,created_at:'2026-01-03',wishlist_products:{title:'Buch'},note:'lesen'},
+ {id:'c',priority:3,created_at:'2026-01-02',wishlist_products:{title:'Computer'},note:''}
+];
+test('bulk selection deduplicates, ignores unknown IDs and respects current membership',()=>{
+ assert.deepEqual(eligibleBulkTargets(['a','a','b','missing','c'],['a','b','c'],new Set(['b']),true),['a','c']);
+ assert.deepEqual(eligibleBulkTargets(['a','b','c'],['a','b','c'],new Set(['b']),false),['b']);
+});
+test('interrupted bulk retains failed and unprocessed targets, never successful targets',()=>{
+ const result=summarizeBulk({targets:['a','b','c','d'],completed:['a'],failed:['b'],stopped:true});
+ assert.deepEqual(result,{total:4,success:1,failed:['b'],remaining:['c','d'],interrupted:true});
+});
+test('complete bulk reports no pending changes',()=>{
+ assert.deepEqual(summarizeBulk({targets:['a','b'],completed:['a','b']}),{total:2,success:2,failed:[],remaining:[],interrupted:false});
+});
+test('account switches, missing membership snapshot and archived list block bulk actions',()=>{
+ const job={uid:'user-1',listId:'list-1'},base={userId:'user-1',listId:'list-1',ready:true,activeListIds:new Set(['list-1'])};
+ assert.equal(bulkContextValid(job,base),true);
+ assert.equal(bulkContextValid(job,{...base,userId:'user-2'}),false);
+ assert.equal(bulkContextValid(job,{...base,ready:false}),false);
+ assert.equal(bulkContextValid(job,{...base,activeListIds:new Set()}),false);
+});
+test('failure messages classify permission, duplicate, network and unknown errors',()=>{
+ assert.match(bulkErrorHint({code:'42501'}),/Berechtigung/);
+ assert.match(bulkErrorHint({code:'23505'}),/Bereits/);
+ assert.match(bulkErrorHint({message:'Failed to fetch'}),/Verbindungsproblem/);
+ assert.match(bulkErrorHint({message:'unexpected'}),/fehlgeschlagen/);
+});
+test('filters combine category, marker, assignment and search',()=>{
+ const result=filterListWishes(items,{search:'buch',category:'books',categories:{b:'books'},marker:'star',markers:{b:'star'},assignment:'assigned',assignedIds:new Set(['b'])});
+ assert.deepEqual(result.map(x=>x.id),['b']);
+ assert.deepEqual(filterListWishes(items,{category:'uncategorized',categories:{b:'books'}}).map(x=>x.id),['c','a']);
+ assert.deepEqual(filterListWishes(items,{marker:'none',markers:{b:'star'}}).map(x=>x.id),['c','a']);
+});
+test('sort order by priority, title and oldest is stable',()=>{
+ assert.deepEqual(filterListWishes(items,{sort:'priority'}).map(x=>x.id),['a','b','c']);
+ assert.deepEqual(filterListWishes(items,{sort:'title-desc'}).map(x=>x.id),['c','b','a']);
+ assert.deepEqual(filterListWishes(items,{sort:'oldest'}).map(x=>x.id),['a','c','b']);
+});
+
+test('pagination loads all pages in order',async()=>{
+ const pages=[[1,2],[3,4],[5]],calls=[];
+ const result=await fetchAllPages(async(from,to)=>{calls.push([from,to]);return {data:pages[calls.length-1]}},{pageSize:2});
+ assert.deepEqual(result,[1,2,3,4,5]);assert.deepEqual(calls,[[0,1],[2,3],[4,5]]);
+});
+test('pagination propagates load errors without returning partial data',async()=>{
+ await assert.rejects(()=>fetchAllPages(async()=>({error:new Error('network')})),/network/);
+});
+test('pagination ignores stale responses after account switch',async()=>{
+ let current=true;
+ const result=await fetchAllPages(async()=>{current=false;return {data:[1]}},{isCurrent:()=>current});
+ assert.equal(result,null);
+});
+
+test('invalid pagination size fails fast instead of looping forever',async()=>{
+ await assert.rejects(()=>fetchAllPages(async()=>({data:[1]}),{pageSize:0}),/pageSize/);
+ await assert.rejects(()=>fetchAllPages(async()=>({data:[1]}),{pageSize:1.5}),/pageSize/);
+});
+test('malformed paginated server response fails explicitly',async()=>{
+ await assert.rejects(()=>fetchAllPages(async()=>({data:{id:'wrong'}})),/array/);
+});
+
+test('regression: reload disables bulk controls immediately until membership is ready',()=>{
+ assert.equal(bulkControlsEnabled({membershipReady:true,bulkBusy:false}),true);
+ assert.equal(bulkControlsEnabled({membershipReady:false,bulkBusy:false}),false);
+ assert.equal(bulkControlsEnabled({membershipReady:false,bulkBusy:true}),false);
+ assert.equal(bulkControlsEnabled({membershipReady:true,bulkBusy:true}),false);
+});
+test('regression: rejected initial read cannot publish a stale error after account switch or newer reload',()=>{
+ const active={requestedUserId:'user-a',currentUserId:'user-a',requestedGeneration:3,currentGeneration:3};
+ assert.equal(currentDashboardLoad(active),true);
+ assert.equal(currentDashboardLoad({...active,currentUserId:'user-b'}),false);
+ assert.equal(currentDashboardLoad({...active,currentGeneration:4}),false);
+ assert.equal(currentDashboardLoad({...active,currentUserId:null}),false);
+});
+test('regression: rejected initial read may show error only for active load',async()=>{
+ let currentUser='user-a',generation=1,status='loading';
+ const rejected=Promise.reject(new Error('connection lost'));
+ const load=async()=>{
+  try{await rejected}catch(error){
+   if(!currentDashboardLoad({requestedUserId:'user-a',currentUserId:currentUser,requestedGeneration:1,currentGeneration:generation}))return;
+   status='error';throw error;
+  }
+ };
+ await assert.rejects(load,/connection lost/);
+ assert.equal(status,'error');
+ status='loading';currentUser='user-b';generation=2;
+ await load();
+ assert.equal(status,'loading');
+});
+
+function mockSupabaseReads({lists=[{id:'list-1'}],wishes=[{id:'wish-1'}],failTable=null,wait=null}={}){
+ const reads=[],writes=[];
+ const client={
+  from(table){
+   const query={table,filters:[],sorts:[],rangeValue:null,
+    select(columns){this.columns=columns;return this},
+    eq(field,value){this.filters.push([field,value]);return this},
+    order(field,options){this.sorts.push([field,options]);return this},
+    range(from,to){this.rangeValue=[from,to];return this},
+    then(resolve,reject){return Promise.resolve().then(async()=>{
+     reads.push({table,columns:this.columns,filters:this.filters,sorts:this.sorts,range:this.rangeValue});
+     if(wait)await wait;
+     if(failTable===table)throw Error('mock read failed');
+     return {data:table==='wishlist_lists'?lists:wishes,error:null};
+    }).then(resolve,reject)}
+   };
+   return query;
+  }
+ };
+ return {client,reads,writes};
+}
+test('dashboard integration: injected Supabase client reads both tables for the current account without writes',async()=>{
+ const db=mockSupabaseReads();
+ const snapshot=await fetchDashboardBase(db.client,'user-a');
+ assert.deepEqual(snapshot.lists.data,[{id:'list-1'}]);
+ assert.deepEqual(snapshot.wishes.data,[{id:'wish-1'}]);
+ assert.deepEqual(db.reads.map(x=>x.table).sort(),['wishlist_lists','wishlist_wishes']);
+ assert.equal(db.reads.every(x=>x.filters.some(([k,v])=>k==='user_id'&&v==='user-a')),true);
+ assert.deepEqual(db.reads.find(x=>x.table==='wishlist_wishes').range,[0,999]);
+ assert.equal(db.writes.length,0);
+});
+test('dashboard integration: rejected Supabase read surfaces error and leaves bulk controls locked',async()=>{
+ const db=mockSupabaseReads({failTable:'wishlist_wishes'});
+ let membershipReady=false,bulkBusy=false,status='loading';
+ try{await fetchDashboardBase(db.client,'user-a')}catch(e){status='error';assert.match(e.message,/mock read failed/)}
+ assert.equal(status,'error');
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy}),false);
+ assert.equal(db.writes.length,0);
+});
+test('dashboard integration: account switch during delayed reload cannot publish stale snapshot',async()=>{
+ let release;const wait=new Promise(resolve=>{release=resolve});
+ const db=mockSupabaseReads({wait});
+ let userId='user-a',generation=1,published='none';
+ const pending=fetchDashboardBase(db.client,userId).then(snapshot=>{
+  if(currentDashboardLoad({requestedUserId:'user-a',currentUserId:userId,requestedGeneration:1,currentGeneration:generation}))published=snapshot.wishes.data[0].id;
+ });
+ userId='user-b';generation=2;
+ release();await pending;
+ assert.equal(published,'none');
+ assert.equal(db.writes.length,0);
+});
+test('dashboard integration: reload immediately locks bulk controls before new snapshot',async()=>{
+ let release;const wait=new Promise(resolve=>{release=resolve});
+ const db=mockSupabaseReads({wait});
+ let membershipReady=true,bulkBusy=false;
+ membershipReady=false;
+ const pending=fetchDashboardBase(db.client,'user-a');
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy}),false);
+ release();await pending;
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy}),false);
+ membershipReady=true;
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy}),true);
+});
+
+function membershipMock(pages,{failAt=-1,rejectAt=-1}={}){
+ const reads=[],writes=[];let attempts=0;
+ return {reads,writes,client:{from(table){
+  if(table!=='wishlist_list_items')throw Error('unexpected table');
+  return {select(){return this},eq(field,value){this.user=[field,value];return this},order(){return this},range(from,to){this.bounds=[from,to];return this},
+   then(resolve,reject){return Promise.resolve().then(()=>{
+    const n=attempts++;reads.push({n,bounds:this.bounds,user:this.user});
+    if(n===rejectAt)throw Error('network interrupted');
+    if(n===failAt)return {data:null,error:new Error('partial membership failure')};
+    return {data:pages[n]||[],error:null};
+   }).then(resolve,reject)}
+  };
+ }}};
+}
+test('dashboard membership integration: reads every page with account filter and no writes',async()=>{
+ const db=membershipMock([[{list_id:'l',wish_id:'a'},{list_id:'l',wish_id:'b'}],[{list_id:'l',wish_id:'c'}]]);
+ const rows=await fetchDashboardMembership(db.client,'user-a',{pageSize:2});
+ assert.deepEqual(rows.map(x=>x.wish_id),['a','b','c']);
+ assert.deepEqual(db.reads.map(x=>x.bounds),[[0,1],[2,3]]);
+ assert.equal(db.reads.every(x=>x.user[0]==='user_id'&&x.user[1]==='user-a'),true);
+ assert.equal(db.writes.length,0);
+});
+test('dashboard membership integration: second-page error rejects without publishing partial results',async()=>{
+ const db=membershipMock([[{wish_id:'a'},{wish_id:'b'}]],{failAt:1});
+ let published='none',membershipReady=false;
+ await assert.rejects(async()=>{published=(await fetchDashboardMembership(db.client,'user-a',{pageSize:2})).length},/partial membership failure/);
+ assert.equal(published,'none');
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy:false}),false);
+ assert.equal(db.writes.length,0);
+});
+test('dashboard membership integration: rejected second page then explicit retry succeeds',async()=>{
+ const db=membershipMock([[{wish_id:'a'},{wish_id:'b'}]],{rejectAt:1});
+ await assert.rejects(()=>fetchDashboardMembership(db.client,'user-a',{pageSize:2}),/network interrupted/);
+ const retry=membershipMock([[{wish_id:'a'},{wish_id:'b'}],[{wish_id:'c'}]]);
+ const rows=await fetchDashboardMembership(retry.client,'user-a',{pageSize:2});
+ assert.deepEqual(rows.map(x=>x.wish_id),['a','b','c']);
+ assert.equal(db.writes.length+retry.writes.length,0);
+});
+test('dashboard membership integration: account invalidation stops pagination without publishing rows',async()=>{
+ let current=true;
+ const db=membershipMock([[{wish_id:'a'},{wish_id:'b'}],[{wish_id:'c'}]]);
+ const rows=await fetchDashboardMembership(db.client,'user-a',{pageSize:2,isCurrent:()=>{if(db.reads.length>=1)current=false;return current}});
+ assert.equal(rows,null);
+ assert.equal(db.reads.length,1);
+});
+
+test('dashboard consistency: overlapping reloads only publish the newest membership snapshot',async()=>{
+ let resolveFirst;
+ const firstPage=new Promise(resolve=>{resolveFirst=resolve});
+ const first={from(){return {select(){return this},eq(){return this},order(){return this},range(){return firstPage}}}};
+ const second=membershipMock([[{list_id:'new',wish_id:'new-wish'}]]);
+ let generation=1,currentUser='user-a',published='none';
+ const old=fetchDashboardMembership(first,'user-a').then(rows=>{
+  if(rows!==null&&currentDashboardLoad({requestedUserId:'user-a',currentUserId:currentUser,requestedGeneration:1,currentGeneration:generation}))published=rows[0].wish_id;
+ });
+ generation=2;
+ const rows=await fetchDashboardMembership(second.client,'user-a');
+ if(currentDashboardLoad({requestedUserId:'user-a',currentUserId:currentUser,requestedGeneration:2,currentGeneration:generation}))published=rows[0].wish_id;
+ resolveFirst({data:[{list_id:'old',wish_id:'old-wish'}],error:null});
+ await old;
+ assert.equal(published,'new-wish');
+});
+test('dashboard consistency: account switch after last membership page blocks final commit',async()=>{
+ const db=membershipMock([[{list_id:'old',wish_id:'a'}]]);
+ let user='user-a',generation=3,published=false;
+ const rows=await fetchDashboardMembership(db.client,'user-a');
+ user='user-b';generation=4;
+ if(rows!==null&&currentDashboardLoad({requestedUserId:'user-a',currentUserId:user,requestedGeneration:3,currentGeneration:generation}))published=true;
+ assert.equal(published,false);
+});
+test('dashboard consistency: failed membership page followed by fresh retry cannot enable controls early',async()=>{
+ const failed=membershipMock([[{wish_id:'a'},{wish_id:'b'}]],{failAt:1});
+ let membershipReady=false;
+ await assert.rejects(()=>fetchDashboardMembership(failed.client,'user-a',{pageSize:2}),/partial membership failure/);
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy:false}),false);
+ const fresh=membershipMock([[{wish_id:'a'},{wish_id:'b'}],[{wish_id:'c'}]]);
+ const rows=await fetchDashboardMembership(fresh.client,'user-a',{pageSize:2});
+ assert.equal(rows.length,3);
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy:false}),false);
+ membershipReady=true;
+ assert.equal(bulkControlsEnabled({membershipReady,bulkBusy:false}),true);
+});
+
+test('dashboard state: list switch never exposes membership from an unfinished reload',()=>{
+ const membershipByList=new Map([['list-a',new Set(['wish-a'])],['list-b',new Set(['wish-b'])]]);
+ assert.deepEqual([...membershipForSelectedList({membershipReady:false,membershipByList,listId:'list-b'})],[]);
+ assert.deepEqual([...membershipForSelectedList({membershipReady:true,membershipByList,listId:'list-b'})],['wish-b']);
+ assert.deepEqual([...membershipForSelectedList({membershipReady:true,membershipByList,listId:'list-a'})],['wish-a']);
+});
+test('dashboard state: failed membership pagination cannot retain old list selection',async()=>{
+ const old=new Map([['list-a',new Set(['old-wish'])]]);
+ const db=membershipMock([[{list_id:'list-b',wish_id:'new-a'},{list_id:'list-b',wish_id:'new-b'}]],{failAt:1});
+ let membershipReady=false;
+ await assert.rejects(()=>fetchDashboardMembership(db.client,'user-a',{pageSize:2}),/partial membership failure/);
+ assert.deepEqual([...membershipForSelectedList({membershipReady,membershipByList:old,listId:'list-a'})],[]);
+ assert.deepEqual([...membershipForSelectedList({membershipReady,membershipByList:old,listId:'list-b'})],[]);
+});
+test('dashboard state: completed reload exposes only the newly selected list',async()=>{
+ const db=membershipMock([[{list_id:'list-b',wish_id:'new-wish'}]]);
+ const rows=await fetchDashboardMembership(db.client,'user-a');
+ const map=new Map();for(const row of rows){if(!map.has(row.list_id))map.set(row.list_id,new Set());map.get(row.list_id).add(row.wish_id)}
+ assert.deepEqual([...membershipForSelectedList({membershipReady:true,membershipByList:map,listId:'list-a'})],[]);
+ assert.deepEqual([...membershipForSelectedList({membershipReady:true,membershipByList:map,listId:'list-b'})],['new-wish']);
+});
