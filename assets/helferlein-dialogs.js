@@ -23,7 +23,7 @@
  }
  function friendlyNotice(message){
   const original=String(message??'').trim();
-  const cleaned=original.replace(/^[\\s✅✔☑🎉]+/u,'').trim();
+  const cleaned=original.replace(/^[\s✅✔☑🎉]+/u,'').trim();
   // Only shorten clear success notices. Never mask errors, partial saves or warnings.
   if(/^(?:erfolgreich (?:gespeichert|synchronisiert)|(?:einstellungen|daten|eintrag|kontakt|pflanze|tarife|gegenstand|parkplatz|rezepte|buchung|notizen|vertrauenspersonen).{0,65}(?:erfolgreich )?gespeichert[!.]?|(?:lokal und (?:in der )?(?:cloud|online|supabase) gespeichert)|(?:mit der cloud synchronisiert)|(?:synchronisierung abgeschlossen))[!.]?$/i.test(cleaned))return 'Gespeichert';
   return original;
