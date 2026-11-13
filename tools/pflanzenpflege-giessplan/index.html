@@ -49,7 +49,7 @@
     <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleSettingsModal()">
         <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg text-lime-900">⚙️ Einstellungen & Cloud-Konto</h3>
+                <h3 class="font-bold text-lg text-lime-900">⚙️ Einstellungen und Konto</h3>
                 <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             
@@ -57,7 +57,7 @@
               👤 <span id="header-user-email">Nicht angemeldet</span>
             </div>
             <div class="p-3 bg-gray-50 rounded-xl border text-xs space-y-1">
-                <div id="cloud-status-text" class="font-bold text-gray-700">Status: Nicht angemeldet</div>
+                <div id="cloud-status-text" class="font-bold text-gray-700">Nicht angemeldet</div>
                 <div id="cloud-user-display" class="text-lime-700 font-semibold"></div>
             </div>
 
@@ -389,7 +389,7 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) { console.warn('Cloud-Synchronisierung nicht geladen'); return; }
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) { console.warn('Online-Sicherung nicht geladen'); return; }
         if (window.helferleinCloudBridge) return;
         window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
           client: supabaseClient,
@@ -464,7 +464,7 @@
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = "Status: Nicht angemeldet";
+                statusText.innerText = "Nicht angemeldet";
                 userDisplay.innerText = "";
                 headerBadge.classList.add('hidden');
                 headerBadge.classList.remove('inline-flex');

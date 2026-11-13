@@ -262,7 +262,7 @@
             if (syncStatus && !syncStatus.classList.contains('hidden')) {
                 syncStatus.classList.remove('border-emerald-700', 'bg-emerald-950/70', 'text-emerald-100');
                 syncStatus.classList.add('border-amber-700', 'bg-amber-950/70', 'text-amber-100');
-                syncStatus.textContent = 'Neuere Änderungen sind lokal gespeichert, aber noch nicht als Online-Sicherung bestätigt. Bitte erneut synchronisieren.';
+                syncStatus.textContent = 'Deine letzten Änderungen sind noch nicht online gesichert. Bitte erneut versuchen.';
             }
             return true;
         }
@@ -303,7 +303,7 @@
                 return;
             }
             status.classList.remove('hidden');
-            status.textContent = 'Online-Sicherung gerade nicht möglich. Deine Änderungen sind auf diesem Gerät gespeichert.';
+            status.textContent = 'Online-Sicherung gerade nicht möglich. Bitte später erneut versuchen.';
         }
 
         function requestCloudRecoveryPassword(message) {
@@ -360,7 +360,7 @@
         // Recovery is intentionally limited to a fresh, empty local vault.
         // Never replace a vault containing entries or with a pending local save.
         async function restoreVaultFromSupabase() {
-            if (!vaultReady) return alert('Lokaler Tresor nicht bereit.');
+            if (!vaultReady) return alert('Bitte öffne zuerst deine Daten.');
             const { data: authData, error: authError } = await supabaseClient.auth.getUser();
             const user = authData?.user;
             if (authError || !user) return alert('Bitte melde dich zuerst in deinem Konto an.');
@@ -511,7 +511,7 @@
                     return alert('Lokaler Tresor während der Kontoprüfung geändert. Wiederherstellung abgebrochen.');
                 }
                 localStorage.setItem('digital_estate_vault', JSON.stringify(restored));
-                alert('Online-Tresor wiederhergestellt. Die Seite wird neu geladen. ' +
+                alert('Daten wiederhergestellt. Die Seite wird neu geladen. ' +
                     (recoveredConfig ? 'Bitte Kontakte und Check-in-Einstellungen kontrollieren. ' :
                         'Kontakte, Alarmregeln und Check-in-Einstellungen müssen neu eingerichtet werden. ') +
                     'Bitte sofort eine verschlüsselte lokale Sicherung erstellen.');
@@ -561,7 +561,7 @@
                 if (!encrypted.iv || !encrypted.ciphertext ||
                     encrypted.iv !== cfg.encryptedData.iv ||
                     encrypted.ciphertext !== cfg.encryptedData.ciphertext) {
-                    return alert('Gespeicherte und lokaler Tresorstand stimmen nicht überein. Bitte zuerst die aktuelle verschlüsselte Sicherung hochladen.');
+                    return alert('Die Sicherungen passen nicht zusammen. Bitte zuerst die aktuelle verschlüsselte Sicherung hochladen.');
                 }
                 const verifiedVault = await decryptVaultPayload(cfg.encryptedData, currentMasterKeyHex);
                 if (!verifiedVault || !Array.isArray(verifiedVault.entries)) {
@@ -649,7 +649,7 @@
                 if (!remote) return alert('Keine Online-Sicherung für dieses Konto vorhanden.');
                 const local = getVaultConfig();
                 if (!local || local.vaultId !== remote.vault_id) {
-                    return alert('Online-Tresor und lokaler Tresor haben unterschiedliche IDs. Keine Wiederherstellung versucht.');
+                    return alert('Diese Sicherung gehört zu anderen Daten. Es wurde nichts geändert.');
                 }
                 if (local.masterKeyHex !== currentMasterKeyHex) {
                     return alert('Der lokale Tresorschlüssel stimmt nicht mit dem aktiven Schlüssel überein. Keine Daten verändert.');
@@ -689,7 +689,7 @@
                     return alert('Der lokale Tresor oder aktive Schlüssel wurde während der Wiederherstellungsprüfung geändert. Bitte erneut prüfen.');
                 }
                 const date = remote.updated_at ? new Date(remote.updated_at).toLocaleString('de-DE') : 'unbekannt';
-                alert('Online-Sicherung vom ' + date + ' erfolgreich mit dem lokalen Schlüssel entschlüsselt. Enthaltene Einträge: ' +
+                alert('Sicherung geprüft. Enthaltene Einträge: ' +
                     decrypted.entries.length + '. ' + configStatus +
                     ' Dies war nur eine Prüfung: Lokale Daten wurden nicht überschrieben.');
             } catch (error) {
@@ -760,7 +760,7 @@
                     !cloudConfig.alarmPersons.every(person =>
                         person && typeof person === 'object' && !Array.isArray(person) &&
                         typeof person.name === 'string' && person.name.length <= 500)) {
-                    return alert('Tresorinhalt stimmt überein, aber die gespeicherte Einstellungen enthält für die Wiederherstellung ungültige Einstellungen.');
+                    return alert('Die Sicherung enthält fehlerhafte Einstellungen. Es wurde nichts geändert.');
                 }
                 const keys = ['ownerName', 'ownerEmail', 'checkInIntervalDays',
                     'lastCheckIn', 'trustees', 'alarmPersons'];
@@ -802,7 +802,7 @@
                 !/^[a-f0-9]{64}$/i.test(currentMasterKeyHex || '') ||
                 cfg.masterKeyHex !== currentMasterKeyHex ||
                 lastPersistedRevision !== localSaveRevision) {
-                return alert('Bitte warten, bis alle lokalen Änderungen gespeichert sind.');
+                return alert('Bitte warte, bis das Speichern abgeschlossen ist.');
             }
             if (!silent && !confirm('Den aktuell lokal verschlüsselten Tresor einschließlich verschlüsselter Kontakte und Check-in-Einstellungen im angemeldeten Konto sichern? Ein unverschlüsselter Tresorschlüssel wird nicht hochgeladen. Für den Gerätewechsel muss zusätzlich ein Wiederherstellungspasswort vorbereitet werden; eine verschlüsselte lokale Sicherungsdatei bleibt empfohlen.')) return false;
             const button = document.getElementById('supabaseBackupBtn');
@@ -908,7 +908,7 @@
                 return true;
             } catch (error) {
                 console.error('Online-Sicherung fehlgeschlagen:', error);
-                if (!silent) alert('Deine Daten konnten gerade nicht online gespeichert werden. Sie bleiben auf diesem Gerät erhalten.');
+                if (!silent) alert('Online-Sicherung gerade nicht möglich. Bitte später erneut versuchen.');
                 return false;
             } finally {
                 if (button) button.disabled = false;
@@ -923,7 +923,7 @@
             }).catch(error => {
                 console.error('Supabase-Synchronisierung fehlgeschlagen:', error);
                 showVaultSyncResult(false);
-                if (!silent) alert('Online-Sicherung gerade nicht möglich. Deine Daten bleiben auf diesem Gerät erhalten.');
+                if (!silent) alert('Online-Sicherung gerade nicht möglich. Bitte später erneut versuchen.');
                 return false;
             });
             vaultSyncQueue = operation.then(() => undefined);

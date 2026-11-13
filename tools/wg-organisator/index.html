@@ -63,7 +63,7 @@
         ],
         extra:[
           {label:'👥 Mitglieder / Kontakte',handler:'openMitbewohnerModal'},
-          {label:'🔄 Manuell synchronisieren',handler:'manuelleSynchronisation'},
+          {label:'🔄 Jetzt speichern',handler:'manuelleSynchronisation'},
           {label:'📄 Finanzbericht (PDF)',handler:'exportAbrechnungPDF'},
           {label:'🔐 Alte WG privat kopieren',handler:'migrateLegacyWgToSecure'},
           {label:'🔐 WG-Zugriff verwalten',handler:'showWgMemberAccess'},
@@ -99,7 +99,7 @@
     <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50" onclick="toggleSettingsModal()">
         <div class="bg-white p-6 rounded-2xl max-w-md w-full space-y-4 shadow-2xl text-gray-800" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg text-emerald-900">⚙️ Einstellungen & Cloud-Konto</h3>
+                <h3 class="font-bold text-lg text-emerald-900">⚙️ Einstellungen und Konto</h3>
                 <button onclick="toggleSettingsModal()" class="text-gray-400 font-bold hover:text-gray-600">✕</button>
             </div>
             
@@ -108,7 +108,7 @@
                   <span id="sync-status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
                   👤 <span id="header-user-email">Nicht angemeldet</span>
                 </span>
-                <div id="cloud-status-text" class="font-bold text-gray-700">Status: Nicht angemeldet</div>
+                <div id="cloud-status-text" class="font-bold text-gray-700">Nicht angemeldet</div>
                 <div id="cloud-user-display" class="text-emerald-700 font-semibold"></div>
             </div>
 
@@ -937,7 +937,7 @@
             // Supabase may require email confirmation, or intentionally conceal
             // whether an address already exists. Never promise an active account.
             if (data?.session) {
-                alert('Angemeldet. Dein Cloud-Konto ist einsatzbereit.');
+                alert('Angemeldet. Dein Konto ist einsatzbereit.');
             } else {
                 alert('Anfrage verarbeitet. Falls eine Bestätigung erforderlich ist, prüfe dein E-Mail-Postfach und bestätige die Adresse. Melde dich danach an.');
             }
@@ -963,7 +963,7 @@
             if (isSecureWgId(wgBinId)) {
                 await secureWgSaving;
                 if (secureWgDirty) {
-                    alert('Abmeldung angehalten: WG-Änderungen sind noch nicht in der Cloud gespeichert. Bitte synchronisieren oder die Daten zuerst sichern.');
+                    alert('Abmeldung angehalten: Deine Änderungen sind noch nicht online gesichert. Bitte speichere sie, bevor du dich abmeldest.');
                     return;
                 }
             }
@@ -1012,7 +1012,7 @@
                 headerBadge.classList.add('inline-flex');
                 btnLogout.classList.remove('hidden');
             } else {
-                statusText.innerText = sessionError ? "Status: Verbindung oder Sitzung nicht überprüfbar" : "Status: Nicht angemeldet";
+                statusText.innerText = sessionError ? "Status: Verbindung oder Sitzung nicht überprüfbar" : "Nicht angemeldet";
                 statusText.className = "font-bold text-gray-700";
                 if(syncDot) {
                     syncDot.classList.remove('bg-emerald-400', 'animate-pulse');

@@ -142,7 +142,7 @@
       pre.className = 'whitespace-pre-wrap break-words text-sm bg-slate-950 p-4 rounded-xl max-h-96 overflow-auto';
       pre.textContent = JSON.stringify(vault.entries,null,2);
       $('estateOutput').append(pre);
-      show('openStatus','Nachlass lokal entschlüsselt. Die Daten werden nicht in Supabase gespeichert.');
+      show('openStatus','Deine Daten sind geöffnet.');
     } catch { show('openStatus','Entschlüsselung fehlgeschlagen. Bitte passenden privaten Schlüssel und Nachlassdatei prüfen.'); }
     finally { $('unlockPassphrase').value = ''; $('openEstate').disabled = false; }
   });

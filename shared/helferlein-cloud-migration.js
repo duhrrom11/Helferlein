@@ -289,9 +289,9 @@
       lastAccountChangeAt = now();
       lastEnableAt = now();
     }
-    function reportError(error) { if (disposed) return; lastStatusErrorAt = now(); lastSyncError = error && error.message ? error.message : String(error); lastConflictMessage = lastSyncError; setStatus('Cloud: ' + lastSyncError); }
+    function reportError(error) { if (disposed) return; lastStatusErrorAt = now(); lastSyncError = error && error.message ? error.message : String(error); lastConflictMessage = lastSyncError; setStatus('Online-Sicherung nicht möglich. Bitte versuche es später erneut.'); }
     function setStatus(message) { if (!disposed) { statusGeneration++; status.textContent = message; } }
-    function statusError(prefix, error) { lastStatusErrorAt = now(); lastConflictMessage = error && error.message ? error.message : String(error); const anonymous = !currentOwner() && /^Auth session missing!?$/i.test(lastConflictMessage); setStatus(anonymous ? 'Nicht angemeldet. Deine lokalen Daten bleiben auf diesem Gerät. Für die optionale Cloud-Sicherung kannst du dich anmelden.' : prefix + ': ' + lastConflictMessage); }
+    function statusError(prefix, error) { lastStatusErrorAt = now(); lastConflictMessage = error && error.message ? error.message : String(error); const anonymous = !currentOwner() && /^Auth session missing!?$/i.test(lastConflictMessage); setStatus(anonymous ? 'Bitte melde dich an, wenn du deine Daten online sichern möchtest.' : 'Das hat nicht geklappt. Bitte versuche es erneut.'); }
     function currentOwner() { return localStorage.getItem(ownerKey); }
     function ownerMatches(uid) { return !!uid && currentOwner() === uid; }
     function assertSameAccount(uid, generation) { if (!sameAccount(uid, generation)) throw new Error('Konto während Cloud-Vorgang gewechselt'); }
@@ -401,7 +401,7 @@
         lastRefreshAt = now();
         lastSyncError = null;
         lastConflictMessage = null;
-        setStatus('Aktuelle Supabase-Daten übernommen');
+        setStatus('Daten übernommen');
         if (typeof refresh === 'function') { try { refresh(); } catch (error) { reportError(error); } }
         return true;
       } catch (error) { reportError(error); return false; }
@@ -429,7 +429,7 @@
         if (!sameAccount(user.id, reconnectGeneration)) return;
         if (reconnectOwner !== currentOwner()) return;
         if (!await store.hasPending()) { lastReconnectAt = now(); reconnectSuccesses++; lastConflictMessage = null; }
-        if (done && await isEnabled() && isOwner(user.id)) setStatus('Ausstehende Änderungen synchronisiert');
+        if (done && await isEnabled() && isOwner(user.id)) setStatus('Gespeichert');
       } catch (error) {
         statusError('Synchronisierung ausstehend', error);
       }
@@ -551,7 +551,7 @@
             accountGeneration++;
             lastAccountChangeAt = now();
             lastSyncError = null;
-            setStatus('Ursprüngliches Konto wieder angemeldet');
+            setStatus('Angemeldet');
           } catch (error) { password.value = ''; statusError('Kontowechsel fehlgeschlagen', error); }
           finally { accountSwitchInProgress = false; loginButton.disabled = false; loginButton.removeAttribute('aria-busy'); email.disabled = false; password.disabled = false; void guardAccount().catch(reportError); }
         });
@@ -598,7 +598,7 @@
           enabledUser = user && localStorage.getItem(ownerKey) === user.id &&
             localStorage.getItem(enabledKey(user.id)) === 'true' ? user.id : null;
           if (enabledUser) void resume().catch(reportError);
-          else setStatus('Cloud-Synchronisierung für dieses Konto nicht aktiviert');
+          else setStatus('Online-Sicherung ist nicht eingerichtet');
         }).catch(error => { if (generation === authGeneration) { enabledUser = null; statusError('Anmeldung konnte nicht geprüft werden', error); } });
       }, 0);
     });
@@ -792,7 +792,7 @@
       ensureOwner(user.id);
       if ((await currentUser())?.id !== user.id) throw new Error('Konto während der Synchronisierung gewechselt');
       if (done) lastConflictMessage = null;
-      setStatus(done ? 'Synchronisierung abgeschlossen' : 'Keine Übertragung möglich oder erforderlich');
+      setStatus(done ? 'Gespeichert' : 'Keine Änderungen nötig');
       } finally { endOperation('flush'); }
     });
     void guardAccount().catch(error => { status.textContent = 'Kontoprüfung fehlgeschlagen: ' + error.message; });
