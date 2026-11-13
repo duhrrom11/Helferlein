@@ -1,0 +1,24 @@
+name: A10 backup file integrity gate
+
+on:
+  pull_request:
+    paths:
+      - 'assets/a10-backup-file-integrity.js'
+      - 'tests/a10-backup-file-integrity.cjs'
+      - '.github/workflows/a10-backup-file-integrity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact-byte selected encrypted backup attestation
+        run: node tests/a10-backup-file-integrity.cjs
