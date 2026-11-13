@@ -25,6 +25,7 @@ on:
       - 'tests/a10-browser-reservation-recovery.cjs'
       - 'tests/a10-browser-orphan-cleanup.cjs'
       - 'tests/a10-browser-simulated-import-commit.cjs'
+      - 'tests/a10-browser-simulated-commit-hardkill.cjs'
       - 'assets/heir-owner-legacy.js'
       - '.github/workflows/a10-browser-indexeddb.yml'
   workflow_dispatch:
@@ -61,3 +62,4 @@ jobs:
           node tests/a10-browser-reservation-recovery.cjs
           node tests/a10-browser-orphan-cleanup.cjs
           node tests/a10-browser-simulated-import-commit.cjs
+          node tests/a10-browser-simulated-commit-hardkill.cjs
