@@ -805,7 +805,33 @@
       }
     }).catch(error => statusError('Cloud-Start fehlgeschlagen', error));
     host.append(title, status, actions);
-    (target || document.body).prepend(host);
+    // Do not place the migration toolbar above the app header. Keep the existing
+    // operations accessible, but tucked away in the tool's settings panel.
+    // An explicit mount target (if supplied) continues to take precedence.
+    let settingsDisclosure = null;
+    const settingsModal = typeof document.getElementById === 'function'
+      ? (document.getElementById('settingsModal') || document.getElementById('settings-modal'))
+      : null;
+    const settingsContent = settingsModal && (settingsModal.firstElementChild || settingsModal);
+    if (target) {
+      target.prepend(host);
+    } else if (settingsContent) {
+      settingsDisclosure = document.createElement('details');
+      settingsDisclosure.setAttribute('aria-label', 'Cloud-Daten verwalten');
+      settingsDisclosure.style.cssText = 'margin-top:12px;border-top:1px solid #cbd5e1;padding-top:12px;max-height:50vh;overflow:auto;color:#0f172a';
+      const toggle = document.createElement('summary');
+      toggle.textContent = '☁️ Cloud-Daten verwalten';
+      toggle.style.cssText = 'cursor:pointer;font:600 14px system-ui;min-height:36px;display:list-item;padding:8px 0';
+      settingsDisclosure.append(toggle, host);
+      settingsContent.append(settingsDisclosure);
+      // Long settings panels must remain scrollable on small screens.
+      settingsContent.style.maxHeight = settingsContent.style.maxHeight || '90vh';
+      settingsContent.style.overflowY = 'auto';
+    } else {
+      // No standalone banner before the header, even on pages without settings.
+      // Retain the controls at the end of the page as a fallback.
+      document.body.append(host);
+    }
     function dispose() {
       if (disposed) return;
       disposed = true;
@@ -830,6 +856,7 @@
       queue = Promise.resolve(false);
       store.dispose();
       host.remove();
+      if (settingsDisclosure) settingsDisclosure.remove();
     }
     // Synchronous gate for legacy saveData(): do not mutate a shared local key
     // while an authenticated account mismatch or migration is unresolved.
