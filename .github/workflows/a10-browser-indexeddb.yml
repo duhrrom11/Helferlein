@@ -10,6 +10,7 @@ on:
       - 'assets/a10-atomic-import-reservation.js'
       - 'assets/a10-preview-bound-reservation.js'
       - 'assets/a10-reservation-recovery.js'
+      - 'assets/a10-orphan-cleanup.js'
       - 'tests/a10-browser-indexeddb.cjs'
       - 'tests/a10-browser-persistent-restart.cjs'
       - 'tests/a10-browser-hardkill.cjs'
@@ -21,6 +22,7 @@ on:
       - 'tests/a10-browser-import-reservation-race.cjs'
       - 'tests/a10-browser-preview-bound-reservation.cjs'
       - 'tests/a10-browser-reservation-recovery.cjs'
+      - 'tests/a10-browser-orphan-cleanup.cjs'
       - 'assets/heir-owner-legacy.js'
       - '.github/workflows/a10-browser-indexeddb.yml'
   workflow_dispatch:
@@ -55,3 +57,4 @@ jobs:
           node tests/a10-browser-import-reservation-race.cjs
           node tests/a10-browser-preview-bound-reservation.cjs
           node tests/a10-browser-reservation-recovery.cjs
+          node tests/a10-browser-orphan-cleanup.cjs
