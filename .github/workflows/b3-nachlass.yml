@@ -115,8 +115,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - name: Verify preserved security notice and vault contract
@@ -135,7 +135,7 @@ jobs:
           npx playwright test tests/b3-nachlass.spec.cjs --reporter=line --workers=1 | tee /tmp/nachlass-browser-tests.log
       - name: Preserve Nachlass test evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nachlass-test-evidence
           if-no-files-found: warn
