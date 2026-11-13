@@ -1,0 +1,24 @@
+name: A10 selected backup file bound staging
+
+on:
+  pull_request:
+    paths:
+      - 'assets/a10-file-bound-recovery-staging.js'
+      - 'tests/a10-file-bound-recovery-staging.cjs'
+      - '.github/workflows/a10-file-bound-recovery-staging.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  file-bound-staging:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify selected backup file binding and fail-closed staging
+        run: node tests/a10-file-bound-recovery-staging.cjs
