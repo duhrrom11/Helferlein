@@ -5,6 +5,10 @@ on:
   push:
     paths:
       - "supabase/functions/_shared/**"
+      - "supabase/functions/heir-invitations/**"
+      - "supabase/functions/heir-redemption/**"
+      - "supabase/functions/vault-api/**"
+      - "tests/a10-cloud-authorization-source.test.cjs"
       - "supabase/functions/trusted-person-invite-test/**"
       - ".github/workflows/trusted-person-security-tests.yml"
       - "supabase/migrations/**"
@@ -45,3 +49,5 @@ jobs:
       - name: Run all isolated security unit tests
         run: |
           deno test --no-remote --no-check supabase/functions/_shared/*_test.ts
+      - name: Check Cloud ownership and Edge release-gate source contracts
+        run: node --test tests/a10-cloud-authorization-source.test.cjs
