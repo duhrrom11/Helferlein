@@ -9,7 +9,7 @@ if(!url||!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw Error(
  const a=new Client({connectionString:url}),b=new Client({connectionString:url});await a.connect();await b.connect();
  try{
   await a.query(`do $$ begin create role anon; exception when duplicate_object then null; end $$; do $$ begin create role authenticated; exception when duplicate_object then null; end $$; do $$ begin create role service_role; exception when duplicate_object then null; end $$; create schema auth; create table auth.users(id uuid primary key); create table auth.sessions(id uuid primary key,user_id uuid references auth.users); create table public.vault_cloud_snapshots(owner_user_id uuid primary key,vault_id text,encrypted_data jsonb);`);
-  const sql=fs.readFileSync('supabase/migrations/20261113111044_estate_read_release_v2.sql','utf8');await a.query(sql);
+  const sql=fs.readFileSync('supabase/migrations/20261113113731_estate_read_release_v2.sql','utf8');await a.query(sql);
   const owner=crypto.randomUUID(),other=crypto.randomUUID(),session=crypto.randomUUID(),otherSession=crypto.randomUUID();
   await a.query('insert into auth.users values($1),($2)',[owner,other]);await a.query('insert into auth.sessions values($1,$2),($3,$4)',[session,owner,otherSession,other]);
   const vault='v_synthetic_12345678';await a.query('insert into vault_cloud_snapshots values($1,$2,$3)',[owner,vault,{ciphertext:'owner-only'}]);
