@@ -1,0 +1,24 @@
+name: A10 isolated V1 to V2 migration preflight
+
+on:
+  pull_request:
+    paths:
+      - 'assets/a10-v1-v2-migration-preflight.js'
+      - 'tests/a10-v1-v2-migration-preflight.cjs'
+      - '.github/workflows/a10-v1-v2-preflight.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify independent encrypted V1 backup and V2 recovery (synthetic)
+        run: node tests/a10-v1-v2-migration-preflight.cjs

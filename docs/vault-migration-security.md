@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## Isolierte V1-zu-V2-Migrationsvorbereitung mit unabhaengigem Backup (2026-11-13)
+
+`assets/a10-v1-v2-migration-preflight.js` verlangt ausdrueckliche Zustimmung, bestaetigte Tresor-ID, bestaetigtes separates Backup und **verschiedene** Backup- und V2-Passwoerter. Die bestehende V1-Normalisierung authentifiziert den inneren V1-AES-GCM-Ciphertext. Das **unveraenderte Original** wird als unabhaengiges verschluesseltes V1-Backup erstellt und testweise entschluesselt und verglichen; anschliessend wird das normalisierte V1 in einer separaten verschluesselten V2-Huelle vorbereitet und erneut authentifiziert und verglichen. `verifyRecovery` nimmt nur die verschluesselten Artefakte und beide Passwoerter an und bestaetigt den erneuten unabhaengigen Rundlauf, ohne entschluesselte Tresordaten zurueckzugeben. Ein gezielter synthetischer Node/WebCrypto-Test prueft Rundlauf, historisch fehlendes `alarmPersons`, Passwortfehler, ID-Konflikt und unveraendertes V1-Objekt.
+
+**Release-Gate:** Kein Dateidownload, keine dauerhafte Backup-Aufbewahrung, keine Speichertransaktion, kein Import, kein Geraetewechsel, keine Cloud-Kompatibilitaet und kein A10-UI. Die zwei Artefakte werden nur im Arbeitsspeicher an den Aufrufer uebergeben; eine unabhaengige, tatsaechlich exportierte und spaeter wiederhergestellte Sicherung ist **nicht** nachgewiesen. Der Test verwendet keine echten V1-Daten. **A10 bleibt NO-GO.**
+
+
 ## A10 isolierter V2 IndexedDB-Staging-Treiber (2026-11-13)
 
 `assets/a10-v2-indexeddb-driver.js` stellt fuer `assets/a10-v2-staging.js` einen dedizierten IndexedDB-Treiber bereit. Nur Datenbanknamen mit `a10-isolated-v2-` sind zugelassen; das Objektstore `staged` wird getrennt angelegt. `transact` liest und schreibt einen Schluessel innerhalb **einer** `readwrite`-Transaktion; der Transformationscallback ist synchron. Fehler und Abbrueche werden abgewiesen, ein Ergebnis erst nach `oncomplete` bestaetigt. Es gibt keine Aktivierung, kein V1-Loeschen und keinen Supabase-Zugriff.

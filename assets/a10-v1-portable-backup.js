@@ -34,7 +34,8 @@
             !Number.isInteger(value.checkInIntervalDays) || value.checkInIntervalDays < 1 ||
             value.checkInIntervalDays > 3650 || typeof value.lastCheckIn !== 'string' ||
             !Number.isFinite(Date.parse(value.lastCheckIn)) ||
-            !Array.isArray(value.trustees) || !Array.isArray(value.alarmPersons)) throw new Error('A10_BACKUP_INVALID_LEGACY');
+            !Array.isArray(value.trustees) ||
+            (Object.prototype.hasOwnProperty.call(value, 'alarmPersons') && !Array.isArray(value.alarmPersons))) throw new Error('A10_BACKUP_INVALID_LEGACY');
         from64(value.encryptedData.iv, 12, 12);
         from64(value.encryptedData.ciphertext, 16, maxBytes);
         return value;
