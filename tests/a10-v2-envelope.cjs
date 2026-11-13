@@ -25,4 +25,4 @@ const { seal, unlock } = require('../assets/a10-v2-encrypted-envelope.js');
   await assert.rejects(unlock(sealed, password), /A10_V2_INVALID_OR_AUTH_FAILED/);
   await assert.rejects(seal(payload, password), /A10_V2_INVALID_OR_AUTH_FAILED/);
   console.log('A10 isolated V2 envelope: PASS');
-})().catch(error => { console.error(error); process.exitCode = 1; });
+})().catch(error => { console.error(error); console.error('::error title=A10 V2 contract failure::' + String(error.stack || error.message || error).replace(/\r?\n/g, '%0A')); process.exitCode = 1; });
