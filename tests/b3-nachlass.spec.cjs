@@ -1,23 +1,21 @@
 const {test,expect}=require('@playwright/test');
 const url='http://127.0.0.1:8765/tools/digitaler-nachlass/index.html';
 for(const width of [390,768,900,1200,1440]){
- test('Digitaler Nachlass B3 responsive and security warning visible at '+width+'px',async({page})=>{
+ test('Digitaler Nachlass B3 responsive and top notices absent at '+width+'px',async({page})=>{
   await page.setViewportSize({width,height:900});
   await page.goto(url,{waitUntil:'domcontentloaded'});
   await expect(page.locator('body.b3-nachlass')).toBeVisible();
   await expect(page.getByRole('button',{name:'Einstellungen öffnen'})).toBeVisible();
   await expect(page.locator('.b3-vault-nav')).toBeVisible();
-  await expect(page.getByRole('alert').filter({hasText:'Wichtiger Sicherheitshinweis'})).toBeVisible();
+  await expect(page.getByRole('alert').filter({hasText:'Wichtiger Sicherheitshinweis'})).toHaveCount(0);
   const x=await page.evaluate(()=>{
    const main=document.getElementById('main-content').getBoundingClientRect();
    const nav=document.querySelector('.b3-vault-nav').getBoundingClientRect();
-   const warning=document.querySelector('.b3-security-notice').getBoundingClientRect();
-   return {scroll:document.documentElement.scrollWidth,main:{left:main.left,right:main.right},nav:{left:nav.left,right:nav.right},warning:{left:warning.left,right:warning.right}};
+   return {scroll:document.documentElement.scrollWidth,main:{left:main.left,right:main.right},nav:{left:nav.left,right:nav.right}};
   });
   expect(x.scroll).toBeLessThanOrEqual(width+4);
   expect(x.nav.left).toBeGreaterThanOrEqual(x.main.left-4);
   expect(x.nav.right).toBeLessThanOrEqual(x.main.right+4);
-  expect(x.warning.right).toBeLessThanOrEqual(width+4);
  });
 }
 test('Nachlass original vault tabs and more actions are reachable',async({page})=>{
@@ -55,16 +53,12 @@ test('Nachlass layout editor cancels without updating sensitive records',async({
  await expect(page.locator('#b3-nachlass-editor')).toBeHidden();
  expect(await page.evaluate(()=>localStorage.getItem('helferlein_ui_layout_nachlass_v1'))).toBeNull();
 });
-test('Nachlass global dark and light mode preserve the security warning',async({page})=>{
+test('Nachlass global dark and light mode remain functional',async({page})=>{
  await page.goto(url,{waitUntil:'domcontentloaded'});
  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
  await page.locator('#b3-nachlass-theme').selectOption('dark');
  await expect(page.locator('body')).toHaveClass(/b3-dark/);
- const dark=await page.locator('.b3-security-notice').evaluate(el=>({text:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor}));
- expect(dark.text).not.toBe(dark.bg);
  await page.locator('#b3-nachlass-theme').selectOption('light');
  await expect(page.locator('body')).toHaveClass(/b3-light/);
- const light=await page.locator('.b3-security-notice').evaluate(el=>({text:getComputedStyle(el).color,bg:getComputedStyle(el).backgroundColor}));
- expect(light.text).not.toBe(light.bg);
  expect(await page.evaluate(()=>localStorage.getItem('helferlein_ui_theme_v1'))).toBe('light');
 });
