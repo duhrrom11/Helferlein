@@ -95,17 +95,7 @@
 <button type="button" data-tab="trustees" class="tab-btn">👥 Vertrauenspersonen</button>
 <button type="button" data-tab="kit" class="tab-btn">📄 Notfall-Kit</button>
 <button type="button" data-tab="settings" class="tab-btn">⚙️ Einstellungen</button>
-</div><details class="b3-more" id="b3-nachlass-more"><summary>☷ Weitere Tools</summary><div class="b3-more-content">
-<button id="manualSyncBtn" type="button" class="b3-more-item" disabled aria-disabled="true" title="Aus Sicherheitsgründen deaktiviert">☁️ Alte Firebase-Synchronisation – deaktiviert</button>
-                <button id="supabaseBackupBtn" type="button" class="b3-more-item">🔐 Verschlüsselten Tresor bei Supabase sichern</button>
-                <button id="supabaseBackupStatusBtn" type="button" class="b3-more-item">🔎 Supabase-Sicherungsstand prüfen</button>
-                <button id="supabaseRestorePreviewBtn" type="button" class="b3-more-item">🛡️ Cloud-Wiederherstellung sicher prüfen</button>
-                <button id="supabaseRecoveryKeyBtn" type="button" class="b3-more-item">🔑 Cloud-Wiederherstellung mit Passwort vorbereiten</button>
-                <button id="supabaseRestoreBtn" type="button" class="b3-more-item">📥 Tresor aus Supabase wiederherstellen</button>
-                <a href="https://github.com/duhrrom11/Helferlein/blob/main/docs/digitaler-nachlass-geraetewechsel.md" target="_blank" rel="noopener noreferrer" class="b3-more-item">📋 Anleitung: sicherer Gerätewechsel</a>
-<button id="b3-nachlass-kit-action" type="button" class="b3-more-item">📄 Notfall-Kit öffnen</button>
-</div></details></nav>
-<section id="a10-migration-panel" data-a10-release="disabled" aria-labelledby="a10-migration-title"><h2 id="a10-migration-title">A10 – sichere Tresor-Migration (noch gesperrt)</h2><p id="a10-migration-status" role="status" aria-live="polite">Keine Migration, kein Import und keine Aktivierung vor Sicherheitsfreigabe.</p><label for="a10-migration-consent"><input id="a10-migration-consent" type="checkbox" disabled> Ich bestätige die getrennte Sicherung meines V1-Backups und stimme der lokalen Vorschau zu (derzeit gesperrt).</label><label for="a10-backup-file">Verschlüsseltes Backup</label><input id="a10-backup-file" type="file" disabled><label for="a10-attestation-file">SHA-256-Prüfnachweis</label><input id="a10-attestation-file" type="file" disabled><button id="a10-migration-preview" type="button" disabled>Backup prüfen – gesperrt</button><button id="a10-migration-stage" type="button" disabled>V2 vorbereiten – gesperrt</button><button id="a10-migration-activate" type="button" disabled>V2 aktivieren – gesperrt</button></section>
+</div></nav>
 <!-- TAB 1: TRESOR -->
         <div id="section-vault" class="tab-section space-y-6">
             <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 shadow-xl">
@@ -418,6 +408,5 @@
     </main>
 
     <script src="../../assets/heir-owner-legacy.js"></script>
-    <script src="../../assets/a10-consent-ui.js"></script>
 </body>
 </html>
