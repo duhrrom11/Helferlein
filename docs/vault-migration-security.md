@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 unabhaengig ausgewaehltes SHA-256-Attest (2026-11-13)
+
+Der isolierte Chromium-Test schreibt das synthetische SHA-256-Attest als **separate lokale Sidecar-Datei** mit restriktiven Dateirechten. Ein neuer Browserkontext waehlt sowohl die zuvor heruntergeladene verschluesselte Backup-Datei als auch das separat gespeicherte Attest per Datei-Input aus. Das Attest wird im empfangenden Browser ausschliesslich aus der ausgewaehlten Sidecar-Datei eingelesen und nicht mehr als In-Memory-Token aus dem Exportkontext uebergeben. Ein veraendertes Sidecar-Attest sowie eine veraenderte Backup-Datei muessen vor jeder IndexedDB-Schreibtransaktion scheitern; nach erneuter Auswahl beider Originaldateien erfolgt die verifizierte inaktive V2-Staging-Pruefung.
+
+**Grenzen:** Beide Testdateien liegen auf demselben Rechner; ein SHA-256-Sidecar ist ohne getrennten vertrauenswuerdigen Kanal kein unabhaengiger Herkunftsnachweis. Kein physischer Geraetewechsel, keine Produktivanbindung, keine Supabase-Testdaten, keine Aktivierung. **A10 bleibt NO-GO.**
+
+
 ## A10 echte manipulierte Dateiauswahl vor IDB-Staging ablehnen (2026-11-13)
 
 Der isolierte Chromium-Integrationstest waehlt jetzt zusaetzlich eine **tatsaechlich veraenderte** Backup-Datei (gleicher Dateiname und JSON-MIME-Typ, aber ein zusaetzliches Leerzeichen im Dateiinhalt). Trotz gueltigem JSON muss die SHA-256-Pruefung vor jeder IndexedDB-Schreibtransaktion ablehnen. Erst die danach erneut ausgewaehlte unveraenderte Datei darf nach kryptografischer Recovery inaktiv gestaged werden. Keine produktive Einbindung, kein echter Geraetewechsel, keine Supabase-Daten und keine Aktivierung. **A10 bleibt NO-GO.**
