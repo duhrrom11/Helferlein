@@ -11,7 +11,7 @@ const url = Deno.env.get("SUPABASE_URL");
 const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
 const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 // Deployment of this reviewed function is the server-side activation.
-const configured = !!(url && anonKey && serviceKey);
+const configured = Deno.env.get("HEIR_INVITATIONS_ENABLED") === "true" && !!(url && anonKey && serviceKey);
 const auth = configured ? createClient(url!, anonKey!, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
 const admin = configured ? createClient(url!, serviceKey!, { auth: { persistSession: false, autoRefreshToken: false } }) : null;
 function json(status: number, body: Record<string, unknown>, headers: Headers) {
