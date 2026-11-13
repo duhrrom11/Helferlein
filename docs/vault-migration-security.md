@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 isolierter V2 IndexedDB-Staging-Treiber (2026-11-13)
+
+`assets/a10-v2-indexeddb-driver.js` stellt fuer `assets/a10-v2-staging.js` einen dedizierten IndexedDB-Treiber bereit. Nur Datenbanknamen mit `a10-isolated-v2-` sind zugelassen; das Objektstore `staged` wird getrennt angelegt. `transact` liest und schreibt einen Schluessel innerhalb **einer** `readwrite`-Transaktion; der Transformationscallback ist synchron. Fehler und Abbrueche werden abgewiesen, ein Ergebnis erst nach `oncomplete` bestaetigt. Es gibt keine Aktivierung, kein V1-Loeschen und keinen Supabase-Zugriff.
+
+`tests/a10-browser-v2-staging-idb.cjs` prueft gezielt auf lokalem Chromium-Ursprung zwei konkurrierende Tabs, nur einen erfolgreichen Staging-Schreibversuch, Ablehnung einer Wiederholung und Erhalt eines synthetischen V1-artigen Belegungsdatensatzes nach Reload. Der V1-artige Marker befindet sich absichtlich nur im isolierten Staging-Teststore; **echte V1-Speicherorte und echte Nutzer-Tresore werden nicht geoeffnet oder getestet**. Der Test beweist keine produktive V1-Migration, keine Geraetewechsel-Wiederherstellung, keine Festplatten-Dauerhaftigkeit bei Stromausfall und keine Cloud-Kompatibilitaet. **A10 bleibt NO-GO.**
+
+
 ## A10 V2 isoliertes verschluesseltes Staging (2026-11-13)
 
 `assets/a10-v2-staging.js` fuegt ein **nicht produktiv eingebundenes** Staging-Gate hinzu. `stage(driver,vaultId,envelope,password,{explicitConsent:true,confirmVaultId})` authentifiziert die V2-Huelle und bindet die Tresor-ID vor dem Schreibversuch. Ausschliesslich die verschluesselte Huelle wird an den atomaren, dedizierten Staging-Transaktionsadapter weitergegeben; existierende Zielschluessel werden nicht ueberschrieben. Der Datensatz ist stets `STAGED_NOT_ACTIVE`, `active:null`, Revision 0. `inspect` liefert ausschliesslich den Status ohne Tresordaten. Ein synthetischer Test prueft fehlende Zustimmung, falsches Passwort, konfliktbehaftete Wiederholung und das Fehlen von Klartextschluesseln im Datensatz.
