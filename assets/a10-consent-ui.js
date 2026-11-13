@@ -5,7 +5,10 @@
 (function (root, factory) {
   const api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
-  else root.HelferleinA10ConsentUI = api;
+  else {
+    root.HelferleinA10ConsentUI = api;
+    if (typeof document !== 'undefined' && document.getElementById('a10-migration-panel')) api.bind(document);
+  }
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   const PRODUCTION_RELEASE_ENABLED = false;
