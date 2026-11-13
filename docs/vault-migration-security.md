@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 persistiertes V2-Staging nach Reload erneut authentifizieren (2026-11-13)
+
+Das neue isolierte Modul `assets/a10-staged-readback.js` liest einen bereits geschriebenen V2-Staging-Datensatz ueber `driver.read` erneut ein und verlangt die exakte Tresor-ID, Revision 0, den inaktiven Status, ein authentifiziertes V2-Envelope sowie exakte Gleichheit mit der zuvor erwarteten verschluesselten Huelle. Beide Huellen werden mit dem explizit bestaetigten V2-Passwort kryptografisch entschluesselt und inhaltlich verglichen; entschluesselte Daten werden weder zurueckgegeben noch geschrieben. Der erweiterte synthetische Chromium-Test prueft den echten IndexedDB-Readback **nach Browser-Reload** sowie falsches Passwort, manipulierte Revision und ausgetauschten Ciphertext. Der Baustein schreibt nichts und aktiviert nichts.
+
+**Grenzen:** Keine Garantie fuer dauerhafte Festplattensynchronisation nach Stromausfall, keine physische Geraetewechselabnahme, kein produktiver V1-Import, keine Cloud-Freigabe und keine Supabase-Daten. **A10 bleibt NO-GO.**
+
+
 ## A10 unabhaengig ausgewaehltes SHA-256-Attest (2026-11-13)
 
 Der isolierte Chromium-Test schreibt das synthetische SHA-256-Attest als **separate lokale Sidecar-Datei** mit restriktiven Dateirechten. Ein neuer Browserkontext waehlt sowohl die zuvor heruntergeladene verschluesselte Backup-Datei als auch das separat gespeicherte Attest per Datei-Input aus. Das Attest wird im empfangenden Browser ausschliesslich aus der ausgewaehlten Sidecar-Datei eingelesen und nicht mehr als In-Memory-Token aus dem Exportkontext uebergeben. Ein veraendertes Sidecar-Attest sowie eine veraenderte Backup-Datei muessen vor jeder IndexedDB-Schreibtransaktion scheitern; nach erneuter Auswahl beider Originaldateien erfolgt die verifizierte inaktive V2-Staging-Pruefung.
