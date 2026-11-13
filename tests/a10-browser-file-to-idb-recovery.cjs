@@ -24,6 +24,7 @@ const http = require('node:http');
     'a10-staged-readback.js',
     'a10-offline-preview.js',
     'a10-preview-workflow.js',
+    'a10-authenticated-import.js',
     'a10-migration-flow.js'
   ];
   const server = http.createServer(async (req, res) => {
@@ -198,6 +199,85 @@ const http = require('node:http');
     assert.equal(preview.activationAllowed, false);
     assert.equal(preview.sha256, prepared.attestation.sha256);
     assert.equal(JSON.stringify(preview).includes(prepared.legacy.masterKeyHex), false);
+    // Coherent Gate 2: selected backup+sidecar -> authenticated preview with
+    // real password -> separate explicit confirmation -> inactive persisted V2.
+    const importGate = await receiver.evaluate(async ({ credentials }) => {
+      const { vaultId, backupPassword, v2Password } = credentials;
+      const file = document.querySelector('#backup').files[0];
+      const sidecar = document.querySelector('#attestation').files[0];
+      const options = { explicitConsent: true, confirmIndependentStorage: true,
+        confirmIndependentBackup: true, confirmStagingOnly: true, confirmVaultId: vaultId };
+      const driver = HelferleinA10V2IndexedDB.driver(indexedDB,
+        'a10-isolated-v2-authenticated-import-gate');
+      let noConsentRejected = false;
+      try { await HelferleinA10AuthenticatedImport.prepareSelectedFile(
+        file, sidecar, backupPassword, v2Password,
+        { ...options, explicitConsent: false }); }
+      catch (_) { noConsentRejected = true; }
+      let wrongBackupRejected = false;
+      try { await HelferleinA10AuthenticatedImport.prepareSelectedFile(
+        file, sidecar, 'incorrect-backup-password', v2Password, options); }
+      catch (_) { wrongBackupRejected = true; }
+      const before = await driver.read(vaultId);
+      const prepared = await HelferleinA10AuthenticatedImport.prepareSelectedFile(
+        file, sidecar, backupPassword, v2Password, options);
+      let noConfirmationRejected = false;
+      try { await HelferleinA10AuthenticatedImport.confirmAndStage(
+        driver, prepared, v2Password, { ...options, confirmSha256: prepared.sha256 }); }
+      catch (_) { noConfirmationRejected = true; }
+      let wrongHashRejected = false;
+      try { await HelferleinA10AuthenticatedImport.confirmAndStage(
+        driver, prepared, v2Password,
+        { ...options, confirmStage: true, confirmSha256: '0'.repeat(64) }); }
+      catch (_) { wrongHashRejected = true; }
+      let wrongPasswordRejected = false;
+      try { await HelferleinA10AuthenticatedImport.confirmAndStage(
+        driver, prepared, 'incorrect-v2-password',
+        { ...options, confirmStage: true, confirmSha256: prepared.sha256 }); }
+      catch (_) { wrongPasswordRejected = true; }
+      // Failed authenticated confirmation consumes the one-shot session.
+      let consumedRejected = false;
+      try { await HelferleinA10AuthenticatedImport.confirmAndStage(
+        driver, prepared, v2Password,
+        { ...options, confirmStage: true, confirmSha256: prepared.sha256 }); }
+      catch (_) { consumedRejected = true; }
+      const ready = await HelferleinA10AuthenticatedImport.prepareSelectedFile(
+        file, sidecar, backupPassword, v2Password, options);
+      const staged = await HelferleinA10AuthenticatedImport.confirmAndStage(
+        driver, ready, v2Password,
+        { ...options, confirmStage: true, confirmSha256: ready.sha256 });
+      const persisted = await driver.read(vaultId);
+      let replayRejected = false;
+      try { await HelferleinA10AuthenticatedImport.confirmAndStage(
+        driver, ready, v2Password,
+        { ...options, confirmStage: true, confirmSha256: ready.sha256 }); }
+      catch (_) { replayRejected = true; }
+      let conflictRejected = false;
+      try {
+        const other = await HelferleinA10AuthenticatedImport.prepareSelectedFile(
+          file, sidecar, backupPassword, v2Password, options);
+        await HelferleinA10AuthenticatedImport.confirmAndStage(driver, other, v2Password,
+          { ...options, confirmStage: true, confirmSha256: other.sha256 });
+      } catch (_) { conflictRejected = true; }
+      return { noConsentRejected, wrongBackupRejected, before, noConfirmationRejected,
+        wrongHashRejected, wrongPasswordRejected, consumedRejected, staged,
+        persisted, replayRejected, conflictRejected, localStorageCount: localStorage.length };
+    }, { credentials });
+    assert.equal(importGate.noConsentRejected, true);
+    assert.equal(importGate.wrongBackupRejected, true);
+    assert.equal(importGate.before, undefined);
+    assert.equal(importGate.noConfirmationRejected, true);
+    assert.equal(importGate.wrongHashRejected, true);
+    assert.equal(importGate.wrongPasswordRejected, true);
+    assert.equal(importGate.consumedRejected, true);
+    assert.equal(importGate.staged.status, 'AUTHENTICATED_IMPORT_STAGED_NOT_ACTIVE');
+    assert.equal(importGate.staged.activationAllowed, false);
+    assert.equal(importGate.persisted.status, 'STAGED_NOT_ACTIVE');
+    assert.equal(importGate.persisted.active, null);
+    assert.equal(importGate.replayRejected, true);
+    assert.equal(importGate.conflictRejected, true);
+    assert.equal(importGate.localStorageCount, 0);
+    assert.equal(JSON.stringify(importGate).includes(prepared.legacy.masterKeyHex), false);
     const result = await receiver.evaluate(async ({ artifacts, credentials }) => {
       const attestation = JSON.parse(await document.querySelector('#attestation').files[0].text());
       const { vaultId, backupPassword, v2Password } = credentials;
