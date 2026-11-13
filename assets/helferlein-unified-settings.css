@@ -17,3 +17,6 @@
 .helferlein-common-section p{margin:.4em 0;font-size:.875rem}
 .helferlein-common-section a{color:#0369a1;text-decoration:underline;font-weight:600}
 .helferlein-common-section select{padding:.5rem;border:1px solid #94a3b8;border-radius:8px;color:#122439;background:white}
+
+/* Vorrang vor alten individuellen Header-Zahnradstilen. */
+body.b3 .b3-settings-trigger.helferlein-gear,body .b3-settings-trigger.helferlein-gear{display:inline-grid!important;place-items:center!important;background:#0b7285!important;color:#fff!important;border:1px solid rgba(255,255,255,.55)!important;border-radius:13px!important;width:46px!important;min-width:46px!important;height:46px!important;padding:0!important;font-size:1.6rem!important}
