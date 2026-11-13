@@ -85,6 +85,9 @@ begin
   if j.kind in ('alarm','reporter-started') and (v.alarm_id is distinct from j.alarm_id or v.alarm_canceled_at is not null) then
    update estate_private.delivery_jobs set delivered_at=now() where id=j.id; return '{}'::jsonb;
   end if;
+  if j.kind='update-reminder' and (not v.review_reminders_enabled or v.last_reviewed>=j.created_at) then
+   update estate_private.delivery_jobs set delivered_at=now() where id=j.id;return '{}'::jsonb;
+  end if;
   return jsonb_build_object('id',j.id,'owner',j.owner_id,'kind',j.kind,'alarm',j.alarm_id,'recipient',j.recipient_email,'deadline',j.deadline,'eventTime',j.event_time);
  end if;
  if p_action='delivered' then

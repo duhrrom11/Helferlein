@@ -79,6 +79,8 @@ if(!url||!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw Error(
   const activity=await rpc('status',{session},owner);assert(activity.lastReviewed);assert(activity.activity.some(e=>e.kind==='read_access'));assert(activity.activity.some(e=>e.kind==='reviewed'));assert(!JSON.stringify(activity.activity).includes(fileSecret));assert(!JSON.stringify(activity.activity).includes('Synthetic secret'));
   await a.query("update estate_private.read_vaults set review_reminders_enabled=true,next_review=now()-interval '1 day' where owner_id=$1",[owner]);
   const reviewJob=await rpc('claim');assert.equal(reviewJob.kind,'update-reminder');await rpc('delivered',{id:reviewJob.id});assert.equal((await rpc('trustee-status',{hash:hashes.c})).status,'normal');
+  await a.query("insert into estate_private.delivery_jobs(owner_id,kind) values($1,'update-reminder')",[owner]);await rpc('review',{session},owner);assert.equal((await rpc('claim')).id,undefined,'review suppresses an obsolete queued reminder');
+  await a.query("insert into estate_private.delivery_jobs(owner_id,kind) values($1,'update-reminder')",[owner]);await a.query('update estate_private.read_vaults set review_reminders_enabled=false where owner_id=$1',[owner]);assert.equal((await rpc('claim')).id,undefined,'opt-out suppresses an obsolete queued reminder');
   await a.query("select set_config('request.jwt.claim.sub',$1,false)",[owner]);await a.query('set role authenticated');
   assert.deepEqual((await a.query('select name from storage.objects')).rows,[{name:owner+'/'+fileId}]);
   await assert.rejects(a.query("insert into storage.objects(bucket_id,name) values('estate-documents',$1)",[other+'/'+crypto.randomUUID()]));
@@ -91,6 +93,6 @@ if(!url||!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw Error(
   const funeralReplica=await C.readReplica([],people,keys,{funeralWishes:'Synthetic burial wishes',trusteeKeys:keys,masterKey:fileSecret});assert.deepEqual(await C.openReplica({...funeralReplica,envelope:funeralReplica.guardians[0].envelope},keys.a),{entries:[],funeralWishes:'Synthetic burial wishes'});
   const wrapped=await C.wrap('a'.repeat(64),'Synthetic password only');assert.equal(await C.unwrap(wrapped,'Synthetic password only'),'a'.repeat(64));await assert.rejects(C.unwrap(wrapped,'wrong'));
   const encrypted=await C.encrypt({entries,trusteeKeys:keys},'a'.repeat(64));assert.deepEqual(await C.decrypt(encrypted,'a'.repeat(64)),{entries,trusteeKeys:keys});assert(!JSON.stringify(replica).includes(keys.a));
-  console.log('PASS: PostgreSQL '+(await a.query('show server_version')).rows[0].server_version+'; two keys, timed one key, pending mail, exact 24h, cancel, stale callback, revocation, duplicate keys, CAS, RLS/EXECUTE, cross-owner sessions, concurrent revoke, reminders, encryption/recovery');
+  console.log('PASS: PostgreSQL '+(await a.query('show server_version')).rows[0].server_version+'; two keys, timed one key, pending mail, exact 24h, cancel, stale callback, revocation, duplicate keys, CAS, RLS/EXECUTE, cross-owner sessions, concurrent revoke, independent review reminders/opt-out, private activity, file RLS/cross-owner refusal, attachment AES-GCM/tamper/limits, funeral allowlist, encryption/recovery');
  }finally{await a.end();await b.end();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
