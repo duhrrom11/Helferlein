@@ -6,11 +6,10 @@ const owner=fs.readFileSync(path.join(root,'assets/heir-owner-legacy.js'),'utf8'
 const heir=fs.readFileSync(path.join(root,'tools/digitaler-nachlass/erben.html'),'utf8');
 const js=fs.readFileSync(path.join(root,'assets/helferlein-b3-nachlass.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'assets/helferlein-b3-nachlass.css'),'utf8');
-test('B3 Nachlass keeps the prominent existing security warning',()=>{
- assert.match(html,/Wichtiger Sicherheitshinweis/);
- assert.match(html,/Der Schlüssel für die lokal verschlüsselten Nachlassdaten/);
- assert.match(html,/keine Passwörter, Zugangscodes oder anderen besonders vertraulichen Geheimnisse/);
- assert.match(css,/b3-security-notice/);
+test('B3 Nachlass omits removed top notice banners',()=>{
+ assert.doesNotMatch(html,/Wichtiger Sicherheitshinweis:/);
+ assert.doesNotMatch(html,/<strong>Cloud-Hinweis:<\/strong>/);
+ assert.doesNotMatch(html,/Der Schlüssel für die lokal verschlüsselten Nachlassdaten/);
  assert.doesNotMatch(html,/Zurück zur Startseite/);
 });
 test('B3 navigation preserves original tab and security-critical IDs',()=>{
