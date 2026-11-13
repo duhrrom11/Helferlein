@@ -87,7 +87,7 @@
   if(result.error)throw result.error;if(result.data?.length!==1)throw Error('conflict');if(snapshot!==localStorage.getItem(STORE))throw Error('conflict');
   stamp=result.data[0].updated_at;localWrite({...record,cloudStamp:stamp,pending:false});
   try{
-   const replica=await C.readReplica(payload.entries,config.alarmPersons,payload.trusteeKeys);
+   const replica=await C.readReplica([...payload.entries,...(payload.funeralWishes?[{id:'funeral-wishes',title:'Meine Bestattungswünsche',category:'Posthum',content:payload.funeralWishes}]:[])],config.alarmPersons,payload.trusteeKeys);
    replica.guardians=replica.guardians.map(g=>({...g,email:config.alarmPersons.find(p=>p.id===g.id).contact}));
    const out=await access('publish',{...replica,vaultId:config.vaultId,version,reminderDays:config.checkInIntervalDays,remindersEnabled:config.remindersEnabled===true});version=out.version;
    localWrite({...record,releaseVersion:version,releasePending:false});$('backup-state').textContent='Online gesichert. Der Lesezugang ist auf dem aktuellen Stand.';
