@@ -1,5 +1,10 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 SHA-256-attestierter echter Browser-Datei-Handoff (2026-11-13)
+
+Der bestehende isolierte Chromium-Ende-zu-Ende-Test `tests/a10-browser-file-to-idb-recovery.cjs` fuehrt jetzt auch das Integritaetsattest aus PR #367 und die Single-Snapshot-Recovery aus PR #368 **im selben echten Browser-Datei-Handoff** aus. Synthetischer Export, tatsaechlicher Download, Dateiauswahl in einem frischen Browserkontext, SHA-256-Abgleich, kryptografische V1/V2-Recovery, inaktives verschluesseltes IndexedDB-Staging und Reload werden gemeinsam geprueft. Ein manipuliertes Attest und ein falsches Backup-Passwort muessen vor dem Schreiben scheitern. Keine produktive A10-Einbindung, kein echter Geraetewechsel, keine Supabase-Daten. **A10 bleibt NO-GO.**
+
+
 ## A10 Integritaetsattest und Recovery vor Staging verbinden (2026-11-13)
 
 `assets/a10-attested-file-staging.js` verknuepft die exakte SHA-256-Bytepruefung der extern ausgewaehlten verschluesselten V1-Datei mit der vorhandenen kryptografischen V1/V2-Recovery und dem inaktiven V2-Staging. Die Datei wird **nur einmal** eingelesen; beide Pruefungen verwenden denselben unveraenderlichen Byte-Snapshot, um eine Veraenderung zwischen Pruefung und Verwendung auszuschliessen. Synthetische Tests pruefen abweichende Bytes, manipulierten Hash, fehlende Einwilligung, nur einen Datei-Lesevorgang, keine Writes vor Freigabe, Inaktivitaet und keinen Klartextschluessel im Staging.

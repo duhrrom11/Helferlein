@@ -18,7 +18,9 @@ const http = require('node:http');
     'a10-recovery-verified-staging.js',
     'a10-file-bound-recovery-staging.js',
     'a10-v2-indexeddb-driver.js',
-    'a10-backup-file-handoff.js'
+    'a10-backup-file-handoff.js',
+    'a10-backup-file-integrity.js',
+    'a10-attested-file-staging.js'
   ];
   const server = http.createServer(async (req, res) => {
     if (req.url === '/') {
@@ -63,7 +65,10 @@ const http = require('node:http');
       const artifacts = await HelferleinA10MigrationPreflight.prepare(
         legacy, backupPassword, v2Password,
         { explicitConsent: true, confirmVaultId: vaultId, confirmIndependentBackup: true });
-      return { artifacts, legacy };
+      const attestation = await HelferleinA10BackupFileIntegrity.attestExport(
+        JSON.stringify(artifacts.backup),
+        { explicitConsent: true, confirmIndependentStorage: true });
+      return { artifacts, legacy, attestation };
     }, credentials);
     const downloadPromise = source.waitForEvent('download');
     const downloadResult = await source.evaluate(backup =>
@@ -79,29 +84,36 @@ const http = require('node:http');
     const fresh = await browser.newContext();
     const receiver = await setup(fresh);
     await receiver.locator('#backup').setInputFiles(exportedPath);
-    const result = await receiver.evaluate(async ({ artifacts, credentials }) => {
+    const result = await receiver.evaluate(async ({ artifacts, attestation, credentials }) => {
       const { vaultId, backupPassword, v2Password } = credentials;
       const file = document.querySelector('#backup').files[0];
       const dbName = 'a10-isolated-v2-file-to-idb-synthetic';
       const driver = HelferleinA10V2IndexedDB.driver(indexedDB, dbName);
-      const options = { explicitConsent: true, confirmIndependentBackup: true,
+      const options = { explicitConsent: true, confirmIndependentStorage: true,
+        confirmIndependentBackup: true,
         confirmStagingOnly: true, confirmVaultId: vaultId };
       let wrongPasswordRejected = false;
-      try { await HelferleinA10FileBoundStaging.stageFromSelectedBackup(driver, file,
-        artifacts, 'wrong-backup-password-123', v2Password, options); }
+      try { await HelferleinA10AttestedFileStaging.stageAttested(driver, file,
+        attestation, artifacts, 'wrong-backup-password-123', v2Password, options); }
       catch (_) { wrongPasswordRejected = true; }
+      let tamperedRejected = false;
+      try { await HelferleinA10AttestedFileStaging.stageAttested(driver, file,
+        { ...attestation, sha256: '0'.repeat(64) }, artifacts,
+        backupPassword, v2Password, options); }
+      catch (_) { tamperedRejected = true; }
       const before = await driver.read(vaultId);
-      const staged = await HelferleinA10FileBoundStaging.stageFromSelectedBackup(driver,
-        file, artifacts, backupPassword, v2Password, options);
+      const staged = await HelferleinA10AttestedFileStaging.stageAttested(driver,
+        file, attestation, artifacts, backupPassword, v2Password, options);
       const stored = await driver.read(vaultId);
       let repeatRejected = false;
-      try { await HelferleinA10FileBoundStaging.stageFromSelectedBackup(driver, file,
-        artifacts, backupPassword, v2Password, options); }
+      try { await HelferleinA10AttestedFileStaging.stageAttested(driver, file,
+        attestation, artifacts, backupPassword, v2Password, options); }
       catch (_) { repeatRejected = true; }
-      return { wrongPasswordRejected, before, staged, stored, repeatRejected,
+      return { wrongPasswordRejected, tamperedRejected, before, staged, stored, repeatRejected,
         localStorageCount: localStorage.length };
-    }, { artifacts: prepared.artifacts, credentials });
+    }, { artifacts: prepared.artifacts, attestation: prepared.attestation, credentials });
     assert.equal(result.wrongPasswordRejected, true);
+    assert.equal(result.tamperedRejected, true);
     assert.equal(result.before, undefined);
     assert.equal(result.staged.status, 'RECOVERY_VERIFIED_STAGED_NOT_ACTIVE');
     assert.equal(result.stored.status, 'STAGED_NOT_ACTIVE');
@@ -116,7 +128,7 @@ const http = require('node:http');
         'a10-isolated-v2-file-to-idb-synthetic').read(vaultId), credentials.vaultId);
     assert.deepEqual(after, result.stored);
     await fresh.close();
-    console.log('A10 real browser file -> fresh-context verified encrypted IDB staging: PASS');
+    console.log('A10 attested real browser file -> fresh-context verified encrypted IDB staging: PASS');
   } finally {
     await browser.close().catch(() => {});
     await new Promise(resolve => server.close(resolve));
