@@ -84,6 +84,31 @@ const http = require('node:http');
     const fresh = await browser.newContext();
     const receiver = await setup(fresh);
     await receiver.locator('#backup').setInputFiles(exportedPath);
+    // The attacker changes the actual selected file bytes while preserving its
+    // expected name and JSON MIME type. Attestation must reject before any IDB write.
+    const exportedBytes = await fs.readFile(exportedPath);
+    const tamperedBytes = Buffer.concat([exportedBytes, Buffer.from(' ')]);
+    await receiver.locator('#backup').setInputFiles({
+      name: 'helferlein-a10-v1-encrypted-backup.json',
+      mimeType: 'application/json', buffer: tamperedBytes
+    });
+    const tamperedFileResult = await receiver.evaluate(async ({ artifacts, attestation, credentials }) => {
+      const { vaultId, backupPassword, v2Password } = credentials;
+      const driver = HelferleinA10V2IndexedDB.driver(indexedDB,
+        'a10-isolated-v2-file-to-idb-synthetic');
+      const options = { explicitConsent: true, confirmIndependentStorage: true,
+        confirmIndependentBackup: true, confirmStagingOnly: true, confirmVaultId: vaultId };
+      let rejected = false;
+      try {
+        await HelferleinA10AttestedFileStaging.stageAttested(driver,
+          document.querySelector('#backup').files[0], attestation, artifacts,
+          backupPassword, v2Password, options);
+      } catch (_) { rejected = true; }
+      return { rejected, stored: await driver.read(vaultId) };
+    }, { artifacts: prepared.artifacts, attestation: prepared.attestation, credentials });
+    assert.equal(tamperedFileResult.rejected, true, 'modified selected file must be rejected');
+    assert.equal(tamperedFileResult.stored, undefined, 'tampered file must not stage');
+    await receiver.locator('#backup').setInputFiles(exportedPath);
     const result = await receiver.evaluate(async ({ artifacts, attestation, credentials }) => {
       const { vaultId, backupPassword, v2Password } = credentials;
       const file = document.querySelector('#backup').files[0];
