@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {Client}=require('pg');
 const C=require('../../assets/estate-crypto.js');
+const F=require('../../assets/estate-files.js');
 const url=process.env.ESTATE_TEST_DATABASE_URL;
 if(!url||!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw Error('Loopback isolated database required');
 (async()=>{
@@ -10,11 +11,16 @@ if(!url||!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw Error(
  try{
   await a.query(`do $$ begin create role anon; exception when duplicate_object then null; end $$; do $$ begin create role authenticated; exception when duplicate_object then null; end $$; do $$ begin create role service_role; exception when duplicate_object then null; end $$; create schema auth; create table auth.users(id uuid primary key); create table auth.sessions(id uuid primary key,user_id uuid references auth.users); create table public.vault_cloud_snapshots(owner_user_id uuid primary key,vault_id text,encrypted_data jsonb);`);
   const sql=fs.readFileSync('supabase/migrations/20261113113731_estate_read_release_v2.sql','utf8');await a.query(sql);await a.query(fs.readFileSync('supabase/migrations/20261113125230_estate_reporter_notifications_v2.sql','utf8'));
+  await a.query(`create schema storage;create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text primary key);alter table storage.objects enable row level security;grant usage on schema storage,auth to anon,authenticated;grant select,insert,delete,update on storage.objects to authenticated;grant select on storage.objects to anon;create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;create function storage.foldername(name text) returns text[] language sql immutable as $$ select string_to_array(name,'/') $$;`);
+  await a.query(fs.readFileSync('supabase/migrations/20261113131528_estate_documents_and_activity_v2.sql','utf8'));
   const owner=crypto.randomUUID(),other=crypto.randomUUID(),session=crypto.randomUUID(),otherSession=crypto.randomUUID();
   await a.query('insert into auth.users values($1),($2)',[owner,other]);await a.query('insert into auth.sessions values($1,$2),($3,$4)',[session,owner,otherSession,other]);
   const vault='v_synthetic_12345678';await a.query('insert into vault_cloud_snapshots values($1,$2,$3)',[owner,vault,{ciphertext:'owner-only'}]);
   const keys={a:C.random(),b:C.random(),c:C.random()},people=[{id:'a'},{id:'b'},{id:'c'}],entries=[{id:1,title:'Synthetic only',content:'Synthetic secret'}];
-  const replica=await C.readReplica(entries,people,keys);replica.guardians=replica.guardians.map(g=>({...g,email:g.id+'@example.invalid'}));const hashes={};for(const id of Object.keys(keys))hashes[id]=await C.hash(keys[id]);
+  const fileId=crypto.randomUUID(),foreignFile=crypto.randomUUID(),fileSecret=C.random();
+  await a.query("insert into storage.objects(bucket_id,name) values('estate-documents',$1),('estate-documents',$2)",[owner+'/'+fileId,other+'/'+foreignFile]);
+  entries[0].attachments=[{id:fileId,key:fileSecret,name:'Synthetic.png',type:'image/png',size:12}];
+  const replica=await C.readReplica(entries,people,keys);replica.attachmentIds=[fileId];replica.guardians=replica.guardians.map(g=>({...g,email:g.id+'@example.invalid'}));const hashes={};for(const id of Object.keys(keys))hashes[id]=await C.hash(keys[id]);
   const rpc=async(action,data={},who=null,client=a)=>(await client.query('select public.estate_release_v2($1,$2,$3) as r',[action,who,data])).rows[0].r;
   const publish=(version,rep=replica)=>rpc('publish',{session,vaultId:vault,version,...rep,reminderDays:30,remindersEnabled:false},owner);
   assert.equal((await rpc('publish',{session:otherSession,vaultId:vault,version:0,...replica},owner)).error,'login_required');
@@ -22,6 +28,9 @@ if(!url||!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw Error(
   assert.equal((await rpc('open',{hash:hashes.a})).error,'two_keys_required');
   assert.equal((await rpc('open',{hash:hashes.a,secondHash:hashes.a})).error,'invalid_keys');
   assert.equal((await rpc('open',{hash:hashes.a,secondHash:'f'.repeat(64)})).error,'invalid_keys');
+  assert.equal((await rpc('file',{hash:hashes.a,fileId})).error,'two_keys_required');
+  assert.equal((await rpc('file',{hash:hashes.a,secondHash:hashes.b,fileId})).path,owner+'/'+fileId);
+  assert.equal((await rpc('file',{hash:hashes.a,secondHash:hashes.b,fileId:foreignFile})).error,'file_unavailable');
   const opened=await rpc('open',{hash:hashes.a,secondHash:hashes.b});assert.deepEqual(await C.openReplica(opened,keys.a),{entries});assert(!JSON.stringify(opened).includes('owner-only'));
   await assert.rejects(C.openReplica(opened,keys.c));
   assert.equal((await rpc('open',{hash:'0'.repeat(64)})).error,'invalid_keys');
@@ -64,6 +73,22 @@ if(!url||!['127.0.0.1','localhost'].includes(new URL(url).hostname))throw Error(
   await rpc('alarm',{hash:hashes.c});const active=await rpc('claim');await rpc('delivered',{id:active.id});await rpc('cancel',{session},owner);
   assert.equal((await rpc('claim')).id,undefined,'unsent start confirmation is suppressed after cancellation');
   const finalStop=await rpc('claim');assert.equal(finalStop.kind,'reporter-stopped');await rpc('delivered',{id:finalStop.id});
+  // Updating the preparation review never cancels or releases an alarm.
+  const stateBeforeReview=await rpc('trustee-status',{hash:hashes.c});await rpc('review',{session},owner);
+  assert.equal((await rpc('trustee-status',{hash:hashes.c})).status,stateBeforeReview.status);
+  const activity=await rpc('status',{session},owner);assert(activity.lastReviewed);assert(activity.activity.some(e=>e.kind==='read_access'));assert(activity.activity.some(e=>e.kind==='reviewed'));assert(!JSON.stringify(activity.activity).includes(fileSecret));assert(!JSON.stringify(activity.activity).includes('Synthetic secret'));
+  await a.query("update estate_private.read_vaults set review_reminders_enabled=true,next_review=now()-interval '1 day' where owner_id=$1",[owner]);
+  const reviewJob=await rpc('claim');assert.equal(reviewJob.kind,'update-reminder');await rpc('delivered',{id:reviewJob.id});assert.equal((await rpc('trustee-status',{hash:hashes.c})).status,'normal');
+  await a.query("select set_config('request.jwt.claim.sub',$1,false)",[owner]);await a.query('set role authenticated');
+  assert.deepEqual((await a.query('select name from storage.objects')).rows,[{name:owner+'/'+fileId}]);
+  await assert.rejects(a.query("insert into storage.objects(bucket_id,name) values('estate-documents',$1)",[other+'/'+crypto.randomUUID()]));
+  assert.equal((await a.query("update storage.objects set name=$1 where name=$2",[owner+'/'+crypto.randomUUID(),owner+'/'+fileId])).rowCount,0);
+  await assert.rejects(a.query('select * from estate_private.activity'));await a.query('reset role');
+  await a.query('set role anon');assert.equal((await a.query('select * from storage.objects')).rowCount,0);await a.query('reset role');
+  assert.equal((await a.query("select public from storage.buckets where id='estate-documents'")).rows[0].public,false);
+  const png=Uint8Array.from([137,80,78,71,13,10,26,10,1,2,3,4]);const sealed=await F.encrypt(png,fileSecret);assert.deepEqual(await F.decrypt(sealed,fileSecret),png);await assert.rejects(F.decrypt(sealed,C.random()));const damaged=sealed.slice();damaged[20]^=1;await assert.rejects(F.decrypt(damaged,fileSecret));await assert.rejects(F.encrypt(new Uint8Array(F.MAX+1),fileSecret));await assert.rejects(F.encrypt(new TextEncoder().encode('<script>bad</script>'),fileSecret));
+  assert.equal(F.safeName('../bad\\name.png'),'.._bad_name.png');
+  const funeralReplica=await C.readReplica([],people,keys,{funeralWishes:'Synthetic burial wishes',trusteeKeys:keys,masterKey:fileSecret});assert.deepEqual(await C.openReplica({...funeralReplica,envelope:funeralReplica.guardians[0].envelope},keys.a),{entries:[],funeralWishes:'Synthetic burial wishes'});
   const wrapped=await C.wrap('a'.repeat(64),'Synthetic password only');assert.equal(await C.unwrap(wrapped,'Synthetic password only'),'a'.repeat(64));await assert.rejects(C.unwrap(wrapped,'wrong'));
   const encrypted=await C.encrypt({entries,trusteeKeys:keys},'a'.repeat(64));assert.deepEqual(await C.decrypt(encrypted,'a'.repeat(64)),{entries,trusteeKeys:keys});assert(!JSON.stringify(replica).includes(keys.a));
   console.log('PASS: PostgreSQL '+(await a.query('show server_version')).rows[0].server_version+'; two keys, timed one key, pending mail, exact 24h, cancel, stale callback, revocation, duplicate keys, CAS, RLS/EXECUTE, cross-owner sessions, concurrent revoke, reminders, encryption/recovery');

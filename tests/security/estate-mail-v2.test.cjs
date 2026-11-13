@@ -30,6 +30,7 @@ const {transform}=require('esbuild');
   s=await scenario({confirmed:false});assert.equal(s.calls.length,0);assert.deepEqual(s.delivered,[]);
   for(const env of [{ESTATE_MAIL_FROM:'sender@example.invalid'},{BREVO_API_KEY:'synthetic-brevo-secret'},{BREVO_API_KEY:'synthetic-brevo-secret',ESTATE_MAIL_FROM:'bad\r\nheader@example.invalid'}]){s=await scenario({env});assert.equal(s.health.notifications,false);assert.equal(s.calls.length,0);assert(!s.rpcs.includes('claim'));}
   s=await scenario({kind:'reminder'});assert(s.calls[0].body.textContent.includes('Sie löst keinen Notfallalarm aus'));assert.deepEqual(s.delivered,[s.job.id]);
+  s=await scenario({kind:'update-reminder'});assert(s.calls[0].body.subject.includes('Nachlassangaben'));assert(s.calls[0].body.textContent.includes('Alles geprüft'));assert(s.calls[0].body.textContent.includes('keinen Notfallalarm'));assert(s.calls[0].body.htmlContent.includes('Unterlagen und Wünsche prüfen'));
   for(const kind of ['reporter-started','reporter-stopped']){
    s=await scenario({kind,confirmed:false});assert.deepEqual(s.calls[0].body.to,[{email:'reporter@example.invalid'}]);assert.deepEqual(s.delivered,[s.job.id]);assert(s.calls[0].body.textContent.includes('erben.html'));assert(!s.calls[0].body.textContent.includes('index.html'));
    assert(s.calls[0].body.subject.includes(kind==='reporter-started'?'gestartet':'Entwarnung'));
