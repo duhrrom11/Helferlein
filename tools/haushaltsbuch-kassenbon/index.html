@@ -498,9 +498,9 @@
 
             <!-- DATENSICHERUNG -->
             <div class="border-t border-gray-200 pt-4">
-                <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Datensicherung (Backup & Wiederherstellung)</label>
+                <label class="block text-xs font-semibold text-gray-600 mb-2">💾 Daten sichern und wiederherstellen</label>
                 <div class="flex gap-2">
-                    <button type="button" onclick="exportBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Backup</button>
+                    <button type="button" onclick="exportBackup()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-sm cursor-pointer transition-all flex items-center justify-center gap-1.5">📥 Sicherung</button>
                     <label class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 cursor-pointer transition-all flex items-center justify-center gap-1.5">
                         📤 Restore <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
                     </label>
@@ -678,7 +678,7 @@
         function householdCloudChanged() {
             if (typeof window === 'undefined' || !window.helferleinCloudBridge) return;
             void window.helferleinCloudBridge.changed(householdCloudSnapshot()).catch(error =>
-                console.error('Haushaltsbuch-Cloud-Synchronisierung ausstehend:', error));
+                console.error('Haushaltsbuch-Online-Sicherung ausstehend:', error));
         }
 
         function saveData(data) {
