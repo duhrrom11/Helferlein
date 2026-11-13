@@ -69,3 +69,8 @@ body.b3-nachlass.b3-light .b3-settings-footer .b3-home-link{color:#5141a9}
  body.b3-nachlass main.b3-dashboard .tab-section>div{padding:1rem}
  body.b3-nachlass main.b3-dashboard .tab-section :is(.grid-cols-2,.grid-cols-3){grid-template-columns:minmax(0,1fr)}
 }
+
+/* Settings use a centered reading column rather than the full dashboard width. */
+body.b3-nachlass main.b3-dashboard #section-settings{width:100%;max-width:820px;margin-inline:auto}
+body.b3-nachlass main.b3-dashboard #section-settings>div{width:100%}
+@media(max-width:767px){body.b3-nachlass main.b3-dashboard #section-settings{max-width:100%}}
