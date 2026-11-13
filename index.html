@@ -6,13 +6,13 @@
 
     <!-- SEO Meta-Daten -->
     <title>✨ Kostenlose Online-Tools & clevere Rechner ✨ | Helferlein</title>
-    <meta name="description" content="Entdecke 11 kostenlose Online-Rechner und Apps: Haushaltsbuch, Zählerstände, Backform-Umrechner, WG-Planer und mehr. Direkt im Browser.">
+    <meta name="description" content="Entdecke 12 kostenlose Online-Rechner und Apps: Haushaltsbuch, Zählerstände, Backform-Umrechner, WG-Planer und mehr. Direkt im Browser.">
     <link rel="canonical" href="https://duhrrom11.github.io/Helferlein/index.html">
     <meta name="robots" content="index,follow">
 
     <!-- Open Graph / Social Media Sharing -->
     <meta property="og:title" content="Kostenlose Online-Tools & clevere Rechner | Helferlein">
-    <meta property="og:description" content="Entdecke 11 praktische Web-Apps für Auto, Haushalt & Finanzen – ohne Anmeldung nutzbar, mit optionalem Konto.">
+    <meta property="og:description" content="Entdecke 12 praktische Web-Apps für Auto, Haushalt & Finanzen – ohne Anmeldung nutzbar, mit optionalem Konto.">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="de_DE">
     <meta property="og:url" content="https://duhrrom11.github.io/Helferlein/index.html">
@@ -95,14 +95,12 @@
    </div>
    <p class="b3-hero-status">✓ 12 kostenlose Web-Apps &nbsp;·&nbsp; ✓ Ohne Installation</p>
   </div>
-  <aside class="b3-hero-preview" aria-label="Beliebte Helferlein-Tools">
-   <div class="b3-preview-heading">Schnellstart</div>
-   <div class="b3-preview-list">
-    <a href="tools/haushaltsbuch-kassenbon/index.html"><span class="b3-preview-icon">🧾</span> Haushaltsbuch</a>
-    <a href="tools/pflanzenpflege-giessplan/index.html"><span class="b3-preview-icon">🌿</span> Pflanzenpflege</a>
-    <a href="tools/backform-umrechner/index.html"><span class="b3-preview-icon">🍰</span> Backform-Umrechner</a>
+  <aside class="b3-hero-preview" aria-label="Dein Schnellstart">
+   <div class="b3-preview-heading">⭐ Mein Schnellstart</div>
+   <div class="b3-preview-list" id="b3-quickstart-list" aria-live="polite">
+    <p class="b3-quickstart-empty">Markiere unten ein Tool mit ⭐, damit es hier erscheint.</p>
    </div>
-   <p style="margin-top:.9rem;font-size:.75rem;color:#e7f8f4">Lieblingstools mit einem Klick öffnen.</p>
+   <p class="b3-preview-hint">Deine Favoriten erscheinen automatisch hier.</p>
   </aside>
  </div>
 </header>
@@ -112,7 +110,7 @@
 
         <!-- Favoriten-Sektion -->
         <div id="favoritesSection" class="hidden space-y-3">
-            <h2 class="text-xs font-bold text-sky-700 uppercase tracking-wider flex items-center gap-1.5">⭐ Deine Favoriten & Schnellstart</h2>
+            <h2 class="text-xs font-bold text-sky-700 uppercase tracking-wider flex items-center gap-1.5">⭐ Deine Favoriten</h2>
             <div id="favoritesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
@@ -120,7 +118,7 @@
 <section class="b3-discovery" id="toolDiscovery" aria-label="Werkzeugfinder">
  <div class="b3-discovery-top">
   <div><h2 class="b3-section-heading">Finde dein Helferlein</h2>
-    <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">11 von 11 Tools</p></div>
+    <p class="b3-section-subtitle" id="b3-result-count" role="status" aria-live="polite">12 von 12 Tools</p></div>
   <div class="b3-search-wrap"><span class="b3-search-icon" aria-hidden="true">⌕</span>
    <label class="helferlein-field" for="searchBox"><span class="helferlein-field-label">Alltagstools durchsuchen</span><input type="search" id="searchBox" inputmode="search" autocomplete="off" aria-label="Alltagstools durchsuchen" oninput="filterTools()" placeholder="Tool oder Aufgabe suchen…"></label>
   </div>
@@ -150,10 +148,9 @@
                         </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Wishlist – Wunschlisten &amp; Geschenke</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Wünsche sammeln, Listen teilen, Geschenkideen entdecken und besondere Anlässe planen.</p>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Erstelle persönliche Wunschlisten, teile deine Wünsche mit Familie und Freunden, entdecke Geschenkideen und plane Geschenke für Geburtstage und andere Anlässe.</p>
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">♡ Wünsche &amp; Geschenke</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/wishlist/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -169,11 +166,10 @@
                         </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Haushaltsbuch mit Kassenbon-Scanner</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Einnahmen und Ausgaben erfassen, Budgets planen, Kassenbons scannen und Garantiefristen verwalten.</p>
-                    <div id="stats-kassenbon" class="mt-3 text-[11px] font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte dein Geld im Blick: Erfasse Einnahmen und Ausgaben, plane Budgets, scanne Kassenbons und finde wichtige Belege oder Garantiefristen schnell wieder.</p>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">📄 PDF-Export</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/haushaltsbuch-kassenbon/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -189,11 +185,10 @@
                         </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Umzugskisten-App & Inventarliste</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Umzugskisten und Gegenstände verwalten. Mit Inventarliste, Suche und QR-Code-Etiketten alles wiederfinden.</p>
-                    <div id="stats-kisten" class="mt-3 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Behalte beim Umzug oder im Lager den Überblick: Erfasse den Inhalt jeder Kiste, suche nach Gegenständen und finde mit QR-Code-Etiketten alles leichter wieder.</p>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">🖨️ QR-Druck</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/umzugskisten-inventar/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -209,11 +204,10 @@
                         </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">WG-Organisator mit Haushaltsbuch</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">WG-Ausgaben gemeinsam verwalten, Kosten aufteilen, Putzplan, Kalender und Notizen organisieren.</p>
-                    <div id="stats-wg-kasse" class="mt-3 text-[11px] font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Organisiert euren gemeinsamen Alltag: Teilt Ausgaben gerecht auf, führt ein Haushaltsbuch und verwaltet Putzplan, Kalender und Notizen an einem Ort.</p>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">⚡ Live-Calc</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/wg-organisator/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -229,11 +223,10 @@
                         </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Digitaler Nachlassverwalter</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Digitalen Nachlass organisieren. Die Verschlüsselung wird überarbeitet: Bitte keine Passwörter, PINs oder Zugangsdaten speichern.</p>
-                    <div id="stats-notizen" class="mt-3 text-[11px] font-semibold text-purple-600 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Sammle wichtige Informationen für deine Angehörigen und lege Vertrauenspersonen fest. Die Notfallfreigabe wird noch eingerichtet – bitte noch keine Passwörter oder PINs hinterlegen.</p>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">⚠️ Eingeschränkt nutzbar</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/digitaler-nachlass/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -250,10 +243,9 @@
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Autokosten-Rechner & Reifenwechsel</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Tankkosten, Reparaturen, TÜV-Termine und Reifenwechsel dokumentieren. Fahrzeugkosten im Blick behalten.</p>
-                    <div id="stats-kfz" class="mt-3 text-[11px] font-semibold text-red-600 bg-red-50 border border-red-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">📅 Kalender</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/autokosten-reifenwechsel/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -270,10 +262,9 @@
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Digitaler Impfpass für Hund & Katze</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Impfungen, Tierarztbesuche, Medikamente, Gewicht und Kosten im digitalen Haustier-Gesundheitspass erfassen.</p>
-                    <div id="stats-haustier" class="mt-3 text-[11px] font-semibold text-teal-600 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">🩺 Vorsorge</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/haustier-gesundheitspass/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -290,10 +281,9 @@
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Parkplatz-Merker & Parkschein-Timer</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Parkplatz per GPS merken, Parkzeit im Blick behalten und Parkgebühren und Parkvorgänge verwalten.</p>
-                    <div id="stats-parken" class="mt-3 text-[11px] font-semibold text-sky-600 bg-sky-50 border border-sky-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">📍 GPS-Save</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/parkplatz-merker-parkschein-timer/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -310,10 +300,9 @@
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Verliehene Gegenstände verwalten</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Werkzeuge, Bücher und andere Leihgaben erfassen, Rückgaben verfolgen und Erinnerungen vorbereiten.</p>
-                    <div id="stats-verleih" class="mt-3 text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">💬 WhatsApp</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/verliehene-gegenstaende-verwalten/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -330,10 +319,9 @@
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Pflanzenpflege-App mit Gießplan</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Zimmer- und Gartenpflanzen organisieren, Gießintervalle und Düngen dokumentieren und Pflege planen.</p>
-                    <div id="stats-pflanzen" class="mt-3 text-[11px] font-semibold text-lime-600 bg-lime-50 border border-lime-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">💧 Reminder</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/pflanzenpflege-giessplan/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -350,10 +338,9 @@
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Zählerstände erfassen: Strom, Gas & Wasser</h3>
                     <p class="text-xs text-gray-500 mt-1 leading-relaxed">Strom-, Wasser- und Gaszählerstände dokumentieren, Verbrauch auswerten und Kosten vergleichen.</p>
-                    <div id="stats-energie" class="mt-3 text-[11px] font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">📊 Charts</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/zaehlerstaende-erfassen/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -369,11 +356,10 @@
                         </div>
                     </div>
                     <h3 class="text-lg font-bold text-gray-900 tracking-tight">Backform-Umrechner & Rezeptrechner</h3>
-                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Backformen vergleichen, Rezeptmengen und Zutaten umrechnen sowie Backzeiten einschätzen.</p>
-                    <div id="stats-backform" class="mt-3 text-[11px] font-semibold text-pink-600 bg-pink-50 border border-pink-200 px-2.5 py-1 rounded-xl inline-block">Lade Stats...</div>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Du hast eine andere Backform als im Rezept? Rechne Zutaten und Teigmengen passend um und erhalte eine Orientierung für die neue Backzeit.</p>
+                    
                 </div>
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span class="text-[11px] text-gray-400">🥧 Im Browser nutzbar</span>
+                <div class="mt-5 pt-3 border-t border-gray-100 flex items-center justify-end">
                     <a href="tools/backform-umrechner/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
                 </div>
             </div>
@@ -661,6 +647,32 @@
                     grid.appendChild(clone);
                 }
             });
+            const quickstart = document.getElementById('b3-quickstart-list');
+            if (quickstart) {
+                quickstart.replaceChildren();
+                const favorites = favs.map(id => document.querySelector('#toolsGrid .tool-card[data-id="' + id + '"]')).filter(Boolean);
+                if (!favorites.length) {
+                    const empty = document.createElement('p');
+                    empty.className = 'b3-quickstart-empty';
+                    empty.textContent = 'Markiere unten ein Tool mit ⭐, damit es hier erscheint.';
+                    quickstart.appendChild(empty);
+                } else {
+                    favorites.forEach(card => {
+                        const source = card.querySelector('a[href^="tools/"]');
+                        if (!source) return;
+                        const link = document.createElement('a');
+                        link.href = source.getAttribute('href');
+                        const icon = document.createElement('span');
+                        icon.className = 'b3-preview-icon';
+                        icon.setAttribute('aria-hidden', 'true');
+                        icon.textContent = card.querySelector('.tool-card > div:first-child > div:first-child > div:first-child')?.textContent?.trim() || '⭐';
+                        const text = document.createElement('span');
+                        text.textContent = card.querySelector('h3')?.textContent?.trim() || 'Mein Tool';
+                        link.append(icon, text);
+                        quickstart.appendChild(link);
+                    });
+                }
+            }
             section.classList.toggle('hidden', grid.children.length === 0);
             document.querySelectorAll('#toolsGrid .tool-card').forEach(c => {
                 const btn = c.querySelector('.fav-btn');
@@ -692,28 +704,6 @@
             document.getElementById('searchEmptyState')?.classList.toggle('hidden', matches !== 0);
             const counter = document.getElementById('b3-result-count');
             if (counter) counter.textContent = matches + ' von ' + document.querySelectorAll('#toolsGrid .tool-card').length + ' Tools';
-        }
-
-        function loadStats() {
-            const setStat = (id, text) => { const el = document.getElementById(id); if (el) el.innerText = text; };
-            const getCount = (keys) => {
-                for (let k of keys) {
-                    let v;
-                    try { v = localStorage.getItem(k); } catch (_) { return 0; }
-                    if (v) { try { let p = JSON.parse(v); return Array.isArray(p) ? p.length : (p && typeof p === "object" ? Object.keys(p).length : 0); } catch(e){} }
-                }
-                return 0;
-            };
-            setStat('stats-kassenbon', `${getCount(['kassenbon_data', 'kassenbon', 'belege', 'receipts'])} Belege gespeichert`);
-            setStat('stats-kisten', `${getCount(['kisten_data', 'kisten', 'boxes', 'inventar'])} Kisten im Bestand`);
-            setStat('stats-wg-kasse', `${getCount(['wg_kasse_data', 'wg_kasse', 'expenses', 'haushalt'])} Ausgaben erfasst`);
-            setStat('stats-notizen', `${getCount(['secure_notes', 'notes', 'notizen_data', 'notizen'])} Notizen gesichert`);
-            setStat('stats-kfz', `${getCount(['kfz_pass', 'kfz_data', 'vehicles', 'autos'])} Fahrzeuge aktiv`);
-            setStat('stats-haustier', `${getCount(['haustier_pass_pro_v5', 'haustier_pass', 'haustier_data', 'pets', 'tiere'])} Haustiere erfasst`);
-            setStat('stats-verleih', `${getCount(['verleih_pass', 'verleih_data', 'verleih', 'items'])} Verleih-Objekte`);
-            setStat('stats-pflanzen', `${getCount(['pflanzen_pass', 'pflanzen_data', 'pflanzen', 'plants'])} Pflanzen im Bestand`);
-            setStat('stats-energie', `${getCount(['energie_tracker_pro', 'energie_data', 'energie', 'readings'])} Ablesungen erfasst`);
-            setStat('stats-backform', `${getCount(['bk_rec', 'bk_pans', 'bk_shop'])} Rezepte/Formen`);
         }
 
         // Authentifizierungs- und Sitzungsdaten gehören niemals in unverschlüsselte Backups.
@@ -1044,7 +1034,6 @@
                     // Storage writes have already succeeded. A display refresh error must not
                     // incorrectly report that the restore failed or trigger a second import.
                     try {
-                        loadStats();
                         initFavorites();
                     } catch (refreshError) {
                         alert(`${count} Einträge wurden wiederhergestellt, aber die Anzeige konnte nicht aktualisiert werden. Bitte die Seite neu laden.`);
@@ -1080,8 +1069,6 @@
                 if(closeSettingsBtn) closeSettingsBtn.addEventListener('click', closeSettings);
                 if(cancelSettingsBtn) cancelSettingsBtn.addEventListener('click', closeSettings);
             } catch(e){}
-
-            try { loadStats(); } catch(e){}
             try { initFavorites(); } catch(e){}
             updateUserDisplay().catch(() => {
                 const status = document.getElementById("cloudStatus");
