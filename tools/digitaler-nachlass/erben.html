@@ -1,45 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'">
-  <title>Erben-Portal – Zugriff derzeit gesperrt | Helferlein</title>
-  <script>
-    // Legacy links may contain a raw decryption key in ?key= or #key=.
-    // Do not read, store, send, display or log ANY URL parameters or fragments.
-    // This runs before rendering or loading another asset.
-    try {
-      if (location.search || location.hash) {
-        history.replaceState(null, '', location.pathname);
-      }
-    } catch (_) {
-      // No fallback that copies credentials to the page, logs or network.
-    }
-  </script>
-  <style>
-    :root { color-scheme: dark; font-family: system-ui, -apple-system, Segoe UI, sans-serif; }
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 1.5rem; color: #e2e8f0; background: #0f172a; }
-    main { max-width: 42rem; width: 100%; border: 1px solid #334155; border-radius: 1.25rem; padding: clamp(1.5rem, 5vw, 3rem); background: #111c30; }
-    .symbol { font-size: 2.5rem; }
-    h1 { font-size: clamp(1.5rem, 4vw, 2rem); margin: 1rem 0; }
-    p { line-height: 1.65; color: #cbd5e1; }
-    .notice { border: 1px solid #92400e; border-radius: .75rem; padding: 1rem; color: #fde68a; background: #451a03; }
-    small { color: #94a3b8; }
-  </style>
-<script defer src="../../assets/helferlein-dialogs.js"></script>
-</head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">
+<title>Vertrauenspersonen – Helferlein</title>
+<script>
+// Clear old link parameters before anything else loads. Never handle raw legacy secret URLs.
+try { if (location.search || location.hash) history.replaceState(null,'',location.pathname); } catch (_) {}
+</script>
+<style>
+:root{font:18px/1.6 system-ui,-apple-system,sans-serif;color:#152b3d;background:#f0f5f8}
+*{box-sizing:border-box}body{margin:0;padding:1rem}
+header,main,footer{max-width:760px;margin:0 auto}header{padding:24px 6px}
+header a{color:#135b73;text-decoration:none;font-weight:750}
+main{background:#fff;border:1px solid #d7e3e8;border-radius:25px;padding:clamp(24px,6vw,48px);box-shadow:0 8px 34px #29445512}
+h1{font-size:clamp(1.75rem,5vw,2.35rem);line-height:1.2;margin:0 0 16px}
+h2{font-size:1.2rem;margin:26px 0 8px}p{margin:0 0 15px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:24px 0}
+.step{padding:18px;border-radius:18px;background:#f0f7fa;border:1px solid #d2e4ee}
+.step strong{display:block;font-size:1.07rem;margin-bottom:8px}
+.note{padding:16px;background:#fff7e4;border:1px solid #e6b65b;color:#744b0d;border-radius:16px;margin:24px 0}
+.action{display:block;background:#145e75;color:#fff;text-align:center;text-decoration:none;padding:16px 24px;border-radius:14px;font-weight:750;font-size:1.05rem}
+.action:focus-visible,header a:focus-visible{outline:3px solid #0891b2;outline-offset:3px}
+footer{padding:25px 8px;color:#475569;font-size:.88rem}
+</style></head>
 <body>
-  <main>
-    <div class="symbol" aria-hidden="true">🔒</div>
-    <h1>Erben-Portal derzeit gesperrt</h1>
-    <p class="notice" role="status">Die technische Prüfung der Berechtigungen und Schlüsselübergabe ist noch nicht abgeschlossen. Dieses Portal gibt derzeit keine Nachlassdaten frei.</p>
-    <p>Alte Zugangslinks und darin enthaltene Schlüssel werden hier nicht mehr verarbeitet. Auch ein abgelaufener Countdown oder eine Notfallmeldung berechtigen derzeit nicht zur Einsicht.</p>
-    <p>Bitte bewahre vorhandene Notfallunterlagen sicher auf und wende dich für weitere Informationen an die Person, die den Nachlass eingerichtet hat. Gib keine Passwörter, PINs oder Entschlüsselungsschlüssel in eine Webseite ein.</p>
-    <small>Helferlein · Digitaler Nachlass · Geschützter Übergangsbetrieb</small>
-  </main>
-</body>
-</html>
+<header><a href="../../index.html">✳ Helferlein</a></header>
+<main>
+<h1>🔑 Ich bin Vertrauensperson</h1>
+<p>Du hast einen Schlüssel von jemandem bekommen, dem du wichtig bist. Bewahre ihn gut auf.</p>
+<h2>So ist der Zugang vorgesehen</h2>
+<div class="steps"><div class="step"><strong>👫 Zu zweit</strong>Zwei verschiedene Vertrauenspersonen öffnen den Tresor gemeinsam.</div><div class="step"><strong>⏰ Im Notfall</strong>Nach einem Alarm und 24 Stunden ohne Entwarnung soll ein Schlüssel reichen.</div></div>
+<div class="note" role="status"><strong>Der Schlüsselzugang ist noch nicht einsatzbereit.</strong> Die sichere Freigabe wird eingerichtet. Auf dieser Seite werden keine Schlüssel abgefragt und keine privaten Daten angezeigt.</div>
+<h2>Du hast bereits verschlüsselte Unterlagen bekommen?</h2>
+<p>Wenn dir die Person eine verschlüsselte Datei übergeben hat, kannst du sie mit deinem eigenen Schlüssel öffnen.</p>
+<a class="action" href="./erben-uebergabe.html">🔐 Verschlüsselte Unterlagen öffnen</a>
+</main>
+<footer>Helferlein · Keine Schlüssel in öffentliche Nachrichten oder unbekannte Webseiten eingeben.</footer>
+</body></html>
