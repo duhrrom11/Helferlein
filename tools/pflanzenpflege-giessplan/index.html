@@ -389,7 +389,7 @@
     <script src="../../shared/helferlein-cloud-migration.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', () => {
-        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) { console.warn('Cloud-Synchronisierung nicht geladen'); return; }
+        if (!window.HelferleinCloudMigration || !window.HelferleinCloudStore) { console.warn('Online-Sicherung nicht geladen'); return; }
         if (window.helferleinCloudBridge) return;
         window.helferleinCloudBridge = window.HelferleinCloudMigration.mount({
           client: supabaseClient,
