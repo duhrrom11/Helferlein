@@ -7,6 +7,7 @@ const legacy = fs.readFileSync(path.join(__dirname, '..', 'assets', 'heir-owner-
 const controller = fs.readFileSync(path.join(__dirname, '..', 'assets', 'a10-consent-ui.js'), 'utf8');
 assert.match(controller, /const PRODUCTION_RELEASE_ENABLED = false/);
 assert.ok(controller.includes('elements.forEach(el => { el.disabled = true'), 'controller must hard-disable all controls');
+assert.doesNotMatch(html, /<script(?![^>]*\\bsrc=)[^>]*>/i, 'vault page must not use inline scripts');
 const checks = [
   ['read stored vault', /const storedVault = localStorage\.getItem\('digital_estate_vault'\)/],
   ['create only when absent', /if \(storedVault === null\)/],
