@@ -5,12 +5,14 @@ on:
     paths:
       - 'assets/a10-atomic-idb-store.js'
       - 'assets/a10-v1-portable-backup.js'
+      - 'assets/a10-historical-v1-normalizer.js'
       - 'tests/a10-browser-indexeddb.cjs'
       - 'tests/a10-browser-persistent-restart.cjs'
       - 'tests/a10-browser-hardkill.cjs'
       - 'tests/a10-browser-quota-faults.cjs'
       - 'tests/a10-browser-portable-v1-backup.cjs'
       - 'tests/a10-browser-v1-schema-contract.cjs'
+      - 'tests/a10-browser-historical-v1.cjs'
       - 'assets/heir-owner-legacy.js'
       - '.github/workflows/a10-browser-indexeddb.yml'
   workflow_dispatch:
@@ -40,3 +42,4 @@ jobs:
           node tests/a10-browser-quota-faults.cjs
           node tests/a10-browser-portable-v1-backup.cjs
           node tests/a10-browser-v1-schema-contract.cjs
+          node tests/a10-browser-historical-v1.cjs
