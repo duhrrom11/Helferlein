@@ -80,7 +80,6 @@
   <nav class="b3-hub-nav" aria-label="Hauptnavigation">
    <a href="#toolsGrid">Alle Tools</a>
    <a href="#favoritesSection">⭐ Favoriten</a>
-   <a href="tools/wishlist/index.html">♡ Wunschlisten</a>
    <span id="userInfo" class="b3-hub-account" role="status" aria-live="polite">Nicht angemeldet</span>
    <button type="button" id="settingsBtn" aria-haspopup="dialog" aria-controls="settingsModal" aria-label="Einstellungen öffnen">⚙ Einstellungen</button>
   </nav>
@@ -89,12 +88,12 @@
   <div>
    <span class="b3-hero-eyebrow">✦ Dein digitaler Werkzeugkasten</span>
    <h1>Mehr Alltag.<br><span>Weniger Aufwand.</span></h1>
-   <p>Elf praktische Helfer für Finanzen, Zuhause, Organisation und unterwegs. Kostenlos im Browser – die meisten Funktionen auch ohne Konto.</p>
+   <p>Zwölf praktische Helfer für Finanzen, Zuhause, Organisation und unterwegs. Kostenlos im Browser – die meisten Funktionen auch ohne Konto.</p>
    <div class="b3-hero-actions">
     <a class="b3-hero-primary" href="#toolDiscovery">🔍 Tools entdecken</a>
     <a class="b3-hero-secondary" href="#favoritesSection">⭐ Meine Favoriten</a>
    </div>
-   <p class="b3-hero-status">✓ 11 kostenlose Web-Apps &nbsp;·&nbsp; ✓ Ohne Installation</p>
+   <p class="b3-hero-status">✓ 12 kostenlose Web-Apps &nbsp;·&nbsp; ✓ Ohne Installation</p>
   </div>
   <aside class="b3-hero-preview" aria-label="Beliebte Helferlein-Tools">
    <div class="b3-preview-heading">Schnellstart</div>
@@ -127,7 +126,7 @@
   </div>
  </div>
  <div class="b3-categories" role="group" aria-label="Tool-Kategorien">
-  <button type="button" class="b3-filter" data-b3-category-filter="alle" aria-pressed="true">Alle 11</button>
+  <button type="button" class="b3-filter" data-b3-category-filter="alle" aria-pressed="true">Alle 12</button>
   <button type="button" class="b3-filter" data-b3-category-filter="finanzen" aria-pressed="false">💶 Finanzen</button>
   <button type="button" class="b3-filter" data-b3-category-filter="zuhause" aria-pressed="false">🏡 Zuhause</button>
   <button type="button" class="b3-filter" data-b3-category-filter="organisation" aria-pressed="false">📋 Organisation</button>
@@ -137,8 +136,27 @@
 </section>
 <p id="searchEmptyState" class="hidden text-sm text-gray-600 bg-white border border-gray-200 rounded-xl p-4" role="status" aria-live="polite">Keine passenden Tools gefunden. Bitte Suche oder Kategorie ändern.</p>
 
-<!-- Tools Grid (Alle 11 Tools) -->
+<!-- Tools Grid (Alle 12 Tools) -->
         <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <!-- Wishlist -->
+            <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="wishlist" data-category="organisation" data-name="wishlist wunschlisten wünsche geschenke geschenkplanung amazon merkliste geburtstag hochzeit ideen">
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl font-bold border border-rose-200 shadow-inner" aria-hidden="true">♡</div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="toggleFavorite('wishlist', event)" class="fav-btn text-gray-300 hover:text-amber-400 text-lg transition-colors cursor-pointer" data-id="wishlist" aria-label="Wishlist zu Favoriten hinzufügen oder entfernen">⭐</button>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md border border-rose-200">Wünsche</span>
+                        </div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 tracking-tight">Wishlist – Wunschlisten &amp; Geschenke</h3>
+                    <p class="text-xs text-gray-500 mt-1 leading-relaxed">Wünsche sammeln, Listen teilen, Geschenkideen entdecken und besondere Anlässe planen.</p>
+                </div>
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[11px] text-gray-400">♡ Wünsche &amp; Geschenke</span>
+                    <a href="tools/wishlist/index.html" class="inline-flex items-center gap-1 bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all border border-sky-500/20">Öffnen &rarr;</a>
+                </div>
+            </div>
 
             <!-- Tool 1 -->
             <div class="tool-card bg-white hover:bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-sky-500/50 relative overflow-hidden" data-id="kassenbon" data-category="finanzen" data-name="haushaltsbuch ausgaben budget kassenbon scanner belege garantie rechner">
