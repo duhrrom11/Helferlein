@@ -30,7 +30,7 @@
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
             const { error } = await supabaseClient.auth.signUp({ email, password });
             if(error) alert('Das hat leider nicht geklappt. Bitte prüfe deine Angaben und versuche es erneut.');
-            else { alert('Registrierung erfolgreich!'); checkUserSession(); }
+            else { alert('Konto erstellt'); checkUserSession(); }
         }
 
         async function supabaseLogin() {
@@ -39,7 +39,7 @@
             if(!email || !password) return alert('Bitte E-Mail und Passwort eingeben.');
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if(error) alert('Das hat leider nicht geklappt. Bitte prüfe deine Angaben und versuche es erneut.');
-            else { alert('Erfolgreich angemeldet!'); checkUserSession(); }
+            else { alert('Angemeldet'); checkUserSession(); }
         }
 
         async function supabaseLogout() {
@@ -619,7 +619,7 @@
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Wiederherstellungsschlüssel für den vorherigen Tresorstand gespeichert, aber der lokale Tresor wurde inzwischen geändert. Bitte Sicherungsstand und Schlüssel erneut prüfen.');
                 }
-                alert('Verschlüsselter Wiederherstellungsschlüssel gespeichert. Passwort unbedingt getrennt aufbewahren. Die Wiederherstellung steht über „Tresor aus der Online-Sicherung wiederherstellen“ auf einem neuen Gerät bereit. Bitte zusätzlich eine verschlüsselte lokale Sicherung aufbewahren.');
+                alert('Gespeichert. Bitte bewahre dein Wiederherstellungspasswort gut auf.');
             } catch (error) {
                 console.error('Online-Schlüsselvorbereitung fehlgeschlagen:', error);
                 alert('Wiederherstellungsschlüssel konnte nicht bestätigt gespeichert werden.');
@@ -904,7 +904,7 @@
                     lastPersistedRevision !== localSaveRevision) {
                     return alert('Der vorherige Stand wurde gesichert, aber inzwischen gibt es neuere lokale Änderungen. Bitte erneut sichern.');
                 }
-                if (!silent) alert('Verschlüsselter Tresor erfolgreich online gespeichert. Den lokalen Sicherungsexport weiterhin aufbewahren.');
+                if (!silent) alert('Gespeichert');
                 return true;
             } catch (error) {
                 console.error('Online-Sicherung fehlgeschlagen:', error);
@@ -1108,7 +1108,7 @@
                 localStorage.setItem('digital_estate_vault', JSON.stringify(cfg));
 
                 document.getElementById('emergencyAlarmBanner').classList.add('hidden');
-                alert("✅ Entwarnung erfolgreich gesendet. Der Alarm wurde zurückgesetzt und dein Check-in erneuert.");
+                alert("Gespeichert");
                 renderApp();
             } catch (e) {
                 alert("Fehler beim Zurücksetzen: " + e.message);
@@ -1221,9 +1221,7 @@
                 return;
             }
             const cloudSaved = await syncVaultToFirebase(true);
-            alert(cloudSaved
-                ? "✅ Deine Einstellungen wurden lokal gespeichert und mit der Cloud synchronisiert!"
-                : "⚠️ Deine Einstellungen wurden nur lokal gespeichert. Die Online-Sicherung ist derzeit nicht verfügbar. Bitte sichere deine lokalen Daten.");
+            alert(cloudSaved ? "Gespeichert" : "Auf diesem Gerät gespeichert. Die Online-Sicherung ist gerade nicht möglich.");
         }
 
         async function addAlarmPerson() {
@@ -1302,9 +1300,7 @@
             document.getElementById('entryContent').value = "";
             renderVaultEntries();
             const entryCloudSaved = await syncVaultToFirebase(true);
-            alert(entryCloudSaved
-                ? "✅ Tresoreintrag lokal gespeichert und mit der Cloud synchronisiert."
-                : "⚠️ Tresoreintrag nur lokal gespeichert. Die Online-Sicherung ist derzeit nicht verfügbar. Bitte sichere deine lokalen Daten.");
+            alert(entryCloudSaved ? "Gespeichert" : "Auf diesem Gerät gespeichert. Die Online-Sicherung ist gerade nicht möglich.");
         }
 
         async function deleteVaultEntry(id) {
@@ -1343,9 +1339,7 @@
             }
             renderApp();
             const cloudCheckInSaved = await syncVaultToFirebase(true);
-            alert(cloudCheckInSaved
-                ? "✅ Check-in lokal und in der Cloud erneuert!"
-                : "⚠️ Check-in nur lokal gespeichert. Der Online-Check-in wurde NICHT erneuert. Die Notfallüberwachung ist derzeit nicht zuverlässig verfügbar.");
+            alert(cloudCheckInSaved ? "Gespeichert" : "Nur auf diesem Gerät gespeichert. Die Notfallüberwachung ist gerade nicht zuverlässig verfügbar.");
         }
 
         async function updateDeadmanInterval() {
@@ -1393,9 +1387,7 @@
                 return;
             }
             const trusteesCloudSaved = await syncVaultToFirebase(true);
-            alert(trusteesCloudSaved
-                ? "✅ Vertrauenspersonen lokal gespeichert. Online-Sicherung abgeschlossen."
-                : "⚠️ Vertrauenspersonen nur lokal gespeichert. Die Online-Sicherung ist derzeit nicht verfügbar. Daraus entsteht kein funktionierender Notfallzugang.");
+            alert(trusteesCloudSaved ? "Gespeichert" : "Nur auf diesem Gerät gespeichert. Der Notfallzugang ist gerade nicht verfügbar.");
         }
 
         // Render Notfall-Kit Vorschau mit QR-Codes (Zuverlässig für alle Personen)
