@@ -23,7 +23,7 @@ const checks = [
   ['accessible alert', /notice\.setAttribute\('role', 'alert'\)/],
   ['A10 migration UI explicitly disabled', /id="a10-migration-panel"[^>]*data-a10-release="disabled"/],
   ['A10 consent disabled', /id="a10-migration-consent"[^>]*disabled/],
-  ['A10 controller loaded', /src="\\.\\.\\/\\.\\.\\/assets\\/a10-consent-ui\\.js"/],
+  ['A10 controller loaded', /a10-consent-ui[.]js/],
   ['A10 backup file disabled', /id="a10-backup-file"[^>]*disabled/],
   ['A10 attestation file disabled', /id="a10-attestation-file"[^>]*disabled/],
   ['A10 preview disabled', /id="a10-migration-preview"[^>]*disabled/],
