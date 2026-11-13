@@ -113,7 +113,7 @@ test('Empty registration is rejected before cloud request', async ({ page }) => 
   const dialogs = [];
   page.on('dialog', async dialog => { dialogs.push(dialog.message()); await dialog.accept(); });
   await page.evaluate(() => registerUser());
-  expect(dialogs).toContain('Bitte E-Mail und Passwort eingeben.');
+  await expect(page.getByRole('alertdialog')).toContainText('Bitte E-Mail und Passwort eingeben.');
 });
 
 test('Successful mocked login normalizes email and clears password', async ({ page }) => {
@@ -144,7 +144,7 @@ test('Mocked rejected login clears password and keeps settings open', async ({ p
     document.getElementById('loginPassword').value = 'local-only-secret';
     await loginUser();
   });
-  expect(dialogs).toContain('Anmeldung abgelehnt');
+  await expect(page.getByRole('alertdialog')).toContainText('Anmeldung abgelehnt');
   await expect(page.locator('#loginPassword')).toHaveValue('');
   await expect(page.locator('#settingsModal')).toBeVisible();
 });

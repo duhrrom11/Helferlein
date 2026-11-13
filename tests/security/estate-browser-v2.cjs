@@ -38,7 +38,7 @@ const root=path.resolve(__dirname,'../..');
   if(u.pathname.includes('/functions/v1/estate-emergency')){
    // Browser origin checks remain production-exact in the actual handler.
    const headers={...req.headers(),Origin:'https://duhrrom11.github.io'};
-   const response=await handler(new Request(req.url(),{method,headers,body:JSON.stringify(body)}));return route.fulfill({status:response.status,headers:Object.fromEntries(response.headers),body:await response.text()});
+   const response=await handler(new Request(req.url(),{method,headers,body:JSON.stringify(body)}));return route.fulfill({status:response.status,headers:{...Object.fromEntries(response.headers),'access-control-allow-origin':origin},body:await response.text()});
   }
   if(u.pathname==='/rest/v1/vault_cloud_snapshots'){
    if(method==='GET')return fulfill(200,(await pg.query('select * from vault_cloud_snapshots where owner_user_id=$1',[owner])).rows);
@@ -76,5 +76,5 @@ const root=path.resolve(__dirname,'../..');
   await page.setViewportSize({width:1280,height:950});await page.locator('[data-tab=people]').click();await page.screenshot({path:'/tmp/estate-owner-isolated.png',fullPage:true});await trustee.screenshot({path:'/tmp/estate-trustee-isolated.png',fullPage:true});
   assert.deepEqual(errors,[]);
   console.log('PASS: Chromium actual owner/trustee UI, legacy data/key preservation, password-protected local storage, local QR, per-person mail/WhatsApp, A4 print, two-key open, one-key refusal, alarm mail, 24h gate, authenticated cancellation, edit persistence, lock, 320/375/768/1280px');
- }finally{global.fetch=originalFetch;await browser.close();server.close();await pg.end();fs.unlinkSync(tempfile);}
+ }catch(error){for(const p of context.pages()){try{console.error('BROWSER DIAGNOSTIC',p.url(),await p.locator('#message').textContent());await p.screenshot({path:'/tmp/estate-failure-'+context.pages().indexOf(p)+'.png',fullPage:true});}catch{}}console.error('BROWSER ERRORS',errors);throw error;}finally{global.fetch=originalFetch;await browser.close();server.close();await pg.end();fs.unlinkSync(tempfile);}
 })().catch(e=>{console.error(e);process.exitCode=1;});

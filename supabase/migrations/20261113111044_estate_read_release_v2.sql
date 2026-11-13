@@ -112,7 +112,7 @@ begin
    end if;
    delete from estate_private.read_guardians where owner_id=p_owner;
    insert into estate_private.read_guardians(owner_id,contact_id,key_hash,envelope) select p_owner,x->>'id',x->>'hash',x->'envelope' from jsonb_array_elements(keys) x;
-   update estate_private.read_vaults set reminder_days=(p_data->>'reminderDays')::integer,reminders_enabled=coalesce((p_data->>'remindersEnabled')::boolean,false) where owner_id=p_owner;
+   update estate_private.read_vaults set next_reminder=case when reminder_days is distinct from (p_data->>'reminderDays')::integer or reminders_enabled is distinct from coalesce((p_data->>'remindersEnabled')::boolean,false) then now()+make_interval(days=>(p_data->>'reminderDays')::integer) else next_reminder end, reminder_days=(p_data->>'reminderDays')::integer,reminders_enabled=coalesce((p_data->>'remindersEnabled')::boolean,false) where owner_id=p_owner;
    return (select jsonb_build_object('version',version) from estate_private.read_vaults where owner_id=p_owner);
   end if;
   if p_action='cancel' and v.owner_id is not null then
