@@ -1,5 +1,12 @@
 # Helferlein – sichere Migration bestehender Tresore
 
+## A10 funktionaler lokaler Migrationsablauf – Gate 1 (2026-11-13)
+
+`assets/a10-migration-flow.js` verknuepft die vorhandenen, isolierten Bausteine zu einem **funktionalen** Ablauf: ausdrueckliche Zustimmung und Tresor-ID-Bindung, unabhhaengiges verschluesseltes V1-Backup mit Wiederherstellungspruefung, authentifizierte V2-Erzeugung, atomare nicht ueberschreibende IndexedDB-Staging-Transaktion und anschliessenden erneuten kryptografischen Readback. Zurueckgegeben werden nur der inaktive Erfolgsstatus und das verschluesselte V1-Backup; der Aufrufer muss dessen separate Sicherung vor einer spaeteren Aktivierung eigenstaendig nachweisen. Wiederholter Import oder vorhandenes Ziel wird abgewiesen. Der bestehende integrierte synthetische Chromium-Test durchlaeuft den neuen Ablauf in einer separaten Staging-Datenbank.
+
+**Keine produktive Integration:** Noch kein UI, kein echter Geraetewechsel, kein atomarer Aktivierungsschalter, keine Cloud-Kompatibilitaetsfreigabe. V1 wird weder geschrieben noch geloescht; V2 bleibt inaktiv. **A10 NO-GO.**
+
+
 ## A10 persistiertes V2-Staging nach Reload erneut authentifizieren (2026-11-13)
 
 Das neue isolierte Modul `assets/a10-staged-readback.js` liest einen bereits geschriebenen V2-Staging-Datensatz ueber `driver.read` erneut ein und verlangt die exakte Tresor-ID, Revision 0, den inaktiven Status, ein authentifiziertes V2-Envelope sowie exakte Gleichheit mit der zuvor erwarteten verschluesselten Huelle. Beide Huellen werden mit dem explizit bestaetigten V2-Passwort kryptografisch entschluesselt und inhaltlich verglichen; entschluesselte Daten werden weder zurueckgegeben noch geschrieben. Der erweiterte synthetische Chromium-Test prueft den echten IndexedDB-Readback **nach Browser-Reload** sowie falsches Passwort, manipulierte Revision und ausgetauschten Ciphertext. Der Baustein schreibt nichts und aktiviert nichts.
