@@ -68,12 +68,15 @@ const http = require('node:http');
         });
       } finally { db.close(); }
     }, { dbName, v1id, legacy });
+    const v1Envelope = await pages[1].evaluate(async ({ candidate, v1id, password }) =>
+      HelferleinA10V2Envelope.seal({ ...candidate, vaultId: v1id }, password,
+        { explicitConsent: true }), { candidate, v1id, password });
     const denied = await pages[1].evaluate(async ({ dbName, v1id, envelope, password }) => {
       const d = HelferleinA10V2IndexedDB.driver(indexedDB, dbName);
       try { await HelferleinA10V2Staging.stage(d, v1id, envelope, password,
         { explicitConsent: true, confirmVaultId: v1id }); return false; }
       catch (_) { return true; }
-    }, { dbName, v1id, envelope, password });
+    }, { dbName, v1id, envelope: v1Envelope, password });
     assert.equal(denied, true);
     await pages[0].reload();
     for (const url of Object.keys(files)) await pages[0].addScriptTag({ url });
