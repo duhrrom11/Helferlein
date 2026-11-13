@@ -309,7 +309,7 @@
       const expectedGeneration = accountGeneration;
       if (activeOperation === 'import' || activeOperation === 'upload') { lastConflictMessage = 'Datenübernahme läuft'; return Promise.resolve(false); }
       if (expectedOwner && verifiedOwner !== expectedOwner) { reportError(new Error('Kontoprüfung für lokale Änderung nicht abgeschlossen')); return Promise.resolve(false); }
-      if (expectedOwner && !enabledUser) { setStatus('Lokal gespeichert · Cloud-Übernahme für dieses Konto noch nicht aktiviert'); return Promise.resolve(false); }
+      if (expectedOwner && !enabledUser) { setStatus('Auf diesem Gerät gespeichert. Die Online-Sicherung ist noch nicht eingerichtet.'); return Promise.resolve(false); }
       let snapshot;
       try { snapshot = JSON.parse(JSON.stringify(data)); } catch (error) { reportError(error); return Promise.reject(new Error('Änderungen konnten nicht serialisiert werden')); }
       cloudChangeQueued++;
@@ -327,7 +327,7 @@
           const uploaded = await store.save(snapshot);
           if (disposed || expectedGeneration !== accountGeneration) return false;
           if (uploaded) { lastSyncError = null; lastConflictMessage = null; lastReconnectAt = now(); lastUploadAt = now(); }
-          if (await isEnabled() && currentOwner() === expectedOwner) setStatus(uploaded ? 'Lokal und in Supabase gespeichert' : 'Lokal gespeichert · Cloud-Synchronisierung ausstehend');
+          if (await isEnabled() && currentOwner() === expectedOwner) setStatus(uploaded ? 'Gespeichert' : 'Auf diesem Gerät gespeichert. Die Online-Sicherung steht noch aus.');
         } catch (error) {
           reportError(error);
         }
