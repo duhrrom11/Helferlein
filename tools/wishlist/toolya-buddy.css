@@ -31,3 +31,11 @@
 /* Idle is deliberately still: no distracting motion when no message is visible. */
 .toolya-buddy[data-pose="idle"] .tb-avatar{animation:none}
 @media(max-width:360px){.tb-message-box{flex-wrap:wrap}.tb-text{flex:1 1 calc(100% - 72px)}.tb-close{white-space:normal}}
+
+/* Optional intensity: still in off mode, reduced amplitude in calm mode. */
+.toolya-buddy[data-motion="calm"] .tb-avatar{animation-duration:2.2s;animation-timing-function:ease-in-out;animation-iteration-count:1}
+.toolya-buddy[data-motion="lively"] .tb-avatar{animation-duration:.8s;animation-timing-function:ease-out;animation-iteration-count:1}
+.toolya-buddy[data-motion="off"] .tb-avatar{animation:none!important;transform:none!important}
+.toolya-buddy[hidden]{display:none!important}
+.tb-preferences select,.tb-preferences input{max-width:100%}
+@media(prefers-reduced-motion:reduce){.toolya-buddy[data-motion] .tb-avatar{animation:none!important;transform:none!important}}
