@@ -150,3 +150,10 @@ test('Android font scaling wraps long labels and keeps touch targets usable',()=
  assert.match(css,/\.tb-title,\.tb-body,\.tb-dialog p,\.tb-dialog h2\{overflow-wrap:anywhere\}/);
  assert.match(css,/\.toolya-buddy\[data-motion="lively"\] \.tb-avatar\{animation:none!important\}/);
 });
+
+test('Android zoom scrolls focused dialog buttons into view without forced motion',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/\.tb-dialog\{scroll-padding-block:1rem\}/);
+ assert.match(css,/\.tb-dialog button\{scroll-margin-block:1rem\}/);
+ assert.match(css,/\.tb-dialog,\.tb-overlay\{scroll-behavior:auto!important\}/);
+});
