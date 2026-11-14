@@ -146,3 +146,10 @@
 @media(prefers-reduced-motion:reduce){
  .toolya-buddy[data-motion="lively"] .tb-avatar{animation:none!important}
 }
+
+/* Keep the focused confirmation action visible with Android zoom and keyboard. */
+.tb-dialog{scroll-padding-block:1rem}
+.tb-dialog button{scroll-margin-block:1rem}
+@media(prefers-reduced-motion:reduce){
+ .tb-dialog,.tb-overlay{scroll-behavior:auto!important}
+}
