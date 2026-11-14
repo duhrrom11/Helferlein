@@ -44,12 +44,12 @@ export class ToolyaBuddy {
  expireOptional(epoch=this.noticeEpoch){if(epoch!==this.noticeEpoch||this.destroyed||!this.current||REQUIRED.has(this.current.type))return;const close=this.host.querySelector('.tb-close');if(document.activeElement===close||this.pointerOver||document.hidden){this.timer=setTimeout(()=>this.expireOptional(epoch),1000);return;}this.dismiss()}
  dismiss(){if(this.destroyed)return;clearTimeout(this.timer);this.deadline=0;do{this.current=this.queue.shift()||null}while((this.quiet||this.hidden||(!this.tips&&this.current?.type==='tip'))&&this.current&&!REQUIRED.has(this.current.type));this.render()}
  confirm({message,title='Bitte bestätigen',confirmLabel='Bestätigen',cancelLabel='Abbrechen',danger=false}={}){
-  if(!message||typeof message!=='string')return Promise.reject(Error('Bestätigungstext fehlt'));
+  if(typeof message!=='string'||!message.trim())return Promise.reject(Error('Bestätigungstext fehlt'));
   return new Promise(resolve=>{
    if(this.destroyed||this.dialogs.length){resolve(false);return;}const previous=document.activeElement,overlay=document.createElement('div');overlay.className='tb-overlay';
    const dialog=document.createElement('div');dialog.className='tb-dialog';dialog.setAttribute('role','alertdialog');dialog.setAttribute('aria-modal','true');
    const img=document.createElement('img');img.className='tb-dialog-avatar';img.alt='';img.setAttribute('aria-hidden','true');this.image(img,'warning');
-   const h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=message;
+   const h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=message.trim();
    const id='tb-dialog-'+Math.random().toString(36).slice(2);h.id=id+'-title';p.id=id+'-desc';dialog.setAttribute('aria-labelledby',h.id);dialog.setAttribute('aria-describedby',p.id);
    const cancel=document.createElement('button'),yes=document.createElement('button');cancel.type=yes.type='button';cancel.textContent=cancelLabel;yes.textContent=confirmLabel;if(danger)yes.className='tb-danger';
    dialog.append(img,h,p,cancel,yes);overlay.append(dialog);document.body.append(overlay);
