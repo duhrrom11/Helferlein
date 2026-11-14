@@ -1,5 +1,8 @@
 import {test,expect} from '@playwright/test';
-test.beforeEach(async({page})=>{await page.route('**/*',r=>new URL(r.request().url()).hostname==='127.0.0.1'?r.continue():r.abort())});
+import {readFileSync} from 'node:fs';
+const sdk=readFileSync(new URL('../../assets/vendor/supabase-2.57.0.js',import.meta.url),'utf8');
+// Serve the pinned SDK locally; every external API remains blocked (no production reads/writes).
+test.beforeEach(async({page})=>{await page.route('**/*',r=>{const u=new URL(r.request().url());if(u.hostname==='127.0.0.1')return r.continue();if(u.hostname==='cdn.jsdelivr.net'&&u.pathname.includes('@supabase/supabase-js'))return r.fulfill({contentType:'application/javascript',body:sdk});return r.abort()})});
 test('platform preferences, real notices, five-touch Easter egg and optional donations',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');
  await expect(page.locator('.toolya-settings')).toBeVisible();await page.evaluate(()=>window.toolyaBuddy.setMotion('off'));
