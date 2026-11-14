@@ -11,13 +11,13 @@ export class ToolyaBuddy {
  }
  image(img,type){if(!['turquoise','purple'].includes(this.character))return;img.hidden=false;img.onerror=()=>{img.hidden=true};img.src=this.assetBase+'toolya_wishlist_'+this.character+'_'+(POSE[type]||'error')+'_1024.png'}
  setCharacter(c){if(!['turquoise','purple'].includes(c))throw Error('Ungültiger Charakter');this.character=c;if(this.current)this.render();for(const d of this.dialogs)this.image(d.img,'warning')}
- setMotion(mode){if(!['off','calm','normal','lively'].includes(mode))throw Error('Ungültige Animationsstufe');this.motion=mode;this.host.setAttribute('data-intensity',mode);this.host.setAttribute('data-motion',this.quiet?'off':mode)}
+ setMotion(mode){if(!['off','calm','normal','lively'].includes(mode))throw Error('Ungültige Animationsstufe');this.motion=mode;this.host.setAttribute('data-intensity',mode);this.host.setAttribute('data-motion',this.quiet?'off':mode==='normal'?'on':mode)}
  setTips(enabled){this.tips=!!enabled;if(!this.tips){this.queue=this.queue.filter(x=>x.type!=='tip');if(this.current?.type==='tip')this.dismiss()}}
- setHidden(value){this.hidden=!!value;this.host.setAttribute('data-hidden',String(this.hidden));this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type)}
+ setHidden(value){this.hidden=!!value;this.host.setAttribute('data-hidden',String(this.hidden));this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type);if(this.hidden){this.queue=this.queue.filter(x=>REQUIRED.has(x.type));if(this.current&&!REQUIRED.has(this.current.type))this.dismiss()}}
  setQuiet(q){this.quiet=!!q;this.host.setAttribute('data-motion',this.quiet?'off':this.motion==='normal'?'on':this.motion);if(this.quiet){this.queue=this.queue.filter(item=>REQUIRED.has(item.type));if(this.current&&!REQUIRED.has(this.current.type))this.current=null;if(!this.current)this.current=this.queue.shift()||null;}this.render()}
  show(type,message){
   if(this.destroyed||!POSE[type]||typeof message!=='string'||!message.trim())return false;
-  if((this.quiet&&!REQUIRED.has(type))||(type==='tip'&&!this.tips))return false;
+  if((this.quiet&&!REQUIRED.has(type))||(type==='tip'&&!this.tips)||(this.hidden&&!REQUIRED.has(type)))return false;
   const item={type,message:message.trim()};
   if(this.current?.type===item.type&&this.current.message===item.message)return true;
   if(this.queue.some(x=>x.type===item.type&&x.message===item.message))return true;
@@ -39,7 +39,7 @@ export class ToolyaBuddy {
    this.queue.splice(optional<0?this.queue.length-1:optional,1);
   }
  }
- render(){clearTimeout(this.timer);const box=this.host.querySelector('.tb-message-box');box.hidden=!this.current;this.host.hidden=this.hidden&&!this.current;if(!this.current){this.host.setAttribute('data-pose','idle');return;}const {type,message}=this.current;this.host.setAttribute('data-pose',POSE[type]);this.image(this.host.querySelector('.tb-avatar'),type);this.host.querySelector('.tb-title').textContent=({'welcome':'Willkommen','success':'Geschafft','tip':'Tipp','warning':'Achtung','error':'Fehler','form-error':'Bitte Eingabe prüfen'})[type];this.host.querySelector('.tb-body').textContent=message;this.host.querySelector('.tb-text').setAttribute('role',REQUIRED.has(type)?'alert':'status');if(!REQUIRED.has(type))this.timer=setTimeout(()=>this.dismiss(),type==='tip'?9000:7000)}
+ render(){clearTimeout(this.timer);const box=this.host.querySelector('.tb-message-box');box.hidden=!this.current;this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type);if(!this.current){this.host.setAttribute('data-pose','idle');return;}const {type,message}=this.current;this.host.setAttribute('data-pose',POSE[type]);this.image(this.host.querySelector('.tb-avatar'),type);this.host.querySelector('.tb-title').textContent=({'welcome':'Willkommen','success':'Geschafft','tip':'Tipp','warning':'Achtung','error':'Fehler','form-error':'Bitte Eingabe prüfen'})[type];this.host.querySelector('.tb-body').textContent=message;this.host.querySelector('.tb-text').setAttribute('role',REQUIRED.has(type)?'alert':'status');this.host.querySelector('.tb-text').setAttribute('aria-live',REQUIRED.has(type)?'assertive':'polite');this.host.querySelector('.tb-text').setAttribute('aria-atomic','true');if(!REQUIRED.has(type))this.timer=setTimeout(()=>this.dismiss(),type==='tip'?9000:7000)}
  dismiss(){clearTimeout(this.timer);do{this.current=this.queue.shift()||null}while(this.quiet&&this.current&&!REQUIRED.has(this.current.type));this.render()}
  confirm({message,title='Bitte bestätigen',confirmLabel='Bestätigen',cancelLabel='Abbrechen',danger=false}={}){
   if(!message||typeof message!=='string')return Promise.reject(Error('Bestätigungstext fehlt'));
