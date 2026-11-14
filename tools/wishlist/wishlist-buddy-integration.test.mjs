@@ -11,8 +11,9 @@ test('ToolyaBuddy wird im Wunschlisten-Einstiegspunkt erstellt',()=>assert.match
 test('Stylesheet ist in der Wunschliste eingebunden',()=>assert.match(html,/toolya-buddy\.css/));
 test('Login meldet Willkommen',()=>assert.match(app,/buddyNotice\('welcome','Willkommen zurück!'\)/));
 test('Speicherfehler werden als Formularfehler gemeldet',()=>assert.match(app,/buddyNotice\(isWishSave\?'form-error':'error',message\)/));
-test('Wunsch-Aktualisierung unterscheidet Erfolg und Warnung',()=>assert.match(app,/buddyNotice\(extrasSaved\?'success':'warning',message\)/));
-test('Neue Wünsche unterscheiden Teil- und Vollerfolg',()=>assert.match(app,/buddyNotice\(assignmentError\|\|!extrasSaved\?'warning':'success',message\)/));
 test('Cloud-Import verlangt ausdrückliche Bestätigung',()=>assert.match(app,/toolyaBuddy\.confirm\(\{title:'Cloud-Import bestätigen'/));
 test('Cloud-Überschreiben verlangt ausdrückliche Bestätigung',()=>assert.match(app,/toolyaBuddy\.confirm\(\{title:'Cloud-Daten überschreiben\?'/));
 test('Bestätigungsdialog blockiert konkurrierende Dialoge ohne offene Promise',()=>assert.match(buddy,/if\(this\.dialogs\.length\)\{resolve\(false\);return;\}/));
+
+test('Speichermeldungen werden über den gemeinsamen Mapper erzeugt',()=>assert.match(app,/wishSaveOutcome\(\{editing:true,extrasSaved\}\)/));
+test('Neue Wünsche verwenden den gemeinsamen Mapper',()=>assert.match(app,/wishSaveOutcome\(\{extrasSaved,assignmentError:!!assignmentError\}\)/));
