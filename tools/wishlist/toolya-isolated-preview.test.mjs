@@ -72,3 +72,11 @@ test('calm mode reduces amplitude independently for all four original poses',()=
  for(const pose of ['welcome','success','tip','error'])assert.ok(css.includes('[data-motion="calm"][data-pose="'+pose+'"] .tb-avatar'));
  assert.match(css,/prefers-reduced-motion:reduce/);
 });
+
+test('Android preview exercises warning and form-error without backend access',()=>{
+ const html=read('toolya-mobile-preview.html');
+ assert.match(html,/data-type="warning"/);
+ assert.match(html,/data-type="form-error"/);
+ assert.match(html,/simulierter Eingabefehler/);
+ assert.doesNotMatch(html,/createClient\(|supabase\.co/);
+});
