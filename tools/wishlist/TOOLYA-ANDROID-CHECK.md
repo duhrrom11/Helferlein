@@ -17,7 +17,8 @@ Stand: 14. November 2026. Ausschließlich isolierte Vorschau, keine Anmeldung un
 - „Bewegung testweise deaktivieren“ einschalten: Animation verschwindet, Text und Schließen bleiben bedienbar. Dies **simuliert nur** die Abschaltung.
 - In Android **Systemeinstellungen → Bedienungshilfen** die Option zum Entfernen/Reduzieren von Animationen aktivieren (Bezeichnung geräteabhängig). Die Vorschau zeigt, ob `prefers-reduced-motion` vom Browser erkannt wird. Wenn dort „Nein“ steht, ist die Systemoption nicht an die Webseite weitergegeben worden.
 - Auf schmalen Bildschirmen, bei vergrößerter Schrift und im Querformat: keine abgeschnittenen Bilder, keine horizontale Scrollleiste, alle Bedienelemente erreichbar.
-- Mit TalkBack und externer Tastatur (falls verfügbar): Meldungen und Schließen prüfen. Bestätigungsdialoge zusätzlich über `toolya-buddy-browser-test.html` testen.
+- Mit TalkBack und externer Tastatur (falls verfügbar): Meldungen und Schließen prüfen. Den Bestätigungsdialog direkt in der Smartphone-Vorschau über „Bestätigung testen“ öffnen; `Tab`, `Shift+Tab`, `Escape`, Fokus-Rückkehr und beide Schaltflächen prüfen.
+- In Android hohe Kontraste/Farbinvertierung und große Schrift aktivieren: Dialograhmen, Schaltflächen, Fokusumrandungen und Warnungen müssen erkennbar bleiben. Die automatisierte CSS-Prüfung ersetzt keine echte Sichtprüfung.
 
 ## Grenzen
 
