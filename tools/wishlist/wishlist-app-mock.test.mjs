@@ -11,6 +11,7 @@ class Element {
  constructor(id=''){this.id=id;this.children=[];this.dataset={};this.style={};this.attrs={};this.value='';this.textContent='';this.hidden=false;this.disabled=false;this.className='';this.classList={add(){},remove(){},toggle(){},contains(){return false}};this.isConnected=true;}
  append(...nodes){this.children.push(...nodes);for(const n of nodes)if(n&&typeof n==='object')n.parent=this}
  appendChild(node){this.append(node);return node}
+ prepend(...nodes){this.children.unshift(...nodes);for(const n of nodes)if(n&&typeof n==='object')n.parent=this}
  replaceChildren(...nodes){this.children=[];this.append(...nodes)}
  remove(){this.isConnected=false;if(this.parent)this.parent.children=this.parent.children.filter(x=>x!==this)}
  setAttribute(k,v){this.attrs[k]=v}
@@ -85,6 +86,7 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  await app.evaluate();
  const preferences=body.children.find(node=>node.className==='tb-preferences');
  assert.ok(preferences,'Toolya-Einstellungen sind in der Oberfläche sichtbar');
+ assert.equal(body.children[0],preferences,'Toolya-Einstellungen sind am Seitenanfang erreichbar');
  const select=preferences.children[0].children[0];
  const quiet=preferences.children[1].children[0];
  assert.equal(select.value,'turquoise');
