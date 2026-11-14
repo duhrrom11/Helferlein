@@ -164,4 +164,11 @@ test('v16: inaktiver Browser-Tab hält optionale Meldung sichtbar',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{b.show('success','Noch lesen');document.hidden=true;b.expireOptional();assert.equal(b.current.type,'success');document.hidden=false;b.expireOptional();assert.equal(b.current,null)}finally{document.hidden=false;b.destroy()}
 });
+test('v17: alter Timer darf neue Meldung nicht schließen',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('tip','Alt');const oldEpoch=b.noticeEpoch;b.show('success','Neu');b.expireOptional(oldEpoch);assert.equal(b.current.message,'Neu');assert.ok(b.noticeEpoch>oldEpoch)}finally{b.destroy()}
+});
+test('v17: nach destroy darf alter Timer keine Meldung verändern',()=>{
+ const b=new ToolyaBuddy({root:document.body});b.show('tip','Alt');const epoch=b.noticeEpoch;b.destroy();b.expireOptional(epoch);assert.equal(b.current,null);
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
