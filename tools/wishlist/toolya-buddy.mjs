@@ -23,14 +23,14 @@ export class ToolyaBuddy {
   if(this.queue.some(x=>x.type===item.type&&x.message===item.message))return true;
   if(!this.current){this.current=item;this.render();return true}
   if(priority(type)>priority(this.current.type)){
-   if(!this.quiet&&!REQUIRED.has(this.current.type))this.enqueue(this.current);
+   if(!this.quiet&&!this.hidden&&!REQUIRED.has(this.current.type))this.enqueue(this.current);
    this.current=item;this.render();return true;
   }
   if(REQUIRED.has(this.current.type)||REQUIRED.has(type)){this.enqueue(item);return true}
   this.current=item;this.render();return true;
  }
  enqueue(item){
-  if(this.quiet&&!REQUIRED.has(item.type))return;
+  if((this.quiet||this.hidden)&&!REQUIRED.has(item.type))return;
   if(this.queue.some(x=>x.type===item.type&&x.message===item.message))return;
   this.queue.push(item);
   this.queue.sort((a,b)=>priority(b.type)-priority(a.type));
@@ -41,7 +41,7 @@ export class ToolyaBuddy {
   }
  }
  render(preserveTimer=false){clearTimeout(this.timer);const box=this.host.querySelector('.tb-message-box');box.hidden=!this.current;this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type);if(!this.current){this.deadline=0;this.host.setAttribute('data-pose','idle');return;}const {type,message}=this.current;this.host.setAttribute('data-pose',POSE[type]);this.image(this.host.querySelector('.tb-avatar'),type);this.host.querySelector('.tb-title').textContent=({'welcome':'Willkommen','success':'Geschafft','tip':'Tipp','warning':'Achtung','error':'Fehler','form-error':'Bitte Eingabe prüfen'})[type];this.host.querySelector('.tb-body').textContent=message;this.host.querySelector('.tb-text').setAttribute('role',REQUIRED.has(type)?'alert':'status');this.host.querySelector('.tb-text').setAttribute('aria-live',REQUIRED.has(type)?'assertive':'polite');this.host.querySelector('.tb-text').setAttribute('aria-atomic','true');if(!REQUIRED.has(type)){const duration=type==='tip'?9000:7000;const remaining=preserveTimer&&this.deadline?Math.max(0,this.deadline-Date.now()):duration;this.deadline=Date.now()+remaining;this.timer=setTimeout(()=>this.dismiss(),remaining)}else this.deadline=0}
- dismiss(){clearTimeout(this.timer);this.deadline=0;do{this.current=this.queue.shift()||null}while(this.quiet&&this.current&&!REQUIRED.has(this.current.type));this.render()}
+ dismiss(){clearTimeout(this.timer);this.deadline=0;do{this.current=this.queue.shift()||null}while((this.quiet||this.hidden||(!this.tips&&this.current?.type==='tip'))&&this.current&&!REQUIRED.has(this.current.type));this.render()}
  confirm({message,title='Bitte bestätigen',confirmLabel='Bestätigen',cancelLabel='Abbrechen',danger=false}={}){
   if(!message||typeof message!=='string')return Promise.reject(Error('Bestätigungstext fehlt'));
   return new Promise(resolve=>{
