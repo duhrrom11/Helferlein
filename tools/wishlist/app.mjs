@@ -24,7 +24,7 @@ function mountToolyaPreferences(){
  characterSelect.value=toolyaBuddy.character;quietToggle.checked=toolyaBuddy.quiet;
  characterSelect.onchange=()=>{toolyaBuddy.setCharacter(characterSelect.value);save()};
  quietToggle.onchange=()=>{toolyaBuddy.setQuiet(quietToggle.checked);save()};
- panel.append(characterLabel,quietLabel);root.append(panel);
+ panel.append(characterLabel,quietLabel);root.prepend(panel);
 }
 mountToolyaPreferences();
 const report=(m)=>{$('status').textContent=m};
