@@ -113,3 +113,10 @@ test('Android reduced-data preference disables decorative mascot motion',()=>{
  assert.match(css,/@media\(prefers-reduced-data:reduce\)/);
  assert.match(css,/\.toolya-buddy \.tb-avatar\{animation:none!important;transition:none!important\}/);
 });
+
+test('Android buttons use manipulation touch action and reduced motion disables animation',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/\.tb-close,\.tb-dialog button\{touch-action:manipulation/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+ assert.match(css,/\.toolya-buddy \.tb-avatar\{animation:none!important;transition:none!important\}/);
+});
