@@ -49,3 +49,12 @@ test('Android preview can inspect the isolated confirmation dialog',()=>{
  assert.match(html,/id="tips-enabled"/);
  assert.match(html,/id="hide-buddy"/);
 });
+
+test('Android high contrast, text zoom and reduced motion have CSS fallbacks',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/@media\(forced-colors:active\)/);
+ assert.match(css,/outline:3px solid Highlight/);
+ assert.match(css,/@media\(max-width:360px\)/);
+ assert.match(css,/max-height:calc\(100dvh - 16px\)/);
+ assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+});
