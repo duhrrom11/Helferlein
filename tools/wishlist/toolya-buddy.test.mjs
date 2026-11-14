@@ -40,7 +40,7 @@ test('Animation verwendet die passende Originalpose',()=>{
  assert.equal(animated.host.attrs['data-pose'],'tip');
  animated.show('error','Fehler');
  assert.equal(animated.host.attrs['data-pose'],'error');
- assert.match(animated.host.querySelector('.tb-avatar').src,/toolya_wishlist_purple_error_1024\\.png$/);
+ assert.equal(animated.host.querySelector('.tb-avatar').src,'./toolya_wishlist_purple_error_1024.png');
  animated.destroy();
 });
 test('Ruhemodus deaktiviert Bewegungen, nicht Fehlermeldungen',()=>{
