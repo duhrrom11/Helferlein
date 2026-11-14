@@ -99,4 +99,12 @@ test('v8: wichtige Meldungen haben keine automatische Ablauffrist',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{b.show('warning','Bitte prüfen');assert.equal(b.deadline,0);assert.equal(b.host.querySelector('.tb-text').attrs['aria-live'],'assertive')}finally{b.destroy()}
 });
+test('v9: Shift+Tab von außerhalb bleibt im Dialog',async()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{const result=b.confirm({message:'Tastaturtest'});document.activeElement=new Element('button');assert.equal(press('Tab',true),true);const dialog=b.dialogs[0].img.parent;assert.equal(document.activeElement,dialog.children.at(-1));assert.equal(press('Escape'),true);assert.equal(await result,false)}finally{b.destroy()}
+});
+test('v9: nach destroy wird kein Bestätigungsdialog geöffnet',async()=>{
+ const b=new ToolyaBuddy({root:document.body});b.destroy();
+ assert.equal(await b.confirm({message:'Nicht mehr öffnen'}),false);
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
