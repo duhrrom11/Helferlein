@@ -45,3 +45,15 @@
 .tb-dialog button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 @media(max-width:360px){.tb-dialog-avatar{float:none;display:block;margin:0 auto 8px}.tb-dialog button{display:block;width:100%;margin:8px 0 0}}
 @media(hover:none){.tb-dialog button,.tb-close{touch-action:manipulation}}
+
+/* High contrast and text zoom: keep controls distinguishable without relying on color alone. */
+@media(forced-colors:active){
+ .tb-message-box,.tb-preferences,.tb-dialog{border:2px solid CanvasText;background:Canvas;color:CanvasText}
+ .tb-close,.tb-dialog button,.tb-preferences select{border:2px solid ButtonText;background:ButtonFace;color:ButtonText}
+ .tb-close:focus-visible,.tb-dialog button:focus-visible,.tb-preferences :is(select,input):focus-visible{outline:3px solid Highlight;outline-offset:3px}
+ .tb-dialog .tb-danger{border-style:double}
+}
+@media(max-width:480px){
+ .tb-overlay{padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}
+ .tb-dialog{max-height:calc(100dvh - 16px)}
+}
