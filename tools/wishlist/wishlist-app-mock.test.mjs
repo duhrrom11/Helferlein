@@ -6,6 +6,8 @@ import {readFileSync} from 'node:fs';
 import {SourceTextModule,SyntheticModule,createContext} from 'node:vm';
 
 class Element {
+ dispatchEvent(){return true}
+ click(){return this.onclick?.()}
  constructor(id=''){this.id=id;this.children=[];this.dataset={};this.style={};this.attrs={};this.value='';this.textContent='';this.hidden=false;this.disabled=false;this.className='';this.classList={add(){},remove(){},toggle(){},contains(){return false}};this.isConnected=true;}
  append(...nodes){this.children.push(...nodes);for(const n of nodes)if(n&&typeof n==='object')n.parent=this}
  appendChild(node){this.append(node);return node}
@@ -56,7 +58,7 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  const document={body,getElementById:el,querySelector:s=>s==='main'?body:new Element(),createElement:tag=>new Element(tag),addEventListener(){},removeEventListener(){}};
  const store=new Map();
  const location={href:'https://example.invalid/tools/wishlist/',search:''};
- const context=createContext({document,window:{supabase:{createClient:()=>db},location,history:{replaceState(){}}},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},URL,URLSearchParams,Intl,Number,String,Set,Map,JSON,Math,Error,TypeError,Promise,console,setTimeout,clearTimeout});
+ const context=createContext({document,HTMLButtonElement:Element,Event:class Event{constructor(type){this.type=type}},window:{supabase:{createClient:()=>db},location,history:{replaceState(){}}},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},URL,URLSearchParams,Intl,Number,String,Set,Map,JSON,Math,Error,TypeError,Promise,console,setTimeout,clearTimeout});
  const appCode=readFileSync(new URL('./app.mjs',import.meta.url),'utf8');
  const app=new SourceTextModule(appCode,{context,identifier:'app.mjs'});
  const stubValues={
@@ -91,7 +93,7 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  el('productTitle').value='Mock-Wunsch';
  el('wishNote').value='';
  await el('saveWish').onclick();
- assert.equal(db.from instanceof Function,true);
+ assert.equal(typeof db.from,'function');
  assert.ok(calls.some(c=>c.table==='wishlist_wishes'&&c.op==='insert'),'Wunsch wurde im Mock gespeichert');
  assert.equal(el('wishSaveFeedback').textContent.includes('Wunsch gespeichert'),true);
 });
