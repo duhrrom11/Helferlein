@@ -1,0 +1,27 @@
+# ToolyaBuddy – Entwicklungsbranch
+
+Branch: `feature/toolya-buddy-wishlist-v4`. **Nicht auf main mergen oder deployen.**
+
+## Integriert
+- `tools/wishlist/toolya-buddy.mjs`: maskottchenbasierte Meldungen und asynchrone Bestätigungsdialoge.
+- `tools/wishlist/toolya-buddy.css`: responsive Darstellung.
+- `tools/wishlist/app.mjs`: Anmeldebegrüßung nach bestätigtem Login; bestätigte Wunsch-/Profil-Speicherungen; Teil-Erfolge als Warnung; Formular- und Laufzeitfehler; zwei Cloud-Bestätigungen.
+- Bestehende `#status`- und `#wishSaveFeedback`-Meldungen bleiben erhalten. Sicherheitsabfragen sind standardmäßig Abbrechen und erfordern ausdrückliche Zustimmung.
+- Keine Änderungen an Supabase-Schema, RLS, Daten oder produktivem Deployment.
+
+## Noch nicht abgeschlossen
+**Die acht Original-PNGs sind noch NICHT in den Branch hochgeladen.** Die Komponente erwartet sie unter `tools/wishlist/toolya-assets/toolya_wishlist_{turquoise|purple}_{welcome|success|error|tip}_1024.png`. Bis dahin wird bei Ladefehlern das Bild ausgeblendet, der Text bleibt lesbar. Originaldateien liegen im lokalen ZIP der Entwicklungsfassung; keine Ersatzfiguren verwenden.
+
+Weitere Bestätigungen in anderen Wunschlistenmodulen und globale `window.alert`-Dialoge werden noch nicht abgefangen. Keine pauschale Änderung des synchronen `confirm()`-Verhaltens.
+
+## Testplan (noch nicht als bestanden markieren)
+1. Branch lokal ohne produktive Schreibzugriffe laden; prüfen, dass alle Module importieren und keine Konsolenfehler auftreten.
+2. Beide Originalmaskottchen-Bildpfade und sämtliche Emotionen kontrollieren, sobald Assets hochgeladen sind.
+3. Formularvalidierung: ursprünglicher Fokus und `aria-invalid` erhalten; Buddy zeigt vollständigen Text.
+4. Erfolgreicher Wunsch-Save und Update: erst nach Serverbestätigung Erfolg anzeigen.
+5. Fehlende Listenzuordnung/lokale Zusatzdaten: Warnung statt vollem Erfolg.
+6. Cloud-Import/Überschreiben: Escape/Abbrechen = keine Mutation; Bestätigen = bestehender Vorgang.
+7. Ruhemodus: freiwillige Meldungen aus, Warnungen/Fehler/Bestätigungen weiterhin sichtbar.
+8. Auth: erst nach bestätigtem Login begrüßen; kein Zugriff auf Passwörter.
+9. Mobil: 320/375px, virtuelle Tastatur, Screenreader, Fokus-Rückgabe und verschachtelte Dialoge.
+10. GitHub Pages Deployment-Konfiguration prüfen, bevor irgendein Merge erwogen wird.
