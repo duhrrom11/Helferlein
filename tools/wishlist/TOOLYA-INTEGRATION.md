@@ -10,7 +10,7 @@ Branch: `feature/toolya-buddy-wishlist-v4`. **Nicht auf main mergen oder deploye
 - Keine Änderungen an Supabase-Schema, RLS, Daten oder produktivem Deployment.
 
 ## Noch nicht abgeschlossen
-**Die acht Original-PNGs sind noch NICHT in den Branch hochgeladen.** Die Komponente erwartet sie unter `tools/wishlist/toolya-assets/toolya_wishlist_{turquoise|purple}_{welcome|success|error|tip}_1024.png`. Bis dahin wird bei Ladefehlern das Bild ausgeblendet, der Text bleibt lesbar. Originaldateien liegen im lokalen ZIP der Entwicklungsfassung; keine Ersatzfiguren verwenden.
+**Die acht Original-PNGs sind im Entwicklungsbranch vorhanden** unter `tools/wishlist/toolya_wishlist_{turquoise|purple}_{welcome|success|error|tip}_1024.png`. Die Bildbasis ist `./`, relativ zu `tools/wishlist/`. Keine Ersatzfiguren verwenden.
 
 Weitere Bestätigungen in anderen Wunschlistenmodulen und globale `window.alert`-Dialoge werden noch nicht abgefangen. Keine pauschale Änderung des synchronen `confirm()`-Verhaltens.
 
