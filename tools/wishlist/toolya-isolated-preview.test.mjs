@@ -127,3 +127,11 @@ test('decorative mascots do not intercept Android taps or selection',()=>{
  assert.match(css,/@media\(prefers-reduced-transparency:reduce\)/);
  assert.match(css,/\.tb-overlay\{backdrop-filter:none!important;-webkit-backdrop-filter:none!important\}/);
 });
+
+test('Android virtual keyboard leaves confirmation modal scrollable in dynamic viewport',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/@supports\(height:100dvh\)/);
+ assert.match(css,/\.tb-overlay\{max-height:100dvh;overflow-y:auto;overscroll-behavior:contain\}/);
+ assert.match(css,/\.tb-dialog\{max-height:calc\(100dvh - 2rem\);overflow-y:auto;overscroll-behavior:contain\}/);
+ assert.match(css,/\.tb-dialog,\.tb-overlay\{animation:none!important;transition:none!important\}/);
+});
