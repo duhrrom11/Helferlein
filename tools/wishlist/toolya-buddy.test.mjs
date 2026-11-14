@@ -171,4 +171,8 @@ test('v17: alter Timer darf neue Meldung nicht schließen',()=>{
 test('v17: nach destroy darf alter Timer keine Meldung verändern',()=>{
  const b=new ToolyaBuddy({root:document.body});b.show('tip','Alt');const epoch=b.noticeEpoch;b.destroy();b.expireOptional(epoch);assert.equal(b.current,null);
 });
+test('v18: Android pointercancel löst die Hover-Pause wieder',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('tip','Pointer');b.host.onpointerenter({pointerType:'pen'});assert.equal(b.pointerOver,true);b.host.onpointercancel();assert.equal(b.pointerOver,false);b.expireOptional();assert.equal(b.current,null)}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
