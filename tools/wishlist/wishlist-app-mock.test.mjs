@@ -52,6 +52,7 @@ function createMockDb(){
 test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  const {db,calls}=createMockDb();
  const body=new Element('body');
+ el('feedFilter').value='all';el('feedSort').value='newest';el('wishQuantity').value='1';el('wishStatus').value='open';el('priority').value='1';el('wishVisibility').value='public';
  const document={body,getElementById:el,querySelector:s=>s==='main'?body:new Element(),createElement:tag=>new Element(tag),addEventListener(){},removeEventListener(){}};
  const store=new Map();
  const location={href:'https://example.invalid/tools/wishlist/',search:''};
@@ -85,4 +86,12 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  await el('signin').onclick();
  assert.equal(el('wishlistAuthStatus').textContent,'● Angemeldet');
  assert.ok(calls.every(c=>!c.table.startsWith('production_')));
+ // Exercise the actual save handler with a purely in-memory database.
+ el('url').value='https://www.amazon.de/dp/B012345678';
+ el('productTitle').value='Mock-Wunsch';
+ el('wishNote').value='';
+ await el('saveWish').onclick();
+ assert.equal(db.from instanceof Function,true);
+ assert.ok(calls.some(c=>c.table==='wishlist_wishes'&&c.op==='insert'),'Wunsch wurde im Mock gespeichert');
+ assert.equal(el('wishSaveFeedback').textContent.includes('Wunsch gespeichert'),true);
 });
