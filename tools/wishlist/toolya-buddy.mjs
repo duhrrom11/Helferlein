@@ -5,7 +5,7 @@ const priority=type=>REQUIRED.has(type)?2:1;
 export class ToolyaBuddy {
  constructor({root=document.body,assetBase='./',character='turquoise',quiet=false,motion='normal',tips=true,hidden=false}={}){
   this.root=root;this.assetBase=assetBase;this.character=character;this.quiet=quiet;this.motion='normal';this.tips=!!tips;this.hidden=!!hidden;this.queue=[];this.current=null;this.timer=null;this.dialogs=[];this.destroyed=false;
-  this.host=document.createElement('aside');this.host.className='toolya-buddy';this.host.setAttribute('data-motion',this.quiet?'off':this.motion);this.host.setAttribute('data-intensity',this.motion);this.host.setAttribute('aria-label','Toolya-Begleiter');
+  this.host=document.createElement('aside');this.host.className='toolya-buddy';this.host.setAttribute('data-motion',this.quiet?'off':this.motion==='normal'?'on':this.motion);this.host.setAttribute('data-intensity',this.motion);this.host.setAttribute('aria-label','Toolya-Begleiter');
   this.host.innerHTML='<div class="tb-message-box" hidden><img class="tb-avatar" alt="" aria-hidden="true"><div class="tb-text"><strong class="tb-title"></strong><p class="tb-body"></p><button type="button" class="tb-close">Schließen</button></div></div>';
   root.append(this.host);this.host.querySelector('.tb-close').onclick=()=>this.dismiss();this.setMotion(motion);this.setHidden(hidden);
  }
@@ -13,8 +13,8 @@ export class ToolyaBuddy {
  setCharacter(c){if(!['turquoise','purple'].includes(c))throw Error('Ungültiger Charakter');this.character=c;if(this.current)this.render();for(const d of this.dialogs)this.image(d.img,'warning')}
  setMotion(mode){if(!['off','calm','normal','lively'].includes(mode))throw Error('Ungültige Animationsstufe');this.motion=mode;this.host.setAttribute('data-intensity',mode);this.host.setAttribute('data-motion',this.quiet?'off':mode)}
  setTips(enabled){this.tips=!!enabled;if(!this.tips){this.queue=this.queue.filter(x=>x.type!=='tip');if(this.current?.type==='tip')this.dismiss()}}
- setHidden(value){this.hidden=!!value;this.host.setAttribute('data-hidden',String(this.hidden));this.host.hidden=this.hidden&&!this.current}
- setQuiet(q){this.quiet=!!q;this.host.setAttribute('data-motion',this.quiet?'off':this.motion);if(this.quiet){this.queue=this.queue.filter(item=>REQUIRED.has(item.type));if(this.current&&!REQUIRED.has(this.current.type))this.current=null;if(!this.current)this.current=this.queue.shift()||null;}this.render()}
+ setHidden(value){this.hidden=!!value;this.host.setAttribute('data-hidden',String(this.hidden));this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type)}
+ setQuiet(q){this.quiet=!!q;this.host.setAttribute('data-motion',this.quiet?'off':this.motion==='normal'?'on':this.motion);if(this.quiet){this.queue=this.queue.filter(item=>REQUIRED.has(item.type));if(this.current&&!REQUIRED.has(this.current.type))this.current=null;if(!this.current)this.current=this.queue.shift()||null;}this.render()}
  show(type,message){
   if(this.destroyed||!POSE[type]||typeof message!=='string'||!message.trim())return false;
   if((this.quiet&&!REQUIRED.has(type))||(type==='tip'&&!this.tips))return false;
