@@ -87,3 +87,15 @@
  .tb-message-box,.tb-preferences,.tb-dialog{border-width:2px}
  .tb-close,.tb-dialog button,.tb-preferences select{border-width:2px}
 }
+
+/* Keyboard and Android accessibility: never obscure the focus ring on dark overlays. */
+.tb-dialog button:focus-visible,.tb-close:focus-visible{outline-offset:3px}
+@media(forced-colors:active){
+ .tb-overlay{background:Canvas}
+ .tb-dialog button:focus-visible,.tb-close:focus-visible{outline:3px solid Highlight}
+}
+@media(max-width:320px){
+ .tb-message-box{flex-direction:column;align-items:stretch}
+ .tb-avatar{align-self:center}
+ .tb-close{width:100%}
+}
