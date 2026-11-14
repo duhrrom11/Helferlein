@@ -58,7 +58,7 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  const document={body,getElementById:el,querySelector:s=>s==='main'?body:new Element(),createElement:tag=>new Element(tag),createDocumentFragment:()=>new Element('fragment'),addEventListener(){},removeEventListener(){}};
  const store=new Map();
  const location={href:'https://example.invalid/tools/wishlist/',search:''};
- const context=createContext({document,Blob:class Blob{},HTMLButtonElement:Element,Event:class Event{constructor(type){this.type=type}},window:{supabase:{createClient:()=>db},location,history:{replaceState(){}}},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},URL,URLSearchParams,Intl,Number,String,Set,Map,JSON,Math,Error,TypeError,Promise,console,setTimeout,clearTimeout});
+ const context=createContext({document,Blob:class Blob{},HTMLButtonElement:Element,Event:class Event{constructor(type){this.type=type}},window:{supabase:{createClient:()=>db},location,history:{replaceState(){}}},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},URL,URLSearchParams,Intl,Number,String,Set,Map,JSON,Math,Error,TypeError,Promise,console,setTimeout,clearTimeout,matchMedia:()=>({matches:true})});
  const appCode=readFileSync(new URL('./app.mjs',import.meta.url),'utf8');
  const app=new SourceTextModule(appCode,{context,identifier:'app.mjs'});
  const stubValues={
@@ -66,7 +66,7 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
   ToolyaBuddy:class{show(){} confirm(){return Promise.resolve(false)}},
   wishSaveOutcome:({editing=false,extrasSaved,assignmentError=false})=>({type:extrasSaved&&!assignmentError?'success':'warning',message:editing?'Wunsch aktualisiert.':'Wunsch gespeichert'}),
   parseAmazonUrl:()=>({marketplace:'amazon.de',asin:'B012345678'}),
-  validateWishFields:()=>({title:'Mock-Wunsch',note:''}),
+  validateWishFields:(title,note)=>({title,note}),
   validatePriority:()=>1,validateCredentials:()=>({email:'mock@example.invalid',password:'not-real'}),
   requestedProfileHandle:()=>null,sharedAmazonProductUrl:()=>null,
   shouldRestoreSharedProductUrl:()=>false,isFeedRequestStale:()=>false,
@@ -97,4 +97,19 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  assert.equal(typeof db.from,'function');
  assert.ok(calls.some(c=>c.table==='wishlist_wishes'&&c.op==='insert'),'Wunsch wurde im Mock gespeichert');
  assert.equal(el('wishSaveFeedback').textContent.includes('Wunsch gespeichert'),true);
+ // Open the actual edit control created by the real feed renderer.
+ const findButton=(root,label)=>{
+  if(root?.textContent===label&&typeof root.onclick==='function')return root;
+  for(const child of root?.children||[]){const found=findButton(child,label);if(found)return found;}
+  return null;
+ };
+ const edit=findButton(el('feed'),'Bearbeiten');
+ assert.ok(edit,'Bearbeiten-Schaltfläche wird im echten Feed erzeugt');
+ edit.click();
+ assert.equal(el('saveWish').textContent,'Änderungen speichern');
+ el('wishNote').value='Bearbeitete Notiz';
+ await el('saveWish').onclick();
+ assert.ok(calls.some(c=>c.table==='wishlist_wishes'&&c.op==='update'),'Wunsch wird über echten Update-Handler aktualisiert');
+ assert.equal(el('wishSaveFeedback').textContent.includes('Wunsch aktualisiert'),true);
+
 });
