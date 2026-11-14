@@ -19,12 +19,21 @@ function mountToolyaPreferences(){
  const quietLabel=document.createElement('label');quietLabel.className='tb-quiet-label';
  const quietToggle=document.createElement('input');quietToggle.type='checkbox';quietToggle.setAttribute('aria-label','Ruhemodus aktivieren');
  quietLabel.append(quietToggle,document.createTextNode(' Ruhemodus (nur wichtige Meldungen)'));
- const save=()=>{try{localStorage.setItem(toolyaPreferencesKey,JSON.stringify({character:toolyaBuddy.character,quiet:toolyaBuddy.quiet}))}catch{}};
- try{const prefs=JSON.parse(localStorage.getItem(toolyaPreferencesKey)||'{}');if(['turquoise','purple'].includes(prefs?.character))toolyaBuddy.setCharacter(prefs.character);toolyaBuddy.setQuiet(prefs?.quiet===true)}catch{}
- characterSelect.value=toolyaBuddy.character;quietToggle.checked=toolyaBuddy.quiet;
+ const motionLabel=document.createElement('label');motionLabel.textContent='Animation';
+ const motionSelect=document.createElement('select');motionSelect.setAttribute('aria-label','Toolya-Animationsintensität');
+ for(const [value,label] of [['off','Aus'],['calm','Ruhig'],['normal','Normal'],['lively','Lebhaft']]){const option=document.createElement('option');option.value=value;option.textContent=label;motionSelect.append(option)}
+ motionLabel.append(motionSelect);
+ const tipsLabel=document.createElement('label');const tipsToggle=document.createElement('input');tipsToggle.type='checkbox';tipsLabel.append(tipsToggle,document.createTextNode(' Optionale Tipps anzeigen'));
+ const hiddenLabel=document.createElement('label');const hiddenToggle=document.createElement('input');hiddenToggle.type='checkbox';hiddenLabel.append(hiddenToggle,document.createTextNode(' Begleiter zeitweise ausblenden (Warnungen bleiben sichtbar)'));
+ const save=()=>{try{localStorage.setItem(toolyaPreferencesKey,JSON.stringify({character:toolyaBuddy.character,quiet:toolyaBuddy.quiet,motion:toolyaBuddy.motion,tips:toolyaBuddy.tips,hidden:toolyaBuddy.hidden}))}catch{}};
+ try{const prefs=JSON.parse(localStorage.getItem(toolyaPreferencesKey)||'{}');if(['turquoise','purple'].includes(prefs?.character))toolyaBuddy.setCharacter(prefs.character);toolyaBuddy.setQuiet(prefs?.quiet===true);if(['off','calm','normal','lively'].includes(prefs?.motion))toolyaBuddy.setMotion(prefs.motion);toolyaBuddy.setTips(prefs?.tips!==false);toolyaBuddy.setHidden(prefs?.hidden===true)}catch{}
+ characterSelect.value=toolyaBuddy.character;quietToggle.checked=toolyaBuddy.quiet;motionSelect.value=toolyaBuddy.motion;tipsToggle.checked=toolyaBuddy.tips;hiddenToggle.checked=toolyaBuddy.hidden;
  characterSelect.onchange=()=>{toolyaBuddy.setCharacter(characterSelect.value);save()};
  quietToggle.onchange=()=>{toolyaBuddy.setQuiet(quietToggle.checked);save()};
- panel.append(characterLabel,quietLabel);root.prepend(panel);
+ motionSelect.onchange=()=>{toolyaBuddy.setMotion(motionSelect.value);save()};
+ tipsToggle.onchange=()=>{toolyaBuddy.setTips(tipsToggle.checked);save()};
+ hiddenToggle.onchange=()=>{toolyaBuddy.setHidden(hiddenToggle.checked);save()};
+ panel.append(characterLabel,quietLabel,motionLabel,tipsLabel,hiddenLabel);root.prepend(panel);
 }
 mountToolyaPreferences();
 const report=(m)=>{$('status').textContent=m};
