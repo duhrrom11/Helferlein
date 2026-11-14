@@ -91,4 +91,12 @@ test('v7: normaler Animationsmodus bleibt kompatibel',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{b.setMotion('normal');assert.equal(b.host.attrs['data-motion'],'on');b.setMotion('calm');assert.equal(b.host.attrs['data-motion'],'calm')}finally{b.destroy()}
 });
+test('v8: Charakterwechsel startet die Meldefrist nicht neu',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('tip','Zeitlich begrenzt');const deadline=b.deadline;assert.ok(deadline>Date.now());b.setCharacter('purple');assert.ok(b.deadline<=deadline);b.dismiss();assert.equal(b.deadline,0)}finally{b.destroy()}
+});
+test('v8: wichtige Meldungen haben keine automatische Ablauffrist',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('warning','Bitte prüfen');assert.equal(b.deadline,0);assert.equal(b.host.querySelector('.tb-text').attrs['aria-live'],'assertive')}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
