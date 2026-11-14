@@ -93,3 +93,10 @@ test('Android preview refreshes reduced-motion status when system settings chang
  assert.match(html,/motionQuery\.addEventListener\?\.\('change',updateViewport\)/);
  assert.match(html,/prefers-reduced-motion: reduce/);
 });
+
+test('ultra-narrow Android screens retain a full-width dismiss control',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/@media\(max-width:320px\)/);
+ assert.match(css,/\.tb-message-box\{flex-direction:column;align-items:stretch\}/);
+ assert.match(css,/\.tb-close\{width:100%\}/);
+});
