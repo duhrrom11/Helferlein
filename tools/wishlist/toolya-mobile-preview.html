@@ -29,7 +29,7 @@ document.getElementById('hide-buddy').addEventListener('change',e=>buddy.setHidd
 simulated.addEventListener('change',()=>{updateMotion();status.textContent=simulated.checked?'Bewegung nur in der Vorschau abgeschaltet.':'Bewegung wieder gemäß Ruhemodus und Systemeinstellung.'});
 const viewport=document.getElementById('viewport-info');
 function updateViewport(){viewport.textContent='Sichtbare Breite: '+document.documentElement.clientWidth+' px · System reduziert Bewegung: '+(window.matchMedia('(prefers-reduced-motion: reduce)').matches?'Ja':'Nein')}
-window.addEventListener('resize',updateViewport);updateViewport();
+window.addEventListener('resize',updateViewport);const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');motionQuery.addEventListener?.('change',updateViewport);updateViewport();
 const poses=[['welcome','Begrüßung'],['success','Erfolg'],['tip','Tipp'],['error','Fehler']];
 let character='turquoise';
 function renderGallery(){
