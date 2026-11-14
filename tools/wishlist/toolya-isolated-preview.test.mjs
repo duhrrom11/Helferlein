@@ -24,3 +24,18 @@ test('four original poses animate only when motion is allowed',()=>{
  assert.match(js,/setAttribute\('data-pose',POSE\[type\]\)/);
  assert.match(js,/setAttribute\('data-motion'/);
 });
+
+test('Android preview exposes viewport and explicit motion simulation',()=>{
+ const html=read('toolya-mobile-preview.html');
+ assert.match(html,/id="simulate-reduced"/);
+ assert.match(html,/id="viewport-info"/);
+ assert.match(html,/prefers-reduced-motion: reduce/);
+ assert.match(html,/buddy\.host\.setAttribute\('data-motion'/);
+});
+test('idle remains still and each pose has its own short animation',()=>{
+ const css=read('toolya-buddy.css');
+ for(const pose of ['welcome','success','tip','error'])assert.ok(css.includes('[data-pose="'+pose+'"] .tb-avatar{animation:'));
+ assert.match(css,/\[data-pose="idle"\] \.tb-avatar\{animation:none\}/);
+ assert.match(css,/prefers-reduced-motion:reduce/);
+ assert.match(css,/\[data-motion="off"\] \.tb-avatar\{animation:none!important/);
+});
