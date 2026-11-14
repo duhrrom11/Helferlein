@@ -1,3 +1,4 @@
+import {mountAmazonWishlistScraperImport} from './amazon-wishlist-scraper-import.mjs';
 import {planWishExtrasImport} from './wish-extras-sync.mjs';
 import {mountListsDashboard} from './lists-dashboard.mjs';
 import {parseAmazonUrl,affiliateUrl,sharedAmazonProductUrl} from './amazon-links.mjs';
@@ -7,6 +8,7 @@ const $=id=>document.getElementById(id);let user=null,profile=null,offset=0;let 
 const updateHiddenProfiles=()=>{const count=hiddenProfileIds.size;$('hiddenProfileInfo').hidden=!count;$('restoreHiddenProfiles').hidden=!count;$('hiddenProfileInfo').textContent=count===1?'1 Profil für diese Sitzung ausgeblendet.':count+' Profile für diese Sitzung ausgeblendet.'};
 const report=(m)=>{$('status').textContent=m};
 const refreshFeed=async()=>{offset=0;renderedWishCount=0;$('feedCount').textContent='Wünsche werden geladen …';feedRevision++;$('more').disabled=true;await feed()};
+const amazonScraperImport=mountAmazonWishlistScraperImport({db,getUser:()=>user,onImported:async()=>{await refreshFeed();await dashboard.refresh();}});
 const requireUser=()=>{if(!user)throw Error('Bitte zuerst anmelden');return user.id};
 
 const localWishExtrasKey=owner=>'helferlein-wish-extras:'+owner;
