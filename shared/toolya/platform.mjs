@@ -39,7 +39,7 @@ function apply(){const p=read();buddy.setCharacter(['turquoise','purple'].includ
 function persist(){try{localStorage.setItem(key,JSON.stringify({character:buddy.character,motion:buddy.motion,quiet:buddy.quiet,tips:buddy.tips,hidden:buddy.hidden}))}catch{}refreshDonations()}
 const donationLines=['Ein Käffchen für meinen Werkzeugkasten? ☕','Meine flauschigen Ohren arbeiten heute Überstunden!','Ich werde nicht mit Keksen bezahlt. Skandal!','Ein kleiner Kaffee und ich hüpfe vor Freude!','Meine Schraubenschlüssel brauchen dringend Koffein!','Unterstützt du uns? Ich wedle auch extra mit dem Schwanz!','Pssst … mein Sparschwein ist noch ziemlich hungrig!','Ich arbeite für Applaus. Aber Kaffee wäre auch toll!','Ein Kaffee für die Menschen hinter Toolya? Ich sage Danke!','Mit einem Käffchen machst du dieses Flauschwesen glücklich!'];
 let donationIndex;try{donationIndex=Number(sessionStorage.getItem('toolya-donation-variant')||0);if(!Number.isSafeInteger(donationIndex))donationIndex=0;sessionStorage.setItem('toolya-donation-variant',String((donationIndex+1)%donationLines.length))}catch{donationIndex=0}
-function refreshDonations(){if(!buddy)return;for(const a of document.querySelectorAll('a[href="https://ko-fi.com/duhrrom"]')){
+function refreshDonations(){if(!buddy)return;const idleImage=buddy.host.querySelector('.toolya-idle img');if(idleImage)idleImage.src=assets+'toolya_wishlist_'+buddy.character+'_welcome_1024.png';for(const a of document.querySelectorAll('a[href="https://ko-fi.com/duhrrom"]')){
  if(a.dataset.toolyaDonation){const image=a.querySelector('img');if(image)image.src=assets+'toolya_wishlist_'+buddy.character+'_welcome_1024.png';continue}
  // Keep legal prose inline; replace only actual calls to action.
  if(!/kaffee|spend|unterstütz/i.test(a.textContent)&&!a.className.includes('kofi'))continue;
@@ -59,6 +59,7 @@ function mountPreferences(){if(tool==='wishlist')return;
 }
 function start(instance){if(buddy)return;buddy=instance;window.toolyaBuddy=buddy;buddy.host.dataset.tool=tool;buddy.host.setAttribute('aria-label','Toolya · '+name);
  const badge=document.createElement('span');badge.className='toolya-context';badge.textContent=prop+' '+name;badge.setAttribute('aria-hidden','true');buddy.host.prepend(badge);
+ const idle=document.createElement('button');idle.type='button';idle.className='toolya-idle';idle.setAttribute('aria-label','Toolya · '+name);const idleImage=document.createElement('img');idleImage.alt='';idleImage.width=72;idleImage.height=72;idleImage.onerror=()=>{idleImage.hidden=true};const idleLabel=document.createElement('span');idleLabel.textContent='Toolya · '+name;idle.append(idleImage,idleLabel);idle.onclick=()=>{const keyboard=document.activeElement===idle;if(buddy.tickle()&&keyboard)buddy.host.querySelector('.tb-avatar').focus({preventScroll:true})};buddy.host.prepend(idle);
  apply();mountPreferences();refreshDonations();new MutationObserver(refreshDonations).observe(document.body,{childList:true,subtree:true});
  window.addEventListener('storage',e=>{if(e.key===key||e.key===null)apply()});
  // Tools can publish confirmed outcomes; do not infer success from clicks or submissions.

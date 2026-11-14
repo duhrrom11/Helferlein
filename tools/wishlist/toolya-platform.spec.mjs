@@ -9,6 +9,8 @@ test('platform preferences, real notices, five-touch Easter egg and optional don
  expect(await page.evaluate(()=>window.toolyaBuddy.tickle())).toBe(false);
  const link=page.locator('a.toolya-donation').first();await expect(link).toHaveAttribute('href','https://ko-fi.com/duhrrom');await expect(link).toHaveAttribute('rel','noopener noreferrer');
  await expect(link.locator('small')).toContainText('Freiwillig');expect(errors).toEqual([]);
+ await page.evaluate(()=>window.toolyaBuddy.dismiss());const idle=page.locator('.toolya-idle');await expect(idle).toBeVisible();
+ await page.evaluate(()=>{window.toolyaBuddy.tickleCooldown=0});await idle.focus();for(let i=0;i<5;i++)await page.keyboard.press('Enter');await expect(page.locator('.tb-body')).toContainText('Ohren');await expect(avatar).toBeFocused();
  await page.screenshot({path:'/tmp/toolya-platform-mobile.png',fullPage:true});
 });
 test('critical notice and native confirmation suppress Easter egg; reduced motion stays still',async({page})=>{
