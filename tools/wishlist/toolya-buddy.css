@@ -39,3 +39,9 @@
 .toolya-buddy[hidden]{display:none!important}
 .tb-preferences select,.tb-preferences input{max-width:100%}
 @media(prefers-reduced-motion:reduce){.toolya-buddy[data-motion] .tb-avatar{animation:none!important;transform:none!important}}
+
+/* Dialog controls remain reachable with Android's keyboard and enlarged text. */
+.tb-dialog{scrollbar-gutter:stable;overflow-wrap:anywhere}
+.tb-dialog button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:360px){.tb-dialog-avatar{float:none;display:block;margin:0 auto 8px}.tb-dialog button{display:block;width:100%;margin:8px 0 0}}
+@media(hover:none){.tb-dialog button,.tb-close{touch-action:manipulation}}
