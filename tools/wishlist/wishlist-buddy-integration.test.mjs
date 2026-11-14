@@ -13,7 +13,7 @@ test('Login meldet Willkommen',()=>assert.match(app,/buddyNotice\('welcome','Wil
 test('Speicherfehler werden als Formularfehler gemeldet',()=>assert.match(app,/buddyNotice\(isWishSave\?'form-error':'error',message\)/));
 test('Cloud-Import verlangt ausdrückliche Bestätigung',()=>assert.match(app,/toolyaBuddy\.confirm\(\{title:'Cloud-Import bestätigen'/));
 test('Cloud-Überschreiben verlangt ausdrückliche Bestätigung',()=>assert.match(app,/toolyaBuddy\.confirm\(\{title:'Cloud-Daten überschreiben\?'/));
-test('Bestätigungsdialog blockiert konkurrierende Dialoge ohne offene Promise',()=>assert.match(buddy,/if\(this\.dialogs\.length\)\{resolve\(false\);return;\}/));
+test('Bestätigungsdialog blockiert konkurrierende und zerstörte Dialoge ohne offene Promise',()=>assert.match(buddy,/if\(this\.destroyed\|\|this\.dialogs\.length\)\{resolve\(false\);return;\}/));
 
 test('Speichermeldungen werden über den gemeinsamen Mapper erzeugt',()=>assert.match(app,/wishSaveOutcome\(\{editing:true,extrasSaved\}\)/));
 test('Neue Wünsche verwenden den gemeinsamen Mapper',()=>assert.match(app,/wishSaveOutcome\(\{extrasSaved,assignmentError:!!assignmentError\}\)/));
