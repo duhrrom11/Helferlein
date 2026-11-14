@@ -58,3 +58,10 @@ test('Android high contrast, text zoom and reduced motion have CSS fallbacks',()
  assert.match(css,/max-height:calc\(100dvh - 16px\)/);
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
+
+test('coarse-pointer Android controls have minimum 44px touch targets',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/@media\(pointer:coarse\)/);
+ assert.match(css,/\.tb-close,\.tb-dialog button\{min-height:44px;min-width:44px\}/);
+ assert.match(css,/@media\(prefers-reduced-transparency:reduce\)/);
+});
