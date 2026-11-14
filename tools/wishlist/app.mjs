@@ -8,6 +8,25 @@ const db=window.supabase.createClient('https://avapuibsidubuzxjtyld.supabase.co'
 const $=id=>document.getElementById(id);let user=null,profile=null,offset=0;let feedBusy=false;let feedRefreshPending=false;let feedRevision=0;let editingWishId=null;let editingWishBaseline=null;let editingWishExtrasBaseline=null;let editingWishFeedRevision=null;let selectedProfileId=null;let peopleSearchGeneration=0;let authGeneration=0;let profileLoadGeneration=0;let wishEditorRevision=0;let wishSaveRunGeneration=0;const dashboard=mountListsDashboard(db,()=>user);const hiddenWishIds=new Set();const hiddenProfileIds=new Set();let lastHiddenWishId=null;let renderedWishCount=0;const updateHiddenWishes=()=>{const count=hiddenWishIds.size;$('hiddenWishInfo').hidden=!count;$('restoreHiddenWishes').hidden=!count;$('undoHiddenWish').hidden=!count||lastHiddenWishId===null;$('hiddenWishInfo').textContent=count===1?'1 Wunsch für diese Sitzung ausgeblendet.':count+' Wünsche für diese Sitzung ausgeblendet.'};
 const updateHiddenProfiles=()=>{const count=hiddenProfileIds.size;$('hiddenProfileInfo').hidden=!count;$('restoreHiddenProfiles').hidden=!count;$('hiddenProfileInfo').textContent=count===1?'1 Profil für diese Sitzung ausgeblendet.':count+' Profile für diese Sitzung ausgeblendet.'};
 const toolyaBuddy=new ToolyaBuddy({root:document.querySelector('main')||document.body,assetBase:'./toolya-assets/'});
+const toolyaPreferencesKey='helferlein-toolya-preferences-v1';
+function mountToolyaPreferences(){
+ const root=document.querySelector('main')||document.body;
+ const panel=document.createElement('section');panel.className='tb-preferences';panel.setAttribute('aria-label','Toolya-Begleiter einstellen');
+ const characterLabel=document.createElement('label');characterLabel.textContent='Toolya-Begleiter';
+ const characterSelect=document.createElement('select');characterSelect.setAttribute('aria-label','Toolya-Begleiter auswählen');
+ for(const [value,name] of [['turquoise','Türkis'],['purple','Lila']]){const option=document.createElement('option');option.value=value;option.textContent=name;characterSelect.append(option)}
+ characterLabel.append(characterSelect);
+ const quietLabel=document.createElement('label');quietLabel.className='tb-quiet-label';
+ const quietToggle=document.createElement('input');quietToggle.type='checkbox';quietToggle.setAttribute('aria-label','Ruhemodus aktivieren');
+ quietLabel.append(quietToggle,document.createTextNode(' Ruhemodus (nur wichtige Meldungen)'));
+ const save=()=>{try{localStorage.setItem(toolyaPreferencesKey,JSON.stringify({character:toolyaBuddy.character,quiet:toolyaBuddy.quiet}))}catch{}};
+ try{const prefs=JSON.parse(localStorage.getItem(toolyaPreferencesKey)||'{}');if(['turquoise','purple'].includes(prefs?.character))toolyaBuddy.setCharacter(prefs.character);toolyaBuddy.setQuiet(prefs?.quiet===true)}catch{}
+ characterSelect.value=toolyaBuddy.character;quietToggle.checked=toolyaBuddy.quiet;
+ characterSelect.onchange=()=>{toolyaBuddy.setCharacter(characterSelect.value);save()};
+ quietToggle.onchange=()=>{toolyaBuddy.setQuiet(quietToggle.checked);save()};
+ panel.append(characterLabel,quietLabel);root.append(panel);
+}
+mountToolyaPreferences();
 const report=(m)=>{$('status').textContent=m};
 const buddyNotice=(type,message)=>toolyaBuddy.show(type,message);
 const refreshFeed=async()=>{offset=0;renderedWishCount=0;$('feedCount').textContent='Wünsche werden geladen …';feedRevision++;$('more').disabled=true;await feed()};
