@@ -30,4 +30,25 @@ test('Bestätigen liefert true',async()=>{const promise=buddy.confirm({message:'
 test('Abbrechen liefert false',async()=>{const promise=buddy.confirm({message:'Nein'});buddy.dialogs[0].img.parent.children.at(-2).onclick();assert.equal(await promise,false)});
 test('Charakterwechsel funktioniert',()=>{buddy.setCharacter('purple');assert.equal(buddy.character,'purple')});
 test('Ungültiger Charakter wird abgelehnt',()=>assert.throws(()=>buddy.setCharacter('invalid'),/Ungültiger Charakter/));
+
+test('Animation verwendet die passende Originalpose',()=>{
+ buddy.setQuiet(false);buddy.show('welcome','Hallo');
+ assert.equal(buddy.host.attrs['data-pose'],'welcome');
+ buddy.show('success','Erledigt');
+ assert.equal(buddy.host.attrs['data-pose'],'success');
+ buddy.show('tip','Hinweis');
+ assert.equal(buddy.host.attrs['data-pose'],'tip');
+ buddy.show('error','Fehler');
+ assert.equal(buddy.host.attrs['data-pose'],'error');
+ assert.match(buddy.host.querySelector('.tb-avatar').src,/toolya_wishlist_purple_error_1024\\.png$/);
+});
+test('Ruhemodus deaktiviert Bewegungen, nicht Fehlermeldungen',()=>{
+ buddy.setQuiet(true);
+ assert.equal(buddy.host.attrs['data-motion'],'off');
+ assert.equal(buddy.show('welcome','Leise'),false);
+ assert.equal(buddy.show('error','Wichtig'),true);
+ buddy.setQuiet(false);
+ assert.equal(buddy.host.attrs['data-motion'],'on');
+});
+
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
