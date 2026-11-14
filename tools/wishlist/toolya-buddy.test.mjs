@@ -52,4 +52,23 @@ test('Ruhemodus deaktiviert Bewegungen, nicht Fehlermeldungen',()=>{
  assert.equal(buddy.host.attrs['data-motion'],'on');
 });
 
+test('v5: kritische Meldung unterbricht optionalen Hinweis und stellt ihn danach wieder her',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('tip','Hinweis');b.show('error','Wichtig');assert.equal(b.current.type,'error');b.dismiss();assert.equal(b.current.type,'tip');}finally{b.destroy()}
+});
+test('v5: gleiche Meldung wird nicht mehrfach eingereiht',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('warning','Kritisch');b.show('tip','Einmal');b.show('tip','Einmal');assert.equal(b.queue.length,1);b.show('warning','Kritisch');assert.equal(b.queue.length,1);}finally{b.destroy()}
+});
+test('v5: wichtige Warteschlangenmeldungen gehen optionalen vor',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('error','Eins');b.show('tip','Optional');b.show('warning','Zwei');b.dismiss();assert.equal(b.current.type,'warning');b.dismiss();assert.equal(b.current.type,'tip');}finally{b.destroy()}
+});
+test('v5: Ruhemodus entfernt optionale Warteschlangeneinträge',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('error','Wichtig');b.show('tip','Optional');b.setQuiet(true);assert.equal(b.queue.length,0);assert.equal(b.current.type,'error');}finally{b.destroy()}
+});
+test('v5: nach destroy werden Meldungen abgelehnt',()=>{
+ const b=new ToolyaBuddy({root:document.body});b.destroy();assert.equal(b.show('error','Nicht mehr anzeigen'),false);
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
