@@ -105,3 +105,8 @@
 @media(hover:hover){
  .toolya-buddy:hover .tb-avatar{animation-play-state:paused}
 }
+
+/* Honor Android data-saving mode for nonessential mascot movement. */
+@media(prefers-reduced-data:reduce){
+ .toolya-buddy .tb-avatar{animation:none!important;transition:none!important}
+}
