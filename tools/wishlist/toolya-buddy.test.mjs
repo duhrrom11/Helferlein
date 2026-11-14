@@ -152,4 +152,12 @@ test('v15: kritische Warnungen bleiben auch beim Ablaufversuch bestehen',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{b.show('warning','Kritisch');b.expireOptional();assert.equal(b.current.type,'warning')}finally{b.destroy()}
 });
+test('v16: Mauszeiger hält optionale Meldung sichtbar',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('tip','Bitte lesen');b.host.onmouseenter();b.expireOptional();assert.equal(b.current.type,'tip');b.host.onmouseleave();b.expireOptional();assert.equal(b.current,null)}finally{b.destroy()}
+});
+test('v16: inaktiver Browser-Tab hält optionale Meldung sichtbar',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('success','Noch lesen');document.hidden=true;b.expireOptional();assert.equal(b.current.type,'success');document.hidden=false;b.expireOptional();assert.equal(b.current,null)}finally{document.hidden=false;b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
