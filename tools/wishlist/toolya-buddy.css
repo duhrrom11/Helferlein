@@ -57,3 +57,12 @@
  .tb-overlay{padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}
  .tb-dialog{max-height:calc(100dvh - 16px)}
 }
+
+/* Avoid persistent animation and keep mobile touch targets easy to activate. */
+@media(pointer:coarse){
+ .tb-close,.tb-dialog button{min-height:44px;min-width:44px}
+ .tb-preferences select,.tb-preferences input{min-height:44px}
+}
+@media(prefers-reduced-transparency:reduce){
+ .tb-message-box,.tb-dialog,.tb-preferences{backdrop-filter:none!important}
+}
