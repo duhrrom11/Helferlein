@@ -143,3 +143,10 @@ test('Android hardware keyboard focus remains visible in forced colors',()=>{
  assert.match(css,/@media\(forced-colors:active\)/);
  assert.match(css,/outline-color:Highlight/);
 });
+
+test('Android font scaling wraps long labels and keeps touch targets usable',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/\.tb-close,\.tb-dialog button\{white-space:normal;overflow-wrap:anywhere;min-height:44px\}/);
+ assert.match(css,/\.tb-title,\.tb-body,\.tb-dialog p,\.tb-dialog h2\{overflow-wrap:anywhere\}/);
+ assert.match(css,/\.toolya-buddy\[data-motion="lively"\] \.tb-avatar\{animation:none!important\}/);
+});
