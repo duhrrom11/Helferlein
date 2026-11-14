@@ -107,3 +107,9 @@ test('mascot motion pauses during keyboard focus and pointer inspection',()=>{
  assert.match(css,/@media\(hover:hover\)/);
  assert.match(css,/\.toolya-buddy:hover \.tb-avatar\{animation-play-state:paused\}/);
 });
+
+test('Android reduced-data preference disables decorative mascot motion',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/@media\(prefers-reduced-data:reduce\)/);
+ assert.match(css,/\.toolya-buddy \.tb-avatar\{animation:none!important;transition:none!important\}/);
+});
