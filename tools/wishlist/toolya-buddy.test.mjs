@@ -131,4 +131,12 @@ test('v13: veralteter Bildladefehler versteckt nicht den neuen Charakter',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{b.show('welcome','Hallo');const img=b.host.querySelector('.tb-avatar');const oldError=img.onerror;b.setCharacter('purple');oldError();assert.equal(img.hidden,false);assert.match(img.src,/purple_welcome/);img.onerror();assert.equal(img.hidden,true)}finally{b.destroy()}
 });
+test('v14: Meldungstext erhält vor der Aktualisierung die passende Live-Region',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ const body=b.host.querySelector('.tb-body'),live=b.host.querySelector('.tb-text');
+ const original=Object.getOwnPropertyDescriptor(body,'textContent');
+ let roleWhenWritten;
+ Object.defineProperty(body,'textContent',{configurable:true,get(){return this._text},set(value){this._text=value;roleWhenWritten=live.attrs.role}});
+ try{b.show('warning','Dringend');assert.equal(roleWhenWritten,'alert');b.dismiss();b.show('tip','Optional');assert.equal(roleWhenWritten,'status')}finally{if(original)Object.defineProperty(body,'textContent',original);b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
