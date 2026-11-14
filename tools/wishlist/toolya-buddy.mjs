@@ -1,7 +1,7 @@
 const POSE={welcome:'welcome',success:'success',tip:'tip',warning:'error',error:'error','form-error':'error'};
 const REQUIRED=new Set(['warning','error','form-error']);
 export class ToolyaBuddy {
- constructor({root=document.body,assetBase='./toolya-assets/',character='turquoise',quiet=false}={}){
+ constructor({root=document.body,assetBase='./',character='turquoise',quiet=false}={}){
   this.root=root;this.assetBase=assetBase;this.character=character;this.quiet=quiet;this.queue=[];this.current=null;this.timer=null;this.dialogs=[];
   this.host=document.createElement('aside');this.host.className='toolya-buddy';this.host.setAttribute('aria-label','Toolya-Begleiter');
   this.host.innerHTML='<div class="tb-message-box" hidden><img class="tb-avatar" alt="" aria-hidden="true"><div class="tb-text"><strong class="tb-title"></strong><p class="tb-body"></p><button type="button" class="tb-close">Schließen</button></div></div>';
