@@ -76,3 +76,14 @@
 .toolya-buddy[data-motion="calm"][data-pose="success"] .tb-avatar{animation-name:tb-success-calm}
 .toolya-buddy[data-motion="calm"][data-pose="tip"] .tb-avatar{animation-name:tb-tip-calm}
 .toolya-buddy[data-motion="calm"][data-pose="error"] .tb-avatar{animation-name:tb-error-calm}
+
+/* Landscape Android: keep the confirmation buttons reachable above soft keyboards. */
+@media(max-height:440px) and (orientation:landscape){
+ .tb-overlay{align-items:flex-start;overflow-y:auto}
+ .tb-dialog{max-height:none;margin:auto 0}
+ .tb-dialog-avatar{width:48px;height:48px}
+}
+@media(prefers-contrast:more){
+ .tb-message-box,.tb-preferences,.tb-dialog{border-width:2px}
+ .tb-close,.tb-dialog button,.tb-preferences select{border-width:2px}
+}
