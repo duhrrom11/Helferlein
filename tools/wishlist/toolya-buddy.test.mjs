@@ -107,4 +107,12 @@ test('v9: nach destroy wird kein Bestätigungsdialog geöffnet',async()=>{
  const b=new ToolyaBuddy({root:document.body});b.destroy();
  assert.equal(await b.confirm({message:'Nicht mehr öffnen'}),false);
 });
+test('v10: Ruhemoduswechsel verlängert aktive Hinweise nicht',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('tip','Ablaufzeit');const deadline=b.deadline;b.setQuiet(false);assert.ok(b.deadline<=deadline);b.setQuiet(true);assert.equal(b.current,null);assert.equal(b.deadline,0)}finally{b.destroy()}
+});
+test('v10: Warteschlange verliert auch bei vielen Warnungen keine kritische Meldung',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('error','Erste Warnung');for(let i=0;i<20;i++)b.show('warning','Warnung '+i);assert.equal(b.queue.length,20);for(let i=0;i<20;i++){b.dismiss();assert.equal(b.current.message,'Warnung '+i)}}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
