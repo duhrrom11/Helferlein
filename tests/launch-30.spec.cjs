@@ -52,19 +52,19 @@ test('Settings modal closes via close button', async ({ page }) => {
   await page.locator('#cancelSettingsBtn').click();
   await expect(page.locator('#settingsModal')).toBeHidden();
 });
-test('Tool search hides unrelated cards', async ({ page }) => {
+test('Tool categories hide unrelated cards', async ({ page }) => {
   await page.goto(base + '/index.html');
-  await page.locator('#searchBox').fill('kassenbon');
+  await page.locator('[data-b3-category-filter=finanzen]').click();
   await page.evaluate(() => filterTools());
   await expect(page.locator('#toolsGrid .tool-card[data-id="kassenbon"]')).toBeVisible();
   await expect(page.locator('#toolsGrid .tool-card[data-id="haustier"]')).toBeHidden();
 });
-test('Tool search restores all cards after clearing', async ({ page }) => {
+test('All-tools category restores cards after filtering', async ({ page }) => {
   await page.goto(base + '/index.html');
-  await page.locator('#searchBox').fill('unwahrscheinlicher-suchbegriff-987');
+  await page.locator('[data-b3-category-filter=tiere]').click();
   await page.evaluate(() => filterTools());
   await expect(page.locator('#toolsGrid .tool-card[data-id="kassenbon"]')).toBeHidden();
-  await page.locator('#searchBox').fill('');
+  await page.locator('[data-b3-category-filter=alle]').click();
   await page.evaluate(() => filterTools());
   await expect(page.locator('#toolsGrid .tool-card[data-id="kassenbon"]')).toBeVisible();
 });
@@ -73,8 +73,7 @@ test('Favorites survive a browser reload', async ({ page }) => {
   await page.evaluate(() => { localStorage.removeItem('hub_favorites'); toggleFavorite('kassenbon'); });
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('hub_favorites')))).toContain('kassenbon');
   await page.reload();
-  await expect(page.locator('#favoritesSection')).toBeVisible();
-  await expect(page.locator('#favoritesGrid .tool-card[data-id="kassenbon"]')).toBeVisible();
+  await expect(page.locator('#b3-quickstart-list a[href="tools/haushaltsbuch-kassenbon/index.html"]')).toBeVisible();
 });
 test('Favorites can be removed without affecting other data', async ({ page }) => {
   await page.goto(base + '/index.html');

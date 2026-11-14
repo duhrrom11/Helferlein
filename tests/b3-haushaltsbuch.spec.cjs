@@ -31,12 +31,12 @@ test('B3 Haushaltsbuch Konto, Ko-fi and discovery are consolidated',async({page}
  await expect(page.locator('#b3-edit-open')).toBeVisible();
  await expect(page.locator('[data-b3-theme]')).toBeVisible();
  const footer=await page.locator('#settingsModal .b3-settings-footer a').evaluateAll(nodes=>nodes.map(n=>({text:n.textContent.trim(),href:n.getAttribute('href')})));
- expect(footer).toEqual([{text:'☕ Kaffee spendieren',href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
+ expect(footer).toEqual([{text:expect.stringContaining('Freiwillig unterstützen'),href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
 });
 test('B3 Haushaltsbuch navigation and actions are reachable',async({page})=>{
  await page.setViewportSize({width:390,height:900});await page.goto(url,{waitUntil:'domcontentloaded'});
  await page.locator('.b3-more summary').click();
- await expect(page.getByRole('button',{name:'Steuer-Export (CSV)'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Steuer-Datei herunterladen (CSV)'})).toBeVisible();
  await expect(page.getByRole('button',{name:'Finanzbericht (PDF)'})).toBeVisible();
  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
  await page.locator('.b3-preferences').getByRole('button',{name:/Hilfe/}).click();

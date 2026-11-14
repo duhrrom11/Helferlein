@@ -32,13 +32,13 @@ test('WG settings preserve account and show correct footer order',async({page})=
  await expect(page.locator('#b3-edit-open')).toBeVisible();
  await expect(page.locator('[data-b3-theme]')).toBeVisible();
  const links=await page.locator('#settingsModal .b3-settings-footer a').evaluateAll(ns=>ns.map(n=>({text:n.textContent.trim(),href:n.getAttribute('href')})));
- expect(links).toEqual([{text:'☕ Kaffee spendieren',href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
+ expect(links).toEqual([{text:expect.stringContaining('Freiwillig unterstützen'),href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
 });
 test('WG extra tools and help modal are reachable',async({page})=>{
  await page.setViewportSize({width:390,height:900});
  await page.goto(url,{waitUntil:'domcontentloaded'});
  await page.locator('.b3-more summary').click();
- for(const label of ['Mitglieder / Kontakte','Manuell synchronisieren','Finanzbericht (PDF)','WG-Link teilen','WLAN QR-Code'])
+ for(const label of ['Mitglieder / Kontakte','Jetzt speichern','Finanzbericht (PDF)','WG-Link teilen','WLAN QR-Code'])
   await expect(page.getByRole('button',{name:label})).toBeVisible();
  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
  await page.locator('.b3-preferences').getByRole('button',{name:/Hilfe/}).click();

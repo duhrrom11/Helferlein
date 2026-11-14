@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Toolya – isolierte Smartphone-Vorschau</title><link rel="stylesheet" href="./toolya-buddy.css">
+<style>
+:root{font-family:system-ui,sans-serif;color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#eef5fa;color:#15324b}main{max-width:740px;margin:auto;padding:16px}h1{font-size:clamp(1.5rem,5vw,2rem)}p{line-height:1.5}.note{font-size:.9rem;color:#435d72}.panel{background:white;border:1px solid #c7d9e6;border-radius:16px;padding:16px;margin:14px 0}.characters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.character{background:#f5faff;border:2px solid #c7d9e6;border-radius:12px;padding:8px;color:#123047;min-width:0;cursor:pointer}.character[aria-pressed=true]{border-color:#1376ad;background:#e6f5ff}.character img{display:block;width:100%;max-height:210px;aspect-ratio:1;object-fit:contain}.character span{display:block;font-weight:700;padding:6px}.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.actions button{border:0;border-radius:10px;background:#17649a;color:white;min-height:48px;font:inherit;padding:10px;cursor:pointer}button:focus-visible,input:focus-visible{outline:3px solid #d07800;outline-offset:3px}.quiet{display:flex;align-items:center;gap:10px;margin-top:14px;min-height:44px}.quiet input{width:22px;height:22px;accent-color:#17649a}.preview-images{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.preview-images img{width:100%;aspect-ratio:1;object-fit:contain}.preview-images figure{margin:0;min-width:0}.preview-images figcaption{text-align:center;font-size:.75rem}.status{min-height:1.5em}.toolya-buddy{margin:12px 0}@media(max-width:380px){main{padding:10px}.panel{padding:12px}.actions{grid-template-columns:1fr}.preview-images{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.quiet{flex-wrap:wrap}.quiet select{max-width:100%;min-width:0}main{min-width:0;overflow-wrap:anywhere}</style></head><body><main>
+<h1>🐾 Toolya – Smartphone-Vorschau</h1><p class="note">Nur Vorschau: keine Anmeldung, keine Supabase-Verbindung, keine produktiven Daten. Diese Seite verändert keine Wunschlisten.</p>
+<section class="panel" aria-label="Charakterauswahl"><h2>Dein Begleiter</h2><div class="characters">
+<button type="button" class="character" data-character="turquoise" aria-pressed="true"><img src="./toolya_wishlist_turquoise_welcome_1024.png" alt="Türkisfarbener Toolya-Begleiter"><span>Türkis</span></button>
+<button type="button" class="character" data-character="purple" aria-pressed="false"><img src="./toolya_wishlist_purple_welcome_1024.png" alt="Lilafarbener Toolya-Begleiter"><span>Lila</span></button>
+</div><label class="quiet"><input type="checkbox" id="quiet"> Ruhemodus: nur wichtige Meldungen, ohne Animation</label><p class="note">Die Bewegungen respektieren automatisch die Android-/Systemeinstellung „Animationen reduzieren“ (prefers-reduced-motion). Alle Meldungen bleiben auch ohne Bewegung lesbar.</p></section>
+<section class="panel"><h2>Android-Sichtprüfung</h2><p class="note">Prüfe beide Figuren, vier Meldungen, Ruhemodus und die Android-Systemoption „Animationen entfernen“. Die folgende Testoption simuliert nur die visuelle Abschaltung, nicht die Systemeinstellung.</p><label class="quiet"><input type="checkbox" id="simulate-reduced"> Bewegung in dieser Vorschau testweise deaktivieren</label><label class="quiet">Animationsintensität <select id="intensity"><option value="off">Aus</option><option value="calm">Ruhig</option><option value="normal" selected>Normal</option><option value="lively">Lebhaft</option></select></label><label class="quiet"><input type="checkbox" id="tips-enabled" checked> Optionale Tipps anzeigen</label><label class="quiet"><input type="checkbox" id="hide-buddy"> Begleiter ausblenden (Warnungen bleiben sichtbar)</label><p id="viewport-info" class="note"></p></section>
+<section class="panel"><h2>Meldungen ausprobieren</h2><div class="actions">
+<button type="button" id="preview-confirm">🔒 Bestätigung testen</button><button type="button" data-type="welcome">👋 Begrüßung</button><button type="button" data-type="success">✨ Erfolg</button><button type="button" data-type="tip">💡 Tipp</button><button type="button" data-type="error">⚠️ Fehler</button><button type="button" data-type="warning">⚠️ Warnung</button><button type="button" data-type="form-error">📝 Formularfehler</button>
+</div><p id="status" class="status" role="status" aria-live="polite">Wähle eine Meldung aus.</p><div id="buddy-mount"></div></section>
+<section class="panel"><h2>Alle vier Originalbilder</h2><div id="image-gallery" class="preview-images"></div><p class="note">Die Bilder werden direkt aus dem Entwicklungsordner geladen.</p></section>
+</main><script type="module">
+import {ToolyaBuddy} from './toolya-buddy.mjs';
+const buddy=new ToolyaBuddy({root:document.getElementById('buddy-mount'),assetBase:'./'});
+const status=document.getElementById('status');
+document.getElementById('preview-confirm').addEventListener('click',async()=>{const accepted=await buddy.confirm({title:'Vorschau: Bestätigung',message:'Dies ist nur ein isolierter Test. Es werden keine Daten verändert.',confirmLabel:'Test bestätigen',cancelLabel:'Abbrechen'});status.textContent=accepted?'Testbestätigung angenommen.':'Testbestätigung abgebrochen.'});
+const gallery=document.getElementById('image-gallery');
+const simulated=document.getElementById('simulate-reduced');
+const quietToggle=document.getElementById('quiet');
+function updateMotion(){buddy.setMotion(document.getElementById('intensity').value);if(simulated.checked)buddy.host.setAttribute('data-motion','off')}
+document.getElementById('intensity').addEventListener('change',updateMotion);
+document.getElementById('tips-enabled').addEventListener('change',e=>buddy.setTips(e.target.checked));
+document.getElementById('hide-buddy').addEventListener('change',e=>buddy.setHidden(e.target.checked));
+simulated.addEventListener('change',()=>{updateMotion();status.textContent=simulated.checked?'Bewegung nur in der Vorschau abgeschaltet.':'Bewegung wieder gemäß Ruhemodus und Systemeinstellung.'});
+const viewport=document.getElementById('viewport-info');
+function updateViewport(){viewport.textContent='Sichtbare Breite: '+document.documentElement.clientWidth+' px · System reduziert Bewegung: '+(window.matchMedia('(prefers-reduced-motion: reduce)').matches?'Ja':'Nein')}
+window.addEventListener('resize',updateViewport);const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');motionQuery.addEventListener?.('change',updateViewport);updateViewport();
+const poses=[['welcome','Begrüßung'],['success','Erfolg'],['tip','Tipp'],['error','Fehler']];
+let character='turquoise';
+function renderGallery(){
+ gallery.replaceChildren();
+ for(const [pose,label] of poses){
+  const figure=document.createElement('figure'),img=document.createElement('img'),caption=document.createElement('figcaption');
+  img.src='./toolya_wishlist_'+character+'_'+pose+'_1024.png';img.alt=label+' – '+(character==='purple'?'Lila':'Türkis');img.loading='lazy';
+  img.onerror=()=>{caption.textContent=label+' (Bild nicht geladen)'};
+  caption.textContent=label;figure.append(img,caption);gallery.append(figure);
+ }
+}
+for(const button of document.querySelectorAll('[data-character]'))button.addEventListener('click',()=>{
+ character=button.dataset.character;buddy.setCharacter(character);
+ for(const choice of document.querySelectorAll('[data-character]'))choice.setAttribute('aria-pressed',String(choice===button));
+ renderGallery();status.textContent='Begleiter: '+(character==='purple'?'Lila':'Türkis');
+});
+document.getElementById('quiet').addEventListener('change',e=>{buddy.setQuiet(e.target.checked);updateMotion();status.textContent=e.target.checked?'Ruhemodus eingeschaltet. Fehler bleiben sichtbar.':'Ruhemodus ausgeschaltet.'});
+for(const button of document.querySelectorAll('[data-type]'))button.addEventListener('click',()=>{
+ const type=button.dataset.type;
+ const message={welcome:'Hallo! Schön, dass du da bist.',success:'Geschafft! Dein Wunsch wurde gespeichert (nur Vorschau).',tip:'Tipp: Du kannst jederzeit den Begleiter wechseln.',error:'Achtung: Das ist eine simulierte Fehlermeldung.',warning:'Dies ist eine wichtige Testwarnung.', 'form-error':'Dies ist ein simulierter Eingabefehler.'}[type];
+ const shown=buddy.show(type,message);
+ status.textContent=shown?'Meldung: '+button.textContent.trim():'Diese optionale Meldung ist durch die Einstellungen ausgeblendet.';
+});
+renderGallery();
+</script></body></html>

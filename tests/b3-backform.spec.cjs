@@ -53,7 +53,7 @@ test('Backform account, design settings and supporter links are intact',async({p
  await expect(page.locator('#b3-backform-theme')).toBeVisible();
  await expect(page.locator('#b3-backform-edit')).toBeVisible();
  const links=await page.locator('#settings-modal .b3-settings-footer a').evaluateAll(ns=>ns.map(n=>({text:n.textContent.trim(),href:n.getAttribute('href')})));
- expect(links).toEqual([{text:'☕ Kaffee spendieren',href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
+ expect(links).toEqual([{text:expect.stringContaining('Freiwillig unterstützen'),href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
 });
 test('Backform tab editor cancels without writing saved recipes',async({page})=>{
  await page.setViewportSize({width:900,height:900});await page.goto(url,{waitUntil:'domcontentloaded'});

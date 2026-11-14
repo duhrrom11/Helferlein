@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ToolyaBuddy – isolierte Browserprüfungen</title><link rel="stylesheet" href="./toolya-buddy.css"></head>
+<body><main><h1>ToolyaBuddy – Browserprüfungen</h1><pre id="results" aria-live="polite">Prüfung läuft …</pre></main>
+<script type="module">
+import {ToolyaBuddy} from './toolya-buddy.mjs';
+const out=document.getElementById('results');
+const checks=[];const assert=(condition,label)=>{if(!condition)throw Error(label);checks.push('OK '+label)};
+const buddy=new ToolyaBuddy({root:document.querySelector('main'),assetBase:'./'});
+try {
+ buddy.show('warning','Wichtiger Hinweis');
+ buddy.show('success','Später');
+ assert(buddy.current.type==='warning','Warnung behält Vorrang');
+ buddy.dismiss();
+ assert(buddy.current.type==='success','Nachfolgende Meldung sichtbar');
+ buddy.show('warning','Bleibt sichtbar');
+ buddy.show('tip','Ausblenden');
+ buddy.show('warning','Auch wichtig');
+ buddy.setQuiet(true);
+ buddy.dismiss();
+ assert(buddy.current?.type==='warning','Ruhemodus überspringt optionale Meldungen');
+ const first=buddy.confirm({message:'Erste Bestätigung'});
+ const second=await buddy.confirm({message:'Gleichzeitige Bestätigung'});
+ assert(second===false,'Zweiter Dialog sicher abgebrochen');
+ assert(document.querySelectorAll('.tb-dialog').length===1,'Nur ein Sicherheitsdialog');
+ document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+ assert(await first===false,'Escape bricht Dialog ab');
+ assert(document.querySelectorAll('.tb-dialog').length===0,'Dialog entfernt');
+ const confirmed=buddy.confirm({message:'Bestätigen'});
+ document.querySelector('.tb-dialog button:last-child').click();
+ assert(await confirmed===true,'Explizite Bestätigung');
+ buddy.destroy();
+ assert(!document.querySelector('.toolya-buddy'),'Aufräumen');
+ out.textContent=checks.join('\n')+'\nBESTANDEN ('+checks.length+' Prüfungen)';
+ document.documentElement.dataset.testResult='pass';
+} catch(error) {
+ out.textContent=checks.join('\n')+'\nFEHLER: '+error.message;
+ document.documentElement.dataset.testResult='fail';
+ throw error;
+}
+</script></body></html>

@@ -150,3 +150,10 @@ body.b3-home .b3-hub-nav .b3-auth-status:focus-visible{outline:3px solid #fff;ou
 @media(max-width:450px){
   body.b3-home .b3-hub-nav .b3-auth-status{font-size:.72rem!important;padding:.55rem .7rem!important;white-space:normal}
 }
+
+/* Long offline/auth status labels must not widen the mobile viewport. */
+@media(max-width:600px){
+ body.b3-home .b3-hub-topbar{box-sizing:border-box;min-width:0;flex-wrap:wrap}
+ body.b3-home .b3-hub-nav{min-width:0;max-width:100%;flex-wrap:wrap}
+ body.b3-home .b3-hub-nav .b3-auth-status{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+}

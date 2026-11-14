@@ -78,7 +78,7 @@ for(const width of [390,900]){
   await expect(page.locator('[data-b3-theme]')).toBeVisible();
   await expect(page.locator('#b3-edit-open')).toBeVisible();
   await expect(page.getByRole('link',{name:/Entdecke mehr Helferlein/})).toBeVisible();
-  await expect(page.getByRole('link',{name:/Kaffee spendieren/})).toBeVisible();
+  await expect(page.getByRole('link',{name:/Toolya freiwillig auf Ko-fi unterstützen/})).toBeVisible();
  });
 }
 
@@ -90,7 +90,7 @@ test('B3 settings footer places Ko-fi immediately before discovery as the final 
   await expect(footer).toBeVisible();
   const links=await footer.locator('a').evaluateAll(nodes=>nodes.map(n=>({text:n.textContent.trim(),href:n.getAttribute('href')})));
   expect(links).toEqual([
-    {text:'☕ Kaffee spendieren',href:'https://ko-fi.com/duhrrom'},
+    {text:expect.stringContaining('Freiwillig unterstützen'),href:'https://ko-fi.com/duhrrom'},
     {text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}
   ]);
   expect(await page.locator('#settingsModal .b3-preferences').evaluate(el=>el.lastElementChild?.className)).toBe('b3-settings-footer');

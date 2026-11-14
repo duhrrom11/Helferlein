@@ -1,0 +1,44 @@
+name: Toolya isolated tests
+on:
+  push:
+    branches: [feature/toolya-buddy-wishlist-v4]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  node-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Component, integration and isolated app mocks
+        run: node --experimental-vm-modules --test tools/wishlist/toolya-buddy.test.mjs tools/wishlist/toolya-assets.test.mjs tools/wishlist/toolya-isolated-preview.test.mjs tools/wishlist/wishlist-buddy-integration.test.mjs tools/wishlist/wish-save-outcome.test.mjs tools/wishlist/wishlist-app-mock.test.mjs
+
+  chromium-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify all eight original PNG hashes
+        working-directory: tools/wishlist
+        run: sha256sum --check toolya-originals.sha256
+      - name: Install pinned browser test runner
+        working-directory: tools/wishlist
+        run: npm install --ignore-scripts --no-package-lock --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: tools/wishlist
+        run: npx playwright install --with-deps chromium
+      - name: Isolated Android viewport, modal and motion checks
+        working-directory: tools/wishlist
+        run: npx playwright test --config playwright.toolya.config.mjs
+      - name: Shared platform, touch Easter egg and canonical tool routes
+        working-directory: tools/wishlist
+        run: npx playwright test --config toolya-platform.config.mjs

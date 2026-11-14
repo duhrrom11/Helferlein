@@ -31,7 +31,7 @@ test('Verleih account, Ko-fi and discovery appear in settings',async({page})=>{
  await expect(page.locator('#b3-edit-open')).toBeVisible();
  await expect(page.locator('[data-b3-theme]')).toBeVisible();
  const footer=await page.locator('#settingsModal .b3-settings-footer a').evaluateAll(ns=>ns.map(n=>({text:n.textContent.trim(),href:n.getAttribute('href')})));
- expect(footer).toEqual([{text:'☕ Kaffee spendieren',href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
+ expect(footer).toEqual([{text:expect.stringContaining('Freiwillig unterstützen'),href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
 });
 test('Verleih PDF action and help are accessible',async({page})=>{
  await page.setViewportSize({width:390,height:900});await page.goto(url,{waitUntil:'domcontentloaded'});

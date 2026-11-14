@@ -30,14 +30,14 @@ test('Autokosten settings, Ko-fi and discovery link appear together',async({page
  await expect(page.locator('[data-b3-theme]')).toBeVisible();
  await expect(page.locator('#b3-edit-open')).toBeVisible();
  const links=await page.locator('#settingsModal .b3-settings-footer a').evaluateAll(ns=>ns.map(n=>({label:n.textContent.trim(),href:n.getAttribute('href')})));
- expect(links).toEqual([{label:'☕ Kaffee spendieren',href:'https://ko-fi.com/duhrrom'},{label:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
+ expect(links).toEqual([{label:expect.stringContaining('Freiwillig unterstützen'),href:'https://ko-fi.com/duhrrom'},{label:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
 });
 test('Autokosten more tools and help actions remain accessible',async({page})=>{
  await page.setViewportSize({width:390,height:850});
  await page.goto(url,{waitUntil:'domcontentloaded'});
  await page.locator('.b3-more summary').click();
  await expect(page.getByRole('button',{name:'PDF-Report'})).toBeVisible();
- await expect(page.getByRole('button',{name:'Backup herunterladen'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Sicherung herunterladen'})).toBeVisible();
  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
  await page.locator('.b3-preferences').getByRole('button',{name:/Hilfe/}).click();
  await expect(page.locator('#helpBox')).toBeVisible();
