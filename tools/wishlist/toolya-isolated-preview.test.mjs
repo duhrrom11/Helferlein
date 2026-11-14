@@ -39,3 +39,13 @@ test('idle remains still and each pose has its own short animation',()=>{
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.match(css,/\[data-motion="off"\] \.tb-avatar\{animation:none!important/);
 });
+
+test('Android preview can inspect the isolated confirmation dialog',()=>{
+ const html=read('toolya-mobile-preview.html');
+ assert.match(html,/id="preview-confirm"/);
+ assert.match(html,/buddy\.confirm\(/);
+ assert.match(html,/keine Daten verändert/);
+ assert.match(html,/id="intensity"/);
+ assert.match(html,/id="tips-enabled"/);
+ assert.match(html,/id="hide-buddy"/);
+});
