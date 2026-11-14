@@ -43,7 +43,7 @@ function createMockDb(){
    if(op==='insert'){const row={id:'mock-'+nextId++,...payload};rows.push(row);tables[table]=rows;return {data:single?row:[row],error:null}}
    if(op==='update'){const matching=rows.filter(r=>filters.every(([k,v])=>Array.isArray(v)?v.includes(r[k]):r[k]===v));for(const row of matching)Object.assign(row,payload);return {data:single?matching[0]||null:matching,error:null}}
    const filtered=rows.filter(r=>filters.every(([k,v])=>Array.isArray(v)?v.includes(r[k]):r[k]===v));
-   const selected=limit?filtered.slice(limit[0],limit[1]+1):filtered;
+   const selected=(limit?filtered.slice(limit[0],limit[1]+1):filtered).map(row=>table==='wishlist_wishes'?{...row,wishlist_products:tables.wishlist_products.find(p=>p.id===row.product_id)||{title:'Mock-Wunsch',asin:'B012345678',marketplace:'amazon.de'},wishlist_profiles:tables.wishlist_profiles.find(p=>p.user_id===row.user_id)||null}:row);
    return {data:single?selected[0]||null:selected,error:null};
   }
   return q;
@@ -55,7 +55,7 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  const {db,calls}=createMockDb();
  const body=new Element('body');
  el('feedFilter').value='all';el('feedSort').value='newest';el('wishQuantity').value='1';el('wishStatus').value='open';el('priority').value='1';el('wishVisibility').value='public';
- const document={body,getElementById:el,querySelector:s=>s==='main'?body:new Element(),createElement:tag=>new Element(tag),addEventListener(){},removeEventListener(){}};
+ const document={body,getElementById:el,querySelector:s=>s==='main'?body:new Element(),createElement:tag=>new Element(tag),createDocumentFragment:()=>new Element('fragment'),addEventListener(){},removeEventListener(){}};
  const store=new Map();
  const location={href:'https://example.invalid/tools/wishlist/',search:''};
  const context=createContext({document,Blob:class Blob{},HTMLButtonElement:Element,Event:class Event{constructor(type){this.type=type}},window:{supabase:{createClient:()=>db},location,history:{replaceState(){}}},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},URL,URLSearchParams,Intl,Number,String,Set,Map,JSON,Math,Error,TypeError,Promise,console,setTimeout,clearTimeout});
@@ -71,6 +71,7 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
   requestedProfileHandle:()=>null,sharedAmazonProductUrl:()=>null,
   shouldRestoreSharedProductUrl:()=>false,isFeedRequestStale:()=>false,
   feedPage:rows=>({items:rows||[],hasMore:false}),
+  isWishLocallyHidden:()=>false,profileDisplayLabel:()=> 'Mock User',priorityLabel:()=> 'Normal',affiliateUrl:()=> 'https://example.invalid/mock-product',
   wishlistErrorMessage:e=>e?.message||String(e)
  };
  await app.link(async specifier=>{
