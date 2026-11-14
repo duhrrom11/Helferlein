@@ -15,4 +15,4 @@ jobs:
         with:
           node-version: '22'
       - name: Component, integration and isolated app mocks
-        run: node --experimental-vm-modules --test tools/wishlist/toolya-buddy.test.mjs tools/wishlist/wishlist-buddy-integration.test.mjs tools/wishlist/wish-save-outcome.test.mjs tools/wishlist/wishlist-app-mock.test.mjs
+        run: node --experimental-vm-modules --test tools/wishlist/toolya-buddy.test.mjs tools/wishlist/toolya-assets.test.mjs tools/wishlist/toolya-isolated-preview.test.mjs tools/wishlist/wishlist-buddy-integration.test.mjs tools/wishlist/wish-save-outcome.test.mjs tools/wishlist/wishlist-app-mock.test.mjs
