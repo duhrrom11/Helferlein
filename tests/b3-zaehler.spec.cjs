@@ -32,7 +32,7 @@ test('B3 Zählerstände account, theme and supporter links are in settings',asyn
  await expect(page.locator('#b3-edit-open')).toBeVisible();
  await expect(page.locator('[data-b3-theme]')).toBeVisible();
  const links=await page.locator('#settingsModal .b3-settings-footer a').evaluateAll(ns=>ns.map(n=>({text:n.textContent.trim(),href:n.getAttribute('href')})));
- expect(links).toEqual([{text:'☕ Kaffee spendieren',href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
+ expect(links).toEqual([{text:expect.stringContaining('Freiwillig unterstützen'),href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'../../index.html'}]);
 });
 test('B3 Zählerstände export, tips, share and help are reachable',async({page})=>{
  await page.setViewportSize({width:390,height:900});

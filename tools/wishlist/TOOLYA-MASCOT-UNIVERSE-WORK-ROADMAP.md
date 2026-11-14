@@ -191,3 +191,12 @@ Vor einer produktiven Übernahme muss das beabsichtigte Ziel eindeutig geklärt 
 
 ### Noch offen – keine vollständige Abnahme
 16 Emotionen mit mehreren echten Posen pro Figur; neue charaktertreue Outfits statt der bisher rein textlichen Tool-Kontexte; unabhängige Augen-/Ohren-/Pfoten-/Schwanzanimationen; reale Ereignisse in sämtlichen Tools; zielgerechte Übernahme in den tatsächlichen Veröffentlichungsstand; erfolgreiche Browser-CI, Merge, Deployment und Liveprüfung. Ganzbild-CSS-Animationen und Kontextsymbole sind ausdrücklich KEIN Ersatz für diese Grafikanforderungen.
+
+
+### Verifizierter Zwischenstand und PR #414
+- Code-Commit `5434b056864e918be585ef1666154fed70228ff9`: Workflow https://github.com/duhrrom11/Helferlein/actions/runs/43606530753 erfolgreich: 94 Node-Prüfungen, sechs Android-/Dialogprüfungen und drei plattformweite Browserprüfungen (einschließlich elf Tool-Routen, Touch, Tastatur, Idle-Begleiter, Ko-fi und Warnungs-/Dialogsperren).
+- Originalbild-Hashes erneut lokal und in GitHub bestätigt. Keine produktiven API-Aufrufe oder Datenbankänderungen in den neuen Browserprüfungen; die Supabase-Bibliothek wird dafür aus der vorhandenen lokalen Kopie geliefert.
+- Android-Textzoom-Überlauf der isolierten Vorschau durch umbrechende Beschriftungen und schrumpfende Dialoginhalte behoben.
+- PR https://github.com/duhrrom11/Helferlein/pull/414 bleibt Entwurf, kein Merge oder Deployment. Die allgemeinen B3-Prüfungen enthielten feste Erwartungen an den alten Ko-fi-Text; diese werden auf freiwillige Unterstützung mit unverändertem Ziel und unveränderter Linkreihenfolge aktualisiert. Shared-Modul im HTML-Head erhält die bisherigen Inline-Script-Regressionen. 16/16 Offline-Release-Regressionen lokal bestanden.
+- Ein bestehender Nachlass-Browsertest klickte nach Ergänzung des Anhang-Entfernen-Buttons fälschlich den ersten Formularbutton; er adressiert jetzt ausdrücklich „Eintrag speichern“. Keine Änderung der Nachlass-Datenlogik.
+- Der nachfolgende CI-Lauf muss diese Integrationskorrekturen zusätzlich bestätigen. Das ist weiterhin keine vollständige grafische oder produktive Abnahme. Domain-/Repository-Zuordnung und die oben aufgeführten Grafik-/Ereignisarbeiten bleiben offen.

@@ -60,7 +60,7 @@ test('B3 home settings preserve cloud, safety backup and footer links',async({pa
  await expect(page.locator('#b3-hub-theme')).toBeVisible();
  await expect(page.locator('#settingsModal')).toContainText('Die einfache Backup-Datei ist unverschlüsselt');
  const links=await page.locator('#settingsModal .b3-hub-settings-footer a').evaluateAll(a=>a.map(x=>({text:x.textContent.trim(),href:x.getAttribute('href')})));
- expect(links).toEqual([{text:'☕ Kaffee spendieren',href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'#toolDiscovery'}]);
+ expect(links).toEqual([{text:expect.stringContaining('Freiwillig unterstützen'),href:'https://ko-fi.com/duhrrom'},{text:'↗ Entdecke mehr Helferlein',href:'#toolDiscovery'}]);
 });
 test('B3 home light/dark mode shares the established B3 theme key',async({page})=>{
  await page.goto(url,{waitUntil:'domcontentloaded'});
