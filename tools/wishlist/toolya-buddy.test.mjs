@@ -187,4 +187,8 @@ test('v21: Dialogende toleriert verbundenes Element ohne focus-Methode',async()=
  const b=new ToolyaBuddy({root:document.body});const previous=document.activeElement;
  try{document.activeElement={isConnected:true};const result=b.confirm({message:'Fokus prüfen'});b.dialogs[0].img.parent.children.at(-2).onclick();assert.equal(await result,false);assert.equal(b.dialogs.length,0)}finally{document.activeElement=previous;b.destroy()}
 });
+test('v22: geerbte Objektschlüssel sind keine gültigen Meldungstypen',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{assert.equal(b.show('constructor','Unsicher'),false);assert.equal(b.show('toString','Unsicher'),false);assert.equal(b.show('__proto__','Unsicher'),false);assert.equal(b.current,null)}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
