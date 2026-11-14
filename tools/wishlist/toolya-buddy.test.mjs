@@ -115,4 +115,12 @@ test('v10: Warteschlange verliert auch bei vielen Warnungen keine kritische Meld
  const b=new ToolyaBuddy({root:document.body});
  try{b.show('error','Erste Warnung');for(let i=0;i<20;i++)b.show('warning','Warnung '+i);assert.equal(b.queue.length,20);for(let i=0;i<20;i++){b.dismiss();assert.equal(b.current.message,'Warnung '+i)}}finally{b.destroy()}
 });
+test('v11: ausgeblendeter Begleiter überspringt alte optionale Meldungen',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('error','Wichtig');b.show('tip','Alter Tipp');b.setHidden(true);b.dismiss();assert.equal(b.current,null);assert.equal(b.host.hidden,true)}finally{b.destroy()}
+});
+test('v11: deaktivierte Tipps erscheinen nach einer Warnung nicht wieder',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('warning','Wichtig');b.show('tip','Alter Tipp');b.setTips(false);b.dismiss();assert.equal(b.current,null)}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
