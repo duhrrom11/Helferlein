@@ -55,7 +55,7 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  const {db,calls}=createMockDb();
  const body=new Element('body');
  el('feedFilter').value='all';el('feedSort').value='newest';el('wishQuantity').value='1';el('wishStatus').value='open';el('priority').value='1';el('wishVisibility').value='public';
- const document={body,getElementById:el,querySelector:s=>s==='main'?body:new Element(),createElement:tag=>new Element(tag),createDocumentFragment:()=>new Element('fragment'),addEventListener(){},removeEventListener(){}};
+ const document={body,getElementById:el,querySelector:s=>s==='main'?body:new Element(),createElement:tag=>new Element(tag),createTextNode:text=>({textContent:text}),createDocumentFragment:()=>new Element('fragment'),addEventListener(){},removeEventListener(){}};
  const store=new Map();
  const location={href:'https://example.invalid/tools/wishlist/',search:''};
  const context=createContext({document,Blob:class Blob{},HTMLButtonElement:Element,Event:class Event{constructor(type){this.type=type}},window:{supabase:{createClient:()=>db},location,history:{replaceState(){}}},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},URL,URLSearchParams,Intl,Number,String,Set,Map,JSON,Math,Error,TypeError,Promise,console,setTimeout,clearTimeout,matchMedia:()=>({matches:true})});
@@ -63,7 +63,7 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  const app=new SourceTextModule(appCode,{context,identifier:'app.mjs'});
  const stubValues={
   mountListsDashboard:()=>({refresh:async()=>{},selectedList:()=>null,assignWish:async()=>{}}),
-  ToolyaBuddy:class{show(){} confirm(){return Promise.resolve(false)}},
+  ToolyaBuddy:class{constructor(){this.character='turquoise';this.quiet=false}show(){} setCharacter(c){this.character=c} setQuiet(q){this.quiet=!!q} confirm(){return Promise.resolve(false)}},
   wishSaveOutcome:({editing=false,extrasSaved,assignmentError=false})=>({type:extrasSaved&&!assignmentError?'success':'warning',message:editing?'Wunsch aktualisiert.':'Wunsch gespeichert'}),
   parseAmazonUrl:()=>({marketplace:'amazon.de',asin:'B012345678'}),
   validateWishFields:(title,note)=>({title,note}),
@@ -83,6 +83,16 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
   return new SyntheticModule(exports,function(){for(const name of exports)this.setExport(name,stubValues[name]??(()=>null))},{context});
  });
  await app.evaluate();
+ const preferences=body.children.find(node=>node.className==='tb-preferences');
+ assert.ok(preferences,'Toolya-Einstellungen sind in der Oberfläche sichtbar');
+ const select=preferences.children[0].children[0];
+ const quiet=preferences.children[1].children[0];
+ assert.equal(select.value,'turquoise');
+ select.value='purple';select.onchange();
+ assert.equal(JSON.parse(store.get('helferlein-toolya-preferences-v1')).character,'purple');
+ quiet.checked=true;quiet.onchange();
+ assert.equal(JSON.parse(store.get('helferlein-toolya-preferences-v1')).quiet,true);
+
  assert.equal(el('wishlistAuthStatus').textContent,'◯ Nicht angemeldet');
  assert.equal(typeof el('signin').onclick,'function');
  el('email').value='mock@example.invalid';el('password').value='not-real';
