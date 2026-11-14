@@ -191,4 +191,8 @@ test('v22: geerbte Objektschlüssel sind keine gültigen Meldungstypen',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{assert.equal(b.show('constructor','Unsicher'),false);assert.equal(b.show('toString','Unsicher'),false);assert.equal(b.show('__proto__','Unsicher'),false);assert.equal(b.current,null)}finally{b.destroy()}
 });
+test('v23: leerer Bestätigungstext öffnet keinen unbeschrifteten Dialog',async()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{await assert.rejects(b.confirm({message:'  \n  '}),/Bestätigungstext fehlt/);assert.equal(b.dialogs.length,0)}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
