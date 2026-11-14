@@ -9,7 +9,7 @@
 <button type="button" class="character" data-character="turquoise" aria-pressed="true"><img src="./toolya_wishlist_turquoise_welcome_1024.png" alt="Türkisfarbener Toolya-Begleiter"><span>Türkis</span></button>
 <button type="button" class="character" data-character="purple" aria-pressed="false"><img src="./toolya_wishlist_purple_welcome_1024.png" alt="Lilafarbener Toolya-Begleiter"><span>Lila</span></button>
 </div><label class="quiet"><input type="checkbox" id="quiet"> Ruhemodus: nur wichtige Meldungen, ohne Animation</label><p class="note">Die Bewegungen respektieren automatisch die Android-/Systemeinstellung „Animationen reduzieren“ (prefers-reduced-motion). Alle Meldungen bleiben auch ohne Bewegung lesbar.</p></section>
-<section class="panel"><h2>Android-Sichtprüfung</h2><p class="note">Prüfe beide Figuren, vier Meldungen, Ruhemodus und die Android-Systemoption „Animationen entfernen“. Die folgende Testoption simuliert nur die visuelle Abschaltung, nicht die Systemeinstellung.</p><label class="quiet"><input type="checkbox" id="simulate-reduced"> Bewegung in dieser Vorschau testweise deaktivieren</label><p id="viewport-info" class="note"></p></section>
+<section class="panel"><h2>Android-Sichtprüfung</h2><p class="note">Prüfe beide Figuren, vier Meldungen, Ruhemodus und die Android-Systemoption „Animationen entfernen“. Die folgende Testoption simuliert nur die visuelle Abschaltung, nicht die Systemeinstellung.</p><label class="quiet"><input type="checkbox" id="simulate-reduced"> Bewegung in dieser Vorschau testweise deaktivieren</label><label class="quiet">Animationsintensität <select id="intensity"><option value="off">Aus</option><option value="calm">Ruhig</option><option value="normal" selected>Normal</option><option value="lively">Lebhaft</option></select></label><label class="quiet"><input type="checkbox" id="tips-enabled" checked> Optionale Tipps anzeigen</label><label class="quiet"><input type="checkbox" id="hide-buddy"> Begleiter ausblenden (Warnungen bleiben sichtbar)</label><p id="viewport-info" class="note"></p></section>
 <section class="panel"><h2>Meldungen ausprobieren</h2><div class="actions">
 <button type="button" data-type="welcome">👋 Begrüßung</button><button type="button" data-type="success">✨ Erfolg</button><button type="button" data-type="tip">💡 Tipp</button><button type="button" data-type="error">⚠️ Fehler</button>
 </div><p id="status" class="status" role="status" aria-live="polite">Wähle eine Meldung aus.</p><div id="buddy-mount"></div></section>
@@ -21,7 +21,10 @@ const status=document.getElementById('status');
 const gallery=document.getElementById('image-gallery');
 const simulated=document.getElementById('simulate-reduced');
 const quietToggle=document.getElementById('quiet');
-function updateMotion(){buddy.host.setAttribute('data-motion',quietToggle.checked||simulated.checked?'off':'on')}
+function updateMotion(){buddy.setMotion(document.getElementById('intensity').value);if(simulated.checked)buddy.host.setAttribute('data-motion','off')}
+document.getElementById('intensity').addEventListener('change',updateMotion);
+document.getElementById('tips-enabled').addEventListener('change',e=>buddy.setTips(e.target.checked));
+document.getElementById('hide-buddy').addEventListener('change',e=>buddy.setHidden(e.target.checked));
 simulated.addEventListener('change',()=>{updateMotion();status.textContent=simulated.checked?'Bewegung nur in der Vorschau abgeschaltet.':'Bewegung wieder gemäß Ruhemodus und Systemeinstellung.'});
 const viewport=document.getElementById('viewport-info');
 function updateViewport(){viewport.textContent='Sichtbare Breite: '+document.documentElement.clientWidth+' px · System reduziert Bewegung: '+(window.matchMedia('(prefers-reduced-motion: reduce)').matches?'Ja':'Nein')}
