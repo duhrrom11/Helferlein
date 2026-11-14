@@ -5,7 +5,7 @@
 import {ToolyaBuddy} from './toolya-buddy.mjs';
 const out=document.getElementById('results');
 const checks=[];const assert=(condition,label)=>{if(!condition)throw Error(label);checks.push('OK '+label)};
-const buddy=new ToolyaBuddy({root:document.querySelector('main'),assetBase:'./toolya-assets/'});
+const buddy=new ToolyaBuddy({root:document.querySelector('main'),assetBase:'./'});
 try {
  buddy.show('warning','Wichtiger Hinweis');
  buddy.show('success','Später');
