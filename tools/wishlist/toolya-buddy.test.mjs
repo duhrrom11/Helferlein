@@ -23,7 +23,7 @@ test('Warnung hat Vorrang vor Erfolg',()=>{buddy.show('warning','Kritisch');budd
 test('Warteschlange liefert nächste Meldung',()=>{buddy.dismiss();assert.equal(buddy.current.type,'success')});
 test('Ruhemodus überspringt optionale Meldungen',()=>{buddy.show('warning','Kritisch');buddy.show('tip','Optional');buddy.show('warning','Noch kritisch');buddy.setQuiet(true);buddy.dismiss();assert.equal(buddy.current.type,'warning')});
 test('Ruhemodus unterdrückt neue optionale Meldungen',()=>assert.equal(buddy.show('tip','Still'),false));
-test('Warnung bleibt auch im Ruhemodus sichtbar',()=>{buddy.show('error','Fehler');assert.equal(buddy.current.type,'error')});
+test('Warnung bleibt auch im Ruhemodus sichtbar',()=>{buddy.show('error','Fehler');assert.equal(buddy.current.type,'warning');buddy.dismiss();assert.equal(buddy.current.type,'error')});
 test('Gleichzeitige Bestätigung wird sicher abgebrochen',async()=>{const first=buddy.confirm({message:'Erste Frage'});assert.equal(await buddy.confirm({message:'Zweite Frage'}),false);assert.equal(buddy.dialogs.length,1);assert.equal(press('Escape'),true);assert.equal(await first,false)});
 test('Escape entfernt Sicherheitsdialog',()=>assert.equal(buddy.dialogs.length,0));
 test('Bestätigen liefert true',async()=>{const promise=buddy.confirm({message:'Ja'});buddy.dialogs[0].img.parent.children.at(-1).onclick();assert.equal(await promise,true)});
