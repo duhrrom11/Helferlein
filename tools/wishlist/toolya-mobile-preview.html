@@ -50,7 +50,7 @@ for(const button of document.querySelectorAll('[data-type]'))button.addEventList
  const type=button.dataset.type;
  const message={welcome:'Hallo! Schön, dass du da bist.',success:'Geschafft! Dein Wunsch wurde gespeichert (nur Vorschau).',tip:'Tipp: Du kannst jederzeit den Begleiter wechseln.',error:'Achtung: Das ist eine simulierte Fehlermeldung.'}[type];
  const shown=buddy.show(type,message);
- status.textContent=shown?'Meldung: '+button.textContent.trim():'Diese optionale Meldung wird im Ruhemodus ausgeblendet.';
+ status.textContent=shown?'Meldung: '+button.textContent.trim():'Diese optionale Meldung ist durch die Einstellungen ausgeblendet.';
 });
 renderGallery();
 </script></body></html>
