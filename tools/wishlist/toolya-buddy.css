@@ -66,3 +66,13 @@
 @media(prefers-reduced-transparency:reduce){
  .tb-message-box,.tb-dialog,.tb-preferences{backdrop-filter:none!important}
 }
+
+/* Calm mode uses genuinely smaller movements, not merely a slower replay. */
+@keyframes tb-greet-calm{0%,100%{transform:rotate(0) translateY(0)}35%{transform:rotate(-2deg) translateY(-1px)}70%{transform:rotate(2deg)}}
+@keyframes tb-success-calm{0%,100%{transform:translateY(0) scale(1)}35%{transform:translateY(-3px) scale(1.015)}65%{transform:translateY(-1px)}}
+@keyframes tb-tip-calm{0%,100%{transform:rotate(0)}40%{transform:rotate(2deg)}70%{transform:rotate(-1deg)}}
+@keyframes tb-error-calm{0%,100%{transform:translateX(0)}30%{transform:translateX(-1px)}60%{transform:translateX(1px)}}
+.toolya-buddy[data-motion="calm"][data-pose="welcome"] .tb-avatar{animation-name:tb-greet-calm}
+.toolya-buddy[data-motion="calm"][data-pose="success"] .tb-avatar{animation-name:tb-success-calm}
+.toolya-buddy[data-motion="calm"][data-pose="tip"] .tb-avatar{animation-name:tb-tip-calm}
+.toolya-buddy[data-motion="calm"][data-pose="error"] .tb-avatar{animation-name:tb-error-calm}
