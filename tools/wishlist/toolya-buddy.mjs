@@ -41,23 +41,23 @@ export class ToolyaBuddy {
   }
  }
  render(preserveTimer=false){clearTimeout(this.timer);const epoch=++this.noticeEpoch;const box=this.host.querySelector('.tb-message-box');box.hidden=!this.current;this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type);if(!this.current){this.deadline=0;this.host.setAttribute('data-pose','idle');return;}const {type,message}=this.current;this.host.setAttribute('data-pose',POSE[type]);this.image(this.host.querySelector('.tb-avatar'),type);const live=this.host.querySelector('.tb-text');live.setAttribute('role',REQUIRED.has(type)?'alert':'status');live.setAttribute('aria-live',REQUIRED.has(type)?'assertive':'polite');live.setAttribute('aria-atomic','true');this.host.querySelector('.tb-title').textContent=({'welcome':'Willkommen','success':'Geschafft','tip':'Tipp','warning':'Achtung','error':'Fehler','form-error':'Bitte Eingabe prüfen'})[type];this.host.querySelector('.tb-body').textContent=message;this.host.querySelector('.tb-close').setAttribute('aria-label','Toolya-Meldung schließen');if(!REQUIRED.has(type)){const duration=type==='tip'?9000:7000;const remaining=preserveTimer&&this.deadline?Math.max(0,this.deadline-Date.now()):duration;this.deadline=Date.now()+remaining;this.timer=setTimeout(()=>this.expireOptional(epoch),remaining)}else this.deadline=0}
- expireOptional(epoch=this.noticeEpoch){if(epoch!==this.noticeEpoch||this.destroyed||!this.current||REQUIRED.has(this.current.type))return;const close=this.host.querySelector('.tb-close');if(document.activeElement===close||this.pointerOver||document.hidden){this.timer=setTimeout(()=>this.expireOptional(epoch),1000);return;}this.dismiss()}
+ expireOptional(epoch=this.noticeEpoch){if(epoch!==this.noticeEpoch||this.destroyed||!this.current||REQUIRED.has(this.current.type))return;const close=this.host.querySelector('.tb-close');if(document.activeElement===close||this.pointerOver||document.hidden||this.dialogs.length){this.timer=setTimeout(()=>this.expireOptional(epoch),1000);return;}this.dismiss()}
  dismiss(){if(this.destroyed)return;clearTimeout(this.timer);this.deadline=0;do{this.current=this.queue.shift()||null}while((this.quiet||this.hidden||(!this.tips&&this.current?.type==='tip'))&&this.current&&!REQUIRED.has(this.current.type));this.render()}
  confirm({message,title='Bitte bestätigen',confirmLabel='Bestätigen',cancelLabel='Abbrechen',danger=false}={}){
   if(typeof message!=='string'||!message.trim())return Promise.reject(Error('Bestätigungstext fehlt'));
   return new Promise(resolve=>{
-   if(this.destroyed||this.dialogs.length){resolve(false);return;}const previous=document.activeElement,overlay=document.createElement('div');overlay.className='tb-overlay';
-   const dialog=document.createElement('div');dialog.className='tb-dialog';dialog.setAttribute('role','alertdialog');dialog.setAttribute('aria-modal','true');
+   if(this.destroyed||this.dialogs.length){resolve(false);return;}const previous=document.activeElement,overlay=document.createElement('dialog');overlay.className='tb-overlay';overlay.setAttribute('role','alertdialog');overlay.setAttribute('aria-modal','true');
+   const dialog=document.createElement('div');dialog.className='tb-dialog';
    const img=document.createElement('img');img.className='tb-dialog-avatar';img.alt='';img.setAttribute('aria-hidden','true');this.image(img,'warning');
    const h=document.createElement('h2'),p=document.createElement('p');h.textContent=title;p.textContent=message.trim();
-   const id='tb-dialog-'+Math.random().toString(36).slice(2);h.id=id+'-title';p.id=id+'-desc';dialog.setAttribute('aria-labelledby',h.id);dialog.setAttribute('aria-describedby',p.id);
+   const id='tb-dialog-'+Math.random().toString(36).slice(2);h.id=id+'-title';p.id=id+'-desc';overlay.setAttribute('aria-labelledby',h.id);overlay.setAttribute('aria-describedby',p.id);
    const cancel=document.createElement('button'),yes=document.createElement('button');cancel.type=yes.type='button';cancel.textContent=cancelLabel;yes.textContent=confirmLabel;if(danger)yes.className='tb-danger';
    dialog.append(img,h,p,cancel,yes);overlay.append(dialog);document.body.append(overlay);
    const entry={img,finish:null};this.dialogs.push(entry);
-   const finish=value=>{if(!this.dialogs.includes(entry))return;this.dialogs=this.dialogs.filter(x=>x!==entry);document.removeEventListener('keydown',key,true);overlay.remove();if(previous?.isConnected&&typeof previous.focus==='function')previous.focus();resolve(value)};
+   const finish=value=>{if(!this.dialogs.includes(entry))return;this.dialogs=this.dialogs.filter(x=>x!==entry);document.removeEventListener('keydown',key,true);overlay.close();overlay.remove();this.host.removeAttribute('data-dialog-open');if(previous?.isConnected&&typeof previous.focus==='function')previous.focus();resolve(value)};
    entry.finish=finish;
    const key=e=>{if(this.dialogs.at(-1)!==entry)return;if(e.key==='Escape'){e.preventDefault();e.stopPropagation();finish(false)}else if(e.key==='Tab'){const a=document.activeElement;if(e.shiftKey&&a===cancel){e.preventDefault();yes.focus()}else if(!e.shiftKey&&a===yes){e.preventDefault();cancel.focus()}else if(a!==cancel&&a!==yes){e.preventDefault();(e.shiftKey?yes:cancel).focus()}}};
-   cancel.onclick=()=>finish(false);yes.onclick=()=>finish(true);document.addEventListener('keydown',key,true);cancel.focus();
+   cancel.onclick=()=>finish(false);yes.onclick=()=>finish(true);overlay.addEventListener('cancel',e=>{e.preventDefault();finish(false)});document.addEventListener('keydown',key,true);this.host.setAttribute('data-dialog-open','true');overlay.showModal();cancel.focus();
   });
  }
  destroy(){this.destroyed=true;this.noticeEpoch++;clearTimeout(this.timer);this.deadline=0;this.queue=[];this.current=null;for(const d of [...this.dialogs])d.finish(false);this.host.remove()}

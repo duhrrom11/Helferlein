@@ -72,3 +72,21 @@ Ein früher favorisiertes Toolya-Logo (unten links im zweiten Konzeptbild) spät
 
 ## Nächster Arbeitsauftrag
 Aktuellen GitHub-Branch prüfen, vorhandene Animationen und Tests ermitteln, P1 vervollständigen, isolierte Android-Vorschau aktualisieren, zielgerichtet testen und **nur im Feature-Branch** committen. Anschließend P2 mit echten Augen-/Ohren-/Pfoten-/Schwanzbewegungen vorbereiten. Nicht erneut Figuren auswählen lassen.
+
+## Fortsetzung 2026-11-14 ab `8adb8825`
+
+### Umgesetzt
+- Bestätigungen verwenden natives `dialog.showModal()`: Browser sperrt den Hintergrund auch für Fokus und assistive Navigation. Abbrechen bleibt vorausgewählt; Escape/Android-Abbruch liefert `false`; Fokus kehrt zum Auslöser zurück.
+- Optionale Meldungen laufen während einer offenen Bestätigung nicht ab. Dekorative Bewegung pausiert bis zum Dialogende.
+- Neuer isolierter Playwright-Lauf: 320×640 und 640×320 mit Touch, Fokusfalle, Hintergrund-Fokussperre, Fokus-Rückgabe, 200 % Schriftgröße, erreichbaren Aktionen und dynamischem System-Bewegungsmodus. Externe Browseranfragen werden blockiert; keine App-/Auth-/Backend-Initialisierung.
+- Acht Original-PNGs durch SHA-256-Manifest geschützt; CI prüft ihre unveränderten Bytes.
+
+### Prüfstand
+- 91 isolierte Node-Prüfungen lokal bestanden.
+- Lokaler Chromium-Start ist durch die Ausführungsumgebung blockiert (`socket: Operation not permitted`); dies ist keine bestandene Browserprüfung. GitHub Actions führt die sechs neuen Browserfälle auf Ubuntu aus.
+
+### Nächste Prioritäten
+1. P1: Reales Android-Gerät mit TalkBack, großer Systemschrift, Bildschirmtastatur und Zurück-Geste prüfen. Chromium-Viewport-Tests ersetzen diese Geräteabnahme nicht.
+2. P1: Weitere Browserfälle für echte Meldungswechsel/Live-Regionen und verschiedene Einstellungswechsel ergänzen, sofern Fehler oder Abnahmelücken vorliegen.
+3. P2: Separate Layer/Frames für Körperteilanimation erst mit originalgetreuen zusätzlichen Assets; vorhandene acht PNGs bleiben unangetastet. Keine Behauptung echter Ohren-/Pfotenanimation durch Ganzbild-CSS.
+4. P3 und Comic-Chef bleiben nachrangig bzw. unbeschlossen.

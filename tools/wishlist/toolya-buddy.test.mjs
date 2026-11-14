@@ -11,6 +11,10 @@ class Element {
  *walk(){for(const child of this.children){yield child;yield* child.walk()}}
  querySelector(selector){return [...this.walk()].find(x=>x.className.split(' ').includes(selector.slice(1)))||null}
  setAttribute(name,value){this.attrs[name]=value}
+ removeAttribute(name){delete this.attrs[name]}
+ addEventListener(){}
+ showModal(){this.open=true}
+ close(){this.open=false}
  remove(){if(this.parent)this.parent.children=this.parent.children.filter(x=>x!==this);this.isConnected=false}
  focus(){document.activeElement=this}
 }
@@ -196,3 +200,8 @@ test('v23: leerer Bestätigungstext öffnet keinen unbeschrifteten Dialog',async
  try{await assert.rejects(b.confirm({message:'  \n  '}),/Bestätigungstext fehlt/);assert.equal(b.dialogs.length,0)}finally{b.destroy()}
 });
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
+
+test('native modal pauses optional expiry and restores notice after cancellation',async()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('tip','Weiterlesen');const result=b.confirm({message:'Sicher?'});b.expireOptional();assert.equal(b.current.message,'Weiterlesen');assert.equal(b.host.attrs['data-dialog-open'],'true');press('Escape');assert.equal(await result,false);assert.equal(b.host.attrs['data-dialog-open'],undefined);document.activeElement=null;b.expireOptional();assert.equal(b.current,null)}finally{b.destroy()}
+});

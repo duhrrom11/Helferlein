@@ -153,3 +153,8 @@
 @media(prefers-reduced-motion:reduce){
  .tb-dialog,.tb-overlay{scroll-behavior:auto!important}
 }
+
+/* Native top-layer modal also isolates the background for assistive technology. */
+dialog.tb-overlay{margin:0;border:0;width:100%;height:100%;max-width:none;max-height:100dvh;color:inherit}
+dialog.tb-overlay::backdrop{background:#101827bd}
+.toolya-buddy[data-dialog-open] .tb-avatar{animation-play-state:paused}
