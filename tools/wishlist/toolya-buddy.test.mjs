@@ -127,4 +127,8 @@ test('v12: Schließen besitzt einen eindeutigen Screenreader-Namen',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{b.show('warning','Wichtiger Hinweis');assert.equal(b.host.querySelector('.tb-close').attrs['aria-label'],'Toolya-Meldung schließen')}finally{b.destroy()}
 });
+test('v13: veralteter Bildladefehler versteckt nicht den neuen Charakter',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('welcome','Hallo');const img=b.host.querySelector('.tb-avatar');const oldError=img.onerror;b.setCharacter('purple');oldError();assert.equal(img.hidden,false);assert.match(img.src,/purple_welcome/);img.onerror();assert.equal(img.hidden,true)}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
