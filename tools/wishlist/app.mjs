@@ -195,7 +195,7 @@ $('updateWishExtrasCloud').onclick=run(async()=>{
  if(!current.data){feedback.textContent='Noch keine Cloud-Daten vorhanden. Bitte zuerst die separate Aktion zum erstmaligen Cloud-Speichern verwenden.';return}
  const old=current.data;
  const details='Cloud-Stand: Bild '+(old.image_url||'–')+', Preis '+(old.target_price??'–')+' €, Menge '+old.quantity+', Status '+old.wish_status+'.';
- if(!await toolyaBuddy.confirm({title:'Cloud-Daten überschreiben?',message:details+'\\nDiese Cloud-Daten jetzt durch die Eingaben im Editor ersetzen?',confirmLabel:'Ersetzen',danger:true})){feedback.textContent='Cloud-Aktualisierung abgebrochen. Keine Daten geändert.';return}
+ if(!await toolyaBuddy.confirm({title:'Cloud-Daten überschreiben?',message:details+'\nDiese Cloud-Daten jetzt durch die Eingaben im Editor ersetzen?',confirmLabel:'Ersetzen',danger:true})){feedback.textContent='Cloud-Aktualisierung abgebrochen. Keine Daten geändert.';return}
  if(user?.id!==ownerId||editingWishId!==wishId||wishEditorRevision!==revision||operation!==wishExtrasCloudOperation)return;
  feedback.textContent='Cloud-Daten werden mit Versionsprüfung aktualisiert …';
  const payload={image_url:extras.imageUrl||null,target_price:extras.price,quantity:extras.quantity,wish_status:extras.status};
