@@ -80,3 +80,10 @@ test('Android preview exercises warning and form-error without backend access',(
  assert.match(html,/simulierter Eingabefehler/);
  assert.doesNotMatch(html,/createClient\(|supabase\.co/);
 });
+
+test('landscape Android and increased contrast retain accessible dialog controls',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/@media\(max-height:440px\) and \(orientation:landscape\)/);
+ assert.match(css,/\.tb-overlay\{align-items:flex-start;overflow-y:auto\}/);
+ assert.match(css,/@media\(prefers-contrast:more\)/);
+});
