@@ -168,3 +168,26 @@ Selbstständig und produktionsorientiert: Repository, Roadmap und CI lesen; voll
 
 ## Übergabehinweis
 Diese Roadmap ist die **neuere Nutzerfreigabe** und ersetzt für künftige Arbeiten die früheren generellen Verbote von Merge, Deployment und Supabase-Zugriff in tools/wishlist/TOOLYA-MASTER-ROADMAP.md. Sicherheitsprüfungen und erforderliche Bestätigungen bleiben verbindlich. Work soll die alte Roadmap entsprechend aktualisieren, ohne den historischen Stand zu verfälschen.
+
+
+## Umsetzung 14.11.2026 – gemeinsamer Kern, noch KEIN Live-Release
+
+- Ausgangsstand: `9dfc79e`; die Original-PNGs bleiben unverändert.
+- Gemeinsamer Adapter `shared/toolya/platform.mjs` auf Startseite und allen elf kanonischen Helferlein-Tools plus Wishlist eingebunden. Historische Redirect-Routen bleiben Redirects.
+- Bestehende Wishlist-Komponente wiederverwendet, einheitliche persistierte Einstellungen, Tool-Kontexte, optionale Begrüßungen und explizite `toolya:notice`-Ereignisschnittstelle. Keine Erfolge aus Klicks oder Formularübermittlungen geraten. Die konkreten Erfolgs-/Fehlerereignisse der übrigen Tools müssen noch angebunden werden.
+- Ko-fi-Handlungsaufrufe einschließlich nachträglich erzeugter Einstellungen werden mit Charakterbild, wechselndem Text, Freiwilligkeit und unverändertem Link dargestellt. Rechtliche Fließtextverweise bleiben erhalten. Gesundheits-/Nachlassbereich verwendet zurückhaltende Texte.
+- Fünf Aktivierungen in fünf Sekunden lösen wechselnde Kitzeltexte aus; 15 Sekunden Abklingzeit, Touch/Tastatur, Sperre bei Warnungen, Bestätigungen, Ruhemodus und ausgeblendetem Begleiter. Reduzierte Bewegung bleibt respektiert.
+- GitHub-Chromium-Runner auf Ubuntu 24.04 fixiert; notwendige plattformweite Browserprüfungen ergänzt.
+- Lokal: 94/94 Node-Prüfungen bestanden. Browserstart durch Umgebungsbeschränkung verhindert (`socket() failed: Operation not permitted`), daher KEINE lokale Browserabnahme behauptet. GitHub-Browserergebnis separat nachtragen.
+
+### Tatsächlicher Releaseblocker: Domain und Repository stimmen nicht überein
+Direkter HTTP-Abruf am 14.11.2026:
+- `https://tooly.app` liefert eine fremde englische Seite „Tooly – A powerful Chrome Extension“.
+- `https://toolya.app` liefert „Toolya – Bald verfügbar“.
+- `duhrrom11/toolya` hat `CNAME=toolya.app`, eine eigenständige Wishlist unter `tools/wishes/` und ein anderes Supabase-Projekt.
+- `duhrrom11/Helferlein` veröffentlicht weiterhin separat über GitHub Pages. Diese Änderung wird NICHT durch einen Helferlein-Merge automatisch auf toolya.app verfügbar.
+
+Vor einer produktiven Übernahme muss das beabsichtigte Ziel eindeutig geklärt werden. Keine fremde Domain umkonfigurieren, keine gesamte Helferlein-Anwendung unkontrolliert in das getrennte Toolya-Projekt kopieren.
+
+### Noch offen – keine vollständige Abnahme
+16 Emotionen mit mehreren echten Posen pro Figur; neue charaktertreue Outfits statt der bisher rein textlichen Tool-Kontexte; unabhängige Augen-/Ohren-/Pfoten-/Schwanzanimationen; reale Ereignisse in sämtlichen Tools; zielgerechte Übernahme in den tatsächlichen Veröffentlichungsstand; erfolgreiche Browser-CI, Merge, Deployment und Liveprüfung. Ganzbild-CSS-Animationen und Kontextsymbole sind ausdrücklich KEIN Ersatz für diese Grafikanforderungen.

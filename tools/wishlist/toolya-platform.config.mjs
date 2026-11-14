@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'.',testMatch:'toolya-platform.spec.mjs',workers:1,retries:0,use:{browserName:'chromium',headless:true,viewport:{width:320,height:640},hasTouch:true,isMobile:true,baseURL:'http://127.0.0.1:8770',launchOptions:process.env.TOOLYA_CHROMIUM_PATH?{executablePath:process.env.TOOLYA_CHROMIUM_PATH}:{}},webServer:{command:'python3 -m http.server 8770 --bind 127.0.0.1 --directory ../..',url:'http://127.0.0.1:8770',reuseExistingServer:false}});

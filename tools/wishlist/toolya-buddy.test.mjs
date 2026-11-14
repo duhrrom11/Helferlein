@@ -205,3 +205,22 @@ test('native modal pauses optional expiry and restores notice after cancellation
  const b=new ToolyaBuddy({root:document.body});
  try{b.show('tip','Weiterlesen');const result=b.confirm({message:'Sicher?'});b.expireOptional();assert.equal(b.current.message,'Weiterlesen');assert.equal(b.host.attrs['data-dialog-open'],'true');press('Escape');assert.equal(await result,false);assert.equal(b.host.attrs['data-dialog-open'],undefined);document.activeElement=null;b.expireOptional();assert.equal(b.current,null)}finally{b.destroy()}
 });
+
+test('Kitzelreaktion braucht fünf Aktivierungen, rotiert und respektiert die Abklingzeit',()=>{
+ const b=new ToolyaBuddy({root:document.body});b.show('welcome','Hallo');
+ for(let i=0;i<4;i++)assert.equal(b.tickle(1000+i),false);
+ assert.equal(b.tickle(1004),true);assert.match(b.current.message,/kitzlig/);
+ assert.equal(b.tickle(1005),false);
+ for(let i=0;i<4;i++)assert.equal(b.tickle(17000+i),false);
+ assert.equal(b.tickle(17004),true);assert.match(b.current.message,/Ohren/);b.destroy();
+});
+test('Kitzelreaktion unterbricht weder Warnungen noch Dialoge und ist im Ruhemodus aus',async()=>{
+ const b=new ToolyaBuddy({root:document.body});b.show('warning','Wichtig');
+ for(let i=0;i<7;i++)assert.equal(b.tickle(1000+i),false);
+ assert.equal(b.current.message,'Wichtig');b.dismiss();
+ const confirmed=b.confirm({message:'Sicher?'});assert.equal(b.tickle(2000),false);press('Escape');assert.equal(await confirmed,false);
+ b.setQuiet(true);assert.equal(b.tickle(3000),false);b.destroy();
+});
+test('Langsame oder auseinanderliegende Aktivierungen lösen keine Kitzelreaktion aus',()=>{
+ const b=new ToolyaBuddy({root:document.body});for(let i=0;i<8;i++)assert.equal(b.tickle(1000+i*5001),false);b.destroy();
+});

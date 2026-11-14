@@ -2,7 +2,10 @@
 
 > **KANONISCHE PROJEKTÜBERGABE FÜR ZUKÜNFTIGE CHATS.** Vor Änderungen den aktuellen GitHub-Stand lesen. Diese Roadmap ist ein Plan, keine Behauptung, dass alle Punkte umgesetzt sind.
 
-## Repository und unverrückbare Grenzen
+## Aktuelle Freigabe
+Die neuere [Mascot-Universe-Roadmap](TOOLYA-MASCOT-UNIVERSE-WORK-ROADMAP.md) und der aktuelle Arbeitsauftrag erlauben Merge und Veröffentlichung. Die folgenden Branch-/Deploymentverbote dokumentieren den historischen Auftrag und sind dadurch ersetzt. Originalbild- und Datenschutzschutz gelten weiterhin.
+
+## Repository und historische Grenzen
 - Repository: `duhrrom11/Helferlein`.
 - **Ausschließlich** Branch `feature/toolya-buddy-wishlist-v4` bearbeiten.
 - **Kein** Merge nach `main`, kein Deployment, keine Änderungen an produktivem Supabase, keine produktiven Testdaten, kein TinyFish.

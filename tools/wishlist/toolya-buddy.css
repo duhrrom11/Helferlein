@@ -158,3 +158,12 @@
 dialog.tb-overlay{margin:0;border:0;width:100%;height:100%;max-width:none;max-height:100dvh;color:inherit}
 dialog.tb-overlay::backdrop{background:#101827bd}
 .toolya-buddy[data-dialog-open] .tb-avatar{animation-play-state:paused}
+
+/* The avatar itself is now an accessible, optional Easter-egg control. */
+.tb-avatar[role=button]{pointer-events:auto;cursor:pointer;touch-action:manipulation;border-radius:12px}
+.tb-avatar[role=button]:focus-visible{outline:3px solid currentColor;outline-offset:3px}
+@keyframes tb-tickle{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-9deg) translateY(-3px)}40%,80%{transform:rotate(9deg) translateY(2px)}}
+.toolya-buddy[data-reaction=tickle] .tb-avatar{animation:tb-tickle 1.4s ease-in-out both}
+.toolya-buddy[data-motion=off] .tb-avatar{animation:none!important}
+.toolya-buddy[data-motion=calm][data-reaction=tickle] .tb-avatar{animation:tb-tip-calm 1.4s ease-in-out both}
+@media(prefers-reduced-motion:reduce){.toolya-buddy[data-reaction] .tb-avatar{animation:none!important}}
