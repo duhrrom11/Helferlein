@@ -32,15 +32,16 @@ test('Charakterwechsel funktioniert',()=>{buddy.setCharacter('purple');assert.eq
 test('Ungültiger Charakter wird abgelehnt',()=>assert.throws(()=>buddy.setCharacter('invalid'),/Ungültiger Charakter/));
 
 test('Animation verwendet die passende Originalpose',()=>{
- buddy.setQuiet(false);buddy.show('welcome','Hallo');
- assert.equal(buddy.host.attrs['data-pose'],'welcome');
- buddy.show('success','Erledigt');
- assert.equal(buddy.host.attrs['data-pose'],'success');
- buddy.show('tip','Hinweis');
- assert.equal(buddy.host.attrs['data-pose'],'tip');
- buddy.show('error','Fehler');
- assert.equal(buddy.host.attrs['data-pose'],'error');
- assert.match(buddy.host.querySelector('.tb-avatar').src,/toolya_wishlist_purple_error_1024\\.png$/);
+ const animated=new ToolyaBuddy({root:document.body,character:'purple'});animated.show('welcome','Hallo');
+ assert.equal(animated.host.attrs['data-pose'],'welcome');
+ animated.show('success','Erledigt');
+ assert.equal(animated.host.attrs['data-pose'],'success');
+ animated.show('tip','Hinweis');
+ assert.equal(animated.host.attrs['data-pose'],'tip');
+ animated.show('error','Fehler');
+ assert.equal(animated.host.attrs['data-pose'],'error');
+ assert.match(animated.host.querySelector('.tb-avatar').src,/toolya_wishlist_purple_error_1024\\.png$/);
+ animated.destroy();
 });
 test('Ruhemodus deaktiviert Bewegungen, nicht Fehlermeldungen',()=>{
  buddy.setQuiet(true);
