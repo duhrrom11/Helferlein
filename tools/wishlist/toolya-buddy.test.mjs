@@ -175,4 +175,8 @@ test('v18: Android pointercancel löst die Hover-Pause wieder',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{b.show('tip','Pointer');b.host.onpointerenter({pointerType:'pen'});assert.equal(b.pointerOver,true);b.host.onpointercancel();assert.equal(b.pointerOver,false);b.expireOptional();assert.equal(b.current,null)}finally{b.destroy()}
 });
+test('v19: Fokusverlust hebt die Hover-Pause auf',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('tip','Hinweis');b.host.onpointerenter({pointerType:'mouse'});assert.equal(b.pointerOver,true);b.host.onblur();assert.equal(b.pointerOver,false);b.expireOptional();assert.equal(b.current,null)}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
