@@ -18,7 +18,7 @@ test('isolated preview uses local originals without external dependencies',()=>{
 test('four original poses animate only when motion is allowed',()=>{
  const css=read('toolya-buddy.css');
  const js=read('toolya-buddy.mjs');
- for(const pose of ['greet','success','tip','error'])assert.match(css,new RegExp('@keyframes tb-'+pose+'\\\\b'));
+ for(const pose of ['greet','success','tip','error'])assert.ok(css.includes('@keyframes tb-'+pose),pose+' animation exists');
  assert.match(css,/prefers-reduced-motion:reduce/);
  assert.match(css,/data-motion="off"/);
  assert.match(js,/setAttribute\('data-pose',POSE\[type\]\)/);
