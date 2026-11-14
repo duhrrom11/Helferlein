@@ -9,7 +9,7 @@ export class ToolyaBuddy {
   this.host.innerHTML='<div class="tb-message-box" hidden><img class="tb-avatar" alt="" aria-hidden="true"><div class="tb-text"><strong class="tb-title"></strong><p class="tb-body"></p><button type="button" class="tb-close">Schließen</button></div></div>';
   root.append(this.host);this.host.querySelector('.tb-close').onclick=()=>this.dismiss();this.setMotion(motion);this.setHidden(hidden);
  }
- image(img,type){if(!['turquoise','purple'].includes(this.character))return;img.hidden=false;img.onerror=()=>{img.hidden=true};img.src=this.assetBase+'toolya_wishlist_'+this.character+'_'+(POSE[type]||'error')+'_1024.png'}
+ image(img,type){if(!['turquoise','purple'].includes(this.character))return;const src=this.assetBase+'toolya_wishlist_'+this.character+'_'+(POSE[type]||'error')+'_1024.png';img.hidden=false;img.onerror=()=>{if(img.src.endsWith(src))img.hidden=true};img.src=src}
  setCharacter(c){if(!['turquoise','purple'].includes(c))throw Error('Ungültiger Charakter');this.character=c;if(this.current)this.render(true);for(const d of this.dialogs)this.image(d.img,'warning')}
  setMotion(mode){if(!['off','calm','normal','lively'].includes(mode))throw Error('Ungültige Animationsstufe');this.motion=mode;this.host.setAttribute('data-intensity',mode);this.host.setAttribute('data-motion',this.quiet?'off':mode==='normal'?'on':mode)}
  setTips(enabled){this.tips=!!enabled;if(!this.tips){this.queue=this.queue.filter(x=>x.type!=='tip');if(this.current?.type==='tip')this.dismiss()}}
