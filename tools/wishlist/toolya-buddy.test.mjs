@@ -154,7 +154,11 @@ test('v15: kritische Warnungen bleiben auch beim Ablaufversuch bestehen',()=>{
 });
 test('v16: Mauszeiger hält optionale Meldung sichtbar',()=>{
  const b=new ToolyaBuddy({root:document.body});
- try{b.show('tip','Bitte lesen');b.host.onmouseenter();b.expireOptional();assert.equal(b.current.type,'tip');b.host.onmouseleave();b.expireOptional();assert.equal(b.current,null)}finally{b.destroy()}
+ try{b.show('tip','Bitte lesen');b.host.onpointerenter({pointerType:'mouse'});b.expireOptional();assert.equal(b.current.type,'tip');b.host.onpointerleave();b.expireOptional();assert.equal(b.current,null)}finally{b.destroy()}
+});
+test('v16: Android-Touch erzeugt keine dauerhafte Hover-Sperre',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('tip','Touch');b.host.onpointerenter({pointerType:'touch'});assert.equal(b.pointerOver,false);b.expireOptional();assert.equal(b.current,null)}finally{b.destroy()}
 });
 test('v16: inaktiver Browser-Tab hält optionale Meldung sichtbar',()=>{
  const b=new ToolyaBuddy({root:document.body});
