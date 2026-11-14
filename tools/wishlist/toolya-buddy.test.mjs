@@ -71,4 +71,16 @@ test('v5: Ruhemodus entfernt optionale Warteschlangeneinträge',()=>{
 test('v5: nach destroy werden Meldungen abgelehnt',()=>{
  const b=new ToolyaBuddy({root:document.body});b.destroy();assert.equal(b.show('error','Nicht mehr anzeigen'),false);
 });
+test('v6: Animation lässt sich abschalten und in Stufen einstellen',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.setMotion('off');assert.equal(b.host.attrs['data-motion'],'off');b.setMotion('lively');assert.equal(b.host.attrs['data-motion'],'lively');b.setQuiet(true);assert.equal(b.host.attrs['data-motion'],'off');b.setQuiet(false);assert.equal(b.host.attrs['data-motion'],'lively');assert.throws(()=>b.setMotion('unknown'),/Animationsstufe/)}finally{b.destroy()}
+});
+test('v6: Tipps können separat abgeschaltet werden',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.setTips(false);assert.equal(b.show('tip','Ungewollt'),false);assert.equal(b.show('warning','Wichtig'),true)}finally{b.destroy()}
+});
+test('v6: ausgeblendeter Begleiter zeigt wichtige Warnungen weiterhin',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.setHidden(true);assert.equal(b.host.hidden,true);b.show('warning','Wichtig');assert.equal(b.host.hidden,false);b.dismiss();assert.equal(b.host.hidden,true)}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
