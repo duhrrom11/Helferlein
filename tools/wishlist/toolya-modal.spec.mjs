@@ -17,7 +17,7 @@ test('large text leaves modal actions reachable without horizontal overflow',asy
  await page.addStyleTag({content:'html{font-size:200%}button{font:inherit}'});await page.locator('#preview-confirm').click();
  for(const name of ['Abbrechen','Test bestätigen']){
   const action=page.getByRole('button',{name,exact:true});await action.focus();await action.scrollIntoViewIfNeeded();await expect(action).toBeInViewport();
-  const box=await action.boundingBox();expect(box.height).toBeGreaterThanOrEqual(44);expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(page.viewportSize().width);
+  const box=await action.boundingBox();console.log('dialog zoom geometry',await page.evaluate(()=>({innerWidth,clientWidth:document.documentElement.clientWidth,visualWidth:visualViewport.width,dialog:document.querySelector('.tb-dialog').getBoundingClientRect().toJSON(),overlay:document.querySelector('.tb-overlay').getBoundingClientRect().toJSON()})),box);expect(box.height).toBeGreaterThanOrEqual(44);expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(page.viewportSize().width);
  }
  expect(await page.locator('.tb-dialog').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
  await page.getByRole('button',{name:'Test bestätigen',exact:true}).click();await expect(page.locator('#status')).toHaveText('Testbestätigung angenommen.');
