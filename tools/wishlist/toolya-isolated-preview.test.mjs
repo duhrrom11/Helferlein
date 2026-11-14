@@ -87,3 +87,9 @@ test('landscape Android and increased contrast retain accessible dialog controls
  assert.match(css,/\.tb-overlay\{align-items:flex-start;overflow-y:auto\}/);
  assert.match(css,/@media\(prefers-contrast:more\)/);
 });
+
+test('Android preview refreshes reduced-motion status when system settings change',()=>{
+ const html=read('toolya-mobile-preview.html');
+ assert.match(html,/motionQuery\.addEventListener\?\.\('change',updateViewport\)/);
+ assert.match(html,/prefers-reduced-motion: reduce/);
+});
