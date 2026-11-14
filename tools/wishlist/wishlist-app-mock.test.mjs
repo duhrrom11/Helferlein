@@ -34,7 +34,7 @@ function createMockDb(){
  const query=(table)=>{
   let op='select',payload=null,filters=[],limit=null;
   const q={
-   select(){return q},eq(k,v){filters.push([k,v]);return q},is(k,v){filters.push([k,v]);return q},in(k,v){filters.push([k,v]);return q},order(){return q},range(a,b){limit=[a,b];return q},limit(){return q},
+   select(){return q},eq(k,v){filters.push([k,v]);return q},is(k,v){filters.push([k,v]);return q},in(k,v){filters.push([k,v]);return q},or(){return q},order(){return q},range(a,b){limit=[a,b];return q},limit(){return q},
    maybeSingle(){return Promise.resolve(run(true))},single(){return Promise.resolve(run(true))},
    insert(v){op='insert';payload=v;return q},update(v){op='update';payload=v;return q},upsert(v){op='upsert';payload=v;return q},delete(){op='delete';return q},
    then(resolve,reject){return Promise.resolve(run(false)).then(resolve,reject)}
@@ -58,7 +58,7 @@ test('App-Initialisierung und Anmeldung mit isoliertem Supabase-Mock',async()=>{
  const document={body,getElementById:el,querySelector:s=>s==='main'?body:new Element(),createElement:tag=>new Element(tag),addEventListener(){},removeEventListener(){}};
  const store=new Map();
  const location={href:'https://example.invalid/tools/wishlist/',search:''};
- const context=createContext({document,HTMLButtonElement:Element,Event:class Event{constructor(type){this.type=type}},window:{supabase:{createClient:()=>db},location,history:{replaceState(){}}},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},URL,URLSearchParams,Intl,Number,String,Set,Map,JSON,Math,Error,TypeError,Promise,console,setTimeout,clearTimeout});
+ const context=createContext({document,Blob:class Blob{},HTMLButtonElement:Element,Event:class Event{constructor(type){this.type=type}},window:{supabase:{createClient:()=>db},location,history:{replaceState(){}}},localStorage:{getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},URL,URLSearchParams,Intl,Number,String,Set,Map,JSON,Math,Error,TypeError,Promise,console,setTimeout,clearTimeout});
  const appCode=readFileSync(new URL('./app.mjs',import.meta.url),'utf8');
  const app=new SourceTextModule(appCode,{context,identifier:'app.mjs'});
  const stubValues={
