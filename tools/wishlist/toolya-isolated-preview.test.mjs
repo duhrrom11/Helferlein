@@ -100,3 +100,10 @@ test('ultra-narrow Android screens retain a full-width dismiss control',()=>{
  assert.match(css,/\.tb-message-box\{flex-direction:column;align-items:stretch\}/);
  assert.match(css,/\.tb-close\{width:100%\}/);
 });
+
+test('mascot motion pauses during keyboard focus and pointer inspection',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/\.toolya-buddy:focus-within \.tb-avatar\{animation-play-state:paused\}/);
+ assert.match(css,/@media\(hover:hover\)/);
+ assert.match(css,/\.toolya-buddy:hover \.tb-avatar\{animation-play-state:paused\}/);
+});
