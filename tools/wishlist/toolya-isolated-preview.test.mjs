@@ -135,3 +135,11 @@ test('Android virtual keyboard leaves confirmation modal scrollable in dynamic v
  assert.match(css,/\.tb-dialog\{max-height:calc\(100dvh - 2rem\);overflow-y:auto;overscroll-behavior:contain\}/);
  assert.match(css,/\.tb-dialog,\.tb-overlay\{animation:none!important;transition:none!important\}/);
 });
+
+test('Android hardware keyboard focus remains visible in forced colors',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/\.tb-close:focus-visible,\.tb-dialog button:focus-visible\{/);
+ assert.match(css,/outline:3px solid currentColor;outline-offset:3px/);
+ assert.match(css,/@media\(forced-colors:active\)/);
+ assert.match(css,/outline-color:Highlight/);
+});
