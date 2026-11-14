@@ -99,3 +99,9 @@
  .tb-avatar{align-self:center}
  .tb-close{width:100%}
 }
+
+/* Stop avatar movement while a keyboard or touch user is interacting with its notice. */
+.toolya-buddy:focus-within .tb-avatar{animation-play-state:paused}
+@media(hover:hover){
+ .toolya-buddy:hover .tb-avatar{animation-play-state:paused}
+}
