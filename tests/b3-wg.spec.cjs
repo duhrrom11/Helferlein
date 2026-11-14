@@ -38,7 +38,7 @@ test('WG extra tools and help modal are reachable',async({page})=>{
  await page.setViewportSize({width:390,height:900});
  await page.goto(url,{waitUntil:'domcontentloaded'});
  await page.locator('.b3-more summary').click();
- for(const label of ['Mitglieder / Kontakte','Manuell synchronisieren','Finanzbericht (PDF)','WG-Link teilen','WLAN QR-Code'])
+ for(const label of ['Mitglieder / Kontakte','Jetzt speichern','Finanzbericht (PDF)','WG-Link teilen','WLAN QR-Code'])
   await expect(page.getByRole('button',{name:label})).toBeVisible();
  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
  await page.locator('.b3-preferences').getByRole('button',{name:/Hilfe/}).click();

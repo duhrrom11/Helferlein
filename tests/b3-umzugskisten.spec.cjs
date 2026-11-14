@@ -38,7 +38,7 @@ test('QR scanner, PDFs, help and backup are accessible from menus',async({page})
  await page.setViewportSize({width:390,height:900});
  await page.goto(url,{waitUntil:'domcontentloaded'});
  await page.locator('.b3-more summary').click();
- for(const name of ['QR- & Barcode-Scanner','Inventar als PDF','QR-Etiketten als PDF','Backup herunterladen'])await expect(page.getByRole('button',{name})).toBeVisible();
+ for(const name of ['QR- & Barcode-Scanner','Inventar als PDF','QR-Etiketten als PDF','Sicherung herunterladen'])await expect(page.getByRole('button',{name})).toBeVisible();
  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
  await page.locator('.b3-preferences').getByRole('button',{name:/Hilfe/}).click();
  await expect(page.locator('#helpBox')).toBeVisible();

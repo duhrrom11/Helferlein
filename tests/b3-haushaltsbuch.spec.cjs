@@ -36,7 +36,7 @@ test('B3 Haushaltsbuch Konto, Ko-fi and discovery are consolidated',async({page}
 test('B3 Haushaltsbuch navigation and actions are reachable',async({page})=>{
  await page.setViewportSize({width:390,height:900});await page.goto(url,{waitUntil:'domcontentloaded'});
  await page.locator('.b3-more summary').click();
- await expect(page.getByRole('button',{name:'Steuer-Export (CSV)'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Steuer-Datei herunterladen (CSV)'})).toBeVisible();
  await expect(page.getByRole('button',{name:'Finanzbericht (PDF)'})).toBeVisible();
  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
  await page.locator('.b3-preferences').getByRole('button',{name:/Hilfe/}).click();

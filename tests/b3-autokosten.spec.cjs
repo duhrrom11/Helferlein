@@ -37,7 +37,7 @@ test('Autokosten more tools and help actions remain accessible',async({page})=>{
  await page.goto(url,{waitUntil:'domcontentloaded'});
  await page.locator('.b3-more summary').click();
  await expect(page.getByRole('button',{name:'PDF-Report'})).toBeVisible();
- await expect(page.getByRole('button',{name:'Backup herunterladen'})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Sicherung herunterladen'})).toBeVisible();
  await page.getByRole('button',{name:'Einstellungen öffnen'}).click();
  await page.locator('.b3-preferences').getByRole('button',{name:/Hilfe/}).click();
  await expect(page.locator('#helpBox')).toBeVisible();

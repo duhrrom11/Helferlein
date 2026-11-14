@@ -6,7 +6,7 @@ for(const width of [390,768,900,1200,1440]){
   await page.goto(url,{waitUntil:'domcontentloaded'});
   await expect(page.locator('body.b3-home')).toBeVisible();
   await expect(page.locator('.b3-hub-hero')).toBeVisible();
-  await expect(page.locator('#toolsGrid .tool-card')).toHaveCount(11);
+  await expect(page.locator('#toolsGrid .tool-card')).toHaveCount(12);
   await expect(page.getByRole('button',{name:'Einstellungen öffnen'})).toBeVisible();
   const r=await page.evaluate(()=>{
    const main=document.querySelector('.b3-hub-main').getBoundingClientRect();
@@ -21,34 +21,29 @@ for(const width of [390,768,900,1200,1440]){
   for(const c of r.cards){expect(c.left).toBeGreaterThanOrEqual(r.main.left-2);expect(c.right).toBeLessThanOrEqual(r.main.right+2)}
  });
 }
-test('B3 category chips and search compose without hiding favorites',async({page})=>{
+test('B3 category chips filter all twelve tools without the removed search',async({page})=>{
  await page.goto(url,{waitUntil:'domcontentloaded'});
  const cards=page.locator('#toolsGrid .tool-card:visible');
- await expect(cards).toHaveCount(11);
- await page.getByRole('button',{name:'Finanzen'}).click();
+ await expect(cards).toHaveCount(12);
+ await page.locator('[data-b3-category-filter=finanzen]').click();
  await expect(cards).toHaveCount(3);
- await expect(page.locator('#b3-result-count')).toContainText('3 von 11');
- await page.locator('#searchBox').fill('Wasser');
- await expect(cards).toHaveCount(1);
- await expect(page.locator('#toolsGrid .tool-card[data-id="energie"]')).toBeVisible();
- await page.locator('#searchBox').fill('keinpassendeswerkzeug123');
- await expect(page.locator('#searchEmptyState')).toBeVisible();
- await page.locator('#searchBox').fill('');
- await page.getByRole('button',{name:'Alle 11'}).click();
- await expect(cards).toHaveCount(11);
+ await expect(page.locator('#b3-result-count')).toContainText('3 von 12');
+ await expect(page.locator('#searchBox')).toHaveCount(0);
+ await page.getByRole('button',{name:'Alle 12'}).click();
+ await expect(cards).toHaveCount(12);
  await expect(page.locator('#searchEmptyState')).toBeHidden();
 });
-test('B3 home keeps favorites and quickstart links functional without cloud writes',async({page})=>{
+test('B3 home keeps local favorites in the three-item quickstart without cloud writes',async({page})=>{
  await page.goto(url,{waitUntil:'domcontentloaded'});
- await page.locator('#toolsGrid .tool-card[data-id="pflanzen"] .fav-btn').click();
- await expect(page.locator('#favoritesSection')).toBeVisible();
- await expect(page.locator('#favoritesGrid .tool-card')).toHaveCount(1);
+ const favorite=page.locator('#toolsGrid .tool-card[data-id="pflanzen"] .fav-btn');
+ await favorite.click();
+ await expect(page.locator('#b3-quickstart-list a')).toHaveCount(1);
+ await expect(page.locator('#b3-quickstart-list a')).toHaveAttribute('href','tools/pflanzenpflege-giessplan/index.html');
  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('hub_favorites')||'[]'))).toEqual(['pflanzen']);
- await page.locator('#favoritesGrid .fav-btn').click();
- await expect(page.locator('#favoritesSection')).toBeHidden();
+ await favorite.click();
+ await expect(page.locator('#b3-quickstart-list a')).toHaveCount(0);
+ await expect(page.locator('.b3-quickstart-empty')).toBeVisible();
  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('hub_favorites')||'[]'))).toEqual([]);
- const urls=await page.locator('.b3-preview-list a').evaluateAll(a=>a.map(x=>x.getAttribute('href')));
- expect(urls).toEqual(['tools/haushaltsbuch-kassenbon/index.html','tools/pflanzenpflege-giessplan/index.html','tools/backform-umrechner/index.html']);
 });
 test('B3 home settings preserve cloud, safety backup and footer links',async({page})=>{
  await page.setViewportSize({width:390,height:900});
