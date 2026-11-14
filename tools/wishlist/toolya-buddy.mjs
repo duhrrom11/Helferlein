@@ -1,16 +1,41 @@
 const POSE={welcome:'welcome',success:'success',tip:'tip',warning:'error',error:'error','form-error':'error'};
 const REQUIRED=new Set(['warning','error','form-error']);
+const MAX_QUEUE=12;
+const priority=type=>REQUIRED.has(type)?2:1;
 export class ToolyaBuddy {
  constructor({root=document.body,assetBase='./',character='turquoise',quiet=false}={}){
-  this.root=root;this.assetBase=assetBase;this.character=character;this.quiet=quiet;this.queue=[];this.current=null;this.timer=null;this.dialogs=[];
+  this.root=root;this.assetBase=assetBase;this.character=character;this.quiet=quiet;this.queue=[];this.current=null;this.timer=null;this.dialogs=[];this.destroyed=false;
   this.host=document.createElement('aside');this.host.className='toolya-buddy';this.host.setAttribute('data-motion',this.quiet?'off':'on');this.host.setAttribute('aria-label','Toolya-Begleiter');
   this.host.innerHTML='<div class="tb-message-box" hidden><img class="tb-avatar" alt="" aria-hidden="true"><div class="tb-text"><strong class="tb-title"></strong><p class="tb-body"></p><button type="button" class="tb-close">Schließen</button></div></div>';
   root.append(this.host);this.host.querySelector('.tb-close').onclick=()=>this.dismiss();
  }
  image(img,type){if(!['turquoise','purple'].includes(this.character))return;img.hidden=false;img.onerror=()=>{img.hidden=true};img.src=this.assetBase+'toolya_wishlist_'+this.character+'_'+(POSE[type]||'error')+'_1024.png'}
  setCharacter(c){if(!['turquoise','purple'].includes(c))throw Error('Ungültiger Charakter');this.character=c;if(this.current)this.render();for(const d of this.dialogs)this.image(d.img,'warning')}
- setQuiet(q){this.quiet=!!q;this.host.setAttribute('data-motion',this.quiet?'off':'on');if(this.quiet&&this.current&&!REQUIRED.has(this.current.type))this.current=null;this.render()}
- show(type,message){if(!POSE[type]||typeof message!=='string'||!message.trim())return false;if(this.quiet&&!REQUIRED.has(type))return false;const item={type,message};if(this.current&&REQUIRED.has(this.current.type)){this.queue.push(item);return true}if(this.current&&REQUIRED.has(type)){this.queue.unshift(this.current)}this.current=item;this.render();return true}
+ setQuiet(q){this.quiet=!!q;this.host.setAttribute('data-motion',this.quiet?'off':'on');if(this.quiet){this.queue=this.queue.filter(item=>REQUIRED.has(item.type));if(this.current&&!REQUIRED.has(this.current.type))this.current=null;if(!this.current)this.current=this.queue.shift()||null;}this.render()}
+ show(type,message){
+  if(this.destroyed||!POSE[type]||typeof message!=='string'||!message.trim())return false;
+  if(this.quiet&&!REQUIRED.has(type))return false;
+  const item={type,message:message.trim()};
+  if(this.current?.type===item.type&&this.current.message===item.message)return true;
+  if(this.queue.some(x=>x.type===item.type&&x.message===item.message))return true;
+  if(!this.current){this.current=item;this.render();return true}
+  if(priority(type)>priority(this.current.type)){
+   if(!this.quiet&&!REQUIRED.has(this.current.type))this.enqueue(this.current);
+   this.current=item;this.render();return true;
+  }
+  if(REQUIRED.has(this.current.type)||REQUIRED.has(type)){this.enqueue(item);return true}
+  this.current=item;this.render();return true;
+ }
+ enqueue(item){
+  if(this.quiet&&!REQUIRED.has(item.type))return;
+  if(this.queue.some(x=>x.type===item.type&&x.message===item.message))return;
+  this.queue.push(item);
+  this.queue.sort((a,b)=>priority(b.type)-priority(a.type));
+  if(this.queue.length>MAX_QUEUE){
+   const optional=this.queue.findLastIndex(x=>!REQUIRED.has(x.type));
+   this.queue.splice(optional<0?this.queue.length-1:optional,1);
+  }
+ }
  render(){clearTimeout(this.timer);const box=this.host.querySelector('.tb-message-box');box.hidden=!this.current;if(!this.current){this.host.setAttribute('data-pose','idle');return;}const {type,message}=this.current;this.host.setAttribute('data-pose',POSE[type]);this.image(this.host.querySelector('.tb-avatar'),type);this.host.querySelector('.tb-title').textContent=({'welcome':'Willkommen','success':'Geschafft','tip':'Tipp','warning':'Achtung','error':'Fehler','form-error':'Bitte Eingabe prüfen'})[type];this.host.querySelector('.tb-body').textContent=message;this.host.querySelector('.tb-text').setAttribute('role',REQUIRED.has(type)?'alert':'status');if(!REQUIRED.has(type))this.timer=setTimeout(()=>this.dismiss(),type==='tip'?9000:7000)}
  dismiss(){clearTimeout(this.timer);do{this.current=this.queue.shift()||null}while(this.quiet&&this.current&&!REQUIRED.has(this.current.type));this.render()}
  confirm({message,title='Bitte bestätigen',confirmLabel='Bestätigen',cancelLabel='Abbrechen',danger=false}={}){
@@ -30,5 +55,5 @@ export class ToolyaBuddy {
    cancel.onclick=()=>finish(false);yes.onclick=()=>finish(true);document.addEventListener('keydown',key,true);cancel.focus();
   });
  }
- destroy(){clearTimeout(this.timer);for(const d of [...this.dialogs])d.finish(false);this.host.remove()}
+ destroy(){this.destroyed=true;clearTimeout(this.timer);this.queue=[];this.current=null;for(const d of [...this.dialogs])d.finish(false);this.host.remove()}
 }
