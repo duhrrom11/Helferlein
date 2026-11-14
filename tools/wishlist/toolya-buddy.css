@@ -110,3 +110,9 @@
 @media(prefers-reduced-data:reduce){
  .toolya-buddy .tb-avatar{animation:none!important;transition:none!important}
 }
+
+/* Keep Android touch interactions from accidentally selecting message text. */
+.tb-close,.tb-dialog button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+@media(prefers-reduced-motion:reduce){
+ .toolya-buddy .tb-avatar{animation:none!important;transition:none!important}
+}
