@@ -83,4 +83,12 @@ test('v6: ausgeblendeter Begleiter zeigt wichtige Warnungen weiterhin',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{b.setHidden(true);assert.equal(b.host.hidden,true);b.show('warning','Wichtig');assert.equal(b.host.hidden,false);b.dismiss();assert.equal(b.host.hidden,true)}finally{b.destroy()}
 });
+test('v7: ausgeblendet unterdrückt optionale Meldungen, zeigt Fehler aber an',()=>{
+ const b=new ToolyaBuddy({root:document.body,hidden:true});
+ try{assert.equal(b.show('success','Nicht anzeigen'),false);assert.equal(b.show('error','Wichtig'),true);assert.equal(b.host.hidden,false);assert.equal(b.host.querySelector('.tb-text').attrs['aria-live'],'assertive');b.dismiss();assert.equal(b.host.hidden,true)}finally{b.destroy()}
+});
+test('v7: normaler Animationsmodus bleibt kompatibel',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.setMotion('normal');assert.equal(b.host.attrs['data-motion'],'on');b.setMotion('calm');assert.equal(b.host.attrs['data-motion'],'calm')}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
