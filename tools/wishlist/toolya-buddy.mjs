@@ -16,7 +16,7 @@ export class ToolyaBuddy {
  setHidden(value){if(this.destroyed)return;this.hidden=!!value;this.host.setAttribute('data-hidden',String(this.hidden));this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type);if(this.hidden){this.queue=this.queue.filter(x=>REQUIRED.has(x.type));if(this.current&&!REQUIRED.has(this.current.type))this.dismiss()}}
  setQuiet(q){if(this.destroyed)return;const previous=this.current;this.quiet=!!q;this.host.setAttribute('data-motion',this.quiet?'off':this.motion==='normal'?'on':this.motion);if(this.quiet){this.queue=this.queue.filter(item=>REQUIRED.has(item.type));if(this.current&&!REQUIRED.has(this.current.type))this.current=null;if(!this.current)this.current=this.queue.shift()||null;}this.render(previous===this.current)}
  show(type,message){
-  if(this.destroyed||!POSE[type]||typeof message!=='string'||!message.trim())return false;
+  if(this.destroyed||!Object.hasOwn(POSE,type)||typeof message!=='string'||!message.trim())return false;
   if((this.quiet&&!REQUIRED.has(type))||(type==='tip'&&!this.tips)||(this.hidden&&!REQUIRED.has(type)))return false;
   const item={type,message:message.trim()};
   if(this.current?.type===item.type&&this.current.message===item.message)return true;
