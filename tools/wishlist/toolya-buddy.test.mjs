@@ -144,4 +144,12 @@ test('v14: verspätete UI-Ereignisse nach destroy bleiben wirkungslos',()=>{
  b.dismiss();b.setCharacter('purple');b.setMotion('lively');b.setQuiet(true);b.setTips(false);b.setHidden(true);
  assert.equal(b.current,null);assert.equal(b.queue.length,0);assert.equal(b.deadline,0);assert.equal(b.character,'turquoise');assert.equal(b.motion,'normal');
 });
+test('v15: fokussierter Schließen-Knopf verhindert automatisches Verschwinden',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('tip','Noch am Lesen');b.host.querySelector('.tb-close').focus();b.expireOptional();assert.equal(b.current.type,'tip');document.activeElement=null;b.expireOptional();assert.equal(b.current,null)}finally{b.destroy()}
+});
+test('v15: kritische Warnungen bleiben auch beim Ablaufversuch bestehen',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('warning','Kritisch');b.expireOptional();assert.equal(b.current.type,'warning')}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
