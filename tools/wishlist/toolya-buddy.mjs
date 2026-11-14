@@ -54,7 +54,7 @@ export class ToolyaBuddy {
    const cancel=document.createElement('button'),yes=document.createElement('button');cancel.type=yes.type='button';cancel.textContent=cancelLabel;yes.textContent=confirmLabel;if(danger)yes.className='tb-danger';
    dialog.append(img,h,p,cancel,yes);overlay.append(dialog);document.body.append(overlay);
    const entry={img,finish:null};this.dialogs.push(entry);
-   const finish=value=>{if(!this.dialogs.includes(entry))return;this.dialogs=this.dialogs.filter(x=>x!==entry);document.removeEventListener('keydown',key,true);overlay.remove();if(previous?.isConnected)previous.focus();resolve(value)};
+   const finish=value=>{if(!this.dialogs.includes(entry))return;this.dialogs=this.dialogs.filter(x=>x!==entry);document.removeEventListener('keydown',key,true);overlay.remove();if(previous?.isConnected&&typeof previous.focus==='function')previous.focus();resolve(value)};
    entry.finish=finish;
    const key=e=>{if(this.dialogs.at(-1)!==entry)return;if(e.key==='Escape'){e.preventDefault();e.stopPropagation();finish(false)}else if(e.key==='Tab'){const a=document.activeElement;if(e.shiftKey&&a===cancel){e.preventDefault();yes.focus()}else if(!e.shiftKey&&a===yes){e.preventDefault();cancel.focus()}else if(a!==cancel&&a!==yes){e.preventDefault();(e.shiftKey?yes:cancel).focus()}}};
    cancel.onclick=()=>finish(false);yes.onclick=()=>finish(true);document.addEventListener('keydown',key,true);cancel.focus();
