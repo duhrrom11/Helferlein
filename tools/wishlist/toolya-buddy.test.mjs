@@ -139,4 +139,9 @@ test('v14: Meldungstext erhält vor der Aktualisierung die passende Live-Region'
  Object.defineProperty(body,'textContent',{configurable:true,get(){return this._text},set(value){this._text=value;roleWhenWritten=live.attrs.role}});
  try{b.show('warning','Dringend');assert.equal(roleWhenWritten,'alert');b.dismiss();b.show('tip','Optional');assert.equal(roleWhenWritten,'status')}finally{if(original)Object.defineProperty(body,'textContent',original);b.destroy()}
 });
+test('v14: verspätete UI-Ereignisse nach destroy bleiben wirkungslos',()=>{
+ const b=new ToolyaBuddy({root:document.body});b.show('tip','Vorher');b.destroy();
+ b.dismiss();b.setCharacter('purple');b.setMotion('lively');b.setQuiet(true);b.setTips(false);b.setHidden(true);
+ assert.equal(b.current,null);assert.equal(b.queue.length,0);assert.equal(b.deadline,0);assert.equal(b.character,'turquoise');assert.equal(b.motion,'normal');
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
