@@ -25,3 +25,14 @@ Weitere Bestätigungen in anderen Wunschlistenmodulen und globale `window.alert`
 8. Auth: erst nach bestätigtem Login begrüßen; kein Zugriff auf Passwörter.
 9. Mobil: 320/375px, virtuelle Tastatur, Screenreader, Fokus-Rückgabe und verschachtelte Dialoge.
 10. GitHub Pages Deployment-Konfiguration prüfen, bevor irgendein Merge erwogen wird.
+
+## Ausbau: Animationsphase und lokale Einstellungen (November 2026)
+
+- Vier Originalposen mit kurzen CSS-Ganzkörperbewegungen; keine Körperteile separat animiert.
+- Ruhemodus, Android-`prefers-reduced-motion`, Bewegungsstufen Aus/Ruhig/Normal/Lebhaft.
+- Optionale Tipps separat abschaltbar; Begleiter zeitweise ausblendbar, während wichtige Warnungen sichtbar bleiben.
+- Einstellungen werden unter dem bestehenden lokalen Präferenzschlüssel gespeichert; keine Datenbankmigration.
+- Isolierte Smartphone-Vorschau: `toolya-mobile-preview.html`, Android-Anleitung: `TOOLYA-ANDROID-CHECK.md`.
+- Automatisierte Tests prüfen Logik und CSS-Verträge. Eine echte Android-Geräteprüfung, TalkBack-Abnahme und Animationen einzelner Körperteile sind noch offen.
+- Für Pfoten-/Ohren-/Augen-/Schwanzanimationen zuerst passende transparente Ebenen oder Frames **ergänzend** zu den Originalbildern konzipieren; keine Originaldatei überschreiben.
+- Optionale Alltagsszenen und Comic-Chef sind keine beschlossenen Funktionen und werden nicht vorgezogen.
