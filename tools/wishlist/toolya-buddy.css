@@ -5,10 +5,11 @@
 @media(max-width:420px){.tb-preferences{box-sizing:border-box;width:100%;max-width:100%;flex-direction:column;align-items:stretch;gap:10px;margin:8px 0 16px}.tb-preferences label{box-sizing:border-box;width:100%;min-width:0;flex-wrap:wrap}.tb-preferences select{width:100%;min-width:0;max-width:100%;margin:0}.tb-preferences .tb-quiet-label{flex-wrap:nowrap}.tb-preferences input[type=checkbox]{flex:0 0 20px;margin:0}.tb-message-box{min-width:0}.tb-avatar{width:64px;height:64px;flex:0 0 64px}}
 
 /* Original PNGs only: subtle, compositor-friendly pose motion. */
-.tb-avatar{transform-origin:50% 85%;animation:tb-greet 1.6s ease-in-out both}
-.toolya-buddy[data-pose="success"] .tb-avatar{animation-name:tb-success}
-.toolya-buddy[data-pose="tip"] .tb-avatar{animation-name:tb-tip}
-.toolya-buddy[data-pose="error"] .tb-avatar{animation-name:tb-error}
+.tb-avatar{transform-origin:50% 85%;animation:none}
+ .toolya-buddy[data-pose="welcome"] .tb-avatar{animation:tb-greet 1.6s ease-in-out both}
+.toolya-buddy[data-pose="success"] .tb-avatar{animation:tb-success 1.05s ease-out both}
+.toolya-buddy[data-pose="tip"] .tb-avatar{animation:tb-tip 1.3s ease-in-out both}
+.toolya-buddy[data-pose="error"] .tb-avatar{animation:tb-error .65s ease-out both}
 @keyframes tb-greet{0%,100%{transform:rotate(0) translateY(0)}35%{transform:rotate(-5deg) translateY(-3px)}70%{transform:rotate(4deg) translateY(0)}}
 @keyframes tb-success{0%,100%{transform:translateY(0) scale(1)}35%{transform:translateY(-7px) scale(1.04)}65%{transform:translateY(-2px) scale(1.01)}}
 @keyframes tb-tip{0%,100%{transform:rotate(0)}40%{transform:rotate(5deg)}70%{transform:rotate(-2deg)}}
@@ -26,3 +27,7 @@
 .tb-dialog button{touch-action:manipulation}
 @media(max-width:360px){.tb-message-box{align-items:flex-start}.tb-close{max-width:100%}.tb-dialog{padding:12px}}
 @media(prefers-reduced-motion:reduce){.tb-dialog,.tb-overlay{scroll-behavior:auto}}
+
+/* Idle is deliberately still: no distracting motion when no message is visible. */
+.toolya-buddy[data-pose="idle"] .tb-avatar{animation:none}
+@media(max-width:360px){.tb-message-box{flex-wrap:wrap}.tb-text{flex:1 1 calc(100% - 72px)}.tb-close{white-space:normal}}
