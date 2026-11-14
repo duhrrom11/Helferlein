@@ -33,7 +33,7 @@ test('Homepage lists all eleven tools and legal links', async ({ page }) => {
   const hrefs = await page.locator('a[href^="tools/"]').evaluateAll(nodes => [...new Set(nodes.map(n => n.getAttribute('href')))]);
   expect(hrefs.length).toBeGreaterThanOrEqual(11);
   await expect(page.locator('a[href="impressum.html"]')).toBeVisible();
-  await expect(page.locator('a[href="datenschutz.html"]')).toBeVisible();
+  await expect(page.locator('footer a[href="datenschutz.html"]')).toBeVisible();
 });
 test('Homepage login rejects empty credentials without network writes', async ({ page }) => {
   await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
@@ -90,7 +90,7 @@ test('Cloud auth UI renders signed-in user with mocked client, without backend c
     });
     await updateUserDisplay();
   });
-  await expect(page.locator('#userInfo')).toContainText('<script>example@invalid.test</script>');
+  await expect(page.locator('#userInfo')).toHaveText('Angemeldet');
   expect(await page.locator('#userInfo script').count()).toBe(0);
   await expect(page.locator('#cloudStatus')).toContainText('Angemeldet');
 });
@@ -100,8 +100,8 @@ test('Cloud auth UI handles unavailable backend with mocked client', async ({ pa
     window.supabaseClient.auth.getUser = async () => ({ data: { user: null }, error: { message: 'offline' } });
     await updateUserDisplay();
   });
-  await expect(page.locator('#cloudStatus')).toContainText('Anmeldestatus konnte nicht geladen werden');
-  await expect(page.locator('#userInfo')).toContainText('Nicht angemeldet');
+  await expect(page.locator('#cloudStatus')).toContainText('Anmeldestatus gerade nicht verfügbar');
+  await expect(page.locator('#userInfo')).toHaveText('Anmelden/Registrieren');
 });
 test('Empty registration is rejected before cloud request', async ({ page }) => {
   await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
@@ -131,7 +131,7 @@ test('Successful mocked login normalizes email and clears password', async ({ pa
   expect(result.received).toEqual({ email: 'person@example.invalid', password: 'local-only-secret' });
   expect(result.password).toBe('');
   await expect(page.locator('#settingsModal')).toBeHidden();
-  await expect(page.locator('#userInfo')).toContainText('person@example.invalid');
+  await expect(page.locator('#userInfo')).toHaveText('Angemeldet');
 });
 test('Mocked rejected login clears password and keeps settings open', async ({ page }) => {
   await page.goto(base + '/index.html', { waitUntil: 'domcontentloaded' });
@@ -159,7 +159,7 @@ test('Mocked logout clears password and shows signed-out status', async ({ page 
     return { calls, password: document.getElementById('loginPassword').value };
   });
   expect(result).toEqual({ calls: 1, password: '' });
-  await expect(page.locator('#userInfo')).toContainText('Nicht angemeldet');
+  await expect(page.locator('#userInfo')).toHaveText('Anmelden/Registrieren');
 });
 
 test('Rejected auth status request hides stale signed-in identity', async ({ page }) => {
@@ -172,8 +172,8 @@ test('Rejected auth status request hides stale signed-in identity', async ({ pag
     window.supabaseClient.auth.getUser = async () => { throw new Error('offline'); };
     await updateUserDisplay();
   });
-  await expect(page.locator('#userInfo')).toHaveText('Nicht angemeldet');
-  await expect(page.locator('#cloudStatus')).toHaveText('Anmeldestatus konnte nicht geladen werden');
+  await expect(page.locator('#userInfo')).toHaveText('Anmelden/Registrieren');
+  await expect(page.locator('#cloudStatus')).toHaveText('Anmeldestatus gerade nicht verfügbar');
 });
 
 test('Older cloud identity response cannot overwrite newer signed-out status', async ({ page }) => {
@@ -187,7 +187,7 @@ test('Older cloud identity response cannot overwrite newer signed-out status', a
     resolveOld({ data: { user: { email: 'stale@example.invalid' } }, error: null });
     await oldRequest;
   });
-  await expect(page.locator('#userInfo')).toHaveText('Nicht angemeldet');
+  await expect(page.locator('#userInfo')).toHaveText('Anmelden/Registrieren');
   await expect(page.locator('#cloudStatus')).toHaveText('Nicht angemeldet');
 });
 test('Older failed auth request cannot override a newer successful status', async ({ page }) => {
@@ -201,6 +201,6 @@ test('Older failed auth request cannot override a newer successful status', asyn
     rejectOld(new Error('old network failure'));
     await oldRequest;
   });
-  await expect(page.locator('#userInfo')).toContainText('current@example.invalid');
+  await expect(page.locator('#userInfo')).toHaveText('Angemeldet');
   await expect(page.locator('#cloudStatus')).toContainText('Angemeldet');
 });
