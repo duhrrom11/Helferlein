@@ -123,4 +123,8 @@ test('v11: deaktivierte Tipps erscheinen nach einer Warnung nicht wieder',()=>{
  const b=new ToolyaBuddy({root:document.body});
  try{b.show('warning','Wichtig');b.show('tip','Alter Tipp');b.setTips(false);b.dismiss();assert.equal(b.current,null)}finally{b.destroy()}
 });
+test('v12: Schließen besitzt einen eindeutigen Screenreader-Namen',()=>{
+ const b=new ToolyaBuddy({root:document.body});
+ try{b.show('warning','Wichtiger Hinweis');assert.equal(b.host.querySelector('.tb-close').attrs['aria-label'],'Toolya-Meldung schließen')}finally{b.destroy()}
+});
 test('Zerstören entfernt Komponente',()=>{buddy.destroy();assert.equal(document.body.querySelector('.toolya-buddy'),null)});
