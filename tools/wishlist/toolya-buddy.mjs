@@ -4,13 +4,13 @@ const MAX_QUEUE=12;
 const priority=type=>REQUIRED.has(type)?2:1;
 export class ToolyaBuddy {
  constructor({root=document.body,assetBase='./',character='turquoise',quiet=false,motion='normal',tips=true,hidden=false}={}){
-  this.root=root;this.assetBase=assetBase;this.character=character;this.quiet=quiet;this.motion='normal';this.tips=!!tips;this.hidden=!!hidden;this.queue=[];this.current=null;this.timer=null;this.dialogs=[];this.destroyed=false;
+  this.root=root;this.assetBase=assetBase;this.character=character;this.quiet=quiet;this.motion='normal';this.tips=!!tips;this.hidden=!!hidden;this.queue=[];this.current=null;this.timer=null;this.deadline=0;this.dialogs=[];this.destroyed=false;
   this.host=document.createElement('aside');this.host.className='toolya-buddy';this.host.setAttribute('data-motion',this.quiet?'off':this.motion==='normal'?'on':this.motion);this.host.setAttribute('data-intensity',this.motion);this.host.setAttribute('aria-label','Toolya-Begleiter');
   this.host.innerHTML='<div class="tb-message-box" hidden><img class="tb-avatar" alt="" aria-hidden="true"><div class="tb-text"><strong class="tb-title"></strong><p class="tb-body"></p><button type="button" class="tb-close">Schließen</button></div></div>';
   root.append(this.host);this.host.querySelector('.tb-close').onclick=()=>this.dismiss();this.setMotion(motion);this.setHidden(hidden);
  }
  image(img,type){if(!['turquoise','purple'].includes(this.character))return;img.hidden=false;img.onerror=()=>{img.hidden=true};img.src=this.assetBase+'toolya_wishlist_'+this.character+'_'+(POSE[type]||'error')+'_1024.png'}
- setCharacter(c){if(!['turquoise','purple'].includes(c))throw Error('Ungültiger Charakter');this.character=c;if(this.current)this.render();for(const d of this.dialogs)this.image(d.img,'warning')}
+ setCharacter(c){if(!['turquoise','purple'].includes(c))throw Error('Ungültiger Charakter');this.character=c;if(this.current)this.render(true);for(const d of this.dialogs)this.image(d.img,'warning')}
  setMotion(mode){if(!['off','calm','normal','lively'].includes(mode))throw Error('Ungültige Animationsstufe');this.motion=mode;this.host.setAttribute('data-intensity',mode);this.host.setAttribute('data-motion',this.quiet?'off':mode==='normal'?'on':mode)}
  setTips(enabled){this.tips=!!enabled;if(!this.tips){this.queue=this.queue.filter(x=>x.type!=='tip');if(this.current?.type==='tip')this.dismiss()}}
  setHidden(value){this.hidden=!!value;this.host.setAttribute('data-hidden',String(this.hidden));this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type);if(this.hidden){this.queue=this.queue.filter(x=>REQUIRED.has(x.type));if(this.current&&!REQUIRED.has(this.current.type))this.dismiss()}}
@@ -39,8 +39,8 @@ export class ToolyaBuddy {
    this.queue.splice(optional<0?this.queue.length-1:optional,1);
   }
  }
- render(){clearTimeout(this.timer);const box=this.host.querySelector('.tb-message-box');box.hidden=!this.current;this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type);if(!this.current){this.host.setAttribute('data-pose','idle');return;}const {type,message}=this.current;this.host.setAttribute('data-pose',POSE[type]);this.image(this.host.querySelector('.tb-avatar'),type);this.host.querySelector('.tb-title').textContent=({'welcome':'Willkommen','success':'Geschafft','tip':'Tipp','warning':'Achtung','error':'Fehler','form-error':'Bitte Eingabe prüfen'})[type];this.host.querySelector('.tb-body').textContent=message;this.host.querySelector('.tb-text').setAttribute('role',REQUIRED.has(type)?'alert':'status');this.host.querySelector('.tb-text').setAttribute('aria-live',REQUIRED.has(type)?'assertive':'polite');this.host.querySelector('.tb-text').setAttribute('aria-atomic','true');if(!REQUIRED.has(type))this.timer=setTimeout(()=>this.dismiss(),type==='tip'?9000:7000)}
- dismiss(){clearTimeout(this.timer);do{this.current=this.queue.shift()||null}while(this.quiet&&this.current&&!REQUIRED.has(this.current.type));this.render()}
+ render(preserveTimer=false){clearTimeout(this.timer);const box=this.host.querySelector('.tb-message-box');box.hidden=!this.current;this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type);if(!this.current){this.host.setAttribute('data-pose','idle');return;}const {type,message}=this.current;this.host.setAttribute('data-pose',POSE[type]);this.image(this.host.querySelector('.tb-avatar'),type);this.host.querySelector('.tb-title').textContent=({'welcome':'Willkommen','success':'Geschafft','tip':'Tipp','warning':'Achtung','error':'Fehler','form-error':'Bitte Eingabe prüfen'})[type];this.host.querySelector('.tb-body').textContent=message;this.host.querySelector('.tb-text').setAttribute('role',REQUIRED.has(type)?'alert':'status');this.host.querySelector('.tb-text').setAttribute('aria-live',REQUIRED.has(type)?'assertive':'polite');this.host.querySelector('.tb-text').setAttribute('aria-atomic','true');if(!REQUIRED.has(type)){const duration=type==='tip'?9000:7000;const remaining=preserveTimer&&this.deadline?Math.max(0,this.deadline-Date.now()):duration;this.deadline=Date.now()+remaining;this.timer=setTimeout(()=>this.dismiss(),remaining)}else this.deadline=0}
+ dismiss(){clearTimeout(this.timer);this.deadline=0;do{this.current=this.queue.shift()||null}while(this.quiet&&this.current&&!REQUIRED.has(this.current.type));this.render()}
  confirm({message,title='Bitte bestätigen',confirmLabel='Bestätigen',cancelLabel='Abbrechen',danger=false}={}){
   if(!message||typeof message!=='string')return Promise.reject(Error('Bestätigungstext fehlt'));
   return new Promise(resolve=>{
@@ -58,5 +58,5 @@ export class ToolyaBuddy {
    cancel.onclick=()=>finish(false);yes.onclick=()=>finish(true);document.addEventListener('keydown',key,true);cancel.focus();
   });
  }
- destroy(){this.destroyed=true;clearTimeout(this.timer);this.queue=[];this.current=null;for(const d of [...this.dialogs])d.finish(false);this.host.remove()}
+ destroy(){this.destroyed=true;clearTimeout(this.timer);this.deadline=0;this.queue=[];this.current=null;for(const d of [...this.dialogs])d.finish(false);this.host.remove()}
 }
