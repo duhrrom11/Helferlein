@@ -120,3 +120,10 @@ test('Android buttons use manipulation touch action and reduced motion disables 
  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
  assert.match(css,/\.toolya-buddy \.tb-avatar\{animation:none!important;transition:none!important\}/);
 });
+
+test('decorative mascots do not intercept Android taps or selection',()=>{
+ const css=read('toolya-buddy.css');
+ assert.match(css,/\.tb-avatar,\.tb-dialog-avatar\{pointer-events:none;user-select:none;-webkit-user-select:none\}/);
+ assert.match(css,/@media\(prefers-reduced-transparency:reduce\)/);
+ assert.match(css,/\.tb-overlay\{backdrop-filter:none!important;-webkit-backdrop-filter:none!important\}/);
+});
