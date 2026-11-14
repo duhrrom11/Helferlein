@@ -16,3 +16,13 @@
 .toolya-buddy[data-motion="off"] .tb-avatar{animation:none!important;transform:none!important}
 @media(prefers-reduced-motion:reduce){.toolya-buddy .tb-avatar{animation:none!important;transform:none!important}}
 @media(max-width:360px){.tb-message-box{box-sizing:border-box;max-width:100%}.tb-text{min-width:0}.tb-avatar{width:52px;height:52px;flex:0 0 52px}}
+
+/* v5: safe-area insets, long translated text and on-screen keyboards. */
+.toolya-buddy,.tb-message-box{min-width:0;box-sizing:border-box}
+.tb-message-box{max-width:100%;overflow-wrap:anywhere}
+.tb-close{flex-shrink:0;touch-action:manipulation}
+.tb-overlay{box-sizing:border-box;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));align-items:safe center}
+.tb-dialog{box-sizing:border-box;max-height:min(90dvh,calc(100dvh - 24px));overscroll-behavior:contain}
+.tb-dialog button{touch-action:manipulation}
+@media(max-width:360px){.tb-message-box{align-items:flex-start}.tb-close{max-width:100%}.tb-dialog{padding:12px}}
+@media(prefers-reduced-motion:reduce){.tb-dialog,.tb-overlay{scroll-behavior:auto}}
