@@ -4,7 +4,7 @@ test('platform preferences, real notices, five-touch Easter egg and optional don
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');
  await expect(page.locator('.toolya-settings')).toBeVisible();await page.evaluate(()=>window.toolyaBuddy.setMotion('off'));
  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('toolya:notice',{detail:{type:'success',message:'Bestätigt gespeichert.'}})));
- const avatar=page.locator('.tb-avatar');await expect(avatar).toBeVisible();expect(await avatar.evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
+ const avatar=page.locator('.tb-avatar');await expect(avatar).toBeVisible();await expect.poll(()=>avatar.evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);
  for(let i=0;i<5;i++)await avatar.tap();await expect(page.locator('.tb-body')).toContainText('kitzlig');
  expect(await page.evaluate(()=>window.toolyaBuddy.tickle())).toBe(false);
  const link=page.locator('a.toolya-donation').first();await expect(link).toHaveAttribute('href','https://ko-fi.com/duhrrom');await expect(link).toHaveAttribute('rel','noopener noreferrer');

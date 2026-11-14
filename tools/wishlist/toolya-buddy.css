@@ -167,3 +167,8 @@ dialog.tb-overlay::backdrop{background:#101827bd}
 .toolya-buddy[data-motion=off] .tb-avatar{animation:none!important}
 .toolya-buddy[data-motion=calm][data-reaction=tickle] .tb-avatar{animation:tb-tip-calm 1.4s ease-in-out both}
 @media(prefers-reduced-motion:reduce){.toolya-buddy[data-reaction] .tb-avatar{animation:none!important}}
+
+/* A native dialog's flex child must shrink below its intrinsic text width. */
+dialog.tb-overlay{inset:0;box-sizing:border-box;min-width:0}
+.tb-dialog{min-width:0;flex:0 1 560px;width:100%;max-width:100%}
+.tb-dialog button{box-sizing:border-box;min-width:0}
