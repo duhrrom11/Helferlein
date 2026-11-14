@@ -14,7 +14,7 @@ export class ToolyaBuddy {
  setMotion(mode){if(!['off','calm','normal','lively'].includes(mode))throw Error('Ungültige Animationsstufe');this.motion=mode;this.host.setAttribute('data-intensity',mode);this.host.setAttribute('data-motion',this.quiet?'off':mode==='normal'?'on':mode)}
  setTips(enabled){this.tips=!!enabled;if(!this.tips){this.queue=this.queue.filter(x=>x.type!=='tip');if(this.current?.type==='tip')this.dismiss()}}
  setHidden(value){this.hidden=!!value;this.host.setAttribute('data-hidden',String(this.hidden));this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type);if(this.hidden){this.queue=this.queue.filter(x=>REQUIRED.has(x.type));if(this.current&&!REQUIRED.has(this.current.type))this.dismiss()}}
- setQuiet(q){this.quiet=!!q;this.host.setAttribute('data-motion',this.quiet?'off':this.motion==='normal'?'on':this.motion);if(this.quiet){this.queue=this.queue.filter(item=>REQUIRED.has(item.type));if(this.current&&!REQUIRED.has(this.current.type))this.current=null;if(!this.current)this.current=this.queue.shift()||null;}this.render()}
+ setQuiet(q){const previous=this.current;this.quiet=!!q;this.host.setAttribute('data-motion',this.quiet?'off':this.motion==='normal'?'on':this.motion);if(this.quiet){this.queue=this.queue.filter(item=>REQUIRED.has(item.type));if(this.current&&!REQUIRED.has(this.current.type))this.current=null;if(!this.current)this.current=this.queue.shift()||null;}this.render(previous===this.current)}
  show(type,message){
   if(this.destroyed||!POSE[type]||typeof message!=='string'||!message.trim())return false;
   if((this.quiet&&!REQUIRED.has(type))||(type==='tip'&&!this.tips)||(this.hidden&&!REQUIRED.has(type)))return false;
@@ -36,7 +36,8 @@ export class ToolyaBuddy {
   this.queue.sort((a,b)=>priority(b.type)-priority(a.type));
   if(this.queue.length>MAX_QUEUE){
    const optional=this.queue.findLastIndex(x=>!REQUIRED.has(x.type));
-   this.queue.splice(optional<0?this.queue.length-1:optional,1);
+   if(optional>=0)this.queue.splice(optional,1);
+   // Critical alerts are never silently discarded to satisfy the optional queue limit.
   }
  }
  render(preserveTimer=false){clearTimeout(this.timer);const box=this.host.querySelector('.tb-message-box');box.hidden=!this.current;this.host.hidden=this.hidden&&!REQUIRED.has(this.current?.type);if(!this.current){this.deadline=0;this.host.setAttribute('data-pose','idle');return;}const {type,message}=this.current;this.host.setAttribute('data-pose',POSE[type]);this.image(this.host.querySelector('.tb-avatar'),type);this.host.querySelector('.tb-title').textContent=({'welcome':'Willkommen','success':'Geschafft','tip':'Tipp','warning':'Achtung','error':'Fehler','form-error':'Bitte Eingabe prüfen'})[type];this.host.querySelector('.tb-body').textContent=message;this.host.querySelector('.tb-text').setAttribute('role',REQUIRED.has(type)?'alert':'status');this.host.querySelector('.tb-text').setAttribute('aria-live',REQUIRED.has(type)?'assertive':'polite');this.host.querySelector('.tb-text').setAttribute('aria-atomic','true');if(!REQUIRED.has(type)){const duration=type==='tip'?9000:7000;const remaining=preserveTimer&&this.deadline?Math.max(0,this.deadline-Date.now()):duration;this.deadline=Date.now()+remaining;this.timer=setTimeout(()=>this.dismiss(),remaining)}else this.deadline=0}
