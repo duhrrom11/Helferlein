@@ -131,3 +131,11 @@
 @media(prefers-reduced-motion:reduce){
  .tb-dialog,.tb-overlay{animation:none!important;transition:none!important}
 }
+
+/* Visible keyboard focus in Android external-keyboard and high-contrast modes. */
+.tb-close:focus-visible,.tb-dialog button:focus-visible{
+ outline:3px solid currentColor;outline-offset:3px;
+}
+@media(forced-colors:active){
+ .tb-close:focus-visible,.tb-dialog button:focus-visible{outline-color:Highlight}
+}
