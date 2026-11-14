@@ -65,3 +65,10 @@ test('coarse-pointer Android controls have minimum 44px touch targets',()=>{
  assert.match(css,/\.tb-close,\.tb-dialog button\{min-height:44px;min-width:44px\}/);
  assert.match(css,/@media\(prefers-reduced-transparency:reduce\)/);
 });
+
+test('calm mode reduces amplitude independently for all four original poses',()=>{
+ const css=read('toolya-buddy.css');
+ for(const pose of ['greet','success','tip','error'])assert.ok(css.includes('@keyframes tb-'+pose+'-calm'));
+ for(const pose of ['welcome','success','tip','error'])assert.ok(css.includes('[data-motion="calm"][data-pose="'+pose+'"] .tb-avatar'));
+ assert.match(css,/prefers-reduced-motion:reduce/);
+});
